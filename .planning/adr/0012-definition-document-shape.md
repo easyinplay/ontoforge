@@ -20,7 +20,7 @@ ADR-0003 决定了「YAML / JSON 解析到单一 IR」，但没有定死文档�
 - loader 内部把 `{kind: X, ...}` 重写为 externally tagged 的 `{X: {...}}` 再反序列化，以保留 `serde_path_to_error` 路径与节点级 span（Spike S1）；`#[serde(tag = "kind")]` 只用于 JSON Schema 导出。
 
 ### ObjectType（D-03）
-`apiName`（PascalCase）、`displayName`、`description`、`aliases`、`hidden`、`primaryKey`、`titleKey`、`properties`。`properties` 是以属性 apiName（camelCase）为 key 的 map，每项 `type`、`items`、`required`、`displayName`、`description`。`titleKey` 缺省等于 `primaryKey`；主键属性隐含 `required: true`。Walking Skeleton 阶段（plan 01-01）只实现 `apiName`、`displayName`、`description`、`primaryKey`、`properties`（`type`、`required`），其余字段由 plan 01-04 补齐。
+`apiName`（PascalCase）、`displayName`、`description`、`aliases`、`hidden`、`primaryKey`、`titleKey`、`properties`。`properties` 是以属性 apiName（camelCase）为 key 的 map，每项 `type`、`items`、`required`、`displayName`、`description`。`titleKey` 缺省等于 `primaryKey`；主键属性隐含 `required: true`（已被 ADR-0013 取代：主键必须显式声明 `required: true`）。Walking Skeleton 阶段（plan 01-01）只实现 `apiName`、`displayName`、`description`、`primaryKey`、`properties`（`type`、`required`），其余字段由 plan 01-04 补齐。
 
 ### LinkType（RESEARCH A1）
 `apiName`（camelCase，link type 之间唯一）、`cardinality: oneToOne | oneToMany | manyToMany`、`from` / `to` 两端 `{ objectType, apiName, displayName, description, foreignKey }`。
