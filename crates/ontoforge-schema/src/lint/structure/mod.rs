@@ -88,6 +88,18 @@ pub(super) mod testing {
         )
     }
 
+    /// [`run`] on another thread, failing the test when it takes longer than
+    /// `seconds`. A run that never ends is left behind; the test process exits
+    /// without waiting for it.
+    pub fn run_within(seconds: u64, rule_id: &'static str, text: String) -> Vec<Diagnostic> {
+        let (tx, rx) = std::sync::mpsc::channel();
+        std::thread::spawn(move || {
+            let _ = tx.send(run(rule_id, &text));
+        });
+        rx.recv_timeout(std::time::Duration::from_secs(seconds))
+            .unwrap_or_else(|e| panic!("{rule_id} did not finish within {seconds} s: {e}"))
+    }
+
     /// The source text each diagnostic points at, in report order.
     pub fn flagged<'a>(text: &'a str, found: &[Diagnostic]) -> Vec<&'a str> {
         found

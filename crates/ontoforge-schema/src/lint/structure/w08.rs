@@ -112,7 +112,7 @@ fn keys_of(object: &ObjectType) -> impl Iterator<Item = Key<'_>> {
 
 #[cfg(test)]
 mod tests {
-    use crate::lint::structure::testing::{flagged, join, object, run};
+    use crate::lint::structure::testing::{flagged, join, object, run, run_within};
 
     const AUDIT: [(&str, &str); 3] = [
         ("createdAt", "timestamp"),
@@ -184,5 +184,39 @@ mod tests {
         let found = run("ONT-W08", &text);
         assert_eq!(flagged(&text, &found), ["Alpha"]);
         assert!(found[0].message.contains("`Delta`"));
+    }
+
+    /// CR-01: a thousand types sharing the same audit fields once took cubic time.
+    #[test]
+    fn many_types_with_the_same_shared_set_finish_quickly() {
+        let docs: Vec<String> = (0..1000)
+            .map(|i| object(&format!("Thing{i}"), "id", &AUDIT))
+            .collect();
+        let found = run_within(5, "ONT-W08", join(&docs));
+        assert_eq!(found.len(), 1, "{:#?}", found.first());
+        assert!(found[0].message.contains("`Thing999`"));
+    }
+
+    /// CR-01: hundreds of types whose shared sets all differ.
+    #[test]
+    fn many_types_with_different_shared_sets_finish_quickly() {
+        let docs: Vec<String> = (0..400)
+            .map(|i| {
+                let extra = [
+                    format!("extra{}", i % 7),
+                    format!("more{}", i % 11),
+                    format!("tag{}", i % 13),
+                ];
+                let mut props: Vec<(&str, &str)> = AUDIT.to_vec();
+                props.extend(extra.iter().map(|p| (p.as_str(), "string")));
+                object(&format!("Thing{i}"), "id", &props)
+            })
+            .collect();
+        let found = run_within(5, "ONT-W08", join(&docs));
+        assert!(
+            found.iter().any(|d| d.message.contains("`createdAt`")),
+            "{:#?}",
+            found.first()
+        );
     }
 }
