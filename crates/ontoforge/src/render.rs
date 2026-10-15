@@ -80,17 +80,31 @@ fn to_report(d: &Diagnostic, sources: &SourceMap) -> Report {
 }
 
 /// Replace terminal control characters so a definition file cannot drive the
-/// reader's terminal. Byte lengths are preserved so span offsets stay valid: C0
-/// controls (except tab, newline, carriage return) and DEL become one `?`; C1
-/// controls (two bytes in UTF-8) become two.
+/// reader's terminal or reorder what it shows. Each replaced character becomes one
+/// `?` per UTF-8 byte, so span offsets stay valid. Replaced: C0 controls except tab
+/// and newline, a carriage return not followed by a newline (it would move the
+/// cursor back over the line, WR-11), DEL, C1 controls, and the bidirectional
+/// controls U+061C, U+200E, U+200F, U+202A to U+202E and U+2066 to U+2069.
 pub fn sanitize(text: &str) -> String {
     let mut out = String::with_capacity(text.len());
-    for c in text.chars() {
-        match c {
-            '\t' | '\n' | '\r' => out.push(c),
-            '\u{0}'..='\u{1f}' | '\u{7f}' => out.push('?'),
-            '\u{80}'..='\u{9f}' => out.push_str("??"),
-            _ => out.push(c),
+    let mut chars = text.chars().peekable();
+    while let Some(c) = chars.next() {
+        let keep = match c {
+            '\t' | '\n' => true,
+            '\r' => chars.peek() == Some(&'\n'),
+            '\u{0}'..='\u{1f}'
+            | '\u{7f}'..='\u{9f}'
+            | '\u{61c}'
+            | '\u{200e}'
+            | '\u{200f}'
+            | '\u{202a}'..='\u{202e}'
+            | '\u{2066}'..='\u{2069}' => false,
+            _ => true,
+        };
+        if keep {
+            out.push(c);
+        } else {
+            out.extend(std::iter::repeat_n('?', c.len_utf8()));
         }
     }
     out
@@ -117,6 +131,16 @@ mod tests {
         assert_eq!(out.len(), input.len());
         assert!(!out.contains('\u{1b}') && !out.contains('\u{9b}') && !out.contains('\u{7f}'));
         assert!(out.contains('\t') && out.ends_with('\n'));
+    }
+
+    /// WR-11: a lone carriage return and bidirectional controls are replaced; a
+    /// `\r\n` line end is kept.
+    #[test]
+    fn carriage_return_and_bidi_controls_are_replaced() {
+        let input = "x\rerror: all good\r\nab\u{202e}cd\u{2066}e\u{200f}f\u{61c}g";
+        let out = sanitize(input);
+        assert_eq!(out.len(), input.len());
+        assert_eq!(out, "x?error: all good\r\nab???cd???e???f??g");
     }
 
     /// CR-04: the file name reaches the source header, so it is sanitized too.
