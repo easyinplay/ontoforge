@@ -17,9 +17,7 @@ pub(super) fn rules() -> Vec<&'static dyn LintRule> {
 /// Appended to every structure help text: these rules are heuristics, so the way out
 /// is part of the message.
 fn off_hint(rule_id: &str) -> String {
-    format!(
-        "if this is intentional, set \"{rule_id}\" = \"off\" under [lint] in ontoforge.toml"
-    )
+    format!("if this is intentional, set \"{rule_id}\" = \"off\" under [lint] in ontoforge.toml")
 }
 
 /// A finding on the `apiName` value of `object`.

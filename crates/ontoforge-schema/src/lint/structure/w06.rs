@@ -8,7 +8,12 @@
 //! The null-rate branch of the original rule needs stored data, so it is Deferred
 //! until the storage phase.
 
+use super::super::words::split_camel;
 use super::super::{Finding, Level, LintCx, LintRule};
+use super::{off_hint, type_finding};
+use crate::ir::BaseType;
+
+const DEFAULT_MAX_PROPERTIES: usize = 60;
 
 pub(super) struct W06;
 
@@ -27,7 +32,45 @@ impl LintRule for W06 {
         &["max_properties"]
     }
 
-    fn check(&self, _cx: &LintCx<'_>, _out: &mut Vec<Finding>) {}
+    fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {
+        let max = cx.option_usize("max_properties", DEFAULT_MAX_PROPERTIES);
+        for object in cx.ontology.object_types.values() {
+            let count = object.properties.len();
+            if count > max {
+                out.push(type_finding(
+                    object,
+                    format!(
+                        "object type `{}` has {count} properties, more than the limit of {max}",
+                        object.api_name
+                    ),
+                    format!(
+                        "split it into several object types; {}",
+                        off_hint(self.id())
+                    ),
+                ));
+            } else if count > max / 2 {
+                let discriminator = object.properties.iter().find(|(name, def)| {
+                    def.base_type == BaseType::String
+                        && split_camel(name.as_str())
+                            .last()
+                            .is_some_and(|w| w == "type" || w == "subtype")
+                });
+                if let Some((name, _)) = discriminator {
+                    out.push(type_finding(
+                        object,
+                        format!(
+                            "object type `{}` has {count} properties and the discriminator `{name}`",
+                            object.api_name
+                        ),
+                        format!(
+                            "one object type per `{name}` value, or an interface for the shared part, is easier to maintain; {}",
+                            off_hint(self.id())
+                        ),
+                    ));
+                }
+            }
+        }
+    }
 }
 
 #[cfg(test)]

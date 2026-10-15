@@ -11,7 +11,14 @@
 //! No data is looked at, so the similarity is a hint that two types describe the same
 //! thing in different systems.
 
+use std::collections::{BTreeMap, BTreeSet};
+
+use super::super::words::split_camel;
 use super::super::{Finding, Level, LintCx, LintRule};
+use super::{off_hint, type_finding};
+use crate::ir::ObjectType;
+
+const DEFAULT_PREFIXES: [&str; 4] = ["hr", "sales", "billing", "crm"];
 
 /// Minimum Jaccard similarity of two property sets.
 const MIN_SIMILARITY: f64 = 0.6;
@@ -35,8 +42,73 @@ impl LintRule for W07 {
         &["silo_prefixes"]
     }
 
-    fn check(&self, _cx: &LintCx<'_>, _out: &mut Vec<Finding>) {
-        let _ = (MIN_SIMILARITY, MIN_PROPERTIES);
+    fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {
+        let prefixes = cx.option_str_list("silo_prefixes", &DEFAULT_PREFIXES);
+        for object in cx.ontology.object_types.values() {
+            let words = split_camel(object.api_name.as_str());
+            if let [first, _, ..] = words.as_slice()
+                && let Some(prefix) = prefixes.iter().find(|p| p.eq_ignore_ascii_case(first))
+            {
+                out.push(type_finding(
+                    object,
+                    format!(
+                        "object type `{}` starts with the system or department prefix `{prefix}`",
+                        object.api_name
+                    ),
+                    format!(
+                        "name the type after the thing it represents, not the system that owns it; {}",
+                        off_hint(self.id())
+                    ),
+                ));
+            }
+        }
+        similar_pairs(cx, self.id(), out);
+    }
+}
+
+/// Property sets of the types that can take part in a similar pair, grouped by
+/// primary key `(name, base type)`. Only types in the same group are compared.
+fn similar_pairs(cx: &LintCx<'_>, rule_id: &str, out: &mut Vec<Finding>) {
+    type Key<'a> = (&'a str, &'a str);
+    let mut groups: BTreeMap<Key<'_>, Vec<(&ObjectType, BTreeSet<Key<'_>>)>> = BTreeMap::new();
+    for object in cx.ontology.object_types.values() {
+        let Some(pk) = object.properties.get(object.primary_key.as_str()) else {
+            continue;
+        };
+        if object.properties.len() < MIN_PROPERTIES {
+            continue;
+        }
+        let set = object
+            .properties
+            .iter()
+            .map(|(name, def)| (name.as_str(), def.base_type.as_str()))
+            .collect();
+        groups
+            .entry((object.primary_key.as_str(), pk.base_type.as_str()))
+            .or_default()
+            .push((object, set));
+    }
+    for members in groups.values() {
+        for (i, (a, set_a)) in members.iter().enumerate() {
+            for (b, set_b) in &members[i + 1..] {
+                let shared = set_a.intersection(set_b).count();
+                #[allow(clippy::cast_precision_loss)] // set sizes are small
+                let similarity = shared as f64 / (set_a.len() + set_b.len() - shared) as f64;
+                if similarity >= MIN_SIMILARITY {
+                    out.push(type_finding(
+                        b,
+                        format!(
+                            "object types `{}` and `{}` have the same primary key and a property similarity of {similarity:.2}",
+                            b.api_name, a.api_name
+                        ),
+                        format!(
+                            "if they describe the same thing, merge them; {}",
+                            off_hint(rule_id)
+                        ),
+                    ));
+                }
+            }
+        }
     }
 }
 
@@ -67,7 +139,10 @@ mod tests {
             ["SalesOrder", "CrmContact", "CrmContact"]
         );
         let messages: Vec<&str> = found.iter().map(|d| d.message.as_str()).collect();
-        assert!(messages.iter().any(|m| m.contains("prefix `crm`")), "{messages:#?}");
+        assert!(
+            messages.iter().any(|m| m.contains("prefix `crm`")),
+            "{messages:#?}"
+        );
         assert!(
             messages
                 .iter()

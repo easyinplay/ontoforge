@@ -5,7 +5,11 @@
 //! property (a v2 capability). Each shared property set is reported once, on the
 //! first object type by `apiName`.
 
+use std::collections::{BTreeMap, BTreeSet};
+
 use super::super::{Finding, Level, LintCx, LintRule};
+use super::{off_hint, type_finding};
+use crate::ir::ObjectType;
 
 /// Types that must share a property set.
 const MIN_TYPES: usize = 3;
@@ -25,9 +29,85 @@ impl LintRule for W08 {
         Level::Warn
     }
 
-    fn check(&self, _cx: &LintCx<'_>, _out: &mut Vec<Finding>) {
-        let _ = (MIN_TYPES, MIN_SHARED);
+    fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {
+        // (property name, base type) to the number of object types that have it.
+        let mut counts: BTreeMap<Key<'_>, usize> = BTreeMap::new();
+        for object in cx.ontology.object_types.values() {
+            for key in keys_of(object) {
+                *counts.entry(key).or_default() += 1;
+            }
+        }
+        // Only keys held by at least three types can be shared by three types, so
+        // the triple search below runs over these alone (T-01-35).
+        let candidates: Vec<(&ObjectType, BTreeSet<Key<'_>>)> = cx
+            .ontology
+            .object_types
+            .values()
+            .map(|object| {
+                let frequent = keys_of(object)
+                    .filter(|key| counts[key] >= MIN_TYPES)
+                    .collect::<BTreeSet<_>>();
+                (object, frequent)
+            })
+            .filter(|(_, frequent)| frequent.len() >= MIN_SHARED)
+            .collect();
+
+        // Shared property set to the names of the types that hold all of it.
+        let mut found: BTreeMap<BTreeSet<Key<'_>>, BTreeSet<&str>> = BTreeMap::new();
+        for (i, (a, set_a)) in candidates.iter().enumerate() {
+            for (j, (b, set_b)) in candidates.iter().enumerate().skip(i + 1) {
+                let ab: BTreeSet<Key<'_>> = set_a.intersection(set_b).copied().collect();
+                if ab.len() < MIN_SHARED {
+                    continue;
+                }
+                for (c, set_c) in candidates.iter().skip(j + 1) {
+                    let shared: BTreeSet<Key<'_>> = ab.intersection(set_c).copied().collect();
+                    if shared.len() >= MIN_SHARED {
+                        found.entry(shared).or_default().extend([
+                            a.api_name.as_str(),
+                            b.api_name.as_str(),
+                            c.api_name.as_str(),
+                        ]);
+                    }
+                }
+            }
+        }
+
+        for (shared, types) in found {
+            let Some(first) = types.first().and_then(|n| cx.ontology.object_types.get(*n)) else {
+                continue;
+            };
+            let list = |items: Vec<&str>| {
+                items
+                    .iter()
+                    .map(|i| format!("`{i}`"))
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            };
+            out.push(type_finding(
+                first,
+                format!(
+                    "object types {} share the properties {}",
+                    list(types.iter().copied().collect()),
+                    list(shared.iter().map(|(name, _)| *name).collect())
+                ),
+                format!(
+                    "extract an interface or a shared property for them (a v2 capability); {}",
+                    off_hint(self.id())
+                ),
+            ));
+        }
     }
+}
+
+/// A property as `(name, base type)`.
+type Key<'a> = (&'a str, &'a str);
+
+fn keys_of(object: &ObjectType) -> impl Iterator<Item = Key<'_>> {
+    object
+        .properties
+        .iter()
+        .map(|(name, def)| (name.as_str(), def.base_type.as_str()))
 }
 
 #[cfg(test)]
@@ -71,10 +151,22 @@ mod tests {
             object("Beta", "betaId", &AUDIT[..2]),
             object("Gamma", "gammaId", &AUDIT[..2]),
             // Two types share three properties.
-            object("Delta", "deltaId", &[("x", "string"), ("y", "string"), ("z", "string")]),
-            object("Epsilon", "epsilonId", &[("x", "string"), ("y", "string"), ("z", "string")]),
+            object(
+                "Delta",
+                "deltaId",
+                &[("x", "string"), ("y", "string"), ("z", "string")],
+            ),
+            object(
+                "Epsilon",
+                "epsilonId",
+                &[("x", "string"), ("y", "string"), ("z", "string")],
+            ),
             // Same name, different base type does not count.
-            object("Zeta", "zetaId", &[("createdAt", "date"), ("updatedAt", "date")]),
+            object(
+                "Zeta",
+                "zetaId",
+                &[("createdAt", "date"), ("updatedAt", "date")],
+            ),
         ]);
         let found = run("ONT-W08", &text);
         assert!(found.is_empty(), "{found:#?}");

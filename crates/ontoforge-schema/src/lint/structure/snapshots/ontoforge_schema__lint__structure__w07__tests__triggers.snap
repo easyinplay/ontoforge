@@ -1,0 +1,45 @@
+---
+source: crates/ontoforge-schema/src/lint/structure/w07.rs
+expression: found
+---
+[
+  {
+    "code": "ONT-W07",
+    "severity": "warning",
+    "message": "object type `SalesOrder` starts with the system or department prefix `sales`",
+    "file": "defs.yaml",
+    "line": 2,
+    "column": 10,
+    "span": {
+      "offset": 26,
+      "length": 10
+    },
+    "help": "name the type after the thing it represents, not the system that owns it; if this is intentional, set \"ONT-W07\" = \"off\" under [lint] in ontoforge.toml"
+  },
+  {
+    "code": "ONT-W07",
+    "severity": "warning",
+    "message": "object type `CrmContact` starts with the system or department prefix `crm`",
+    "file": "defs.yaml",
+    "line": 18,
+    "column": 10,
+    "span": {
+      "offset": 363,
+      "length": 10
+    },
+    "help": "name the type after the thing it represents, not the system that owns it; if this is intentional, set \"ONT-W07\" = \"off\" under [lint] in ontoforge.toml"
+  },
+  {
+    "code": "ONT-W07",
+    "severity": "warning",
+    "message": "object types `CrmContact` and `Contact` have the same primary key and a property similarity of 0.67",
+    "file": "defs.yaml",
+    "line": 18,
+    "column": 10,
+    "span": {
+      "offset": 363,
+      "length": 10
+    },
+    "help": "if they describe the same thing, merge them; if this is intentional, set \"ONT-W07\" = \"off\" under [lint] in ontoforge.toml"
+  }
+]
