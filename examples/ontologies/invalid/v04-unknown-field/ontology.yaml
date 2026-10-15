@@ -1,0 +1,2 @@
+apiName: invalidUnknownField
+description: Fixture for ONT-V04, the primary key field is misspelled in objects.yaml.

@@ -1,0 +1,7 @@
+kind: ObjectType
+apiName: Airport
+displayName: Airport
+primaryKey: code
+properties:
+  code: { type: string, required: true }
+  name: { type: string }
