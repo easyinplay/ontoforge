@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 1
 current_phase_name: Workspace, Schema & Lint
 status: executing
-stopped_at: Completed 01-07-PLAN.md
-last_updated: "2026-10-15T15:03:26.209Z"
+stopped_at: Completed 01-06-PLAN.md
+last_updated: "2026-10-15T15:16:33.296Z"
 last_activity: 2026-10-15
 last_activity_desc: Phase 1 execution started
-state_head: 2c350835570f351332d69384a5bc7786fc897655
+state_head: b49a647a67bfbcdc64f854eebade56e9b736b711
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 12
-  completed_plans: 6
+  completed_plans: 7
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-15)
 ## Current Position
 
 Phase: 1 (Workspace, Schema & Lint) — EXECUTING
-Plan: 7 of 12
+Plan: 8 of 12
 Status: Ready to execute
 Last activity: 2026-10-15 — Phase 1 execution started
 
@@ -59,6 +59,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P04 | n/a | 3 tasks | 29 files |
 | Phase 01 P05 | 8 min | 3 tasks | 22 files |
 | Phase 01 P07 | 15 min | 2 tasks | 5 files |
+| Phase 01 P06 | 12 min | 3 tasks | 29 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,7 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 1]: 01-04: primary key must declare required: true explicitly (overrides ADR-0012 implicit required); titleKey stays Option in IR with effective_title_key()
 - [Phase 01]: Link end apiName is the accessor on that end's own objectType (ADR-0012); a link with a missing end type reports V09 only and skips the other link checks — V08 accessor namespaces are keyed per object type; later checks need the resolved type pair
 - [Phase 01]: cel 0.15 SourceInfo::offset_for returns UTF-8 byte offsets; offset_to_line_col takes bytes and returns a char column — Verified with a multi-byte literal in ontoforge-expr tests (01-07)
+- [Phase 01]: 01-06: numeric assignability is by value class (byte/short/integer, float/double); objectReference params cannot be assigned to properties; modifyObject on the primary key is V12 — RESEARCH scale-property-limits mapping and plan discretion
 
 ### Pending Todos
 
@@ -91,6 +93,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-15T15:03:26.180Z
-Stopped at: Completed 01-07-PLAN.md
+Last session: 2026-10-15T15:16:33.266Z
+Stopped at: Completed 01-06-PLAN.md
 Resume file: None
