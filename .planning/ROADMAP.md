@@ -36,7 +36,7 @@
   4. `ontoforge lint` 运行适用于 v1 schema 范围的 ONT-E 规则与 ONT-W01–W11，输出人类可读（带源码定位）与 JSON 两种格式；有 E 级问题时退出码非 0；配置文件可按规则 ID 关闭规则或调整严重级
   5. 开发者可以导出 ontology 定义的 JSON Schema，仓库内示例 ontology 通过该 Schema 校验
 
-**Plans**: 1/12 plans executed（6 waves）
+**Plans**: 2/12 plans executed（6 waves）
 
 Plans:
 **Wave 1**
@@ -45,7 +45,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 01-02-PLAN.md — 其余 8 个 crate 骨架、CI、CONTRIBUTING、ADR-0003 回写
+- [x] 01-02-PLAN.md — 其余 8 个 crate 骨架、CI、CONTRIBUTING、ADR-0003 回写
 - [ ] 01-03-PLAN.md — 加载层：include glob、路径安全、严格 JSON、栈安全、确定性
 - [ ] 01-04-PLAN.md — object type 与 13 个 base type、V10 校验、aviation 双格式示例
 
@@ -186,7 +186,7 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7（Phase 3 �
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Workspace, Schema & Lint | 1/12 | In Progress|  |
+| 1. Workspace, Schema & Lint | 2/12 | In Progress|  |
 | 2. Storage & Edit Log | 0/TBD | Not started | - |
 | 3. Action Execution | 0/TBD | Not started | - |
 | 4. Object Set Query | 0/TBD | Not started | - |
