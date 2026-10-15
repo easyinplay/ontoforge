@@ -149,3 +149,96 @@ fn pk_suitability_table() {
     assert!(is_title_suitable(String, None));
     assert!(is_title_suitable(Array, Some(String)));
 }
+
+const GOOD: &str = "kind: ObjectType
+apiName: Airport
+primaryKey: code
+properties:
+  code: { type: string, required: true }
+  name: { type: string }
+";
+
+#[test]
+fn primary_key_must_be_required() {
+    let out = load(&GOOD.replace("required: true", "required: false"));
+    let d = only(&out);
+    assert_eq!(d.code, codes::V10);
+    assert_eq!((d.line, d.column), (5, 3));
+    assert!(
+        d.help.as_deref().unwrap().contains("required: true"),
+        "{d:?}"
+    );
+}
+
+#[test]
+fn invalid_primary_key_types_are_v10() {
+    for t in [
+        "float",
+        "double",
+        "decimal",
+        "geopoint",
+        "array, items: string",
+    ] {
+        let out = load(&GOOD.replace("type: string, required", &format!("type: {t}, required")));
+        let d = only(&out);
+        assert_eq!(d.code, codes::V10, "{t}");
+        assert_eq!((d.line, d.column), (3, 13), "{t}");
+        let name = t.split(',').next().unwrap();
+        assert!(d.message.contains(name), "{t}: {}", d.message);
+    }
+}
+
+#[test]
+fn discouraged_primary_key_is_not_a_validate_error() {
+    let out = load(&GOOD.replace("type: string, required", "type: timestamp, required"));
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+    assert!(out.ontology.is_some());
+}
+
+#[test]
+fn title_key_must_exist() {
+    let out = load(&GOOD.replace("primaryKey: code\n", "primaryKey: code\ntitleKey: nme\n"));
+    let d = only(&out);
+    assert_eq!(d.code, codes::V10);
+    assert_eq!((d.line, d.column), (4, 11));
+    assert!(d.help.as_deref().unwrap().contains("`name`"), "{d:?}");
+}
+
+#[test]
+fn array_requires_items() {
+    let out = load(&format!("{GOOD}  tags: {{ type: array }}\n"));
+    let d = only(&out);
+    assert_eq!(d.code, codes::V05);
+    assert_eq!((d.line, d.column), (7, 17));
+    assert!(d.help.as_deref().unwrap().contains("items"), "{d:?}");
+}
+
+#[test]
+fn items_only_for_arrays() {
+    let out = load(&GOOD.replace(
+        "name: { type: string }",
+        "name: { type: string, items: string }",
+    ));
+    let d = only(&out);
+    assert_eq!(d.code, codes::V06);
+    assert_eq!((d.line, d.column), (6, 25));
+}
+
+#[test]
+fn nested_array_is_not_a_validate_error() {
+    let out = load(&format!("{GOOD}  grid: {{ type: array, items: array }}\n"));
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+}
+
+#[test]
+fn duplicate_object_type_reports_first_location() {
+    let out = load_from_memory(&[
+        ("ontology.yaml", MANIFEST),
+        ("a.yaml", GOOD),
+        ("b.yaml", GOOD),
+    ]);
+    let d = only(&out);
+    assert_eq!(d.code, codes::V08);
+    assert_eq!(d.file, "b.yaml");
+    assert!(d.message.contains("a.yaml:2:10"), "{}", d.message);
+}
