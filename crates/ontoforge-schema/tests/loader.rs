@@ -445,8 +445,8 @@ fn empty_yaml_documents_are_skipped() {
 fn multi_document_yaml_and_json_array_are_both_loaded() {
     let yaml = format!("{}---\n{}", object("Airport"), object("Flight"));
     let json = r#"[
-      {"kind":"ObjectType","apiName":"Plane","primaryKey":"code","properties":{"code":{"type":"string"}}},
-      {"kind":"ObjectType","apiName":"Gate","primaryKey":"code","properties":{"code":{"type":"string"}}}
+      {"kind":"ObjectType","apiName":"Plane","primaryKey":"code","properties":{"code":{"type":"string","required":true}}},
+      {"kind":"ObjectType","apiName":"Gate","primaryKey":"code","properties":{"code":{"type":"string","required":true}}}
     ]"#;
     let out = mem(&[("a.yaml", yaml.as_str()), ("b.json", json)]);
     assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
@@ -455,8 +455,8 @@ fn multi_document_yaml_and_json_array_are_both_loaded() {
 
 #[test]
 fn properties_keep_declared_order() {
-    let yaml = "kind: ObjectType\napiName: Airport\nprimaryKey: zeta\nproperties:\n  zeta: { type: string }\n  alpha: { type: string }\n  mid: { type: string }\n";
-    let json = r#"{"kind":"ObjectType","apiName":"Flight","primaryKey":"zeta","properties":{"zeta":{"type":"string"},"alpha":{"type":"string"},"mid":{"type":"string"}}}"#;
+    let yaml = "kind: ObjectType\napiName: Airport\nprimaryKey: zeta\nproperties:\n  zeta: { type: string, required: true }\n  alpha: { type: string }\n  mid: { type: string }\n";
+    let json = r#"{"kind":"ObjectType","apiName":"Flight","primaryKey":"zeta","properties":{"zeta":{"type":"string","required":true},"alpha":{"type":"string"},"mid":{"type":"string"}}}"#;
     let out = mem(&[("a.yaml", yaml), ("b.json", json)]);
     assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
     let ontology = out.ontology.unwrap();

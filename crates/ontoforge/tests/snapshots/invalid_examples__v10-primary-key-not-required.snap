@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V10",
+    "severity": "error",
+    "message": "primary key property `code` must be required",
+    "file": "objects.yaml",
+    "line": 5,
+    "column": 3,
+    "span": {
+      "offset": 65,
+      "length": 4
+    },
+    "help": "declare `required: true` on the primary key property"
+  }
+]

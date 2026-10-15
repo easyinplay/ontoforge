@@ -1,0 +1,5 @@
+kind: ObjectType
+apiName: flight
+primaryKey: flightId
+properties:
+  flightId: { type: string, required: true }

@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V07",
+    "severity": "error",
+    "message": "invalid object type apiName `flight`: must match ^[A-Z][A-Za-z0-9]{0,99}$",
+    "file": "objects.yaml",
+    "line": 2,
+    "column": 10,
+    "span": {
+      "offset": 26,
+      "length": 6
+    },
+    "help": "write it as `Flight`"
+  }
+]
