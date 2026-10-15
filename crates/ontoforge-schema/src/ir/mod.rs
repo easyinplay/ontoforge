@@ -8,13 +8,15 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 pub mod basetype;
+pub mod link;
 pub mod manifest;
 pub mod names;
 pub mod object;
 
 pub use basetype::BaseType;
+pub use link::{Cardinality, LinkEnd, LinkType};
 pub use manifest::Manifest;
-pub use names::{ObjectTypeName, OntologyName, PropertyName};
+pub use names::{LinkEndName, LinkTypeName, ObjectTypeName, OntologyName, PropertyName};
 pub use object::{ObjectType, PropertyDef};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
@@ -24,6 +26,8 @@ pub struct Ontology {
     pub display_name: Option<String>,
     pub description: Option<String>,
     pub object_types: BTreeMap<ObjectTypeName, ObjectType>,
+    #[serde(default)]
+    pub link_types: BTreeMap<LinkTypeName, LinkType>,
 }
 
 /// One definition document.
@@ -36,4 +40,5 @@ pub struct Ontology {
 #[schemars(tag = "kind")]
 pub enum Definition {
     ObjectType(ObjectType),
+    LinkType(LinkType),
 }

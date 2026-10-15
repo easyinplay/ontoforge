@@ -135,7 +135,7 @@ fn link_end_unknown_field_is_v04() {
     let out = load(&ONE_TO_MANY.replace("foreignKey:", "foreignkey:"));
     let d = only(&out);
     assert_eq!(d.code, codes::V04);
-    assert_eq!((d.line, d.column), (5, 62));
+    assert_eq!((d.line, d.column), (5, 54));
     assert_eq!(
         d.help.as_deref(),
         Some("did you mean `foreignKey`?"),
@@ -165,4 +165,24 @@ fn link_type_api_name_must_be_camel_case() {
     assert_eq!(d.code, codes::V07);
     assert_eq!((d.line, d.column), (2, 10));
     assert_eq!(d.help.as_deref(), Some("write it as `flightCrew`"), "{d:?}");
+}
+
+#[test]
+fn link_ir_is_typed() {
+    use ontoforge_schema::ir::Cardinality;
+    let out = load(ONE_TO_MANY);
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+    let ontology = out.ontology.expect("ontology");
+    let link = &ontology.link_types["flightDepartureAirport"];
+    assert_eq!(link.cardinality, Cardinality::OneToMany);
+    assert_eq!(link.from.object_type.as_str(), "Airport");
+    assert_eq!(link.to.api_name.as_str(), "departureAirport");
+    assert_eq!(
+        link.to
+            .foreign_key
+            .as_ref()
+            .map(ontoforge_schema::ir::PropertyName::as_str),
+        Some("departureAirportCode")
+    );
+    assert!(link.from.foreign_key.is_none());
 }

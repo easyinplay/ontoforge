@@ -15,7 +15,7 @@ use crate::ir::{Definition, Manifest};
 /// Kinds a definition document may declare.
 const KINDS: [&str; 3] = ["ObjectType", "LinkType", "ActionType"];
 /// Kinds whose deserialization exists in this build.
-const IMPLEMENTED_KINDS: [&str; 1] = ["ObjectType"];
+const IMPLEMENTED_KINDS: [&str; 2] = ["ObjectType", "LinkType"];
 /// Kinds reserved for later versions.
 const RESERVED_KINDS: [&str; 3] = ["Interface", "ValueType", "SharedProperty"];
 

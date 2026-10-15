@@ -5,7 +5,9 @@ use std::collections::BTreeMap;
 use camino::Utf8Path;
 
 use crate::diag::{Diagnostic, Severity, SourceLocation, codes, has_errors, sort_diagnostics};
-use crate::ir::{Definition, Manifest, ObjectType, ObjectTypeName, Ontology};
+use crate::ir::{
+    Definition, LinkType, LinkTypeName, Manifest, ObjectType, ObjectTypeName, Ontology,
+};
 
 mod discover;
 mod dispatch;
@@ -183,7 +185,7 @@ fn assemble(manifest: Text, listing: Listing, read: &dyn Fn(&str) -> Text) -> Lo
     );
     diags.extend(selection.diagnostics);
 
-    let mut object_types: BTreeMap<ObjectTypeName, ObjectType> = BTreeMap::new();
+    let mut defs = Defs::default();
     for path in selection.files {
         let text = match read(&path) {
             Ok(t) => t,
@@ -198,7 +200,7 @@ fn assemble(manifest: Text, listing: Listing, read: &dyn Fn(&str) -> Text) -> Lo
             Err(e) => diags.push(syntax_diagnostic(&sources, file, &e)),
             Ok(docs) => {
                 for doc in docs {
-                    merge(&mut sources, file, doc, &mut object_types, &mut diags);
+                    merge(&mut sources, file, doc, &mut defs, &mut diags);
                 }
             }
         }
@@ -208,7 +210,8 @@ fn assemble(manifest: Text, listing: Listing, read: &dyn Fn(&str) -> Text) -> Lo
         api_name: m.api_name,
         display_name: m.display_name,
         description: m.description,
-        object_types,
+        object_types: defs.object_types,
+        link_types: defs.link_types,
     });
     if let Some(o) = &ontology {
         diags.extend(crate::validate::validate(o, &sources));
@@ -274,39 +277,63 @@ fn load_manifest(
     }
 }
 
+/// Definitions collected from all files, keyed by apiName.
+#[derive(Default)]
+struct Defs {
+    object_types: BTreeMap<ObjectTypeName, ObjectType>,
+    link_types: BTreeMap<LinkTypeName, LinkType>,
+}
+
 fn merge(
     sources: &mut SourceMap,
     file: FileId,
     doc: parse::Node,
-    object_types: &mut BTreeMap<ObjectTypeName, ObjectType>,
+    defs: &mut Defs,
     diags: &mut Vec<Diagnostic>,
 ) {
-    let def = dispatch(&doc, &Ctx { file, sources });
-    let Definition::ObjectType(object) = match def {
+    let def = match dispatch(&doc, &Ctx { file, sources }) {
         Ok(d) => d,
         Err(d) => {
             diags.push(d);
             return;
         }
     };
-    let key = DefKey {
-        kind: DefKind::ObjectType,
-        api_name: object.api_name.to_string(),
+    let (kind, label, api_name, duplicate) = match &def {
+        Definition::ObjectType(o) => (
+            DefKind::ObjectType,
+            "ObjectType",
+            o.api_name.to_string(),
+            defs.object_types.contains_key(o.api_name.as_str()),
+        ),
+        Definition::LinkType(l) => (
+            DefKind::LinkType,
+            "LinkType",
+            l.api_name.to_string(),
+            defs.link_types.contains_key(l.api_name.as_str()),
+        ),
     };
+    let key = DefKey { kind, api_name };
     let name_path = [Seg::Key("apiName".into())];
-    if object_types.contains_key(object.api_name.as_str()) {
+    if duplicate {
         let first: SourceLocation = sources.locate(&key, &name_path, Part::Value);
         let at = sources.locate_in(file, &doc, &name_path, Part::Value);
         diags.push(Diagnostic::error(
             codes::V08,
             format!(
-                "duplicate ObjectType `{}`; first defined at {}:{}:{}",
-                object.api_name, first.file, first.line, first.column
+                "duplicate {label} `{}`; first defined at {}:{}:{}",
+                key.api_name, first.file, first.line, first.column
             ),
             &at,
         ));
         return;
     }
     sources.register_def(key, file, doc);
-    object_types.insert(object.api_name.clone(), object);
+    match def {
+        Definition::ObjectType(o) => {
+            defs.object_types.insert(o.api_name.clone(), o);
+        }
+        Definition::LinkType(l) => {
+            defs.link_types.insert(l.api_name.clone(), l);
+        }
+    }
 }
