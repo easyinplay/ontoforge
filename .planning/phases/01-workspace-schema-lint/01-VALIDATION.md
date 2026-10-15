@@ -57,8 +57,8 @@ created: "2026-10-15"
 | 1-06-01 | 06 | 4 | SCHEMA-05 | — | — | integration | `cargo test -p ontoforge-schema --test action_types` | ❌ W0 | ⬜ pending |
 | 1-06-02 | 06 | 4 | SCHEMA-05, SCHEMA-06 | T-01-18..21 | action 不能修改主键；字面量严格校验 | integration + snapshot | `cargo test -p ontoforge-schema --test action_types && cargo test -p ontoforge --test invalid_examples` | ❌ W0 | ⬜ pending |
 | 1-06-03 | 06 | 4 | SCHEMA-05, SCHEMA-01 | — | — | integration | `cargo test -p ontoforge-schema --test load_examples` | ❌ W0 | ⬜ pending |
-| 1-07-01 | 07 | 5 | SCHEMA-05 | T-01-22, T-01-23 | 深层嵌套 CEL 在 1 MiB 栈上被拒绝而不崩溃 | unit + integration | `cargo test -p ontoforge-expr` | ❌ W0 | ⬜ pending |
-| 1-07-02 | 07 | 5 | SCHEMA-05, SCHEMA-06 | T-01-24, T-01-25 | 只编译不求值 | integration + snapshot | `cargo test -p ontoforge-expr && cargo test -p ontoforge --test invalid_examples --test cli` | ❌ W0 | ⬜ pending |
+| 1-07-01 | 07 | 3 | SCHEMA-05 | T-01-22, T-01-25 | 深层嵌套 CEL 在 1 MiB 栈上被拒绝而不崩溃；超长、未闭合字符串不进入编译器；预检按 CEL 词法跳过字符串 | integration | `cargo test -p ontoforge-expr --test analyze` | ❌ W0 | ⬜ pending |
+| 1-07-02 | 07 | 3 | SCHEMA-05 | T-01-23 | 遍历在大栈线程内；comprehension 变量不算自由变量 | integration | `cargo test -p ontoforge-expr && cargo clippy -p ontoforge-expr --all-targets -- -D warnings` | ❌ W0 | ⬜ pending |
 | 1-08-01 | 08 | 5 | LINT-04 | T-01-26, T-01-27 | ONT-V 不可被配置关闭；未知规则 ID 报 V15 | unit | `cargo test -p ontoforge-schema lint::` | ❌ W0 | ⬜ pending |
 | 1-08-02 | 08 | 5 | LINT-01 | — | — | unit + snapshot | `cargo test -p ontoforge-schema lint::e0` | ❌ W0 | ⬜ pending |
 | 1-08-03 | 08 | 5 | LINT-01, LINT-03, LINT-04 | T-01-28 | JSON 输出无 ANSI | CLI e2e + snapshot（+ human-check：Windows Terminal 彩色输出） | `cargo test -p ontoforge --test cli_lint` | ❌ W0 | ⬜ pending |
@@ -68,6 +68,9 @@ created: "2026-10-15"
 | 1-10-02 | 10 | 6 | LINT-02 | T-01-34 | — | unit + snapshot | `cargo test -p ontoforge-schema lint::naming && cargo test -p ontoforge-schema --test lint_examples` | ❌ W0 | ⬜ pending |
 | 1-11-01 | 11 | 6 | LINT-02, LINT-04 | T-01-35, T-01-36 | 选项键受规则声明约束 | unit + snapshot | `cargo test -p ontoforge-schema lint::structure` | ❌ W0 | ⬜ pending |
 | 1-11-02 | 11 | 6 | LINT-02, DX-03 | T-01-37 | phase 门禁 | unit + snapshot + workspace | `cargo test --workspace && cargo clippy --workspace --all-targets -- -D warnings && cargo fmt --all --check` | ❌ W0 | ⬜ pending |
+| 1-12-01 | 12 | 5 | SCHEMA-05, SCHEMA-06 | T-01-24, T-01-39 | 只编译不求值；V13 为 hard error，定位到 condition 值 | integration + CLI e2e | `cargo test -p ontoforge-expr --test criteria && cargo test -p ontoforge --test cli --test invalid_examples` | ❌ W0 | ⬜ pending |
+| 1-12-02 | 12 | 5 | SCHEMA-05 | T-01-38 | 类型推断在 analyze 的大栈线程内运行；不可推断即 Any | integration | `cargo test -p ontoforge-expr` | ❌ W0 | ⬜ pending |
+| 1-12-03 | 12 | 5 | SCHEMA-05, SCHEMA-06 | — | — | snapshot + CLI e2e | `cargo test -p ontoforge --test invalid_examples --test cli && cargo clippy -p ontoforge-expr -p ontoforge --all-targets -- -D warnings` | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
