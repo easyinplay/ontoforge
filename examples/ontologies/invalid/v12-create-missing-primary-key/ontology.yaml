@@ -1,0 +1,2 @@
+apiName: v12CreateCase
+description: Fixture for ONT-V12, a createObject rule does not assign the primary key.

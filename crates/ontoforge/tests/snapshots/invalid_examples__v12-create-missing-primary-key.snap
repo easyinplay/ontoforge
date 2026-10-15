@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V12",
+    "severity": "error",
+    "message": "createObject of `Flight` does not assign the primary key or required properties: `flightId`",
+    "file": "defs.yaml",
+    "line": 16,
+    "column": 5,
+    "span": {
+      "offset": 325,
+      "length": 10
+    },
+    "help": "add each missing property under `properties` with a value source"
+  }
+]

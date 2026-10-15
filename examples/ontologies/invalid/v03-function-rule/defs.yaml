@@ -1,0 +1,15 @@
+kind: ObjectType
+apiName: Flight
+primaryKey: flightId
+properties:
+  flightId: { type: string, required: true }
+  status: { type: string }
+  delayMinutes: { type: integer }
+---
+kind: ActionType
+apiName: runFunction
+parameters:
+  flight: { type: { objectReference: Flight }, required: true }
+rules:
+  - kind: function
+    name: computeDelay

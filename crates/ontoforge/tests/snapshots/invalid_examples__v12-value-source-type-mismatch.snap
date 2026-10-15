@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V12",
+    "severity": "error",
+    "message": "parameter `minutes` has type `integer`, but property `status` has type `string`",
+    "file": "defs.yaml",
+    "line": 18,
+    "column": 24,
+    "span": {
+      "offset": 422,
+      "length": 7
+    },
+    "help": null
+  }
+]

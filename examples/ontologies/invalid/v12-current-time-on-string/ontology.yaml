@@ -1,0 +1,2 @@
+apiName: v12CurrentTimeCase
+description: Fixture for ONT-V12, currentTime is assigned to a string property.

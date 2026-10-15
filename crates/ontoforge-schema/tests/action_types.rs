@@ -546,7 +546,8 @@ fn current_user_only_on_string() {
         codes::V12,
     );
     assert!(d.message.contains("string"), "{}", d.message);
-    assert_eq!(spanned(&text, &d), "{}");
+    // A mapping node is located at its opening brace.
+    assert_eq!((spanned(&text, &d), d.column), ("{", 36));
 }
 
 #[test]
@@ -560,7 +561,7 @@ fn current_time_only_on_timestamp() {
         codes::V12,
     );
     assert!(d.message.contains("timestamp"), "{}", d.message);
-    assert_eq!(spanned(&text, &d), "{}");
+    assert_eq!((spanned(&text, &d), d.column), ("{", 30));
 }
 
 #[test]

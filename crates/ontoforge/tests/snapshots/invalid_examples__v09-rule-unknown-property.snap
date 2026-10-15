@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V09",
+    "severity": "error",
+    "message": "`Flight` has no property `statuss`",
+    "file": "defs.yaml",
+    "line": 17,
+    "column": 7,
+    "span": {
+      "offset": 360,
+      "length": 7
+    },
+    "help": "did you mean `status`?"
+  }
+]

@@ -1,7 +1,9 @@
 //! The thirteen base types of a property (D-03) and where they may be used.
 
+use chrono::{DateTime, NaiveDate};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
@@ -96,16 +98,129 @@ pub enum ValueClass {
     Array,
 }
 
-/// RED stub, replaced in the GREEN commit.
-pub fn value_class(_t: BaseType) -> ValueClass {
-    ValueClass::String
+/// The class of `t`: which values of other types it can be assigned from.
+pub fn value_class(t: BaseType) -> ValueClass {
+    match t {
+        BaseType::Byte | BaseType::Short | BaseType::Integer => ValueClass::Integer,
+        BaseType::Long => ValueClass::Long,
+        BaseType::Float | BaseType::Double => ValueClass::Double,
+        BaseType::Decimal => ValueClass::Decimal,
+        BaseType::String => ValueClass::String,
+        BaseType::Boolean => ValueClass::Boolean,
+        BaseType::Date => ValueClass::Date,
+        BaseType::Timestamp => ValueClass::Timestamp,
+        BaseType::Geopoint => ValueClass::Geopoint,
+        BaseType::Array => ValueClass::Array,
+    }
 }
 
-/// RED stub, replaced in the GREEN commit.
-pub fn check_literal(
-    _v: &serde_json::Value,
-    _t: BaseType,
-    _items: Option<BaseType>,
-) -> Result<(), String> {
-    Ok(())
+/// Check that the JSON value `v` is a legal literal of type `t`. `items` is the
+/// element type for arrays; without it array elements are not checked. The error
+/// is a short English phrase meant to sit inside a diagnostic message.
+pub fn check_literal(v: &Value, t: BaseType, items: Option<BaseType>) -> Result<(), String> {
+    if v.is_null() {
+        return Err("null is not a valid value".to_owned());
+    }
+    let wrong = |expected: &str| Err(format!("expected {expected}, found {}", describe(v)));
+    match t {
+        BaseType::Byte => integer_in(v, "byte", i8::MIN.into(), i8::MAX.into()),
+        BaseType::Short => integer_in(v, "short", i16::MIN.into(), i16::MAX.into()),
+        BaseType::Integer => integer_in(v, "integer", i32::MIN.into(), i32::MAX.into()),
+        BaseType::Long => integer_in(v, "long", i64::MIN, i64::MAX),
+        BaseType::Float | BaseType::Double => match v {
+            Value::Number(_) => Ok(()),
+            _ => wrong("a number"),
+        },
+        BaseType::Decimal => match v {
+            Value::Number(_) => Ok(()),
+            Value::String(s) if is_decimal(s) => Ok(()),
+            Value::String(s) => Err(format!("`{s}` is not a decimal number")),
+            _ => wrong("a number or a decimal string"),
+        },
+        BaseType::String => match v {
+            Value::String(_) => Ok(()),
+            _ => wrong("a string"),
+        },
+        BaseType::Boolean => match v {
+            Value::Bool(_) => Ok(()),
+            _ => wrong("true or false"),
+        },
+        BaseType::Date => match v {
+            Value::String(s) if is_date(s) => Ok(()),
+            Value::String(s) => Err(format!("`{s}` is not a date written as YYYY-MM-DD")),
+            _ => wrong("a date string"),
+        },
+        BaseType::Timestamp => match v {
+            Value::String(s) if DateTime::parse_from_rfc3339(s).is_ok() => Ok(()),
+            Value::String(s) => Err(format!("`{s}` is not an RFC 3339 timestamp")),
+            _ => wrong("a timestamp string"),
+        },
+        BaseType::Geopoint => match v {
+            Value::String(s) => geopoint(s),
+            _ => wrong("a \"lat,lon\" string"),
+        },
+        BaseType::Array => match v {
+            Value::Array(elements) => {
+                let Some(inner) = items else {
+                    return Ok(());
+                };
+                elements.iter().enumerate().try_for_each(|(i, e)| {
+                    check_literal(e, inner, None).map_err(|m| format!("element {i}: {m}"))
+                })
+            }
+            _ => wrong("an array"),
+        },
+    }
+}
+
+fn describe(v: &Value) -> &'static str {
+    match v {
+        Value::Null => "null",
+        Value::Bool(_) => "a boolean",
+        Value::Number(_) => "a number",
+        Value::String(_) => "a string",
+        Value::Array(_) => "an array",
+        Value::Object(_) => "a mapping",
+    }
+}
+
+fn integer_in(v: &Value, name: &str, lo: i64, hi: i64) -> Result<(), String> {
+    let Value::Number(n) = v else {
+        return Err(format!("expected an integer, found {}", describe(v)));
+    };
+    match n.as_i64() {
+        Some(i) if (lo..=hi).contains(&i) => Ok(()),
+        Some(_) => Err(format!("{n} is out of range for {name} ({lo} to {hi})")),
+        None if n.is_u64() => Err(format!("{n} is out of range for {name} ({lo} to {hi})")),
+        None => Err(format!("{n} is not an integer")),
+    }
+}
+
+fn is_decimal(s: &str) -> bool {
+    let unsigned = s.strip_prefix(['+', '-']).unwrap_or(s);
+    let (whole, fraction) = unsigned.split_once('.').unwrap_or((unsigned, ""));
+    let digits = |part: &str| part.bytes().all(|b| b.is_ascii_digit());
+    digits(whole) && digits(fraction) && !(whole.is_empty() && fraction.is_empty())
+}
+
+fn is_date(s: &str) -> bool {
+    // `%Y` alone would also take signs and long years; ten bytes pins YYYY-MM-DD.
+    s.len() == 10 && NaiveDate::parse_from_str(s, "%Y-%m-%d").is_ok()
+}
+
+fn geopoint(s: &str) -> Result<(), String> {
+    let parsed = s.split_once(',').and_then(|(lat, lon)| {
+        let lat = lat.trim().parse::<f64>().ok()?;
+        let lon = lon.trim().parse::<f64>().ok()?;
+        Some((lat, lon))
+    });
+    match parsed {
+        Some((lat, lon)) if (-90.0..=90.0).contains(&lat) && (-180.0..=180.0).contains(&lon) => {
+            Ok(())
+        }
+        Some(_) => Err(format!(
+            "`{s}` is outside latitude -90 to 90 or longitude -180 to 180"
+        )),
+        None => Err(format!("`{s}` is not a \"lat,lon\" pair")),
+    }
 }

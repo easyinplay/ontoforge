@@ -1,0 +1,17 @@
+kind: ObjectType
+apiName: Flight
+primaryKey: flightId
+properties:
+  flightId: { type: string, required: true }
+  status: { type: string }
+  delayMinutes: { type: integer }
+---
+kind: ActionType
+apiName: markFlight
+parameters:
+  flight: { type: { objectReference: Flight }, required: true }
+rules:
+  - kind: modifyObject
+    object: flight
+    properties:
+      statuss: { static: BOARDING }
