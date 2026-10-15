@@ -167,3 +167,27 @@ fn closure_panic_becomes_internal() {
     let result: Result<(), ExprError> = analyze("1", |_| panic!("boom"));
     assert_eq!(result, Err(ExprError::Internal));
 }
+
+#[test]
+fn flat_recursive_forms_do_not_crash_on_a_small_stack() {
+    let handle = std::thread::Builder::new()
+        .stack_size(1 << 20)
+        .spawn(|| {
+            // Neither form uses brackets, so only the compiler's own limits stop them.
+            for src in [
+                format!("{}true", "!".repeat(4000)),
+                format!("{}1", "a ? b : ".repeat(500)),
+                format!("1{}", " + 1".repeat(1000)),
+            ] {
+                let (result, _) = run(&src);
+                assert!(
+                    matches!(result, Ok(()) | Err(ExprError::Syntax { .. })),
+                    "{result:?}"
+                );
+            }
+        })
+        .expect("spawn small-stack thread");
+    handle
+        .join()
+        .expect("small-stack thread must not panic or overflow");
+}
