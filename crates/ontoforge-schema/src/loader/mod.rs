@@ -29,45 +29,61 @@ pub struct LoadOutput {
 
 type Text = Result<String, Diagnostic>;
 
+/// Largest definition file the loader reads.
+pub const MAX_FILE_BYTES: u64 = 4 * 1024 * 1024;
+
 /// Load the ontology under `root`: parse, merge and validate (every `ONT-V`
 /// check except CEL, which `ontoforge-expr` owns).
 pub fn load_dir(root: &Utf8Path) -> LoadOutput {
     let manifest = read_text(root, MANIFEST);
-    let files = match discover::discover(root) {
-        Ok(names) => names
-            .into_iter()
-            .map(|n| {
-                let text = read_text(root, &n);
-                (n, text)
-            })
-            .collect(),
-        Err(e) => {
-            let mut out = assemble(manifest, Vec::new());
-            out.diagnostics.push(Diagnostic::without_location(
-                codes::V14,
-                Severity::Error,
-                format!("cannot list the ontology directory: {}", e.kind()),
-                MANIFEST,
-            ));
-            return out;
-        }
+    let (candidates, diagnostics) = discover::walk(root);
+    let listing = Listing {
+        candidates,
+        diagnostics,
     };
-    assemble(manifest, files)
+    assemble(manifest, listing, &|name| read_text(root, name))
 }
 
-/// Same pipeline over in-memory files; paths use `/` and are the diagnostic `file`s.
+/// Same pipeline over in-memory files; paths use `/` (`\` is accepted) and are
+/// the diagnostic `file`s.
 pub fn load_from_memory(files: &[(&str, &str)]) -> LoadOutput {
-    let manifest = files
+    let by_path: BTreeMap<String, &str> = files
         .iter()
-        .find(|(p, _)| *p == MANIFEST)
-        .map_or_else(|| Err(missing_manifest()), |(_, t)| Ok((*t).to_owned()));
-    let mut rest: Vec<(String, Text)> = files
-        .iter()
-        .filter(|(p, _)| *p != MANIFEST && discover::is_definition_file(p))
-        .map(|(p, t)| ((*p).to_owned(), Ok((*t).to_owned())))
+        .map(|(p, t)| (discover::normalize(p), *t))
         .collect();
-    rest.sort_by(|a, b| a.0.cmp(&b.0));
-    assemble(manifest, rest)
+    let read = |name: &str| match by_path.get(name) {
+        Some(t) => check_size(name, t.len() as u64).map(|()| (*t).to_owned()),
+        None if name == MANIFEST => Err(missing_manifest()),
+        None => Err(Diagnostic::without_location(
+            codes::V14,
+            Severity::Error,
+            format!("cannot read `{name}`: not found"),
+            name,
+        )),
+    };
+    let listing = Listing {
+        candidates: by_path.keys().cloned().collect(),
+        diagnostics: Vec::new(),
+    };
+    assemble(read(MANIFEST), listing, &read)
+}
+
+/// Candidate definition files plus problems found while listing them.
+struct Listing {
+    candidates: Vec<String>,
+    diagnostics: Vec<Diagnostic>,
+}
+
+fn check_size(name: &str, len: u64) -> Result<(), Diagnostic> {
+    if len > MAX_FILE_BYTES {
+        return Err(Diagnostic::without_location(
+            codes::V14,
+            Severity::Error,
+            format!("file is {len} bytes, over the {MAX_FILE_BYTES} byte limit; skipped"),
+            name,
+        ));
+    }
+    Ok(())
 }
 
 fn missing_manifest() -> Diagnostic {
@@ -83,8 +99,15 @@ fn missing_manifest() -> Diagnostic {
 }
 
 fn read_text(root: &Utf8Path, name: &str) -> Text {
-    match std::fs::read(root.join(name)) {
-        Ok(bytes) => String::from_utf8(bytes).map_err(|_| {
+    let path = root.join(name);
+    let read = std::fs::metadata(&path)
+        .map_err(|e| e.kind())
+        .and_then(|m| match check_size(name, m.len()) {
+            Ok(()) => std::fs::read(&path).map(Ok).map_err(|e| e.kind()),
+            Err(d) => Ok(Err(d)),
+        });
+    match read {
+        Ok(Ok(bytes)) => String::from_utf8(bytes).map_err(|_| {
             Diagnostic::without_location(
                 codes::V01,
                 Severity::Error,
@@ -92,13 +115,12 @@ fn read_text(root: &Utf8Path, name: &str) -> Text {
                 name,
             )
         }),
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound && name == MANIFEST => {
-            Err(missing_manifest())
-        }
-        Err(e) => Err(Diagnostic::without_location(
+        Ok(Err(d)) => Err(d),
+        Err(std::io::ErrorKind::NotFound) if name == MANIFEST => Err(missing_manifest()),
+        Err(kind) => Err(Diagnostic::without_location(
             codes::V14,
             Severity::Error,
-            format!("cannot read `{name}`: {}", e.kind()),
+            format!("cannot read `{name}`: {kind}"),
             name,
         )),
     }
@@ -113,14 +135,24 @@ fn syntax_diagnostic(sources: &SourceMap, file: FileId, e: &parse::ParseError) -
     Diagnostic::error(codes::V01, e.message.clone(), &at)
 }
 
-fn assemble(manifest: Text, files: Vec<(String, Text)>) -> LoadOutput {
+fn assemble(manifest: Text, listing: Listing, read: &dyn Fn(&str) -> Text) -> LoadOutput {
     let mut sources = SourceMap::default();
     let mut diags = Vec::new();
     let manifest = load_manifest(&mut sources, manifest, &mut diags);
 
+    let report_empty = listing.diagnostics.is_empty();
+    diags.extend(listing.diagnostics);
+    let selection = discover::select(
+        listing.candidates,
+        manifest.as_ref(),
+        &sources,
+        report_empty,
+    );
+    diags.extend(selection.diagnostics);
+
     let mut object_types: BTreeMap<ObjectTypeName, ObjectType> = BTreeMap::new();
-    for (path, text) in files {
-        let text = match text {
+    for path in selection.files {
+        let text = match read(&path) {
             Ok(t) => t,
             Err(d) => {
                 diags.push(d);

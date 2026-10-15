@@ -1,17 +1,23 @@
-//! Finding definition files. Minimal for now: plan 01-03 adds `include` globs,
-//! recursion and the safety limits.
+//! Finding definition files: directory walk, manifest `include` globs and the
+//! path-safety rules. Disk and in-memory sources share one selection function so
+//! both behave the same.
 
 use camino::Utf8Path;
+use globset::{GlobBuilder, GlobSetBuilder};
 
 use super::MANIFEST;
+use super::sourcemap::{Part, Seg, SourceMap};
+use crate::diag::{Diagnostic, Severity, codes};
+use crate::ir::Manifest;
 
-/// Whether `name` has a definition-file extension.
-pub fn is_definition_file(name: &str) -> bool {
-    matches!(
-        Utf8Path::new(name).extension(),
-        Some("yaml" | "yml" | "json")
-    )
-}
+/// Used when the manifest has no `include`.
+const DEFAULT_INCLUDE: [&str; 3] = ["**/*.yaml", "**/*.yml", "**/*.json"];
+
+/// Directories never searched for definitions (besides those starting with `.`).
+const SKIPPED_DIRS: [&str; 2] = ["target", "node_modules"];
+
+/// Lint configuration file; never a definition file.
+const LINT_CONFIG: &str = "ontoforge.toml";
 
 /// Whether `name` is a `.json` file (extension compared case-insensitively).
 pub fn is_json_file(name: &str) -> bool {
@@ -20,23 +26,153 @@ pub fn is_json_file(name: &str) -> bool {
         .is_some_and(|e| e.eq_ignore_ascii_case("json"))
 }
 
-/// Definition files directly under `root`, manifest excluded, sorted by name.
-pub fn discover(root: &Utf8Path) -> std::io::Result<Vec<String>> {
-    let mut names = Vec::new();
-    for entry in std::fs::read_dir(root)? {
-        let entry = entry?;
-        if !entry.file_type()?.is_file() {
-            continue;
-        }
-        let Ok(name) = entry.file_name().into_string() else {
-            continue;
-        };
-        if name != MANIFEST && is_definition_file(&name) {
-            names.push(name);
+/// Relative paths always use `/`.
+pub fn normalize(path: &str) -> String {
+    path.replace('\\', "/")
+}
+
+fn dir_is_skipped(name: &str) -> bool {
+    name.starts_with('.') || SKIPPED_DIRS.contains(&name)
+}
+
+/// Whether a normalized relative file path may hold definitions at all.
+fn is_candidate(rel: &str) -> bool {
+    let mut parts: Vec<&str> = rel.split('/').collect();
+    let Some(file) = parts.pop() else {
+        return false;
+    };
+    rel != MANIFEST && file != LINT_CONFIG && !parts.iter().any(|d| dir_is_skipped(d))
+}
+
+/// Regular files under `root` as normalized relative paths. Symbolic links are
+/// neither followed nor listed.
+pub fn walk(root: &Utf8Path) -> (Vec<String>, Vec<Diagnostic>) {
+    let walker = walkdir::WalkDir::new(root)
+        .follow_links(false)
+        .into_iter()
+        .filter_entry(|e| {
+            e.depth() == 0
+                || !e.file_type().is_dir()
+                || e.file_name().to_str().is_some_and(|n| !dir_is_skipped(n))
+        });
+    let mut files = Vec::new();
+    let mut diags = Vec::new();
+    for entry in walker {
+        match entry {
+            Ok(e) if e.file_type().is_file() => {
+                let rel = e
+                    .path()
+                    .strip_prefix(root.as_std_path())
+                    .ok()
+                    .and_then(Utf8Path::from_path)
+                    .map(|p| normalize(p.as_str()));
+                files.extend(rel);
+            }
+            Ok(_) => {}
+            Err(e) => diags.push(Diagnostic::without_location(
+                codes::V14,
+                Severity::Error,
+                format!("cannot list the ontology directory: {e}"),
+                MANIFEST,
+            )),
         }
     }
-    names.sort();
-    Ok(names)
+    (files, diags)
+}
+
+/// The definition files chosen by the manifest, in a deterministic order.
+#[derive(Debug, Default)]
+pub struct Selection {
+    pub files: Vec<String>,
+    pub diagnostics: Vec<Diagnostic>,
+}
+
+/// Apply the manifest's `include` to `candidates` (normalized relative paths).
+///
+/// `manifest` is `None` when it could not be loaded; the default patterns apply
+/// then and an empty result is not reported (the manifest error is enough).
+pub fn select(
+    candidates: Vec<String>,
+    manifest: Option<&Manifest>,
+    sources: &SourceMap,
+    report_empty: bool,
+) -> Selection {
+    let include = manifest.and_then(|m| m.include.as_deref());
+    let patterns: Vec<&str> = include.map_or_else(
+        || DEFAULT_INCLUDE.to_vec(),
+        |p| p.iter().map(String::as_str).collect(),
+    );
+
+    let mut diagnostics = Vec::new();
+    let mut set = GlobSetBuilder::new();
+    for (i, pattern) in patterns.iter().enumerate() {
+        let at =
+            || sources.locate_manifest(&[Seg::Key("include".into()), Seg::Index(i)], Part::Value);
+        if escapes_root(pattern) {
+            diagnostics.push(
+                Diagnostic::error(
+                    codes::V14,
+                    format!("include pattern `{pattern}` escapes the ontology root"),
+                    &at(),
+                )
+                .with_help("use a path relative to the ontology directory, without `..`"),
+            );
+            continue;
+        }
+        match GlobBuilder::new(pattern).literal_separator(true).build() {
+            Ok(g) => {
+                set.add(g);
+            }
+            Err(e) => diagnostics.push(Diagnostic::error(
+                codes::V14,
+                format!("invalid include pattern `{pattern}`: {}", e.kind()),
+                &at(),
+            )),
+        }
+    }
+    if !diagnostics.is_empty() {
+        return Selection {
+            files: Vec::new(),
+            diagnostics,
+        };
+    }
+    let Ok(set) = set.build() else {
+        return Selection::default();
+    };
+
+    let mut files: Vec<String> = candidates
+        .into_iter()
+        .filter(|p| is_candidate(p) && set.is_match(p))
+        .collect();
+    files.sort();
+    files.dedup();
+
+    if files.is_empty() && report_empty && manifest.is_some() {
+        let key = if include.is_some() {
+            "include"
+        } else {
+            "apiName"
+        };
+        let at = sources.locate_manifest(&[Seg::Key(key.into())], Part::Value);
+        diagnostics.push(
+            Diagnostic::error(
+                codes::V14,
+                "no definition files matched the include patterns",
+                &at,
+            )
+            .with_help(format!(
+                "add definition files, or adjust `include` in `{MANIFEST}` (default: {})",
+                DEFAULT_INCLUDE.join(", ")
+            )),
+        );
+    }
+    Selection { files, diagnostics }
+}
+
+fn escapes_root(pattern: &str) -> bool {
+    pattern.starts_with(['/', '\\'])
+        || pattern.as_bytes().get(1) == Some(&b':')
+        || pattern.split(['/', '\\']).any(|seg| seg == "..")
 }
 
 #[cfg(test)]
@@ -44,21 +180,36 @@ mod tests {
     use super::*;
 
     #[test]
-    fn extensions_are_matched_exactly() {
-        assert!(is_definition_file("a.yaml"));
-        assert!(is_definition_file("a.yml"));
-        assert!(is_definition_file("a.json"));
-        assert!(!is_definition_file("a.toml"));
-        assert!(!is_definition_file("yaml"));
+    fn json_extension_is_case_insensitive() {
+        assert!(is_json_file("a.JSON"));
+        assert!(!is_json_file("a.yaml"));
     }
 
     #[test]
-    fn manifest_is_excluded_and_names_are_sorted() {
+    fn candidates_skip_manifest_lint_config_and_hidden_dirs() {
+        assert!(is_candidate("a.yaml"));
+        assert!(is_candidate("sub/a.yaml"));
+        assert!(!is_candidate("ontology.yaml"));
+        assert!(is_candidate("sub/ontology.yaml"));
+        assert!(!is_candidate("ontoforge.toml"));
+        assert!(!is_candidate("sub/ontoforge.toml"));
+        assert!(!is_candidate(".github/ci.yml"));
+        assert!(!is_candidate("a/target/x.yaml"));
+        assert!(!is_candidate("node_modules/p/package.json"));
+    }
+
+    #[test]
+    fn walk_lists_nested_files_and_prunes_dirs() {
         let dir = tempfile::tempdir().unwrap();
-        for f in ["b.yaml", "a.json", "ontology.yaml", "notes.md"] {
-            std::fs::write(dir.path().join(f), "").unwrap();
+        for f in ["b.yaml", "x/a.json", ".git/c.yaml", "target/d.yaml"] {
+            let p = dir.path().join(f);
+            std::fs::create_dir_all(p.parent().unwrap()).unwrap();
+            std::fs::write(p, "").unwrap();
         }
         let root = Utf8Path::from_path(dir.path()).unwrap();
-        assert_eq!(discover(root).unwrap(), ["a.json", "b.yaml"]);
+        let (mut files, diags) = walk(root);
+        files.sort();
+        assert!(diags.is_empty());
+        assert_eq!(files, ["b.yaml", "x/a.json"]);
     }
 }
