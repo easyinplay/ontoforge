@@ -1,0 +1,141 @@
+//! Object type fields, base types and structural validation through the public
+//! in-memory API.
+
+use ontoforge_schema::diag::{Diagnostic, codes};
+use ontoforge_schema::ir::basetype::{PkSuitability, is_title_suitable, pk_suitability};
+use ontoforge_schema::ir::{BaseType, ObjectType};
+use ontoforge_schema::{LoadOutput, load_from_memory};
+
+const MANIFEST: &str = "apiName: demo\n";
+
+fn load(objects: &str) -> LoadOutput {
+    load_from_memory(&[("ontology.yaml", MANIFEST), ("objects.yaml", objects)])
+}
+
+fn only(out: &LoadOutput) -> &Diagnostic {
+    assert_eq!(
+        out.diagnostics.len(),
+        1,
+        "diagnostics: {:#?}",
+        out.diagnostics
+    );
+    &out.diagnostics[0]
+}
+
+fn object<'a>(out: &'a LoadOutput, name: &str) -> &'a ObjectType {
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+    out.ontology
+        .as_ref()
+        .expect("ontology")
+        .object_types
+        .get(name)
+        .expect("object type")
+}
+
+#[test]
+fn all_v1_base_types_parse() {
+    let names = [
+        "byte", "short", "integer", "long", "float", "double", "decimal", "string", "boolean",
+        "date", "timestamp", "geopoint",
+    ];
+    let mut doc = String::from(
+        "kind: ObjectType\napiName: Sample\nprimaryKey: id\nproperties:\n  id: { type: string, required: true }\n",
+    );
+    for n in names {
+        doc.push_str(&format!("  p{n}: {{ type: {n} }}\n"));
+    }
+    doc.push_str("  list: { type: array, items: string }\n");
+    let out = load(&doc);
+    let sample = object(&out, "Sample");
+    assert_eq!(sample.properties.len(), 1 + names.len() + 1);
+    assert_eq!(sample.properties["pdecimal"].base_type, BaseType::Decimal);
+    assert_eq!(sample.properties["pgeopoint"].base_type, BaseType::Geopoint);
+    assert_eq!(sample.properties["list"].base_type, BaseType::Array);
+    assert_eq!(sample.properties["list"].items, Some(BaseType::String));
+    assert!(sample.properties["id"].required);
+    assert!(!sample.properties["pbyte"].required);
+}
+
+#[test]
+fn object_type_optional_fields_default() {
+    let out = load(
+        "kind: ObjectType\napiName: Airport\nprimaryKey: code\nproperties:\n  code: { type: string, required: true }\n",
+    );
+    let airport = object(&out, "Airport");
+    assert!(airport.aliases.is_empty());
+    assert!(!airport.hidden);
+    assert!(airport.title_key.is_none());
+    assert_eq!(airport.effective_title_key().as_str(), "code");
+}
+
+#[test]
+fn full_object_type_round_trips() {
+    let out = load(
+        "kind: ObjectType
+apiName: Airport
+displayName: Airport
+description: A place aircraft depart from.
+aliases: [aerodrome, airfield]
+hidden: true
+primaryKey: code
+titleKey: name
+properties:
+  code: { type: string, required: true, displayName: Code, description: IATA code }
+  name: { type: string }
+  tags: { type: array, items: string }
+",
+    );
+    let airport = object(&out, "Airport");
+    assert_eq!(airport.display_name.as_deref(), Some("Airport"));
+    assert_eq!(
+        airport.description.as_deref(),
+        Some("A place aircraft depart from.")
+    );
+    assert_eq!(airport.aliases, ["aerodrome", "airfield"]);
+    assert!(airport.hidden);
+    assert_eq!(airport.effective_title_key().as_str(), "name");
+    let code = &airport.properties["code"];
+    assert_eq!(code.display_name.as_deref(), Some("Code"));
+    assert_eq!(code.description.as_deref(), Some("IATA code"));
+    assert_eq!(airport.properties["tags"].items, Some(BaseType::String));
+}
+
+#[test]
+fn unknown_base_type_suggests_nearest() {
+    let out = load(
+        "kind: ObjectType\napiName: Airport\nprimaryKey: code\nproperties:\n  code: { type: strng, required: true }\n",
+    );
+    let d = only(&out);
+    assert_eq!(d.code, codes::V06);
+    assert!(d.help.as_deref().unwrap().contains("`string`"), "{d:?}");
+}
+
+#[test]
+fn string_field_given_number_suggests_quotes() {
+    let out = load(
+        "kind: ObjectType\napiName: Airport\ndisplayName: 123\nprimaryKey: code\nproperties:\n  code: { type: string, required: true }\n",
+    );
+    let d = only(&out);
+    assert_eq!(d.code, codes::V06);
+    assert_eq!((d.line, d.column), (3, 14));
+    assert!(d.help.as_deref().unwrap().contains("quote"), "{d:?}");
+}
+
+#[test]
+fn pk_suitability_table() {
+    use BaseType::{
+        Array, Boolean, Byte, Date, Decimal, Double, Float, Geopoint, Integer, Long, Short, String,
+        Timestamp,
+    };
+    for t in [String, Integer, Short] {
+        assert_eq!(pk_suitability(t), PkSuitability::Valid, "{t:?}");
+    }
+    for t in [Date, Timestamp, Boolean, Byte, Long] {
+        assert_eq!(pk_suitability(t), PkSuitability::Discouraged, "{t:?}");
+    }
+    for t in [Float, Double, Decimal, Geopoint, Array] {
+        assert_eq!(pk_suitability(t), PkSuitability::Invalid, "{t:?}");
+    }
+    assert!(is_title_suitable(String, None));
+    assert!(is_title_suitable(Array, Some(String)));
+}
