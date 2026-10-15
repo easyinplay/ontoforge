@@ -19,10 +19,10 @@
 
 ### Lint
 
-- [ ] **LINT-01**: `ontoforge lint` 对 ontology 运行 E 级规则（适用于 v1 schema 范围的 ONT-E 规则），有 E 级问题时退出码非 0
+- [x] **LINT-01**: `ontoforge lint` 对 ontology 运行 E 级规则（适用于 v1 schema 范围的 ONT-E 规则），有 E 级问题时退出码非 0
 - [ ] **LINT-02**: `ontoforge lint` 运行 W01–W11 命名与结构警告
-- [ ] **LINT-03**: lint 结果可输出为人类可读格式（带源码定位）和 JSON 格式
-- [ ] **LINT-04**: 开发者可以在配置中按规则 ID 关闭或调整严重级
+- [x] **LINT-03**: lint 结果可输出为人类可读格式（带源码定位）和 JSON 格式
+- [x] **LINT-04**: 开发者可以在配置中按规则 ID 关闭或调整严重级
 
 ### Storage 与 edit log
 
@@ -140,10 +140,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SCHEMA-05 | Phase 1 | Pending |
 | SCHEMA-06 | Phase 1 | Complete |
 | SCHEMA-07 | Phase 1 | Pending |
-| LINT-01 | Phase 1 | Pending |
+| LINT-01 | Phase 1 | Complete |
 | LINT-02 | Phase 1 | Pending |
-| LINT-03 | Phase 1 | Pending |
-| LINT-04 | Phase 1 | Pending |
+| LINT-03 | Phase 1 | Complete |
+| LINT-04 | Phase 1 | Complete |
 | DX-03 | Phase 1 | Complete |
 | STORE-01 | Phase 2 | Pending |
 | STORE-02 | Phase 2 | Pending |
