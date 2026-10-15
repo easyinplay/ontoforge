@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 1
 current_phase_name: Workspace, Schema & Lint
 status: executing
-stopped_at: Completed 01-03-PLAN.md
-last_updated: "2026-10-15T14:33:21.571Z"
+stopped_at: Completed 01-04-PLAN.md
+last_updated: "2026-10-15T14:42:14.932Z"
 last_activity: 2026-10-15
 last_activity_desc: Phase 1 execution started
-state_head: c388da8446df81565b9aac2bcef147147c1cbd98
+state_head: 2a2380a0da3953be8d69826cb2da745b991e9e75
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 12
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-15)
 ## Current Position
 
 Phase: 1 (Workspace, Schema & Lint) — EXECUTING
-Plan: 4 of 12
+Plan: 5 of 12
 Status: Ready to execute
 Last activity: 2026-10-15 — Phase 1 execution started
 
@@ -56,6 +56,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 1 P01 | n/a | 2 tasks | 34 files |
 | Phase 01 P02 | n/a | 2 tasks | 20 files |
 | Phase 01 P03 | n/a | 2 tasks | 18 files |
+| Phase 01 P04 | n/a | 3 tasks | 29 files |
 
 ## Accumulated Context
 
@@ -67,6 +68,7 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 1]: ADR-0012: definition document shape accepted by user (recommended); link end apiName = accessor on that end's objectType
 - [Phase 1]: 01-01: LinkType/ActionType kinds report ONT-V03 'not implemented yet' until plans 01-05/01-06; clippy result_large_err allowed workspace-wide
 - [Phase 01]: Invalid include patterns load no files; empty-match V14 only when manifest and listing succeeded
+- [Phase 1]: 01-04: primary key must declare required: true explicitly (overrides ADR-0012 implicit required); titleKey stays Option in IR with effective_title_key()
 
 ### Pending Todos
 
@@ -85,6 +87,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-15T14:33:21.543Z
-Stopped at: Completed 01-03-PLAN.md
+Last session: 2026-10-15T14:42:14.905Z
+Stopped at: Completed 01-04-PLAN.md
 Resume file: None
