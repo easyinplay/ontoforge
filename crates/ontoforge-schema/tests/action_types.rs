@@ -3,7 +3,7 @@
 
 use ontoforge_schema::diag::{Diagnostic, codes};
 use ontoforge_schema::ir::BaseType;
-use ontoforge_schema::ir::basetype::{ValueClass, check_literal, value_class};
+use ontoforge_schema::ir::basetype::{check_literal, widens_to};
 use ontoforge_schema::{LoadOutput, load_from_memory};
 use serde_json::{Value, json};
 
@@ -353,23 +353,37 @@ fn literal_validation() {
     bad(Value::Null, BaseType::String, None);
 }
 
+/// WR-04: numeric values only widen.
 #[test]
-fn value_class_folds_numeric_types() {
-    assert_eq!(value_class(BaseType::Byte), value_class(BaseType::Integer));
-    assert_eq!(value_class(BaseType::Short), value_class(BaseType::Integer));
-    assert_eq!(value_class(BaseType::Float), value_class(BaseType::Double));
-    assert_ne!(value_class(BaseType::Long), value_class(BaseType::Integer));
-    assert_ne!(
-        value_class(BaseType::Decimal),
-        value_class(BaseType::Double)
-    );
-    assert_eq!(value_class(BaseType::Array), ValueClass::Array);
+fn numeric_values_only_widen() {
+    use BaseType::{Byte, Decimal, Double, Float, Integer, Long, Short, String};
+    for (from, to) in [
+        (Byte, Short),
+        (Short, Integer),
+        (Integer, Long),
+        (Byte, Long),
+        (Float, Double),
+        (Long, Long),
+    ] {
+        assert!(widens_to(from, to), "{from:?} -> {to:?}");
+    }
+    for (from, to) in [
+        (Long, Integer),
+        (Integer, Byte),
+        (Double, Float),
+        (Integer, Double),
+        (Double, Decimal),
+        (Integer, String),
+    ] {
+        assert!(!widens_to(from, to), "{from:?} -> {to:?}");
+    }
 
     let compatible = "  - kind: modifyObject
     object: flight
     properties:
       delayMinutes: { param: sh }
       speed: { param: fl }
+      ceiling: { param: n }
       tags: { param: tags }
 ";
     let out = load(&probe(PARAMS, compatible));

@@ -82,35 +82,21 @@ pub fn is_title_suitable(t: BaseType, items: Option<BaseType>) -> bool {
     }
 }
 
-/// Types that accept each other's values (D-07). Byte, short and integer share a
-/// class, as do float and double; every other type is its own class.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ValueClass {
-    Integer,
-    Long,
-    Double,
-    Decimal,
-    String,
-    Boolean,
-    Date,
-    Timestamp,
-    Geopoint,
-    Array,
-}
-
-/// The class of `t`: which values of other types it can be assigned from.
-pub fn value_class(t: BaseType) -> ValueClass {
-    match t {
-        BaseType::Byte | BaseType::Short | BaseType::Integer => ValueClass::Integer,
-        BaseType::Long => ValueClass::Long,
-        BaseType::Float | BaseType::Double => ValueClass::Double,
-        BaseType::Decimal => ValueClass::Decimal,
-        BaseType::String => ValueClass::String,
-        BaseType::Boolean => ValueClass::Boolean,
-        BaseType::Date => ValueClass::Date,
-        BaseType::Timestamp => ValueClass::Timestamp,
-        BaseType::Geopoint => ValueClass::Geopoint,
-        BaseType::Array => ValueClass::Array,
+/// Whether a value of type `from` can be assigned to a property of type `to` without
+/// loss (D-07, WR-04): the same type, or a wider one along `byte ⊂ short ⊂ integer ⊂
+/// long` or `float ⊂ double`. Narrowing (`long` into `integer`) is refused.
+pub fn widens_to(from: BaseType, to: BaseType) -> bool {
+    use BaseType::{Byte, Double, Float, Integer, Long, Short};
+    let rank = |t| match t {
+        Byte => Some(0),
+        Short => Some(1),
+        Integer => Some(2),
+        Long => Some(3),
+        _ => None,
+    };
+    match (rank(from), rank(to)) {
+        (Some(a), Some(b)) => a <= b,
+        _ => from == to || (from == Float && to == Double),
     }
 }
 

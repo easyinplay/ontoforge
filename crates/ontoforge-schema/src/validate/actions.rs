@@ -5,7 +5,7 @@
 //! it points at are skipped so one typo does not produce a chain of errors.
 
 use crate::diag::{Diagnostic, SourceLocation, codes, did_you_mean};
-use crate::ir::basetype::{check_literal, value_class};
+use crate::ir::basetype::{check_literal, widens_to};
 use crate::ir::{
     ActionType, BaseType, CreateObjectRule, LinkRule, LinkTypeName, ModifyObjectRule, ObjectType,
     ObjectTypeName, Ontology, ParamType, ParameterName, PropertyDef, PropertyName, Rule,
@@ -426,14 +426,14 @@ fn value_source(
     }
 }
 
-/// Whether a value of type `from` can be assigned to a property of type `to`.
-/// Numeric types compare by class; arrays also compare their element classes.
+/// Whether a value of type `from` can be assigned to a property of type `to`:
+/// numbers only widen ([`widens_to`]); arrays also compare their element types.
 fn compatible(from: (BaseType, Option<BaseType>), to: (BaseType, Option<BaseType>)) -> bool {
-    if value_class(from.0) != value_class(to.0) {
+    if !widens_to(from.0, to.0) {
         return false;
     }
     match (from.1, to.1) {
-        (Some(a), Some(b)) => value_class(a) == value_class(b),
+        (Some(a), Some(b)) => widens_to(a, b),
         _ => true,
     }
 }
