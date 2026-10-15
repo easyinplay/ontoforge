@@ -32,7 +32,21 @@
   3. 定义有错（重复 apiName、未知 base type、link 指向不存在的 object type 等）时，CLI 输出带文件名与 line:col 的诊断，退出码非 0
   4. `ontoforge lint` 运行适用于 v1 schema 范围的 ONT-E 规则与 ONT-W01–W11，输出人类可读（带源码定位）与 JSON 两种格式；有 E 级问题时退出码非 0；配置文件可按规则 ID 关闭规则或调整严重级
   5. 开发者可以导出 ontology 定义的 JSON Schema，仓库内示例 ontology 通过该 Schema 校验
-**Plans**: TBD
+**Plans**: 11 plans（6 waves）
+
+Plans:
+- [ ] 01-01-PLAN.md — 定义格式契约 checkpoint + Walking Skeleton tracer（ObjectType YAML → IR → `ontoforge validate` line:col）
+- [ ] 01-02-PLAN.md — 其余 8 个 crate 骨架、CI、CONTRIBUTING、ADR-0003 回写
+- [ ] 01-03-PLAN.md — 加载层：include glob、路径安全、严格 JSON、栈安全、确定性
+- [ ] 01-04-PLAN.md — object type 与 13 个 base type、V10 校验、aviation 双格式示例
+- [ ] 01-05-PLAN.md — link type（1:1 / 1:N / M:N）与 V08 / V09 / V11
+- [ ] 01-06-PLAN.md — action type（参数、rules、值来源、criteria 结构）与 V09 / V12
+- [ ] 01-07-PLAN.md — CEL 静态检查（V13）接入 validate、ADR-0006 回写
+- [ ] 01-08-PLAN.md — lint 框架、ontoforge.toml、ONT-E08 / E09、`ontoforge lint`
+- [ ] 01-09-PLAN.md — JSON Schema 导出（`ontoforge schema export`）
+- [ ] 01-10-PLAN.md — ONT-W01..W05 命名规则
+- [ ] 01-11-PLAN.md — ONT-W06..W11 结构规则与 phase 门禁
+
 **Details**: `.planning/phases/01-workspace-schema-lint/`
 
 ### Phase 2: Storage & Edit Log
@@ -132,7 +146,7 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7（Phase 3 �
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Workspace, Schema & Lint | 0/TBD | Not started | - |
+| 1. Workspace, Schema & Lint | 0/11 | Planned | - |
 | 2. Storage & Edit Log | 0/TBD | Not started | - |
 | 3. Action Execution | 0/TBD | Not started | - |
 | 4. Object Set Query | 0/TBD | Not started | - |
