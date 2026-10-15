@@ -1,0 +1,71 @@
+---
+source: crates/ontoforge-schema/src/lint/naming/w05.rs
+expression: found
+---
+[
+  {
+    "code": "ONT-W05",
+    "severity": "warning",
+    "message": "property `etlBatchId` looks like pipeline bookkeeping (`etl`)",
+    "file": "objects.yaml",
+    "line": 6,
+    "column": 3,
+    "span": {
+      "offset": 103,
+      "length": 10
+    },
+    "help": "data pipeline fields do not belong in an ontology, so drop it; if the name is intentional, set \"ONT-W05\" = \"off\" under [lint] in ontoforge.toml"
+  },
+  {
+    "code": "ONT-W05",
+    "severity": "warning",
+    "message": "property `extractedAt` looks like pipeline bookkeeping (`extracted at`)",
+    "file": "objects.yaml",
+    "line": 7,
+    "column": 3,
+    "span": {
+      "offset": 134,
+      "length": 11
+    },
+    "help": "data pipeline fields do not belong in an ontology, so drop it; if the name is intentional, set \"ONT-W05\" = \"off\" under [lint] in ontoforge.toml"
+  },
+  {
+    "code": "ONT-W05",
+    "severity": "warning",
+    "message": "property `rowSequence` looks like pipeline bookkeeping (`sequence`)",
+    "file": "objects.yaml",
+    "line": 8,
+    "column": 3,
+    "span": {
+      "offset": 169,
+      "length": 11
+    },
+    "help": "data pipeline fields do not belong in an ontology, so drop it; if the name is intentional, set \"ONT-W05\" = \"off\" under [lint] in ontoforge.toml"
+  },
+  {
+    "code": "ONT-W05",
+    "severity": "warning",
+    "message": "property `tableVersion` looks like pipeline bookkeeping (`table version`)",
+    "file": "objects.yaml",
+    "line": 9,
+    "column": 3,
+    "span": {
+      "offset": 202,
+      "length": 12
+    },
+    "help": "data pipeline fields do not belong in an ontology, so drop it; if the name is intentional, set \"ONT-W05\" = \"off\" under [lint] in ontoforge.toml"
+  },
+  {
+    "code": "ONT-W05",
+    "severity": "warning",
+    "message": "property `internalRecordId` looks like pipeline bookkeeping (`internal record id`)",
+    "file": "objects.yaml",
+    "line": 10,
+    "column": 3,
+    "span": {
+      "offset": 236,
+      "length": 16
+    },
+    "help": "data pipeline fields do not belong in an ontology, so drop it; if the name is intentional, set \"ONT-W05\" = \"off\" under [lint] in ontoforge.toml"
+  }
+]
