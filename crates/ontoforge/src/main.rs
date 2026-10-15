@@ -13,11 +13,10 @@ fn main() -> ExitCode {
         .name("ontoforge-main".into())
         .stack_size(STACK_SIZE)
         .spawn(move || ontoforge::run(cli));
-    match handle.map(std::thread::JoinHandle::join) {
-        Ok(Ok(code)) => ExitCode::from(code),
-        _ => {
-            eprintln!("internal error: ontoforge worker thread failed");
-            ExitCode::from(101)
-        }
+    if let Ok(Ok(code)) = handle.map(std::thread::JoinHandle::join) {
+        ExitCode::from(code)
+    } else {
+        eprintln!("internal error: ontoforge worker thread failed");
+        ExitCode::from(101)
     }
 }

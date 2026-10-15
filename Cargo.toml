@@ -34,6 +34,8 @@ tempfile = "3.27.0"
 unsafe_code = "forbid"
 
 [workspace.lints.clippy]
+# Diagnostic is the error type of the loader; boxing it would only add noise.
+result_large_err = "allow"
 pedantic = { level = "warn", priority = -1 }
 module_name_repetitions = "allow"
 missing_errors_doc = "allow"

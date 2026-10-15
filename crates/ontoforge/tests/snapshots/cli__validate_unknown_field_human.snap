@@ -1,0 +1,15 @@
+---
+source: crates/ontoforge/tests/cli.rs
+expression: stdout
+---
+ONT-V04
+
+  × unknown field `primaryKy`
+   ╭─[objects.yaml:3:1]
+ 2 │ apiName: Airport
+ 3 │ primaryKy: code
+   · ────┬────
+   ·     ╰── here
+ 4 │ properties:
+   ╰────
+  help: did you mean `primaryKey`?

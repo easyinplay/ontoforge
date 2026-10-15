@@ -31,7 +31,11 @@ fn validate(args: &ValidateArgs) -> u8 {
     let code = render::exit_code(&out.diagnostics, out_args.deny_warnings);
     if out_args.format == Format::Human {
         let summary = match &out.ontology {
-            Some(_) => "ok".to_owned(),
+            Some(ontology) => format!(
+                "ok: ontology `{}` with {} object type(s)",
+                ontology.api_name,
+                ontology.object_types.len()
+            ),
             None => format!("{} problem(s) found", out.diagnostics.len()),
         };
         eprintln!("{summary}");

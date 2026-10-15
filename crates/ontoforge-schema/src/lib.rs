@@ -3,5 +3,6 @@
 pub mod diag;
 pub mod ir;
 pub mod loader;
+pub mod validate;
 
 pub use loader::{LoadOutput, load_dir, load_from_memory};

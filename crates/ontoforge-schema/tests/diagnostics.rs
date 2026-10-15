@@ -155,3 +155,12 @@ fn deeply_nested_yaml_is_rejected_not_crashing() {
     let out = load(&doc);
     assert!(!out.diagnostics.is_empty());
 }
+
+#[test]
+fn unknown_base_type_is_v06_at_the_value_with_a_suggestion() {
+    let out = load(&GOOD.replace("type: string", "type: strng"));
+    let d = only(&out);
+    assert_eq!(d.code, codes::V06);
+    assert_eq!((d.line, d.column), (5, 17));
+    assert!(d.help.as_deref().unwrap().contains("`string`"));
+}
