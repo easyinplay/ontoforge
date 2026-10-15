@@ -2,9 +2,11 @@
 
 pub mod analyze;
 pub mod limits;
+pub mod walk;
 
 pub use analyze::{ExprError, analyze};
 pub use limits::{MAX_EXPR_CHARS, MAX_EXPR_NESTING};
+pub use walk::{MemberPath, member_paths};
 
 /// Cargo package name of this crate.
 pub const CRATE_NAME: &str = env!("CARGO_PKG_NAME");

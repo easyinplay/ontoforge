@@ -191,3 +191,76 @@ fn flat_recursive_forms_do_not_crash_on_a_small_stack() {
         .join()
         .expect("small-stack thread must not panic or overflow");
 }
+
+mod walk {
+    use ontoforge_expr::{analyze, member_paths};
+
+    use ontoforge_expr::walk::offset_to_line_col;
+
+    /// `(dotted path, position)` for each member path, via the isolated compile.
+    fn paths(src: &str) -> Vec<(String, Option<(usize, usize)>)> {
+        analyze(src, |p| member_paths(p, src))
+            .expect("expression compiles")
+            .into_iter()
+            .map(|m| (m.segments.join("."), m.pos))
+            .collect()
+    }
+
+    fn names(src: &str) -> Vec<String> {
+        paths(src).into_iter().map(|(n, _)| n).collect()
+    }
+
+    #[test]
+    fn comprehension_vars_are_scoped() {
+        assert_eq!(names("params.items.all(i, i.qty > 0)"), ["params.items"]);
+    }
+
+    #[test]
+    fn nested_comprehension_scopes() {
+        assert_eq!(
+            names("params.a.exists(x, params.b.all(y, x == y))"),
+            ["params.a", "params.b"]
+        );
+    }
+
+    #[test]
+    fn has_macro_yields_member_path() {
+        let found = paths("has(params.note)");
+        assert_eq!(found.len(), 1);
+        assert_eq!(found[0].0, "params.note");
+        assert!(found[0].1.is_some());
+    }
+
+    #[test]
+    fn select_chain_is_full_path() {
+        assert_eq!(
+            paths("objects.flight.status != 'X'"),
+            [("objects.flight.status".to_owned(), Some((1, 1)))]
+        );
+    }
+
+    #[test]
+    fn bare_identifier_is_a_path() {
+        assert_eq!(names("foo > 1"), ["foo"]);
+    }
+
+    #[test]
+    fn index_breaks_path() {
+        assert_eq!(names("params.items[0].qty > 0"), ["params.items"]);
+    }
+
+    #[test]
+    fn positions_are_line_and_char_column() {
+        let found = paths("params.a > 1 &&\n  params.b");
+        assert_eq!(found[1], ("params.b".to_owned(), Some((2, 3))));
+        let found = paths("'é' == params.x");
+        assert_eq!(found, [("params.x".to_owned(), Some((1, 8)))]);
+    }
+
+    #[test]
+    fn offset_to_line_col_counts_chars_and_lines() {
+        assert_eq!(offset_to_line_col("ab\ncd", 0), (1, 1));
+        assert_eq!(offset_to_line_col("ab\ncd", 4), (2, 2));
+        assert_eq!(offset_to_line_col("éa", 1), (1, 2));
+    }
+}
