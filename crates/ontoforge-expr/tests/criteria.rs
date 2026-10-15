@@ -101,7 +101,7 @@ fn analyzer_errors_become_v13() {
     assert_eq!(syntax.code, codes::V13);
     assert_eq!(syntax.severity, Severity::Error);
     assert!(
-        syntax.message.contains("(at 1:21 in expression)"),
+        syntax.message.contains("(at 1:22 in expression)"),
         "{}",
         syntax.message
     );
