@@ -20,7 +20,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use super::super::words::split_camel;
-use super::super::{Finding, Level, LintCx, LintRule};
+use super::super::{Finding, Level, LintCx, LintRule, OptionKind};
 use super::{off_hint, type_finding};
 use crate::ir::ObjectType;
 
@@ -44,8 +44,8 @@ impl LintRule for W07 {
         Level::Warn
     }
 
-    fn option_keys(&self) -> &'static [&'static str] {
-        &["silo_prefixes"]
+    fn option_keys(&self) -> &'static [(&'static str, OptionKind)] {
+        &[("silo_prefixes", OptionKind::Words)]
     }
 
     fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {

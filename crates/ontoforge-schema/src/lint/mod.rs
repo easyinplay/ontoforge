@@ -73,7 +73,8 @@ pub struct LintCx<'a> {
 }
 
 impl LintCx<'_> {
-    /// Integer option `key`, or `default` when unset or negative.
+    /// Integer option `key`, or `default` when unset. `ontoforge.toml` has already
+    /// rejected values of the wrong kind ([`OptionKind`]).
     pub fn option_usize(&self, key: &str, default: usize) -> usize {
         match self.options.get(key) {
             Some(OptionValue::Int(n)) => usize::try_from(*n).unwrap_or(default),
@@ -101,13 +102,45 @@ impl LintCx<'_> {
     }
 }
 
+/// What a rule option accepts. `ontoforge.toml` values of another kind are
+/// `ONT-V15` (WR-05), so a rule never silently falls back to its default.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum OptionKind {
+    /// A non-negative integer, read with [`LintCx::option_usize`].
+    Count,
+    /// An integer or a number, read with [`LintCx::option_f64`].
+    Number,
+    /// A string or an array of strings, read with [`LintCx::option_str_list`].
+    Words,
+}
+
+impl OptionKind {
+    pub fn accepts(self, value: &OptionValue) -> bool {
+        match (self, value) {
+            (Self::Count, OptionValue::Int(n)) => *n >= 0,
+            (Self::Number, OptionValue::Int(_) | OptionValue::Float(_))
+            | (Self::Words, OptionValue::Str(_) | OptionValue::List(_)) => true,
+            _ => false,
+        }
+    }
+
+    /// The accepted values, as a phrase for diagnostics.
+    pub fn describe(self) -> &'static str {
+        match self {
+            Self::Count => "a non-negative integer",
+            Self::Number => "a number",
+            Self::Words => "a string or an array of strings",
+        }
+    }
+}
+
 /// One lint rule. Implementations are `static` values.
 pub trait LintRule: Sync {
     /// `ONT-E08` and so on; also the key in `ontoforge.toml`.
     fn id(&self) -> &'static str;
     fn default_level(&self) -> Level;
-    /// Names accepted under `[lint.options."<id>"]`.
-    fn option_keys(&self) -> &'static [&'static str] {
+    /// Names accepted under `[lint.options."<id>"]`, with the kind of value each takes.
+    fn option_keys(&self) -> &'static [(&'static str, OptionKind)] {
         &[]
     }
     fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>);
@@ -218,8 +251,8 @@ mod tests {
         fn default_level(&self) -> Level {
             self.default
         }
-        fn option_keys(&self) -> &'static [&'static str] {
-            &["limit"]
+        fn option_keys(&self) -> &'static [(&'static str, OptionKind)] {
+            &[("limit", OptionKind::Count)]
         }
         fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {
             for name in cx.ontology.object_types.keys() {

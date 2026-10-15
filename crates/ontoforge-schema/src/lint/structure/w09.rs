@@ -16,7 +16,7 @@ use std::sync::LazyLock;
 
 use regex::Regex;
 
-use super::super::{Finding, Level, LintCx, LintRule};
+use super::super::{Finding, Level, LintCx, LintRule, OptionKind};
 use super::{off_hint, type_finding};
 use crate::ir::{ActionType, ParamType, Rule};
 use crate::loader::sourcemap::{DefKey, DefKind, Part, Seg};
@@ -39,8 +39,8 @@ impl LintRule for W09 {
         Level::Warn
     }
 
-    fn option_keys(&self) -> &'static [&'static str] {
-        &["max_actions_per_type"]
+    fn option_keys(&self) -> &'static [(&'static str, OptionKind)] {
+        &[("max_actions_per_type", OptionKind::Count)]
     }
 
     fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {

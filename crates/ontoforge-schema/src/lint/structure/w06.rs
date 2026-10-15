@@ -9,7 +9,7 @@
 //! until the storage phase.
 
 use super::super::words::split_camel;
-use super::super::{Finding, Level, LintCx, LintRule};
+use super::super::{Finding, Level, LintCx, LintRule, OptionKind};
 use super::{off_hint, type_finding};
 use crate::ir::BaseType;
 
@@ -28,8 +28,8 @@ impl LintRule for W06 {
         Level::Warn
     }
 
-    fn option_keys(&self) -> &'static [&'static str] {
-        &["max_properties"]
+    fn option_keys(&self) -> &'static [(&'static str, OptionKind)] {
+        &[("max_properties", OptionKind::Count)]
     }
 
     fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {

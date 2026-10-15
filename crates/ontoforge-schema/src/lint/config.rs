@@ -239,15 +239,16 @@ impl Parser<'_> {
                 .iter()
                 .find(|r| r.id() == id)
                 .map_or(&[][..], |r| r.option_keys());
+            let names: Vec<&str> = declared.iter().map(|(n, _)| *n).collect();
             for (name_key, value) in options {
                 let name: &str = name_key.get_ref();
-                if !declared.contains(&name) {
-                    let help = if declared.is_empty() {
+                let Some(&(_, kind)) = declared.iter().find(|(n, _)| *n == name) else {
+                    let help = if names.is_empty() {
                         format!("{id} takes no options")
-                    } else if let Some(s) = did_you_mean(name, declared.iter().copied()) {
+                    } else if let Some(s) = did_you_mean(name, names.iter().copied()) {
                         format!("did you mean `{s}`?")
                     } else {
-                        format!("available options: {}", declared.join(", "))
+                        format!("available options: {}", names.join(", "))
                     };
                     self.problem(
                         name_key.span(),
@@ -255,8 +256,13 @@ impl Parser<'_> {
                         Some(help),
                     );
                     continue;
-                }
+                };
                 match option_value(&value) {
+                    Ok(v) if !kind.accepts(&v) => self.problem(
+                        value.span(),
+                        format!("option `{name}` of {id} must be {}", kind.describe()),
+                        None,
+                    ),
                     Ok(v) => {
                         self.config
                             .options
@@ -353,11 +359,11 @@ pub fn load_config(
 mod tests {
     use super::*;
     use crate::diag::{Severity, codes};
-    use crate::lint::{Finding, LintCx};
+    use crate::lint::{Finding, LintCx, OptionKind};
 
     struct Fake {
         id: &'static str,
-        keys: &'static [&'static str],
+        keys: &'static [(&'static str, OptionKind)],
     }
 
     impl LintRule for Fake {
@@ -367,7 +373,7 @@ mod tests {
         fn default_level(&self) -> Level {
             Level::Warn
         }
-        fn option_keys(&self) -> &'static [&'static str] {
+        fn option_keys(&self) -> &'static [(&'static str, OptionKind)] {
             self.keys
         }
         fn check(&self, _: &LintCx<'_>, _: &mut Vec<Finding>) {}
@@ -387,7 +393,11 @@ mod tests {
     };
     static W06: Fake = Fake {
         id: "ONT-W06",
-        keys: &["max_properties", "ratio", "words"],
+        keys: &[
+            ("max_properties", OptionKind::Count),
+            ("ratio", OptionKind::Number),
+            ("words", OptionKind::Words),
+        ],
     };
 
     fn rules() -> Vec<&'static dyn LintRule> {
@@ -506,6 +516,29 @@ mod tests {
         assert_eq!(at, "1");
         let (_, at) = one_problem("[lint.options]\n\"ONT-W06\" = 3\n");
         assert_eq!(at, "3");
+    }
+
+    /// WR-05: a value of the wrong kind is an error, not a silent default.
+    #[test]
+    fn option_of_the_wrong_kind_is_error() {
+        for (line, bad) in [
+            ("max_properties = \"5\"", "\"5\""),
+            ("max_properties = 5.0", "5.0"),
+            ("max_properties = -1", "-1"),
+            ("max_properties = [\"a\"]", "[\"a\"]"),
+            ("ratio = \"half\"", "\"half\""),
+            ("words = 3", "3"),
+        ] {
+            let (d, at) = one_problem(&format!("[lint.options.\"ONT-W06\"]\n{line}\n"));
+            assert_eq!(at, bad, "{line}");
+            assert!(d.message.contains("must be"), "{}", d.message);
+        }
+        let (config, diags) = parse("[lint.options.\"ONT-W06\"]\nratio = 2\nwords = \"a\"\n");
+        assert!(diags.is_empty(), "{diags:#?}");
+        assert_eq!(
+            config.options("ONT-W06").unwrap()["ratio"],
+            OptionValue::Int(2)
+        );
     }
 
     #[test]
