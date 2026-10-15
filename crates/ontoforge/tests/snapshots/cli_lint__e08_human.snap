@@ -1,0 +1,14 @@
+---
+source: crates/ontoforge/tests/cli_lint.rs
+expression: stdout
+---
+ONT-E08
+
+  × addLink only works on manyToMany links, but `departures` is oneToMany
+   ╭─[actions.yaml:7:28]
+ 6 │ rules:
+ 7 │   - { kind: addLink, link: departures, from: airport, to: flight }
+   ·                            ─────┬────
+   ·                                 ╰── here
+   ╰────
+  help: use modifyObject on `Flight` to set `originCode` instead

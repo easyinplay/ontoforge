@@ -20,6 +20,19 @@ pub struct Cli {
 pub enum Command {
     /// Check an ontology directory for structural errors.
     Validate(ValidateArgs),
+    /// Validate, then run the lint rules.
+    Lint(LintArgs),
+}
+
+#[derive(Debug, Args)]
+pub struct LintArgs {
+    /// Ontology directory containing `ontology.yaml`.
+    pub dir: Utf8PathBuf,
+    /// Lint configuration file; replaces `<DIR>/ontoforge.toml`.
+    #[arg(long)]
+    pub config: Option<Utf8PathBuf>,
+    #[command(flatten)]
+    pub output: OutputArgs,
 }
 
 #[derive(Debug, Args)]
