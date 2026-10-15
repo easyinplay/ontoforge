@@ -1,0 +1,5 @@
+---
+source: crates/ontoforge-schema/src/lint/naming/w02.rs
+expression: found
+---
+[]

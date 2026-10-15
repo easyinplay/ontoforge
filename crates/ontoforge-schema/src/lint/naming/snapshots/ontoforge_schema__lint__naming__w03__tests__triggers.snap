@@ -1,0 +1,71 @@
+---
+source: crates/ontoforge-schema/src/lint/naming/w03.rs
+expression: found
+---
+[
+  {
+    "code": "ONT-W03",
+    "severity": "warning",
+    "message": "property `dtCreated` looks like an encoded abbreviation (matches `^dt[A-Z]`)",
+    "file": "objects.yaml",
+    "line": 6,
+    "column": 3,
+    "span": {
+      "offset": 101,
+      "length": 9
+    },
+    "help": "spell the name out, such as `createdAt` or `totalCount`; if the name is intentional, set \"ONT-W03\" = \"off\" under [lint] in ontoforge.toml"
+  },
+  {
+    "code": "ONT-W03",
+    "severity": "warning",
+    "message": "property `nTOTAL` looks like an encoded abbreviation (matches `^n[A-Z]{2,}`)",
+    "file": "objects.yaml",
+    "line": 7,
+    "column": 3,
+    "span": {
+      "offset": 129,
+      "length": 6
+    },
+    "help": "spell the name out, such as `createdAt` or `totalCount`; if the name is intentional, set \"ONT-W03\" = \"off\" under [lint] in ontoforge.toml"
+  },
+  {
+    "code": "ONT-W03",
+    "severity": "warning",
+    "message": "property `code01` looks like an encoded abbreviation (matches `\\d{2,}$`)",
+    "file": "objects.yaml",
+    "line": 8,
+    "column": 3,
+    "span": {
+      "offset": 157,
+      "length": 6
+    },
+    "help": "spell the name out, such as `createdAt` or `totalCount`; if the name is intentional, set \"ONT-W03\" = \"off\" under [lint] in ontoforge.toml"
+  },
+  {
+    "code": "ONT-W03",
+    "severity": "warning",
+    "message": "property `field1` looks like an encoded abbreviation (matches `^field[A-Z0-9]`)",
+    "file": "objects.yaml",
+    "line": 9,
+    "column": 3,
+    "span": {
+      "offset": 184,
+      "length": 6
+    },
+    "help": "spell the name out, such as `createdAt` or `totalCount`; if the name is intentional, set \"ONT-W03\" = \"off\" under [lint] in ontoforge.toml"
+  },
+  {
+    "code": "ONT-W03",
+    "severity": "warning",
+    "message": "property `fieldA` looks like an encoded abbreviation (matches `^field[A-Z0-9]`)",
+    "file": "objects.yaml",
+    "line": 10,
+    "column": 3,
+    "span": {
+      "offset": 211,
+      "length": 6
+    },
+    "help": "spell the name out, such as `createdAt` or `totalCount`; if the name is intentional, set \"ONT-W03\" = \"off\" under [lint] in ontoforge.toml"
+  }
+]
