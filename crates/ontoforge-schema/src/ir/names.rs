@@ -197,6 +197,29 @@ mod tests {
         assert_eq!(e.help.as_deref(), Some("write it as `tailNumber`"));
     }
 
+    fn help_of<T: TryFrom<String, Error = String>>(raw: &str) -> Option<String> {
+        let e = T::try_from(raw.to_owned()).err().expect("name is invalid");
+        parse_custom_de_error(&e).unwrap().help
+    }
+
+    #[test]
+    fn acronym_prefix_is_lowered_as_a_word() {
+        assert_eq!(
+            help_of::<PropertyName>("HTTPServer").as_deref(),
+            Some("write it as `httpServer`")
+        );
+        assert_eq!(
+            help_of::<LinkEndName>("HTTPServer").as_deref(),
+            Some("write it as `httpServer`")
+        );
+    }
+
+    #[test]
+    fn non_ascii_names_get_no_misleading_suggestion() {
+        assert_eq!(help_of::<PropertyName>("café_name"), None);
+        assert_eq!(help_of::<ObjectTypeName>("Café"), None);
+    }
+
     #[test]
     fn unfixable_names_get_no_help() {
         assert!(
