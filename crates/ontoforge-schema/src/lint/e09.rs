@@ -5,7 +5,8 @@
 //!   boolean, byte, long) is a warning. Invalid key types are `ONT-V10`, not here.
 //! - a title key must have a type `is_title_suitable` accepts. Every v1 type does,
 //!   so this never fires today; the call keeps the rule honest when types are added.
-//! - an array whose `items` is itself an array (nested arrays) is an error.
+//! - an array whose `items` is itself an array (nested arrays) is an error, for
+//!   object type properties and action parameters alike.
 //!
 //! One rule id carries both severities: a configured level in `ontoforge.toml`
 //! replaces both, an unconfigured run keeps each finding's own severity.
@@ -82,6 +83,30 @@ impl LintRule for E09 {
                         Some("use a scalar element type, or model the inner list as its own object type".to_owned()),
                         None,
                     ));
+                }
+            }
+        }
+        // Parameters hold array elements too (WR-09).
+        for action in cx.ontology.action_types.values() {
+            for (name, param) in &action.parameters {
+                if param.param_type.base_type() == Some(BaseType::Array)
+                    && param.items == Some(BaseType::Array)
+                {
+                    out.push(Finding {
+                        def: DefKey {
+                            kind: DefKind::ActionType,
+                            api_name: action.api_name.to_string(),
+                        },
+                        path: ["parameters", name.as_str(), "items"]
+                            .map(|k| Seg::Key(k.to_owned()))
+                            .to_vec(),
+                        part: Part::Value,
+                        message: format!(
+                            "array parameter `{name}` has array items; nested arrays are not supported"
+                        ),
+                        help: Some("use a scalar element type".to_owned()),
+                        severity: None,
+                    });
                 }
             }
         }
@@ -166,6 +191,33 @@ properties:
         let found = run(CLEAN, None);
         assert!(found.is_empty(), "{found:#?}");
         insta::assert_json_snapshot!("clean", found);
+    }
+
+    /// WR-09: action parameters are array elements too.
+    #[test]
+    fn nested_array_parameter_is_an_error() {
+        let text = format!(
+            "{CLEAN}---
+kind: ActionType
+apiName: fill
+parameters:
+  name: {{ type: string, required: true }}
+  grid: {{ type: array, items: array }}
+  tags: {{ type: array, items: string }}
+rules:
+  - kind: createObject
+    objectType: Flight
+    properties:
+      id: {{ param: name }}
+"
+        );
+        let found = run(&text, None);
+        assert_eq!(found.len(), 1, "{found:#?}");
+        let d = &found[0];
+        assert_eq!(d.severity, Severity::Error);
+        assert!(d.message.contains("parameter `grid`"), "{}", d.message);
+        assert_eq!(&text[d.span.offset..d.span.offset + d.span.length], "array");
+        assert!(text[..d.span.offset].ends_with("grid: { type: array, items: "));
     }
 
     #[test]
