@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 1
 current_phase_name: Workspace, Schema & Lint
 status: executing
-stopped_at: Completed 01-13-PLAN.md
-last_updated: "2026-10-15T16:25:37.254Z"
+stopped_at: Completed 01-10-PLAN.md
+last_updated: "2026-10-15T16:41:00.957Z"
 last_activity: 2026-10-15
 last_activity_desc: Phase 1 execution started
-state_head: 07a0e060c5551d00b0ecf77391607bae1dbfe257
+state_head: 3d35d7e8daf2e68cb2b0f85c7fe5c54b150e23b9
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 13
-  completed_plans: 11
+  completed_plans: 12
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-15)
 ## Current Position
 
 Phase: 1 (Workspace, Schema & Lint) — EXECUTING
-Plan: 11 of 13 done; 01-10, 01-11 remaining
+Plan: 12 of 13 done; 01-11 remaining
 Status: Ready to execute
 Last activity: 2026-10-15 — Phase 1 execution started
 
@@ -53,6 +53,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P12 | 25 min | 3 tasks | 21 files |
 | Phase 01 P09 | 10 min | 2 tasks | 12 files |
 | Phase 01 P13 | n/a | 3 tasks | 12 files |
+| Phase 01 P10 | 15 min | 2 tasks | 16 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,7 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 01]: 01-08: a configured lint level replaces every severity of a rule; unknown rule ids suggest the zero-padded id first (ONT-W1 -> ONT-W01), then Jaro-Winkler
 - [Phase 01]: 01-12: CEL criteria check emits ONT-V13 as a hard error in pipeline::check, which clears LoadOutput.ontology on any error — Keeps the Some-only-when-no-error invariant so validate never prints ok next to an error
 - [Phase 1]: [Phase 01] 01-13: diag::offset_to_line_col is the only byte-offset to line:col implementation; expr keeps walk::char_pos only to widen to usize
+- [Phase 1]: 01-10: naming rules W01-W05 are heuristics whose help text always ends with the way to switch the rule off; split_camel stays (convert_case adds two new crates for no gain)
 
 ### Pending Todos
 
@@ -89,6 +91,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-15T16:25:37.223Z
-Stopped at: Completed 01-13-PLAN.md
+Last session: 2026-10-15T16:41:00.925Z
+Stopped at: Completed 01-10-PLAN.md
 Resume file: None
