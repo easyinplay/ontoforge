@@ -9,9 +9,19 @@ use crate::loader::sourcemap::{DefKey, DefKind, Part, Seg};
 mod w06;
 mod w07;
 mod w08;
+mod w09;
+mod w10;
+mod w11;
 
 pub(super) fn rules() -> Vec<&'static dyn LintRule> {
-    vec![&w06::RULE, &w07::RULE, &w08::RULE]
+    vec![
+        &w06::RULE,
+        &w07::RULE,
+        &w08::RULE,
+        &w09::RULE,
+        &w10::RULE,
+        &w11::RULE,
+    ]
 }
 
 /// Appended to every structure help text: these rules are heuristics, so the way out
