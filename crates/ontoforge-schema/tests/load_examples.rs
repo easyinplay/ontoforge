@@ -23,6 +23,9 @@ fn aviation_yaml_and_json_produce_identical_ir() {
     assert!(yaml.ontology.is_some(), "{:#?}", yaml.diagnostics);
     assert!(json.ontology.is_some(), "{:#?}", json.diagnostics);
     assert_eq!(yaml.ontology, json.ontology);
+    let ontology = yaml.ontology.expect("checked above");
+    assert_eq!(ontology.object_types.len(), 5);
+    assert_eq!(ontology.link_types.len(), 5);
 }
 
 #[test]

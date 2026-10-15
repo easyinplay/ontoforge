@@ -1,0 +1,42 @@
+# Each end's apiName is the accessor on that end's own objectType:
+# Airport.departingFlights returns Flights, Flight.departureAirport returns an Airport.
+# The foreignKey sits on the `to` end and has the type of the `from` end's primary key.
+kind: LinkType
+apiName: flightDepartureAirport
+displayName: Flight departure airport
+description: The airport a flight departs from.
+cardinality: oneToMany
+from: { objectType: Airport, apiName: departingFlights, displayName: Departing flights }
+to: { objectType: Flight, apiName: departureAirport, displayName: Departure airport, foreignKey: departureAirportCode }
+---
+kind: LinkType
+apiName: flightArrivalAirport
+displayName: Flight arrival airport
+description: The airport a flight arrives at.
+cardinality: oneToMany
+from: { objectType: Airport, apiName: arrivingFlights, displayName: Arriving flights }
+to: { objectType: Flight, apiName: arrivalAirport, displayName: Arrival airport, foreignKey: arrivalAirportCode }
+---
+kind: LinkType
+apiName: aircraftFlights
+displayName: Aircraft flights
+description: The flights an aircraft operates.
+cardinality: oneToMany
+from: { objectType: Aircraft, apiName: flights, displayName: Flights }
+to: { objectType: Flight, apiName: aircraft, displayName: Aircraft, foreignKey: aircraftTailNumber }
+---
+kind: LinkType
+apiName: aircraftCurrentMaintenance
+displayName: Aircraft current maintenance
+description: The maintenance record that is currently open for an aircraft.
+cardinality: oneToOne
+from: { objectType: Aircraft, apiName: currentMaintenanceRecord, displayName: Current maintenance record }
+to: { objectType: MaintenanceRecord, apiName: aircraft, displayName: Aircraft, foreignKey: aircraftTailNumber }
+---
+kind: LinkType
+apiName: flightCrew
+displayName: Flight crew
+description: The pilots assigned to a flight. The system manages the join, so no foreignKey is written.
+cardinality: manyToMany
+from: { objectType: Flight, apiName: crew, displayName: Crew }
+to: { objectType: Pilot, apiName: assignedFlights, displayName: Assigned flights }
