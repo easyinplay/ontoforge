@@ -5,15 +5,38 @@
 //! from inside the [`analyze`](crate::analyze()) closure, which runs on the large-stack
 //! thread and only ever sees prechecked input.
 
-use cel::common::ast::{EntryExpr, Expr, IdedExpr, SourceInfo};
+use cel::common::ast::operators as op;
+use cel::common::ast::{EntryExpr, Expr, IdedExpr, LiteralValue, SourceInfo};
 use ontoforge_schema::diag::offset_to_line_col;
 
-/// A member path rooted at a free variable, e.g. `params.items`.
+/// A member path rooted at a free variable, e.g. `params.items`. A string-literal
+/// index is a segment like a field (`params['items']` is `params.items`, WR-02).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MemberPath {
     pub segments: Vec<String>,
     /// 1-based `(line, column)` inside the expression, column counted in chars.
     pub pos: Option<(usize, usize)>,
+    /// The path is followed by an index that is not a string literal, so whatever
+    /// it selects next cannot be checked.
+    pub dynamic: bool,
+}
+
+/// One step of a member path: `.field`, `['field']` (`Some`), or an index that is
+/// not a string literal (`None`), with the operand it applies to.
+fn step(e: &IdedExpr) -> Option<(Option<&str>, &IdedExpr)> {
+    match &e.expr {
+        Expr::Select(sel) => Some((Some(sel.field.as_str()), &sel.operand)),
+        Expr::Call(call) if call.func_name == op::INDEX && call.target.is_none() => {
+            match call.args.as_slice() {
+                [operand, key] => match &key.expr {
+                    Expr::Literal(LiteralValue::String(s)) => Some((Some(&**s), operand)),
+                    _ => Some((None, operand)),
+                },
+                _ => None,
+            }
+        }
+        _ => None,
+    }
 }
 
 /// Collects the member paths rooted at free variables of `program`, in source walk
@@ -67,10 +90,12 @@ impl<'a> Walker<'a> {
                     self.out.push(MemberPath {
                         segments: vec![name.clone()],
                         pos,
+                        dynamic: false,
                     });
                 }
             }
             Expr::Select(_) => self.select(e),
+            Expr::Call(_) if step(e).is_some() => self.select(e),
             Expr::Call(call) => {
                 if let Some(target) = &call.target {
                     self.visit(target);
@@ -109,15 +134,25 @@ impl<'a> Walker<'a> {
         }
     }
 
-    /// Handles a `Select` chain: descends through plain field selections (and the
-    /// outermost `has()` test) to its root. A free identifier root yields the full
-    /// path; any other root is walked on its own.
+    /// Handles a chain of field selections and indexes: descends through them (and
+    /// the outermost `has()` test) to its root. A free identifier root yields the
+    /// path; any other root is walked on its own. A non-literal index is walked on
+    /// its own and cuts the path there: only the part below it can be checked.
     fn select(&mut self, outermost: &'a IdedExpr) {
         let mut fields = Vec::new();
+        let mut dynamic = false;
         let mut node = outermost;
-        while let Expr::Select(sel) = &node.expr {
-            fields.push(sel.field.as_str());
-            node = &sel.operand;
+        while let Some((field, operand)) = step(node) {
+            if let Some(field) = field {
+                fields.push(field);
+            } else {
+                if let Expr::Call(call) = &node.expr {
+                    call.args.iter().skip(1).for_each(|key| self.visit(key));
+                }
+                fields.clear();
+                dynamic = true;
+            }
+            node = operand;
             if matches!(&node.expr, Expr::Select(inner) if inner.test) {
                 break;
             }
@@ -129,7 +164,11 @@ impl<'a> Walker<'a> {
                     .chain(fields.iter().rev().copied())
                     .map(str::to_owned)
                     .collect();
-                self.out.push(MemberPath { segments, pos });
+                self.out.push(MemberPath {
+                    segments,
+                    pos,
+                    dynamic,
+                });
             }
             Expr::Ident(_) => {}
             _ => self.visit(node),

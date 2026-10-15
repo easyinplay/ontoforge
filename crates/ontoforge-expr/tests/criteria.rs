@@ -281,3 +281,29 @@ fn mixed_int_and_double_arithmetic_is_an_error() {
         d.message
     );
 }
+
+/// WR-02: a string-literal index is checked like a field selection.
+#[test]
+fn literal_index_is_checked_like_a_field() {
+    assert_clean("params['delayMinutes'] > 0 && objects['flight'].status == 'x'");
+    assert_clean("params.tags[0] == 'a' && objects.flight['status'] == 'x'");
+    let d = only("params['typo'] > 0");
+    assert_eq!(d.code, codes::V13);
+    assert!(
+        d.message.contains("unknown parameter `typo`"),
+        "{}",
+        d.message
+    );
+    let d = only("objects.flight['nope'] == 'x'");
+    assert!(d.message.contains("no property `nope`"), "{}", d.message);
+}
+
+/// WR-02: an index that is not a literal cannot be checked where a name is expected.
+#[test]
+fn dynamic_index_on_a_checked_root_is_an_error() {
+    let d = only("params[params.tags[0]] == 1");
+    assert_eq!(d.code, codes::V13);
+    assert!(d.message.contains("dynamic index"), "{}", d.message);
+    let d = only("objects.flight[params.tags[0]] == 1");
+    assert!(d.message.contains("dynamic index"), "{}", d.message);
+}

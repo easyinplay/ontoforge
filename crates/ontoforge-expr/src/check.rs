@@ -133,6 +133,32 @@ fn reference_problems(
 }
 
 fn path_problem(path: &MemberPath, ontology: &Ontology, action: &ActionType) -> Option<Problem> {
+    name_problem(path, ontology, action).or_else(|| dynamic_problem(path))
+}
+
+/// A non-literal index where a parameter, property or user field name belongs
+/// (`params[x]`, `objects.flight[x]`) cannot be checked (WR-02).
+fn dynamic_problem(path: &MemberPath) -> Option<Problem> {
+    let [root, rest @ ..] = path.segments.as_slice() else {
+        return None;
+    };
+    let names_needed = match root.as_str() {
+        "params" | "user" => 1,
+        "objects" => 2,
+        _ => 0,
+    };
+    if !path.dynamic || rest.len() >= names_needed {
+        return None;
+    }
+    let shown = path.segments.join(".");
+    Some(Problem::new(
+        format!("dynamic index on `{shown}` cannot be checked"),
+        format!("name the member directly, such as `{shown}.<name>` or `{shown}['<name>']`"),
+        path.pos,
+    ))
+}
+
+fn name_problem(path: &MemberPath, ontology: &Ontology, action: &ActionType) -> Option<Problem> {
     let [root, rest @ ..] = path.segments.as_slice() else {
         return None;
     };
