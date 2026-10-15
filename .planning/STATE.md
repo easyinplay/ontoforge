@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 1
 current_phase_name: Workspace, Schema & Lint
 status: executing
-stopped_at: Completed 01-08-PLAN.md
-last_updated: "2026-10-15T15:31:53.676Z"
+stopped_at: Completed 01-12-PLAN.md
+last_updated: "2026-10-15T15:41:49.348Z"
 last_activity: 2026-10-15
 last_activity_desc: Phase 1 execution started
-state_head: 4753ec13820ecf41cc16b52e98d887430d17136f
+state_head: 0634758b6712fd8c9c3da043cf663e8969eff6b9
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 12
-  completed_plans: 8
+  completed_plans: 9
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-15)
 ## Current Position
 
 Phase: 1 (Workspace, Schema & Lint) — EXECUTING
-Plan: 9 of 12
+Plan: 10 of 12
 Status: Ready to execute
 Last activity: 2026-10-15 — Phase 1 execution started
 
@@ -50,6 +50,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P07 | 15 min | 2 tasks | 5 files |
 | Phase 01 P06 | 12 min | 3 tasks | 29 files |
 | Phase 01 P08 | 9 min | 3 tasks | 18 files |
+| Phase 01 P12 | 25 min | 3 tasks | 21 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,7 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 01]: cel 0.15 SourceInfo::offset_for returns UTF-8 byte offsets; offset_to_line_col takes bytes and returns a char column — Verified with a multi-byte literal in ontoforge-expr tests (01-07)
 - [Phase 01]: 01-06: numeric assignability is by value class (byte/short/integer, float/double); objectReference params cannot be assigned to properties; modifyObject on the primary key is V12 — RESEARCH scale-property-limits mapping and plan discretion
 - [Phase 01]: 01-08: a configured lint level replaces every severity of a rule; unknown rule ids suggest the zero-padded id first (ONT-W1 -> ONT-W01), then Jaro-Winkler
+- [Phase 01]: 01-12: CEL criteria check emits ONT-V13 as a hard error in pipeline::check, which clears LoadOutput.ontology on any error — Keeps the Some-only-when-no-error invariant so validate never prints ok next to an error
 
 ### Pending Todos
 
@@ -84,6 +86,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-15T15:31:53.647Z
-Stopped at: Completed 01-08-PLAN.md
+Last session: 2026-10-15T15:41:41.628Z
+Stopped at: Completed 01-12-PLAN.md
 Resume file: None
