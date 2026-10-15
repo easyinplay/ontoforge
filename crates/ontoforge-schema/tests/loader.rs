@@ -231,3 +231,252 @@ fn load_from_memory_applies_same_include_filter() {
     assert_eq!(codes_of(&out), [codes::V03], "{:#?}", out.diagnostics);
     assert_eq!(out.diagnostics[0].file, "objects/win.yaml");
 }
+
+// ------------------------------------------------------------------- parsing
+
+const MANIFEST: &str = "apiName: demo\n";
+
+fn mem(files: &[(&str, &str)]) -> LoadOutput {
+    let mut all = vec![("ontology.yaml", MANIFEST)];
+    all.extend_from_slice(files);
+    load_from_memory(&all)
+}
+
+fn on_small_stack<T: Send + 'static>(f: impl FnOnce() -> T + Send + 'static) -> T {
+    std::thread::Builder::new()
+        .stack_size(1 << 20)
+        .spawn(f)
+        .expect("spawn")
+        .join()
+        .expect("loader must not crash the calling thread")
+}
+
+#[test]
+fn deeply_nested_yaml_is_rejected_not_crashing() {
+    let codes = on_small_stack(|| {
+        let mut doc = String::from("kind: ObjectType\napiName: Airport\nproperties:\n  code:\n");
+        for depth in 0..200 {
+            doc.push_str(&"  ".repeat(depth + 2));
+            doc.push_str("a:\n");
+        }
+        mem(&[("objects.yaml", doc.as_str())])
+            .diagnostics
+            .into_iter()
+            .map(|d| d.code)
+            .collect::<Vec<_>>()
+    });
+    assert!(codes.iter().any(|c| c == "ONT-V01"), "{codes:?}");
+}
+
+#[test]
+fn deeply_nested_json_is_rejected_not_crashing() {
+    for depth in [100_usize, 200] {
+        let codes = on_small_stack(move || {
+            let doc = format!("{}{}", "[".repeat(depth), "]".repeat(depth));
+            mem(&[("objects.json", doc.as_str())])
+                .diagnostics
+                .into_iter()
+                .map(|d| d.code)
+                .collect::<Vec<_>>()
+        });
+        assert!(codes.iter().any(|c| c == "ONT-V01"), "{depth}: {codes:?}");
+    }
+}
+
+#[test]
+fn json_trailing_comma_is_rejected() {
+    let text = "{\"kind\":\"ObjectType\",}";
+    let out = mem(&[("objects.json", text)]);
+    let d = &out.diagnostics[0];
+    assert_eq!(d.code, codes::V01, "{:#?}", out.diagnostics);
+    assert_eq!((d.file.as_str(), d.line, d.column), ("objects.json", 1, 22));
+    assert_eq!(&text[d.span.offset..d.span.offset + d.span.length], "}");
+}
+
+#[test]
+fn json_comment_is_rejected() {
+    let out = mem(&[(
+        "objects.json",
+        "{\n  // note\n  \"kind\": \"ObjectType\"\n}",
+    )]);
+    let d = &out.diagnostics[0];
+    assert_eq!((d.code.as_str(), d.line), (codes::V01, 2), "{d:?}");
+}
+
+#[test]
+fn yaml_yes_no_stay_strings() {
+    let doc = object("Airport").replace("apiName: Airport", "apiName: Airport\ndisplayName: no");
+    let out = mem(&[("objects.yaml", doc.as_str())]);
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+    let airport = &out.ontology.unwrap().object_types["Airport"];
+    assert_eq!(airport.display_name.as_deref(), Some("no"));
+
+    let bad = object("Airport").replace("required: true", "required: yes");
+    let out = mem(&[("objects.yaml", bad.as_str())]);
+    assert_eq!(
+        out.diagnostics[0].code,
+        codes::V06,
+        "{:#?}",
+        out.diagnostics
+    );
+}
+
+#[test]
+fn duplicate_key_is_v01_with_location() {
+    let out = mem(&[("objects.yaml", "kind: ObjectType\napiName: A\napiName: B\n")]);
+    let d = &out.diagnostics[0];
+    assert_eq!(
+        (d.code.as_str(), d.line, d.column),
+        (codes::V01, 3, 1),
+        "{d:?}"
+    );
+    assert_eq!(d.message, "duplicate mapping key `apiName`");
+}
+
+#[test]
+fn merge_key_is_v01() {
+    let doc = "kind: ObjectType\napiName: A\nprimaryKey: code\nproperties:\n  code: &c { type: string }\n  other:\n    <<: *c\n";
+    let out = mem(&[("objects.yaml", doc)]);
+    let d = &out.diagnostics[0];
+    assert_eq!(d.code, codes::V01, "{:#?}", out.diagnostics);
+    assert_eq!(d.line, 7, "{d:?}");
+}
+
+#[test]
+fn unsupported_tag_is_v01() {
+    let doc = object("Airport").replace(
+        "apiName: Airport",
+        "apiName: Airport\ndisplayName: !custom x",
+    );
+    let out = mem(&[("objects.yaml", doc.as_str())]);
+    let d = &out.diagnostics[0];
+    assert_eq!((d.code.as_str(), d.line), (codes::V01, 3), "{d:?}");
+}
+
+#[test]
+fn v01_message_has_no_parser_position_suffix() {
+    let cases = [
+        ("a.yaml", "kind: ObjectType\napiName: A\napiName: B\n"),
+        ("b.json", "{\"a\": 1,}"),
+        ("c.yaml", "a: [1\n"),
+    ];
+    for (name, text) in cases {
+        let out = mem(&[(name, text)]);
+        let d = &out.diagnostics[0];
+        assert_eq!(d.code, codes::V01, "{name}: {d:?}");
+        for forbidden in [" at line ", "DuplicateKeyPolicy", "Options"] {
+            assert!(!d.message.contains(forbidden), "{name}: {}", d.message);
+        }
+    }
+}
+
+fn unknown_key_diag(name: &str, text: &str) -> (u32, u32, String) {
+    let out = mem(&[(name, text)]);
+    let d = out
+        .diagnostics
+        .iter()
+        .find(|d| d.code == codes::V04)
+        .unwrap_or_else(|| panic!("{name}: {:#?}", out.diagnostics));
+    let slice = text[d.span.offset..d.span.offset + d.span.length].to_owned();
+    (d.line, d.column, slice)
+}
+
+#[test]
+fn bom_crlf_tab_and_cjk_locations_are_exact() {
+    let yaml = object("Airport").replace("primaryKey", "primaryKy");
+
+    let bom = format!("\u{feff}{yaml}");
+    assert_eq!(unknown_key_diag("a.yaml", &bom), (3, 1, "primaryKy".into()));
+
+    let crlf = yaml.replace('\n', "\r\n");
+    assert_eq!(
+        unknown_key_diag("a.yaml", &crlf),
+        (3, 1, "primaryKy".into())
+    );
+
+    let tabbed =
+        "{\n\t\"kind\": \"ObjectType\",\n\t\"apiName\": \"Airport\",\n\t\"primaryKy\": \"code\"\n}";
+    assert_eq!(
+        unknown_key_diag("a.json", tabbed),
+        (4, 2, "\"primaryKy\"".into())
+    );
+
+    let cjk_line = "description: 机场说明\nprimaryKy: code";
+    let cjk = yaml.replace("primaryKy: code", cjk_line);
+    assert_eq!(unknown_key_diag("a.yaml", &cjk), (4, 1, "primaryKy".into()));
+
+    let one_line = "{\"kind\": \"ObjectType\", \"apiName\": \"Airport\", \"description\": \"中文说明\", \"primaryKy\": \"code\"}";
+    let col = one_line[..one_line.find("\"primaryKy\"").unwrap()]
+        .chars()
+        .count();
+    let (line, column, slice) = unknown_key_diag("a.json", one_line);
+    assert_eq!(
+        (line, column as usize, slice.as_str()),
+        (1, col + 1, "\"primaryKy\"")
+    );
+}
+
+#[test]
+fn json_syntax_error_column_counts_characters() {
+    let text = "{\"description\": \"中文说明\", }";
+    let out = mem(&[("a.json", text)]);
+    let d = &out.diagnostics[0];
+    let col = text
+        .find('}')
+        .map(|i| text[..i].chars().count() + 1)
+        .unwrap();
+    assert_eq!(
+        (d.code.as_str(), d.column as usize),
+        (codes::V01, col),
+        "{d:?}"
+    );
+    assert_eq!(&text[d.span.offset..d.span.offset + d.span.length], "}");
+}
+
+#[test]
+fn empty_yaml_documents_are_skipped() {
+    let doc = format!("---\n---\n{}\n---\n# only a comment\n", object("Airport"));
+    let out = mem(&[("objects.yaml", doc.as_str())]);
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+    assert_eq!(names(&out), ["Airport"]);
+}
+
+#[test]
+fn multi_document_yaml_and_json_array_are_both_loaded() {
+    let yaml = format!("{}---\n{}", object("Airport"), object("Flight"));
+    let json = r#"[
+      {"kind":"ObjectType","apiName":"Plane","primaryKey":"code","properties":{"code":{"type":"string"}}},
+      {"kind":"ObjectType","apiName":"Gate","primaryKey":"code","properties":{"code":{"type":"string"}}}
+    ]"#;
+    let out = mem(&[("a.yaml", yaml.as_str()), ("b.json", json)]);
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+    assert_eq!(names(&out), ["Airport", "Flight", "Gate", "Plane"]);
+}
+
+#[test]
+fn properties_keep_declared_order() {
+    let yaml = "kind: ObjectType\napiName: Airport\nprimaryKey: zeta\nproperties:\n  zeta: { type: string }\n  alpha: { type: string }\n  mid: { type: string }\n";
+    let json = r#"{"kind":"ObjectType","apiName":"Flight","primaryKey":"zeta","properties":{"zeta":{"type":"string"},"alpha":{"type":"string"},"mid":{"type":"string"}}}"#;
+    let out = mem(&[("a.yaml", yaml), ("b.json", json)]);
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+    let ontology = out.ontology.unwrap();
+    for name in ["Airport", "Flight"] {
+        let order: Vec<&str> = ontology.object_types[name]
+            .properties
+            .keys()
+            .map(|k| k.as_str())
+            .collect();
+        assert_eq!(order, ["zeta", "alpha", "mid"], "{name}");
+    }
+}
+
+#[test]
+fn file_order_does_not_change_ir() {
+    let a = object("Airport");
+    let b = object("Flight");
+    let c = object("Gate");
+    let forward = mem(&[("a.yaml", &a), ("b.yaml", &b), ("c.yaml", &c)]);
+    let reverse = mem(&[("c.yaml", &c), ("b.yaml", &b), ("a.yaml", &a)]);
+    assert!(forward.ontology.is_some());
+    assert_eq!(forward.ontology, reverse.ontology);
+}
