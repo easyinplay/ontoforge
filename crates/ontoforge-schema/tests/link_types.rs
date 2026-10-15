@@ -186,3 +186,181 @@ fn link_ir_is_typed() {
     );
     assert!(link.from.foreign_key.is_none());
 }
+
+// ---- structural validation: V09, V11, V08 --------------------------------
+
+#[test]
+fn unknown_end_object_type_is_v09() {
+    let out = load(&ONE_TO_MANY.replace("objectType: Flight", "objectType: Flght"));
+    let d = only(&out);
+    assert_eq!(d.code, codes::V09);
+    assert_eq!((d.file.as_str(), d.line, d.column), ("links.yaml", 5, 19));
+    assert!(d.message.contains("Flght"), "{}", d.message);
+    assert_eq!(d.help.as_deref(), Some("did you mean `Flight`?"), "{d:?}");
+}
+
+#[test]
+fn unknown_foreign_key_property_is_v09() {
+    let out = load(&ONE_TO_MANY.replace("departureAirportCode", "departureAirportCod"));
+    let d = only(&out);
+    assert_eq!(d.code, codes::V09);
+    assert_eq!(d.line, 5);
+    assert!(d.message.contains("Flight"), "{}", d.message);
+    assert_eq!(
+        d.help.as_deref(),
+        Some("did you mean `departureAirportCode`?"),
+        "{d:?}"
+    );
+}
+
+#[test]
+fn many_to_many_with_foreign_key_is_v11() {
+    let out = load(
+        "kind: LinkType
+apiName: flightCrew
+cardinality: manyToMany
+from: { objectType: Flight, apiName: crew }
+to: { objectType: Pilot, apiName: assignedFlights, foreignKey: employeeId }
+",
+    );
+    let d = only(&out);
+    assert_eq!(d.code, codes::V11);
+    assert_eq!((d.line, d.column), (5, 62));
+    assert!(d.message.contains("manyToMany"), "{}", d.message);
+}
+
+#[test]
+fn one_to_many_without_foreign_key_is_v11() {
+    let out = load(&ONE_TO_MANY.replace(", foreignKey: departureAirportCode", ""));
+    let d = only(&out);
+    assert_eq!(d.code, codes::V11);
+    assert_eq!((d.line, d.column), (3, 14));
+    assert!(d.message.contains("foreignKey"), "{}", d.message);
+}
+
+#[test]
+fn foreign_key_on_from_end_is_v11() {
+    let out = load(&ONE_TO_MANY.replace(
+        "apiName: departingFlights",
+        "apiName: departingFlights, foreignKey: code",
+    ));
+    let d = only(&out);
+    assert_eq!(d.code, codes::V11);
+    assert_eq!((d.line, d.column), (4, 62));
+    assert!(d.help.as_deref().unwrap().contains("`to`"), "{d:?}");
+}
+
+#[test]
+fn foreign_key_type_must_match_primary_key() {
+    let objects = OBJECTS.replace(
+        "departureAirportCode: { type: string }",
+        "departureAirportCode: { type: integer }",
+    );
+    let out = load_from_memory(&[
+        ("ontology.yaml", MANIFEST),
+        ("objects.yaml", &objects),
+        ("links.yaml", ONE_TO_MANY),
+    ]);
+    let d = only(&out);
+    assert_eq!(d.code, codes::V11);
+    assert_eq!((d.line, d.column), (5, 74));
+    for needle in ["integer", "string", "Airport.code", "departureAirportCode"] {
+        assert!(d.message.contains(needle), "{needle}: {}", d.message);
+    }
+}
+
+#[test]
+fn end_name_clashes_with_property_is_v08() {
+    let out = load(&ONE_TO_MANY.replace("apiName: departureAirport,", "apiName: status,"));
+    let d = only(&out);
+    assert_eq!(d.code, codes::V08);
+    assert_eq!((d.line, d.column), (5, 40));
+    assert!(d.message.contains("status"), "{}", d.message);
+    assert!(d.message.contains("Flight"), "{}", d.message);
+}
+
+#[test]
+fn duplicate_end_names_on_same_type_is_v08() {
+    let objects = OBJECTS.replace(
+        "departureAirportCode: { type: string }",
+        "departureAirportCode: { type: string }\n  arrivalAirportCode: { type: string }",
+    );
+    let links = format!(
+        "{}---\n{}",
+        ONE_TO_MANY.replace("apiName: departureAirport,", "apiName: airport,"),
+        ONE_TO_MANY
+            .replace("flightDepartureAirport", "flightArrivalAirport")
+            .replace("apiName: departureAirport,", "apiName: airport,")
+            .replace("apiName: departingFlights", "apiName: arrivingFlights")
+            .replace("departureAirportCode", "arrivalAirportCode"),
+    );
+    let out = load_from_memory(&[
+        ("ontology.yaml", MANIFEST),
+        ("objects.yaml", &objects),
+        ("links.yaml", &links),
+    ]);
+    let d = only(&out);
+    assert_eq!(d.code, codes::V08);
+    // Links are visited in apiName order, so the later one, flightDepartureAirport
+    // (the first document of the file), is the one reported.
+    assert_eq!((d.line, d.column), (5, 40));
+    assert!(d.message.contains("flightArrivalAirport"), "{}", d.message);
+    assert!(d.message.contains("`airport`"), "{}", d.message);
+}
+
+const EMPLOYEE: &str = "kind: ObjectType
+apiName: Employee
+primaryKey: employeeId
+properties:
+  employeeId: { type: string, required: true }
+  managerId: { type: string }
+";
+
+fn self_link(from_end: &str, to_end: &str) -> LoadOutput {
+    let objects = format!("{OBJECTS}---\n{EMPLOYEE}");
+    let links = format!(
+        "kind: LinkType
+apiName: reporting
+cardinality: oneToMany
+from: {{ objectType: Employee, apiName: {from_end} }}
+to: {{ objectType: Employee, apiName: {to_end}, foreignKey: managerId }}
+"
+    );
+    load_from_memory(&[
+        ("ontology.yaml", MANIFEST),
+        ("objects.yaml", &objects),
+        ("links.yaml", &links),
+    ])
+}
+
+#[test]
+fn self_link_ends_must_differ() {
+    let out = self_link("reports", "reports");
+    let d = only(&out);
+    assert_eq!(d.code, codes::V08);
+    assert_eq!((d.line, d.column), (5, 40));
+    assert!(d.message.contains("Employee"), "{}", d.message);
+}
+
+#[test]
+fn self_link_with_distinct_ends_is_valid() {
+    let out = self_link("reports", "manager");
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+}
+
+#[test]
+fn link_checks_are_skipped_for_missing_types() {
+    // `status` would clash with a Flight property and the foreign key is absent,
+    // but with no Flight there is nothing to compare against.
+    let out = load(
+        "kind: LinkType
+apiName: flightDepartureAirport
+cardinality: oneToMany
+from: { objectType: Airport, apiName: departingFlights }
+to: { objectType: Flght, apiName: status }
+",
+    );
+    let d = only(&out);
+    assert_eq!(d.code, codes::V09);
+    assert_eq!(d.line, 5);
+}
