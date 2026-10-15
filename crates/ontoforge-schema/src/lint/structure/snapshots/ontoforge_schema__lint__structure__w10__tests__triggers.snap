@@ -1,0 +1,71 @@
+---
+source: crates/ontoforge-schema/src/lint/structure/w10.rs
+expression: found
+---
+[
+  {
+    "code": "ONT-W10",
+    "severity": "warning",
+    "message": "property `version` versions the object inside the schema",
+    "file": "defs.yaml",
+    "line": 6,
+    "column": 3,
+    "span": {
+      "offset": 119,
+      "length": 7
+    },
+    "help": "keep history in the edit log instead of in the schema; if this is intentional, set \"ONT-W10\" = \"off\" under [lint] in ontoforge.toml"
+  },
+  {
+    "code": "ONT-W10",
+    "severity": "warning",
+    "message": "property `revision` versions the object inside the schema",
+    "file": "defs.yaml",
+    "line": 7,
+    "column": 3,
+    "span": {
+      "offset": 148,
+      "length": 8
+    },
+    "help": "keep history in the edit log instead of in the schema; if this is intentional, set \"ONT-W10\" = \"off\" under [lint] in ontoforge.toml"
+  },
+  {
+    "code": "ONT-W10",
+    "severity": "warning",
+    "message": "property `isCurrent` versions the object inside the schema",
+    "file": "defs.yaml",
+    "line": 8,
+    "column": 3,
+    "span": {
+      "offset": 178,
+      "length": 9
+    },
+    "help": "keep history in the edit log instead of in the schema; if this is intentional, set \"ONT-W10\" = \"off\" under [lint] in ontoforge.toml"
+  },
+  {
+    "code": "ONT-W10",
+    "severity": "warning",
+    "message": "object type `Flight2024` has a year or version number in its name",
+    "file": "defs.yaml",
+    "line": 11,
+    "column": 10,
+    "span": {
+      "offset": 237,
+      "length": 10
+    },
+    "help": "keep history in the edit log instead of in the schema; if this is intentional, set \"ONT-W10\" = \"off\" under [lint] in ontoforge.toml"
+  },
+  {
+    "code": "ONT-W10",
+    "severity": "warning",
+    "message": "object type `FlightV2` has a year or version number in its name",
+    "file": "defs.yaml",
+    "line": 17,
+    "column": 10,
+    "span": {
+      "offset": 356,
+      "length": 8
+    },
+    "help": "keep history in the edit log instead of in the schema; if this is intentional, set \"ONT-W10\" = \"off\" under [lint] in ontoforge.toml"
+  }
+]

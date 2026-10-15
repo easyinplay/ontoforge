@@ -1,16 +1,30 @@
 //! ONT-W09: Action Sprawl (D-13).
 //!
 //! Two checks:
-//! - an object type that more than `max_actions_per_type` actions (default 10)
-//!   create, modify or delete is reported on the object type. An action belongs to
-//!   the type it creates or to the target type of the `objectReference` parameter a
-//!   `modifyObject` / `deleteObject` rule names; it counts once per type;
+//! - an object type that is created, modified or deleted by more than
+//!   `max_actions_per_type` actions (default 10) is reported on the object type. An
+//!   action belongs to the type it creates or to the target type of the
+//!   `objectReference` parameter a `modifyObject` / `deleteObject` rule names; it
+//!   counts once per type;
 //! - an action named `set...` or `update...` (camelCase, so `setStatus`) whose only
 //!   rule is a `modifyObject` assigning one property is a property setter in disguise
 //!   and is reported on the action. The original rule talks about display names with
 //!   spaces; here the `apiName` is checked.
 
+use std::collections::{BTreeMap, BTreeSet};
+use std::sync::LazyLock;
+
+use regex::Regex;
+
 use super::super::{Finding, Level, LintCx, LintRule};
+use super::{off_hint, type_finding};
+use crate::ir::{ActionType, ParamType, Rule};
+use crate::loader::sourcemap::{DefKey, DefKind, Part, Seg};
+
+const DEFAULT_MAX_ACTIONS: usize = 10;
+
+static SETTER_NAME: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new("^(set|update)[A-Z]").expect("fixed pattern"));
 
 pub(super) struct W09;
 
@@ -29,7 +43,78 @@ impl LintRule for W09 {
         &["max_actions_per_type"]
     }
 
-    fn check(&self, _cx: &LintCx<'_>, _out: &mut Vec<Finding>) {}
+    fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {
+        let max = cx.option_usize("max_actions_per_type", DEFAULT_MAX_ACTIONS);
+        // Object type to the actions that create, modify or delete it.
+        let mut per_type: BTreeMap<&str, BTreeSet<&str>> = BTreeMap::new();
+        for action in cx.ontology.action_types.values() {
+            for rule in &action.rules {
+                let owner = match rule {
+                    Rule::CreateObject(r) => Some(r.object_type.as_str()),
+                    Rule::ModifyObject(r) => referenced_type(action, r.object.as_str()),
+                    Rule::DeleteObject(r) => referenced_type(action, r.object.as_str()),
+                    Rule::AddLink(_) | Rule::RemoveLink(_) => None,
+                };
+                if let Some(owner) = owner {
+                    per_type
+                        .entry(owner)
+                        .or_default()
+                        .insert(action.api_name.as_str());
+                }
+            }
+            if is_single_property_setter(action) {
+                out.push(Finding {
+                    def: DefKey {
+                        kind: DefKind::ActionType,
+                        api_name: action.api_name.to_string(),
+                    },
+                    path: vec![Seg::Key("apiName".to_owned())],
+                    part: Part::Value,
+                    message: format!(
+                        "action `{}` only sets one property of one object",
+                        action.api_name
+                    ),
+                    help: Some(format!(
+                        "an action should express a business intent (`closeAccount`, not `setStatus`); {}",
+                        off_hint(self.id())
+                    )),
+                    severity: None,
+                });
+            }
+        }
+        for (name, actions) in per_type {
+            let Some(object) = cx.ontology.object_types.get(name) else {
+                continue;
+            };
+            if actions.len() > max {
+                out.push(type_finding(
+                    object,
+                    format!(
+                        "{} actions change object type `{name}`, more than the limit of {max}",
+                        actions.len()
+                    ),
+                    format!(
+                        "merge actions that differ only in the property they set, or split the object type; {}",
+                        off_hint(self.id())
+                    ),
+                ));
+            }
+        }
+    }
+}
+
+/// The object type behind the `objectReference` parameter `param` of `action`.
+fn referenced_type<'a>(action: &'a ActionType, param: &str) -> Option<&'a str> {
+    match &action.parameters.get(param)?.param_type {
+        ParamType::ObjectReference(t) => Some(t.as_str()),
+        _ => None,
+    }
+}
+
+/// `setXxx` / `updateXxx` with a single `modifyObject` rule assigning one property.
+fn is_single_property_setter(action: &ActionType) -> bool {
+    SETTER_NAME.is_match(action.api_name.as_str())
+        && matches!(action.rules.as_slice(), [Rule::ModifyObject(r)] if r.properties.len() == 1)
 }
 
 #[cfg(test)]

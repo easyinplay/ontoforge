@@ -7,10 +7,19 @@
 //! format makes both end `apiName`s required (a missing one is `ONT-V05`), so that
 //! check is not repeated here.
 
-use super::super::{Finding, Level, LintCx, LintRule};
+use std::sync::LazyLock;
 
-fn is_generic(_name: &str) -> bool {
-    false
+use regex::Regex;
+
+use super::super::{Finding, Level, LintCx, LintRule};
+use super::off_hint;
+use crate::loader::sourcemap::{DefKey, DefKind, Part, Seg};
+
+static GENERIC: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?i)^(related|link\d)").expect("fixed pattern"));
+
+fn is_generic(name: &str) -> bool {
+    GENERIC.is_match(name)
 }
 
 pub(super) struct W11;
@@ -26,7 +35,34 @@ impl LintRule for W11 {
         Level::Warn
     }
 
-    fn check(&self, _cx: &LintCx<'_>, _out: &mut Vec<Finding>) {}
+    fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {
+        let help = format!(
+            "name the relationship by what it means, for example `departingFlights`; {}",
+            off_hint(self.id())
+        );
+        for link in cx.ontology.link_types.values() {
+            let names: [(&str, &[&str]); 3] = [
+                (link.api_name.as_str(), &["apiName"]),
+                (link.from.api_name.as_str(), &["from", "apiName"]),
+                (link.to.api_name.as_str(), &["to", "apiName"]),
+            ];
+            for (name, path) in names {
+                if is_generic(name) {
+                    out.push(Finding {
+                        def: DefKey {
+                            kind: DefKind::LinkType,
+                            api_name: link.api_name.to_string(),
+                        },
+                        path: path.iter().map(|k| Seg::Key((*k).to_owned())).collect(),
+                        part: Part::Value,
+                        message: format!("link name `{name}` is generic"),
+                        help: Some(help.clone()),
+                        severity: None,
+                    });
+                }
+            }
+        }
+    }
 }
 
 #[cfg(test)]
