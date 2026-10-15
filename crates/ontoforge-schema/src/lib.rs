@@ -2,6 +2,7 @@
 
 pub mod diag;
 pub mod ir;
+pub mod lint;
 pub mod loader;
 pub mod validate;
 
