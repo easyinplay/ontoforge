@@ -63,29 +63,43 @@ fn miscased_manifest(rel: &str) -> Option<Diagnostic> {
 }
 
 /// Regular files under `root` as normalized relative paths. Symbolic links are
-/// neither followed nor listed.
+/// neither followed nor listed. A file or directory whose name is not UTF-8 is
+/// reported and skipped (WR-12).
 pub fn walk(root: &Utf8Path) -> (Vec<String>, Vec<Diagnostic>) {
-    let walker = walkdir::WalkDir::new(root)
+    let mut walker = walkdir::WalkDir::new(root)
         .follow_links(false)
         .into_iter()
         .filter_entry(|e| {
             e.depth() == 0
                 || !e.file_type().is_dir()
-                || e.file_name().to_str().is_some_and(|n| !dir_is_skipped(n))
+                || e.file_name().to_str().is_none_or(|n| !dir_is_skipped(n))
         });
     let mut files = Vec::new();
     let mut diags = Vec::new();
-    for entry in walker {
+    while let Some(entry) = walker.next() {
         match entry {
-            Ok(e) if e.file_type().is_file() => {
-                let rel = e
+            Ok(e) if e.depth() > 0 && (e.file_type().is_file() || e.file_type().is_dir()) => {
+                let rel_path = e
                     .path()
                     .strip_prefix(root.as_std_path())
-                    .ok()
-                    .and_then(Utf8Path::from_path)
-                    .map(|p| normalize(p.as_str()));
-                diags.extend(rel.as_deref().and_then(miscased_manifest));
-                files.extend(rel);
+                    .unwrap_or(e.path());
+                let Some(rel) = Utf8Path::from_path(rel_path).map(|p| normalize(p.as_str())) else {
+                    let shown = normalize(&rel_path.to_string_lossy());
+                    diags.push(Diagnostic::without_location(
+                        codes::V14,
+                        Severity::Error,
+                        format!("the name of `{shown}` is not valid UTF-8; skipped"),
+                        shown,
+                    ));
+                    if e.file_type().is_dir() {
+                        walker.skip_current_dir();
+                    }
+                    continue;
+                };
+                if e.file_type().is_file() {
+                    diags.extend(miscased_manifest(&rel));
+                    files.push(rel);
+                }
             }
             Ok(_) => {}
             Err(e) => diags.push(Diagnostic::without_location(

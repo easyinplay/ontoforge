@@ -166,6 +166,52 @@ fn non_utf8_file_is_v01() {
     assert_eq!((d.code.as_str(), d.file.as_str()), (codes::V01, "bad.yaml"));
 }
 
+/// A file or directory name that is not valid Unicode.
+#[cfg(unix)]
+fn non_utf8_name(stem: &str) -> std::ffi::OsString {
+    use std::os::unix::ffi::OsStringExt;
+    let mut bytes = stem.as_bytes().to_vec();
+    bytes.push(0xff);
+    std::ffi::OsString::from_vec(bytes)
+}
+
+#[cfg(windows)]
+fn non_utf8_name(stem: &str) -> std::ffi::OsString {
+    use std::os::windows::ffi::OsStringExt;
+    let mut wide: Vec<u16> = stem.encode_utf16().collect();
+    wide.push(0xd800); // an unpaired surrogate
+    std::ffi::OsString::from_wide(&wide)
+}
+
+/// WR-12: names that are not UTF-8 are reported, not silently dropped.
+#[test]
+fn non_utf8_file_and_directory_names_are_v14() {
+    let dir = tempfile::tempdir().unwrap();
+    write(&dir, "ontology.yaml", "apiName: demo\n");
+    write(&dir, "airport.yaml", object("Airport"));
+    let mut file = non_utf8_name("bad");
+    file.push(".yaml");
+    let sub = dir.path().join(non_utf8_name("sub"));
+    let made = std::fs::write(dir.path().join(&file), object("Lost"))
+        .and_then(|()| std::fs::create_dir(&sub))
+        .and_then(|()| std::fs::write(sub.join("deep.yaml"), object("Deep")));
+    if made.is_err() {
+        return; // this file system only stores Unicode names
+    }
+    let out = load(&dir);
+    let messages: Vec<&str> = out
+        .diagnostics
+        .iter()
+        .filter(|d| d.code == codes::V14)
+        .map(|d| d.message.as_str())
+        .collect();
+    assert_eq!(messages.len(), 2, "{:#?}", out.diagnostics);
+    assert!(
+        messages.iter().all(|m| m.contains("not valid UTF-8")),
+        "{messages:#?}"
+    );
+}
+
 #[cfg(unix)]
 fn symlink_file(from: &std::path::Path, to: &std::path::Path) -> std::io::Result<()> {
     std::os::unix::fs::symlink(from, to)
