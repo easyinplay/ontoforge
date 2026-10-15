@@ -15,7 +15,15 @@ use crate::ir::{Definition, Manifest};
 /// Kinds a definition document may declare.
 const KINDS: [&str; 3] = ["ObjectType", "LinkType", "ActionType"];
 /// Kinds whose deserialization exists in this build.
-const IMPLEMENTED_KINDS: [&str; 2] = ["ObjectType", "LinkType"];
+const IMPLEMENTED_KINDS: [&str; 3] = ["ObjectType", "LinkType", "ActionType"];
+/// Rule kinds an action may use; `function` is recognised only to reject it.
+const RULE_KINDS: [&str; 5] = [
+    "createObject",
+    "modifyObject",
+    "deleteObject",
+    "addLink",
+    "removeLink",
+];
 /// Kinds reserved for later versions.
 const RESERVED_KINDS: [&str; 3] = ["Interface", "ValueType", "SharedProperty"];
 
@@ -96,10 +104,66 @@ pub fn dispatch(doc: &Node, cx: &Ctx) -> Result<Definition, Diagnostic> {
         ));
     };
     body.shift_remove("kind");
+    if kind == "ActionType" {
+        rewrite_rules(&mut body, cx, doc)?;
+    }
     let mut wrapped = serde_json::Map::new();
     wrapped.insert(kind.clone(), Value::Object(body));
     serde_path_to_error::deserialize::<_, Definition>(Value::Object(wrapped))
         .map_err(|e| map_error(&e, doc, cx))
+}
+
+/// Rewrite each `rules[i]` from `{ kind: x, .. }` to `{ x: { .. } }`, the same
+/// transformation the document root gets, so rule errors keep their paths.
+fn rewrite_rules(
+    body: &mut serde_json::Map<String, Value>,
+    cx: &Ctx,
+    doc: &Node,
+) -> Result<(), Diagnostic> {
+    let Some(Value::Array(rules)) = body.get_mut("rules") else {
+        return Ok(());
+    };
+    for (i, rule) in rules.iter_mut().enumerate() {
+        let rule_path = [Seg::Key("rules".into()), Seg::Index(i)];
+        let at_rule = |field: Option<&str>| {
+            let mut path = rule_path.to_vec();
+            path.extend(field.map(|f| Seg::Key(f.into())));
+            cx.at(doc, &path, Part::Value)
+        };
+        let Value::Object(fields) = rule else {
+            return Err(Diagnostic::error(
+                codes::V02,
+                "a rule must be a mapping",
+                &at_rule(None),
+            ));
+        };
+        let Some(kind) = fields.shift_remove("kind") else {
+            return Err(
+                Diagnostic::error(codes::V02, "rule has no `kind` field", &at_rule(None))
+                    .with_help(format!("add `kind: <{}>`", RULE_KINDS.join(" | "))),
+            );
+        };
+        let Value::String(kind) = kind else {
+            return Err(Diagnostic::error(
+                codes::V02,
+                "`kind` must be a string",
+                &at_rule(Some("kind")),
+            ));
+        };
+        if kind == "function" {
+            return Err(Diagnostic::error(
+                codes::V03,
+                "function-backed rules are not supported in v1",
+                &at_rule(Some("kind")),
+            )
+            .with_help(format!("use one of: {}", ticked(&RULE_KINDS))));
+        }
+        let inner = std::mem::take(fields);
+        let mut wrapped = serde_json::Map::new();
+        wrapped.insert(kind, Value::Object(inner));
+        *rule = Value::Object(wrapped);
+    }
+    Ok(())
 }
 
 /// Parse the manifest document (no `kind`).

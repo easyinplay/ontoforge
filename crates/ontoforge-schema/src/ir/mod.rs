@@ -7,16 +7,24 @@ use std::collections::BTreeMap;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+pub mod action;
 pub mod basetype;
 pub mod link;
 pub mod manifest;
 pub mod names;
 pub mod object;
 
+pub use action::{
+    ActionType, CreateObjectRule, DeleteObjectRule, Empty, LinkRule, ModifyObjectRule, ParamType,
+    ParameterDef, Rule, SubmissionCriterion, ValueSource,
+};
 pub use basetype::BaseType;
 pub use link::{Cardinality, LinkEnd, LinkType};
 pub use manifest::Manifest;
-pub use names::{LinkEndName, LinkTypeName, ObjectTypeName, OntologyName, PropertyName};
+pub use names::{
+    ActionTypeName, LinkEndName, LinkTypeName, ObjectTypeName, OntologyName, ParameterName,
+    PropertyName,
+};
 pub use object::{ObjectType, PropertyDef};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
@@ -28,6 +36,8 @@ pub struct Ontology {
     pub object_types: BTreeMap<ObjectTypeName, ObjectType>,
     #[serde(default)]
     pub link_types: BTreeMap<LinkTypeName, LinkType>,
+    #[serde(default)]
+    pub action_types: BTreeMap<ActionTypeName, ActionType>,
 }
 
 /// One definition document.
@@ -41,4 +51,5 @@ pub struct Ontology {
 pub enum Definition {
     ObjectType(ObjectType),
     LinkType(LinkType),
+    ActionType(ActionType),
 }

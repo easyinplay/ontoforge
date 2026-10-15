@@ -6,7 +6,8 @@ use camino::Utf8Path;
 
 use crate::diag::{Diagnostic, Severity, SourceLocation, codes, has_errors, sort_diagnostics};
 use crate::ir::{
-    Definition, LinkType, LinkTypeName, Manifest, ObjectType, ObjectTypeName, Ontology,
+    ActionType, ActionTypeName, Definition, LinkType, LinkTypeName, Manifest, ObjectType,
+    ObjectTypeName, Ontology,
 };
 
 mod discover;
@@ -210,8 +211,9 @@ fn assemble(manifest: Text, listing: Listing, read: &dyn Fn(&str) -> Text) -> Lo
         api_name: m.api_name,
         display_name: m.display_name,
         description: m.description,
-        object_types: defs.object_types,
-        link_types: defs.link_types,
+        object_types: defs.objects,
+        link_types: defs.links,
+        action_types: defs.actions,
     });
     if let Some(o) = &ontology {
         diags.extend(crate::validate::validate(o, &sources));
@@ -280,8 +282,9 @@ fn load_manifest(
 /// Definitions collected from all files, keyed by apiName.
 #[derive(Default)]
 struct Defs {
-    object_types: BTreeMap<ObjectTypeName, ObjectType>,
-    link_types: BTreeMap<LinkTypeName, LinkType>,
+    objects: BTreeMap<ObjectTypeName, ObjectType>,
+    links: BTreeMap<LinkTypeName, LinkType>,
+    actions: BTreeMap<ActionTypeName, ActionType>,
 }
 
 fn merge(
@@ -303,13 +306,19 @@ fn merge(
             DefKind::ObjectType,
             "ObjectType",
             o.api_name.to_string(),
-            defs.object_types.contains_key(o.api_name.as_str()),
+            defs.objects.contains_key(o.api_name.as_str()),
         ),
         Definition::LinkType(l) => (
             DefKind::LinkType,
             "LinkType",
             l.api_name.to_string(),
-            defs.link_types.contains_key(l.api_name.as_str()),
+            defs.links.contains_key(l.api_name.as_str()),
+        ),
+        Definition::ActionType(a) => (
+            DefKind::ActionType,
+            "ActionType",
+            a.api_name.to_string(),
+            defs.actions.contains_key(a.api_name.as_str()),
         ),
     };
     let key = DefKey { kind, api_name };
@@ -330,10 +339,13 @@ fn merge(
     sources.register_def(key, file, doc);
     match def {
         Definition::ObjectType(o) => {
-            defs.object_types.insert(o.api_name.clone(), o);
+            defs.objects.insert(o.api_name.clone(), o);
         }
         Definition::LinkType(l) => {
-            defs.link_types.insert(l.api_name.clone(), l);
+            defs.links.insert(l.api_name.clone(), l);
+        }
+        Definition::ActionType(a) => {
+            defs.actions.insert(a.api_name.clone(), a);
         }
     }
 }

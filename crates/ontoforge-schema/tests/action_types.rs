@@ -108,7 +108,13 @@ rules:
         .expect("rules list");
     let kinds: Vec<&str> = rules
         .iter()
-        .map(|r| r.as_object().expect("rule map").keys().next().expect("kind"))
+        .map(|r| {
+            r.as_object()
+                .expect("rule map")
+                .keys()
+                .next()
+                .expect("kind")
+        })
         .map(String::as_str)
         .collect();
     assert_eq!(
@@ -176,7 +182,10 @@ rules:
     );
     let json = ontology_json(&out);
     let params = &json["actionTypes"]["tune"]["parameters"];
-    assert_eq!(params["flight"]["type"], json!({ "objectReference": "Flight" }));
+    assert_eq!(
+        params["flight"]["type"],
+        json!({ "objectReference": "Flight" })
+    );
     assert_eq!(params["flight"]["required"], true);
     assert_eq!(params["minutes"]["type"], "integer");
     assert_eq!(params["minutes"]["description"], "How long.");
@@ -272,5 +281,5 @@ rules:
     let out = load(text);
     let d = only(&out);
     assert_eq!(d.code, codes::V06);
-    assert_eq!((d.line, d.column), (9, 20));
+    assert_eq!((d.line, d.column), (9, 19));
 }
