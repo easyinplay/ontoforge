@@ -10,9 +10,11 @@ use crate::loader::sourcemap::{DefKey, DefKind, Part, Seg};
 mod w01;
 mod w02;
 mod w03;
+mod w04;
+mod w05;
 
 pub(super) fn rules() -> Vec<&'static dyn LintRule> {
-    vec![&w01::RULE, &w02::RULE, &w03::RULE]
+    vec![&w01::RULE, &w02::RULE, &w03::RULE, &w04::RULE, &w05::RULE]
 }
 
 /// Appended to every naming help text: these rules are heuristics, so the way out is
