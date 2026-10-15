@@ -1,0 +1,4 @@
+/target/
+.ruff_cache/
+*.sqlite
+*.db
