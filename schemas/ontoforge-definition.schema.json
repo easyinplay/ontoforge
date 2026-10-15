@@ -1,0 +1,658 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ontoforge definition document",
+  "description": "An ObjectType, LinkType or ActionType document (ADR-0012), selected by its `kind`; JSON files may hold an array of them.",
+  "anyOf": [
+    {
+      "$ref": "#/$defs/Definition"
+    },
+    {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Definition"
+      }
+    }
+  ],
+  "$defs": {
+    "Definition": {
+      "description": "One definition document: an ObjectType, LinkType or ActionType, selected by `kind`.",
+      "oneOf": [
+        {
+          "description": "A kind of object, for example `Flight`.",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "ObjectType"
+            },
+            "apiName": {
+              "description": "Unique `PascalCase` name used in code, APIs and references.",
+              "$ref": "#/$defs/ObjectTypeName"
+            },
+            "displayName": {
+              "description": "Human-readable name shown in UIs.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "description": {
+              "description": "What this object type represents.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "aliases": {
+              "description": "Alternative names, used for search and by agents.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": []
+            },
+            "hidden": {
+              "description": "Hide the object type from default listings.",
+              "type": "boolean",
+              "default": false
+            },
+            "primaryKey": {
+              "description": "Property that uniquely identifies an object. It must be declared in\n`properties`, set `required: true`, and be a string, integer or short\n(other types are discouraged or invalid).",
+              "$ref": "#/$defs/PropertyName"
+            },
+            "titleKey": {
+              "description": "Property used as the object's title; defaults to `primaryKey`.",
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/PropertyName"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "properties": {
+              "description": "Properties keyed by their camelCase apiName.",
+              "type": "object",
+              "additionalProperties": false,
+              "patternProperties": {
+                "^[a-z][A-Za-z0-9]{0,99}$": {
+                  "$ref": "#/$defs/PropertyDef"
+                }
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "apiName",
+            "primaryKey",
+            "properties"
+          ]
+        },
+        {
+          "description": "A relationship between two object types, for example `Airport` to `Flight`.\n\nBoth ends are written in the link type. An end's `apiName` is the accessor on\nthat end's own `objectType` that reaches the other end. This is the reverse of\nhow Foundry words it, where the name written on one end lives on the opposite\nobject type.",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "LinkType"
+            },
+            "apiName": {
+              "description": "Unique `camelCase` name; actions refer to the link by it.",
+              "$ref": "#/$defs/LinkTypeName"
+            },
+            "displayName": {
+              "description": "Human-readable name shown in UIs.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "description": {
+              "description": "What this relationship means.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cardinality": {
+              "description": "`oneToOne`, `oneToMany` or `manyToMany`.",
+              "$ref": "#/$defs/Cardinality"
+            },
+            "from": {
+              "description": "The first end. In `oneToMany` this is the \"one\" side.",
+              "$ref": "#/$defs/LinkEnd"
+            },
+            "to": {
+              "description": "The second end. In `oneToMany` this is the \"many\" side and holds the\nforeign key.",
+              "$ref": "#/$defs/LinkEnd"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "apiName",
+            "cardinality",
+            "from",
+            "to"
+          ]
+        },
+        {
+          "description": "A named, validated change to the object graph.",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "ActionType"
+            },
+            "apiName": {
+              "description": "Unique `camelCase` name; callers and agents invoke the action by it.",
+              "$ref": "#/$defs/ActionTypeName"
+            },
+            "displayName": {
+              "description": "Human-readable name shown in UIs.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "description": {
+              "description": "What this action does.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "parameters": {
+              "description": "Inputs, keyed by their camelCase apiName.",
+              "type": "object",
+              "additionalProperties": false,
+              "patternProperties": {
+                "^[a-z][A-Za-z0-9]{0,99}$": {
+                  "$ref": "#/$defs/ParameterDef"
+                }
+              },
+              "default": {}
+            },
+            "rules": {
+              "description": "Edits applied in order; the order is significant and at least one rule is\nrequired. Each rule is written `kind: <ruleKind>` followed by its fields.",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Rule"
+              }
+            },
+            "submissionCriteria": {
+              "description": "Conditions that must hold before the rules run.",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/SubmissionCriterion"
+              },
+              "default": []
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "apiName",
+            "rules"
+          ]
+        }
+      ]
+    },
+    "ObjectTypeName": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Za-z0-9]{0,99}$"
+    },
+    "PropertyName": {
+      "type": "string",
+      "pattern": "^[a-z][A-Za-z0-9]{0,99}$"
+    },
+    "PropertyDef": {
+      "description": "One property of an object type.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "Base type of the property value.",
+          "$ref": "#/$defs/BaseType"
+        },
+        "required": {
+          "description": "Whether every object must have a value.",
+          "type": "boolean",
+          "default": false
+        },
+        "displayName": {
+          "description": "Human-readable name shown in UIs.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "description": "What this property holds.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "items": {
+          "description": "Element type; required when `type` is `array`, not allowed otherwise.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BaseType"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "BaseType": {
+      "type": "string",
+      "enum": [
+        "byte",
+        "short",
+        "integer",
+        "long",
+        "float",
+        "double",
+        "decimal",
+        "string",
+        "boolean",
+        "date",
+        "timestamp",
+        "array",
+        "geopoint"
+      ]
+    },
+    "LinkTypeName": {
+      "type": "string",
+      "pattern": "^[a-z][A-Za-z0-9]{0,99}$"
+    },
+    "Cardinality": {
+      "description": "How many objects each side of a link may relate to.",
+      "oneOf": [
+        {
+          "description": "One `from` object relates to at most one `to` object, and the other way round.\nThe `to` end carries the foreign key.",
+          "type": "string",
+          "const": "oneToOne"
+        },
+        {
+          "description": "One `from` object relates to many `to` objects. The `to` end carries the\nforeign key.",
+          "type": "string",
+          "const": "oneToMany"
+        },
+        {
+          "description": "Many objects on each side. The system manages a join table, so no foreign\nkey is written.",
+          "type": "string",
+          "const": "manyToMany"
+        }
+      ]
+    },
+    "LinkEnd": {
+      "description": "One end of a link type.",
+      "type": "object",
+      "properties": {
+        "objectType": {
+          "description": "The object type at this end.",
+          "$ref": "#/$defs/ObjectTypeName"
+        },
+        "apiName": {
+          "description": "The accessor on this end's `objectType` that reaches the other end. It must\nbe unique among that object type's accessors and must not equal one of its\nproperties.",
+          "$ref": "#/$defs/LinkEndName"
+        },
+        "displayName": {
+          "description": "Human-readable name of the accessor shown in UIs.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "description": "What the accessor returns.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "foreignKey": {
+          "description": "Property holding the reference. Only on the `to` end of `oneToOne` and\n`oneToMany`; it must be a property of the `to` object type whose type equals\nthe `from` object type's primary key type. Never written for `manyToMany`.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PropertyName"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "objectType",
+        "apiName"
+      ]
+    },
+    "LinkEndName": {
+      "type": "string",
+      "pattern": "^[a-z][A-Za-z0-9]{0,99}$"
+    },
+    "ActionTypeName": {
+      "type": "string",
+      "pattern": "^[a-z][A-Za-z0-9]{0,99}$"
+    },
+    "ParameterDef": {
+      "description": "One input of an action.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "A base type, or `{ objectReference: <ObjectType> }` for an existing object.",
+          "$ref": "#/$defs/ParamType"
+        },
+        "items": {
+          "description": "Element type; required when `type` is `array`, not allowed otherwise.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BaseType"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "required": {
+          "description": "Whether the caller must supply a value.",
+          "type": "boolean",
+          "default": false
+        },
+        "default": {
+          "description": "Value used when the caller supplies none. Must be a valid literal of the\nparameter type; not allowed for object references."
+        },
+        "displayName": {
+          "description": "Human-readable name shown in UIs.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "description": "What this parameter means.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "ParamType": {
+      "description": "The type of a parameter: one of the thirteen base types or an object reference.",
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "byte",
+            "short",
+            "integer",
+            "long",
+            "float",
+            "double",
+            "decimal",
+            "string",
+            "boolean",
+            "date",
+            "timestamp",
+            "array",
+            "geopoint"
+          ]
+        },
+        {
+          "description": "An existing object of this type, written `{ objectReference: Flight }`.",
+          "type": "object",
+          "properties": {
+            "objectReference": {
+              "$ref": "#/$defs/ObjectTypeName"
+            }
+          },
+          "required": [
+            "objectReference"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Rule": {
+      "description": "One edit of an action, selected by `kind`. Rules run in list order.",
+      "oneOf": [
+        {
+          "description": "Create a new object.",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "createObject"
+            },
+            "objectType": {
+              "description": "Type of the new object.",
+              "$ref": "#/$defs/ObjectTypeName"
+            },
+            "properties": {
+              "description": "Property values. The primary key and every required property must appear.",
+              "type": "object",
+              "additionalProperties": false,
+              "patternProperties": {
+                "^[a-z][A-Za-z0-9]{0,99}$": {
+                  "$ref": "#/$defs/ValueSource"
+                }
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "objectType",
+            "properties"
+          ]
+        },
+        {
+          "description": "Change properties of an existing object passed as a parameter.",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "modifyObject"
+            },
+            "object": {
+              "description": "Name of an `objectReference` parameter holding the object to change.",
+              "$ref": "#/$defs/ParameterName"
+            },
+            "properties": {
+              "description": "Property values to set. The primary key cannot be set.",
+              "type": "object",
+              "additionalProperties": false,
+              "patternProperties": {
+                "^[a-z][A-Za-z0-9]{0,99}$": {
+                  "$ref": "#/$defs/ValueSource"
+                }
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "object",
+            "properties"
+          ]
+        },
+        {
+          "description": "Delete an existing object passed as a parameter.",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "deleteObject"
+            },
+            "object": {
+              "description": "Name of an `objectReference` parameter holding the object to delete.",
+              "$ref": "#/$defs/ParameterName"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "object"
+          ]
+        },
+        {
+          "description": "Link two existing objects.",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "addLink"
+            },
+            "link": {
+              "description": "The link type to edit.",
+              "$ref": "#/$defs/LinkTypeName"
+            },
+            "from": {
+              "description": "`objectReference` parameter for the link's `from` object type.",
+              "$ref": "#/$defs/ParameterName"
+            },
+            "to": {
+              "description": "`objectReference` parameter for the link's `to` object type.",
+              "$ref": "#/$defs/ParameterName"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "link",
+            "from",
+            "to"
+          ]
+        },
+        {
+          "description": "Unlink two existing objects.",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "removeLink"
+            },
+            "link": {
+              "description": "The link type to edit.",
+              "$ref": "#/$defs/LinkTypeName"
+            },
+            "from": {
+              "description": "`objectReference` parameter for the link's `from` object type.",
+              "$ref": "#/$defs/ParameterName"
+            },
+            "to": {
+              "description": "`objectReference` parameter for the link's `to` object type.",
+              "$ref": "#/$defs/ParameterName"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "link",
+            "from",
+            "to"
+          ]
+        }
+      ]
+    },
+    "ValueSource": {
+      "description": "Where a property value comes from, written as a single-key map.",
+      "oneOf": [
+        {
+          "description": "The value of a parameter: `{ param: name }`.",
+          "type": "object",
+          "properties": {
+            "param": {
+              "$ref": "#/$defs/ParameterName"
+            }
+          },
+          "required": [
+            "param"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "description": "A literal: `{ static: value }`. `null` is not allowed.",
+          "type": "object",
+          "properties": {
+            "static": true
+          },
+          "required": [
+            "static"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "description": "The calling user's id, for string properties: `{ currentUser: {} }`.",
+          "type": "object",
+          "properties": {
+            "currentUser": {
+              "$ref": "#/$defs/Empty"
+            }
+          },
+          "required": [
+            "currentUser"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "description": "The time of the call, for timestamp properties: `{ currentTime: {} }`.",
+          "type": "object",
+          "properties": {
+            "currentTime": {
+              "$ref": "#/$defs/Empty"
+            }
+          },
+          "required": [
+            "currentTime"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ParameterName": {
+      "type": "string",
+      "pattern": "^[a-z][A-Za-z0-9]{0,99}$"
+    },
+    "Empty": {
+      "description": "The empty mapping `{}`; no fields are accepted.",
+      "type": "object",
+      "additionalProperties": false
+    },
+    "SubmissionCriterion": {
+      "description": "A condition checked before the rules run.",
+      "type": "object",
+      "properties": {
+        "condition": {
+          "description": "A CEL expression over `params`, `user` and `objects` that must be true.",
+          "type": "string"
+        },
+        "failureMessage": {
+          "description": "Shown to the caller when the condition is false.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "condition",
+        "failureMessage"
+      ]
+    }
+  }
+}

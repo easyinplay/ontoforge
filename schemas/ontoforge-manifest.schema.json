@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ontoforge ontology manifest",
+  "type": "object",
+  "properties": {
+    "apiName": {
+      "$ref": "#/$defs/OntologyName"
+    },
+    "displayName": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "include": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "apiName"
+  ],
+  "$defs": {
+    "OntologyName": {
+      "type": "string",
+      "pattern": "^[a-z][A-Za-z0-9]{0,99}$"
+    }
+  },
+  "description": "The ontology.yaml manifest naming the ontology and listing definition files."
+}
