@@ -12,6 +12,7 @@ use ontoforge_schema::ir::{ActionType, Ontology, ParamType, ParameterName, Prope
 use ontoforge_schema::loader::SourceMap;
 use ontoforge_schema::loader::sourcemap::{DefKey, DefKind, Part, Seg};
 
+use crate::infer::{TypeEnv, type_issues};
 use crate::walk::{MemberPath, member_paths};
 use crate::{ExprError, analyze};
 
@@ -28,6 +29,7 @@ pub fn check_ontology(ontology: &Ontology, sources: &SourceMap) -> Vec<Diagnosti
             kind: DefKind::ActionType,
             api_name: name.as_str().to_owned(),
         };
+        let env = TypeEnv::for_action(action, ontology);
         for (i, criterion) in action.submission_criteria.iter().enumerate() {
             let path = [
                 Seg::Key("submissionCriteria".into()),
@@ -36,7 +38,7 @@ pub fn check_ontology(ontology: &Ontology, sources: &SourceMap) -> Vec<Diagnosti
             ];
             let at = sources.locate(&def, &path, Part::Value);
             out.extend(
-                check_condition(&criterion.condition, ontology, action)
+                check_condition(&criterion.condition, ontology, action, &env)
                     .into_iter()
                     .map(|p| p.into_diagnostic(&at)),
             );
@@ -77,9 +79,26 @@ impl Problem {
     }
 }
 
-fn check_condition(src: &str, ontology: &Ontology, action: &ActionType) -> Vec<Problem> {
-    match analyze(src, |program| member_paths(program, src)) {
-        Ok(paths) => reference_problems(&paths, ontology, action),
+fn check_condition(
+    src: &str,
+    ontology: &Ontology,
+    action: &ActionType,
+    env: &TypeEnv,
+) -> Vec<Problem> {
+    // Both walks recurse per AST level, so they run inside the analyzer thread.
+    let analyzed = analyze(src, |program| {
+        (member_paths(program, src), type_issues(program, src, env))
+    });
+    match analyzed {
+        Ok((paths, issues)) => {
+            let mut problems = reference_problems(&paths, ontology, action);
+            problems.extend(
+                issues
+                    .into_iter()
+                    .map(|i| Problem::new(i.message, None, i.pos)),
+            );
+            problems
+        }
         Err(error) => vec![analyzer_problem(&error)],
     }
 }

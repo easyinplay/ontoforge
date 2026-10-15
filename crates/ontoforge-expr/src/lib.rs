@@ -2,6 +2,7 @@
 
 pub mod analyze;
 pub mod check;
+pub mod infer;
 pub mod limits;
 pub mod walk;
 
