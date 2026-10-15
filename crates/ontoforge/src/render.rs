@@ -57,7 +57,7 @@ fn to_report(d: &Diagnostic, sources: &SourceMap) -> Report {
         Severity::Info => MietteSeverity::Advice,
     };
     let mut diag = MietteDiagnostic::new(sanitize(&d.message))
-        .with_code(d.code.clone())
+        .with_code(sanitize(&d.code))
         .with_severity(severity);
     if let Some(help) = &d.help {
         diag = diag.with_help(sanitize(help));
@@ -74,7 +74,9 @@ fn to_report(d: &Diagnostic, sources: &SourceMap) -> Report {
         d.span.offset..d.span.offset + d.span.length,
         "here",
     ));
-    Report::new(diag).with_source_code(NamedSource::new(d.file.clone(), sanitize(text)))
+    // File names come from the (possibly untrusted) checkout and miette prints them
+    // unescaped in the source header (CR-04).
+    Report::new(diag).with_source_code(NamedSource::new(sanitize(&d.file), sanitize(text)))
 }
 
 /// Replace terminal control characters so a definition file cannot drive the
@@ -115,6 +117,29 @@ mod tests {
         assert_eq!(out.len(), input.len());
         assert!(!out.contains('\u{1b}') && !out.contains('\u{9b}') && !out.contains('\u{7f}'));
         assert!(out.contains('\t') && out.ends_with('\n'));
+    }
+
+    /// CR-04: the file name reaches the source header, so it is sanitized too.
+    #[test]
+    fn file_name_cannot_drive_the_terminal() {
+        let name = "\u{1b}]52;c;aGk=\u{7}.yaml";
+        let mut sources = SourceMap::default();
+        sources.add_file(name, "a: 1\n".to_owned());
+        let at = ontoforge_schema::diag::SourceLocation {
+            file: name.into(),
+            line: 1,
+            column: 1,
+            offset: 0,
+            length: 1,
+        };
+        let out = render(
+            &[Diagnostic::error("ONT-V01", "x", &at)],
+            &sources,
+            Format::Human,
+            false,
+        );
+        assert!(out.contains("?]52;c;aGk=?.yaml"), "{out}");
+        assert!(!out.contains('\u{1b}') && !out.contains('\u{7}'), "{out:?}");
     }
 
     #[test]
