@@ -292,15 +292,22 @@ impl<'a> Inferer<'a> {
                 }
                 Ty::Bool
             }
-            op::ADD => match args.as_slice() {
-                [Ty::String, Ty::String] => Ty::String,
-                [left, right] => arithmetic(left, right),
-                _ => Ty::Any,
-            },
-            op::SUBSTRACT | op::MULTIPLY | op::DIVIDE | op::MODULO => match args.as_slice() {
-                [left, right] => arithmetic(left, right),
-                _ => Ty::Any,
-            },
+            op::ADD | op::SUBSTRACT | op::MULTIPLY | op::DIVIDE | op::MODULO => {
+                match args.as_slice() {
+                    [Ty::String, Ty::String] if call.func_name == op::ADD => Ty::String,
+                    [left, right] => arithmetic(left, right).unwrap_or_else(|()| {
+                        let symbol = call.func_name.trim_matches('_');
+                        self.issue(
+                            id,
+                            format!(
+                                "cannot apply {symbol} to {left} and {right}; convert one side with int(...) or double(...)"
+                            ),
+                        );
+                        Ty::Any
+                    }),
+                    _ => Ty::Any,
+                }
+            }
             op::NEGATE => match args.as_slice() {
                 [only] if only.is_numeric() => only.clone(),
                 _ => Ty::Any,
@@ -316,10 +323,14 @@ impl<'a> Inferer<'a> {
     }
 }
 
-fn arithmetic(left: &Ty, right: &Ty) -> Ty {
+/// Result type of an arithmetic operator. `cel` evaluates `+ - * / %` only when both
+/// operands have the same numeric type (WR-01), so int with double is an error
+/// (comparisons do mix, see [`Ty::compatible`]).
+fn arithmetic(left: &Ty, right: &Ty) -> Result<Ty, ()> {
     match (left, right) {
-        (Ty::Int, Ty::Int) => Ty::Int,
-        (l, r) if l.is_numeric() && r.is_numeric() => Ty::Double,
-        _ => Ty::Any,
+        (Ty::Int, Ty::Int) => Ok(Ty::Int),
+        (Ty::Double, Ty::Double) => Ok(Ty::Double),
+        (l, r) if l.is_numeric() && r.is_numeric() => Err(()),
+        _ => Ok(Ty::Any),
     }
 }

@@ -262,3 +262,22 @@ fn builtin_functions_have_known_result_types() {
     let d = only("size(params.tags)");
     assert!(d.message.contains("found int"), "{}", d.message);
 }
+
+/// WR-01: `cel` evaluates arithmetic only on operands of the same numeric type.
+#[test]
+fn mixed_int_and_double_arithmetic_is_an_error() {
+    assert_clean("params.delayMinutes * 2 > 1 && 1.5 * 2.0 > 1.0 && params.delayMinutes > 1.5");
+    let d = only("params.delayMinutes * 1.5 > 2.0");
+    assert_eq!(d.code, codes::V13);
+    assert!(
+        d.message.contains("cannot apply * to int and double"),
+        "{}",
+        d.message
+    );
+    let d = only("1.0 - params.delayMinutes < 0.0");
+    assert!(
+        d.message.contains("cannot apply - to double and int"),
+        "{}",
+        d.message
+    );
+}
