@@ -80,6 +80,30 @@ fn reserved_word_is_v07_case_insensitively() {
     assert!(d.message.contains("reserved"), "{}", d.message);
 }
 
+/// WR-03: a CEL keyword cannot be referenced in a condition (`params.in` does not
+/// parse), so parameter and property names may not be one.
+#[test]
+fn cel_keyword_parameter_or_property_name_is_v07() {
+    let out = load(&format!("{GOOD}  for: {{ type: string }}\n"));
+    let d = only(&out);
+    assert_eq!(d.code, codes::V07);
+    assert_eq!(d.line, 6);
+    assert!(d.message.contains("CEL"), "{}", d.message);
+
+    let action =
+        "kind: ActionType\napiName: bump\nparameters:\n  in: { type: integer }\nrules: []\n";
+    let out = load(&format!("{GOOD}---\n{action}"));
+    let d = only(&out);
+    assert_eq!(d.code, codes::V07);
+    assert!(d.message.contains("`in`"), "{}", d.message);
+
+    // Only exact keywords are refused.
+    let out = load(&format!(
+        "{GOOD}  inbound: {{ type: string }}\n  nullable: {{ type: string }}\n"
+    ));
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+}
+
 #[test]
 fn duplicate_api_name_is_v08_and_cites_the_first_definition() {
     let doc = format!("{GOOD}---\n{GOOD}");

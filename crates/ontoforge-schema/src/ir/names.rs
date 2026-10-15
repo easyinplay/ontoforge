@@ -25,6 +25,33 @@ pub const RESERVED_API_NAMES: [&str; 9] = [
     "ontologyObject",
 ];
 
+/// CEL keywords and reserved identifiers (case-sensitive). Parameter and property
+/// names appear in conditions as `params.<name>` and `objects.<param>.<name>`, where
+/// these do not parse, so those names may not be one (WR-03, ONT-V07).
+pub const CEL_RESERVED_WORDS: [&str; 21] = [
+    "as",
+    "break",
+    "const",
+    "continue",
+    "else",
+    "false",
+    "for",
+    "function",
+    "if",
+    "import",
+    "in",
+    "let",
+    "loop",
+    "namespace",
+    "null",
+    "package",
+    "return",
+    "true",
+    "var",
+    "void",
+    "while",
+];
+
 const MAX_LEN: usize = 100;
 
 #[derive(Clone, Copy)]
@@ -57,7 +84,13 @@ fn canonical(raw: &str, initial: Initial) -> Option<String> {
     (well_formed(&out, initial) && reserved(&out).is_none() && out != raw).then_some(out)
 }
 
-fn check(raw: &str, what: &str, initial: Initial, pattern: &str) -> Result<(), String> {
+fn check(
+    raw: &str,
+    what: &str,
+    initial: Initial,
+    pattern: &str,
+    keywords: &[&str],
+) -> Result<(), String> {
     if !well_formed(raw, initial) {
         let help = canonical(raw, initial).map(|c| format!("write it as `{c}`"));
         return Err(custom_de_error(
@@ -73,11 +106,23 @@ fn check(raw: &str, what: &str, initial: Initial, pattern: &str) -> Result<(), S
             Some("choose a different name"),
         ));
     }
+    if keywords.contains(&raw) {
+        return Err(custom_de_error(
+            codes::V07,
+            &format!(
+                "`{raw}` is a CEL keyword and cannot be used as {what} apiName: submission criteria could not refer to it"
+            ),
+            Some(&format!("choose a different name, such as `{raw}Value`")),
+        ));
+    }
     Ok(())
 }
 
 macro_rules! api_name {
     ($(#[$meta:meta])* $name:ident, $initial:expr, $what:literal, $pattern:literal) => {
+        api_name!($(#[$meta])* $name, $initial, $what, $pattern, &[]);
+    };
+    ($(#[$meta:meta])* $name:ident, $initial:expr, $what:literal, $pattern:literal, $keywords:expr) => {
         $(#[$meta])*
         #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize)]
         #[serde(try_from = "String")]
@@ -93,7 +138,7 @@ macro_rules! api_name {
             type Error = String;
 
             fn try_from(value: String) -> Result<Self, String> {
-                check(&value, $what, $initial, $pattern)?;
+                check(&value, $what, $initial, $pattern, $keywords)?;
                 Ok(Self(value))
             }
         }
@@ -137,8 +182,8 @@ api_name!(
     ObjectTypeName, Initial::Upper, "object type", "^[A-Z][A-Za-z0-9]{0,99}$"
 );
 api_name!(
-    /// Property apiName, `camelCase`.
-    PropertyName, Initial::Lower, "property", "^[a-z][A-Za-z0-9]{0,99}$"
+    /// Property apiName, `camelCase`, not a CEL keyword.
+    PropertyName, Initial::Lower, "property", "^[a-z][A-Za-z0-9]{0,99}$", &CEL_RESERVED_WORDS
 );
 api_name!(
     /// Link type apiName, `camelCase`.
@@ -153,8 +198,8 @@ api_name!(
     ActionTypeName, Initial::Lower, "action type", "^[a-z][A-Za-z0-9]{0,99}$"
 );
 api_name!(
-    /// Action parameter apiName, `camelCase`.
-    ParameterName, Initial::Lower, "parameter", "^[a-z][A-Za-z0-9]{0,99}$"
+    /// Action parameter apiName, `camelCase`, not a CEL keyword.
+    ParameterName, Initial::Lower, "parameter", "^[a-z][A-Za-z0-9]{0,99}$", &CEL_RESERVED_WORDS
 );
 
 #[cfg(test)]
