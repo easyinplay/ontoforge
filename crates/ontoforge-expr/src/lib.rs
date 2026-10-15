@@ -1,5 +1,11 @@
 //! CEL expression wrapper (ADR-0011). Implemented in Phase 1 (plans 01-07 and 01-12).
 
+pub mod analyze;
+pub mod limits;
+
+pub use analyze::{ExprError, analyze};
+pub use limits::{MAX_EXPR_CHARS, MAX_EXPR_NESTING};
+
 /// Cargo package name of this crate.
 pub const CRATE_NAME: &str = env!("CARGO_PKG_NAME");
 
