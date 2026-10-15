@@ -182,34 +182,63 @@ fn precheck_json(text: &str) -> Result<(), ParseError> {
         .map(|_| ())
         .map_err(|e| {
             let bom = text.len() - body.len();
+            let offset = offset_of(body, e.line(), e.column());
+            let line_start = body[..offset].rfind('\n').map_or(0, |i| i + 1);
             ParseError {
-                message: e.to_string(),
+                message: json_message(&e.to_string()),
                 line: u64::try_from(e.line()).unwrap_or(0),
-                column: u64::try_from(e.column()).unwrap_or(0),
-                offset: bom + offset_of(body, e.line(), e.column()),
+                // serde_json counts bytes; the diagnostic column counts characters.
+                column: u64::try_from(body[line_start..offset].chars().count() + 1).unwrap_or(0),
+                offset: bom + offset,
                 length: 1,
             }
         })
 }
 
-/// Byte offset of a 1-based line and byte column.
+/// Byte offset of a 1-based line and byte column, moved back to a char boundary.
 fn offset_of(text: &str, line: usize, column: usize) -> usize {
     let line_start: usize = text
         .split_inclusive('\n')
         .take(line.saturating_sub(1))
         .map(str::len)
         .sum();
-    (line_start + column.saturating_sub(1)).min(text.len())
+    let mut offset = (line_start + column.saturating_sub(1)).min(text.len());
+    while !text.is_char_boundary(offset) {
+        offset -= 1;
+    }
+    offset
 }
 
-/// Drop the trailing ` at line L, column C` the parser appends; the location is
-/// reported separately.
-fn clean_message(raw: &str) -> String {
-    let first_line = raw.lines().next().unwrap_or(raw);
+/// Drop the trailing position the parsers append (` at line L, column C` for YAML,
+/// ` at line L column C` for JSON); the location is reported separately.
+fn strip_position(first_line: &str) -> String {
     match first_line.rfind(" at line ") {
         Some(i) => first_line[..i].to_owned(),
         None => first_line.to_owned(),
     }
+}
+
+/// `serde_json` says "key must be a string" for both an unquoted key and a trailing
+/// comma in an object; name both.
+fn json_message(raw: &str) -> String {
+    let message = strip_position(raw);
+    if message == "key must be a string" {
+        return "expected a quoted key; JSON does not allow a trailing comma".to_owned();
+    }
+    message
+}
+
+/// One-line, developer-facing message without parser internals.
+fn clean_message(raw: &str) -> String {
+    let message = strip_position(raw.lines().next().unwrap_or(raw));
+    if let Some(rest) = message.strip_prefix("duplicate mapping key: ") {
+        let key = rest.split(", set ").next().unwrap_or(rest);
+        return format!("duplicate mapping key `{key}`");
+    }
+    if message.starts_with("budget breached: Depth") {
+        return format!("document nests deeper than {MAX_DEPTH} levels");
+    }
+    message
 }
 
 #[cfg(test)]
@@ -246,6 +275,20 @@ mod tests {
         let e = parse_documents("a: 1\na: 2\n", false).unwrap_err();
         assert!(!e.message.contains(" at line "), "{}", e.message);
         assert_eq!(e.line, 2);
+    }
+
+    #[test]
+    fn depth_budget_message_names_the_limit() {
+        let mut text = String::new();
+        for depth in 0..40 {
+            text.push_str(&"  ".repeat(depth));
+            text.push_str(
+                "a:
+",
+            );
+        }
+        let e = parse_documents(&text, false).unwrap_err();
+        assert_eq!(e.message, "document nests deeper than 32 levels");
     }
 
     #[test]

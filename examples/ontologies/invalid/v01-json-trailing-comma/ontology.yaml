@@ -1,0 +1,2 @@
+apiName: v01TrailingComma
+description: Fixture for ONT-V01, objects.json has a trailing comma that a YAML parser would accept.

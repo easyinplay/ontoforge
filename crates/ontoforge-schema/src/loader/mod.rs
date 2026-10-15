@@ -35,18 +35,24 @@ pub const MAX_FILE_BYTES: u64 = 4 * 1024 * 1024;
 /// Load the ontology under `root`: parse, merge and validate (every `ONT-V`
 /// check except CEL, which `ontoforge-expr` owns).
 pub fn load_dir(root: &Utf8Path) -> LoadOutput {
-    let manifest = read_text(root, MANIFEST);
-    let (candidates, diagnostics) = discover::walk(root);
-    let listing = Listing {
-        candidates,
-        diagnostics,
-    };
-    assemble(manifest, listing, &|name| read_text(root, name))
+    isolated(|| {
+        let manifest = read_text(root, MANIFEST);
+        let (candidates, diagnostics) = discover::walk(root);
+        let listing = Listing {
+            candidates,
+            diagnostics,
+        };
+        assemble(manifest, listing, &|name| read_text(root, name))
+    })
 }
 
 /// Same pipeline over in-memory files; paths use `/` (`\` is accepted) and are
 /// the diagnostic `file`s.
 pub fn load_from_memory(files: &[(&str, &str)]) -> LoadOutput {
+    isolated(|| load_from_memory_inner(files))
+}
+
+fn load_from_memory_inner(files: &[(&str, &str)]) -> LoadOutput {
     let by_path: BTreeMap<String, &str> = files
         .iter()
         .map(|(p, t)| (discover::normalize(p), *t))
@@ -66,6 +72,33 @@ pub fn load_from_memory(files: &[(&str, &str)]) -> LoadOutput {
         diagnostics: Vec::new(),
     };
     assemble(read(MANIFEST), listing, &read)
+}
+
+/// Stack size of the loader thread. The recursive-descent parsers need far more
+/// than a 1 MiB debug-build stack (a Windows main thread) for nested input.
+const LOADER_STACK_BYTES: usize = 32 << 20;
+
+/// Run the whole load on a thread with a large stack, so callers never depend on
+/// their own stack size. A panic becomes a diagnostic instead of unwinding into
+/// the caller.
+fn isolated<'a>(work: impl FnOnce() -> LoadOutput + Send + 'a) -> LoadOutput {
+    let outcome = std::thread::scope(|scope| {
+        std::thread::Builder::new()
+            .stack_size(LOADER_STACK_BYTES)
+            .spawn_scoped(scope, work)
+            .ok()
+            .and_then(|handle| handle.join().ok())
+    });
+    outcome.unwrap_or_else(|| LoadOutput {
+        ontology: None,
+        sources: SourceMap::default(),
+        diagnostics: vec![Diagnostic::without_location(
+            codes::V01,
+            Severity::Error,
+            "internal error while loading",
+            MANIFEST,
+        )],
+    })
 }
 
 /// Candidate definition files plus problems found while listing them.

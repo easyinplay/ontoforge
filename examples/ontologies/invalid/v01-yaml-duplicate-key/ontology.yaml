@@ -1,0 +1,2 @@
+apiName: v01DuplicateKey
+description: Fixture for ONT-V01, objects.yaml repeats apiName in one mapping.

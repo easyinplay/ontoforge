@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V01",
+    "severity": "error",
+    "message": "duplicate mapping key `apiName`",
+    "file": "objects.yaml",
+    "line": 3,
+    "column": 1,
+    "span": {
+      "offset": 34,
+      "length": 7
+    },
+    "help": null
+  }
+]

@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V01",
+    "severity": "error",
+    "message": "expected a quoted key; JSON does not allow a trailing comma",
+    "file": "objects.json",
+    "line": 7,
+    "column": 3,
+    "span": {
+      "offset": 146,
+      "length": 1
+    },
+    "help": null
+  }
+]

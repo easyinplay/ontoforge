@@ -1,0 +1,4 @@
+apiName: Airport
+primaryKey: code
+properties:
+  code: { type: string, required: true }

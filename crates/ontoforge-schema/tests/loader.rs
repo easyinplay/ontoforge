@@ -464,7 +464,7 @@ fn properties_keep_declared_order() {
         let order: Vec<&str> = ontology.object_types[name]
             .properties
             .keys()
-            .map(|k| k.as_str())
+            .map(ontoforge_schema::ir::PropertyName::as_str)
             .collect();
         assert_eq!(order, ["zeta", "alpha", "mid"], "{name}");
     }

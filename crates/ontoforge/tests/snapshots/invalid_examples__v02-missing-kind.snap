@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V02",
+    "severity": "error",
+    "message": "document has no `kind` field",
+    "file": "objects.yaml",
+    "line": 1,
+    "column": 1,
+    "span": {
+      "offset": 0,
+      "length": 1
+    },
+    "help": "add `kind: <ObjectType | LinkType | ActionType>`"
+  }
+]
