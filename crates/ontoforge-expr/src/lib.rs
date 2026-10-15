@@ -1,10 +1,12 @@
 //! CEL expression wrapper (ADR-0011). Implemented in Phase 1 (plans 01-07 and 01-12).
 
 pub mod analyze;
+pub mod check;
 pub mod limits;
 pub mod walk;
 
 pub use analyze::{ExprError, analyze};
+pub use check::check_ontology;
 pub use limits::{MAX_EXPR_CHARS, MAX_EXPR_NESTING};
 pub use walk::{MemberPath, member_paths};
 
