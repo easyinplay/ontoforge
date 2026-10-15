@@ -15,7 +15,7 @@
 - [x] **SCHEMA-04**: 开发者可以定义 link type：1:1、1:N（外键属性）、M:N（join 定义），两个方向各有 apiName
 - [x] **SCHEMA-05**: 开发者可以定义 action type：参数（类型、required、默认值）、rules（create / modify / delete object，add / remove link）、submission criteria（CEL）
 - [x] **SCHEMA-06**: 定义有错时，开发者看到带文件名与 line:col 的诊断信息
-- [ ] **SCHEMA-07**: 开发者可以导出 ontology 定义的 JSON Schema，用于编辑器补全与 LLM 生成
+- [x] **SCHEMA-07**: 开发者可以导出 ontology 定义的 JSON Schema，用于编辑器补全与 LLM 生成
 
 ### Lint
 
@@ -139,7 +139,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SCHEMA-04 | Phase 1 | Complete |
 | SCHEMA-05 | Phase 1 | Complete |
 | SCHEMA-06 | Phase 1 | Complete |
-| SCHEMA-07 | Phase 1 | Pending |
+| SCHEMA-07 | Phase 1 | Complete |
 | LINT-01 | Phase 1 | Complete |
 | LINT-02 | Phase 1 | Pending |
 | LINT-03 | Phase 1 | Complete |
