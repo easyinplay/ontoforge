@@ -114,7 +114,7 @@ fn similar_pairs(cx: &LintCx<'_>, rule_id: &str, out: &mut Vec<Finding>) {
 
 #[cfg(test)]
 mod tests {
-    use crate::lint::structure::testing::{flagged, join, object, run, run_with};
+    use crate::lint::structure::testing::{flagged, join, object, run, run_with, run_within};
 
     const CONTACT: [(&str, &str); 4] = [
         ("name", "string"),
@@ -184,6 +184,25 @@ mod tests {
         let found = run("ONT-W07", &text);
         assert!(found.is_empty(), "{found:#?}");
         insta::assert_json_snapshot!("clean", found);
+    }
+
+    /// CR-02: a thousand similar types once produced one warning per pair.
+    #[test]
+    fn many_similar_types_are_reported_once() {
+        let own: Vec<String> = (0..1000).map(|i| format!("note{i}")).collect();
+        let docs: Vec<String> = (0..1000)
+            .map(|i| {
+                let props = [
+                    ("createdAt", "timestamp"),
+                    ("updatedAt", "timestamp"),
+                    ("ownerId", "string"),
+                    (own[i].as_str(), "string"),
+                ];
+                object(&format!("Thing{i}"), "id", &props)
+            })
+            .collect();
+        let found = run_within(5, "ONT-W07", join(&docs));
+        assert_eq!(found.len(), 1, "{} findings", found.len());
     }
 
     #[test]
