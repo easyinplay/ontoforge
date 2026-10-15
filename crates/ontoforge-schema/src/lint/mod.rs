@@ -6,7 +6,7 @@
 
 use std::collections::HashMap;
 
-use crate::diag::{Diagnostic, Severity};
+use crate::diag::{Diagnostic, Severity, sort_diagnostics};
 use crate::ir::Ontology;
 use crate::loader::SourceMap;
 use crate::loader::sourcemap::{DefKey, Part, Seg};
@@ -136,8 +136,35 @@ fn run_rules(
     sources: &SourceMap,
     config: &LintConfig,
 ) -> Vec<Diagnostic> {
-    let _ = (rules, ontology, sources, config);
-    Vec::new()
+    let no_options = HashMap::new();
+    let mut out = Vec::new();
+    for rule in rules {
+        let configured = config.level(rule.id());
+        if configured.unwrap_or_else(|| rule.default_level()) == Level::Off {
+            continue;
+        }
+        let cx = LintCx {
+            ontology,
+            options: config.options(rule.id()).unwrap_or(&no_options),
+        };
+        let mut findings = Vec::new();
+        rule.check(&cx, &mut findings);
+        for f in findings {
+            // A configured level replaces every severity of the rule; otherwise the
+            // finding's own severity applies, then the rule's default level.
+            let severity = configured
+                .and_then(Level::severity)
+                .or(f.severity)
+                .or_else(|| rule.default_level().severity())
+                .unwrap_or(Severity::Warning);
+            let at = sources.locate(&f.def, &f.path, f.part);
+            let mut d = Diagnostic::new(rule.id(), severity, f.message, &at);
+            d.help = f.help;
+            out.push(d);
+        }
+    }
+    sort_diagnostics(&mut out);
+    out
 }
 
 /// Run one registered rule on in-memory files; panics if the rule is not
@@ -287,6 +314,16 @@ mod tests {
         assert_eq!(cx.option_usize("other", 1), 1);
         assert!((cx.option_f64("limit", 0.5) - 7.0).abs() < f64::EPSILON);
         assert_eq!(cx.option_str_list("names", &["a", "b"]), ["a", "b"]);
+    }
+
+    #[test]
+    #[should_panic(expected = "is not registered")]
+    fn lint_rule_on_panics_for_an_unregistered_rule() {
+        lint_rule_on(
+            "ONT-W99",
+            &[("ontology.yaml", MANIFEST), ("o.yaml", OBJECTS)],
+            None,
+        );
     }
 
     #[test]

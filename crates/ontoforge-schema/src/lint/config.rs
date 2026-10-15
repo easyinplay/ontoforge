@@ -11,19 +11,29 @@
 //!
 //! Rule ids contain a hyphen, so they must be quoted keys. Only the lint rules
 //! (`ONT-E*`, `ONT-W*`) can be configured; `ONT-V*` structural errors cannot (D-06).
-//! Anything the loader does not recognize is `ONT-V15`, so a typo never silently
-//! disables nothing.
+//! Anything unrecognized is `ONT-V15`, so a typo never silently disables nothing.
+//!
+//! Positions come from `toml::Spanned`: the file is read into a [`Raw`] tree whose
+//! every key and value carries its byte span, then checked by hand.
 
 use std::collections::HashMap;
+use std::fmt;
+use std::ops::Range;
 
 use camino::Utf8Path;
+use serde::Deserialize;
+use serde::de::{Deserializer, MapAccess, SeqAccess, Visitor};
+use toml::Spanned;
 
-use super::{Level, LintRule};
-use crate::diag::Diagnostic;
-use crate::loader::SourceMap;
+use super::{KNOWN_RULE_IDS, Level, LintRule, registry};
+use crate::diag::{Diagnostic, Severity, SourceLocation, codes, did_you_mean};
+use crate::loader::{MAX_FILE_BYTES, SourceMap};
 
 /// File name of the configuration at the ontology root.
 pub const CONFIG_FILE: &str = "ontoforge.toml";
+
+/// Key `toml` uses to hand a datetime to a generic visitor.
+const DATETIME_KEY: &str = "$__toml_private_datetime";
 
 /// A rule option value: an integer, a number, a string, or a list of strings.
 #[derive(Debug, Clone, PartialEq)]
@@ -53,6 +63,74 @@ impl LintConfig {
     }
 }
 
+/// Any TOML value, every nested key and value with its span.
+enum Raw {
+    Int(i64),
+    Float(f64),
+    Str(String),
+    Array(Vec<Spanned<Raw>>),
+    Table(Vec<(Spanned<String>, Spanned<Raw>)>),
+    /// A value no option or level can be: a boolean, a datetime or an out-of-range integer.
+    Other,
+}
+
+impl<'de> Deserialize<'de> for Raw {
+    fn deserialize<D: Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        d.deserialize_any(RawVisitor)
+    }
+}
+
+struct RawVisitor;
+
+impl<'de> Visitor<'de> for RawVisitor {
+    type Value = Raw;
+
+    fn expecting(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("a TOML value")
+    }
+
+    fn visit_bool<E>(self, _: bool) -> Result<Raw, E> {
+        Ok(Raw::Other)
+    }
+
+    fn visit_i64<E>(self, v: i64) -> Result<Raw, E> {
+        Ok(Raw::Int(v))
+    }
+
+    fn visit_u64<E>(self, v: u64) -> Result<Raw, E> {
+        Ok(i64::try_from(v).map_or(Raw::Other, Raw::Int))
+    }
+
+    fn visit_f64<E>(self, v: f64) -> Result<Raw, E> {
+        Ok(Raw::Float(v))
+    }
+
+    fn visit_str<E>(self, v: &str) -> Result<Raw, E> {
+        Ok(Raw::Str(v.to_owned()))
+    }
+
+    fn visit_seq<A: SeqAccess<'de>>(self, mut seq: A) -> Result<Raw, A::Error> {
+        let mut items = Vec::new();
+        while let Some(item) = seq.next_element::<Spanned<Raw>>()? {
+            items.push(item);
+        }
+        Ok(Raw::Array(items))
+    }
+
+    fn visit_map<A: MapAccess<'de>>(self, mut map: A) -> Result<Raw, A::Error> {
+        let mut entries = Vec::new();
+        while let Some(key) = map.next_key::<Spanned<String>>()? {
+            entries.push((key, map.next_value::<Spanned<Raw>>()?));
+        }
+        let is_datetime = entries.len() == 1 && entries[0].0.get_ref() == DATETIME_KEY;
+        Ok(if is_datetime {
+            Raw::Other
+        } else {
+            Raw::Table(entries)
+        })
+    }
+}
+
 /// Parse and check `text`. `file` is the name used in diagnostics; `rules` tell
 /// which options each rule declares.
 pub fn parse_config(
@@ -60,20 +138,278 @@ pub fn parse_config(
     file: &str,
     rules: &[&dyn LintRule],
 ) -> (LintConfig, Vec<Diagnostic>) {
-    let _ = (text, file, rules);
-    (LintConfig::default(), Vec::new())
+    let mut parser = Parser {
+        text,
+        file,
+        rules,
+        config: LintConfig::default(),
+        diags: Vec::new(),
+    };
+    match toml::from_str::<Raw>(text) {
+        Ok(Raw::Table(sections)) => {
+            for (key, value) in sections {
+                if key.get_ref() == "lint" {
+                    parser.lint(value);
+                } else {
+                    let name = key.get_ref();
+                    let help = did_you_mean(name, ["lint"]).map_or_else(
+                        || "the only section is `[lint]`".to_owned(),
+                        |s| format!("did you mean `{s}`?"),
+                    );
+                    parser.problem(key.span(), format!("unknown section `{name}`"), Some(help));
+                }
+            }
+        }
+        Ok(_) => {}
+        Err(e) => parser.problem(e.span().unwrap_or(0..0), e.message(), None),
+    }
+    (parser.config, parser.diags)
+}
+
+struct Parser<'a> {
+    text: &'a str,
+    file: &'a str,
+    rules: &'a [&'a dyn LintRule],
+    config: LintConfig,
+    diags: Vec<Diagnostic>,
+}
+
+/// The known id for a number written without its zero padding (`ONT-W1` is
+/// `ONT-W01`). Edit distance cannot pick it: `ONT-W10` is as close.
+fn zero_padded(id: &str) -> Option<&'static str> {
+    let rest = id.to_ascii_uppercase();
+    let rest = rest.strip_prefix("ONT-")?;
+    let mut chars = rest.chars();
+    let letter = chars.next()?;
+    let number: u32 = chars.as_str().parse().ok()?;
+    let padded = format!("ONT-{letter}{number:02}");
+    KNOWN_RULE_IDS.iter().find(|k| **k == padded).copied()
+}
+
+fn levels_help() -> String {
+    let all: Vec<String> = Level::NAMES.iter().map(|l| format!("\"{l}\"")).collect();
+    format!("use one of: {}", all.join(", "))
+}
+
+impl Parser<'_> {
+    fn at(&self, span: &Range<usize>) -> SourceLocation {
+        let start = self.text.floor_char_boundary(span.start);
+        let before = &self.text[..start];
+        let line = before.matches('\n').count() + 1;
+        let column = before.chars().rev().take_while(|c| *c != '\n').count() + 1;
+        let room = (self.text.len() - start).max(1);
+        SourceLocation {
+            file: self.file.to_owned(),
+            line: u32::try_from(line).unwrap_or(u32::MAX),
+            column: u32::try_from(column).unwrap_or(u32::MAX),
+            offset: start,
+            length: span.end.saturating_sub(start).clamp(1, room),
+        }
+    }
+
+    fn problem(&mut self, span: Range<usize>, message: impl Into<String>, help: Option<String>) {
+        let mut d = Diagnostic::error(codes::V15, message, &self.at(&span));
+        d.help = help;
+        self.diags.push(d);
+    }
+
+    /// Report `key` when it is not a configurable rule id; true if it was reported.
+    fn id_problem(&mut self, key: &Spanned<String>, extra: &[&str]) -> bool {
+        let id = key.get_ref();
+        if KNOWN_RULE_IDS.contains(&id.as_str()) {
+            return false;
+        }
+        if id.starts_with("ONT-V") {
+            self.problem(
+                key.span(),
+                format!("`{id}` is a structural validation error and cannot be configured"),
+                Some(
+                    "only lint rules (ONT-E*, ONT-W*) can be set; ONT-V errors are always errors"
+                        .to_owned(),
+                ),
+            );
+            return true;
+        }
+        let candidates = KNOWN_RULE_IDS.iter().chain(extra).copied();
+        let help = zero_padded(id)
+            .or_else(|| did_you_mean(id, candidates))
+            .map_or_else(
+                || format!("known rules: {}", KNOWN_RULE_IDS.join(", ")),
+                |s| format!("did you mean `{s}`?"),
+            );
+        self.problem(key.span(), format!("unknown lint rule `{id}`"), Some(help));
+        true
+    }
+
+    fn lint(&mut self, value: Spanned<Raw>) {
+        let span = value.span();
+        let Raw::Table(entries) = value.into_inner() else {
+            self.problem(
+                span,
+                "`lint` must be a table",
+                Some("write `[lint]` followed by lines like `\"ONT-W01\" = \"off\"`".to_owned()),
+            );
+            return;
+        };
+        for (key, value) in entries {
+            if key.get_ref() == "options" {
+                self.options(value);
+            } else if !self.id_problem(&key, &["options"]) {
+                self.level(key.get_ref(), &value);
+            }
+        }
+    }
+
+    fn level(&mut self, id: &str, value: &Spanned<Raw>) {
+        match value.get_ref() {
+            Raw::Str(s) => match Level::parse(s) {
+                Some(level) => {
+                    self.config.levels.insert(id.to_owned(), level);
+                }
+                None => self.problem(
+                    value.span(),
+                    format!("invalid level `{s}` for {id}"),
+                    Some(levels_help()),
+                ),
+            },
+            _ => self.problem(
+                value.span(),
+                format!("the level of {id} must be a string"),
+                Some(levels_help()),
+            ),
+        }
+    }
+
+    fn options(&mut self, value: Spanned<Raw>) {
+        let span = value.span();
+        let Raw::Table(per_rule) = value.into_inner() else {
+            self.problem(
+                span,
+                "`options` must be a table keyed by rule id",
+                Some("write `[lint.options.\"ONT-W06\"]`".to_owned()),
+            );
+            return;
+        };
+        for (key, table) in per_rule {
+            if self.id_problem(&key, &[]) {
+                continue;
+            }
+            let id = key.get_ref();
+            let table_span = table.span();
+            let Raw::Table(options) = table.into_inner() else {
+                self.problem(
+                    table_span,
+                    format!("the options of {id} must be a table"),
+                    Some(format!("write `[lint.options.\"{id}\"]`")),
+                );
+                continue;
+            };
+            let rules = self.rules;
+            let declared = rules
+                .iter()
+                .find(|r| r.id() == id)
+                .map_or(&[][..], |r| r.option_keys());
+            for (name_key, value) in options {
+                let name = name_key.get_ref();
+                if !declared.contains(&name.as_str()) {
+                    let help = if declared.is_empty() {
+                        format!("{id} takes no options")
+                    } else if let Some(s) = did_you_mean(name, declared.iter().copied()) {
+                        format!("did you mean `{s}`?")
+                    } else {
+                        format!("available options: {}", declared.join(", "))
+                    };
+                    self.problem(
+                        name_key.span(),
+                        format!("rule {id} has no option `{name}`"),
+                        Some(help),
+                    );
+                    continue;
+                }
+                match option_value(&value) {
+                    Ok(v) => {
+                        self.config
+                            .options
+                            .entry(id.clone())
+                            .or_default()
+                            .insert(name.clone(), v);
+                    }
+                    Err(bad) => self.problem(
+                        bad,
+                        format!("option `{name}` of {id} has an unsupported value"),
+                        Some(
+                            "use an integer, a number, a string or an array of strings".to_owned(),
+                        ),
+                    ),
+                }
+            }
+        }
+    }
+}
+
+/// The value as an option, or the span of the part that cannot be one.
+fn option_value(value: &Spanned<Raw>) -> Result<OptionValue, Range<usize>> {
+    match value.get_ref() {
+        Raw::Int(n) => Ok(OptionValue::Int(*n)),
+        Raw::Float(f) => Ok(OptionValue::Float(*f)),
+        Raw::Str(s) => Ok(OptionValue::Str(s.clone())),
+        Raw::Array(items) => items
+            .iter()
+            .map(|item| match item.get_ref() {
+                Raw::Str(s) => Ok(s.clone()),
+                _ => Err(item.span()),
+            })
+            .collect::<Result<_, _>>()
+            .map(OptionValue::List),
+        Raw::Table(_) | Raw::Other => Err(value.span()),
+    }
 }
 
 /// Load the configuration for the ontology at `root`: `override_path` when given
 /// (a missing file is an error), else `<root>/ontoforge.toml` (a missing file means
 /// defaults). The text is registered in `sources` so diagnostics can be rendered.
+///
+/// A relative `override_path` is relative to the current directory. Diagnostics
+/// name the file as given, with `/` separators.
 pub fn load_config(
     root: &Utf8Path,
     override_path: Option<&Utf8Path>,
     sources: &mut SourceMap,
 ) -> (LintConfig, Vec<Diagnostic>) {
-    let _ = (root, override_path, sources);
-    (LintConfig::default(), Vec::new())
+    let (path, name, required) = match override_path {
+        Some(p) => (p.to_owned(), p.as_str().replace('\\', "/"), true),
+        None => (root.join(CONFIG_FILE), CONFIG_FILE.to_owned(), false),
+    };
+    let unreadable = |why: String| {
+        let message = format!("cannot read lint configuration `{name}`: {why}");
+        let d = Diagnostic::without_location(codes::V15, Severity::Error, message, name.clone());
+        (LintConfig::default(), vec![d])
+    };
+    let bytes = match std::fs::metadata(&path) {
+        Ok(m) if m.len() > MAX_FILE_BYTES => {
+            return unreadable(format!(
+                "file is {} bytes, over the {MAX_FILE_BYTES} byte limit",
+                m.len()
+            ));
+        }
+        Ok(_) => match std::fs::read(&path) {
+            Ok(bytes) => bytes,
+            Err(e) => return unreadable(e.kind().to_string()),
+        },
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound && !required => {
+            return (LintConfig::default(), Vec::new());
+        }
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+            return unreadable("not found".to_owned());
+        }
+        Err(e) => return unreadable(e.kind().to_string()),
+    };
+    let Ok(text) = String::from_utf8(bytes) else {
+        return unreadable("file is not valid UTF-8".to_owned());
+    };
+    let parsed = parse_config(&text, &name, &registry());
+    sources.add_file(&name, text);
+    parsed
 }
 
 #[cfg(test)]
