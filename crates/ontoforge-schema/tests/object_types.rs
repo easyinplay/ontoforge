@@ -35,14 +35,24 @@ fn object<'a>(out: &'a LoadOutput, name: &str) -> &'a ObjectType {
 #[test]
 fn all_v1_base_types_parse() {
     let names = [
-        "byte", "short", "integer", "long", "float", "double", "decimal", "string", "boolean",
-        "date", "timestamp", "geopoint",
+        "byte",
+        "short",
+        "integer",
+        "long",
+        "float",
+        "double",
+        "decimal",
+        "string",
+        "boolean",
+        "date",
+        "timestamp",
+        "geopoint",
     ];
     let mut doc = String::from(
         "kind: ObjectType\napiName: Sample\nprimaryKey: id\nproperties:\n  id: { type: string, required: true }\n",
     );
     for n in names {
-        doc.push_str(&format!("  p{n}: {{ type: {n} }}\n"));
+        doc += &["  p", n, ": { type: ", n, " }\n"].concat();
     }
     doc.push_str("  list: { type: array, items: string }\n");
     let out = load(&doc);

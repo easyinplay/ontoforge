@@ -215,7 +215,7 @@ fn map_error(
 
     let d = Diagnostic::error(codes::V06, msg.clone(), &cx.at(root, &path, Part::Value));
     if msg.contains("expected a string") {
-        d.with_help("wrap the value in quotes to make it a string")
+        d.with_help("quote the value if it is meant to be a string")
     } else {
         d
     }
