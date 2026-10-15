@@ -19,6 +19,7 @@ path = "src/main.rs"
 
 [dependencies]
 ontoforge-schema = { path = "../ontoforge-schema" }
+ontoforge-expr = { path = "../ontoforge-expr" }
 clap.workspace = true
 miette.workspace = true
 serde.workspace = true

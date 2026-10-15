@@ -1,0 +1,13 @@
+[package]
+name = "ontoforge-query"
+description = "ObjectSet AST and sea-query compilation"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+ontoforge-schema = { path = "../ontoforge-schema" }
