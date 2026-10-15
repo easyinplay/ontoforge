@@ -1,0 +1,72 @@
+[
+  {
+    "kind": "ActionType",
+    "apiName": "assignPilot",
+    "displayName": "Assign pilot",
+    "description": "Put a pilot on the crew of a flight.",
+    "parameters": {
+      "flight": { "type": { "objectReference": "Flight" }, "required": true, "displayName": "Flight" },
+      "pilot": { "type": { "objectReference": "Pilot" }, "required": true, "displayName": "Pilot" }
+    },
+    "rules": [
+      { "kind": "addLink", "link": "flightCrew", "from": "flight", "to": "pilot" }
+    ],
+    "submissionCriteria": [
+      { "condition": "'dispatcher' in user.groups", "failureMessage": "Only dispatchers can assign pilots" }
+    ]
+  },
+  {
+    "kind": "ActionType",
+    "apiName": "delayFlight",
+    "displayName": "Delay flight",
+    "description": "Mark a flight as delayed and record how long.",
+    "parameters": {
+      "flight": { "type": { "objectReference": "Flight" }, "required": true, "displayName": "Flight" },
+      "delayMinutes": { "type": "integer", "required": true, "displayName": "Delay in minutes" },
+      "reason": { "type": "string", "default": "unspecified", "displayName": "Reason" }
+    },
+    "rules": [
+      {
+        "kind": "modifyObject",
+        "object": "flight",
+        "properties": {
+          "status": { "static": "DELAYED" },
+          "delayMinutes": { "param": "delayMinutes" }
+        }
+      }
+    ],
+    "submissionCriteria": [
+      {
+        "condition": "params.delayMinutes > 0 && objects.flight.status != 'CANCELLED'",
+        "failureMessage": "Delay must be positive and cancelled flights cannot be delayed"
+      }
+    ]
+  },
+  {
+    "kind": "ActionType",
+    "apiName": "recordMaintenance",
+    "displayName": "Record maintenance",
+    "description": "Log a maintenance event for an aircraft, stamped with the user and the time.",
+    "parameters": {
+      "recordId": { "type": "string", "required": true, "displayName": "Record id" },
+      "aircraftTailNumber": { "type": "string", "required": true, "displayName": "Aircraft tail number" },
+      "summary": { "type": "string", "displayName": "Summary" }
+    },
+    "rules": [
+      {
+        "kind": "createObject",
+        "objectType": "MaintenanceRecord",
+        "properties": {
+          "recordId": { "param": "recordId" },
+          "aircraftTailNumber": { "param": "aircraftTailNumber" },
+          "performedAt": { "currentTime": {} },
+          "performedBy": { "currentUser": {} },
+          "summary": { "param": "summary" }
+        }
+      }
+    ],
+    "submissionCriteria": [
+      { "condition": "size(params.recordId) > 0", "failureMessage": "recordId must not be empty" }
+    ]
+  }
+]
