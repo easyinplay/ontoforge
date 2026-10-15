@@ -6,6 +6,7 @@
 use std::borrow::{Borrow, Cow};
 use std::fmt;
 
+use heck::{ToLowerCamelCase, ToUpperCamelCase};
 use schemars::{JsonSchema, Schema, SchemaGenerator, json_schema};
 use serde::{Serialize, Serializer};
 
@@ -49,22 +50,10 @@ fn reserved(raw: &str) -> Option<&'static str> {
 
 /// Rewrite `raw` into the nearest legal spelling, or `None` when none exists.
 fn canonical(raw: &str, initial: Initial) -> Option<String> {
-    let mut out = String::new();
-    let mut capitalize = matches!(initial, Initial::Upper);
-    for c in raw.chars() {
-        if c.is_ascii_alphanumeric() {
-            if out.is_empty() && !capitalize {
-                out.push(c.to_ascii_lowercase());
-            } else if capitalize {
-                out.push(c.to_ascii_uppercase());
-            } else {
-                out.push(c);
-            }
-            capitalize = false;
-        } else {
-            capitalize = capitalize || !out.is_empty();
-        }
-    }
+    let out = match initial {
+        Initial::Upper => raw.to_upper_camel_case(),
+        Initial::Lower => raw.to_lower_camel_case(),
+    };
     (well_formed(&out, initial) && reserved(&out).is_none() && out != raw).then_some(out)
 }
 

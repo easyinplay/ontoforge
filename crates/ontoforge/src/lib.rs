@@ -1,6 +1,6 @@
 //! `ontoforge` command line library: argument model and orchestration.
 
-use std::io::{IsTerminal, Write};
+use std::io::Write;
 
 pub mod cli;
 pub mod lint_cmd;
@@ -47,8 +47,9 @@ fn report(out: &LoadOutput, args: &OutputArgs) -> u8 {
     let color = match args.color {
         ColorChoice::Always => true,
         ColorChoice::Never => false,
+        // NO_COLOR, CLICOLOR, CLICOLOR_FORCE, TERM and the terminal check, per anstream.
         ColorChoice::Auto => {
-            std::io::stdout().is_terminal() && std::env::var_os("NO_COLOR").is_none()
+            anstream::AutoStream::choice(&std::io::stdout()) != anstream::ColorChoice::Never
         }
     };
     let text = render::render(&out.diagnostics, &out.sources, args.format, color);

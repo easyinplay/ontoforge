@@ -24,6 +24,7 @@ walkdir.workspace = true
 camino.workspace = true
 regex.workspace = true
 chrono.workspace = true
+heck.workspace = true
 
 [dev-dependencies]
 insta.workspace = true

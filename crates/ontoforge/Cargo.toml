@@ -25,6 +25,7 @@ miette.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 camino.workspace = true
+anstream.workspace = true
 
 [dev-dependencies]
 insta.workspace = true
