@@ -2,6 +2,8 @@
 //! structural checks V09 and V12 for parameters, rules and value sources.
 
 use ontoforge_schema::diag::{Diagnostic, codes};
+use ontoforge_schema::ir::BaseType;
+use ontoforge_schema::ir::basetype::{ValueClass, check_literal, value_class};
 use ontoforge_schema::{LoadOutput, load_from_memory};
 use serde_json::{Value, json};
 
@@ -15,6 +17,8 @@ properties:
   status: { type: string }
   delayMinutes: { type: integer }
   tags: { type: array, items: string }
+  speed: { type: double }
+  ceiling: { type: long }
 ---
 kind: ObjectType
 apiName: Pilot
@@ -282,4 +286,400 @@ rules:
     let d = only(&out);
     assert_eq!(d.code, codes::V06);
     assert_eq!((d.line, d.column), (9, 19));
+}
+
+// ---------------------------------------------------------------------------
+// Structural checks (Task 2)
+// ---------------------------------------------------------------------------
+
+/// Parameters shared by most checks; every line is indented for `parameters:`.
+const PARAMS: &str = "  flight: { type: { objectReference: Flight }, required: true }
+  pilot: { type: { objectReference: Pilot }, required: true }
+  n: { type: integer }
+  s: { type: string }
+  sh: { type: short }
+  fl: { type: float }
+  lg: { type: long }
+  tags: { type: array, items: string }
+  nums: { type: array, items: integer }
+";
+
+/// An action with the given indented parameter lines and rule lines.
+fn probe(params: &str, rules: &str) -> String {
+    format!("kind: ActionType\napiName: probe\nparameters:\n{params}rules:\n{rules}")
+}
+
+/// Load `PARAMS` plus `rules`, and return the single diagnostic with `code`.
+fn single(rules: &str, code: &str) -> (String, Diagnostic) {
+    let text = probe(PARAMS, rules);
+    let out = load(&text);
+    let d = only(&out).clone();
+    assert_eq!(d.code, code, "{d:#?}");
+    (text, d)
+}
+
+#[test]
+fn literal_validation() {
+    let ok = |v: Value, t: BaseType, items: Option<BaseType>| {
+        let r = check_literal(&v, t, items);
+        assert!(r.is_ok(), "{v} as {t:?}: {r:?}");
+    };
+    let bad = |v: Value, t: BaseType, items: Option<BaseType>| {
+        let r = check_literal(&v, t, items);
+        assert!(r.is_err(), "{v} as {t:?} should be rejected");
+    };
+    bad(json!(300), BaseType::Byte, None);
+    ok(json!(127), BaseType::Byte, None);
+    bad(json!(1_099_511_627_776_i64), BaseType::Integer, None);
+    ok(json!(2_147_483_647), BaseType::Integer, None);
+    bad(json!(1.5), BaseType::Integer, None);
+    ok(json!(1.5), BaseType::Double, None);
+    bad(json!("1.5"), BaseType::Float, None);
+    ok(json!("12.50"), BaseType::Decimal, None);
+    bad(json!("twelve"), BaseType::Decimal, None);
+    bad(json!(true), BaseType::String, None);
+    bad(json!("yes"), BaseType::Boolean, None);
+    ok(json!(false), BaseType::Boolean, None);
+    bad(json!("2026-02-30"), BaseType::Date, None);
+    ok(json!("2026-10-15"), BaseType::Date, None);
+    bad(json!("not-a-time"), BaseType::Timestamp, None);
+    ok(json!("2026-10-15T08:00:00Z"), BaseType::Timestamp, None);
+    bad(json!("91,0"), BaseType::Geopoint, None);
+    bad(json!("0,181"), BaseType::Geopoint, None);
+    ok(json!("57.6,10.4"), BaseType::Geopoint, None);
+    ok(json!(["a", "b"]), BaseType::Array, Some(BaseType::String));
+    bad(json!(["a", 1]), BaseType::Array, Some(BaseType::String));
+    bad(json!("a"), BaseType::Array, Some(BaseType::String));
+    bad(Value::Null, BaseType::String, None);
+}
+
+#[test]
+fn value_class_folds_numeric_types() {
+    assert_eq!(value_class(BaseType::Byte), value_class(BaseType::Integer));
+    assert_eq!(value_class(BaseType::Short), value_class(BaseType::Integer));
+    assert_eq!(value_class(BaseType::Float), value_class(BaseType::Double));
+    assert_ne!(value_class(BaseType::Long), value_class(BaseType::Integer));
+    assert_ne!(
+        value_class(BaseType::Decimal),
+        value_class(BaseType::Double)
+    );
+    assert_eq!(value_class(BaseType::Array), ValueClass::Array);
+
+    let compatible = "  - kind: modifyObject
+    object: flight
+    properties:
+      delayMinutes: { param: sh }
+      speed: { param: fl }
+      tags: { param: tags }
+";
+    let out = load(&probe(PARAMS, compatible));
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+
+    let (_, d) = single(
+        "  - kind: modifyObject
+    object: flight
+    properties:
+      delayMinutes: { param: lg }
+",
+        codes::V12,
+    );
+    assert!(d.message.contains("long"), "{}", d.message);
+    assert!(d.message.contains("integer"), "{}", d.message);
+
+    let (_, d) = single(
+        "  - kind: modifyObject
+    object: flight
+    properties:
+      tags: { param: nums }
+",
+        codes::V12,
+    );
+    assert!(d.message.contains("array"), "{}", d.message);
+}
+
+#[test]
+fn references_must_exist() {
+    let create = |object_type: &str, extra: &str| {
+        format!(
+            "  - kind: createObject
+    objectType: {object_type}
+    properties:
+      recordId: {{ param: s }}
+      aircraftTailNumber: {{ param: s }}
+{extra}"
+        )
+    };
+    let modify = |props: &str| {
+        format!("  - kind: modifyObject\n    object: flight\n    properties:\n      {props}\n")
+    };
+    let link = |name: &str, from: &str| {
+        format!("  - kind: addLink\n    link: {name}\n    from: {from}\n    to: pilot\n")
+    };
+    // (rules, text the diagnostic must cover, expected suggestion)
+    let cases: Vec<(String, &str, Option<&str>)> = vec![
+        (
+            create("MaintenanceRecrd", ""),
+            "MaintenanceRecrd",
+            Some("MaintenanceRecord"),
+        ),
+        (
+            create("MaintenanceRecord", "      sumary: { param: s }\n"),
+            "sumary",
+            Some("summary"),
+        ),
+        (
+            "  - kind: modifyObject\n    object: flihgt\n    properties:\n      status: { static: x }\n"
+                .to_owned(),
+            "flihgt",
+            Some("flight"),
+        ),
+        (modify("statuss: { static: x }"), "statuss", Some("status")),
+        (
+            "  - kind: deleteObject\n    object: planet\n".to_owned(),
+            "planet",
+            None,
+        ),
+        (link("flightCrw", "flight"), "flightCrw", Some("flightCrew")),
+        (link("flightCrew", "flihgt"), "flihgt", Some("flight")),
+        (modify("status: { param: missing }"), "missing", None),
+    ];
+    for (rules, covered, suggestion) in cases {
+        let text = probe(PARAMS, &rules);
+        let out = load(&text);
+        let d = only(&out);
+        assert_eq!(d.code, codes::V09, "{covered}: {d:#?}");
+        assert_eq!(spanned(&text, d), covered, "{d:#?}");
+        let expected = suggestion.map(|s| format!("did you mean `{s}`?"));
+        assert_eq!(d.help, expected, "{covered}");
+    }
+}
+
+#[test]
+fn object_reference_target_must_exist() {
+    let text = probe(
+        "  flight: { type: { objectReference: Flght } }\n",
+        "  - kind: deleteObject\n    object: flight\n",
+    );
+    let out = load(&text);
+    let d = only(&out);
+    assert_eq!(d.code, codes::V09);
+    assert_eq!(spanned(&text, d), "Flght");
+    assert_eq!(d.help.as_deref(), Some("did you mean `Flight`?"));
+}
+
+#[test]
+fn create_must_assign_primary_key_and_required() {
+    let (text, d) = single(
+        "  - kind: createObject
+    objectType: MaintenanceRecord
+    properties:
+      summary: { param: s }
+",
+        codes::V12,
+    );
+    assert!(d.message.contains("`recordId`"), "{}", d.message);
+    assert!(d.message.contains("`aircraftTailNumber`"), "{}", d.message);
+    assert!(!d.message.contains("`summary`"), "{}", d.message);
+    assert_eq!(spanned(&text, &d), "properties");
+}
+
+#[test]
+fn modify_cannot_assign_primary_key() {
+    let (text, d) = single(
+        "  - kind: modifyObject
+    object: flight
+    properties:
+      flightId: { param: s }
+",
+        codes::V12,
+    );
+    assert!(d.message.contains("flightId"), "{}", d.message);
+    assert_eq!(spanned(&text, &d), "flightId");
+}
+
+#[test]
+fn modify_object_param_must_be_object_reference() {
+    let (text, d) = single(
+        "  - kind: modifyObject
+    object: n
+    properties:
+      status: { static: x }
+",
+        codes::V12,
+    );
+    assert!(d.message.contains("objectReference"), "{}", d.message);
+    assert_eq!(spanned(&text, &d), "n");
+
+    let (text, d) = single("  - kind: deleteObject\n    object: s\n", codes::V12);
+    assert_eq!(spanned(&text, &d), "s");
+}
+
+#[test]
+fn add_link_params_must_match_link_ends() {
+    let swapped = probe(
+        PARAMS,
+        "  - kind: addLink\n    link: flightCrew\n    from: pilot\n    to: flight\n",
+    );
+    let out = load(&swapped);
+    assert_eq!(out.diagnostics.len(), 2, "{:#?}", out.diagnostics);
+    for d in &out.diagnostics {
+        assert_eq!(d.code, codes::V12);
+    }
+    assert_eq!(spanned(&swapped, &out.diagnostics[0]), "pilot");
+    assert!(out.diagnostics[0].message.contains("Flight"));
+
+    let (text, d) = single(
+        "  - kind: removeLink\n    link: flightCrew\n    from: s\n    to: pilot\n",
+        codes::V12,
+    );
+    assert_eq!(spanned(&text, &d), "s");
+}
+
+#[test]
+fn current_user_only_on_string() {
+    let (text, d) = single(
+        "  - kind: modifyObject
+    object: flight
+    properties:
+      delayMinutes: { currentUser: {} }
+",
+        codes::V12,
+    );
+    assert!(d.message.contains("string"), "{}", d.message);
+    assert_eq!(spanned(&text, &d), "{}");
+}
+
+#[test]
+fn current_time_only_on_timestamp() {
+    let (text, d) = single(
+        "  - kind: modifyObject
+    object: flight
+    properties:
+      status: { currentTime: {} }
+",
+        codes::V12,
+    );
+    assert!(d.message.contains("timestamp"), "{}", d.message);
+    assert_eq!(spanned(&text, &d), "{}");
+}
+
+#[test]
+fn object_reference_param_cannot_be_assigned() {
+    let (text, d) = single(
+        "  - kind: modifyObject
+    object: flight
+    properties:
+      status: { param: flight }
+",
+        codes::V12,
+    );
+    assert!(d.help.as_deref().unwrap_or_default().contains("string"));
+    assert_eq!(spanned(&text, &d), "flight");
+}
+
+#[test]
+fn static_null_is_rejected() {
+    let (text, d) = single(
+        "  - kind: modifyObject
+    object: flight
+    properties:
+      status: { static: null }
+",
+        codes::V12,
+    );
+    assert_eq!(spanned(&text, &d), "null");
+}
+
+#[test]
+fn static_literal_must_match_property_type() {
+    for literal in ["abc", "2147483648", "1.5"] {
+        let rules = format!(
+            "  - kind: modifyObject
+    object: flight
+    properties:
+      delayMinutes: {{ static: {literal} }}
+"
+        );
+        let (text, d) = single(&rules, codes::V12);
+        assert_eq!(spanned(&text, &d), literal);
+    }
+}
+
+#[test]
+fn parameter_default_must_be_valid_literal() {
+    let rules = "  - kind: deleteObject\n    object: flight\n";
+    let text = probe(
+        "  flight: { type: { objectReference: Flight } }\n  n: { type: integer, default: abc }\n",
+        rules,
+    );
+    let out = load(&text);
+    let d = only(&out);
+    assert_eq!(d.code, codes::V12);
+    assert_eq!(spanned(&text, d), "abc");
+
+    let ok = probe(
+        "  flight: { type: { objectReference: Flight } }\n  n: { type: integer, default: 3 }\n",
+        rules,
+    );
+    assert!(load(&ok).diagnostics.is_empty());
+}
+
+#[test]
+fn object_reference_param_cannot_have_default() {
+    let text = probe(
+        "  flight: { type: { objectReference: Flight }, default: F1 }\n",
+        "  - kind: deleteObject\n    object: flight\n",
+    );
+    let out = load(&text);
+    let d = only(&out);
+    assert_eq!(d.code, codes::V12);
+    assert_eq!(spanned(&text, d), "F1");
+}
+
+#[test]
+fn parameter_items_follow_the_property_rules() {
+    let rules = "  - kind: deleteObject\n    object: flight\n";
+    let flight = "  flight: { type: { objectReference: Flight } }\n";
+
+    let text = probe(&format!("{flight}  a: {{ type: array }}\n"), rules);
+    let out = load(&text);
+    assert_eq!(only(&out).code, codes::V05);
+
+    let text = probe(
+        &format!("{flight}  b: {{ type: string, items: string }}\n"),
+        rules,
+    );
+    let out = load(&text);
+    assert_eq!(only(&out).code, codes::V06);
+}
+
+#[test]
+fn action_requires_at_least_one_rule() {
+    let text = "kind: ActionType\napiName: nothing\nrules: []\n";
+    let out = load(text);
+    let d = only(&out);
+    assert_eq!(d.code, codes::V12);
+    assert_eq!((d.file.as_str(), d.line), ("actions.yaml", 3));
+}
+
+#[test]
+fn empty_condition_or_failure_message_is_v12() {
+    let text = "kind: ActionType
+apiName: gated
+parameters:
+  flight: { type: { objectReference: Flight } }
+rules:
+  - kind: deleteObject
+    object: flight
+submissionCriteria:
+  - condition: \"\"
+    failureMessage: Not allowed
+  - condition: \"true\"
+    failureMessage: \"  \"
+";
+    let out = load(text);
+    assert_eq!(out.diagnostics.len(), 2, "{:#?}", out.diagnostics);
+    assert!(out.diagnostics.iter().all(|d| d.code == codes::V12));
+    assert_eq!(out.diagnostics[0].line, 9);
+    assert_eq!(out.diagnostics[1].line, 12);
 }

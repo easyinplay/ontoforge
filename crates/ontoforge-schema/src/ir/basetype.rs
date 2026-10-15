@@ -79,3 +79,33 @@ pub fn is_title_suitable(t: BaseType, items: Option<BaseType>) -> bool {
         _ => true,
     }
 }
+
+/// Types that accept each other's values (D-07). Byte, short and integer share a
+/// class, as do float and double; every other type is its own class.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ValueClass {
+    Integer,
+    Long,
+    Double,
+    Decimal,
+    String,
+    Boolean,
+    Date,
+    Timestamp,
+    Geopoint,
+    Array,
+}
+
+/// RED stub, replaced in the GREEN commit.
+pub fn value_class(_t: BaseType) -> ValueClass {
+    ValueClass::String
+}
+
+/// RED stub, replaced in the GREEN commit.
+pub fn check_literal(
+    _v: &serde_json::Value,
+    _t: BaseType,
+    _items: Option<BaseType>,
+) -> Result<(), String> {
+    Ok(())
+}
