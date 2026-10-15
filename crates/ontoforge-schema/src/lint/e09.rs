@@ -30,7 +30,61 @@ impl LintRule for E09 {
     }
 
     fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {
-        let _ = (cx, out);
+        for object in cx.ontology.object_types.values() {
+            let def = DefKey {
+                kind: DefKind::ObjectType,
+                api_name: object.api_name.to_string(),
+            };
+            let finding =
+                |path: Vec<Seg>, message: String, help: Option<String>, severity| Finding {
+                    def: def.clone(),
+                    path,
+                    part: Part::Value,
+                    message,
+                    help,
+                    severity,
+                };
+            let key = |name: &str| Seg::Key(name.to_owned());
+
+            if let Some(pk) = object.properties.get(&object.primary_key)
+                && pk_suitability(pk.base_type) == PkSuitability::Discouraged
+            {
+                out.push(finding(
+                    vec![key("primaryKey")],
+                    format!(
+                        "primary key `{}` is a {}, which is discouraged",
+                        object.primary_key,
+                        pk.base_type.as_str()
+                    ),
+                    Some("prefer string, integer or short for a primary key".to_owned()),
+                    Some(Severity::Warning),
+                ));
+            }
+            if let Some(title) = &object.title_key
+                && let Some(prop) = object.properties.get(title)
+                && !is_title_suitable(prop.base_type, prop.items)
+            {
+                out.push(finding(
+                    vec![key("titleKey")],
+                    format!(
+                        "title key `{title}` is a {}, which cannot serve as a title",
+                        prop.base_type.as_str()
+                    ),
+                    None,
+                    None,
+                ));
+            }
+            for (name, prop) in &object.properties {
+                if prop.base_type == BaseType::Array && prop.items == Some(BaseType::Array) {
+                    out.push(finding(
+                        vec![key("properties"), key(name.as_str()), key("items")],
+                        format!("array property `{name}` has array items; nested arrays are not supported"),
+                        Some("use a scalar element type, or model the inner list as its own object type".to_owned()),
+                        None,
+                    ));
+                }
+            }
+        }
     }
 }
 

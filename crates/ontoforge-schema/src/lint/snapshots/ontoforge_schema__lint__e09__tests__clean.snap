@@ -1,0 +1,5 @@
+---
+source: crates/ontoforge-schema/src/lint/e09.rs
+expression: found
+---
+[]

@@ -32,8 +32,121 @@ impl LintRule for E08 {
     }
 
     fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {
-        let _ = (cx, out);
+        for action in cx.ontology.action_types.values() {
+            check_action(cx, action, out);
+        }
     }
+}
+
+fn key(name: &str) -> Seg {
+    Seg::Key(name.to_owned())
+}
+
+fn check_action(cx: &LintCx<'_>, action: &ActionType, out: &mut Vec<Finding>) {
+    let def = DefKey {
+        kind: DefKind::ActionType,
+        api_name: action.api_name.to_string(),
+    };
+    let finding = |i: usize, field: &str, message: String, help: Option<String>| Finding {
+        def: def.clone(),
+        path: vec![key("rules"), Seg::Index(i), key(field)],
+        part: Part::Value,
+        message,
+        help,
+        severity: None,
+    };
+    // Parameter name to the index of the rule that deleted it.
+    let mut deleted: HashMap<&str, usize> = HashMap::new();
+    // Object type and primary key source of every createObject so far.
+    let mut created: Vec<(&str, &ValueSource)> = Vec::new();
+
+    for (i, rule) in action.rules.iter().enumerate() {
+        match rule {
+            Rule::AddLink(r) | Rule::RemoveLink(r) => {
+                let Some(link) = cx.ontology.link_types.get(r.link.as_str()) else {
+                    continue;
+                };
+                let cardinality = match link.cardinality {
+                    Cardinality::ManyToMany => continue,
+                    Cardinality::OneToOne => "oneToOne",
+                    Cardinality::OneToMany => "oneToMany",
+                };
+                let verb = if matches!(rule, Rule::AddLink(_)) {
+                    "addLink"
+                } else {
+                    "removeLink"
+                };
+                let help = match &link.to.foreign_key {
+                    Some(fk) => format!(
+                        "use modifyObject on `{}` to set `{fk}` instead",
+                        link.to.object_type
+                    ),
+                    None => format!(
+                        "use modifyObject on `{}` to set the foreign key instead",
+                        link.to.object_type
+                    ),
+                };
+                out.push(finding(
+                    i,
+                    "link",
+                    format!(
+                        "{verb} only works on manyToMany links, but `{}` is {cardinality}",
+                        r.link
+                    ),
+                    Some(help),
+                ));
+            }
+            Rule::ModifyObject(r) => {
+                if let Some(&j) = deleted.get(r.object.as_str()) {
+                    let message = format!(
+                        "`{}` is modified here but rules[{j}] already deletes it",
+                        r.object
+                    );
+                    out.push(finding(i, "object", message, None));
+                }
+            }
+            Rule::DeleteObject(r) => {
+                if let Some(&j) = deleted.get(r.object.as_str()) {
+                    let message = format!(
+                        "`{}` is deleted here but rules[{j}] already deletes it",
+                        r.object
+                    );
+                    out.push(finding(i, "object", message, None));
+                } else {
+                    deleted.insert(r.object.as_str(), i);
+                }
+            }
+            Rule::CreateObject(r) => {
+                if let Some(j) = duplicate_create(cx, r, &created) {
+                    let message = format!(
+                        "rules[{j}] already creates a `{}` with the same primary key; the object would be created twice",
+                        r.object_type
+                    );
+                    out.push(finding(i, "objectType", message, None));
+                } else if let Some(source) = primary_key_source(cx, r) {
+                    created.push((r.object_type.as_str(), source));
+                }
+            }
+        }
+    }
+}
+
+/// Where the new object's primary key comes from, if the rule sets it.
+fn primary_key_source<'a>(cx: &LintCx<'_>, rule: &'a CreateObjectRule) -> Option<&'a ValueSource> {
+    let object = cx.ontology.object_types.get(rule.object_type.as_str())?;
+    rule.properties.get(object.primary_key.as_str())
+}
+
+/// Index of an earlier createObject of the same type with the same key source.
+fn duplicate_create(
+    cx: &LintCx<'_>,
+    rule: &CreateObjectRule,
+    created: &[(&str, &ValueSource)],
+) -> Option<usize> {
+    let source = primary_key_source(cx, rule)?;
+    created
+        .iter()
+        .position(|(ty, other)| *ty == rule.object_type.as_str() && *other == source)
 }
 
 #[cfg(test)]
