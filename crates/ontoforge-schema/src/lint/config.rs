@@ -24,7 +24,7 @@ use toml::Spanned;
 use toml::de::{DeString, DeTable, DeValue};
 
 use super::{KNOWN_RULE_IDS, Level, LintRule, registry};
-use crate::diag::{Diagnostic, Severity, SourceLocation, codes, did_you_mean};
+use crate::diag::{Diagnostic, Severity, SourceLocation, codes, did_you_mean, offset_to_line_col};
 use crate::loader::{MAX_FILE_BYTES, SourceMap};
 
 /// File name of the configuration at the ontology root.
@@ -126,14 +126,12 @@ fn levels_help() -> String {
 impl Parser<'_> {
     fn at(&self, span: &Range<usize>) -> SourceLocation {
         let start = self.text.floor_char_boundary(span.start);
-        let before = &self.text[..start];
-        let line = before.matches('\n').count() + 1;
-        let column = before.chars().rev().take_while(|c| *c != '\n').count() + 1;
+        let (line, column) = offset_to_line_col(self.text, start);
         let room = (self.text.len() - start).max(1);
         SourceLocation {
             file: self.file.to_owned(),
-            line: u32::try_from(line).unwrap_or(u32::MAX),
-            column: u32::try_from(column).unwrap_or(u32::MAX),
+            line,
+            column,
             offset: start,
             length: span.end.saturating_sub(start).clamp(1, room),
         }

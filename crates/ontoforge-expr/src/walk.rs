@@ -6,6 +6,7 @@
 //! thread and only ever sees prechecked input.
 
 use cel::common::ast::{EntryExpr, Expr, IdedExpr, SourceInfo};
+use ontoforge_schema::diag::offset_to_line_col;
 
 /// A member path rooted at a free variable, e.g. `params.items`.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -29,21 +30,12 @@ pub fn member_paths(program: &cel::Program, src: &str) -> Vec<MemberPath> {
     walker.out
 }
 
-/// Converts a 0-based UTF-8 byte offset (the unit of `cel`'s `SourceInfo::offset_for`,
-/// verified against 0.15.0 with a multi-byte literal) into a 1-based `(line, column)`
-/// pair; the column is counted in chars.
-#[must_use]
-pub fn offset_to_line_col(src: &str, offset: usize) -> (usize, usize) {
-    let (mut line, mut column) = (1, 1);
-    for (_, c) in src.char_indices().take_while(|&(i, _)| i < offset) {
-        if c == '\n' {
-            line += 1;
-            column = 1;
-        } else {
-            column += 1;
-        }
-    }
-    (line, column)
+/// 1-based `(line, column)` of a `cel` source offset, column counted in chars.
+/// `SourceInfo::offset_for` yields 0-based UTF-8 byte offsets (verified against 0.15.0
+/// with a multi-byte literal), which is what `offset_to_line_col` takes.
+pub(crate) fn char_pos(src: &str, offset: usize) -> (usize, usize) {
+    let (line, column) = offset_to_line_col(src, offset);
+    (line as usize, column as usize)
 }
 
 struct Walker<'a> {
@@ -58,7 +50,7 @@ impl<'a> Walker<'a> {
     fn pos(&self, ids: &[u64]) -> Option<(usize, usize)> {
         ids.iter().find_map(|&id| {
             let (start, _) = self.info.offset_for(id)?;
-            Some(offset_to_line_col(self.src, start as usize))
+            Some(char_pos(self.src, start as usize))
         })
     }
 

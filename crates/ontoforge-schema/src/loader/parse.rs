@@ -10,6 +10,8 @@ use serde::de::{self, MapAccess, SeqAccess, Visitor};
 use serde::{Deserialize, Deserializer};
 use serde_saphyr::{Budget, DuplicateKeyPolicy, Location, MergeKeyPolicy, Options, Spanned};
 
+use crate::diag::offset_to_line_col;
+
 /// Maximum structural nesting depth accepted in definition files.
 const MAX_DEPTH: usize = 32;
 
@@ -183,12 +185,11 @@ fn precheck_json(text: &str) -> Result<(), ParseError> {
         .map_err(|e| {
             let bom = text.len() - body.len();
             let offset = offset_of(body, e.line(), e.column());
-            let line_start = body[..offset].rfind('\n').map_or(0, |i| i + 1);
             ParseError {
                 message: json_message(&e.to_string()),
                 line: u64::try_from(e.line()).unwrap_or(0),
                 // serde_json counts bytes; the diagnostic column counts characters.
-                column: u64::try_from(body[line_start..offset].chars().count() + 1).unwrap_or(0),
+                column: u64::from(offset_to_line_col(body, offset).1),
                 offset: bom + offset,
                 length: 1,
             }

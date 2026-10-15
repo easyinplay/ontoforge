@@ -17,7 +17,7 @@ use cel::common::ast::operators as op;
 use cel::common::ast::{CallExpr, Expr, IdedExpr, LiteralValue, SourceInfo};
 use ontoforge_schema::ir::{ActionType, BaseType, Ontology, ParamType};
 
-use crate::walk::offset_to_line_col;
+use crate::walk::char_pos;
 
 /// An inferred type.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -159,7 +159,7 @@ impl<'a> Inferer<'a> {
         let pos = self
             .info
             .offset_for(id)
-            .map(|(start, _)| offset_to_line_col(self.src, start as usize));
+            .map(|(start, _)| char_pos(self.src, start as usize));
         self.issues.push(TypeIssue { message, pos });
     }
 

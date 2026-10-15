@@ -18,6 +18,21 @@ pub struct Span {
     pub length: usize,
 }
 
+/// Converts a 0-based UTF-8 byte offset into a 1-based `(line, column)` pair, with the
+/// column counted in chars. An offset inside a multi-byte char is moved back to the
+/// start of that char; one past the end is clamped to the end of `text`.
+#[must_use]
+pub fn offset_to_line_col(text: &str, byte_offset: usize) -> (u32, u32) {
+    let start = text.floor_char_boundary(byte_offset);
+    let before = &text[..start];
+    let line = before.matches('\n').count() + 1;
+    let column = before.chars().rev().take_while(|c| *c != '\n').count() + 1;
+    (
+        u32::try_from(line).unwrap_or(u32::MAX),
+        u32::try_from(column).unwrap_or(u32::MAX),
+    )
+}
+
 /// A resolved position inside a source file.
 ///
 /// `file` is relative to the ontology root and always uses `/` separators.
@@ -216,6 +231,17 @@ mod tests {
             Some("primaryKey")
         );
         assert_eq!(did_you_mean("zzzz", names.iter().copied()), None);
+    }
+
+    #[test]
+    fn offset_to_line_col_takes_byte_offsets_and_counts_char_columns() {
+        assert_eq!(offset_to_line_col("ab\ncd", 0), (1, 1));
+        assert_eq!(offset_to_line_col("ab\ncd", 4), (2, 2));
+        // `é` is two bytes: byte offset 2 is the char after it, in column 2.
+        assert_eq!(offset_to_line_col("éa", 2), (1, 2));
+        // Mid-char and past-the-end offsets are clamped instead of panicking.
+        assert_eq!(offset_to_line_col("éa", 1), (1, 1));
+        assert_eq!(offset_to_line_col("ab", 99), (1, 3));
     }
 
     #[test]

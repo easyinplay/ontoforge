@@ -195,8 +195,6 @@ fn flat_recursive_forms_do_not_crash_on_a_small_stack() {
 mod walk {
     use ontoforge_expr::{analyze, member_paths};
 
-    use ontoforge_expr::walk::offset_to_line_col;
-
     /// `(dotted path, position)` for each member path, via the isolated compile.
     fn paths(src: &str) -> Vec<(String, Option<(usize, usize)>)> {
         analyze(src, |p| member_paths(p, src))
@@ -255,14 +253,6 @@ mod walk {
         assert_eq!(found[1], ("params.b".to_owned(), Some((2, 3))));
         let found = paths("'é' == params.x");
         assert_eq!(found, [("params.x".to_owned(), Some((1, 8)))]);
-    }
-
-    #[test]
-    fn offset_to_line_col_takes_byte_offsets_and_counts_char_columns() {
-        assert_eq!(offset_to_line_col("ab\ncd", 0), (1, 1));
-        assert_eq!(offset_to_line_col("ab\ncd", 4), (2, 2));
-        // `é` is two bytes: byte offset 2 is the char after it, in column 2.
-        assert_eq!(offset_to_line_col("éa", 2), (1, 2));
     }
 
     #[test]
