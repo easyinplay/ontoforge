@@ -1,0 +1,48 @@
+{
+  "contract": "1.0.0",
+  "flavor": "core",
+  "milestone": null,
+  "phases": [
+    {
+      "number": "1",
+      "name": "Workspace, Schema & Lint",
+      "status": "pending"
+    },
+    {
+      "number": "2",
+      "name": "Storage & Edit Log",
+      "status": "pending"
+    },
+    {
+      "number": "3",
+      "name": "Action Execution",
+      "status": "pending"
+    },
+    {
+      "number": "4",
+      "name": "Object Set Query",
+      "status": "pending"
+    },
+    {
+      "number": "5",
+      "name": "Auth & RBAC",
+      "status": "pending"
+    },
+    {
+      "number": "6",
+      "name": "REST API & Clients",
+      "status": "pending"
+    },
+    {
+      "number": "7",
+      "name": "MCP Server",
+      "status": "pending"
+    }
+  ],
+  "next": {
+    "command": "/gsd:progress --next",
+    "label": "Advance to the next step",
+    "reason": "Phase 1 of 7 · 0% · executing"
+  },
+  "updated_at": "2026-10-15T13:53:17.938Z"
+}
