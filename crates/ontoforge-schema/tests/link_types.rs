@@ -225,7 +225,7 @@ to: { objectType: Pilot, apiName: assignedFlights, foreignKey: employeeId }
     );
     let d = only(&out);
     assert_eq!(d.code, codes::V11);
-    assert_eq!((d.line, d.column), (5, 62));
+    assert_eq!((d.line, d.column), (5, 64));
     assert!(d.message.contains("manyToMany"), "{}", d.message);
 }
 
@@ -246,7 +246,7 @@ fn foreign_key_on_from_end_is_v11() {
     ));
     let d = only(&out);
     assert_eq!(d.code, codes::V11);
-    assert_eq!((d.line, d.column), (4, 62));
+    assert_eq!((d.line, d.column), (4, 69));
     assert!(d.help.as_deref().unwrap().contains("`to`"), "{d:?}");
 }
 
@@ -263,7 +263,7 @@ fn foreign_key_type_must_match_primary_key() {
     ]);
     let d = only(&out);
     assert_eq!(d.code, codes::V11);
-    assert_eq!((d.line, d.column), (5, 74));
+    assert_eq!((d.line, d.column), (5, 66));
     for needle in ["integer", "string", "Airport.code", "departureAirportCode"] {
         assert!(d.message.contains(needle), "{needle}: {}", d.message);
     }
@@ -274,7 +274,7 @@ fn end_name_clashes_with_property_is_v08() {
     let out = load(&ONE_TO_MANY.replace("apiName: departureAirport,", "apiName: status,"));
     let d = only(&out);
     assert_eq!(d.code, codes::V08);
-    assert_eq!((d.line, d.column), (5, 40));
+    assert_eq!((d.line, d.column), (5, 36));
     assert!(d.message.contains("status"), "{}", d.message);
     assert!(d.message.contains("Flight"), "{}", d.message);
 }
@@ -303,7 +303,7 @@ fn duplicate_end_names_on_same_type_is_v08() {
     assert_eq!(d.code, codes::V08);
     // Links are visited in apiName order, so the later one, flightDepartureAirport
     // (the first document of the file), is the one reported.
-    assert_eq!((d.line, d.column), (5, 40));
+    assert_eq!((d.line, d.column), (5, 36));
     assert!(d.message.contains("flightArrivalAirport"), "{}", d.message);
     assert!(d.message.contains("`airport`"), "{}", d.message);
 }
@@ -338,7 +338,7 @@ fn self_link_ends_must_differ() {
     let out = self_link("reports", "reports");
     let d = only(&out);
     assert_eq!(d.code, codes::V08);
-    assert_eq!((d.line, d.column), (5, 40));
+    assert_eq!((d.line, d.column), (5, 38));
     assert!(d.message.contains("Employee"), "{}", d.message);
 }
 

@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V11",
+    "severity": "error",
+    "message": "foreignKey `departureAirportCode` has type `integer`, but the primary key `Airport.code` has type `string`",
+    "file": "defs.yaml",
+    "line": 19,
+    "column": 66,
+    "span": {
+      "offset": 484,
+      "length": 20
+    },
+    "help": "a foreign key must have exactly the type of the primary key it references"
+  }
+]

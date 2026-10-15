@@ -1,0 +1,2 @@
+apiName: v11ManyToManyCase
+description: Fixture for ONT-V11, a manyToMany link declares a foreignKey.

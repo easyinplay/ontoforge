@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V09",
+    "severity": "error",
+    "message": "`to` end of link `flightDepartureAirport` refers to unknown object type `Flght`",
+    "file": "defs.yaml",
+    "line": 19,
+    "column": 19,
+    "span": {
+      "offset": 436,
+      "length": 5
+    },
+    "help": "did you mean `Flight`?"
+  }
+]

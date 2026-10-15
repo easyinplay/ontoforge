@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V11",
+    "severity": "error",
+    "message": "manyToMany link `flightCrew` must not declare a `foreignKey`",
+    "file": "defs.yaml",
+    "line": 17,
+    "column": 64,
+    "span": {
+      "offset": 399,
+      "length": 10
+    },
+    "help": "remove it; the system manages the join for manyToMany links"
+  }
+]
