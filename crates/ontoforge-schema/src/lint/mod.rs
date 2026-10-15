@@ -12,6 +12,8 @@ use crate::loader::SourceMap;
 use crate::loader::sourcemap::{DefKey, Part, Seg};
 
 pub mod config;
+mod e08;
+mod e09;
 mod naming;
 mod structure;
 pub mod words;
@@ -119,7 +121,7 @@ pub const KNOWN_RULE_IDS: [&str; 13] = [
 
 /// All rules, E rules first. The W rules come from `naming` and `structure`.
 pub fn registry() -> Vec<&'static dyn LintRule> {
-    let mut rules: Vec<&'static dyn LintRule> = Vec::new();
+    let mut rules: Vec<&'static dyn LintRule> = vec![&e08::RULE, &e09::RULE];
     rules.extend(naming::rules());
     rules.extend(structure::rules());
     rules
