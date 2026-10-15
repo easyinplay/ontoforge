@@ -18,6 +18,9 @@ pub enum ExprError {
     TooDeep {
         depth: usize,
     },
+    /// The CEL parser's own recursion limit was reached (long unparenthesized
+    /// chains such as nested `? :`), which the nesting precheck does not count.
+    ParserLimit,
     /// 1-based position relative to the expression text.
     Syntax {
         line: usize,
@@ -44,6 +47,9 @@ impl fmt::Display for ExprError {
                 column,
                 message,
             } => write!(f, "syntax error at {line}:{column}: {message}"),
+            Self::ParserLimit => f.write_str(
+                "expression nests too deeply for the CEL parser; split it into several conditions",
+            ),
             Self::Internal => f.write_str("internal error while analyzing expression"),
         }
     }
@@ -75,6 +81,17 @@ where
 fn compile_and_run<R>(src: &str, f: impl FnOnce(&cel::Program) -> R) -> Result<R, ExprError> {
     match cel::Program::compile(src) {
         Ok(program) => Ok(f(&program)),
+        // `cel` 0.15 reports its recursion limit as a debug-formatted
+        // `OtherError(ParseError { .. })`, sometimes after follow-on errors such as
+        // "Incomplete `ExprContext`" (WR-08).
+        Err(errors)
+            if errors
+                .errors
+                .iter()
+                .any(|e| e.msg.contains("Recursion limit of")) =>
+        {
+            Err(ExprError::ParserLimit)
+        }
         Err(errors) => Err(errors.errors.first().map_or_else(
             || ExprError::Syntax {
                 line: 1,

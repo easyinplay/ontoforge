@@ -211,11 +211,38 @@ fn offset_of(text: &str, line: usize, column: usize) -> usize {
 }
 
 /// Drop the trailing position the parsers append (` at line L, column C` for YAML,
-/// ` at line L column C` for JSON); the location is reported separately.
+/// ` at line L column C` for JSON); the location is reported separately. A position
+/// inside the message is kept (WR-08).
 fn strip_position(first_line: &str) -> String {
-    match first_line.rfind(" at line ") {
-        Some(i) => first_line[..i].to_owned(),
-        None => first_line.to_owned(),
+    static TRAILING: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(r"\s+at line \d+,? column \d+$").expect("valid regex")
+    });
+    TRAILING.replace(first_line, "").into_owned()
+}
+
+/// A readable message for a breached parser budget (`budget breached: Nodes { .. }`).
+fn budget_message(breach: &str) -> String {
+    let budget = Budget::default();
+    let name = breach.split([' ', '{']).next().unwrap_or(breach);
+    match name {
+        "Depth" => format!("document nests deeper than {MAX_DEPTH} levels"),
+        "Nodes" => format!(
+            "document has more than {} nodes; each use of a YAML alias counts again",
+            budget.max_nodes
+        ),
+        "Aliases" => format!(
+            "document uses YAML aliases more than {} times",
+            budget.max_aliases
+        ),
+        "Anchors" => format!(
+            "document defines more than {} YAML anchors",
+            budget.max_anchors
+        ),
+        "Events" => format!(
+            "document is too large to parse (more than {} parser events)",
+            budget.max_events
+        ),
+        other => format!("document exceeds a parser limit ({other})"),
     }
 }
 
@@ -236,8 +263,12 @@ fn clean_message(raw: &str) -> String {
         let key = rest.split(", set ").next().unwrap_or(rest);
         return format!("duplicate mapping key `{key}`");
     }
-    if message.starts_with("budget breached: Depth") {
-        return format!("document nests deeper than {MAX_DEPTH} levels");
+    if let Some(breach) = message.strip_prefix("budget breached: ") {
+        return budget_message(breach);
+    }
+    // Mapping keys are read as strings, so this is a `null:`, `~:` or empty key.
+    if message.starts_with("cannot deserialize null into string") {
+        return "a mapping key is null; write a name, or quote it (`\"null\"`) if the text null is meant".to_owned();
     }
     message
 }
@@ -290,6 +321,38 @@ mod tests {
         }
         let e = parse_documents(&text, false).unwrap_err();
         assert_eq!(e.message, "document nests deeper than 32 levels");
+    }
+
+    /// WR-08: only a trailing position is stripped.
+    #[test]
+    fn only_the_trailing_position_is_stripped() {
+        assert_eq!(strip_position("bad at line 3, column 4"), "bad");
+        assert_eq!(strip_position("bad at line 3 column 4"), "bad");
+        let inner = "x (defined at line 9, column 9) y";
+        assert_eq!(strip_position(inner), inner);
+    }
+
+    /// WR-08: an alias bomb names the node budget instead of a cut debug message.
+    #[test]
+    fn node_budget_message_is_readable() {
+        use std::fmt::Write as _;
+        let mut text = String::from("a: &a [x, x, x, x, x, x, x, x, x, x]\n");
+        for (name, prev) in [("b", "a"), ("c", "b"), ("d", "c"), ("e", "d"), ("f", "e")] {
+            let refs = vec![format!("*{prev}"); 10].join(", ");
+            writeln!(text, "{name}: &{name} [{refs}]").unwrap();
+        }
+        let e = parse_documents(&text, false).unwrap_err();
+        assert!(e.message.contains("nodes"), "{}", e.message);
+        assert!(!e.message.contains("budget breached"), "{}", e.message);
+        assert!(!e.message.contains("(used"), "{}", e.message);
+    }
+
+    /// WR-08: a null mapping key does not mention Rust types.
+    #[test]
+    fn null_key_message_has_no_rust_types() {
+        let e = parse_documents("null: 1\n", false).unwrap_err();
+        assert!(e.message.contains("null"), "{}", e.message);
+        assert!(!e.message.contains("Option<"), "{}", e.message);
     }
 
     #[test]

@@ -181,7 +181,10 @@ fn flat_recursive_forms_do_not_crash_on_a_small_stack() {
             ] {
                 let (result, _) = run(&src);
                 assert!(
-                    matches!(result, Ok(()) | Err(ExprError::Syntax { .. })),
+                    matches!(
+                        result,
+                        Ok(()) | Err(ExprError::Syntax { .. } | ExprError::ParserLimit)
+                    ),
                     "{result:?}"
                 );
             }

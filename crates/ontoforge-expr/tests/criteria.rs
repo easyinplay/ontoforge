@@ -307,3 +307,13 @@ fn dynamic_index_on_a_checked_root_is_an_error() {
     let d = only("objects.flight[params.tags[0]] == 1");
     assert!(d.message.contains("dynamic index"), "{}", d.message);
 }
+
+/// WR-08: the CEL parser's recursion limit is reported without its internals.
+#[test]
+fn parser_recursion_limit_has_a_clean_message() {
+    let deep = format!("{}true", "true ? false : ".repeat(120));
+    let d = only(&deep);
+    assert_eq!(d.code, codes::V13);
+    assert!(d.message.contains("too deeply"), "{}", d.message);
+    assert!(!d.message.contains("OtherError"), "{}", d.message);
+}
