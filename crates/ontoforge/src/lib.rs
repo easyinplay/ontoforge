@@ -7,9 +7,10 @@ pub mod lint_cmd;
 pub mod pipeline;
 pub mod render;
 
-use cli::{Cli, Command, LintArgs, OutputArgs, ValidateArgs};
-use ontoforge_schema::LoadOutput;
+use camino::Utf8Path;
+use cli::{Cli, Command, LintArgs, OutputArgs, SchemaCommand, ValidateArgs};
 use ontoforge_schema::diag::{Severity, codes};
+use ontoforge_schema::{LoadOutput, schema_export};
 use render::{ColorChoice, Format};
 
 /// Run the CLI and return the process exit code.
@@ -17,6 +18,27 @@ pub fn run(cli: Cli) -> u8 {
     match cli.command {
         Command::Validate(args) => validate(&args),
         Command::Lint(args) => lint(&args),
+        Command::Schema(args) => match args.command {
+            SchemaCommand::Export { out_dir } => export_schemas(&out_dir),
+        },
+    }
+}
+
+/// Write each exported schema into `out_dir`, naming every written file on stderr.
+fn export_schemas(out_dir: &Utf8Path) -> u8 {
+    let result = std::fs::create_dir_all(out_dir).and_then(|()| {
+        for (name, text) in schema_export::rendered_schemas() {
+            std::fs::write(out_dir.join(name), text)?;
+            eprintln!("{}/{name}", out_dir.as_str().trim_end_matches(['/', '\\']));
+        }
+        Ok(())
+    });
+    match result {
+        Ok(()) => 0,
+        Err(e) => {
+            eprintln!("error: cannot write schemas to {out_dir}: {e}");
+            1
+        }
     }
 }
 

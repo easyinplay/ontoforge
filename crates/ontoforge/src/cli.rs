@@ -22,6 +22,24 @@ pub enum Command {
     Validate(ValidateArgs),
     /// Validate, then run the lint rules.
     Lint(LintArgs),
+    /// Work with the JSON Schema of the definition format.
+    Schema(SchemaArgs),
+}
+
+#[derive(Debug, Args)]
+pub struct SchemaArgs {
+    #[command(subcommand)]
+    pub command: SchemaCommand,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum SchemaCommand {
+    /// Write the definition and manifest JSON Schemas for editors and LLMs.
+    Export {
+        /// Directory to write the schema files into; created when missing.
+        #[arg(long, default_value = "schemas")]
+        out_dir: Utf8PathBuf,
+    },
 }
 
 #[derive(Debug, Args)]

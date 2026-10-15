@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=../../../schemas/ontoforge-definition.schema.json
 # Each end's apiName is the accessor on that end's own objectType:
 # Airport.departingFlights returns Flights, Flight.departureAirport returns an Airport.
 # The foreignKey sits on the `to` end and has the type of the `from` end's primary key.

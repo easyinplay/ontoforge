@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=../../../schemas/ontoforge-definition.schema.json
 # Object data changes only through actions. Rules run in order; each property value
 # comes from one of four sources: { param: x }, { static: v }, { currentUser: {} } or
 # { currentTime: {} }. Submission criteria are CEL over `params`, `user` and `objects`.
