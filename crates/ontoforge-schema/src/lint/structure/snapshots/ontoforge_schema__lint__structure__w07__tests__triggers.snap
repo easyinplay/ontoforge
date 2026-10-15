@@ -32,7 +32,7 @@ expression: found
   {
     "code": "ONT-W07",
     "severity": "warning",
-    "message": "object types `CrmContact` and `Contact` have the same primary key and a property similarity of 0.67",
+    "message": "object types `CrmContact` and `Contact` have the same primary key and a property similarity of 0.60",
     "file": "defs.yaml",
     "line": 18,
     "column": 10,
