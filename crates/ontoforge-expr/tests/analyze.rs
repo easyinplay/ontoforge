@@ -258,9 +258,27 @@ mod walk {
     }
 
     #[test]
-    fn offset_to_line_col_counts_chars_and_lines() {
+    fn offset_to_line_col_takes_byte_offsets_and_counts_char_columns() {
         assert_eq!(offset_to_line_col("ab\ncd", 0), (1, 1));
         assert_eq!(offset_to_line_col("ab\ncd", 4), (2, 2));
-        assert_eq!(offset_to_line_col("éa", 1), (1, 2));
+        // `é` is two bytes: byte offset 2 is the char after it, in column 2.
+        assert_eq!(offset_to_line_col("éa", 2), (1, 2));
+    }
+
+    #[test]
+    fn map_list_and_method_targets_are_walked() {
+        assert_eq!(
+            names("{'k': params.a}['k'] == params.b"),
+            ["params.a", "params.b"]
+        );
+        assert_eq!(
+            names("[params.a, user.id].size() > params.n.size()"),
+            ["params.a", "user.id", "params.n"]
+        );
+    }
+
+    #[test]
+    fn has_on_comprehension_variable_yields_nothing() {
+        assert_eq!(names("params.items.all(i, has(i.note))"), ["params.items"]);
     }
 }

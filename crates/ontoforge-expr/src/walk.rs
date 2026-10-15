@@ -1,4 +1,11 @@
 //! Scope-aware walk over the CEL AST that collects member paths.
+//!
+//! `cel`'s own reference listing counts comprehension variables as free variables, so
+//! the walk keeps its own scope stack. It recurses once per AST level: call it only
+//! from inside the [`analyze`](crate::analyze()) closure, which runs on the large-stack
+//! thread and only ever sees prechecked input.
+
+use cel::common::ast::{EntryExpr, Expr, IdedExpr, SourceInfo};
 
 /// A member path rooted at a free variable, e.g. `params.items`.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -8,14 +15,132 @@ pub struct MemberPath {
     pub pos: Option<(usize, usize)>,
 }
 
-/// Collects the member paths rooted at free variables of `program`.
+/// Collects the member paths rooted at free variables of `program`, in source walk
+/// order and without deduplication. `src` must be the text `program` was compiled from.
 #[must_use]
-pub fn member_paths(_program: &cel::Program, _src: &str) -> Vec<MemberPath> {
-    Vec::new()
+pub fn member_paths(program: &cel::Program, src: &str) -> Vec<MemberPath> {
+    let mut walker = Walker {
+        info: program.source_info(),
+        src,
+        scope: Vec::new(),
+        out: Vec::new(),
+    };
+    walker.visit(program.expression());
+    walker.out
 }
 
-/// Converts a 0-based offset into a 1-based `(line, column)`.
+/// Converts a 0-based UTF-8 byte offset (the unit of `cel`'s `SourceInfo::offset_for`,
+/// verified against 0.15.0 with a multi-byte literal) into a 1-based `(line, column)`
+/// pair; the column is counted in chars.
 #[must_use]
-pub fn offset_to_line_col(_src: &str, _offset: usize) -> (usize, usize) {
-    (0, 0)
+pub fn offset_to_line_col(src: &str, offset: usize) -> (usize, usize) {
+    let (mut line, mut column) = (1, 1);
+    for (_, c) in src.char_indices().take_while(|&(i, _)| i < offset) {
+        if c == '\n' {
+            line += 1;
+            column = 1;
+        } else {
+            column += 1;
+        }
+    }
+    (line, column)
+}
+
+struct Walker<'a> {
+    info: &'a SourceInfo,
+    src: &'a str,
+    /// Comprehension variables currently in scope (iteration and accumulator).
+    scope: Vec<&'a str>,
+    out: Vec<MemberPath>,
+}
+
+impl<'a> Walker<'a> {
+    fn pos(&self, ids: &[u64]) -> Option<(usize, usize)> {
+        ids.iter().find_map(|&id| {
+            let (start, _) = self.info.offset_for(id)?;
+            Some(offset_to_line_col(self.src, start as usize))
+        })
+    }
+
+    fn in_scope(&self, name: &str) -> bool {
+        self.scope.contains(&name)
+    }
+
+    fn visit(&mut self, e: &'a IdedExpr) {
+        match &e.expr {
+            Expr::Unspecified | Expr::Literal(_) => {}
+            Expr::Ident(name) => {
+                if !self.in_scope(name) {
+                    let pos = self.pos(&[e.id]);
+                    self.out.push(MemberPath {
+                        segments: vec![name.clone()],
+                        pos,
+                    });
+                }
+            }
+            Expr::Select(_) => self.select(e),
+            Expr::Call(call) => {
+                if let Some(target) = &call.target {
+                    self.visit(target);
+                }
+                call.args.iter().for_each(|a| self.visit(a));
+            }
+            Expr::List(list) => list.elements.iter().for_each(|a| self.visit(a)),
+            Expr::Map(map) => map.entries.iter().for_each(|entry| match &entry.expr {
+                EntryExpr::MapEntry(m) => {
+                    self.visit(&m.key);
+                    self.visit(&m.value);
+                }
+                EntryExpr::StructField(f) => self.visit(&f.value),
+            }),
+            Expr::Struct(s) => s.entries.iter().for_each(|entry| match &entry.expr {
+                EntryExpr::StructField(f) => self.visit(&f.value),
+                EntryExpr::MapEntry(m) => {
+                    self.visit(&m.key);
+                    self.visit(&m.value);
+                }
+            }),
+            Expr::Comprehension(c) => {
+                self.visit(&c.iter_range);
+                self.visit(&c.accu_init);
+                let mark = self.scope.len();
+                self.scope.push(&c.iter_var);
+                if let Some(second) = &c.iter_var2 {
+                    self.scope.push(second);
+                }
+                self.scope.push(&c.accu_var);
+                self.visit(&c.loop_cond);
+                self.visit(&c.loop_step);
+                self.visit(&c.result);
+                self.scope.truncate(mark);
+            }
+        }
+    }
+
+    /// Handles a `Select` chain: descends through plain field selections (and the
+    /// outermost `has()` test) to its root. A free identifier root yields the full
+    /// path; any other root is walked on its own.
+    fn select(&mut self, outermost: &'a IdedExpr) {
+        let mut fields = Vec::new();
+        let mut node = outermost;
+        while let Expr::Select(sel) = &node.expr {
+            fields.push(sel.field.as_str());
+            node = &sel.operand;
+            if matches!(&node.expr, Expr::Select(inner) if inner.test) {
+                break;
+            }
+        }
+        match &node.expr {
+            Expr::Ident(root) if !self.in_scope(root) => {
+                let pos = self.pos(&[node.id, outermost.id]);
+                let segments = std::iter::once(root.as_str())
+                    .chain(fields.iter().rev().copied())
+                    .map(str::to_owned)
+                    .collect();
+                self.out.push(MemberPath { segments, pos });
+            }
+            Expr::Ident(_) => {}
+            _ => self.visit(node),
+        }
+    }
 }
