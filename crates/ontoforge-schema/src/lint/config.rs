@@ -13,17 +13,15 @@
 //! (`ONT-E*`, `ONT-W*`) can be configured; `ONT-V*` structural errors cannot (D-06).
 //! Anything unrecognized is `ONT-V15`, so a typo never silently disables nothing.
 //!
-//! Positions come from `toml::Spanned`: the file is read into a [`Raw`] tree whose
-//! every key and value carries its byte span, then checked by hand.
+//! Positions come from `toml::Spanned`: the file is read into a `toml::de::DeTable`
+//! whose every key and value carries its byte span, then checked by hand.
 
 use std::collections::HashMap;
-use std::fmt;
 use std::ops::Range;
 
 use camino::Utf8Path;
-use serde::Deserialize;
-use serde::de::{Deserializer, MapAccess, SeqAccess, Visitor};
 use toml::Spanned;
+use toml::de::{DeString, DeTable, DeValue};
 
 use super::{KNOWN_RULE_IDS, Level, LintRule, registry};
 use crate::diag::{Diagnostic, Severity, SourceLocation, codes, did_you_mean};
@@ -31,9 +29,6 @@ use crate::loader::{MAX_FILE_BYTES, SourceMap};
 
 /// File name of the configuration at the ontology root.
 pub const CONFIG_FILE: &str = "ontoforge.toml";
-
-/// Key `toml` uses to hand a datetime to a generic visitor.
-const DATETIME_KEY: &str = "$__toml_private_datetime";
 
 /// A rule option value: an integer, a number, a string, or a list of strings.
 #[derive(Debug, Clone, PartialEq)]
@@ -63,73 +58,11 @@ impl LintConfig {
     }
 }
 
-/// Any TOML value, every nested key and value with its span.
-enum Raw {
-    Int(i64),
-    Float(f64),
-    Str(String),
-    Array(Vec<Spanned<Raw>>),
-    Table(Vec<(Spanned<String>, Spanned<Raw>)>),
-    /// A value no option or level can be: a boolean, a datetime or an out-of-range integer.
-    Other,
-}
+/// A TOML value with the byte span of the source it was read from.
+type Value<'a> = Spanned<DeValue<'a>>;
 
-impl<'de> Deserialize<'de> for Raw {
-    fn deserialize<D: Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
-        d.deserialize_any(RawVisitor)
-    }
-}
-
-struct RawVisitor;
-
-impl<'de> Visitor<'de> for RawVisitor {
-    type Value = Raw;
-
-    fn expecting(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str("a TOML value")
-    }
-
-    fn visit_bool<E>(self, _: bool) -> Result<Raw, E> {
-        Ok(Raw::Other)
-    }
-
-    fn visit_i64<E>(self, v: i64) -> Result<Raw, E> {
-        Ok(Raw::Int(v))
-    }
-
-    fn visit_u64<E>(self, v: u64) -> Result<Raw, E> {
-        Ok(i64::try_from(v).map_or(Raw::Other, Raw::Int))
-    }
-
-    fn visit_f64<E>(self, v: f64) -> Result<Raw, E> {
-        Ok(Raw::Float(v))
-    }
-
-    fn visit_str<E>(self, v: &str) -> Result<Raw, E> {
-        Ok(Raw::Str(v.to_owned()))
-    }
-
-    fn visit_seq<A: SeqAccess<'de>>(self, mut seq: A) -> Result<Raw, A::Error> {
-        let mut items = Vec::new();
-        while let Some(item) = seq.next_element::<Spanned<Raw>>()? {
-            items.push(item);
-        }
-        Ok(Raw::Array(items))
-    }
-
-    fn visit_map<A: MapAccess<'de>>(self, mut map: A) -> Result<Raw, A::Error> {
-        let mut entries = Vec::new();
-        while let Some(key) = map.next_key::<Spanned<String>>()? {
-            entries.push((key, map.next_value::<Spanned<Raw>>()?));
-        }
-        let is_datetime = entries.len() == 1 && entries[0].0.get_ref() == DATETIME_KEY;
-        Ok(if is_datetime {
-            Raw::Other
-        } else {
-            Raw::Table(entries)
-        })
-    }
-}
+/// A TOML key with the byte span of the source it was read from.
+type Key<'a> = Spanned<DeString<'a>>;
 
 /// Parse and check `text`. `file` is the name used in diagnostics; `rules` tell
 /// which options each rule declares.
@@ -145,13 +78,13 @@ pub fn parse_config(
         config: LintConfig::default(),
         diags: Vec::new(),
     };
-    match toml::from_str::<Raw>(text) {
-        Ok(Raw::Table(sections)) => {
-            for (key, value) in sections {
+    match DeTable::parse(text) {
+        Ok(root) => {
+            for (key, value) in root.into_inner() {
                 if key.get_ref() == "lint" {
                     parser.lint(value);
                 } else {
-                    let name = key.get_ref();
+                    let name = key.get_ref().as_ref();
                     let help = did_you_mean(name, ["lint"]).map_or_else(
                         || "the only section is `[lint]`".to_owned(),
                         |s| format!("did you mean `{s}`?"),
@@ -160,7 +93,6 @@ pub fn parse_config(
                 }
             }
         }
-        Ok(_) => {}
         Err(e) => parser.problem(e.span().unwrap_or(0..0), e.message(), None),
     }
     (parser.config, parser.diags)
@@ -214,9 +146,9 @@ impl Parser<'_> {
     }
 
     /// Report `key` when it is not a configurable rule id; true if it was reported.
-    fn id_problem(&mut self, key: &Spanned<String>, extra: &[&str]) -> bool {
-        let id = key.get_ref();
-        if KNOWN_RULE_IDS.contains(&id.as_str()) {
+    fn id_problem(&mut self, key: &Key<'_>, extra: &[&str]) -> bool {
+        let id: &str = key.get_ref();
+        if KNOWN_RULE_IDS.contains(&id) {
             return false;
         }
         if id.starts_with("ONT-V") {
@@ -241,9 +173,9 @@ impl Parser<'_> {
         true
     }
 
-    fn lint(&mut self, value: Spanned<Raw>) {
+    fn lint(&mut self, value: Value<'_>) {
         let span = value.span();
-        let Raw::Table(entries) = value.into_inner() else {
+        let DeValue::Table(entries) = value.into_inner() else {
             self.problem(
                 span,
                 "`lint` must be a table",
@@ -260,9 +192,9 @@ impl Parser<'_> {
         }
     }
 
-    fn level(&mut self, id: &str, value: &Spanned<Raw>) {
+    fn level(&mut self, id: &str, value: &Value<'_>) {
         match value.get_ref() {
-            Raw::Str(s) => match Level::parse(s) {
+            DeValue::String(s) => match Level::parse(s) {
                 Some(level) => {
                     self.config.levels.insert(id.to_owned(), level);
                 }
@@ -280,9 +212,9 @@ impl Parser<'_> {
         }
     }
 
-    fn options(&mut self, value: Spanned<Raw>) {
+    fn options(&mut self, value: Value<'_>) {
         let span = value.span();
-        let Raw::Table(per_rule) = value.into_inner() else {
+        let DeValue::Table(per_rule) = value.into_inner() else {
             self.problem(
                 span,
                 "`options` must be a table keyed by rule id",
@@ -294,9 +226,9 @@ impl Parser<'_> {
             if self.id_problem(&key, &[]) {
                 continue;
             }
-            let id = key.get_ref();
+            let id: &str = key.get_ref();
             let table_span = table.span();
-            let Raw::Table(options) = table.into_inner() else {
+            let DeValue::Table(options) = table.into_inner() else {
                 self.problem(
                     table_span,
                     format!("the options of {id} must be a table"),
@@ -310,8 +242,8 @@ impl Parser<'_> {
                 .find(|r| r.id() == id)
                 .map_or(&[][..], |r| r.option_keys());
             for (name_key, value) in options {
-                let name = name_key.get_ref();
-                if !declared.contains(&name.as_str()) {
+                let name: &str = name_key.get_ref();
+                if !declared.contains(&name) {
                     let help = if declared.is_empty() {
                         format!("{id} takes no options")
                     } else if let Some(s) = did_you_mean(name, declared.iter().copied()) {
@@ -330,9 +262,9 @@ impl Parser<'_> {
                     Ok(v) => {
                         self.config
                             .options
-                            .entry(id.clone())
+                            .entry(id.to_owned())
                             .or_default()
-                            .insert(name.clone(), v);
+                            .insert(name.to_owned(), v);
                     }
                     Err(bad) => self.problem(
                         bad,
@@ -348,20 +280,27 @@ impl Parser<'_> {
 }
 
 /// The value as an option, or the span of the part that cannot be one.
-fn option_value(value: &Spanned<Raw>) -> Result<OptionValue, Range<usize>> {
+fn option_value(value: &Value<'_>) -> Result<OptionValue, Range<usize>> {
+    let unsupported = || value.span();
     match value.get_ref() {
-        Raw::Int(n) => Ok(OptionValue::Int(*n)),
-        Raw::Float(f) => Ok(OptionValue::Float(*f)),
-        Raw::Str(s) => Ok(OptionValue::Str(s.clone())),
-        Raw::Array(items) => items
+        DeValue::Integer(i) => i64::from_str_radix(i.as_str(), i.radix())
+            .map(OptionValue::Int)
+            .map_err(|_| unsupported()),
+        DeValue::Float(f) => f
+            .as_str()
+            .parse()
+            .map(OptionValue::Float)
+            .map_err(|_| unsupported()),
+        DeValue::String(s) => Ok(OptionValue::Str(s.to_string())),
+        DeValue::Array(items) => items
             .iter()
             .map(|item| match item.get_ref() {
-                Raw::Str(s) => Ok(s.clone()),
+                DeValue::String(s) => Ok(s.to_string()),
                 _ => Err(item.span()),
             })
             .collect::<Result<_, _>>()
             .map(OptionValue::List),
-        Raw::Table(_) | Raw::Other => Err(value.span()),
+        DeValue::Table(_) | DeValue::Boolean(_) | DeValue::Datetime(_) => Err(unsupported()),
     }
 }
 
@@ -569,6 +508,15 @@ mod tests {
         assert_eq!(at, "1");
         let (_, at) = one_problem("[lint.options]\n\"ONT-W06\" = 3\n");
         assert_eq!(at, "3");
+    }
+
+    #[test]
+    fn datetime_and_out_of_range_integers_are_unsupported_values() {
+        let (_, at) = one_problem("[lint.options.\"ONT-W06\"]\nratio = 1979-05-27T07:32:00Z\n");
+        assert_eq!(at, "1979-05-27T07:32:00Z");
+        let (_, at) =
+            one_problem("[lint.options.\"ONT-W06\"]\nmax_properties = 0xFFFFFFFFFFFFFFFF\n");
+        assert_eq!(at, "0xFFFFFFFFFFFFFFFF");
     }
 
     #[test]
