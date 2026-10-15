@@ -1,0 +1,79 @@
+[
+  {
+    "kind": "ObjectType",
+    "apiName": "Airport",
+    "displayName": "Airport",
+    "description": "A place where aircraft take off and land.",
+    "aliases": ["aerodrome"],
+    "primaryKey": "code",
+    "titleKey": "name",
+    "properties": {
+      "code": { "type": "string", "required": true, "displayName": "Code", "description": "IATA airport code." },
+      "name": { "type": "string", "required": true, "displayName": "Name" },
+      "city": { "type": "string", "displayName": "City" },
+      "country": { "type": "string", "displayName": "Country" },
+      "location": { "type": "geopoint", "displayName": "Location" }
+    }
+  },
+  {
+    "kind": "ObjectType",
+    "apiName": "Aircraft",
+    "displayName": "Aircraft",
+    "description": "A single airframe identified by its registration.",
+    "primaryKey": "tailNumber",
+    "properties": {
+      "tailNumber": { "type": "string", "required": true, "displayName": "Tail number" },
+      "model": { "type": "string", "required": true, "displayName": "Model" },
+      "seatCapacity": { "type": "integer", "displayName": "Seat capacity" },
+      "inServiceSince": { "type": "date", "displayName": "In service since" }
+    }
+  },
+  {
+    "kind": "ObjectType",
+    "apiName": "Flight",
+    "displayName": "Flight",
+    "description": "One scheduled movement of an aircraft between two airports.",
+    "primaryKey": "flightId",
+    "titleKey": "flightNumber",
+    "properties": {
+      "flightId": { "type": "string", "required": true, "displayName": "Flight id" },
+      "flightNumber": { "type": "string", "required": true, "displayName": "Flight number" },
+      "departureAirportCode": { "type": "string", "required": true, "displayName": "Departure airport code" },
+      "arrivalAirportCode": { "type": "string", "required": true, "displayName": "Arrival airport code" },
+      "aircraftTailNumber": { "type": "string", "displayName": "Aircraft tail number" },
+      "scheduledDeparture": { "type": "timestamp", "displayName": "Scheduled departure" },
+      "status": { "type": "string", "displayName": "Status" },
+      "delayMinutes": { "type": "integer", "displayName": "Delay in minutes" },
+      "tags": { "type": "array", "items": "string", "displayName": "Tags" }
+    }
+  },
+  {
+    "kind": "ObjectType",
+    "apiName": "Pilot",
+    "displayName": "Pilot",
+    "description": "A licensed crew member who can operate flights.",
+    "hidden": false,
+    "primaryKey": "employeeId",
+    "titleKey": "fullName",
+    "properties": {
+      "employeeId": { "type": "string", "required": true, "displayName": "Employee id" },
+      "fullName": { "type": "string", "required": true, "displayName": "Full name" },
+      "licenseNumber": { "type": "string", "displayName": "License number" },
+      "flightHours": { "type": "double", "displayName": "Flight hours" }
+    }
+  },
+  {
+    "kind": "ObjectType",
+    "apiName": "MaintenanceRecord",
+    "displayName": "Maintenance record",
+    "description": "A maintenance event performed on an aircraft.",
+    "primaryKey": "recordId",
+    "properties": {
+      "recordId": { "type": "string", "required": true, "displayName": "Record id" },
+      "aircraftTailNumber": { "type": "string", "required": true, "displayName": "Aircraft tail number" },
+      "performedAt": { "type": "timestamp", "displayName": "Performed at" },
+      "performedBy": { "type": "string", "displayName": "Performed by" },
+      "summary": { "type": "string", "displayName": "Summary" }
+    }
+  }
+]
