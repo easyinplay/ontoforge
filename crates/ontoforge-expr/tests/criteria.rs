@@ -13,6 +13,10 @@ properties:
   flightId: { type: string, required: true }
   status: { type: string }
   delayMinutes: { type: integer }
+  departure: { type: timestamp }
+  flightDate: { type: date }
+  fare: { type: decimal }
+  position: { type: geopoint }
 ";
 
 /// Header of the single action; the criterion line is appended by `check`.
@@ -195,4 +199,66 @@ fn diagnostic_points_at_condition_value() {
         "{}",
         d.message
     );
+}
+
+#[test]
+fn non_bool_condition() {
+    let d = only("params.delayMinutes + 1");
+    assert_eq!(d.code, codes::V13);
+    assert!(
+        d.message.contains("must evaluate to bool, found int"),
+        "{}",
+        d.message
+    );
+}
+
+#[test]
+fn comparison_type_mismatch() {
+    let d = only("params.delayMinutes == 'ten'");
+    assert_eq!(d.code, codes::V13);
+    assert!(
+        d.message.contains("int") && d.message.contains("string"),
+        "{}",
+        d.message
+    );
+    assert!(d.message.contains("in expression)"), "{}", d.message);
+    assert_clean("params.delayMinutes > 1.5");
+    assert_clean("objects.flight.delayMinutes >= params.delayMinutes");
+    let d = only("objects.flight.status == 5");
+    assert_eq!(d.code, codes::V13);
+}
+
+#[test]
+fn unknown_types_are_any() {
+    assert_clean("objects.flight.departure == 'x'");
+    assert_clean("objects.flight.flightDate > 3");
+    assert_clean("objects.flight.fare > 1");
+    assert_clean("objects.flight.position == 1");
+    assert_clean("params.flight == 'x'");
+    assert_clean("someFunction(params.delayMinutes) == 'x'");
+    assert_clean("params.delayMinutes.someMethod() == 'x'");
+}
+
+#[test]
+fn comprehension_result_types() {
+    assert_clean("params.tags.all(t, t != '')");
+    assert_clean("params.tags.exists(t, t == 'a') && params.tags.exists_one(t, t == 'b')");
+    let d = only("params.tags.map(t, t)");
+    assert!(d.message.contains("found list"), "{}", d.message);
+    let d = only("params.tags.all(t, t == 1)");
+    assert_eq!(d.code, codes::V13);
+}
+
+#[test]
+fn unknown_reference_is_any() {
+    let d = only("params.nope == 'x'");
+    assert!(d.message.contains("unknown parameter"), "{}", d.message);
+}
+
+#[test]
+fn builtin_functions_have_known_result_types() {
+    assert_clean("size(params.tags) > 0 && 'ops'.startsWith('o') && has(params.delayMinutes)");
+    assert_clean("params.delayMinutes > 0 ? true : false");
+    let d = only("size(params.tags)");
+    assert!(d.message.contains("found int"), "{}", d.message);
 }
