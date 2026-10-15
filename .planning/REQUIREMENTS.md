@@ -9,12 +9,12 @@
 
 ### Schema（ontology-as-code）
 
-- [ ] **SCHEMA-01**: 开发者可以用 YAML（或等价 JSON）在多个文件中定义一个 ontology，`ontoforge validate` 把它们合并加载为单一 IR
+- [x] **SCHEMA-01**: 开发者可以用 YAML（或等价 JSON）在多个文件中定义一个 ontology，`ontoforge validate` 把它们合并加载为单一 IR
 - [ ] **SCHEMA-02**: 开发者可以定义 object type：`apiName`、primary key、title key、displayName、description、aliases、hidden
 - [ ] **SCHEMA-03**: 开发者可以为属性选择 base type：Byte / Short / Integer / Long / Float / Double / Decimal、String、Boolean、Date、Timestamp、Array、Geopoint，并声明 required
 - [ ] **SCHEMA-04**: 开发者可以定义 link type：1:1、1:N（外键属性）、M:N（join 定义），两个方向各有 apiName
 - [ ] **SCHEMA-05**: 开发者可以定义 action type：参数（类型、required、默认值）、rules（create / modify / delete object，add / remove link）、submission criteria（CEL）
-- [ ] **SCHEMA-06**: 定义有错时，开发者看到带文件名与 line:col 的诊断信息
+- [x] **SCHEMA-06**: 定义有错时，开发者看到带文件名与 line:col 的诊断信息
 - [ ] **SCHEMA-07**: 开发者可以导出 ontology 定义的 JSON Schema，用于编辑器补全与 LLM 生成
 
 ### Lint
@@ -83,7 +83,7 @@
 
 - [ ] **DX-01**: 开发者用一个二进制 `ontoforge serve --dev` 即可在本机（含 Windows）启动完整服务（SQLite + dev token）
 - [ ] **DX-02**: 仓库附带至少一个示例 ontology，可完成导入、查询、执行 action 的端到端演示
-- [ ] **DX-03**: Windows 本机 `cargo test` 不依赖 Docker 即可全部通过
+- [x] **DX-03**: Windows 本机 `cargo test` 不依赖 Docker 即可全部通过
 
 ## v2 Requirements
 
@@ -133,18 +133,18 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SCHEMA-01 | Phase 1 | Pending |
+| SCHEMA-01 | Phase 1 | Complete |
 | SCHEMA-02 | Phase 1 | Pending |
 | SCHEMA-03 | Phase 1 | Pending |
 | SCHEMA-04 | Phase 1 | Pending |
 | SCHEMA-05 | Phase 1 | Pending |
-| SCHEMA-06 | Phase 1 | Pending |
+| SCHEMA-06 | Phase 1 | Complete |
 | SCHEMA-07 | Phase 1 | Pending |
 | LINT-01 | Phase 1 | Pending |
 | LINT-02 | Phase 1 | Pending |
 | LINT-03 | Phase 1 | Pending |
 | LINT-04 | Phase 1 | Pending |
-| DX-03 | Phase 1 | Pending |
+| DX-03 | Phase 1 | Complete |
 | STORE-01 | Phase 2 | Pending |
 | STORE-02 | Phase 2 | Pending |
 | STORE-03 | Phase 2 | Pending |
@@ -186,6 +186,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MCP-06 | Phase 7 | Pending |
 
 **Coverage:**
+
 - v1 requirements: 51 total
 - Mapped to phases: 51
 - Unmapped: 0
