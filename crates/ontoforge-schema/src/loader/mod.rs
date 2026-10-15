@@ -115,11 +115,19 @@ fn check_size(name: &str, len: u64) -> Result<(), Diagnostic> {
         return Err(Diagnostic::without_location(
             codes::V14,
             Severity::Error,
-            format!("file is {len} bytes, over the {MAX_FILE_BYTES} byte limit; skipped"),
+            format!("{}; skipped", too_large(Some(len))),
             name,
         ));
     }
     Ok(())
+}
+
+/// "file is N bytes, over the limit", without the size when it is not known.
+pub(crate) fn too_large(len: Option<u64>) -> String {
+    match len {
+        Some(len) => format!("file is {len} bytes, over the {MAX_FILE_BYTES} byte limit"),
+        None => format!("file is over the {MAX_FILE_BYTES} byte limit"),
+    }
 }
 
 fn missing_manifest() -> Diagnostic {
@@ -134,16 +142,53 @@ fn missing_manifest() -> Diagnostic {
     ))
 }
 
+/// Why [`read_limited`] returned no bytes.
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) enum ReadFailure {
+    Io(std::io::ErrorKind),
+    /// A symbolic link (when links are not followed), directory, device or pipe.
+    NotRegular,
+    /// Over [`MAX_FILE_BYTES`]; the size when the file system reported it.
+    TooLarge(Option<u64>),
+}
+
+/// Read a regular file of at most [`MAX_FILE_BYTES`] (CR-03). With `follow_links`
+/// false a symbolic link is refused, so a checked-in link cannot point the loader at
+/// a device or at a file outside the ontology. The read itself is bounded too, so a
+/// file that grows or lies about its size still cannot exhaust memory.
+pub(crate) fn read_limited(
+    path: &std::path::Path,
+    follow_links: bool,
+) -> Result<Vec<u8>, ReadFailure> {
+    use std::io::Read;
+
+    let meta = if follow_links {
+        std::fs::metadata(path)
+    } else {
+        std::fs::symlink_metadata(path)
+    }
+    .map_err(|e| ReadFailure::Io(e.kind()))?;
+    if !meta.file_type().is_file() {
+        return Err(ReadFailure::NotRegular);
+    }
+    if meta.len() > MAX_FILE_BYTES {
+        return Err(ReadFailure::TooLarge(Some(meta.len())));
+    }
+    let mut bytes = Vec::new();
+    std::fs::File::open(path)
+        .and_then(|f| f.take(MAX_FILE_BYTES + 1).read_to_end(&mut bytes))
+        .map_err(|e| ReadFailure::Io(e.kind()))?;
+    if bytes.len() as u64 > MAX_FILE_BYTES {
+        return Err(ReadFailure::TooLarge(None));
+    }
+    Ok(bytes)
+}
+
 fn read_text(root: &Utf8Path, name: &str) -> Text {
-    let path = root.join(name);
-    let read = std::fs::metadata(&path)
-        .map_err(|e| e.kind())
-        .and_then(|m| match check_size(name, m.len()) {
-            Ok(()) => std::fs::read(&path).map(Ok).map_err(|e| e.kind()),
-            Err(d) => Ok(Err(d)),
-        });
-    match read {
-        Ok(Ok(bytes)) => String::from_utf8(bytes).map_err(|_| {
+    let v14 =
+        |message: String| Diagnostic::without_location(codes::V14, Severity::Error, message, name);
+    match read_limited(root.join(name).as_std_path(), false) {
+        Ok(bytes) => String::from_utf8(bytes).map_err(|_| {
             Diagnostic::without_location(
                 codes::V01,
                 Severity::Error,
@@ -151,14 +196,14 @@ fn read_text(root: &Utf8Path, name: &str) -> Text {
                 name,
             )
         }),
-        Ok(Err(d)) => Err(d),
-        Err(std::io::ErrorKind::NotFound) if name == MANIFEST => Err(missing_manifest()),
-        Err(kind) => Err(Diagnostic::without_location(
-            codes::V14,
-            Severity::Error,
-            format!("cannot read `{name}`: {kind}"),
-            name,
-        )),
+        Err(ReadFailure::TooLarge(len)) => Err(v14(format!("{}; skipped", too_large(len)))),
+        Err(ReadFailure::NotRegular) => Err(v14(format!(
+            "`{name}` is not a regular file (symbolic links are not followed); skipped"
+        ))),
+        Err(ReadFailure::Io(std::io::ErrorKind::NotFound)) if name == MANIFEST => {
+            Err(missing_manifest())
+        }
+        Err(ReadFailure::Io(kind)) => Err(v14(format!("cannot read `{name}`: {kind}"))),
     }
 }
 

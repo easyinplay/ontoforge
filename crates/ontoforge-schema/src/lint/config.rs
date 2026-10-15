@@ -25,7 +25,7 @@ use toml::de::{DeString, DeTable, DeValue};
 
 use super::{KNOWN_RULE_IDS, Level, LintRule, registry};
 use crate::diag::{Diagnostic, Severity, SourceLocation, codes, did_you_mean, offset_to_line_col};
-use crate::loader::{MAX_FILE_BYTES, SourceMap};
+use crate::loader::{ReadFailure, SourceMap, read_limited, too_large};
 
 /// File name of the configuration at the ontology root.
 pub const CONFIG_FILE: &str = "ontoforge.toml";
@@ -322,24 +322,24 @@ pub fn load_config(
         let d = Diagnostic::without_location(codes::V15, Severity::Error, message, name.clone());
         (LintConfig::default(), vec![d])
     };
-    let bytes = match std::fs::metadata(&path) {
-        Ok(m) if m.len() > MAX_FILE_BYTES => {
-            return unreadable(format!(
-                "file is {} bytes, over the {MAX_FILE_BYTES} byte limit",
-                m.len()
-            ));
-        }
-        Ok(_) => match std::fs::read(&path) {
-            Ok(bytes) => bytes,
-            Err(e) => return unreadable(e.kind().to_string()),
-        },
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound && !required => {
+    // The root file comes with the (possibly untrusted) ontology, so a symbolic link
+    // there is refused; an explicit `--config` path may be a link (CR-03).
+    let bytes = match read_limited(path.as_std_path(), required) {
+        Ok(bytes) => bytes,
+        Err(ReadFailure::Io(std::io::ErrorKind::NotFound)) if !required => {
             return (LintConfig::default(), Vec::new());
         }
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+        Err(ReadFailure::Io(std::io::ErrorKind::NotFound)) => {
             return unreadable("not found".to_owned());
         }
-        Err(e) => return unreadable(e.kind().to_string()),
+        Err(ReadFailure::Io(kind)) => return unreadable(kind.to_string()),
+        Err(ReadFailure::NotRegular) if required => {
+            return unreadable("not a regular file".to_owned());
+        }
+        Err(ReadFailure::NotRegular) => {
+            return unreadable("not a regular file (symbolic links are not followed)".to_owned());
+        }
+        Err(ReadFailure::TooLarge(len)) => return unreadable(too_large(len)),
     };
     let Ok(text) = String::from_utf8(bytes) else {
         return unreadable("file is not valid UTF-8".to_owned());
@@ -577,6 +577,43 @@ mod tests {
         let (config, diags) = load_config(root, Some(&other), &mut sources);
         assert!(diags.is_empty(), "{diags:#?}");
         assert_eq!(config.level("ONT-E09"), Some(Level::Info));
+    }
+
+    /// CR-03: a root `ontoforge.toml` that is not a regular file is refused.
+    #[test]
+    fn root_config_that_is_not_a_file_is_error() {
+        let dir = tempfile::tempdir().unwrap();
+        let root = Utf8Path::from_path(dir.path()).unwrap();
+        std::fs::create_dir(root.join(CONFIG_FILE)).unwrap();
+        let mut sources = SourceMap::default();
+        let (_, diags) = load_config(root, None, &mut sources);
+        assert_eq!(diags.len(), 1, "{diags:#?}");
+        assert_eq!(diags[0].code, codes::V15);
+        assert!(diags[0].message.contains("not a regular file"));
+    }
+
+    /// CR-03: a symbolic link at the root is not followed.
+    #[test]
+    fn symlinked_root_config_is_not_followed() {
+        let outside = tempfile::tempdir().unwrap();
+        let target = outside.path().join("secret.toml");
+        std::fs::write(&target, "[lint]\n").unwrap();
+        let dir = tempfile::tempdir().unwrap();
+        let root = Utf8Path::from_path(dir.path()).unwrap();
+        #[cfg(unix)]
+        let made = std::os::unix::fs::symlink(&target, root.join(CONFIG_FILE));
+        #[cfg(windows)]
+        let made = std::os::windows::fs::symlink_file(&target, root.join(CONFIG_FILE));
+        if made.is_err() {
+            return; // no permission to create symlinks on this machine
+        }
+        let mut sources = SourceMap::default();
+        let (_, diags) = load_config(root, None, &mut sources);
+        assert_eq!(diags.len(), 1, "{diags:#?}");
+        assert!(diags[0].message.contains("symbolic links are not followed"));
+        // An explicit path may still be a link.
+        let (_, diags) = load_config(root, Some(&root.join(CONFIG_FILE)), &mut sources);
+        assert!(diags.is_empty(), "{diags:#?}");
     }
 
     #[test]

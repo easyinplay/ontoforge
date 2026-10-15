@@ -196,6 +196,37 @@ fn symlinked_file_is_not_followed() {
     assert_eq!(names(&out), ["Airport"]);
 }
 
+/// CR-03: the manifest is read directly, not through the walk, so it checks links
+/// itself.
+#[test]
+fn symlinked_manifest_is_not_followed() {
+    let outside = tempfile::tempdir().unwrap();
+    write(&outside, "secret.yaml", "apiName: secret\n");
+    let dir = tempfile::tempdir().unwrap();
+    if symlink_file(
+        &outside.path().join("secret.yaml"),
+        &dir.path().join("ontology.yaml"),
+    )
+    .is_err()
+    {
+        return; // no permission to create symlinks on this machine
+    }
+    let out = load(&dir);
+    assert_eq!(codes_of(&out), [codes::V14], "{:#?}", out.diagnostics);
+    assert!(out.diagnostics[0].message.contains("not a regular file"));
+}
+
+#[test]
+fn manifest_that_is_not_a_file_is_v14() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::create_dir(dir.path().join("ontology.yaml")).unwrap();
+    let out = load(&dir);
+    assert_eq!(codes_of(&out), [codes::V14], "{:#?}", out.diagnostics);
+    let d = &out.diagnostics[0];
+    assert_eq!(d.file, "ontology.yaml");
+    assert!(d.message.contains("not a regular file"), "{}", d.message);
+}
+
 #[test]
 fn diagnostic_paths_use_forward_slash() {
     let dir = tempfile::tempdir().unwrap();
