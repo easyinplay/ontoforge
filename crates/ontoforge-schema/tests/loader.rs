@@ -216,6 +216,28 @@ fn symlinked_manifest_is_not_followed() {
     assert!(out.diagnostics[0].message.contains("not a regular file"));
 }
 
+/// WR-06: a manifest spelled with other letter case is never a definition file, and
+/// is reported the same way on case-sensitive and case-insensitive file systems.
+#[test]
+fn manifest_with_other_letter_case_is_v14_and_not_a_definition() {
+    let dir = tempfile::tempdir().unwrap();
+    write(&dir, "Ontology.yaml", "apiName: demo\n");
+    write(&dir, "airport.yaml", object("Airport"));
+    let out = load(&dir);
+    assert!(
+        !codes_of(&out).contains(&codes::V02),
+        "{:#?}",
+        out.diagnostics
+    );
+    assert!(
+        out.diagnostics.iter().any(|d| d.code == codes::V14
+            && d.file == "Ontology.yaml"
+            && d.message.contains("`ontology.yaml`")),
+        "{:#?}",
+        out.diagnostics
+    );
+}
+
 #[test]
 fn manifest_that_is_not_a_file_is_v14() {
     let dir = tempfile::tempdir().unwrap();

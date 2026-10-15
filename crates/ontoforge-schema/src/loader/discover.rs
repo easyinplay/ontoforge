@@ -35,13 +35,31 @@ fn dir_is_skipped(name: &str) -> bool {
     name.starts_with('.') || SKIPPED_DIRS.contains(&name)
 }
 
-/// Whether a normalized relative file path may hold definitions at all.
+/// Whether a normalized relative file path may hold definitions at all. The
+/// manifest and lint config names are compared ignoring ASCII case, because a
+/// case-insensitive file system opens `Ontology.yaml` as the manifest (WR-06).
 fn is_candidate(rel: &str) -> bool {
     let mut parts: Vec<&str> = rel.split('/').collect();
     let Some(file) = parts.pop() else {
         return false;
     };
-    rel != MANIFEST && file != LINT_CONFIG && !parts.iter().any(|d| dir_is_skipped(d))
+    !rel.eq_ignore_ascii_case(MANIFEST)
+        && !file.eq_ignore_ascii_case(LINT_CONFIG)
+        && !parts.iter().any(|d| dir_is_skipped(d))
+}
+
+/// V14 for a root file that is the manifest in other letter case: it is opened as
+/// the manifest on Windows and macOS but not on Linux, so it must be renamed.
+fn miscased_manifest(rel: &str) -> Option<Diagnostic> {
+    (rel != MANIFEST && rel.eq_ignore_ascii_case(MANIFEST)).then(|| {
+        Diagnostic::without_location(
+            codes::V14,
+            Severity::Error,
+            format!("the manifest must be named `{MANIFEST}`, not `{rel}`"),
+            rel,
+        )
+        .with_help(format!("rename `{rel}` to `{MANIFEST}`"))
+    })
 }
 
 /// Regular files under `root` as normalized relative paths. Symbolic links are
@@ -66,6 +84,7 @@ pub fn walk(root: &Utf8Path) -> (Vec<String>, Vec<Diagnostic>) {
                     .ok()
                     .and_then(Utf8Path::from_path)
                     .map(|p| normalize(p.as_str()));
+                diags.extend(rel.as_deref().and_then(miscased_manifest));
                 files.extend(rel);
             }
             Ok(_) => {}
