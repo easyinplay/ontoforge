@@ -4,6 +4,14 @@
 //! name and base type, the shared set is a candidate for an interface or a shared
 //! property (a v2 capability). Each shared property set is reported once, on the
 //! first object type by `apiName`.
+//!
+//! Shared sets are found pairwise (CR-01): the properties two object types have in
+//! common, counting only properties that at least three types hold, form a shared
+//! set, and the set is reported when at least three types are linked by exactly that
+//! set. Every listed type holds the whole set. Types with the same candidate
+//! properties are compared once, so the work grows with the square of the number of
+//! different property combinations, not the cube of the number of types. Above
+//! [`MAX_COMBINATIONS`] combinations the rule reports that it did not run instead.
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -15,6 +23,8 @@ use crate::ir::ObjectType;
 const MIN_TYPES: usize = 3;
 /// Properties the types must share.
 const MIN_SHARED: usize = 3;
+/// Different candidate property combinations the rule compares pairwise.
+const MAX_COMBINATIONS: usize = 500;
 
 pub(super) struct W08;
 
@@ -37,41 +47,48 @@ impl LintRule for W08 {
                 *counts.entry(key).or_default() += 1;
             }
         }
-        // Only keys held by at least three types can be shared by three types, so
-        // the triple search below runs over these alone (T-01-35).
-        let candidates: Vec<(&ObjectType, BTreeSet<Key<'_>>)> = cx
-            .ontology
-            .object_types
-            .values()
-            .map(|object| {
-                let frequent = keys_of(object)
-                    .filter(|key| counts[key] >= MIN_TYPES)
-                    .collect::<BTreeSet<_>>();
-                (object, frequent)
-            })
-            .filter(|(_, frequent)| frequent.len() >= MIN_SHARED)
-            .collect();
+        // Only keys held by at least three types can be shared by three types (T-01-35).
+        // Types with the same such keys are grouped, so each combination is compared
+        // once (CR-01).
+        let mut combinations: BTreeMap<BTreeSet<Key<'_>>, Vec<&str>> = BTreeMap::new();
+        for object in cx.ontology.object_types.values() {
+            let frequent: BTreeSet<Key<'_>> = keys_of(object)
+                .filter(|key| counts[key] >= MIN_TYPES)
+                .collect();
+            if frequent.len() >= MIN_SHARED {
+                combinations
+                    .entry(frequent)
+                    .or_default()
+                    .push(object.api_name.as_str());
+            }
+        }
+        let combinations: Vec<(BTreeSet<Key<'_>>, Vec<&str>)> = combinations.into_iter().collect();
+        if combinations.len() > MAX_COMBINATIONS {
+            self.too_many(cx, &combinations, out);
+            return;
+        }
 
         // Shared property set to the names of the types that hold all of it.
         let mut found: BTreeMap<BTreeSet<Key<'_>>, BTreeSet<&str>> = BTreeMap::new();
-        for (i, (a, set_a)) in candidates.iter().enumerate() {
-            for (j, (b, set_b)) in candidates.iter().enumerate().skip(i + 1) {
-                let ab: BTreeSet<Key<'_>> = set_a.intersection(set_b).copied().collect();
-                if ab.len() < MIN_SHARED {
-                    continue;
-                }
-                for (c, set_c) in candidates.iter().skip(j + 1) {
-                    let shared: BTreeSet<Key<'_>> = ab.intersection(set_c).copied().collect();
-                    if shared.len() >= MIN_SHARED {
-                        found.entry(shared).or_default().extend([
-                            a.api_name.as_str(),
-                            b.api_name.as_str(),
-                            c.api_name.as_str(),
-                        ]);
-                    }
+        for (i, (set_a, types_a)) in combinations.iter().enumerate() {
+            if types_a.len() > 1 {
+                // Two types of one combination share all of it.
+                found
+                    .entry(set_a.clone())
+                    .or_default()
+                    .extend(types_a.iter().copied());
+            }
+            for (set_b, types_b) in &combinations[i + 1..] {
+                let shared: BTreeSet<Key<'_>> = set_a.intersection(set_b).copied().collect();
+                if shared.len() >= MIN_SHARED {
+                    found
+                        .entry(shared)
+                        .or_default()
+                        .extend(types_a.iter().chain(types_b).copied());
                 }
             }
         }
+        found.retain(|_, types| types.len() >= MIN_TYPES);
 
         for (shared, types) in found {
             let Some(first) = types.first().and_then(|n| cx.ontology.object_types.get(*n)) else {
@@ -97,6 +114,37 @@ impl LintRule for W08 {
                 ),
             ));
         }
+    }
+}
+
+impl W08 {
+    /// One finding, on the first candidate type, saying the rule did not run.
+    fn too_many(
+        &self,
+        cx: &LintCx<'_>,
+        combinations: &[(BTreeSet<Key<'_>>, Vec<&str>)],
+        out: &mut Vec<Finding>,
+    ) {
+        let types = combinations.iter().flat_map(|(_, types)| types);
+        let Some(first) = types
+            .clone()
+            .min()
+            .and_then(|n| cx.ontology.object_types.get(*n))
+        else {
+            return;
+        };
+        out.push(type_finding(
+            first,
+            format!(
+                "{} object types hold {} different combinations of commonly shared properties, more than the {MAX_COMBINATIONS} this rule compares, so shared property sets were not checked",
+                types.count(),
+                combinations.len()
+            ),
+            format!(
+                "split the ontology or review shared properties by hand; {}",
+                off_hint(self.id())
+            ),
+        ));
     }
 }
 
@@ -218,5 +266,30 @@ mod tests {
             "{:#?}",
             found.first()
         );
+    }
+
+    /// CR-01: past the comparison budget the rule says it did not run.
+    #[test]
+    fn too_many_combinations_are_reported_once() {
+        let docs: Vec<String> = (0..600)
+            .map(|i| {
+                let extra = [
+                    format!("extra{}", i % 7),
+                    format!("more{}", i % 11),
+                    format!("tag{}", i % 13),
+                ];
+                let mut props: Vec<(&str, &str)> = AUDIT.to_vec();
+                props.extend(extra.iter().map(|p| (p.as_str(), "string")));
+                object(&format!("Thing{i}"), "id", &props)
+            })
+            .collect();
+        let found = run_within(5, "ONT-W08", join(&docs));
+        assert_eq!(found.len(), 1, "{found:#?}");
+        assert!(
+            found[0]
+                .message
+                .contains("600 object types hold 600 different")
+        );
+        assert!(found[0].message.contains("were not checked"));
     }
 }
