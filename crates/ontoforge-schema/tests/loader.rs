@@ -156,6 +156,41 @@ fn oversized_in_memory_file_is_rejected() {
     assert_eq!((d.code.as_str(), d.file.as_str()), (codes::V14, "big.yaml"));
 }
 
+/// WR-07: the definition files together have a byte budget.
+#[test]
+fn total_size_budget_stops_reading() {
+    use ontoforge_schema::loader::{MAX_FILE_BYTES, MAX_TOTAL_BYTES};
+    let len = usize::try_from(MAX_FILE_BYTES).unwrap();
+    let full = format!("#{}\n", "a".repeat(len - 2));
+    let count = usize::try_from(MAX_TOTAL_BYTES / MAX_FILE_BYTES).unwrap() + 1;
+    let names: Vec<String> = (0..count).map(|i| format!("f{i:03}.yaml")).collect();
+    let mut files = vec![("ontology.yaml", "apiName: demo\n")];
+    files.extend(names.iter().map(|n| (n.as_str(), full.as_str())));
+    let out = load_from_memory(&files);
+    assert_eq!(codes_of(&out), [codes::V14], "{:#?}", out.diagnostics);
+    let d = &out.diagnostics[0];
+    assert!(d.message.contains("byte budget"), "{}", d.message);
+    assert_eq!(d.file, names[count - 1]);
+    assert!(out.ontology.is_none());
+}
+
+/// WR-07: and a file count budget.
+#[test]
+fn file_count_budget_stops_reading() {
+    use ontoforge_schema::loader::MAX_FILES;
+    let names: Vec<String> = (0..=MAX_FILES).map(|i| format!("f{i:05}.yaml")).collect();
+    let mut files = vec![("ontology.yaml", "apiName: demo\n")];
+    files.extend(names.iter().map(|n| (n.as_str(), "# empty\n")));
+    let out = load_from_memory(&files);
+    assert_eq!(codes_of(&out), [codes::V14], "{:#?}", out.diagnostics);
+    assert!(
+        out.diagnostics[0].message.contains("more than"),
+        "{}",
+        out.diagnostics[0].message
+    );
+    assert!(out.ontology.is_none());
+}
+
 #[test]
 fn non_utf8_file_is_v01() {
     let dir = tempfile::tempdir().unwrap();

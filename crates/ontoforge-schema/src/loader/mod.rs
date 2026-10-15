@@ -35,6 +35,13 @@ type Text = Result<String, Diagnostic>;
 /// Largest definition file the loader reads.
 pub const MAX_FILE_BYTES: u64 = 4 * 1024 * 1024;
 
+/// Most definition files one ontology may select (WR-07).
+pub const MAX_FILES: usize = 10_000;
+
+/// Most bytes all selected definition files may hold together (WR-07). Every text is
+/// kept in the [`SourceMap`] for rendering, so this bounds the loader's memory.
+pub const MAX_TOTAL_BYTES: u64 = 64 * 1024 * 1024;
+
 /// Load the ontology under `root`: parse, merge and validate (every `ONT-V`
 /// check except CEL, which `ontoforge-expr` owns).
 pub fn load_dir(root: &Utf8Path) -> LoadOutput {
@@ -232,7 +239,22 @@ fn assemble(manifest: Text, listing: Listing, read: &dyn Fn(&str) -> Text) -> Lo
     diags.extend(selection.diagnostics);
 
     let mut defs = Defs::default();
-    for path in selection.files {
+    if selection.files.len() > MAX_FILES {
+        diags.push(
+            Diagnostic::without_location(
+                codes::V14,
+                Severity::Error,
+                format!(
+                    "the include patterns select {} files, more than the {MAX_FILES} an ontology may have; only the first {MAX_FILES} were read",
+                    selection.files.len()
+                ),
+                MANIFEST,
+            )
+            .with_help("narrow `include` in the manifest"),
+        );
+    }
+    let mut total: u64 = 0;
+    for path in selection.files.into_iter().take(MAX_FILES) {
         let text = match read(&path) {
             Ok(t) => t,
             Err(d) => {
@@ -240,6 +262,18 @@ fn assemble(manifest: Text, listing: Listing, read: &dyn Fn(&str) -> Text) -> Lo
                 continue;
             }
         };
+        total += text.len() as u64;
+        if total > MAX_TOTAL_BYTES {
+            diags.push(Diagnostic::without_location(
+                codes::V14,
+                Severity::Error,
+                format!(
+                    "definition files exceed the {MAX_TOTAL_BYTES} byte budget of an ontology; this file and the ones after it were not read"
+                ),
+                path,
+            ));
+            break;
+        }
         let parsed = parse::parse_documents(&text, discover::is_json_file(&path));
         let file = sources.add_file(&path, text);
         match parsed {
