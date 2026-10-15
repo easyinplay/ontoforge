@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V13",
+    "severity": "error",
+    "message": "cannot compare int with string (at 1:21 in expression)",
+    "file": "defs.yaml",
+    "line": 19,
+    "column": 16,
+    "span": {
+      "offset": 457,
+      "length": 30
+    },
+    "help": null
+  }
+]

@@ -1,0 +1,20 @@
+kind: ObjectType
+apiName: Flight
+primaryKey: flightId
+properties:
+  flightId: { type: string, required: true }
+  delayMinutes: { type: integer }
+---
+kind: ActionType
+apiName: delayFlight
+parameters:
+  flight: { type: { objectReference: Flight }, required: true }
+  delayMinutes: { type: integer, required: true }
+rules:
+  - kind: modifyObject
+    object: flight
+    properties:
+      delayMinutes: { param: delayMinutes }
+submissionCriteria:
+  - condition: "objects.delayMinutes.value > 0"
+    failureMessage: "Delay was rejected"

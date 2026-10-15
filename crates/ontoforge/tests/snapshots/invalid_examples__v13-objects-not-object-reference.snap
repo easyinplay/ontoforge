@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V13",
+    "severity": "error",
+    "message": "`objects.delayMinutes` needs an objectReference parameter, but `delayMinutes` is not one (at 1:1 in expression)",
+    "file": "defs.yaml",
+    "line": 19,
+    "column": 16,
+    "span": {
+      "offset": 457,
+      "length": 32
+    },
+    "help": "objectReference parameters: flight"
+  }
+]
