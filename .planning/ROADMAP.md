@@ -92,14 +92,14 @@ Plans:
   4. 自有 printer 生成的 SQL 经 proptest（任意字符串值往返不改变结构）与真实 Trino / SQLite 执行验证；SQLite 替身在 Windows `cargo test` 全绿
   5. Linux CI 以 Trino + PG service container 跑集成测试，nightly 加跑 Iceberg
 
-**Plans**: 1/10 plans executed（5 waves）
+**Plans**: 2/10 plans executed（5 waves）
 
 Plans:
 
 **Wave 1**
 
 - [x] 02-01-PLAN.md — backing 必填与 Phase 1 fixture 全量迁移、ADR-0021、wave 2 共用前置（read_limited / ProfileName / V16-V20）
-- [ ] 02-02-PLAN.md — ontoforge-engine 骨架：Engine trait、类型化 printer、SQLite 替身执行、proptest
+- [x] 02-02-PLAN.md — ontoforge-engine 骨架：Engine trait、类型化 printer、SQLite 替身执行、proptest
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -221,7 +221,7 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7（纵切片
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Workspace, Schema & Lint | 14/14 | Complete    | 2026-10-16 |
-| 2. Source Binding & Engine | 1/10 | In Progress|  |
+| 2. Source Binding & Engine | 2/10 | In Progress|  |
 | 3. Edit Store & Scope Model | 0/TBD | Not started | - |
 | 4. Scoped L0 Read | 0/TBD | Not started | - |
 | 5. Online Action | 0/TBD | Not started | - |
