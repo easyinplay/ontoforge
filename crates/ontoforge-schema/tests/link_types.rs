@@ -364,3 +364,62 @@ to: { objectType: Flght, apiName: status }
     assert_eq!(d.code, codes::V09);
     assert_eq!(d.line, 5);
 }
+
+// ---- backing (D-02) --------------------------------------------------------
+
+const MANY_TO_MANY: &str = "kind: LinkType
+apiName: flightCrew
+cardinality: manyToMany
+from: { objectType: Flight, apiName: crew }
+to: { objectType: Pilot, apiName: assignedFlights }
+";
+
+#[test]
+fn many_to_many_without_backing_is_v05() {
+    let out = load(MANY_TO_MANY);
+    let d = only(&out);
+    assert_eq!(d.code, codes::V05);
+    assert!(d.message.contains("flightCrew"), "{}", d.message);
+    assert!(d.message.contains("`backing`"), "{}", d.message);
+    // Located on the `cardinality` value.
+    assert_eq!((d.file.as_str(), d.line, d.column), ("links.yaml", 3, 14));
+    assert_eq!(
+        d.help.as_deref(),
+        Some("add `backing: source` or `backing: editOnly`"),
+        "{d:?}"
+    );
+}
+
+#[test]
+fn many_to_many_with_backing_loads() {
+    let out = load(&format!("{MANY_TO_MANY}backing: source\n"));
+    let json = ontology_json(&out);
+    assert_eq!(json["linkTypes"]["flightCrew"]["backing"], "source");
+}
+
+#[test]
+fn one_to_many_with_backing_is_v11() {
+    let out = load(&format!("{ONE_TO_MANY}backing: source\n"));
+    let d = only(&out);
+    assert_eq!(d.code, codes::V11);
+    // Located on the `backing` key.
+    assert_eq!((d.file.as_str(), d.line, d.column), ("links.yaml", 6, 1));
+    assert!(d.message.contains("flightDepartureAirport"), "{}", d.message);
+    assert!(d.help.as_deref().unwrap().contains("`to`"), "{d:?}");
+}
+
+#[test]
+fn one_to_one_with_backing_is_v11() {
+    let out = load(
+        "kind: LinkType
+apiName: aircraftCurrentMaintenance
+cardinality: oneToOne
+from: { objectType: Aircraft, apiName: currentMaintenanceRecord }
+to: { objectType: MaintenanceRecord, apiName: aircraft, foreignKey: aircraftTailNumber }
+backing: editOnly
+",
+    );
+    let d = only(&out);
+    assert_eq!(d.code, codes::V11);
+    assert_eq!((d.line, d.column), (6, 1));
+}

@@ -242,3 +242,59 @@ fn duplicate_object_type_reports_first_location() {
     assert_eq!(d.file, "b.yaml");
     assert!(d.message.contains("a.yaml:2:10"), "{}", d.message);
 }
+
+// ---- backing (D-02) --------------------------------------------------------
+
+#[test]
+fn object_without_backing_is_v05() {
+    let out = load(GOOD);
+    let d = only(&out);
+    assert_eq!(d.code, codes::V05);
+    assert_eq!(d.message, "missing required field `backing`");
+    assert_eq!((d.file.as_str(), d.line, d.column), ("objects.yaml", 1, 7));
+}
+
+#[test]
+fn unknown_backing_value_is_v06() {
+    let out = load(&format!("{GOOD}backing: sourced\n"));
+    let d = only(&out);
+    assert_eq!(d.code, codes::V06);
+    assert_eq!(d.help.as_deref(), Some("did you mean `source`?"), "{d:?}");
+}
+
+#[test]
+fn both_backing_values_load() {
+    for (value, json) in [("source", "source"), ("editOnly", "editOnly")] {
+        let out = load(&format!("{GOOD}backing: {value}\n"));
+        assert!(out.diagnostics.is_empty(), "{value}: {:#?}", out.diagnostics);
+        let json_ir = serde_json::to_value(object(&out, "Airport")).expect("serializable IR");
+        assert_eq!(json_ir["backing"], json, "{value}");
+    }
+}
+
+#[test]
+fn aviation_backing_values() {
+    let out = ontoforge_schema::load_dir(&camino::Utf8PathBuf::from(format!(
+        "{}/../../examples/ontologies/aviation",
+        env!("CARGO_MANIFEST_DIR")
+    )));
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+    let ir = serde_json::to_value(out.ontology.expect("ontology")).expect("serializable IR");
+    for (name, backing) in [
+        ("Airport", "editOnly"),
+        ("Aircraft", "source"),
+        ("Flight", "source"),
+        ("Pilot", "source"),
+        ("MaintenanceRecord", "source"),
+    ] {
+        assert_eq!(ir["objectTypes"][name]["backing"], backing, "{name}");
+    }
+    let links = ir["linkTypes"].as_object().expect("linkTypes map");
+    for (name, link) in links {
+        if name == "flightCrew" {
+            assert_eq!(link["backing"], "source", "{name}");
+        } else {
+            assert!(link.get("backing").is_none_or(serde_json::Value::is_null), "{name}: {link}");
+        }
+    }
+}
