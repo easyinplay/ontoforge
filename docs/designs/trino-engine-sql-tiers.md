@@ -430,7 +430,7 @@ L2 边界（显式例外）：
 - [ ] **E10 (P2, human ~1d / CC ~20min)** — audit — 读审计异步队列 + `AuditUnavailable`（D11、D15）
 - [ ] **E11 (P2, human ~2d / CC ~40min)** — ci — PR / nightly 矩阵（D9）
 - [ ] **E12 (P2, human ~1d / CC ~20min)** — release — 三平台二进制 release workflow（分发缺口）
-- [ ] **E13 (P1, human ~0.5d / CC ~20min)** — planning — 经 GSD 重排 ROADMAP / REQUIREMENTS
+- [x] **E13 (P1, human ~0.5d / CC ~20min)** — planning — 经 GSD 重排 ROADMAP / REQUIREMENTS（D26：Phase 2–7 原地替换，v1 需求 79 条）
 
 CEO review 的 T1–T12 继续有效；T13（锁定 6 个必解项）已由 D4、D5、D13、D18 与 D-misc 完成。
 

@@ -1,19 +1,19 @@
 ---
 gsd_state_version: "1.0"
 current_phase: 2
-current_phase_name: Storage & Edit Log
+current_phase_name: Source Binding & Engine
 status: planning
 stopped_at: Phase 01 complete, ready to plan Phase 2
-last_updated: "2026-10-16T13:04:15.870Z"
+last_updated: "2026-10-16T14:16:21.052Z"
 last_activity: 2026-10-16
 last_activity_desc: Phase 01 complete, transitioned to Phase 2
-state_head: 1a71579d4aa1f4976d070ee7555c2c7277b50a03
+state_head: 53cedcaa62d798e54cbbfa527122e932dba8309e
 progress:
   total_phases: 7
-  completed_phases: 1
+  completed_phases: 0
   total_plans: 14
   completed_plans: 14
-  percent: 14
+  percent: 0
 ---
 
 # Project State
@@ -23,16 +23,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-16)
 
 **Core value:** 定义一次 ontology，应用和 agent 就能通过 REST 与 MCP 对同一份对象图做受控读写：写入一律经 Action 校验与授权，每次写入都可审计。
-**Current focus:** 重排 Phase 2+（Trino 主引擎方向），先跑 spike 3b → ADR 修订 → GSD 重排 ROADMAP / REQUIREMENTS
+**Current focus:** Phase 2 — Source Binding & Engine
 
 ## Current Position
 
-Phase: 2 — Storage & Edit Log
+Phase: 2 — Source Binding & Engine
 Plan: Not started
-Status: Ready to plan — ⚠️ 现 ROADMAP 的 Phase 2 定义已被 `docs/designs/trino-engine-sql-tiers.md`（eng review D1–D23）取代，不要按原文规划
+Status: Ready to plan（ROADMAP 已按设计文档 D1–D26 重排）
 Last activity: 2026-10-16 — Phase 01 complete, transitioned to Phase 2
 
-Progress: [█░░░░░░░░░] 14%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -73,9 +73,16 @@ None yet.
 
 ### Blockers/Concerns
 
-- [Next]: spike 3b（D16）为重排前门禁，其中 resource group 测量需要公司 Trino 管理员权限
-- [Next]: 写 / 修订 ADR 0003、0004、0005、0008 + 新 engine ADR（E2）
 - [Ops]: 测试凭据待轮换（`ontoforge_trino_ro`、postgres），测试 catalog `ontoforge_pg` 待删除
+
+### Roadmap Evolution
+
+- Phase 2 edited: re-planned per Trino engine design D1-D26 / ADR-0015..0020: title, goal, requirements, success_criteria
+- Phase 3 edited: re-planned per Trino engine design D1-D26 / ADR-0015..0020: title, goal, requirements, success_criteria
+- Phase 4 edited: re-planned per Trino engine design D1-D26 / ADR-0015..0020: title, goal, requirements, success_criteria
+- Phase 5 edited: re-planned per Trino engine design D1-D26 / ADR-0015..0020: title, goal, requirements, success_criteria
+- Phase 6 edited: re-planned per Trino engine design D1-D26 / ADR-0015..0020: title, goal, requirements, success_criteria
+- Phase 7 edited: re-planned per Trino engine design D1-D26 / ADR-0015..0020: title, goal, requirements, success_criteria
 
 ## Deferred Items
 
@@ -86,5 +93,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-10-16
-Stopped at: Phase 01 complete; next = spike 3b → ADR → 重排 ROADMAP
+Stopped at: ROADMAP re-planned (D1–D26); next = /gsd-discuss-phase 2 或 /gsd-plan-phase 2
 Resume file: None
