@@ -36,7 +36,7 @@
   4. `ontoforge lint` 运行适用于 v1 schema 范围的 ONT-E 规则与 ONT-W01–W11，输出人类可读（带源码定位）与 JSON 两种格式；有 E 级问题时退出码非 0；配置文件可按规则 ID 关闭规则或调整严重级
   5. 开发者可以导出 ontology 定义的 JSON Schema，仓库内示例 ontology 通过该 Schema 校验
 
-**Plans**: 13/13 plans executed（6 waves）
+**Plans**: 13/14 plans executed（6 waves + gap closure）
 
 Plans:
 
@@ -70,6 +70,10 @@ Plans:
 - [x] 01-13-PLAN.md — 用现成 crate 替换手写实现（toml DeTable、heck、anstream、行列换算去重）
 - [x] 01-10-PLAN.md — ONT-W01..W05 命名规则
 - [x] 01-11-PLAN.md — ONT-W06..W11 结构规则与 phase 门禁
+
+**Gap closure**（UAT G-1-2）
+
+- [ ] 01-14-PLAN.md — 多文档 YAML 的编辑器 schema 关联（项目级 yaml.schemas、每个 document 的 modeline、回归测试）
 
 **Details**: `.planning/phases/01-workspace-schema-lint/`
 
