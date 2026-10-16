@@ -5,15 +5,17 @@
 //! `X-Trino-Set-*` response headers are ignored. Not implemented on purpose: spooling,
 //! transactions, prepared statements, Kerberos.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::time::Duration;
 
 use reqwest::{Client, Method, RequestBuilder, Url};
 use secrecy::SecretString;
 
+use crate::printer::ast::{CompareOp, Expr, Literal, OrderItem, Select, SelectItem};
+use crate::printer::print_select;
 use crate::{
-    Column, Dialect, Engine, EngineError, EngineStatus, PhysicalColumn, PrintedSql, QueryContext,
-    QueryOutput, TableRef, Value,
+    Column, DEFAULT_MAX_BYTES, Dialect, Engine, EngineError, EngineStatus, PhysicalColumn,
+    PhysicalType, PrintedSql, QueryContext, QueryOutput, TableRef, Value,
 };
 
 mod client;
@@ -287,23 +289,172 @@ impl Engine for TrinoEngine {
         Ok(collector.finish())
     }
 
-    // Placeholder until the information_schema query lands in the next task of this plan.
-    #[allow(clippy::unused_async_trait_impl)]
     async fn describe_tables(
         &self,
-        _tables: &[TableRef],
-        _ctx: &QueryContext,
+        tables: &[TableRef],
+        ctx: &QueryContext,
     ) -> Result<BTreeMap<TableRef, Vec<PhysicalColumn>>, EngineError> {
-        Err(EngineError::Config(
-            "describe_tables is not implemented yet".to_owned(),
-        ))
+        let Some(first) = tables.first() else {
+            return Ok(BTreeMap::new());
+        };
+        if let Some(other) = tables.iter().find(|t| t.catalog != first.catalog) {
+            return Err(EngineError::Config(format!(
+                "describe_tables needs one catalog per call, got `{}` and `{}`",
+                first.catalog, other.catalog
+            )));
+        }
+        let sql = print_select(
+            &columns_query(first.catalog.clone(), tables),
+            Dialect::Trino,
+        )?;
+        let output = match self.execute(&sql, ctx).await {
+            Ok(output) => output,
+            // A catalog or schema that does not exist has no tables.
+            Err(EngineError::Query { error_name, .. })
+                if error_name == "CATALOG_NOT_FOUND" || error_name == "SCHEMA_NOT_FOUND" =>
+            {
+                return Ok(BTreeMap::new());
+            }
+            Err(e) => return Err(e),
+        };
+        if output.truncated {
+            // An incomplete column list would read as missing columns.
+            return Err(EngineError::Protocol(format!(
+                "column metadata of catalog `{}` was truncated by max_rows / max_bytes",
+                first.catalog
+            )));
+        }
+        group_columns(tables, &output.rows)
     }
 
-    // Placeholder, see `describe_tables`.
-    #[allow(clippy::unused_async_trait_impl)]
     async fn status(&self) -> EngineStatus {
-        EngineStatus::Unavailable {
-            reason: "status is not implemented yet".to_owned(),
+        let ctx = QueryContext {
+            trace_token: "ontoforge-status".to_owned(),
+            client_tags: vec!["ontoforge".to_owned()],
+            timeout: Duration::from_secs(5),
+            max_rows: 1,
+            max_bytes: DEFAULT_MAX_BYTES,
+        };
+        let probe = Select {
+            projection: vec![SelectItem {
+                expr: Expr::Literal(Literal::Long(1)),
+                alias: None,
+            }],
+            from: None,
+            filter: None,
+            group_by: Vec::new(),
+            having: None,
+            order_by: Vec::new(),
+            limit: None,
+        };
+        let result = match print_select(&probe, Dialect::Trino) {
+            Ok(sql) => self.execute(&sql, &ctx).await,
+            Err(e) => Err(EngineError::Print(e)),
+        };
+        match result {
+            Ok(_) => EngineStatus::Available,
+            Err(e) => EngineStatus::Unavailable {
+                reason: e.to_string(),
+            },
         }
     }
+}
+
+/// `SELECT .. FROM <catalog>.information_schema.columns WHERE <one condition per table>`.
+/// Trino exposes identifiers in lower case, so the filter values are lower-cased.
+fn columns_query(catalog: String, tables: &[TableRef]) -> Select {
+    let equals = |column: &str, value: String| Expr::Compare {
+        left: Box::new(Expr::Column(column.to_owned())),
+        op: CompareOp::Eq,
+        right: Box::new(Expr::Literal(Literal::String(value))),
+    };
+    let mut conditions: Vec<Expr> = tables
+        .iter()
+        .map(|t| {
+            Expr::And(vec![
+                equals("table_schema", t.schema.to_lowercase()),
+                equals("table_name", t.table.to_lowercase()),
+            ])
+        })
+        .collect();
+    let filter = if conditions.len() == 1 {
+        conditions.remove(0)
+    } else {
+        Expr::Or(conditions)
+    };
+    let item = |name: &str| SelectItem {
+        expr: Expr::Column(name.to_owned()),
+        alias: None,
+    };
+    let ascending = |name: &str| OrderItem {
+        expr: Expr::Column(name.to_owned()),
+        descending: false,
+        nulls_first: false,
+    };
+    Select {
+        projection: vec![
+            item("table_schema"),
+            item("table_name"),
+            item("column_name"),
+            item("data_type"),
+            item("is_nullable"),
+        ],
+        from: Some(TableRef {
+            catalog,
+            schema: "information_schema".to_owned(),
+            table: "columns".to_owned(),
+        }),
+        filter: Some(filter),
+        group_by: Vec::new(),
+        having: None,
+        order_by: vec![
+            ascending("table_schema"),
+            ascending("table_name"),
+            ascending("ordinal_position"),
+        ],
+        limit: None,
+    }
+}
+
+/// Files the rows of `columns_query` under the `TableRef` that was asked for.
+fn group_columns(
+    tables: &[TableRef],
+    rows: &[Vec<Value>],
+) -> Result<BTreeMap<TableRef, Vec<PhysicalColumn>>, EngineError> {
+    let mut asked: HashMap<(String, String), Vec<&TableRef>> = HashMap::new();
+    for t in tables {
+        asked
+            .entry((t.schema.to_lowercase(), t.table.to_lowercase()))
+            .or_default()
+            .push(t);
+    }
+    let mut described: BTreeMap<TableRef, Vec<PhysicalColumn>> = BTreeMap::new();
+    for row in rows {
+        let [
+            Value::String(schema),
+            Value::String(table),
+            Value::String(column),
+            Value::String(data_type),
+            Value::String(nullable),
+        ] = row.as_slice()
+        else {
+            return Err(EngineError::Protocol(
+                "an information_schema.columns row has an unexpected shape".to_owned(),
+            ));
+        };
+        let Some(targets) = asked.get(&(schema.to_lowercase(), table.to_lowercase())) else {
+            continue;
+        };
+        for target in targets {
+            described
+                .entry((*target).clone())
+                .or_default()
+                .push(PhysicalColumn {
+                    name: column.clone(),
+                    physical: PhysicalType::parse(data_type),
+                    nullable: nullable.eq_ignore_ascii_case("YES"),
+                });
+        }
+    }
+    Ok(described)
 }

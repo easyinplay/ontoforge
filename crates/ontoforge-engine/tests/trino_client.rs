@@ -622,7 +622,7 @@ fn expected_describe_sql(catalog: &str, pairs: &[(&str, &str)]) -> String {
         .to_owned()
 }
 
-fn page(rows: serde_json::Value) -> serde_json::Value {
+fn page(rows: &serde_json::Value) -> serde_json::Value {
     json!({ "id": "q1", "columns": info_columns(), "data": rows, "stats": { "state": "FINISHED" } })
 }
 
@@ -631,7 +631,7 @@ async fn describe_tables_batches_one_catalog() {
     let server = MockServer::start().await;
     mount_post(
         &server,
-        page(json!([
+        page(&json!([
             ["aviation", "flights", "flight_id", "varchar", "NO"],
             ["aviation", "flights", "departure", "timestamp(3)", "YES"],
             ["aviation", "flights", "seats", "integer", "YES"],
@@ -688,7 +688,7 @@ async fn describe_tables_batches_one_catalog() {
 #[tokio::test]
 async fn describe_single_table_uses_a_single_condition() {
     let server = MockServer::start().await;
-    mount_post(&server, page(json!([]))).await;
+    mount_post(&server, page(&json!([]))).await;
     engine_for(&server)
         .describe_tables(&[table("demo", "aviation", "flights")], &ctx())
         .await
@@ -705,7 +705,7 @@ async fn describe_tables_lowercases_names() {
     let server = MockServer::start().await;
     mount_post(
         &server,
-        page(json!([[
+        page(&json!([[
             "aviation",
             "flights",
             "flight_id",
@@ -739,7 +739,7 @@ async fn describe_missing_tables_absent() {
     let pilots = table("demo", "aviation", "pilots");
 
     let server = MockServer::start().await;
-    mount_post(&server, page(json!([]))).await;
+    mount_post(&server, page(&json!([]))).await;
     let described = engine_for(&server)
         .describe_tables(&[flights.clone(), pilots.clone()], &ctx())
         .await
@@ -749,7 +749,7 @@ async fn describe_missing_tables_absent() {
     let server = MockServer::start().await;
     mount_post(
         &server,
-        page(json!([[
+        page(&json!([[
             "aviation",
             "flights",
             "flight_id",
@@ -797,7 +797,7 @@ async fn describe_truncated_metadata_is_error() {
     let server = MockServer::start().await;
     mount_post(
         &server,
-        page(json!([
+        page(&json!([
             ["aviation", "flights", "a", "varchar", "NO"],
             ["aviation", "flights", "b", "varchar", "NO"],
             ["aviation", "flights", "c", "varchar", "NO"]
