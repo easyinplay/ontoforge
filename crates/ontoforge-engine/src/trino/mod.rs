@@ -11,6 +11,7 @@ use std::time::Duration;
 use reqwest::{Client, Method, RequestBuilder, Url};
 use secrecy::SecretString;
 
+use self::cancel::QueryGuard;
 use crate::printer::ast::{CompareOp, Expr, Literal, OrderItem, Select, SelectItem};
 use crate::printer::print_select;
 use crate::{
@@ -18,6 +19,7 @@ use crate::{
     PhysicalType, PrintedSql, QueryContext, QueryOutput, TableRef, Value,
 };
 
+mod cancel;
 mod classify;
 mod client;
 mod decode;
@@ -199,20 +201,73 @@ fn same_origin(a: &Url, b: &Url) -> bool {
         && a.port_or_known_default() == b.port_or_known_default()
 }
 
+impl TrinoEngine {
+    /// The statement protocol: submit, then follow `nextUri` until the last page, a limit or
+    /// an error. `guard` always knows the `DELETE` for the newest `nextUri`.
+    async fn run(
+        &self,
+        sql: &PrintedSql,
+        ctx: &QueryContext,
+        guard: &mut QueryGuard,
+    ) -> Result<QueryOutput, EngineError> {
+        let max_page = self.conn.max_page_bytes;
+        let mut page = client::send(
+            || {
+                Ok(self
+                    .request(Method::POST, self.statement_url.clone(), ctx, true)?
+                    .body(sql.as_str().to_owned()))
+            },
+            true,
+            max_page,
+        )
+        .await?;
+        let mut collector = Collector::new(ctx.max_rows, ctx.max_bytes);
+        loop {
+            let next_url = page
+                .next_uri
+                .take()
+                .map(|uri| self.checked_next_uri(&uri))
+                .transpose()?;
+            guard.advance(
+                next_url
+                    .as_ref()
+                    .and_then(|url| self.request(Method::DELETE, url.clone(), ctx, false).ok()),
+            );
+            collector.absorb(page)?;
+            let Some(next_url) = next_url else { break };
+            if collector.truncated {
+                break;
+            }
+            page = client::send(
+                || self.request(Method::GET, next_url.clone(), ctx, false),
+                false,
+                max_page,
+            )
+            .await?;
+        }
+        Ok(collector.finish())
+    }
+}
+
 /// Rows and columns gathered over all pages.
 struct Collector {
     columns: Option<Vec<Column>>,
     rows: Vec<Vec<Value>>,
     max_rows: usize,
+    max_bytes: usize,
+    /// JSON bytes of the cells kept so far.
+    bytes: usize,
     truncated: bool,
 }
 
 impl Collector {
-    fn new(max_rows: usize) -> Self {
+    fn new(max_rows: usize, max_bytes: usize) -> Self {
         Self {
             columns: None,
             rows: Vec::new(),
             max_rows,
+            max_bytes,
+            bytes: 0,
             truncated: false,
         }
     }
@@ -236,10 +291,14 @@ impl Collector {
                     columns.len()
                 )));
             }
-            if self.rows.len() >= self.max_rows {
+            let row_bytes = json_len(&row);
+            if self.rows.len() >= self.max_rows
+                || self.bytes.saturating_add(row_bytes) > self.max_bytes
+            {
                 self.truncated = true;
                 break;
             }
+            self.bytes += row_bytes;
             self.rows.push(decode::decode_row(columns, &row));
         }
         Ok(())
@@ -254,6 +313,24 @@ impl Collector {
     }
 }
 
+/// Size of `row` as compact JSON, the unit `max_bytes` is counted in.
+fn json_len(row: &[serde_json::Value]) -> usize {
+    struct Counter(usize);
+    impl std::io::Write for Counter {
+        fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+            self.0 += buf.len();
+            Ok(buf.len())
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+    let mut counter = Counter(0);
+    // Writing JSON into a counter cannot fail.
+    let _ = serde_json::to_writer(&mut counter, row);
+    counter.0
+}
+
 impl Engine for TrinoEngine {
     fn dialect(&self) -> Dialect {
         Dialect::Trino
@@ -264,37 +341,35 @@ impl Engine for TrinoEngine {
         sql: &PrintedSql,
         ctx: &QueryContext,
     ) -> Result<QueryOutput, EngineError> {
-        let max_page = self.conn.max_page_bytes;
-        let mut page = client::send(
-            || {
-                Ok(self
-                    .request(Method::POST, self.statement_url.clone(), ctx, true)?
-                    .body(sql.as_str().to_owned()))
-            },
-            true,
-            max_page,
-        )
-        .await?;
-        let mut collector = Collector::new(ctx.max_rows);
-        loop {
-            let next_url = page
-                .next_uri
-                .take()
-                .map(|uri| self.checked_next_uri(&uri))
-                .transpose()?;
-            collector.absorb(page)?;
-            let Some(next_url) = next_url else { break };
-            if collector.truncated {
-                break;
+        // Dropped on every exit, including the caller dropping this future: an unfinished
+        // guard cancels the query on the coordinator.
+        let mut guard = QueryGuard::new();
+        match tokio::time::timeout(ctx.timeout, self.run(sql, ctx, &mut guard)).await {
+            Err(_elapsed) => {
+                guard.cancel_now().await;
+                Err(EngineError::Timeout {
+                    after_ms: u64::try_from(ctx.timeout.as_millis()).unwrap_or(u64::MAX),
+                })
             }
-            page = client::send(
-                || self.request(Method::GET, next_url.clone(), ctx, false),
-                false,
-                max_page,
-            )
-            .await?;
+            Ok(Ok(output)) => {
+                if output.truncated {
+                    // The rest of the result is not wanted.
+                    guard.cancel_now().await;
+                } else {
+                    guard.finish();
+                }
+                Ok(output)
+            }
+            // The server itself reported the failure: the query is over there.
+            Ok(Err(error @ EngineError::Query { .. })) => {
+                guard.finish();
+                Err(error)
+            }
+            Ok(Err(error)) => {
+                guard.cancel_now().await;
+                Err(error)
+            }
         }
-        Ok(collector.finish())
     }
 
     async fn describe_tables(
