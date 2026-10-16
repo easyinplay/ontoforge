@@ -8,10 +8,19 @@ use crate::error::PrintError;
 
 /// Quotes `s` as a SQL string literal. Rejects NUL: SQLite's C API truncates SQL text there.
 pub(super) fn quote_string(s: &str) -> Result<String, PrintError> {
-    Ok(s.to_owned())
+    if s.contains('\0') {
+        return Err(PrintError::NulInString);
+    }
+    Ok(format!("'{}'", s.replace('\'', "''")))
 }
 
 /// Quotes `s` as a delimited identifier. Rejects the empty string and NUL.
 pub(super) fn quote_ident(s: &str) -> Result<String, PrintError> {
-    Ok(s.to_owned())
+    if s.is_empty() {
+        return Err(PrintError::EmptyIdentifier);
+    }
+    if s.contains('\0') {
+        return Err(PrintError::NulInIdentifier);
+    }
+    Ok(format!("\"{}\"", s.replace('"', "\"\"")))
 }

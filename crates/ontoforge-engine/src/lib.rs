@@ -58,9 +58,9 @@ impl QueryContext {
         Self {
             trace_token,
             client_tags,
-            timeout: Duration::ZERO,
-            max_rows: 0,
-            max_bytes: 0,
+            timeout: Duration::from_millis(DEFAULT_QUERY_TIMEOUT_MS),
+            max_rows: DEFAULT_MAX_ROWS,
+            max_bytes: DEFAULT_MAX_BYTES,
         }
     }
 }

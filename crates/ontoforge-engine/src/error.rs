@@ -81,7 +81,17 @@ impl EngineError {
     /// Stable upper-snake error code.
     #[must_use]
     pub fn code(&self) -> &'static str {
-        ""
+        match self {
+            Self::Unavailable { .. } => "ENGINE_UNAVAILABLE",
+            Self::Unauthorized { .. } => "ENGINE_UNAUTHORIZED",
+            Self::Timeout { .. } => "ENGINE_TIMEOUT",
+            Self::Cancelled => "ENGINE_CANCELLED",
+            Self::Query { .. } => "ENGINE_QUERY_FAILED",
+            Self::Protocol(_) => "ENGINE_PROTOCOL_ERROR",
+            Self::Print(_) => "SQL_PRINT_ERROR",
+            Self::Config(_) => "ENGINE_CONFIG_ERROR",
+            Self::Fixture(_) => "ENGINE_FIXTURE_ERROR",
+        }
     }
 
     /// Whether the engine as a whole cannot serve this round of requests.
@@ -91,6 +101,12 @@ impl EngineError {
     /// with the others.
     #[must_use]
     pub fn is_engine_wide(&self) -> bool {
-        false
+        matches!(
+            self,
+            Self::Unavailable { .. }
+                | Self::Unauthorized { .. }
+                | Self::Cancelled
+                | Self::Config(_)
+        )
     }
 }
