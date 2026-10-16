@@ -1,6 +1,16 @@
 //! ONT-W17: a bound column is missing from the binding's fixture (D-03).
+//!
+//! The offline part of "a property has no column in the bound table": a binding that
+//! names a fixture is compared with the header the loader recorded for it. Columns
+//! that exist only in the real table are checked by `validate --online` (ONT-V17).
+//! A fixture whose header cannot be read is reported as well, so a broken fixture
+//! never makes the lint look clean (E20).
 
+use std::collections::HashSet;
+
+use super::{all_bindings, binding_def};
 use crate::lint::{Finding, Level, LintCx, LintRule};
+use crate::loader::sourcemap::{Part, Seg};
 
 pub(super) struct W17;
 
@@ -15,7 +25,61 @@ impl LintRule for W17 {
         Level::Warn
     }
 
-    fn check(&self, _cx: &LintCx<'_>, _out: &mut Vec<Finding>) {}
+    fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {
+        for (profile, binding) in all_bindings(cx.ontology) {
+            let Some(fixture) = &binding.fixture else {
+                continue;
+            };
+            let def = binding_def(profile, binding);
+            let Some(header) = cx.sources.fixture_columns(&def.api_name) else {
+                continue;
+            };
+            let finding = |path: &[&str], message: String, help: String| Finding {
+                def: def.clone(),
+                path: path.iter().map(|k| Seg::Key((*k).to_owned())).collect(),
+                part: Part::Value,
+                message,
+                help: Some(help),
+                severity: None,
+            };
+            let header = match header {
+                Ok(header) => header,
+                Err(reason) => {
+                    out.push(finding(
+                        &["fixture", "file"],
+                        format!(
+                            "cannot read the header of fixture `{}`: {reason}; bound columns cannot be checked offline",
+                            fixture.file
+                        ),
+                        "fix the fixture, or run `ontoforge validate --online` to check the binding"
+                            .to_owned(),
+                    ));
+                    continue;
+                }
+            };
+            // Column names compare without regard to case, like the engine's tables.
+            let present: HashSet<String> = header.iter().map(|c| c.to_lowercase()).collect();
+            for column in cx.ontology.bound_columns(binding) {
+                if present.contains(&column.column.to_lowercase()) {
+                    continue;
+                }
+                let path: &[&str] = if column.explicit {
+                    &["columns", column.key, "column"]
+                } else {
+                    &["fixture", "file"]
+                };
+                out.push(finding(
+                    path,
+                    format!(
+                        "fixture `{}` has no column `{}` for `{}`",
+                        fixture.file, column.column, column.key
+                    ),
+                    "add the column to the fixture, or map the property with `columns.<key>.column`"
+                        .to_owned(),
+                ));
+            }
+        }
+    }
 }
 
 #[cfg(test)]

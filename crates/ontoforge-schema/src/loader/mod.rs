@@ -1,6 +1,6 @@
 //! Loading an ontology directory: parse, dispatch, merge, validate.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 
 use camino::Utf8Path;
 
@@ -24,7 +24,7 @@ pub use discover::{fixture_path, profile_dir};
 use dispatch::{Ctx, dispatch, parse_manifest};
 pub use fixture::fixture_header;
 pub use sourcemap::SourceMap;
-use sourcemap::{DefKey, DefKind, FileId, Part, Seg};
+use sourcemap::{DefKey, DefKind, FileId, FixtureColumns, Part, Seg};
 
 /// File name of the manifest at the ontology root.
 pub const MANIFEST: &str = "ontology.yaml";
@@ -357,11 +357,71 @@ fn assemble(
     if has_errors(&diags) {
         ontology = None;
     }
+    if let Some(o) = &ontology {
+        capture_fixture_headers(o, &mut sources, read, probe, total);
+    }
     LoadOutput {
         ontology,
         sources,
         diagnostics: diags,
     }
+}
+
+/// Record the header of every fixture the bindings name, for the offline lint rule that
+/// compares it with the bound columns (ONT-W17).
+///
+/// Fixture bytes count against [`MAX_TOTAL_BYTES`] together with the definition files
+/// (`total` is what those already used, E23), and a fixture several bindings share is
+/// read once. A fixture that is not read, or whose header cannot be parsed, is recorded
+/// with the reason instead of being left out, so the rule can say so (E20). Only the
+/// header is kept: the text is dropped after it is parsed.
+fn capture_fixture_headers(
+    ontology: &Ontology,
+    sources: &mut SourceMap,
+    read: &dyn Fn(&str) -> Text,
+    probe: Probe,
+    mut total: u64,
+) {
+    let mut by_path: HashMap<String, FixtureColumns> = HashMap::new();
+    for (profile, bound) in &ontology.bindings {
+        for binding in bound.objects.values().chain(bound.links.values()) {
+            let Some(fixture) = &binding.fixture else {
+                continue;
+            };
+            let def_name = binding_def_name(profile, binding.target_name());
+            let key = DefKey {
+                kind: DefKind::SourceBinding,
+                api_name: def_name.clone(),
+            };
+            let binding_file = sources.locate(&key, &[], Part::Value).file;
+            let columns = match fixture_path(&binding_file, &fixture.file) {
+                Ok(resolved) => by_path
+                    .entry(resolved.clone())
+                    .or_insert_with(|| read_fixture_header(&resolved, read, probe, &mut total))
+                    .clone(),
+                Err(reason) => Err(reason),
+            };
+            sources.set_fixture_columns(def_name, columns);
+        }
+    }
+}
+
+/// The header of the fixture at `path`, adding the bytes read to `total`.
+fn read_fixture_header(
+    path: &str,
+    read: &dyn Fn(&str) -> Text,
+    probe: Probe,
+    total: &mut u64,
+) -> FixtureColumns {
+    let size = probe(path)?;
+    if total.saturating_add(size) > MAX_TOTAL_BYTES {
+        return Err(format!(
+            "fixture skipped: the ontology byte budget of {MAX_TOTAL_BYTES} bytes is exhausted"
+        ));
+    }
+    let text = read(path).map_err(|d| d.message)?;
+    *total += text.len() as u64;
+    fixture_header(path, &text)
 }
 
 fn load_manifest(
