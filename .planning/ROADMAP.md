@@ -92,7 +92,7 @@ Plans:
   4. 自有 printer 生成的 SQL 经 proptest（任意字符串值往返不改变结构）与真实 Trino / SQLite 执行验证；SQLite 替身在 Windows `cargo test` 全绿
   5. Linux CI 以 Trino + PG service container 跑集成测试，nightly 加跑 Iceberg
 
-**Plans**: 4/10 plans executed（5 waves）
+**Plans**: 5/10 plans executed（5 waves）
 
 Plans:
 
@@ -108,7 +108,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 02-05-PLAN.md — phase tracer：`validate --online` 经 SQLite 替身比对绑定、fixture 语义
+- [x] 02-05-PLAN.md — phase tracer：`validate --online` 经 SQLite 替身比对绑定、fixture 语义
 - [ ] 02-06-PLAN.md — Trino client 不可用分类、重试、超时 / 断连 / 上限取消
 - [ ] 02-07-PLAN.md — 类型契约 lint ONT-E13..E16 与 ONT-W17
 
@@ -221,7 +221,7 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7（纵切片
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Workspace, Schema & Lint | 14/14 | Complete    | 2026-10-16 |
-| 2. Source Binding & Engine | 4/10 | In Progress|  |
+| 2. Source Binding & Engine | 5/10 | In Progress|  |
 | 3. Edit Store & Scope Model | 0/TBD | Not started | - |
 | 4. Scoped L0 Read | 0/TBD | Not started | - |
 | 5. Online Action | 0/TBD | Not started | - |

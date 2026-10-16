@@ -32,7 +32,7 @@
 - [ ] **ENGINE-01**: 服务经自写 Trino client 连接部署方已有的 Trino（不打包、不托管），支持超时、断连取消、trace token 与两个服务身份
 - [ ] **ENGINE-02**: Trino 不可用时，需要 Trino 的读写 fail-closed（`EngineUnavailable`），`/health` 与 describe 暴露引擎状态
 - [ ] **ENGINE-03**: 发往 Trino / SQLite 的 SQL 由自有 printer 生成，值只经转义函数输出，注入防护由 proptest 与真实执行验证
-- [ ] **ENGINE-04**: SQLite 替身引擎支撑 Windows 本机 `cargo test` 与 `serve --dev`（不承诺生产）
+- [x] **ENGINE-04**: SQLite 替身引擎支撑 Windows 本机 `cargo test` 与 `serve --dev`（不承诺生产）
 - [ ] **ENGINE-05**: Linux CI 跑 Trino + PG 集成测试，nightly 加跑 Iceberg；SQL Server 由私有 fixture 验证
 
 ### Edit store 与 edit log
@@ -196,7 +196,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ENGINE-01 | Phase 2 | Pending |
 | ENGINE-02 | Phase 2（错误分类与 status()）+ Phase 7（/health 与 describe 暴露，API-01） | Pending |
 | ENGINE-03 | Phase 2 | Pending |
-| ENGINE-04 | Phase 2（SQLite 替身支撑 Windows cargo test）+ Phase 7（serve --dev，DX-01） | Pending |
+| ENGINE-04 | Phase 2（SQLite 替身支撑 Windows cargo test）+ Phase 7（serve --dev，DX-01） | Complete |
 | ENGINE-05 | Phase 2 | Pending |
 | STORE-01 | Phase 3 | Pending |
 | STORE-02 | Phase 3 | Pending |

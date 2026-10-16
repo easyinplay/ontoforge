@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 2
 current_phase_name: Source Binding & Engine
 status: executing
-stopped_at: Completed 02-04-PLAN.md
-last_updated: "2026-10-16T20:09:38.194Z"
+stopped_at: Completed 02-05-PLAN.md
+last_updated: "2026-10-16T20:43:46.651Z"
 last_activity: 2026-10-17
 last_activity_desc: Phase 2 execution started
-state_head: eaf6b0011b5eaa242c132a5b3555f03898353b06
+state_head: f1ed346b21aba8799ecfaa111b44469285eaa08a
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 24
-  completed_plans: 18
+  completed_plans: 19
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-16)
 ## Current Position
 
 Phase: 2 (Source Binding & Engine) — EXECUTING
-Plan: 5 of 10
+Plan: 6 of 10
 Status: Ready to execute
 Last activity: 2026-10-17 — Phase 2 execution started
 
@@ -60,6 +60,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 02 P02 | 15min | 3 tasks | 21 files |
 | Phase 2 P03 | 35min | 3 tasks | 72 files |
 | Phase 02 P04 | 21min | 3 tasks | 10 files |
+| Phase 02 P05 | 30 min | 2 tasks | 26 files |
 
 ## Accumulated Context
 
@@ -78,6 +79,9 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 02]: 02-03: fixture existence and size are probed through metadata only inside assemble; fixture_header, bound_columns and effective_decimal are the single implementations shared with 02-05 and 02-07 — E23 and E7-E9: no content read at load time and no second copy of header, column-name or decimal-default logic
 - [Phase 02]: 02-04: TrinoEngine::new enforces https-only credentials and same-scheme extra origins at the library layer (E2); TrinoConnection is boxed inside TrinoEngine to keep AnyEngine small — Direct construction of TrinoConnection must not bypass the config-layer checks; large_enum_variant clippy gate
 - [Phase 02]: 02-04: max_rows truncation lives in TrinoEngine::execute now; max_bytes, retries, per-request timeout and DELETE cancellation remain for 02-06 — describe_tables treats truncated metadata as an error, so truncation was needed early
+- [Phase 2]: 02-05: fixture decimals are normalized to scale and refused instead of rounded; precision or scale above 38 is refused — decimal text never passes through a float; bounded padding
+- [Phase 2]: 02-05: timestamp fixture fractions above 3 digits are refused (timestamp(3)), integers reject a leading + — no silent loss of information in fixtures
+- [Phase 2]: 02-05: compare_binding uses type families only; geopoint counts as string; family-internal rules stay in 02-08 — plan scope; crossing families is always an error
 
 ### Pending Todos
 
@@ -104,6 +108,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-16T20:09:29.775Z
-Stopped at: Completed 02-04-PLAN.md
+Last session: 2026-10-16T20:43:44.773Z
+Stopped at: Completed 02-05-PLAN.md
 Resume file: None
