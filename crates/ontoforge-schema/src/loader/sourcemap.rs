@@ -55,11 +55,17 @@ struct Entry {
     node: Node,
 }
 
+/// The column names a binding's fixture declares, or why they could not be read. The
+/// reason names a structural problem and never repeats data from the file.
+pub type FixtureColumns = Result<Vec<String>, String>;
+
 #[derive(Debug, Default)]
 pub struct SourceMap {
     files: Vec<SourceFile>,
     defs: HashMap<DefKey, Entry>,
     manifest: Option<Entry>,
+    /// Fixture headers by binding definition name ([`crate::ir::binding_def_name`]).
+    fixture_columns: HashMap<String, FixtureColumns>,
 }
 
 impl SourceMap {
@@ -90,6 +96,17 @@ impl SourceMap {
 
     pub(crate) fn set_manifest(&mut self, file: FileId, node: Node) {
         self.manifest = Some(Entry { file, node });
+    }
+
+    /// Record the header of the fixture of the binding named `def_name`.
+    pub(crate) fn set_fixture_columns(&mut self, def_name: String, columns: FixtureColumns) {
+        self.fixture_columns.insert(def_name, columns);
+    }
+
+    /// The header of the fixture of the binding named `def_name` (`{profile}/{target}`):
+    /// `None` when the binding has no fixture or its header was not looked at.
+    pub fn fixture_columns(&self, def_name: &str) -> Option<&FixtureColumns> {
+        self.fixture_columns.get(def_name)
     }
 
     /// Where `path` of the definition `def` lives. A path that does not exist

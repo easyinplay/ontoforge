@@ -608,7 +608,178 @@ fn merge_binding(
 
 #[cfg(test)]
 mod tests {
-    use super::{ReadFailure, read_limited};
+    use super::{MAX_FILE_BYTES, ReadFailure, load_from_memory, read_limited};
+
+    const MANIFEST: &str = "apiName: demo\n";
+
+    fn object(name: &str) -> String {
+        format!(
+            "kind: ObjectType\napiName: {name}\nprimaryKey: id\nproperties:\n  id: {{ type: string, required: true }}\nbacking: source\n"
+        )
+    }
+
+    fn binding(name: &str, fixture: &str) -> String {
+        format!(
+            "kind: SourceBinding\ntarget: {{ objectType: {name} }}\nsource: {{ catalog: demo, schema: s, table: t }}\nfixture: {{ file: {fixture} }}\n"
+        )
+    }
+
+    #[test]
+    fn fixture_header_is_captured() {
+        let objects = format!("{}---\n{}", object("Flight"), object("Pilot"));
+        let flight = binding("Flight", "fixtures/flights.csv");
+        let pilot = binding("Pilot", "fixtures/pilots.json");
+        let broken = "kind: SourceBinding\ntarget: { objectType: Seat }\nsource: { catalog: demo, schema: s, table: t }\nfixture: { file: fixtures/seats.json }\n";
+        let seat = object("Seat");
+        let files = [
+            ("ontology.yaml", MANIFEST),
+            ("objects.yaml", objects.as_str()),
+            ("seats.yaml", seat.as_str()),
+            ("bindings/dev/flight.yaml", flight.as_str()),
+            (
+                "bindings/dev/fixtures/flights.csv",
+                "\u{feff}id,flight_no\nF-1,LH1\n",
+            ),
+            ("bindings/dev/pilot.yaml", pilot.as_str()),
+            (
+                "bindings/dev/fixtures/pilots.json",
+                r#"[{"id": "P-1"}, {"name": "Ann", "id": "P-2"}]"#,
+            ),
+            ("bindings/dev/seat.yaml", broken),
+            ("bindings/dev/fixtures/seats.json", r#"{"id": "S-1"}"#),
+        ];
+        let out = load_from_memory(&files);
+        assert!(out.ontology.is_some(), "{:#?}", out.diagnostics);
+        let columns = |name: &str| out.sources.fixture_columns(name).cloned();
+        assert_eq!(
+            columns("dev/Flight"),
+            Some(Ok(vec!["id".to_owned(), "flight_no".to_owned()]))
+        );
+        assert_eq!(
+            columns("dev/Pilot"),
+            Some(Ok(vec!["id".to_owned(), "name".to_owned()]))
+        );
+        let Some(Err(reason)) = columns("dev/Seat") else {
+            panic!("a malformed fixture records why it cannot be read");
+        };
+        assert!(reason.contains("array of objects"), "{reason}");
+        // A binding without a fixture has no entry.
+        assert_eq!(columns("dev/Nothing"), None);
+    }
+
+    /// E23: fixtures are read after the definition files and share their byte budget.
+    #[test]
+    fn fixture_bytes_count_toward_budget() {
+        let (objects, bindings, fixtures) = many_fixture_bindings(17, 17);
+        let big = max_size_fixture();
+        let out = load_from_memory(&memory_files(&objects, &bindings, &fixtures, &big));
+        assert!(out.ontology.is_some(), "{:#?}", out.diagnostics);
+        // 64 MiB hold 15 fixtures of 4 MiB next to the small definition files.
+        for (i, letter) in letters(17).enumerate() {
+            let columns = out.sources.fixture_columns(&format!("dev/Item{letter}"));
+            if i < 15 {
+                assert_eq!(columns, Some(&Ok(vec!["id".to_owned()])), "Item{letter}");
+            } else {
+                let Some(Err(reason)) = columns else {
+                    panic!("Item{letter} was read past the budget: {columns:?}");
+                };
+                assert!(reason.contains("byte budget"), "{reason}");
+            }
+        }
+    }
+
+    /// E23: a fixture that several bindings use is read, and counted, once.
+    #[test]
+    fn shared_fixture_is_counted_once() {
+        let (objects, bindings, fixtures) = many_fixture_bindings(17, 15);
+        let big = max_size_fixture();
+        let out = load_from_memory(&memory_files(&objects, &bindings, &fixtures, &big));
+        assert!(out.ontology.is_some(), "{:#?}", out.diagnostics);
+        for letter in letters(17) {
+            let columns = out.sources.fixture_columns(&format!("dev/Item{letter}"));
+            assert_eq!(columns, Some(&Ok(vec!["id".to_owned()])), "Item{letter}");
+        }
+    }
+
+    fn letters(n: u8) -> impl Iterator<Item = char> {
+        (0..n).map(|i| char::from(b'A' + i))
+    }
+
+    /// A CSV with a one-column header that is exactly [`MAX_FILE_BYTES`] long.
+    fn max_size_fixture() -> String {
+        let big = format!(
+            "id\n{}",
+            "x".repeat(usize::try_from(MAX_FILE_BYTES).unwrap() - 3)
+        );
+        assert_eq!(big.len() as u64, MAX_FILE_BYTES);
+        big
+    }
+
+    /// `bindings` object types `ItemA`.. each with a binding; binding `i` uses
+    /// fixture `f{i % distinct}.csv`. Returns the object text, the (path, text) of
+    /// every binding, and the fixture paths.
+    fn many_fixture_bindings(
+        bindings: u8,
+        distinct: u8,
+    ) -> (String, Vec<(String, String)>, Vec<String>) {
+        let objects: Vec<String> = letters(bindings)
+            .map(|l| object(&format!("Item{l}")))
+            .collect();
+        let bound: Vec<(String, String)> = letters(bindings)
+            .zip(0..)
+            .map(|(l, i)| {
+                (
+                    format!("bindings/dev/item-{l}.yaml"),
+                    binding(
+                        &format!("Item{l}"),
+                        &format!("fixtures/f{}.csv", i % distinct),
+                    ),
+                )
+            })
+            .collect();
+        let fixtures = (0..distinct)
+            .map(|i| format!("bindings/dev/fixtures/f{i}.csv"))
+            .collect();
+        (objects.join("---\n"), bound, fixtures)
+    }
+
+    fn memory_files<'a>(
+        objects: &'a str,
+        bindings: &'a [(String, String)],
+        fixtures: &'a [String],
+        fixture_text: &'a str,
+    ) -> Vec<(&'a str, &'a str)> {
+        let mut files = vec![("ontology.yaml", MANIFEST), ("objects.yaml", objects)];
+        files.extend(bindings.iter().map(|(p, t)| (p.as_str(), t.as_str())));
+        files.extend(fixtures.iter().map(|p| (p.as_str(), fixture_text)));
+        files
+    }
+
+    /// E20: bytes that are not UTF-8 are recorded as unreadable, not skipped.
+    #[test]
+    fn fixture_that_is_not_utf8_is_recorded_as_unreadable() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let root = camino::Utf8Path::from_path(dir.path()).expect("utf-8 temp dir");
+        std::fs::create_dir_all(dir.path().join("bindings/dev/fixtures")).unwrap();
+        std::fs::write(dir.path().join("ontology.yaml"), MANIFEST).unwrap();
+        std::fs::write(dir.path().join("objects.yaml"), object("Flight")).unwrap();
+        std::fs::write(
+            dir.path().join("bindings/dev/flight.yaml"),
+            binding("Flight", "fixtures/flights.csv"),
+        )
+        .unwrap();
+        std::fs::write(
+            dir.path().join("bindings/dev/fixtures/flights.csv"),
+            [b'i', b'd', b'\n', 0xff, 0xfe],
+        )
+        .unwrap();
+        let out = super::load_dir(root);
+        assert!(out.ontology.is_some(), "{:#?}", out.diagnostics);
+        let Some(Err(reason)) = out.sources.fixture_columns("dev/Flight") else {
+            panic!("an unreadable fixture records why");
+        };
+        assert!(reason.contains("UTF-8"), "{reason}");
+    }
 
     #[test]
     fn read_limited_custom_limit() {

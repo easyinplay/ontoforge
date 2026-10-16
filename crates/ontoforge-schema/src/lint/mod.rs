@@ -67,9 +67,12 @@ pub struct Finding {
     pub severity: Option<Severity>,
 }
 
-/// What a rule can see: the validated ontology and its own options.
+/// What a rule can see: the validated ontology, the sources it was loaded from, and its
+/// own options.
 pub struct LintCx<'a> {
     pub ontology: &'a Ontology,
+    /// Source texts and what the loader recorded next to them (fixture headers).
+    pub sources: &'a SourceMap,
     options: &'a HashMap<String, OptionValue>,
 }
 
@@ -150,10 +153,10 @@ pub trait LintRule: Sync {
 /// Every rule id that `ontoforge.toml` may mention (D-12: E08, E09 and W01 to W11;
 /// the binding rules E13 to E16 and W17 come from `binding`, and E10 to E12 and W12 to
 /// W16 are taken by the foundry spec).
-pub const KNOWN_RULE_IDS: [&str; 17] = [
+pub const KNOWN_RULE_IDS: [&str; 18] = [
     "ONT-E08", "ONT-E09", "ONT-E13", "ONT-E14", "ONT-E15", "ONT-E16", "ONT-W01", "ONT-W02",
     "ONT-W03", "ONT-W04", "ONT-W05", "ONT-W06", "ONT-W07", "ONT-W08", "ONT-W09", "ONT-W10",
-    "ONT-W11",
+    "ONT-W11", "ONT-W17",
 ];
 
 /// All rules, E rules first. The W rules come from `naming` and `structure`, the
@@ -186,6 +189,7 @@ fn run_rules(
         }
         let cx = LintCx {
             ontology,
+            sources,
             options: config.options(rule.id()).unwrap_or(&no_options),
         };
         let mut findings = Vec::new();
@@ -349,6 +353,7 @@ mod tests {
         assert!(diags.is_empty(), "{diags:#?}");
         let cx = LintCx {
             ontology,
+            sources: &out.sources,
             options: config.options("ONT-W01").unwrap(),
         };
         assert_eq!(cx.option_usize("limit", 1), 7);
