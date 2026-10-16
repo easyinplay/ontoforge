@@ -12,6 +12,7 @@ apiName: Airport
 primaryKey: code
 properties:
   code: { type: string, required: true }
+backing: editOnly
 ---
 kind: ObjectType
 apiName: Flight
@@ -20,18 +21,21 @@ properties:
   flightId: { type: string, required: true }
   departureAirportCode: { type: string }
   status: { type: string }
+backing: editOnly
 ---
 kind: ObjectType
 apiName: Pilot
 primaryKey: employeeId
 properties:
   employeeId: { type: string, required: true }
+backing: editOnly
 ---
 kind: ObjectType
 apiName: Aircraft
 primaryKey: tailNumber
 properties:
   tailNumber: { type: string, required: true }
+backing: editOnly
 ---
 kind: ObjectType
 apiName: MaintenanceRecord
@@ -39,6 +43,7 @@ primaryKey: recordId
 properties:
   recordId: { type: string, required: true }
   aircraftTailNumber: { type: string }
+backing: editOnly
 ";
 
 const ONE_TO_MANY: &str = "kind: LinkType
@@ -93,6 +98,7 @@ apiName: flightCrew
 cardinality: manyToMany
 from: { objectType: Flight, apiName: crew }
 to: { objectType: Pilot, apiName: assignedFlights }
+backing: editOnly
 ",
     );
     let json = ontology_json(&out);
@@ -221,6 +227,7 @@ apiName: flightCrew
 cardinality: manyToMany
 from: { objectType: Flight, apiName: crew }
 to: { objectType: Pilot, apiName: assignedFlights, foreignKey: employeeId }
+backing: editOnly
 ",
     );
     let d = only(&out);
@@ -314,6 +321,7 @@ primaryKey: employeeId
 properties:
   employeeId: { type: string, required: true }
   managerId: { type: string }
+backing: editOnly
 ";
 
 fn self_link(from_end: &str, to_end: &str) -> LoadOutput {
@@ -404,7 +412,11 @@ fn one_to_many_with_backing_is_v11() {
     assert_eq!(d.code, codes::V11);
     // Located on the `backing` key.
     assert_eq!((d.file.as_str(), d.line, d.column), ("links.yaml", 6, 1));
-    assert!(d.message.contains("flightDepartureAirport"), "{}", d.message);
+    assert!(
+        d.message.contains("flightDepartureAirport"),
+        "{}",
+        d.message
+    );
     assert!(d.help.as_deref().unwrap().contains("`to`"), "{d:?}");
 }
 

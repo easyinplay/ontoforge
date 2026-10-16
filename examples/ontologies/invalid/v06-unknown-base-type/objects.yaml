@@ -3,3 +3,4 @@ apiName: Airport
 primaryKey: code
 properties:
   code: { type: strng, required: true }
+backing: editOnly

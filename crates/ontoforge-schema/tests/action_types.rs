@@ -19,12 +19,14 @@ properties:
   tags: { type: array, items: string }
   speed: { type: double }
   ceiling: { type: long }
+backing: editOnly
 ---
 kind: ObjectType
 apiName: Pilot
 primaryKey: employeeId
 properties:
   employeeId: { type: string, required: true }
+backing: editOnly
 ---
 kind: ObjectType
 apiName: MaintenanceRecord
@@ -35,6 +37,7 @@ properties:
   performedAt: { type: timestamp }
   performedBy: { type: string }
   summary: { type: string }
+backing: editOnly
 ";
 
 const LINKS: &str = "kind: LinkType
@@ -42,6 +45,7 @@ apiName: flightCrew
 cardinality: manyToMany
 from: { objectType: Flight, apiName: crew }
 to: { objectType: Pilot, apiName: assignedFlights }
+backing: editOnly
 ";
 
 fn load(actions: &str) -> LoadOutput {

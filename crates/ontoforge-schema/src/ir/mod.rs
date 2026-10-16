@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 
 pub mod action;
 pub mod basetype;
+pub mod binding;
 pub mod link;
 pub mod manifest;
 pub mod names;
@@ -19,6 +20,7 @@ pub use action::{
     ParameterDef, Rule, SubmissionCriterion, ValueSource,
 };
 pub use basetype::BaseType;
+pub use binding::Backing;
 pub use link::{Cardinality, LinkEnd, LinkType};
 pub use manifest::Manifest;
 pub use names::{

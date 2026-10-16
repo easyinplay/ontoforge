@@ -8,10 +8,10 @@ expression: out.diagnostics
     "severity": "error",
     "message": "`Flight` has no property `statuss`",
     "file": "defs.yaml",
-    "line": 17,
+    "line": 18,
     "column": 7,
     "span": {
-      "offset": 360,
+      "offset": 378,
       "length": 7
     },
     "help": "did you mean `status`?"

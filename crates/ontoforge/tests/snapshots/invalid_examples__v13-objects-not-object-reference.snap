@@ -8,10 +8,10 @@ expression: out.diagnostics
     "severity": "error",
     "message": "`objects.delayMinutes` needs an objectReference parameter, but `delayMinutes` is not one (at 1:1 in expression)",
     "file": "defs.yaml",
-    "line": 19,
+    "line": 20,
     "column": 16,
     "span": {
-      "offset": 457,
+      "offset": 475,
       "length": 32
     },
     "help": "objectReference parameters: flight"

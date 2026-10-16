@@ -5,6 +5,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use super::basetype::BaseType;
+use super::binding::Backing;
 use super::names::{ObjectTypeName, PropertyName};
 
 /// A kind of object, for example `Flight`.
@@ -23,6 +24,9 @@ pub struct ObjectType {
     /// Hide the object type from default listings.
     #[serde(default)]
     pub hidden: bool,
+    /// Where the objects come from. Required: `source` needs a source binding in
+    /// the selected profile, `editOnly` must have none (D-02).
+    pub backing: Backing,
     /// Property that uniquely identifies an object. It must be declared in
     /// `properties`, set `required: true`, and be a string, integer or short
     /// (other types are discouraged or invalid).

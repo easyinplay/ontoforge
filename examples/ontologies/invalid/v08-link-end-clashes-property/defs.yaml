@@ -3,6 +3,7 @@ apiName: Airport
 primaryKey: code
 properties:
   code: { type: string, required: true }
+backing: editOnly
 ---
 kind: ObjectType
 apiName: Flight
@@ -11,6 +12,7 @@ properties:
   flightId: { type: string, required: true }
   departureAirportCode: { type: string }
   status: { type: string }
+backing: editOnly
 ---
 kind: LinkType
 apiName: flightDepartureAirport

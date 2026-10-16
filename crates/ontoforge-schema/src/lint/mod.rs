@@ -272,7 +272,7 @@ mod tests {
     }
 
     const MANIFEST: &str = "apiName: demo\n";
-    const OBJECTS: &str = "kind: ObjectType\napiName: Flight\nprimaryKey: id\nproperties:\n  id: { type: string, required: true }\n";
+    const OBJECTS: &str = "kind: ObjectType\napiName: Flight\nprimaryKey: id\nproperties:\n  id: { type: string, required: true }\nbacking: editOnly\n";
 
     fn loaded() -> crate::LoadOutput {
         let out = crate::load_from_memory(&[("ontology.yaml", MANIFEST), ("o.yaml", OBJECTS)]);

@@ -3,6 +3,7 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+use super::binding::Backing;
 use super::names::{LinkEndName, LinkTypeName, ObjectTypeName, PropertyName};
 
 /// How many objects each side of a link may relate to.
@@ -37,6 +38,9 @@ pub struct LinkType {
     pub description: Option<String>,
     /// `oneToOne`, `oneToMany` or `manyToMany`.
     pub cardinality: Cardinality,
+    /// Where the link rows come from. Required for `manyToMany`; not allowed for
+    /// `oneToOne` and `oneToMany`, which follow the foreign key on the `to` end.
+    pub backing: Option<Backing>,
     /// The first end. In `oneToMany` this is the "one" side.
     pub from: LinkEnd,
     /// The second end. In `oneToMany` this is the "many" side and holds the

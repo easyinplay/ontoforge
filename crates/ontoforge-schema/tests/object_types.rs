@@ -54,7 +54,7 @@ fn all_v1_base_types_parse() {
     for n in names {
         doc += &["  p", n, ": { type: ", n, " }\n"].concat();
     }
-    doc.push_str("  list: { type: array, items: string }\n");
+    doc.push_str("  list: { type: array, items: string }\nbacking: editOnly\n");
     let out = load(&doc);
     let sample = object(&out, "Sample");
     assert_eq!(sample.properties.len(), 1 + names.len() + 1);
@@ -69,7 +69,7 @@ fn all_v1_base_types_parse() {
 #[test]
 fn object_type_optional_fields_default() {
     let out = load(
-        "kind: ObjectType\napiName: Airport\nprimaryKey: code\nproperties:\n  code: { type: string, required: true }\n",
+        "kind: ObjectType\napiName: Airport\nprimaryKey: code\nproperties:\n  code: { type: string, required: true }\nbacking: editOnly\n",
     );
     let airport = object(&out, "Airport");
     assert!(airport.aliases.is_empty());
@@ -93,6 +93,7 @@ properties:
   code: { type: string, required: true, displayName: Code, description: IATA code }
   name: { type: string }
   tags: { type: array, items: string }
+backing: editOnly
 ",
     );
     let airport = object(&out, "Airport");
@@ -113,7 +114,7 @@ properties:
 #[test]
 fn unknown_base_type_suggests_nearest() {
     let out = load(
-        "kind: ObjectType\napiName: Airport\nprimaryKey: code\nproperties:\n  code: { type: strng, required: true }\n",
+        "kind: ObjectType\napiName: Airport\nprimaryKey: code\nproperties:\n  code: { type: strng, required: true }\nbacking: editOnly\n",
     );
     let d = only(&out);
     assert_eq!(d.code, codes::V06);
@@ -123,7 +124,7 @@ fn unknown_base_type_suggests_nearest() {
 #[test]
 fn string_field_given_number_suggests_quotes() {
     let out = load(
-        "kind: ObjectType\napiName: Airport\ndisplayName: 123\nprimaryKey: code\nproperties:\n  code: { type: string, required: true }\n",
+        "kind: ObjectType\napiName: Airport\ndisplayName: 123\nprimaryKey: code\nproperties:\n  code: { type: string, required: true }\nbacking: editOnly\n",
     );
     let d = only(&out);
     assert_eq!(d.code, codes::V06);
@@ -156,7 +157,16 @@ primaryKey: code
 properties:
   code: { type: string, required: true }
   name: { type: string }
+backing: editOnly
 ";
+
+/// `GOOD` with extra property lines added after its last property.
+fn good_with(properties: &str) -> String {
+    GOOD.replace(
+        "backing: editOnly\n",
+        &format!("{properties}backing: editOnly\n"),
+    )
+}
 
 #[test]
 fn primary_key_must_be_required() {
@@ -206,7 +216,7 @@ fn title_key_must_exist() {
 
 #[test]
 fn array_requires_items() {
-    let out = load(&format!("{GOOD}  tags: {{ type: array }}\n"));
+    let out = load(&good_with("  tags: { type: array }\n"));
     let d = only(&out);
     assert_eq!(d.code, codes::V05);
     assert_eq!((d.line, d.column), (7, 17));
@@ -226,7 +236,7 @@ fn items_only_for_arrays() {
 
 #[test]
 fn nested_array_is_not_a_validate_error() {
-    let out = load(&format!("{GOOD}  grid: {{ type: array, items: array }}\n"));
+    let out = load(&good_with("  grid: { type: array, items: array }\n"));
     assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
 }
 
@@ -247,7 +257,7 @@ fn duplicate_object_type_reports_first_location() {
 
 #[test]
 fn object_without_backing_is_v05() {
-    let out = load(GOOD);
+    let out = load(&GOOD.replace("backing: editOnly\n", ""));
     let d = only(&out);
     assert_eq!(d.code, codes::V05);
     assert_eq!(d.message, "missing required field `backing`");
@@ -256,7 +266,7 @@ fn object_without_backing_is_v05() {
 
 #[test]
 fn unknown_backing_value_is_v06() {
-    let out = load(&format!("{GOOD}backing: sourced\n"));
+    let out = load(&GOOD.replace("editOnly", "sourced"));
     let d = only(&out);
     assert_eq!(d.code, codes::V06);
     assert_eq!(d.help.as_deref(), Some("did you mean `source`?"), "{d:?}");
@@ -265,8 +275,12 @@ fn unknown_backing_value_is_v06() {
 #[test]
 fn both_backing_values_load() {
     for (value, json) in [("source", "source"), ("editOnly", "editOnly")] {
-        let out = load(&format!("{GOOD}backing: {value}\n"));
-        assert!(out.diagnostics.is_empty(), "{value}: {:#?}", out.diagnostics);
+        let out = load(&GOOD.replace("editOnly", value));
+        assert!(
+            out.diagnostics.is_empty(),
+            "{value}: {:#?}",
+            out.diagnostics
+        );
         let json_ir = serde_json::to_value(object(&out, "Airport")).expect("serializable IR");
         assert_eq!(json_ir["backing"], json, "{value}");
     }
@@ -294,7 +308,10 @@ fn aviation_backing_values() {
         if name == "flightCrew" {
             assert_eq!(link["backing"], "source", "{name}");
         } else {
-            assert!(link.get("backing").is_none_or(serde_json::Value::is_null), "{name}: {link}");
+            assert!(
+                link.get("backing").is_none_or(serde_json::Value::is_null),
+                "{name}: {link}"
+            );
         }
     }
 }

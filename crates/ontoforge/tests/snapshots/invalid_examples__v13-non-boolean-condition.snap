@@ -8,10 +8,10 @@ expression: out.diagnostics
     "severity": "error",
     "message": "condition must evaluate to bool, found int (at 1:21 in expression)",
     "file": "defs.yaml",
-    "line": 19,
+    "line": 20,
     "column": 16,
     "span": {
-      "offset": 457,
+      "offset": 475,
       "length": 25
     },
     "help": null

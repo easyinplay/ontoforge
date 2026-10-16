@@ -56,6 +56,10 @@
               "type": "boolean",
               "default": false
             },
+            "backing": {
+              "description": "Where the objects come from. Required: `source` needs a source binding in\nthe selected profile, `editOnly` must have none (D-02).",
+              "$ref": "#/$defs/Backing"
+            },
             "primaryKey": {
               "description": "Property that uniquely identifies an object. It must be declared in\n`properties`, set `required: true`, and be a string, integer or short\n(other types are discouraged or invalid).",
               "$ref": "#/$defs/PropertyName"
@@ -86,6 +90,7 @@
           "required": [
             "kind",
             "apiName",
+            "backing",
             "primaryKey",
             "properties"
           ]
@@ -119,6 +124,17 @@
             "cardinality": {
               "description": "`oneToOne`, `oneToMany` or `manyToMany`.",
               "$ref": "#/$defs/Cardinality"
+            },
+            "backing": {
+              "description": "Where the link rows come from. Required for `manyToMany`; not allowed for\n`oneToOne` and `oneToMany`, which follow the foreign key on the `to` end.",
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Backing"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             },
             "from": {
               "description": "The first end. In `oneToMany` this is the \"one\" side.",
@@ -203,6 +219,21 @@
     "ObjectTypeName": {
       "type": "string",
       "pattern": "^[A-Z][A-Za-z0-9]{0,99}$"
+    },
+    "Backing": {
+      "description": "The data source an object type or many-to-many link declares.",
+      "oneOf": [
+        {
+          "description": "Objects come from the physical table bound for the selected profile; edits\nare layered on top.",
+          "type": "string",
+          "const": "source"
+        },
+        {
+          "description": "Objects are created only through actions or imports. No binding is allowed.",
+          "type": "string",
+          "const": "editOnly"
+        }
+      ]
     },
     "PropertyName": {
       "type": "string",

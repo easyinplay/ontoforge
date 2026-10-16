@@ -8,10 +8,10 @@ expression: out.diagnostics
     "severity": "error",
     "message": "function-backed rules are not supported in v1",
     "file": "defs.yaml",
-    "line": 14,
+    "line": 15,
     "column": 11,
     "span": {
-      "offset": 307,
+      "offset": 325,
       "length": 8
     },
     "help": "use one of: `createObject`, `modifyObject`, `deleteObject`, `addLink`, `removeLink`"

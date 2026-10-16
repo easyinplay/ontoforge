@@ -90,6 +90,7 @@ pub(super) mod testing {
                         .iter()
                         .map(|(prop, ty)| format!("  {prop}: {{ type: {ty} }}")),
                 );
+                lines.push("backing: editOnly".to_owned());
                 lines.join("\n") + "\n"
             })
             .collect();

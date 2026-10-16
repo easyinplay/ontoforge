@@ -19,7 +19,7 @@ fn only(out: &LoadOutput) -> &Diagnostic {
     &out.diagnostics[0]
 }
 
-const GOOD: &str = "kind: ObjectType\napiName: Airport\nprimaryKey: code\nproperties:\n  code: { type: string, required: true }\n";
+const GOOD: &str = "kind: ObjectType\napiName: Airport\nprimaryKey: code\nproperties:\n  code: { type: string, required: true }\nbacking: editOnly\n";
 
 #[test]
 fn valid_document_loads_into_the_ontology() {
@@ -39,7 +39,9 @@ fn unknown_field_is_v04_at_the_key_with_a_suggestion() {
 
 #[test]
 fn missing_required_field_is_v05_at_the_kind_value() {
-    let out = load("kind: ObjectType\napiName: Airport\nproperties:\n  code: { type: string }\n");
+    let out = load(
+        "kind: ObjectType\napiName: Airport\nproperties:\n  code: { type: string }\nbacking: editOnly\n",
+    );
     let d = only(&out);
     assert_eq!(d.code, codes::V05);
     assert!(d.message.contains("primaryKey"), "{}", d.message);
@@ -63,6 +65,14 @@ fn reserved_kind_is_v03_not_supported_in_v1() {
     assert!(d.message.contains("not supported in v1"), "{}", d.message);
 }
 
+/// `GOOD` with extra property lines added after its last property.
+fn good_with(properties: &str) -> String {
+    GOOD.replace(
+        "backing: editOnly\n",
+        &format!("{properties}backing: editOnly\n"),
+    )
+}
+
 #[test]
 fn lowercase_object_type_name_is_v07_with_canonical_help() {
     let out = load(&GOOD.replace("apiName: Airport", "apiName: airport"));
@@ -84,7 +94,7 @@ fn reserved_word_is_v07_case_insensitively() {
 /// parse), so parameter and property names may not be one.
 #[test]
 fn cel_keyword_parameter_or_property_name_is_v07() {
-    let out = load(&format!("{GOOD}  for: {{ type: string }}\n"));
+    let out = load(&good_with("  for: { type: string }\n"));
     let d = only(&out);
     assert_eq!(d.code, codes::V07);
     assert_eq!(d.line, 6);
@@ -98,8 +108,8 @@ fn cel_keyword_parameter_or_property_name_is_v07() {
     assert!(d.message.contains("`in`"), "{}", d.message);
 
     // Only exact keywords are refused.
-    let out = load(&format!(
-        "{GOOD}  inbound: {{ type: string }}\n  nullable: {{ type: string }}\n"
+    let out = load(&good_with(
+        "  inbound: { type: string }\n  nullable: { type: string }\n",
     ));
     assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
 }
@@ -110,7 +120,7 @@ fn duplicate_api_name_is_v08_and_cites_the_first_definition() {
     let out = load(&doc);
     let d = only(&out);
     assert_eq!(d.code, codes::V08);
-    assert_eq!((d.line, d.column), (8, 10));
+    assert_eq!((d.line, d.column), (9, 10));
     assert!(d.message.contains("objects.yaml:2:10"), "{}", d.message);
 }
 
@@ -155,7 +165,7 @@ fn json_trailing_comma_is_v01_even_though_yaml_would_accept_it() {
 #[test]
 fn yaml_and_json_load_to_the_same_ontology() {
     let json = r#"{"kind":"ObjectType","apiName":"Airport","primaryKey":"code",
-        "properties":{"code":{"type":"string","required":true}}}"#;
+        "properties":{"code":{"type":"string","required":true}},"backing":"editOnly"}"#;
     let from_yaml = load(GOOD);
     let from_json = load_from_memory(&[("ontology.yaml", MANIFEST), ("objects.json", json)]);
     assert!(

@@ -162,6 +162,7 @@ apiName: Airport
 primaryKey: code
 properties:
   code: { type: string, required: true }
+backing: editOnly
 ---
 kind: ObjectType
 apiName: Flight
@@ -169,12 +170,14 @@ primaryKey: flightId
 properties:
   flightId: { type: string, required: true }
   originCode: { type: string }
+backing: editOnly
 ---
 kind: ObjectType
 apiName: Pilot
 primaryKey: pilotId
 properties:
   pilotId: { type: string, required: true }
+backing: editOnly
 ---
 kind: ObjectType
 apiName: Badge
@@ -182,6 +185,7 @@ primaryKey: badgeId
 properties:
   badgeId: { type: string, required: true }
   pilotId: { type: string }
+backing: editOnly
 ";
 
     const LINKS: &str = "\
@@ -202,6 +206,7 @@ apiName: crew
 cardinality: manyToMany
 from: { objectType: Flight, apiName: pilots }
 to: { objectType: Pilot, apiName: flights }
+backing: editOnly
 ";
 
     const TRIGGERS: &str = "\

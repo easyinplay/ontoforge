@@ -126,12 +126,14 @@ apiName: Event
 primaryKey: at
 properties:
   at: { type: timestamp, required: true }
+backing: editOnly
 ---
 kind: ObjectType
 apiName: Counter
 primaryKey: n
 properties:
   n: { type: long, required: true }
+backing: editOnly
 ---
 kind: ObjectType
 apiName: Grid
@@ -139,6 +141,7 @@ primaryKey: id
 properties:
   id: { type: string, required: true }
   cells: { type: array, items: array }
+backing: editOnly
 ";
 
     const CLEAN: &str = "\
@@ -148,18 +151,21 @@ primaryKey: id
 properties:
   id: { type: string, required: true }
   tags: { type: array, items: string }
+backing: editOnly
 ---
 kind: ObjectType
 apiName: Seat
 primaryKey: row
 properties:
   row: { type: short, required: true }
+backing: editOnly
 ---
 kind: ObjectType
 apiName: Gate
 primaryKey: number
 properties:
   number: { type: integer, required: true }
+backing: editOnly
 ";
 
     fn run(objects: &str, config: Option<&str>) -> Vec<Diagnostic> {
@@ -179,8 +185,8 @@ properties:
             severities,
             [
                 (3, Severity::Warning),
-                (9, Severity::Warning),
-                (18, Severity::Error)
+                (10, Severity::Warning),
+                (20, Severity::Error)
             ]
         );
         insta::assert_json_snapshot!("triggers", found);

@@ -21,10 +21,10 @@ expression: found
     "severity": "warning",
     "message": "property `name` is ambiguous next to `displayName` on `Person`",
     "file": "objects.yaml",
-    "line": 14,
+    "line": 15,
     "column": 3,
     "span": {
-      "offset": 268,
+      "offset": 286,
       "length": 4
     },
     "help": "qualify it, such as `flightName`; if the name is intentional, set \"ONT-W02\" = \"off\" under [lint] in ontoforge.toml"

@@ -5,6 +5,7 @@ properties:
   flightId: { type: string, required: true }
   status: { type: string }
   delayMinutes: { type: integer }
+backing: editOnly
 ---
 kind: ActionType
 apiName: markFlight

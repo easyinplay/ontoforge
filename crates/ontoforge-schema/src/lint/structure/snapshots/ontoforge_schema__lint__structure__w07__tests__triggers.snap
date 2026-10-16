@@ -21,10 +21,10 @@ expression: found
     "severity": "warning",
     "message": "object type `CrmContact` starts with the system or department prefix `crm`",
     "file": "defs.yaml",
-    "line": 18,
+    "line": 20,
     "column": 10,
     "span": {
-      "offset": 363,
+      "offset": 399,
       "length": 10
     },
     "help": "name the type after the thing it represents, not the system that owns it; if this is intentional, set \"ONT-W07\" = \"off\" under [lint] in ontoforge.toml"
@@ -34,10 +34,10 @@ expression: found
     "severity": "warning",
     "message": "object types `CrmContact` and `Contact` have the same primary key and a property similarity of 0.60",
     "file": "defs.yaml",
-    "line": 18,
+    "line": 20,
     "column": 10,
     "span": {
-      "offset": 363,
+      "offset": 399,
       "length": 10
     },
     "help": "if they describe the same thing, merge them; if this is intentional, set \"ONT-W07\" = \"off\" under [lint] in ontoforge.toml"

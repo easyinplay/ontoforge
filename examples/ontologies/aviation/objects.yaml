@@ -12,6 +12,7 @@ properties:
   city: { type: string, displayName: City }
   country: { type: string, displayName: Country }
   location: { type: geopoint, displayName: Location }
+backing: editOnly
 ---
 # yaml-language-server: $schema=../../../schemas/ontoforge-definition.schema.json
 kind: ObjectType
@@ -24,6 +25,7 @@ properties:
   model: { type: string, required: true, displayName: Model }
   seatCapacity: { type: integer, displayName: Seat capacity }
   inServiceSince: { type: date, displayName: In service since }
+backing: source
 ---
 # yaml-language-server: $schema=../../../schemas/ontoforge-definition.schema.json
 kind: ObjectType
@@ -42,6 +44,7 @@ properties:
   status: { type: string, displayName: Status }
   delayMinutes: { type: integer, displayName: Delay in minutes }
   tags: { type: array, items: string, displayName: Tags }
+backing: source
 ---
 # yaml-language-server: $schema=../../../schemas/ontoforge-definition.schema.json
 kind: ObjectType
@@ -56,6 +59,7 @@ properties:
   fullName: { type: string, required: true, displayName: Full name }
   licenseNumber: { type: string, displayName: License number }
   flightHours: { type: double, displayName: Flight hours }
+backing: source
 ---
 # yaml-language-server: $schema=../../../schemas/ontoforge-definition.schema.json
 kind: ObjectType
@@ -69,3 +73,4 @@ properties:
   performedAt: { type: timestamp, displayName: Performed at }
   performedBy: { type: string, displayName: Performed by }
   summary: { type: string, displayName: Summary }
+backing: source

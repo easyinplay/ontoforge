@@ -21,6 +21,7 @@ apiName: Airport
 primaryKey: code
 properties:
   code: { type: string, required: true }
+backing: editOnly
 ---
 kind: ObjectType
 apiName: Flight
@@ -28,6 +29,7 @@ primaryKey: flightId
 properties:
   flightId: { type: string, required: true }
   originCode: { type: string }
+backing: editOnly
 ---
 kind: LinkType
 apiName: departures
@@ -53,6 +55,7 @@ apiName: Event
 primaryKey: at
 properties:
   at: { type: timestamp, required: true }
+backing: editOnly
 ";
 
 fn write(dir: &Path, name: &str, text: &str) {

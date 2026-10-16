@@ -8,10 +8,10 @@ expression: out.diagnostics
     "severity": "error",
     "message": "`currentTime` can only be assigned to a timestamp property, but `status` is `string`",
     "file": "defs.yaml",
-    "line": 17,
+    "line": 18,
     "column": 30,
     "span": {
-      "offset": 384,
+      "offset": 402,
       "length": 1
     },
     "help": null

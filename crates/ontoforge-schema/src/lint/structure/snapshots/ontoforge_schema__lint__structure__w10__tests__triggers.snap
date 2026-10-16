@@ -47,10 +47,10 @@ expression: found
     "severity": "warning",
     "message": "object type `Flight2024` has a year or version number in its name",
     "file": "defs.yaml",
-    "line": 11,
+    "line": 12,
     "column": 10,
     "span": {
-      "offset": 237,
+      "offset": 255,
       "length": 10
     },
     "help": "keep history in the edit log instead of in the schema; if this is intentional, set \"ONT-W10\" = \"off\" under [lint] in ontoforge.toml"
@@ -60,10 +60,10 @@ expression: found
     "severity": "warning",
     "message": "object type `FlightV2` has a year or version number in its name",
     "file": "defs.yaml",
-    "line": 17,
+    "line": 19,
     "column": 10,
     "span": {
-      "offset": 356,
+      "offset": 392,
       "length": 8
     },
     "help": "keep history in the edit log instead of in the schema; if this is intentional, set \"ONT-W10\" = \"off\" under [lint] in ontoforge.toml"

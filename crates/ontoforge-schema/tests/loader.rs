@@ -7,7 +7,7 @@ use ontoforge_schema::{LoadOutput, load_dir, load_from_memory};
 
 fn object(name: &str) -> String {
     format!(
-        "kind: ObjectType\napiName: {name}\nprimaryKey: code\nproperties:\n  code: {{ type: string, required: true }}\n"
+        "kind: ObjectType\napiName: {name}\nprimaryKey: code\nproperties:\n  code: {{ type: string, required: true }}\nbacking: editOnly\n"
     )
 }
 
@@ -469,7 +469,7 @@ fn duplicate_key_is_v01_with_location() {
 
 #[test]
 fn merge_key_is_v01() {
-    let doc = "kind: ObjectType\napiName: A\nprimaryKey: code\nproperties:\n  code: &c { type: string }\n  other:\n    <<: *c\n";
+    let doc = "kind: ObjectType\napiName: A\nprimaryKey: code\nproperties:\n  code: &c { type: string }\n  other:\n    <<: *c\nbacking: editOnly\n";
     let out = mem(&[("objects.yaml", doc)]);
     let d = &out.diagnostics[0];
     assert_eq!(d.code, codes::V01, "{:#?}", out.diagnostics);
@@ -579,8 +579,8 @@ fn empty_yaml_documents_are_skipped() {
 fn multi_document_yaml_and_json_array_are_both_loaded() {
     let yaml = format!("{}---\n{}", object("Airport"), object("Flight"));
     let json = r#"[
-      {"kind":"ObjectType","apiName":"Plane","primaryKey":"code","properties":{"code":{"type":"string","required":true}}},
-      {"kind":"ObjectType","apiName":"Gate","primaryKey":"code","properties":{"code":{"type":"string","required":true}}}
+      {"kind":"ObjectType","apiName":"Plane","primaryKey":"code","properties":{"code":{"type":"string","required":true}},"backing":"editOnly"},
+      {"kind":"ObjectType","apiName":"Gate","primaryKey":"code","properties":{"code":{"type":"string","required":true}},"backing":"editOnly"}
     ]"#;
     let out = mem(&[("a.yaml", yaml.as_str()), ("b.json", json)]);
     assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
@@ -589,8 +589,8 @@ fn multi_document_yaml_and_json_array_are_both_loaded() {
 
 #[test]
 fn properties_keep_declared_order() {
-    let yaml = "kind: ObjectType\napiName: Airport\nprimaryKey: zeta\nproperties:\n  zeta: { type: string, required: true }\n  alpha: { type: string }\n  mid: { type: string }\n";
-    let json = r#"{"kind":"ObjectType","apiName":"Flight","primaryKey":"zeta","properties":{"zeta":{"type":"string","required":true},"alpha":{"type":"string"},"mid":{"type":"string"}}}"#;
+    let yaml = "kind: ObjectType\napiName: Airport\nprimaryKey: zeta\nproperties:\n  zeta: { type: string, required: true }\n  alpha: { type: string }\n  mid: { type: string }\nbacking: editOnly\n";
+    let json = r#"{"kind":"ObjectType","apiName":"Flight","primaryKey":"zeta","properties":{"zeta":{"type":"string","required":true},"alpha":{"type":"string"},"mid":{"type":"string"}},"backing":"editOnly"}"#;
     let out = mem(&[("a.yaml", yaml), ("b.json", json)]);
     assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
     let ontology = out.ontology.unwrap();

@@ -8,10 +8,10 @@ expression: out.diagnostics
     "severity": "error",
     "message": "modifyObject cannot assign the primary key `flightId` of `Flight`",
     "file": "defs.yaml",
-    "line": 18,
+    "line": 19,
     "column": 7,
     "span": {
-      "offset": 404,
+      "offset": 422,
       "length": 8
     },
     "help": "an action cannot change an object's primary key"

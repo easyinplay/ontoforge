@@ -45,3 +45,4 @@ description: The pilots assigned to a flight. The system manages the join, so no
 cardinality: manyToMany
 from: { objectType: Flight, apiName: crew, displayName: Crew }
 to: { objectType: Pilot, apiName: assignedFlights, displayName: Assigned flights }
+backing: source

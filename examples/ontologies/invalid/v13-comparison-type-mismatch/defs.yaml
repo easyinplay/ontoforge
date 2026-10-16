@@ -4,6 +4,7 @@ primaryKey: flightId
 properties:
   flightId: { type: string, required: true }
   delayMinutes: { type: integer }
+backing: editOnly
 ---
 kind: ActionType
 apiName: delayFlight

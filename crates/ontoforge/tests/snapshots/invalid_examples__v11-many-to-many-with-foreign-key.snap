@@ -8,10 +8,10 @@ expression: out.diagnostics
     "severity": "error",
     "message": "manyToMany link `flightCrew` must not declare a `foreignKey`",
     "file": "defs.yaml",
-    "line": 17,
+    "line": 19,
     "column": 64,
     "span": {
-      "offset": 399,
+      "offset": 435,
       "length": 10
     },
     "help": "remove it; the system manages the join for manyToMany links"

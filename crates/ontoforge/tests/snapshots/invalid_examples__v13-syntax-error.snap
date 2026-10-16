@@ -8,10 +8,10 @@ expression: out.diagnostics
     "severity": "error",
     "message": "invalid CEL expression: Syntax error: mismatched input '<EOF>' expecting {'[', '{', '(', '.', '-', '!', 'true', 'false', 'null', NUM_FLOAT, NUM_INT, NUM_UINT, STRING, BYTES, IDENTIFIER} (at 1:22 in expression)",
     "file": "defs.yaml",
-    "line": 19,
+    "line": 20,
     "column": 16,
     "span": {
-      "offset": 457,
+      "offset": 475,
       "length": 23
     },
     "help": null

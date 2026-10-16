@@ -8,10 +8,10 @@ expression: out.diagnostics
     "severity": "error",
     "message": "`to` end `status` of link `flightDepartureAirport` has the same name as a property of `Flight`",
     "file": "defs.yaml",
-    "line": 19,
+    "line": 21,
     "column": 36,
     "span": {
-      "offset": 453,
+      "offset": 489,
       "length": 6
     },
     "help": "rename the link end or the property"

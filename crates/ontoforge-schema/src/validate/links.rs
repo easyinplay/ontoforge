@@ -1,8 +1,9 @@
 //! Link type structural checks (hard errors): references (V09), cardinality and
-//! foreign key consistency (V11), and accessor names on each object type (V08).
+//! foreign key consistency (V11), `backing` placement (V05, V11), and accessor
+//! names on each object type (V08).
 //!
-//! A link whose end types do not exist only reports V09; the other checks need
-//! those types and would only add noise.
+//! A link whose end types do not exist reports V09 and the `backing` check; the
+//! other checks need those types and would only add noise.
 
 use std::collections::HashMap;
 use std::collections::hash_map::Entry;
@@ -29,11 +30,42 @@ pub fn check(ontology: &Ontology, sources: &SourceMap, out: &mut Vec<Diagnostic>
             let path: Vec<Seg> = path.iter().map(|s| Seg::Key((*s).to_owned())).collect();
             sources.locate(&key, &path, part)
         };
+        backing(link, &at, out);
         let Some((from, to)) = end_types(link, ontology, &at, out) else {
             continue;
         };
         foreign_key(link, from, to, &at, out);
         end_names(link, [from, to], &at, &mut accessors, out);
+    }
+}
+
+/// `manyToMany` links must say where their rows come from; `oneToOne` and
+/// `oneToMany` follow the foreign key on the `to` end and must not (D-02).
+fn backing(link: &LinkType, at: &At, out: &mut Vec<Diagnostic>) {
+    let name = &link.api_name;
+    match (link.cardinality, link.backing) {
+        (Cardinality::ManyToMany, None) => out.push(
+            Diagnostic::error(
+                codes::V05,
+                format!("manyToMany link `{name}` must declare `backing`"),
+                &at(&["cardinality"], Part::Value),
+            )
+            .with_help("add `backing: source` or `backing: editOnly`"),
+        ),
+        (Cardinality::OneToOne | Cardinality::OneToMany, Some(_)) => out.push(
+            Diagnostic::error(
+                codes::V11,
+                format!(
+                    "{} link `{name}` must not declare `backing`",
+                    cardinality_name(link.cardinality)
+                ),
+                &at(&["backing"], Part::Key),
+            )
+            .with_help(
+                "remove `backing`: oneToOne and oneToMany links follow the foreign key on the `to` object type",
+            ),
+        ),
+        _ => {}
     }
 }
 

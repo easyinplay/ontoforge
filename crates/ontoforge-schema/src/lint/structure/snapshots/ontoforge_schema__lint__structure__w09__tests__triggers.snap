@@ -21,10 +21,10 @@ expression: found
     "severity": "warning",
     "message": "action `setStatus` only sets one property of one object",
     "file": "defs.yaml",
-    "line": 149,
+    "line": 151,
     "column": 10,
     "span": {
-      "offset": 3248,
+      "offset": 3284,
       "length": 9
     },
     "help": "an action should express a business intent (`closeAccount`, not `setStatus`); if this is intentional, set \"ONT-W09\" = \"off\" under [lint] in ontoforge.toml"

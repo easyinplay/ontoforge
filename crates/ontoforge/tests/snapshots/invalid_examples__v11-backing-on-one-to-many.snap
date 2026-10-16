@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V11",
+    "severity": "error",
+    "message": "oneToMany link `flightDepartureAirport` must not declare `backing`",
+    "file": "defs.yaml",
+    "line": 21,
+    "column": 1,
+    "span": {
+      "offset": 515,
+      "length": 7
+    },
+    "help": "remove `backing`: oneToOne and oneToMany links follow the foreign key on the `to` object type"
+  }
+]

@@ -17,6 +17,7 @@ properties:
   flightDate: { type: date }
   fare: { type: decimal }
   position: { type: geopoint }
+backing: editOnly
 ";
 
 /// Header of the single action; the criterion line is appended by `check`.
