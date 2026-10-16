@@ -265,10 +265,16 @@ impl Engine for TrinoEngine {
         ctx: &QueryContext,
     ) -> Result<QueryOutput, EngineError> {
         let max_page = self.conn.max_page_bytes;
-        let post = self
-            .request(Method::POST, self.statement_url.clone(), ctx, true)?
-            .body(sql.as_str().to_owned());
-        let mut page = client::send_once(post, true, max_page).await?;
+        let mut page = client::send(
+            || {
+                Ok(self
+                    .request(Method::POST, self.statement_url.clone(), ctx, true)?
+                    .body(sql.as_str().to_owned()))
+            },
+            true,
+            max_page,
+        )
+        .await?;
         let mut collector = Collector::new(ctx.max_rows);
         loop {
             let next_url = page
@@ -281,8 +287,12 @@ impl Engine for TrinoEngine {
             if collector.truncated {
                 break;
             }
-            let get = self.request(Method::GET, next_url, ctx, false)?;
-            page = client::send_once(get, false, max_page).await?;
+            page = client::send(
+                || self.request(Method::GET, next_url.clone(), ctx, false),
+                false,
+                max_page,
+            )
+            .await?;
         }
         Ok(collector.finish())
     }

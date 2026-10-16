@@ -6,28 +6,50 @@ use super::classify::{self, Outcome};
 use super::decode::QueryResults;
 use crate::error::EngineError;
 
-/// Sends `request` once and parses the page it returns.
+/// Sends the request `build` makes and parses the page it returns, retrying as
+/// [`classify`] decides. `build` is called again for every attempt.
 ///
-/// Retries, timeouts and cancellation wrap this function; it does exactly one exchange.
-/// `is_post` marks the statement submission, whose 503 body is inspected. Error texts never
-/// carry the URL (it holds the query id) or any header.
-pub(super) async fn send_once(
-    request: RequestBuilder,
+/// `is_post` marks the statement submission, whose retries are narrower than a GET's.
+/// Timeouts and cancellation wrap this function. Error texts never carry the URL (it holds
+/// the query id) or any header.
+pub(super) async fn send<F>(
+    build: F,
     is_post: bool,
     max_page_bytes: usize,
-) -> Result<QueryResults, EngineError> {
-    match exchange(request, is_post, max_page_bytes).await {
-        Outcome::Page(page) => Ok(page),
-        Outcome::Fail(error) => Err(error),
+) -> Result<QueryResults, EngineError>
+where
+    F: Fn() -> Result<RequestBuilder, EngineError>,
+{
+    let mut attempt = 0;
+    loop {
+        match exchange(build()?, is_post, attempt, max_page_bytes).await {
+            Outcome::Page(page) => return Ok(page),
+            Outcome::Fail(error) => return Err(error),
+            Outcome::Retry { after } => {
+                tokio::time::sleep(after).await;
+                attempt += 1;
+            }
+        }
     }
 }
 
-async fn exchange(request: RequestBuilder, is_post: bool, max_page_bytes: usize) -> Outcome {
+/// One request and its response, classified.
+async fn exchange(
+    request: RequestBuilder,
+    is_post: bool,
+    attempt: u32,
+    max_page_bytes: usize,
+) -> Outcome {
     let mut response = match request.send().await {
         Ok(response) => response,
-        Err(e) => return Outcome::Fail(classify::transport_failure(e)),
+        Err(e) => return classify::classify_transport(e, attempt),
     };
     let status = response.status().as_u16();
+    let retry_after = response
+        .headers()
+        .get(reqwest::header::RETRY_AFTER)
+        .and_then(|value| value.to_str().ok())
+        .map(str::to_owned);
     // A gateway may answer 503 for a statement the server did accept; only the body tells a
     // server that was not ready (`SERVER_STARTING_UP`) from a plain gateway failure.
     let error_name = if is_post && status == 503 {
@@ -35,7 +57,13 @@ async fn exchange(request: RequestBuilder, is_post: bool, max_page_bytes: usize)
     } else {
         None
     };
-    if let Some(outcome) = classify::classify_status(status, error_name.as_deref()) {
+    if let Some(outcome) = classify::classify_status(
+        status,
+        retry_after.as_deref(),
+        error_name.as_deref(),
+        is_post,
+        attempt,
+    ) {
         return outcome;
     }
     match read_page(&mut response, max_page_bytes).await {
