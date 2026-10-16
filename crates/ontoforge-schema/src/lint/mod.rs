@@ -150,9 +150,10 @@ pub trait LintRule: Sync {
 /// Every rule id that `ontoforge.toml` may mention (D-12: E08, E09 and W01 to W11;
 /// the binding rules E13 to E16 and W17 come from `binding`, and E10 to E12 and W12 to
 /// W16 are taken by the foundry spec).
-pub const KNOWN_RULE_IDS: [&str; 14] = [
-    "ONT-E08", "ONT-E09", "ONT-W01", "ONT-W02", "ONT-W03", "ONT-W04", "ONT-W05", "ONT-W06",
-    "ONT-W07", "ONT-W08", "ONT-W09", "ONT-W10", "ONT-W11", "ONT-E14",
+pub const KNOWN_RULE_IDS: [&str; 17] = [
+    "ONT-E08", "ONT-E09", "ONT-E13", "ONT-E14", "ONT-E15", "ONT-E16", "ONT-W01", "ONT-W02",
+    "ONT-W03", "ONT-W04", "ONT-W05", "ONT-W06", "ONT-W07", "ONT-W08", "ONT-W09", "ONT-W10",
+    "ONT-W11",
 ];
 
 /// All rules, E rules first. The W rules come from `naming` and `structure`, the

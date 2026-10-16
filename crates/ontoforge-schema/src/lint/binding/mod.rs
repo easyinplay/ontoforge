@@ -8,10 +8,13 @@ use crate::ir::{
 };
 use crate::loader::sourcemap::{DefKey, DefKind};
 
+mod e13;
 mod e14;
+mod e15;
+mod e16;
 
 pub(super) fn rules() -> Vec<&'static dyn LintRule> {
-    vec![&e14::RULE]
+    vec![&e13::RULE, &e14::RULE, &e15::RULE, &e16::RULE]
 }
 
 /// Every binding of every profile, objects before links, profiles in name order.
