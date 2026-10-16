@@ -10,32 +10,32 @@
     },
     {
       "number": "2",
-      "name": "Storage & Edit Log",
+      "name": "Source Binding & Engine",
       "status": "pending"
     },
     {
       "number": "3",
-      "name": "Action Execution",
+      "name": "Edit Store & Scope Model",
       "status": "pending"
     },
     {
       "number": "4",
-      "name": "Object Set Query",
+      "name": "Scoped L0 Read",
       "status": "pending"
     },
     {
       "number": "5",
-      "name": "Auth & RBAC",
+      "name": "Online Action",
       "status": "pending"
     },
     {
       "number": "6",
-      "name": "REST API & Clients",
+      "name": "L2 Raw DQL, Toolsets & Audit",
       "status": "pending"
     },
     {
       "number": "7",
-      "name": "MCP Server",
+      "name": "REST & MCP Shell",
       "status": "pending"
     }
   ],
@@ -44,5 +44,5 @@
     "label": "Advance to the next step (plan phase 2)",
     "reason": "Phase 2 of 7 — needs a plan"
   },
-  "updated_at": "2026-10-16T13:04:15.912Z"
+  "updated_at": "2026-10-16T16:23:56.911Z"
 }
