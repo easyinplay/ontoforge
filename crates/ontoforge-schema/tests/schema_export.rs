@@ -181,3 +181,141 @@ fn invalid_examples_fail_schema() {
         assert!(rejected, "{name} unexpectedly passes the definition schema");
     }
 }
+
+const DEFINITION_SCHEMA_KEY: &str = "./schemas/ontoforge-definition.schema.json";
+
+fn repo_path(relative: &str) -> std::path::PathBuf {
+    std::path::Path::new(ROOT).join(relative)
+}
+
+/// Parse an editor settings file as strict JSON (no comments, no trailing commas).
+fn strict_json(relative: &str) -> Value {
+    serde_json::from_str(&read(&repo_path(relative)))
+        .unwrap_or_else(|e| panic!("{relative} must be strict JSON: {e}"))
+}
+
+fn only_key<'a>(value: &'a Value, expected: &str, at: &str) -> &'a Value {
+    let map = value
+        .as_object()
+        .unwrap_or_else(|| panic!("{at} must be a JSON object"));
+    let keys: Vec<&String> = map.keys().collect();
+    assert_eq!(
+        keys,
+        [expected],
+        "{at} must contain exactly the key `{expected}`: the editor configs only carry the \
+         schema mapping, nothing executable"
+    );
+    &map[expected]
+}
+
+fn glob(pattern: &str, at: &str) -> globset::GlobMatcher {
+    globset::GlobBuilder::new(pattern)
+        .literal_separator(true)
+        .build()
+        .unwrap_or_else(|e| panic!("{at}: invalid glob `{pattern}`: {e}"))
+        .compile_matcher()
+}
+
+#[test]
+fn editor_configs_associate_definition_schema_with_examples() {
+    let zed = strict_json(".zed/settings.json");
+    let lsp = only_key(&zed, "lsp", ".zed/settings.json");
+    let server = only_key(lsp, "yaml-language-server", ".zed/settings.json lsp");
+    let settings = only_key(
+        server,
+        "settings",
+        ".zed/settings.json lsp.yaml-language-server",
+    );
+    let yaml = only_key(settings, "yaml", ".zed/settings.json ...settings");
+    let zed_schemas = only_key(yaml, "schemas", ".zed/settings.json ...settings.yaml");
+
+    let vscode = strict_json(".vscode/settings.json");
+    let vscode_schemas = only_key(&vscode, "yaml.schemas", ".vscode/settings.json");
+
+    assert_eq!(
+        zed_schemas, vscode_schemas,
+        ".zed/settings.json and .vscode/settings.json must map the same schemas"
+    );
+
+    // Every key is a schema file inside the repository, never a remote URL.
+    let exported: Vec<&str> = rendered_schemas().iter().map(|(name, _)| *name).collect();
+    let mappings = zed_schemas
+        .as_object()
+        .expect("yaml.schemas must be a JSON object");
+    for key in mappings.keys() {
+        let relative = key.strip_prefix("./schemas/").unwrap_or_else(|| {
+            panic!("yaml.schemas key `{key}` must be a local `./schemas/...` path")
+        });
+        assert!(
+            repo_path(&format!("schemas/{relative}")).is_file(),
+            "yaml.schemas key `{key}` points at a file that does not exist"
+        );
+        assert!(
+            exported.contains(&relative),
+            "yaml.schemas key `{key}` is not one of the exported schemas {exported:?}"
+        );
+    }
+
+    let globs: Vec<&str> = mappings
+        .get(DEFINITION_SCHEMA_KEY)
+        .unwrap_or_else(|| panic!("yaml.schemas must contain the key `{DEFINITION_SCHEMA_KEY}`"))
+        .as_array()
+        .expect("the definition schema maps to an array of globs")
+        .iter()
+        .map(|g| g.as_str().expect("globs are strings"))
+        .collect();
+    assert_eq!(
+        globs.first().copied(),
+        Some("examples/ontologies/**/*.yaml"),
+        "the first glob must cover every example definition file"
+    );
+    let include: Vec<_> = globs
+        .iter()
+        .filter(|g| !g.starts_with('!'))
+        .map(|g| glob(g, "include"))
+        .collect();
+    let exclude: Vec<_> = globs
+        .iter()
+        .filter_map(|g| g.strip_prefix('!'))
+        .map(|g| glob(g, "exclude"))
+        .collect();
+
+    let mut covered = Vec::new();
+    let examples = repo_path("examples/ontologies");
+    for entry in walkdir::WalkDir::new(&examples) {
+        let entry = entry.expect("walk examples/ontologies");
+        let path = entry.path();
+        if path.extension().and_then(|e| e.to_str()) != Some("yaml") {
+            continue;
+        }
+        let relative = path
+            .strip_prefix(std::path::Path::new(ROOT))
+            .expect("example under repo root")
+            .components()
+            .map(|c| c.as_os_str().to_string_lossy().into_owned())
+            .collect::<Vec<_>>()
+            .join("/");
+        let is_covered = include.iter().any(|g| g.is_match(&relative))
+            && !exclude.iter().any(|g| g.is_match(&relative));
+        if path.file_name().and_then(|n| n.to_str()) == Some("ontology.yaml") {
+            assert!(
+                !is_covered,
+                "{relative} must not be covered by the definition schema: a manifest relies on \
+                 its own modeline"
+            );
+        } else {
+            assert!(
+                is_covered,
+                "{relative} is not covered by the definition schema globs {globs:?}"
+            );
+            covered.push(relative);
+        }
+    }
+    for name in ["objects.yaml", "links.yaml", "actions.yaml"] {
+        let expected = format!("examples/ontologies/aviation/{name}");
+        assert!(
+            covered.contains(&expected),
+            "{expected} missing from the covered set (empty walk?)"
+        );
+    }
+}

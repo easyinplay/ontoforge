@@ -1,0 +1,16 @@
+{
+  "lsp": {
+    "yaml-language-server": {
+      "settings": {
+        "yaml": {
+          "schemas": {
+            "./schemas/ontoforge-definition.schema.json": [
+              "examples/ontologies/**/*.yaml",
+              "!examples/ontologies/**/ontology.yaml"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
