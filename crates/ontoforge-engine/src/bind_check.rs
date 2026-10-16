@@ -95,64 +95,285 @@ pub fn expected_columns(ontology: &Ontology, binding: &SourceBinding) -> Vec<Exp
         .collect()
 }
 
-/// The type families the comparison tells apart. Rules within a family belong to 02-08.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Family {
-    Integer,
-    Float,
-    Decimal,
-    String,
-    Boolean,
-    Date,
-    Timestamp,
-    Array,
-    Other,
+/// What comparing one expected column with the physical column it reads came to.
+///
+/// Only lossless readings are accepted (D-13): anything that could drop or reinterpret a value
+/// is an error, and a reading that is lossless but not exact is a warning.
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum Compat {
+    Ok,
+    Warn {
+        kind: MismatchKind,
+        reason: String,
+        help: Option<String>,
+    },
+    Error {
+        kind: MismatchKind,
+        reason: String,
+        help: Option<String>,
+    },
 }
 
-impl Family {
-    fn name(self) -> &'static str {
-        match self {
-            Self::Integer => "integer",
-            Self::Float => "floating point",
-            Self::Decimal => "decimal",
-            Self::String => "string",
-            Self::Boolean => "boolean",
-            Self::Date => "date",
-            Self::Timestamp => "timestamp",
-            Self::Array => "array",
-            Self::Other => "other",
+const CAST_HELP: &str =
+    "create a view in Trino that casts the column to a supported type and bind the view";
+
+impl Compat {
+    fn error(kind: MismatchKind, reason: impl Into<String>, help: &str) -> Self {
+        Self::Error {
+            kind,
+            reason: reason.into(),
+            help: Some(help.to_owned()),
         }
     }
-}
 
-/// The family a property type is stored as. A geopoint is stored as text.
-fn expected_family(base: BaseType) -> Family {
-    match base {
-        BaseType::Byte | BaseType::Short | BaseType::Integer | BaseType::Long => Family::Integer,
-        BaseType::Float | BaseType::Double => Family::Float,
-        BaseType::Decimal => Family::Decimal,
-        BaseType::String | BaseType::Geopoint => Family::String,
-        BaseType::Boolean => Family::Boolean,
-        BaseType::Date => Family::Date,
-        BaseType::Timestamp => Family::Timestamp,
-        BaseType::Array => Family::Array,
+    fn warn(kind: MismatchKind, reason: impl Into<String>, help: &str) -> Self {
+        Self::Warn {
+            kind,
+            reason: reason.into(),
+            help: Some(help.to_owned()),
+        }
+    }
+
+    /// The column is not of the kind of type the property needs.
+    fn family(want: &str, physical: &PhysicalType) -> Self {
+        Self::error(
+            MismatchKind::TypeIncompatible,
+            format!(
+                "a {want} property cannot be read from a {} column",
+                family_name(physical)
+            ),
+            "change the column type, or map the property to a column of a matching type",
+        )
+    }
+
+    /// A type this comparison has no lossless reading for.
+    fn unsupported(reason: impl Into<String>) -> Self {
+        Self::error(MismatchKind::UnsupportedType, reason, CAST_HELP)
     }
 }
 
-fn physical_family(physical: &PhysicalType) -> Family {
+/// The kind of a physical type, for messages.
+fn family_name(physical: &PhysicalType) -> &'static str {
     match physical {
         PhysicalType::Tinyint
         | PhysicalType::Smallint
         | PhysicalType::Integer
-        | PhysicalType::Bigint => Family::Integer,
-        PhysicalType::Real | PhysicalType::Double => Family::Float,
-        PhysicalType::Decimal { .. } | PhysicalType::Number => Family::Decimal,
-        PhysicalType::Varchar { .. } | PhysicalType::Char { .. } => Family::String,
-        PhysicalType::Boolean => Family::Boolean,
-        PhysicalType::Date => Family::Date,
-        PhysicalType::Timestamp { .. } => Family::Timestamp,
-        PhysicalType::Array(_) => Family::Array,
-        PhysicalType::Other(_) => Family::Other,
+        | PhysicalType::Bigint => "integer",
+        PhysicalType::Real | PhysicalType::Double => "floating point",
+        PhysicalType::Decimal { .. } | PhysicalType::Number => "decimal",
+        PhysicalType::Varchar { .. } | PhysicalType::Char { .. } => "string",
+        PhysicalType::Boolean => "boolean",
+        PhysicalType::Date => "date",
+        PhysicalType::Timestamp { .. } => "timestamp",
+        PhysicalType::Array(_) => "array",
+        PhysicalType::Other(_) => "unsupported",
+    }
+}
+
+/// How the property is written in the definition: `integer`, `decimal(12,2)`, `array<string>`.
+fn declared(expected: &ExpectedColumn) -> String {
+    let scalar = |base: BaseType| match base {
+        BaseType::Decimal => format!("decimal({},{})", expected.precision, expected.scale),
+        other => other.as_str().to_owned(),
+    };
+    match (expected.base, expected.items) {
+        (BaseType::Array, Some(items)) => format!("array<{}>", scalar(items)),
+        (base, _) => scalar(base),
+    }
+}
+
+/// Rank of an integer property type; a column may be read when its rank is not larger.
+fn integer_rank(base: BaseType) -> Option<u8> {
+    match base {
+        BaseType::Byte => Some(1),
+        BaseType::Short => Some(2),
+        BaseType::Integer => Some(3),
+        BaseType::Long => Some(4),
+        _ => None,
+    }
+}
+
+fn physical_integer_rank(physical: &PhysicalType) -> Option<u8> {
+    match physical {
+        PhysicalType::Tinyint => Some(1),
+        PhysicalType::Smallint => Some(2),
+        PhysicalType::Integer => Some(3),
+        PhysicalType::Bigint => Some(4),
+        _ => None,
+    }
+}
+
+/// Whether the column `physical` can be read as the property `expected` without loss (D-13,
+/// ADR-0021). Arrays are compared by element.
+///
+/// `expected.precision` / `expected.scale` are already the effective values of the property
+/// (`PropertyDef::effective_decimal`); no default is applied here.
+fn compatibility(expected: &ExpectedColumn, physical: &PhysicalType) -> Compat {
+    if expected.base != BaseType::Array {
+        return element_compatibility(expected.base, expected, physical);
+    }
+    let Some(element) = expected.items else {
+        return Compat::unsupported("an array property without an element type");
+    };
+    match physical {
+        PhysicalType::Array(inner) => element_compatibility(element, expected, inner),
+        PhysicalType::Other(_) => element_compatibility(element, expected, physical),
+        other => Compat::family("array", other),
+    }
+}
+
+fn element_compatibility(
+    base: BaseType,
+    expected: &ExpectedColumn,
+    physical: &PhysicalType,
+) -> Compat {
+    if base == BaseType::Geopoint {
+        return Compat::unsupported(
+            "a geopoint property cannot be read from a source column; no lossless mapping exists",
+        );
+    }
+    if let PhysicalType::Other(text) = physical {
+        return Compat::unsupported(format!("the column type `{text}` is not supported"));
+    }
+    if let Some(rank) = integer_rank(base) {
+        let Some(have) = physical_integer_rank(physical) else {
+            return Compat::family("integer", physical);
+        };
+        return if have <= rank {
+            Compat::Ok
+        } else {
+            Compat::error(
+                MismatchKind::TypeIncompatible,
+                format!(
+                    "`{}` is wider than {}, so values could be lost",
+                    physical.render(),
+                    base.as_str()
+                ),
+                "widen the property type, or create a view in Trino that casts the column",
+            )
+        };
+    }
+    match base {
+        BaseType::Float | BaseType::Double => match physical {
+            PhysicalType::Real => Compat::Ok,
+            PhysicalType::Double if base == BaseType::Double => Compat::Ok,
+            PhysicalType::Double => Compat::error(
+                MismatchKind::TypeIncompatible,
+                "`double` is wider than float, so values could be rounded",
+                "declare the property as double",
+            ),
+            other => Compat::family("floating point", other),
+        },
+        BaseType::Decimal => decimal_compatibility(expected, physical),
+        BaseType::String => match physical {
+            PhysicalType::Varchar { .. } => Compat::Ok,
+            PhysicalType::Char { .. } => Compat::warn(
+                MismatchKind::CharPadding,
+                "`char` columns pad values with trailing spaces, which the property would keep",
+                "use a varchar column, or a view that trims the value",
+            ),
+            other => Compat::family("string", other),
+        },
+        BaseType::Boolean => match physical {
+            PhysicalType::Boolean => Compat::Ok,
+            other => Compat::family("boolean", other),
+        },
+        BaseType::Date => match physical {
+            PhysicalType::Date => Compat::Ok,
+            other => Compat::family("date", other),
+        },
+        BaseType::Timestamp => match physical {
+            PhysicalType::Timestamp { with_time_zone, .. } => {
+                timezone_compatibility(expected.timezone.as_deref(), *with_time_zone)
+            }
+            other => Compat::family("timestamp", other),
+        },
+        // Integers were handled above; geopoint above; an array element cannot be an array.
+        BaseType::Array
+        | BaseType::Geopoint
+        | BaseType::Byte
+        | BaseType::Short
+        | BaseType::Integer
+        | BaseType::Long => {
+            Compat::unsupported("this property type has no lossless column mapping")
+        }
+    }
+}
+
+/// `decimal(p, s)` fits `decimal(P, S)` exactly when `s <= S` and `p - s <= P - S`: neither the
+/// fraction nor the integer digits can be lost. The integer part matters, because
+/// `decimal(10, 2)` does not fit `decimal(10, 5)`.
+fn decimal_compatibility(expected: &ExpectedColumn, physical: &PhysicalType) -> Compat {
+    let (want_p, want_s) = (i64::from(expected.precision), i64::from(expected.scale));
+    match physical {
+        PhysicalType::Decimal { precision, scale } => {
+            let (p, s) = (i64::from(*precision), i64::from(*scale));
+            let name = physical.render();
+            if s > want_s {
+                Compat::error(
+                    MismatchKind::TypeIncompatible,
+                    format!(
+                        "`{name}` has {s} fraction digits but the property keeps {want_s}, so digits could be lost"
+                    ),
+                    "raise `scale` on the property, or create a view in Trino that rounds the column",
+                )
+            } else if p - s > want_p - want_s {
+                Compat::error(
+                    MismatchKind::TypeIncompatible,
+                    format!(
+                        "`{name}` has {} integer digits but the property holds {}, so values could overflow",
+                        p - s,
+                        want_p - want_s
+                    ),
+                    "raise `precision` on the property, or create a view in Trino that narrows the column",
+                )
+            } else if p < want_p || s < want_s {
+                Compat::warn(
+                    MismatchKind::PrecisionChanged,
+                    format!("`{name}` is narrower than the declared decimal({want_p},{want_s})"),
+                    "align `precision` and `scale` on the property with the column",
+                )
+            } else {
+                Compat::Ok
+            }
+        }
+        PhysicalType::Number => Compat::error(
+            MismatchKind::UnsupportedType,
+            "`number` is an unconstrained numeric with no fixed precision (ADR-0021)",
+            "create a view in Trino that casts the column to a decimal(p, s) and bind the view",
+        ),
+        other => Compat::family("decimal", other),
+    }
+}
+
+/// The online recheck of ADR-0021: the declared zone must agree with whether the column has
+/// one. `declared` is the binding's `timezone`: an IANA name, `aware`, or nothing.
+fn timezone_compatibility(declared: Option<&str>, column_has_zone: bool) -> Compat {
+    match (declared, column_has_zone) {
+        (Some("aware"), true) => Compat::Ok,
+        (Some("aware"), false) => Compat::error(
+            MismatchKind::TimezoneMismatch,
+            "the binding says the column is time zone aware, but it has no time zone",
+            "declare the IANA zone the values are written in, for example `timezone: Europe/Berlin`",
+        ),
+        (Some(zone), true) => Compat::warn(
+            MismatchKind::TimezoneMismatch,
+            format!(
+                "the binding declares zone `{zone}`, but the column already carries a time zone"
+            ),
+            "write `timezone: aware`; the declared zone would not be applied",
+        ),
+        (Some(_), false) => Compat::Ok,
+        (None, false) => Compat::error(
+            MismatchKind::TimezoneMismatch,
+            "the column has no time zone and the binding declares none",
+            "declare `timezone` under `columns` in the binding: an IANA name, or `aware`",
+        ),
+        (None, true) => Compat::warn(
+            MismatchKind::TimezoneMismatch,
+            "the column carries a time zone but the binding does not say so",
+            "write `timezone: aware` under `columns` in the binding",
+        ),
     }
 }
 
@@ -177,8 +398,9 @@ fn column_path(column: &ExpectedColumn) -> Vec<Seg> {
 /// Compares `binding` with `physical`: the columns of its table, or `None` when the table does
 /// not exist.
 ///
-/// Column names are compared in lower case, because Trino exposes identifiers in lower case.
-/// Messages carry only apiNames and physical names, never data.
+/// Column names are compared in lower case, because Trino exposes identifiers in lower case. A
+/// bound column with several physical candidates that differ only in case is an error, since
+/// the choice would be arbitrary. Messages carry only apiNames and physical names, never data.
 #[must_use]
 pub fn compare_binding(
     ontology: &Ontology,
@@ -203,9 +425,12 @@ pub fn compare_binding(
         BindingTarget::ObjectType(_) => "property",
         BindingTarget::LinkType(_) => "end",
     };
-    let mut by_name: HashMap<String, &PhysicalColumn> = HashMap::new();
+    let mut by_name: HashMap<String, Vec<&PhysicalColumn>> = HashMap::new();
     for column in physical {
-        by_name.entry(column.name.to_lowercase()).or_insert(column);
+        by_name
+            .entry(column.name.to_lowercase())
+            .or_default()
+            .push(column);
     }
 
     let mut found = Vec::new();
@@ -216,38 +441,61 @@ pub fn compare_binding(
             binding.target_name(),
             expected.column
         );
-        let Some(actual) = by_name.get(&expected.column.to_lowercase()) else {
-            found.push(Mismatch {
-                kind: MismatchKind::ColumnMissing,
-                severity: Severity::Error,
-                path: column_path(&expected),
-                message: format!("{subject}, but table `{table}` has no such column"),
-                help: Some(
-                    "add the column, or map it to an existing one with `columns.<key>.column`"
-                        .to_owned(),
-                ),
-            });
-            continue;
+        let candidates = by_name
+            .get(&expected.column.to_lowercase())
+            .map_or(&[][..], Vec::as_slice);
+        let actual = match candidates {
+            [] => {
+                found.push(Mismatch {
+                    kind: MismatchKind::ColumnMissing,
+                    severity: Severity::Error,
+                    path: column_path(&expected),
+                    message: format!("{subject}, but table `{table}` has no such column"),
+                    help: Some(
+                        "add the column, or map it to an existing one with `columns.<key>.column`"
+                            .to_owned(),
+                    ),
+                });
+                continue;
+            }
+            [one] => *one,
+            many => {
+                let names: Vec<String> = many.iter().map(|c| format!("`{}`", c.name)).collect();
+                found.push(Mismatch {
+                    kind: MismatchKind::CaseCollision,
+                    severity: Severity::Error,
+                    path: column_path(&expected),
+                    message: format!(
+                        "{subject}, but table `{table}` has columns {} that differ only in case, so the column is ambiguous",
+                        names.join(" and ")
+                    ),
+                    help: Some(
+                        "create a view in Trino that exposes one of them under a unique name and bind the view"
+                            .to_owned(),
+                    ),
+                });
+                continue;
+            }
         };
-        let want = expected_family(expected.base);
-        let have = physical_family(&actual.physical);
-        if want != have {
-            found.push(Mismatch {
-                kind: MismatchKind::TypeIncompatible,
-                severity: Severity::Error,
-                path: column_path(&expected),
-                message: format!(
-                    "{subject}, which is `{}` ({} family) but the {what} is a {} value",
-                    actual.physical.render(),
-                    have.name(),
-                    want.name()
-                ),
-                help: Some(
-                    "change the column type, or map the property to a column of a matching type"
-                        .to_owned(),
-                ),
-            });
-        }
+        let (kind, severity, reason, help) = match compatibility(&expected, &actual.physical) {
+            Compat::Ok => continue,
+            Compat::Warn { kind, reason, help } => (kind, Severity::Warning, reason, help),
+            Compat::Error { kind, reason, help } => (kind, Severity::Error, reason, help),
+        };
+        found.push(Mismatch {
+            kind,
+            severity,
+            path: column_path(&expected),
+            message: format!(
+                "{what} `{}` ({}) of `{}` reads column `{}`, which is `{}`: {reason}",
+                expected.key,
+                declared(&expected),
+                binding.target_name(),
+                expected.column,
+                actual.physical.render(),
+            ),
+            help,
+        });
     }
     found
 }

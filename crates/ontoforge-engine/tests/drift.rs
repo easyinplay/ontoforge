@@ -121,7 +121,7 @@ async fn aviation_is_healthy() {
     );
     for (name, health) in &report.objects {
         assert!(
-            matches!(health, TargetHealth::Healthy { .. }),
+            matches!(health, TargetHealth::Healthy { warnings } if warnings.is_empty()),
             "{name}: {health:?}"
         );
     }
