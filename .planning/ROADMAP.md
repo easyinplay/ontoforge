@@ -86,7 +86,7 @@ Plans:
 **Spike**: 已完成（spike 1 Trino client、spike 2 sqlparser）；决策见 ADR-0015、ADR-0017
 **Success Criteria** (what must be TRUE):
 
-  1. 定义文件可声明 `source` 绑定；decimal 精度、无时区 timestamp 的 `timezone`、collation、geopoint 不支持等契约违反时 lint 报 E，示例 ontology 仍 lint clean
+  1. 定义以 `backing: source | editOnly` 显式声明数据来源，`SourceBinding` 绑定文件（按 profile 分目录）声明 source 绑定；decimal 精度、无时区 timestamp 的 `timezone`、collation、geopoint 不支持等契约违反时 lint 报 E，示例 ontology 仍 lint clean
   2. `ontoforge validate --online` 对真实 Trino 校验绑定（列存在、类型兼容）并报告不匹配；`--check-pk` 报告重复主键
   3. Trino client 能执行查询、按超时与客户端断连取消、带 trace token 与 client tags；Trino 不可达时返回 `EngineUnavailable`
   4. 自有 printer 生成的 SQL 经 proptest（任意字符串值往返不改变结构）与真实 Trino / SQLite 执行验证；SQLite 替身在 Windows `cargo test` 全绿

@@ -26,7 +26,7 @@
 
 ### 数据源绑定与引擎
 
-- [ ] **BIND-01**: 开发者可以为 object type 与 M:N link 声明可选的 `source` 绑定（catalog / schema / table / columns），无 `source` 的 object type 是 edit-only
+- [ ] **BIND-01**: 开发者在独立的 `SourceBinding` 绑定文件（按 profile 分目录）中为 object type 与 M:N link 声明 source 绑定（catalog / schema / table / columns），定义中以 `backing: source | editOnly` 显式声明数据来源（ADR-0021）
 - [ ] **BIND-02**: 绑定遵守类型契约（decimal 精度、无时区 timestamp 的 `timezone`、可选 collation、geopoint 不支持），违反时 lint 报 E
 - [ ] **BIND-03**: `ontoforge validate --online` 对 Trino 校验绑定，`--check-pk` 查重；启动与定时 drift 校验不匹配时该 object type 降级（`SourceSchemaDrift`），其余照常
 - [ ] **ENGINE-01**: 服务经自写 Trino client 连接部署方已有的 Trino（不打包、不托管），支持超时、断连取消、trace token 与两个服务身份
@@ -192,11 +192,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DX-03 | Phase 1 | Complete |
 | BIND-01 | Phase 2 | Pending |
 | BIND-02 | Phase 2 | Pending |
-| BIND-03 | Phase 2 | Pending |
+| BIND-03 | Phase 2（validate --online、--check-pk、drift 库函数与降级状态模型）+ Phase 7（启动 / 定时 drift 执行） | Pending |
 | ENGINE-01 | Phase 2 | Pending |
-| ENGINE-02 | Phase 2 | Pending |
+| ENGINE-02 | Phase 2（错误分类与 status()）+ Phase 7（/health 与 describe 暴露，API-01） | Pending |
 | ENGINE-03 | Phase 2 | Pending |
-| ENGINE-04 | Phase 2 | Pending |
+| ENGINE-04 | Phase 2（SQLite 替身支撑 Windows cargo test）+ Phase 7（serve --dev，DX-01） | Pending |
 | ENGINE-05 | Phase 2 | Pending |
 | STORE-01 | Phase 3 | Pending |
 | STORE-02 | Phase 3 | Pending |

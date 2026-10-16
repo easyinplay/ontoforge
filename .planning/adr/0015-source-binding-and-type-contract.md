@@ -3,6 +3,7 @@
 - status: accepted
 - date: 2026-10-16
 - 扩展：ADR-0003（IR 新增可选字段，向后兼容；不取代）
+- 部分取代：ADR-0021（「object type 增加可选 source」一条改为独立 SourceBinding 文件 + backing；其余条款仍有效）
 - 依据：`docs/designs/trino-engine-sql-tiers.md` §1、Eng Review D8 / D18 / D23
 
 ## Context
