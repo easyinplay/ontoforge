@@ -1,9 +1,9 @@
 ---
-status: diagnosed
+status: complete
 phase: 01-workspace-schema-lint
 source: [01-VERIFICATION.md]
 started: 2026-10-15T17:44:12Z
-updated: 2026-10-16T01:32:07Z
+updated: 2026-10-16T12:56:06Z
 ---
 
 ## Current Test
@@ -16,11 +16,14 @@ updated: 2026-10-16T01:32:07Z
 expected: 运行上面的命令，颜色、源码片段、下划线位置与 help 提示都正确显示，无乱码或错位
 result: pass
 
-### 2. 编辑器基于导出 schema 的 YAML 补全（Zed）
-expected: 安装 Red Hat YAML 扩展后打开 `examples/ontologies/aviation/objects.yaml`（首行有 yaml-language-server 的 $schema 注释），输入 `kind: ` 时提示 ObjectType / LinkType / ActionType，按 kind 收窄后续字段补全，未知字段被标红
-result: issue
-reported: "在 Zed 中打开 examples/ontologies/aviation/objects.yaml（首行 modeline 正确），文件末尾新文档输入 kind: 后无补全提示，空值也无错误标记（截图）"
-severity: minor
+### 2. 编辑器基于导出 schema 的 YAML 补全（Zed）— G-1-2 修复后复测
+expected: 在 Zed 中打开仓库根目录（已打开则执行 `editor: restart language server`），打开 `examples/ontologies/aviation/objects.yaml`，在末尾追加 `---` 和 `kind: ` 后按 Ctrl+Space：补全列出 ObjectType、LinkType、ActionType；选 ObjectType 后新行 Ctrl+Space 只出现 ObjectType 字段（apiName、primaryKey、properties 等）；在该 document 加 `bogus: 1` 被标红；打开 `examples/ontologies/aviation-json/ontology.yaml` 没有 schema 错误提示
+result: pass
+reported: "重启了yaml language server，但是[截图]，要不这个先pass吧"
+note: "截图：objects.yaml 末尾追加的 document 中 `kind:` 出现红色诊断 `Incorrect type. Expected \"string\".`，状态栏 5 个错误，与 headless 实测的 5 条诊断一致，说明 schema 已关联到追加的 document（修复前无任何标记）。截图未展示补全弹窗、bogus 标红与 aviation-json 无误报，这三项未逐一观察，用户决定按 pass 收口。"
+previous_result: issue
+previous_reported: "在 Zed 中打开 examples/ontologies/aviation/objects.yaml（首行 modeline 正确），文件末尾新文档输入 kind: 后无补全提示，空值也无错误标记（截图）"
+retest_after: 01-14-PLAN.md
 
 ### 3. GitHub Actions CI 在 windows-latest 与 ubuntu-latest 上全绿
 expected: push 分支后 `.github/workflows/ci.yml` 两个平台的 fmt / clippy / test 全部通过，包括 Unix 下的 symlink 与非 UTF-8 文件名测试
@@ -30,8 +33,8 @@ note: "PR #1 run 38834599192：windows-latest 2m38s、ubuntu-latest 1m20s，fmt 
 ## Summary
 
 total: 3
-passed: 2
-issues: 1
+passed: 3
+issues: 0
 pending: 0
 skipped: 0
 blocked: 0
@@ -40,7 +43,9 @@ blocked: 0
 
 - gap_id: G-1-2
   truth: "在支持 yaml-language-server 的编辑器（Zed）中，示例 YAML 按导出的 JSON Schema 提供 kind 补全、按 kind 收窄字段并标红未知字段"
-  status: failed
+  status: resolved
+  resolved_by: 01-14-PLAN.md
+  resolved_at: 2026-10-16
   reason: "User reported: Zed 中 objects.yaml 末尾输入 kind: 无补全、无错误标记"
   severity: minor
   test: 2
