@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 2
 current_phase_name: Source Binding & Engine
 status: executing
-stopped_at: Completed 02-02-PLAN.md
-last_updated: "2026-10-16T19:05:08.955Z"
+stopped_at: Completed 02-03-PLAN.md
+last_updated: "2026-10-16T19:45:45.391Z"
 last_activity: 2026-10-17
 last_activity_desc: Phase 2 execution started
-state_head: 5681b48de0a367f474344d16fb8f184df3843ac5
+state_head: 6fc7e4eb9973c6b12bf1dff43cd0b6521c96a58c
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 24
-  completed_plans: 16
+  completed_plans: 17
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-16)
 ## Current Position
 
 Phase: 2 (Source Binding & Engine) — EXECUTING
-Plan: 3 of 10
+Plan: 4 of 10
 Status: Ready to execute
 Last activity: 2026-10-17 — Phase 2 execution started
 
@@ -58,6 +58,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P14 | 12 min | 3 tasks | 7 files |
 | Phase 2 P01 | 35 min | 3 tasks | 84 files |
 | Phase 02 P02 | 15min | 3 tasks | 21 files |
+| Phase 2 P03 | 35min | 3 tasks | 72 files |
 
 ## Accumulated Context
 
@@ -72,6 +73,8 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 2]: read_limited(path, follow_links, max_bytes)、ProfileName、诊断码 V16..V20 在 wave 1 公开，02-03 与 02-04 共用 — 避免 wave 2 两个并行 plan 互相依赖或各复刻一份有界读取（E10、E14）
 - [Phase 02]: 02-02: SQL text only from printer; PrintedSql::new is printer-private, quote_string/quote_ident are the only value exits — Compiler enforces ENGINE-03; proptest and source scan back it up
 - [Phase 02]: 02-02: SqliteEngine execute prepares first (columns for empty results) then streams rows up to max_rows+1 / max_bytes — E24 bounded memory; Trino-like column metadata on zero rows
+- [Phase 02]: 02-03: SourceBinding documents live only under bindings/<profile>/; the profile comes from the directory and is only a map key; target is an externally tagged enum — Keeps serde error paths (ADR-0003), keeps physical names out of definitions, and a profile name never reaches a file path
+- [Phase 02]: 02-03: fixture existence and size are probed through metadata only inside assemble; fixture_header, bound_columns and effective_decimal are the single implementations shared with 02-05 and 02-07 — E23 and E7-E9: no content read at load time and no second copy of header, column-name or decimal-default logic
 
 ### Pending Todos
 
@@ -98,6 +101,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-16T19:05:08.903Z
-Stopped at: Completed 02-02-PLAN.md
+Last session: 2026-10-16T19:45:36.226Z
+Stopped at: Completed 02-03-PLAN.md
 Resume file: None

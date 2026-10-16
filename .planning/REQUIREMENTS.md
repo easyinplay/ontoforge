@@ -26,7 +26,7 @@
 
 ### 数据源绑定与引擎
 
-- [ ] **BIND-01**: 开发者在独立的 `SourceBinding` 绑定文件（按 profile 分目录）中为 object type 与 M:N link 声明 source 绑定（catalog / schema / table / columns），定义中以 `backing: source | editOnly` 显式声明数据来源（ADR-0021）
+- [x] **BIND-01**: 开发者在独立的 `SourceBinding` 绑定文件（按 profile 分目录）中为 object type 与 M:N link 声明 source 绑定（catalog / schema / table / columns），定义中以 `backing: source | editOnly` 显式声明数据来源（ADR-0021）
 - [ ] **BIND-02**: 绑定遵守类型契约（decimal 精度、无时区 timestamp 的 `timezone`、可选 collation、geopoint 不支持），违反时 lint 报 E
 - [ ] **BIND-03**: `ontoforge validate --online` 对 Trino 校验绑定，`--check-pk` 查重；启动与定时 drift 校验不匹配时该 object type 降级（`SourceSchemaDrift`），其余照常
 - [ ] **ENGINE-01**: 服务经自写 Trino client 连接部署方已有的 Trino（不打包、不托管），支持超时、断连取消、trace token 与两个服务身份
@@ -190,7 +190,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LINT-03 | Phase 1 | Complete |
 | LINT-04 | Phase 1 | Complete |
 | DX-03 | Phase 1 | Complete |
-| BIND-01 | Phase 2 | Pending |
+| BIND-01 | Phase 2 | Complete |
 | BIND-02 | Phase 2 | Pending |
 | BIND-03 | Phase 2（validate --online、--check-pk、drift 库函数与降级状态模型）+ Phase 7（启动 / 定时 drift 执行） | Pending |
 | ENGINE-01 | Phase 2 | Pending |
