@@ -2,7 +2,6 @@
 
 use serde::Deserialize;
 
-use crate::error::EngineError;
 use crate::value::{Column, PhysicalType, Value};
 
 /// One page of a statement response. Unknown fields (stats, warnings, ...) are ignored.
@@ -33,15 +32,6 @@ pub(super) struct WireError {
     pub message: String,
     #[serde(default)]
     pub error_name: Option<String>,
-}
-
-impl WireError {
-    pub(super) fn into_engine_error(self) -> EngineError {
-        EngineError::Query {
-            error_name: self.error_name.unwrap_or_else(|| "UNKNOWN".to_owned()),
-            message: self.message,
-        }
-    }
 }
 
 pub(super) fn columns(wire: &[WireColumn]) -> Vec<Column> {

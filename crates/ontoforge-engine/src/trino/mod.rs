@@ -18,6 +18,7 @@ use crate::{
     PhysicalType, PrintedSql, QueryContext, QueryOutput, TableRef, Value,
 };
 
+mod classify;
 mod client;
 mod decode;
 mod headers;
@@ -267,12 +268,9 @@ impl Engine for TrinoEngine {
         let post = self
             .request(Method::POST, self.statement_url.clone(), ctx, true)?
             .body(sql.as_str().to_owned());
-        let mut page = client::send_once(post, max_page).await?;
+        let mut page = client::send_once(post, true, max_page).await?;
         let mut collector = Collector::new(ctx.max_rows);
         loop {
-            if let Some(error) = page.error.take() {
-                return Err(error.into_engine_error());
-            }
             let next_url = page
                 .next_uri
                 .take()
@@ -284,7 +282,7 @@ impl Engine for TrinoEngine {
                 break;
             }
             let get = self.request(Method::GET, next_url, ctx, false)?;
-            page = client::send_once(get, max_page).await?;
+            page = client::send_once(get, false, max_page).await?;
         }
         Ok(collector.finish())
     }
