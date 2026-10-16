@@ -10,6 +10,7 @@ use std::time::Duration;
 pub mod error;
 pub mod printer;
 pub mod sqlite;
+pub mod trino;
 pub mod value;
 
 pub use error::{EngineError, PrintError};
@@ -107,12 +108,14 @@ pub trait Engine {
 /// Runtime selected engine.
 pub enum AnyEngine {
     Sqlite(sqlite::SqliteEngine),
+    Trino(trino::TrinoEngine),
 }
 
 impl Engine for AnyEngine {
     fn dialect(&self) -> Dialect {
         match self {
             Self::Sqlite(e) => e.dialect(),
+            Self::Trino(e) => e.dialect(),
         }
     }
 
@@ -123,6 +126,7 @@ impl Engine for AnyEngine {
     ) -> Result<QueryOutput, EngineError> {
         match self {
             Self::Sqlite(e) => e.execute(sql, ctx).await,
+            Self::Trino(e) => e.execute(sql, ctx).await,
         }
     }
 
@@ -133,12 +137,14 @@ impl Engine for AnyEngine {
     ) -> Result<BTreeMap<TableRef, Vec<PhysicalColumn>>, EngineError> {
         match self {
             Self::Sqlite(e) => e.describe_tables(tables, ctx).await,
+            Self::Trino(e) => e.describe_tables(tables, ctx).await,
         }
     }
 
     async fn status(&self) -> EngineStatus {
         match self {
             Self::Sqlite(e) => e.status().await,
+            Self::Trino(e) => e.status().await,
         }
     }
 }
