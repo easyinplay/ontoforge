@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 2
 current_phase_name: Source Binding & Engine
 status: executing
-stopped_at: Completed 02-03-PLAN.md
-last_updated: "2026-10-16T19:45:45.391Z"
+stopped_at: Completed 02-04-PLAN.md
+last_updated: "2026-10-16T20:09:38.194Z"
 last_activity: 2026-10-17
 last_activity_desc: Phase 2 execution started
-state_head: 6fc7e4eb9973c6b12bf1dff43cd0b6521c96a58c
+state_head: eaf6b0011b5eaa242c132a5b3555f03898353b06
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 24
-  completed_plans: 17
+  completed_plans: 18
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-16)
 ## Current Position
 
 Phase: 2 (Source Binding & Engine) — EXECUTING
-Plan: 4 of 10
+Plan: 5 of 10
 Status: Ready to execute
 Last activity: 2026-10-17 — Phase 2 execution started
 
@@ -59,6 +59,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 2 P01 | 35 min | 3 tasks | 84 files |
 | Phase 02 P02 | 15min | 3 tasks | 21 files |
 | Phase 2 P03 | 35min | 3 tasks | 72 files |
+| Phase 02 P04 | 21min | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -75,6 +76,8 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 02]: 02-02: SqliteEngine execute prepares first (columns for empty results) then streams rows up to max_rows+1 / max_bytes — E24 bounded memory; Trino-like column metadata on zero rows
 - [Phase 02]: 02-03: SourceBinding documents live only under bindings/<profile>/; the profile comes from the directory and is only a map key; target is an externally tagged enum — Keeps serde error paths (ADR-0003), keeps physical names out of definitions, and a profile name never reaches a file path
 - [Phase 02]: 02-03: fixture existence and size are probed through metadata only inside assemble; fixture_header, bound_columns and effective_decimal are the single implementations shared with 02-05 and 02-07 — E23 and E7-E9: no content read at load time and no second copy of header, column-name or decimal-default logic
+- [Phase 02]: 02-04: TrinoEngine::new enforces https-only credentials and same-scheme extra origins at the library layer (E2); TrinoConnection is boxed inside TrinoEngine to keep AnyEngine small — Direct construction of TrinoConnection must not bypass the config-layer checks; large_enum_variant clippy gate
+- [Phase 02]: 02-04: max_rows truncation lives in TrinoEngine::execute now; max_bytes, retries, per-request timeout and DELETE cancellation remain for 02-06 — describe_tables treats truncated metadata as an error, so truncation was needed early
 
 ### Pending Todos
 
@@ -101,6 +104,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-16T19:45:36.226Z
-Stopped at: Completed 02-03-PLAN.md
+Last session: 2026-10-16T20:09:29.775Z
+Stopped at: Completed 02-04-PLAN.md
 Resume file: None
