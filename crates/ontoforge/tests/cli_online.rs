@@ -243,3 +243,42 @@ fn aviation_fixture_data() {
 fn aviation_json_fixtures_match_yaml_fixtures() {
     assert_eq!(fixture_files(AVIATION), fixture_files(AVIATION_JSON));
 }
+
+/// `float` reads only `real` and `double` reads `real` or `double` (D-13), so the stand-in must
+/// report each property type with the physical type its own rule accepts.
+#[test]
+fn float_and_double_properties_are_clean() {
+    const READING: &str = "\
+kind: ObjectType
+apiName: Reading
+primaryKey: readingId
+properties:
+  readingId: { type: string, required: true }
+  ratio: { type: float }
+  total: { type: double }
+backing: source
+";
+    const READING_BINDING: &str = "\
+kind: SourceBinding
+target: { objectType: Reading }
+source: { catalog: demo, schema: lab, table: readings }
+fixture: { file: fixtures/readings.csv }
+";
+    let dir = TempDir::new().expect("tempdir");
+    write(dir.path(), "ontology.yaml", MANIFEST);
+    write(dir.path(), "objects.yaml", READING);
+    write(dir.path(), "bindings/dev/reading.yaml", READING_BINDING);
+    write(
+        dir.path(),
+        "bindings/dev/fixtures/readings.csv",
+        "readingId,ratio,total\nR1,1.5,2.25\nR2,,\n",
+    );
+    let out = online(dir.path(), &["--format", "json"]);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&out.stdout)
+    );
+    assert_eq!(String::from_utf8_lossy(&out.stdout).trim(), "[]");
+}

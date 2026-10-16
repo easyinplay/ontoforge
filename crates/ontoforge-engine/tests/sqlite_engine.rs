@@ -833,3 +833,18 @@ fn shared_table_conflicts_are_errors() {
     let plan = fx_plan(&note, FX_OBJECTS, &[]).expect("same table");
     assert_eq!(plan.tables.len(), 1, "{:#?}", plan.tables);
 }
+
+#[tokio::test]
+async fn float_columns_report_real() {
+    let engine = fx_load("t.csv", "v\n1.5\n", vec![("v", LogicalType::Float)])
+        .await
+        .expect("loads");
+    let described = engine
+        .describe_tables(
+            &[fx_ref("t")],
+            &QueryContext::new("t".to_owned(), Vec::new()),
+        )
+        .await
+        .expect("described");
+    assert_eq!(described[&fx_ref("t")][0].physical.render(), "real");
+}
