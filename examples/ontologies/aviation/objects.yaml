@@ -13,6 +13,7 @@ properties:
   country: { type: string, displayName: Country }
   location: { type: geopoint, displayName: Location }
 ---
+# yaml-language-server: $schema=../../../schemas/ontoforge-definition.schema.json
 kind: ObjectType
 apiName: Aircraft
 displayName: Aircraft
@@ -24,6 +25,7 @@ properties:
   seatCapacity: { type: integer, displayName: Seat capacity }
   inServiceSince: { type: date, displayName: In service since }
 ---
+# yaml-language-server: $schema=../../../schemas/ontoforge-definition.schema.json
 kind: ObjectType
 apiName: Flight
 displayName: Flight
@@ -41,6 +43,7 @@ properties:
   delayMinutes: { type: integer, displayName: Delay in minutes }
   tags: { type: array, items: string, displayName: Tags }
 ---
+# yaml-language-server: $schema=../../../schemas/ontoforge-definition.schema.json
 kind: ObjectType
 apiName: Pilot
 displayName: Pilot
@@ -54,6 +57,7 @@ properties:
   licenseNumber: { type: string, displayName: License number }
   flightHours: { type: double, displayName: Flight hours }
 ---
+# yaml-language-server: $schema=../../../schemas/ontoforge-definition.schema.json
 kind: ObjectType
 apiName: MaintenanceRecord
 displayName: Maintenance record

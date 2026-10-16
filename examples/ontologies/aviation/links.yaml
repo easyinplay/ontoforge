@@ -10,6 +10,7 @@ cardinality: oneToMany
 from: { objectType: Airport, apiName: departingFlights, displayName: Departing flights }
 to: { objectType: Flight, apiName: departureAirport, displayName: Departure airport, foreignKey: departureAirportCode }
 ---
+# yaml-language-server: $schema=../../../schemas/ontoforge-definition.schema.json
 kind: LinkType
 apiName: flightArrivalAirport
 displayName: Flight arrival airport
@@ -18,6 +19,7 @@ cardinality: oneToMany
 from: { objectType: Airport, apiName: arrivingFlights, displayName: Arriving flights }
 to: { objectType: Flight, apiName: arrivalAirport, displayName: Arrival airport, foreignKey: arrivalAirportCode }
 ---
+# yaml-language-server: $schema=../../../schemas/ontoforge-definition.schema.json
 kind: LinkType
 apiName: aircraftFlights
 displayName: Aircraft flights
@@ -26,6 +28,7 @@ cardinality: oneToMany
 from: { objectType: Aircraft, apiName: flights, displayName: Flights }
 to: { objectType: Flight, apiName: aircraft, displayName: Aircraft, foreignKey: aircraftTailNumber }
 ---
+# yaml-language-server: $schema=../../../schemas/ontoforge-definition.schema.json
 kind: LinkType
 apiName: aircraftCurrentMaintenance
 displayName: Aircraft current maintenance
@@ -34,6 +37,7 @@ cardinality: oneToOne
 from: { objectType: Aircraft, apiName: currentMaintenanceRecord, displayName: Current maintenance record }
 to: { objectType: MaintenanceRecord, apiName: aircraft, displayName: Aircraft, foreignKey: aircraftTailNumber }
 ---
+# yaml-language-server: $schema=../../../schemas/ontoforge-definition.schema.json
 kind: LinkType
 apiName: flightCrew
 displayName: Flight crew

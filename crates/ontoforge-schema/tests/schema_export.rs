@@ -319,3 +319,80 @@ fn editor_configs_associate_definition_schema_with_examples() {
         );
     }
 }
+
+const DEFINITION_MODELINE: &str =
+    "# yaml-language-server: $schema=../../../schemas/ontoforge-definition.schema.json";
+const MANIFEST_MODELINE: &str =
+    "# yaml-language-server: $schema=../../../schemas/ontoforge-manifest.schema.json";
+
+/// yaml-language-server applies a modeline only to the YAML document it sits in
+/// (redhat-developer/vscode-yaml#1066), so every document of a multi-document
+/// definition file carries its own.
+#[test]
+fn aviation_definition_documents_start_with_modeline() {
+    let dir = example_dir("aviation");
+
+    let mut files: Vec<std::path::PathBuf> = std::fs::read_dir(&dir)
+        .unwrap_or_else(|e| panic!("read {}: {e}", dir.display()))
+        .map(|entry| entry.expect("dir entry").path())
+        .filter(|p| p.extension().and_then(|e| e.to_str()) == Some("yaml"))
+        .filter(|p| p.file_name().and_then(|n| n.to_str()) != Some("ontology.yaml"))
+        .collect();
+    files.sort();
+    let names: Vec<String> = files
+        .iter()
+        .map(|p| p.file_name().unwrap().to_string_lossy().into_owned())
+        .collect();
+    for expected in ["actions.yaml", "links.yaml", "objects.yaml"] {
+        assert!(
+            names.iter().any(|n| n == expected),
+            "{expected} missing from aviation definition files {names:?}"
+        );
+    }
+
+    for path in &files {
+        let name = path.file_name().unwrap().to_string_lossy();
+        let text = read(path);
+        let lines: Vec<&str> = text.lines().collect();
+
+        assert_eq!(
+            lines.first().copied(),
+            Some(DEFINITION_MODELINE),
+            "{name}:1 must be the definition modeline"
+        );
+        for (i, line) in lines.iter().enumerate() {
+            if *line == "---" {
+                assert_eq!(
+                    lines.get(i + 1).copied(),
+                    Some(DEFINITION_MODELINE),
+                    "{name}:{} must be the definition modeline (the line after `---`)",
+                    i + 2
+                );
+            }
+        }
+        let modelines = lines.iter().filter(|l| **l == DEFINITION_MODELINE).count();
+        let documents = yaml_documents(path).len();
+        assert_eq!(
+            modelines, documents,
+            "{name} has {modelines} definition modelines for {documents} YAML documents"
+        );
+    }
+
+    let manifest = read(&dir.join("ontology.yaml"));
+    assert_eq!(
+        manifest.lines().next(),
+        Some(MANIFEST_MODELINE),
+        "aviation/ontology.yaml:1 must be the manifest modeline: the editor configs exclude it"
+    );
+
+    for modeline in [DEFINITION_MODELINE, MANIFEST_MODELINE] {
+        let relative = modeline
+            .split_once("$schema=")
+            .expect("modeline has $schema=")
+            .1;
+        assert!(
+            dir.join(relative).is_file(),
+            "modeline schema path `{relative}` does not resolve from examples/ontologies/aviation"
+        );
+    }
+}

@@ -18,6 +18,7 @@ submissionCriteria:
   - condition: "'dispatcher' in user.groups"
     failureMessage: "Only dispatchers can assign pilots"
 ---
+# yaml-language-server: $schema=../../../schemas/ontoforge-definition.schema.json
 kind: ActionType
 apiName: delayFlight
 displayName: Delay flight
@@ -36,6 +37,7 @@ submissionCriteria:
   - condition: "params.delayMinutes > 0 && objects.flight.status != 'CANCELLED'"
     failureMessage: "Delay must be positive and cancelled flights cannot be delayed"
 ---
+# yaml-language-server: $schema=../../../schemas/ontoforge-definition.schema.json
 kind: ActionType
 apiName: recordMaintenance
 displayName: Record maintenance
