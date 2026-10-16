@@ -350,3 +350,66 @@ async fn trace_token_of_128_characters_is_accepted() {
         .await
         .expect("128 characters are fine");
 }
+
+#[tokio::test]
+async fn next_uri_scheme_mismatch_is_rejected() {
+    let server = MockServer::start().await;
+    // Same host and port as the mock, but https.
+    let downgraded = format!(
+        "{}/v1/statement/q1/1",
+        server.uri().replacen("http://", "https://", 1)
+    );
+    mount_post(
+        &server,
+        json!({ "id": "q1", "nextUri": downgraded, "stats": { "state": "QUEUED" } }),
+    )
+    .await;
+
+    let err = engine_for(&server)
+        .execute(&select_one(), &ctx())
+        .await
+        .expect_err("scheme mismatch");
+    assert!(matches!(err, EngineError::Protocol(_)), "{err:?}");
+    assert_eq!(
+        server.received_requests().await.expect("recorded").len(),
+        1,
+        "only the POST may be sent"
+    );
+}
+
+#[tokio::test]
+async fn two_identities_use_separate_clients() {
+    let server = MockServer::start().await;
+    mount_post(
+        &server,
+        json!({ "id": "q1", "columns": [], "stats": { "state": "FINISHED" } }),
+    )
+    .await;
+    let mut ontology = connection(&server.uri());
+    ontology.user = "ontoforge-ontology".to_owned();
+    let mut l2 = connection(&server.uri());
+    l2.user = "ontoforge-l2".to_owned();
+    let ontology = TrinoEngine::new(ontology).expect("ontology engine");
+    let l2 = TrinoEngine::new(l2).expect("l2 engine");
+
+    ontology
+        .execute(&select_one(), &ctx())
+        .await
+        .expect("ontology query");
+    l2.execute(&select_one(), &ctx()).await.expect("l2 query");
+
+    let users: Vec<String> = server
+        .received_requests()
+        .await
+        .expect("recorded")
+        .iter()
+        .map(|r| {
+            r.headers
+                .get("x-trino-user")
+                .and_then(|v| v.to_str().ok())
+                .unwrap_or_default()
+                .to_owned()
+        })
+        .collect();
+    assert_eq!(users, vec!["ontoforge-ontology", "ontoforge-l2"]);
+}

@@ -89,3 +89,54 @@ pub(super) fn statement_headers(
     }
     Ok(headers)
 }
+
+/// Adds the `Authorization` header of `auth` to `builder`.
+pub(super) fn apply_auth(
+    builder: reqwest::RequestBuilder,
+    user: &str,
+    auth: &super::Auth,
+) -> reqwest::RequestBuilder {
+    let _ = (user, auth);
+    builder
+}
+
+#[cfg(test)]
+mod tests {
+    use secrecy::SecretString;
+
+    use super::*;
+    use crate::trino::Auth;
+
+    fn authorization(auth: &Auth) -> Option<String> {
+        let request = apply_auth(
+            reqwest::Client::new().post("https://trino.example/v1/statement"),
+            "ontoforge",
+            auth,
+        )
+        .build()
+        .expect("request");
+        request
+            .headers()
+            .get("authorization")
+            .map(|v| v.to_str().expect("ascii").to_owned())
+    }
+
+    #[test]
+    fn basic_and_bearer_headers() {
+        assert_eq!(authorization(&Auth::None), None);
+        assert_eq!(
+            authorization(&Auth::Basic {
+                password: SecretString::from("pw".to_owned())
+            })
+            .as_deref(),
+            Some("Basic b250b2ZvcmdlOnB3")
+        );
+        assert_eq!(
+            authorization(&Auth::Bearer {
+                token: SecretString::from("tok.en".to_owned())
+            })
+            .as_deref(),
+            Some("Bearer tok.en")
+        );
+    }
+}
