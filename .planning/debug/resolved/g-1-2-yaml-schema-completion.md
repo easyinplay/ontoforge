@@ -1,5 +1,5 @@
 ---
-status: diagnosed
+status: resolved
 trigger: "G-1-2: Zed (Windows) objects.yaml 末尾新文档输入 kind: 无补全、无错误标记"
 created: 2026-10-16T00:00:00Z
 updated: 2026-10-16T02:30:00Z

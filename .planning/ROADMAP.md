@@ -11,7 +11,7 @@
 - Integer phases (1, 2, 3): 本 milestone 计划内工作
 - Decimal phases (2.1, 2.2): 紧急插入（标注 INSERTED）
 
-- [ ] **Phase 1: Workspace, Schema & Lint** - cargo workspace 骨架，YAML/JSON 到单一 IR，E/W lint 规则与 line:col 诊断
+- [x] **Phase 1: Workspace, Schema & Lint** - cargo workspace 骨架，YAML/JSON 到单一 IR，E/W lint 规则与 line:col 诊断 (completed 2026-10-16)
 - [ ] **Phase 2: Storage & Edit Log** - SQLite + PostgreSQL 双后端，不可变 edit log 与对象历史，`ontoforge import`
 - [ ] **Phase 3: Action Execution** - 参数校验、rules 单事务执行、CEL submission criteria、validate-only 与 batch
 - [ ] **Phase 4: Object Set Query** - filter / 全文搜索 / 排序与游标分页 / searchAround / 集合运算 / 聚合，双后端等价
@@ -192,7 +192,7 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7（Phase 3 �
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Workspace, Schema & Lint | 14/14 | In Progress|  |
+| 1. Workspace, Schema & Lint | 14/14 | Complete    | 2026-10-16 |
 | 2. Storage & Edit Log | 0/TBD | Not started | - |
 | 3. Action Execution | 0/TBD | Not started | - |
 | 4. Object Set Query | 0/TBD | Not started | - |

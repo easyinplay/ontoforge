@@ -1,38 +1,38 @@
 ---
 gsd_state_version: "1.0"
-current_phase: 01
-current_phase_name: Workspace, Schema & Lint
-status: executing
-stopped_at: Completed 01-14-PLAN.md
-last_updated: "2026-10-16T02:06:48.530Z"
+current_phase: 2
+current_phase_name: Storage & Edit Log
+status: planning
+stopped_at: Phase 01 complete, ready to plan Phase 2
+last_updated: "2026-10-16T13:04:15.870Z"
 last_activity: 2026-10-16
-last_activity_desc: Phase 01 execution started
-state_head: 99641e477256c7591e3d6e8bcf791c48792b23ed
+last_activity_desc: Phase 01 complete, transitioned to Phase 2
+state_head: 1a71579d4aa1f4976d070ee7555c2c7277b50a03
 progress:
   total_phases: 7
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 14
   completed_plans: 14
-  percent: 0
+  percent: 14
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-10-15)
+See: .planning/PROJECT.md (updated 2026-10-16)
 
 **Core value:** 定义一次 ontology，应用和 agent 就能通过 REST 与 MCP 对同一份对象图做受控读写：写入一律经 Action 校验与授权，每次写入都可审计。
-**Current focus:** Phase 01 — Workspace, Schema & Lint
+**Current focus:** 重排 Phase 2+（Trino 主引擎方向），先跑 spike 3b → ADR 修订 → GSD 重排 ROADMAP / REQUIREMENTS
 
 ## Current Position
 
-Phase: 01 (Workspace, Schema & Lint) — EXECUTING
-Plan: 14 of 14 (all plans complete; phase verification pending)
-Status: Ready for verification
-Last activity: 2026-10-16 — Phase 01 execution started
+Phase: 2 — Storage & Edit Log
+Plan: Not started
+Status: Ready to plan — ⚠️ 现 ROADMAP 的 Phase 2 定义已被 `docs/designs/trino-engine-sql-tiers.md`（eng review D1–D23）取代，不要按原文规划
+Last activity: 2026-10-16 — Phase 01 complete, transitioned to Phase 2
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 14%
 
 ## Performance Metrics
 
@@ -61,22 +61,11 @@ Progress: [░░░░░░░░░░] 0%
 
 ### Decisions
 
-决策全文见 `.planning/adr/`（ADR-0001 至 ADR-0011，均 accepted），摘要见 PROJECT.md Key Decisions。
+决策全文见 `.planning/adr/`，摘要见 PROJECT.md Key Decisions；Phase 1 实施细节见各 `01-*-SUMMARY.md`。
 
-- [Roadmap]: 7 个 phase，按 schema → storage → action / query → auth → REST → MCP 依赖链排列
-- [Phase 1]: ADR-0012: definition document shape accepted by user (recommended); link end apiName = accessor on that end's objectType
-- [Phase 1]: 01-01: LinkType/ActionType kinds report ONT-V03 'not implemented yet' until plans 01-05/01-06; clippy result_large_err allowed workspace-wide
-- [Phase 01]: Invalid include patterns load no files; empty-match V14 only when manifest and listing succeeded
-- [Phase 1]: 01-04: primary key must declare required: true explicitly (overrides ADR-0012 implicit required); titleKey stays Option in IR with effective_title_key()
-- [Phase 01]: Link end apiName is the accessor on that end's own objectType (ADR-0012); a link with a missing end type reports V09 only and skips the other link checks — V08 accessor namespaces are keyed per object type; later checks need the resolved type pair
-- [Phase 01]: cel 0.15 SourceInfo::offset_for returns UTF-8 byte offsets; offset_to_line_col takes bytes and returns a char column — Verified with a multi-byte literal in ontoforge-expr tests (01-07)
-- [Phase 01]: 01-06: numeric assignability is by value class (byte/short/integer, float/double); objectReference params cannot be assigned to properties; modifyObject on the primary key is V12 — RESEARCH scale-property-limits mapping and plan discretion
-- [Phase 01]: 01-08: a configured lint level replaces every severity of a rule; unknown rule ids suggest the zero-padded id first (ONT-W1 -> ONT-W01), then Jaro-Winkler
-- [Phase 01]: 01-12: CEL criteria check emits ONT-V13 as a hard error in pipeline::check, which clears LoadOutput.ontology on any error — Keeps the Some-only-when-no-error invariant so validate never prints ok next to an error
-- [Phase 1]: [Phase 01] 01-13: diag::offset_to_line_col is the only byte-offset to line:col implementation; expr keeps walk::char_pos only to widen to usize
-- [Phase 1]: 01-10: naming rules W01-W05 are heuristics whose help text always ends with the way to switch the rule off; split_camel stays (convert_case adds two new crates for no gain)
-- [Phase 1]: [Phase 01] 01-11: structure rules W06-W11 group before comparing (W07 by primary key, W08 by keys held by 3+ types); W08 counts the primary key like any property, so three types sharing key name id already share one property
-- [Phase 01]: 01-14: exclude ontology.yaml manifests from the definition-schema yaml.schemas glob (28 modeline-less manifests otherwise get 4 false positives each)
+- [Roadmap]: 原 7 个 phase 按 schema → storage → action / query → auth → REST → MCP 排列；Phase 2+ 待按设计文档纵切片顺序重排
+- [Phase 1]: 已交付并通过 UAT 3/3、VERIFICATION passed、SECURITY 47/47 closed（详: `phases/01-workspace-schema-lint/`）
+- [Design]: Trino 主引擎 + 分级 SQL 方向通过 office-hours / CEO / eng review（详: `docs/designs/trino-engine-sql-tiers.md`「Eng Review 决策」）
 
 ### Pending Todos
 
@@ -84,8 +73,9 @@ None yet.
 
 ### Blockers/Concerns
 
-- [Phase 1]: 进入前 spike `serde-saphyr` 按路径取 span
-- [Phase 2]: 进入前 spike `postgresql_embedded`（Windows）与 `sea-query` JSON 表达式；edit log 格式必须在 Phase 2 定死
+- [Next]: spike 3b（D16）为重排前门禁，其中 resource group 测量需要公司 Trino 管理员权限
+- [Next]: 写 / 修订 ADR 0003、0004、0005、0008 + 新 engine ADR（E2）
+- [Ops]: 测试凭据待轮换（`ontoforge_trino_ro`、postgres），测试 catalog `ontoforge_pg` 待删除
 
 ## Deferred Items
 
@@ -95,6 +85,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-16T02:06:48.471Z
-Stopped at: Completed 01-14-PLAN.md
+Last session: 2026-10-16
+Stopped at: Phase 01 complete; next = spike 3b → ADR → 重排 ROADMAP
 Resume file: None
