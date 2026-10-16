@@ -98,7 +98,7 @@ Plans:
 
 **Wave 1**
 
-- [ ] 02-01-PLAN.md — backing 必填与 Phase 1 fixture 全量迁移、ADR-0021
+- [ ] 02-01-PLAN.md — backing 必填与 Phase 1 fixture 全量迁移、ADR-0021、wave 2 共用前置（read_limited / ProfileName / V16-V20）
 - [ ] 02-02-PLAN.md — ontoforge-engine 骨架：Engine trait、类型化 printer、SQLite 替身执行、proptest
 
 **Wave 2** *(blocked on Wave 1 completion)*
@@ -115,7 +115,7 @@ Plans:
 **Wave 4** *(blocked on Wave 3 completion)*
 
 - [ ] 02-08-PLAN.md — D-13 完整兼容表、drift 状态模型、绑定规范文档
-- [ ] 02-09-PLAN.md — `--server-config` / Trino 路径、退出码 3、`--check-pk`、sqlite_dir
+- [ ] 02-09-PLAN.md — `--server-config` / Trino 路径、退出码 3、`--check-pk`（查重排除 NULL）
 
 **Wave 5** *(blocked on Wave 4 completion)*
 
