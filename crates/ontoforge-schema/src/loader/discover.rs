@@ -48,6 +48,24 @@ fn is_candidate(rel: &str) -> bool {
         && !parts.iter().any(|d| dir_is_skipped(d))
 }
 
+/// The profile directory of a normalized relative path: `bindings/<x>/...` gives
+/// `<x>`. A file directly under `bindings/` has none.
+pub fn profile_dir(rel: &str) -> Option<&str> {
+    let _ = rel;
+    None
+}
+
+/// Resolve `fixture_file`, written relative to the directory of `binding_file`, to a
+/// path relative to the ontology root (`/` separated). Pure string arithmetic: no
+/// file system access, so it behaves the same on disk and in memory.
+///
+/// Fails when the path is absolute, names a drive, passes above the root, or does
+/// not end in `.csv` or `.json`.
+pub fn fixture_path(binding_file: &str, fixture_file: &str) -> Result<String, String> {
+    let _ = (binding_file, fixture_file);
+    Err("not implemented".to_owned())
+}
+
 /// V14 for a root file that is the manifest in other letter case: it is opened as
 /// the manifest on Windows and macOS but not on Linux, so it must be renamed.
 fn miscased_manifest(rel: &str) -> Option<Diagnostic> {
@@ -229,6 +247,55 @@ mod tests {
         assert!(!is_candidate(".github/ci.yml"));
         assert!(!is_candidate("a/target/x.yaml"));
         assert!(!is_candidate("node_modules/p/package.json"));
+    }
+
+    #[test]
+    fn fixture_path_rules() {
+        let binding = "bindings/dev/flight.yaml";
+        assert_eq!(
+            fixture_path(binding, "fixtures/flights.csv").as_deref(),
+            Ok("bindings/dev/fixtures/flights.csv")
+        );
+        assert_eq!(fixture_path(binding, "../../x.csv").as_deref(), Ok("x.csv"));
+        assert_eq!(
+            fixture_path(binding, "./a/../rows.JSON").as_deref(),
+            Ok("bindings/dev/rows.JSON")
+        );
+        for bad in [
+            "../../../x.csv",
+            "/abs.csv",
+            "\\abs.csv",
+            "C:/x.csv",
+            "fixtures/x.txt",
+            "fixtures/x",
+            "",
+            ".",
+            "fixtures/a:b.csv",
+            "fixtures/\u{7}.csv",
+        ] {
+            assert!(fixture_path(binding, bad).is_err(), "{bad:?}");
+        }
+        assert!(fixture_path("a.yaml", "../x.csv").is_err());
+    }
+
+    #[test]
+    fn profile_dir_is_the_second_segment_under_bindings() {
+        assert_eq!(profile_dir("bindings/dev/flight.yaml"), Some("dev"));
+        assert_eq!(profile_dir("bindings/dev/sub/x.yaml"), Some("dev"));
+        assert_eq!(profile_dir("bindings/Prod/x.yaml"), Some("Prod"));
+        assert_eq!(profile_dir("bindings/flight.yaml"), None);
+        assert_eq!(profile_dir("defs/bindings/dev/x.yaml"), None);
+        assert_eq!(profile_dir("objects.yaml"), None);
+    }
+
+    #[test]
+    fn only_binding_fixture_directories_are_excluded() {
+        assert!(!is_candidate("bindings/dev/fixtures/rows.json"));
+        assert!(!is_candidate("bindings/dev/fixtures/deep/rows.json"));
+        assert!(is_candidate("bindings/dev/flight.yaml"));
+        assert!(is_candidate("fixtures/objects.yaml"));
+        assert!(is_candidate("defs/fixtures/x.yaml"));
+        assert!(is_candidate("bindings/fixtures/x.yaml"));
     }
 
     #[test]

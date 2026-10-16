@@ -7,7 +7,7 @@ use camino::Utf8Path;
 use crate::diag::{Diagnostic, Severity, SourceLocation, codes, has_errors, sort_diagnostics};
 use crate::ir::{
     ActionType, ActionTypeName, Definition, LinkType, LinkTypeName, Manifest, ObjectType,
-    ObjectTypeName, Ontology,
+    ObjectTypeName, Ontology, ProfileBindings, ProfileName,
 };
 
 mod discover;
@@ -15,6 +15,7 @@ mod dispatch;
 mod parse;
 pub mod sourcemap;
 
+pub use discover::{fixture_path, profile_dir};
 use dispatch::{Ctx, dispatch, parse_manifest};
 pub use sourcemap::SourceMap;
 use sourcemap::{DefKey, DefKind, FileId, Part, Seg};
@@ -299,6 +300,8 @@ fn assemble(manifest: Text, listing: Listing, read: &dyn Fn(&str) -> Text) -> Lo
         object_types: defs.objects,
         link_types: defs.links,
         action_types: defs.actions,
+        default_profile: m.default_profile,
+        bindings: defs.bindings,
     });
     if let Some(o) = &ontology {
         diags.extend(crate::validate::validate(o, &sources));
@@ -370,6 +373,7 @@ struct Defs {
     objects: BTreeMap<ObjectTypeName, ObjectType>,
     links: BTreeMap<LinkTypeName, LinkType>,
     actions: BTreeMap<ActionTypeName, ActionType>,
+    bindings: BTreeMap<ProfileName, ProfileBindings>,
 }
 
 fn merge(
@@ -405,6 +409,7 @@ fn merge(
             a.api_name.to_string(),
             defs.actions.contains_key(a.api_name.as_str()),
         ),
+        Definition::SourceBinding(_) => return,
     };
     let key = DefKey { kind, api_name };
     let name_path = [Seg::Key("apiName".into())];
@@ -432,6 +437,7 @@ fn merge(
         Definition::ActionType(a) => {
             defs.actions.insert(a.api_name.clone(), a);
         }
+        Definition::SourceBinding(_) => {}
     }
 }
 

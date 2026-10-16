@@ -20,14 +20,19 @@ pub use action::{
     ParameterDef, Rule, SubmissionCriterion, ValueSource,
 };
 pub use basetype::BaseType;
-pub use binding::Backing;
+pub use binding::{
+    Backing, BindingTarget, BoundColumn, Collation, ColumnBinding, FixtureRef, ProfileBindings,
+    SourceBinding, SourceRef,
+};
 pub use link::{Cardinality, LinkEnd, LinkType};
 pub use manifest::Manifest;
 pub use names::{
     ActionTypeName, LinkEndName, LinkTypeName, ObjectTypeName, OntologyName, ParameterName,
     ProfileName, PropertyName,
 };
-pub use object::{ObjectType, PropertyDef};
+pub use object::{
+    DEFAULT_DECIMAL_PRECISION, DEFAULT_DECIMAL_SCALE, ObjectType, PropertyDef,
+};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields, rename_all = "camelCase")]
@@ -40,6 +45,26 @@ pub struct Ontology {
     pub link_types: BTreeMap<LinkTypeName, LinkType>,
     #[serde(default)]
     pub action_types: BTreeMap<ActionTypeName, ActionType>,
+    /// The manifest's `defaultProfile`.
+    pub default_profile: Option<ProfileName>,
+    /// Source bindings by profile, from `bindings/<profile>/`.
+    #[serde(default)]
+    pub bindings: BTreeMap<ProfileName, ProfileBindings>,
+}
+
+impl Ontology {
+    /// The bindings of profile `p`, if any binding file exists for it.
+    pub fn profile_bindings(&self, p: &ProfileName) -> Option<&ProfileBindings> {
+        self.bindings.get(p)
+    }
+}
+
+/// The name a binding is registered under in the source map: `{profile}/{target}`.
+///
+/// Object type names start with an upper case letter and link type names with a
+/// lower case one, so an object type and a link type never share a target name.
+pub fn binding_def_name(profile: &ProfileName, target: &str) -> String {
+    format!("{profile}/{target}")
 }
 
 /// One definition document.
@@ -54,4 +79,5 @@ pub enum Definition {
     ObjectType(ObjectType),
     LinkType(LinkType),
     ActionType(ActionType),
+    SourceBinding(SourceBinding),
 }

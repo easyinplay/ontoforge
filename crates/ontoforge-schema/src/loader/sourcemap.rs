@@ -18,6 +18,8 @@ pub enum DefKind {
     ObjectType,
     LinkType,
     ActionType,
+    /// Registered under `{profile}/{target}` ([`crate::ir::binding_def_name`]).
+    SourceBinding,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -68,6 +70,11 @@ impl SourceMap {
             text,
         });
         FileId(self.files.len() - 1)
+    }
+
+    /// The path a file was registered under.
+    pub(crate) fn path(&self, file: FileId) -> &str {
+        &self.files[file.0].path
     }
 
     pub fn text(&self, path: &str) -> Option<&str> {

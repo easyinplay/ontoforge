@@ -60,4 +60,56 @@ pub struct PropertyDef {
     pub description: Option<String>,
     /// Element type; required when `type` is `array`, not allowed otherwise.
     pub items: Option<BaseType>,
+    /// Total number of digits of a `decimal` (or of an `array` of `decimal`).
+    /// Defaults to 38 (ADR-0015, ADR-0021).
+    pub precision: Option<u32>,
+    /// Number of digits after the decimal point of a `decimal` (or of an `array`
+    /// of `decimal`). Defaults to 10 (ADR-0015, ADR-0021).
+    pub scale: Option<u32>,
+}
+
+
+/// Precision of a `decimal` that does not write `precision`.
+pub const DEFAULT_DECIMAL_PRECISION: u32 = 38;
+
+/// Scale of a `decimal` that does not write `scale`.
+pub const DEFAULT_DECIMAL_SCALE: u32 = 10;
+
+impl PropertyDef {
+    /// `(precision, scale)` with each missing value replaced by its own default.
+    ///
+    /// The only definition of the decimal defaults; lint, the engine and the binding
+    /// comparison all call it.
+    pub fn effective_decimal(&self) -> (u32, u32) {
+        (0, 0)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn decimal(precision: Option<u32>, scale: Option<u32>) -> PropertyDef {
+        PropertyDef {
+            base_type: BaseType::Decimal,
+            required: false,
+            display_name: None,
+            description: None,
+            items: None,
+            precision,
+            scale,
+        }
+    }
+
+    #[test]
+    fn effective_decimal_defaults() {
+        assert_eq!(decimal(None, None).effective_decimal(), (38, 10));
+        assert_eq!(decimal(Some(12), None).effective_decimal(), (12, 10));
+        assert_eq!(decimal(None, Some(2)).effective_decimal(), (38, 2));
+        assert_eq!(decimal(Some(12), Some(2)).effective_decimal(), (12, 2));
+        assert_eq!(
+            (DEFAULT_DECIMAL_PRECISION, DEFAULT_DECIMAL_SCALE),
+            (38, 10)
+        );
+    }
 }
