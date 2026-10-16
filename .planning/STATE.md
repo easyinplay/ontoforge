@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 2
 current_phase_name: Source Binding & Engine
 status: executing
-stopped_at: Completed 02-05-PLAN.md
-last_updated: "2026-10-16T20:43:46.651Z"
+stopped_at: Completed 02-06-PLAN.md
+last_updated: "2026-10-16T20:59:23.396Z"
 last_activity: 2026-10-17
 last_activity_desc: Phase 2 execution started
-state_head: f1ed346b21aba8799ecfaa111b44469285eaa08a
+state_head: aab8fe3c4b44c6ff77b004b67b2422437552d577
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 24
-  completed_plans: 19
+  completed_plans: 20
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-16)
 ## Current Position
 
 Phase: 2 (Source Binding & Engine) — EXECUTING
-Plan: 6 of 10
+Plan: 7 of 10
 Status: Ready to execute
 Last activity: 2026-10-17 — Phase 2 execution started
 
@@ -61,6 +61,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 2 P03 | 35min | 3 tasks | 72 files |
 | Phase 02 P04 | 21min | 3 tasks | 10 files |
 | Phase 02 P05 | 30 min | 2 tasks | 26 files |
+| Phase 02 P06 | 11 min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,8 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 2]: 02-05: fixture decimals are normalized to scale and refused instead of rounded; precision or scale above 38 is refused — decimal text never passes through a float; bounded padding
 - [Phase 2]: 02-05: timestamp fixture fractions above 3 digits are refused (timestamp(3)), integers reject a leading + — no silent loss of information in fixtures
 - [Phase 2]: 02-05: compare_binding uses type families only; geopoint counts as string; family-internal rules stay in 02-08 — plan scope; crossing families is always an error
+- [Phase 02]: Trino client 的 POST 重试收窄到能证明语句未被接受的情形（429、503 + SERVER_STARTING_UP、连接未建立），普通 503 / 502 / 504 返回 Unavailable，避免重复提交昂贵查询 (E16) — 02-06：网关 503 不能证明查询未提交
+- [Phase 02]: QueryGuard 持有预构造的 DELETE 请求而非 URL，guard 不接触凭据；服务端已报告 Query 错误时不发 DELETE，其余错误、超时、截断都会 cancel_now — 02-06：取消只发往已通过同源校验的 nextUri（T-02-27）
 
 ### Pending Todos
 
@@ -108,6 +111,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-16T20:43:44.773Z
-Stopped at: Completed 02-05-PLAN.md
+Last session: 2026-10-16T20:59:07.778Z
+Stopped at: Completed 02-06-PLAN.md
 Resume file: None
