@@ -1,6 +1,17 @@
 //! ONT-E13: a decimal needs a valid precision and scale (BIND-02).
+//!
+//! Applies to every decimal property (and every array of decimals), whatever the
+//! backing: the precision and scale are part of the type, not of the binding. The
+//! effective values come from [`PropertyDef::effective_decimal`], the only place the
+//! defaults are defined.
 
-use super::super::{Finding, Level, LintCx, LintRule};
+use super::element_type;
+use crate::ir::{BaseType, PropertyDef};
+use crate::lint::{Finding, Level, LintCx, LintRule};
+use crate::loader::sourcemap::{DefKey, DefKind, Part, Seg};
+
+/// The largest precision a decimal may have.
+const MAX_PRECISION: u32 = 38;
 
 pub(super) struct E13;
 
@@ -15,7 +26,68 @@ impl LintRule for E13 {
         Level::Error
     }
 
-    fn check(&self, _cx: &LintCx<'_>, _out: &mut Vec<Finding>) {}
+    fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {
+        for object in cx.ontology.object_types.values() {
+            let def = DefKey {
+                kind: DefKind::ObjectType,
+                api_name: object.api_name.to_string(),
+            };
+            for (name, property) in &object.properties {
+                if element_type(property) != BaseType::Decimal {
+                    continue;
+                }
+                let Some((field, message, help)) = problem(name.as_str(), property) else {
+                    continue;
+                };
+                out.push(Finding {
+                    def: def.clone(),
+                    path: ["properties", name.as_str(), field]
+                        .map(|k| Seg::Key(k.to_owned()))
+                        .to_vec(),
+                    part: Part::Value,
+                    message,
+                    help: Some(help),
+                    severity: None,
+                });
+            }
+        }
+    }
+}
+
+/// What is wrong with the decimal `property`, as the field to point at, a message and
+/// a help text. At most one problem per property: an out-of-range precision first.
+fn problem(name: &str, property: &PropertyDef) -> Option<(&'static str, String, String)> {
+    let (precision, scale) = property.effective_decimal();
+    if !(1..=MAX_PRECISION).contains(&precision) {
+        return Some((
+            "precision",
+            format!(
+                "decimal property `{name}` has precision {precision}, which is outside 1 to {MAX_PRECISION}"
+            ),
+            format!("write a `precision` between 1 and {MAX_PRECISION}"),
+        ));
+    }
+    if scale <= precision {
+        return None;
+    }
+    if property.scale.is_some() {
+        Some((
+            "scale",
+            format!(
+                "decimal property `{name}` has scale {scale}, which is greater than its precision {precision}"
+            ),
+            format!("write a `scale` between 0 and {precision}"),
+        ))
+    } else {
+        // Only the precision is written, so the default scale is what is too large.
+        Some((
+            "precision",
+            format!(
+                "decimal property `{name}` has precision {precision}, which is smaller than the default scale {scale}"
+            ),
+            format!("the default scale is {scale}; declare `scale` explicitly"),
+        ))
+    }
 }
 
 #[cfg(test)]

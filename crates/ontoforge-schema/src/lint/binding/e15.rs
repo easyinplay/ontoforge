@@ -1,6 +1,14 @@
 //! ONT-E15: collation applies to string columns only (BIND-02).
+//!
+//! `collation` in a binding says how a string column compares case. The column of an
+//! object property takes the property type; the column of a link end takes the type of
+//! the primary key at that end. Pushing case-insensitive comparison down to the data
+//! source is the query compiler's business (Phase 4, D23), not this rule's.
 
-use super::super::{Finding, Level, LintCx, LintRule};
+use super::{all_bindings, binding_def, describe, element_type};
+use crate::ir::BaseType;
+use crate::lint::{Finding, Level, LintCx, LintRule};
+use crate::loader::sourcemap::{Part, Seg};
 
 pub(super) struct E15;
 
@@ -15,7 +23,39 @@ impl LintRule for E15 {
         Level::Error
     }
 
-    fn check(&self, _cx: &LintCx<'_>, _out: &mut Vec<Finding>) {}
+    fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {
+        for (profile, binding) in all_bindings(cx.ontology) {
+            let def = binding_def(profile, binding);
+            for column in cx.ontology.bound_columns(binding) {
+                let has_collation = binding
+                    .columns
+                    .get(column.key)
+                    .is_some_and(|mapping| mapping.collation.is_some());
+                let element = element_type(column.property);
+                if !has_collation || element == BaseType::String {
+                    continue;
+                }
+                let held = if column.property.base_type == BaseType::Array {
+                    format!("array of {}", element.as_str())
+                } else {
+                    element.as_str().to_owned()
+                };
+                out.push(Finding {
+                    def: def.clone(),
+                    path: ["columns", column.key, "collation"]
+                        .map(|k| Seg::Key(k.to_owned()))
+                        .to_vec(),
+                    part: Part::Key,
+                    message: format!(
+                        "`collation` does not apply to {}: its type is {held}, not string",
+                        describe(binding, column.key)
+                    ),
+                    help: Some("remove `collation`; it applies to string columns only".to_owned()),
+                    severity: None,
+                });
+            }
+        }
+    }
 }
 
 #[cfg(test)]

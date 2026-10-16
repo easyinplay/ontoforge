@@ -1,6 +1,13 @@
 //! ONT-E16: geopoint properties cannot be read from a source (ADR-0015).
+//!
+//! A geopoint has no representation in the data source types a binding reads, so a
+//! `backing: source` object type may not declare one (or an array of them). An
+//! `editOnly` object type may.
 
-use super::super::{Finding, Level, LintCx, LintRule};
+use super::element_type;
+use crate::ir::{Backing, BaseType};
+use crate::lint::{Finding, Level, LintCx, LintRule};
+use crate::loader::sourcemap::{DefKey, DefKind, Part, Seg};
 
 pub(super) struct E16;
 
@@ -15,7 +22,44 @@ impl LintRule for E16 {
         Level::Error
     }
 
-    fn check(&self, _cx: &LintCx<'_>, _out: &mut Vec<Finding>) {}
+    fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {
+        for object in cx.ontology.object_types.values() {
+            if object.backing != Backing::Source {
+                continue;
+            }
+            let def = DefKey {
+                kind: DefKind::ObjectType,
+                api_name: object.api_name.to_string(),
+            };
+            for (name, property) in &object.properties {
+                if element_type(property) != BaseType::Geopoint {
+                    continue;
+                }
+                // Point at the type that is the geopoint: `items` of an array.
+                let field = if property.base_type == BaseType::Array {
+                    "items"
+                } else {
+                    "type"
+                };
+                out.push(Finding {
+                    def: def.clone(),
+                    path: ["properties", name.as_str(), field]
+                        .map(|k| Seg::Key(k.to_owned()))
+                        .to_vec(),
+                    part: Part::Value,
+                    message: format!(
+                        "geopoint properties cannot be read from a source binding (property `{name}` of `{}`)",
+                        object.api_name
+                    ),
+                    help: Some(format!(
+                        "give `{}` `backing: editOnly`, or remove the property",
+                        object.api_name
+                    )),
+                    severity: None,
+                });
+            }
+        }
+    }
 }
 
 #[cfg(test)]
