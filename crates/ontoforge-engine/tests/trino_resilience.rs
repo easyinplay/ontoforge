@@ -1,6 +1,8 @@
 //! Failure behaviour of the Trino client: error classification, retries and cancellation.
 
-use std::net::TcpListener;
+use std::io::{Read, Write};
+use std::net::{TcpListener, TcpStream};
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 use ontoforge_engine::printer::ast::{Expr, Literal, Select, SelectItem};
@@ -505,4 +507,381 @@ async fn connect_failure_is_retried_with_backoff() {
         "{:?}",
         started.elapsed()
     );
+}
+
+// ---- cancellation, limits and the page size cap ----
+
+/// Requests of `http_method` the server has seen; waits up to 2 s for at least `at_least`.
+async fn wait_for_requests(
+    server: &MockServer,
+    http_method: &str,
+    at_least: usize,
+) -> Vec<wiremock::Request> {
+    let deadline = Instant::now() + Duration::from_secs(2);
+    loop {
+        let found: Vec<_> = server
+            .received_requests()
+            .await
+            .expect("recorded")
+            .into_iter()
+            .filter(|r| r.method.as_str() == http_method)
+            .collect();
+        if found.len() >= at_least || Instant::now() >= deadline {
+            return found;
+        }
+        tokio::time::sleep(Duration::from_millis(20)).await;
+    }
+}
+
+async fn mount_delete(server: &MockServer) {
+    Mock::given(method("DELETE"))
+        .respond_with(ResponseTemplate::new(204))
+        .mount(server)
+        .await;
+}
+
+/// GET `/v1/statement/q1/{page}` with `rows` varchar rows and, unless `last`, a nextUri to
+/// the following page.
+async fn mount_rows_page(server: &MockServer, page: u32, rows: usize, last: bool) {
+    let mut body = json!({
+        "id": "q1",
+        "columns": [{ "name": "c", "type": "varchar" }],
+        "data": vec![json!(["aaaaaaaaaa"]); rows],
+        "stats": { "state": "RUNNING" }
+    });
+    if !last {
+        body["nextUri"] = json!(next(server, &(page + 1).to_string()));
+    }
+    Mock::given(method("GET"))
+        .and(path(format!("/v1/statement/q1/{page}")))
+        .respond_with(ResponseTemplate::new(200).set_body_json(body))
+        .mount(server)
+        .await;
+}
+
+/// Three pages of three rows each, behind a submission that only returns the first nextUri.
+async fn mount_three_pages(server: &MockServer) {
+    mount_submit(server).await;
+    mount_rows_page(server, 1, 3, false).await;
+    mount_rows_page(server, 2, 3, false).await;
+    mount_rows_page(server, 3, 3, true).await;
+}
+
+#[tokio::test]
+async fn timeout_sends_delete() {
+    let server = MockServer::start().await;
+    mount_submit(&server).await;
+    mount_get_always(
+        &server,
+        ResponseTemplate::new(200)
+            .set_body_json(done_page())
+            .set_delay(Duration::from_secs(2)),
+    )
+    .await;
+    mount_delete(&server).await;
+    let mut context = ctx();
+    context.timeout = Duration::from_millis(300);
+
+    let started = Instant::now();
+    let err = engine_for(&server)
+        .execute(&select_one(), &context)
+        .await
+        .expect_err("the page is slower than the timeout");
+    assert_eq!(err, EngineError::Timeout { after_ms: 300 });
+    assert_eq!(err.code(), "ENGINE_TIMEOUT");
+    assert!(
+        started.elapsed() < Duration::from_millis(1500),
+        "{:?}",
+        started.elapsed()
+    );
+
+    let deletes = wait_for_requests(&server, "DELETE", 1).await;
+    assert_eq!(deletes.len(), 1);
+    assert_eq!(deletes[0].url.path(), "/v1/statement/q1/1");
+}
+
+#[tokio::test]
+async fn hanging_submission_times_out_without_delete() {
+    let server = MockServer::start().await;
+    mount_post(
+        &server,
+        ResponseTemplate::new(200)
+            .set_body_json(done_page())
+            .set_delay(Duration::from_secs(2)),
+    )
+    .await;
+    let mut context = ctx();
+    context.timeout = Duration::from_millis(300);
+
+    let err = engine_for(&server)
+        .execute(&select_one(), &context)
+        .await
+        .expect_err("the submission is slower than the timeout");
+    assert_eq!(err, EngineError::Timeout { after_ms: 300 });
+    // The server has not told us a nextUri, so there is nothing to cancel.
+    assert_eq!(count(&server, "DELETE").await, 0);
+}
+
+#[tokio::test]
+async fn retries_respect_timeout() {
+    let server = MockServer::start().await;
+    mount_submit(&server).await;
+    mount_get_always(&server, ResponseTemplate::new(503)).await;
+    let mut context = ctx();
+    context.timeout = Duration::from_millis(300);
+
+    let started = Instant::now();
+    let err = engine_for(&server)
+        .execute(&select_one(), &context)
+        .await
+        .expect_err("503 forever");
+    assert_eq!(err, EngineError::Timeout { after_ms: 300 });
+    assert!(
+        started.elapsed() < Duration::from_secs(2),
+        "{:?}",
+        started.elapsed()
+    );
+}
+
+#[tokio::test]
+async fn dropped_future_sends_delete() {
+    let server = MockServer::start().await;
+    mount_submit(&server).await;
+    mount_get_always(
+        &server,
+        ResponseTemplate::new(200)
+            .set_body_json(done_page())
+            .set_delay(Duration::from_secs(5)),
+    )
+    .await;
+    mount_delete(&server).await;
+    let engine = Arc::new(engine_for(&server));
+    let sql = select_one();
+    let context = ctx();
+
+    let runner = Arc::clone(&engine);
+    let task = tokio::spawn(async move { runner.execute(&sql, &context).await });
+    let gets = wait_for_requests(&server, "GET", 1).await;
+    assert_eq!(gets.len(), 1, "the query never reached its first GET");
+    task.abort();
+    assert!(task.await.expect_err("aborted").is_cancelled());
+
+    let deletes = wait_for_requests(&server, "DELETE", 1).await;
+    assert_eq!(deletes.len(), 1);
+    assert_eq!(deletes[0].url.path(), "/v1/statement/q1/1");
+    assert_eq!(
+        deletes[0]
+            .headers
+            .get("x-trino-user")
+            .and_then(|v| v.to_str().ok()),
+        Some("ontoforge")
+    );
+}
+
+#[tokio::test]
+async fn finished_query_sends_no_delete() {
+    let server = MockServer::start().await;
+    mount_submit(&server).await;
+    mount_get_always(
+        &server,
+        ResponseTemplate::new(200).set_body_json(done_page()),
+    )
+    .await;
+    mount_delete(&server).await;
+
+    engine_for(&server)
+        .execute(&select_one(), &ctx())
+        .await
+        .expect("query succeeds");
+    tokio::time::sleep(Duration::from_millis(200)).await;
+    assert_eq!(count(&server, "DELETE").await, 0);
+}
+
+#[tokio::test]
+async fn failed_query_sends_no_delete() {
+    let server = MockServer::start().await;
+    mount_submit(&server).await;
+    mount_get_always(
+        &server,
+        ResponseTemplate::new(200).set_body_json(error_page("TABLE_NOT_FOUND")),
+    )
+    .await;
+    mount_delete(&server).await;
+
+    let err = engine_for(&server)
+        .execute(&select_one(), &ctx())
+        .await
+        .expect_err("query failed");
+    assert!(matches!(err, EngineError::Query { .. }), "{err:?}");
+    tokio::time::sleep(Duration::from_millis(200)).await;
+    assert_eq!(count(&server, "DELETE").await, 0);
+}
+
+#[tokio::test]
+async fn max_rows_truncates_and_deletes() {
+    let server = MockServer::start().await;
+    mount_three_pages(&server).await;
+    mount_delete(&server).await;
+    let mut context = ctx();
+    context.max_rows = 4;
+
+    let output = engine_for(&server)
+        .execute(&select_one(), &context)
+        .await
+        .expect("truncated, not failed");
+    assert_eq!(output.rows.len(), 4);
+    assert!(output.truncated);
+
+    let deletes = wait_for_requests(&server, "DELETE", 1).await;
+    assert_eq!(deletes.len(), 1);
+    // The nextUri given with page 2; page 3 was never fetched.
+    assert_eq!(deletes[0].url.path(), "/v1/statement/q1/3");
+    let gets: Vec<_> = server
+        .received_requests()
+        .await
+        .expect("recorded")
+        .into_iter()
+        .filter(|r| r.method.as_str() == "GET")
+        .map(|r| r.url.path().to_owned())
+        .collect();
+    assert_eq!(gets, ["/v1/statement/q1/1", "/v1/statement/q1/2"]);
+}
+
+#[tokio::test]
+async fn max_bytes_truncates_and_deletes() {
+    let server = MockServer::start().await;
+    mount_three_pages(&server).await;
+    mount_delete(&server).await;
+    // A row is about 14 bytes of JSON: page 1 (3 rows) fits, the first row of page 2 does not.
+    let mut context = ctx();
+    context.max_bytes = 50;
+
+    let output = engine_for(&server)
+        .execute(&select_one(), &context)
+        .await
+        .expect("truncated, not failed");
+    assert_eq!(output.rows.len(), 3);
+    assert!(output.truncated);
+
+    let deletes = wait_for_requests(&server, "DELETE", 1).await;
+    assert_eq!(deletes.len(), 1);
+    assert_eq!(deletes[0].url.path(), "/v1/statement/q1/3");
+}
+
+#[tokio::test]
+async fn limits_not_reached_do_not_truncate() {
+    let server = MockServer::start().await;
+    mount_three_pages(&server).await;
+    mount_delete(&server).await;
+
+    let output = engine_for(&server)
+        .execute(&select_one(), &ctx())
+        .await
+        .expect("all nine rows");
+    assert_eq!(output.rows.len(), 9);
+    assert!(!output.truncated);
+    tokio::time::sleep(Duration::from_millis(200)).await;
+    assert_eq!(count(&server, "DELETE").await, 0);
+}
+
+/// A bare TCP server that speaks just enough HTTP/1.1 to serve one query whose second page
+/// is sent chunked, without `Content-Length`, and larger than the client allows. Every request
+/// line it sees is appended to the returned log.
+fn chunked_oversize_server() -> (u16, Arc<Mutex<Vec<String>>>) {
+    fn handle(mut stream: TcpStream, port: u16, log: &Mutex<Vec<String>>) {
+        let mut head = Vec::new();
+        let mut byte = [0u8; 1];
+        while !head.ends_with(b"\r\n\r\n") {
+            if stream.read(&mut byte).unwrap_or(0) == 0 {
+                return;
+            }
+            head.push(byte[0]);
+        }
+        let head = String::from_utf8_lossy(&head).into_owned();
+        let request_line = head.lines().next().unwrap_or_default().to_owned();
+        let content_length = head
+            .lines()
+            .find_map(|l| {
+                l.to_ascii_lowercase()
+                    .strip_prefix("content-length:")
+                    .map(str::to_owned)
+            })
+            .and_then(|v| v.trim().parse::<usize>().ok())
+            .unwrap_or(0);
+        let mut body = vec![0u8; content_length];
+        let _ = stream.read_exact(&mut body);
+        let mut parts = request_line.split_whitespace();
+        let (verb, target) = (parts.next().unwrap_or(""), parts.next().unwrap_or(""));
+        log.lock().expect("log").push(format!("{verb} {target}"));
+        match (verb, target) {
+            ("POST", "/v1/statement") => {
+                let page = format!(
+                    r#"{{"id":"q1","nextUri":"http://127.0.0.1:{port}/v1/statement/q1/1"}}"#
+                );
+                let _ = write!(
+                    stream,
+                    "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{page}",
+                    page.len()
+                );
+            }
+            ("GET", _) => {
+                let _ = write!(
+                    stream,
+                    "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nTransfer-Encoding: chunked\r\nConnection: close\r\n\r\n"
+                );
+                for _ in 0..8 {
+                    let chunk = "x".repeat(512);
+                    if write!(stream, "{:x}\r\n{chunk}\r\n", chunk.len()).is_err() {
+                        return;
+                    }
+                }
+                let _ = write!(stream, "0\r\n\r\n");
+            }
+            _ => {
+                let _ = write!(
+                    stream,
+                    "HTTP/1.1 204 No Content\r\nConnection: close\r\n\r\n"
+                );
+            }
+        }
+    }
+
+    let listener = TcpListener::bind("127.0.0.1:0").expect("bind");
+    let port = listener.local_addr().expect("addr").port();
+    let log = Arc::new(Mutex::new(Vec::new()));
+    let shared = Arc::clone(&log);
+    std::thread::spawn(move || {
+        for stream in listener.incoming().flatten() {
+            let log = Arc::clone(&shared);
+            std::thread::spawn(move || handle(stream, port, &log));
+        }
+    });
+    (port, log)
+}
+
+#[tokio::test]
+async fn oversized_page_is_protocol_error() {
+    let (port, log) = chunked_oversize_server();
+    let mut conn = connection(&format!("http://127.0.0.1:{port}"));
+    conn.max_page_bytes = 1024;
+    let engine = TrinoEngine::new(conn).expect("engine");
+
+    let err = engine
+        .execute(&select_one(), &ctx())
+        .await
+        .expect_err("the second page is 4096 bytes");
+    match err {
+        EngineError::Protocol(message) => assert!(message.contains("1024"), "{message}"),
+        other => panic!("expected a Protocol error, got {other:?}"),
+    }
+
+    let deadline = Instant::now() + Duration::from_secs(2);
+    loop {
+        let seen = log.lock().expect("log").clone();
+        if seen.iter().any(|l| l == "DELETE /v1/statement/q1/1") {
+            break;
+        }
+        assert!(Instant::now() < deadline, "no DELETE seen, got {seen:?}");
+        tokio::time::sleep(Duration::from_millis(20)).await;
+    }
 }
