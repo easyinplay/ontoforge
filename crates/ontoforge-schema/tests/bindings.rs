@@ -499,3 +499,264 @@ fn all_edit_only_needs_no_profile() {
     assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
     assert!(selected(&out, None).is_empty());
 }
+
+// ---------------------------------------------------------------------------
+// Structural checks of one binding: columns, identifiers, fixtures, time zones
+// ---------------------------------------------------------------------------
+
+/// A Flight binding with `extra` appended to the document.
+fn flight_binding_with(extra: &str) -> String {
+    format!(
+        "kind: SourceBinding\ntarget: {{ objectType: Flight }}\nsource: {{ catalog: demo, schema: aviation, table: flights }}\n{extra}"
+    )
+}
+
+/// Load the shared definitions with one extra binding file and no fixture file.
+fn load_binding(text: &str) -> LoadOutput {
+    load_with(&[("bindings/dev/flight.yaml", text)])
+}
+
+#[test]
+fn column_key_unknown_property_is_v09() {
+    let text = flight_binding_with("columns:\n  flightNumbr: { column: flight_no }\n");
+    let out = load_binding(&text);
+    let d = only(&out);
+    assert_eq!(d.code, codes::V09);
+    assert_eq!(d.file, "bindings/dev/flight.yaml");
+    assert_eq!((d.line, d.column), (5, 3), "points at the key");
+    assert_eq!(d.help.as_deref(), Some("did you mean `flightNumber`?"));
+}
+
+#[test]
+fn link_columns_need_from_and_to() {
+    let only_from = "kind: SourceBinding\ntarget: { linkType: flightCrew }\nsource: { catalog: demo, schema: aviation, table: flight_crew }\ncolumns:\n  from: { column: flight_id }\n";
+    let out = load_with(&[("bindings/dev/crew.yaml", only_from)]);
+    let d = only(&out);
+    assert_eq!(d.code, codes::V16);
+    assert!(d.message.contains("`to`"), "{}", d.message);
+
+    let none = "kind: SourceBinding\ntarget: { linkType: flightCrew }\nsource: { catalog: demo, schema: aviation, table: flight_crew }\n";
+    let out = load_with(&[("bindings/dev/crew.yaml", none)]);
+    assert_eq!(out.diagnostics.len(), 2, "{:#?}", out.diagnostics);
+    assert!(out.diagnostics.iter().all(|d| d.code == codes::V16));
+
+    let extra = format!("{CREW_BINDING}  via: {{ column: x }}\n");
+    let out = load_with(&[("bindings/dev/crew.yaml", extra.as_str())]);
+    let d = only(&out);
+    assert_eq!(d.code, codes::V09);
+    assert!(d.message.contains("via"), "{}", d.message);
+}
+
+fn source_binding(catalog: &str, schema: &str, table: &str) -> String {
+    format!(
+        "kind: SourceBinding\ntarget: {{ objectType: Flight }}\nsource:\n  catalog: \"{catalog}\"\n  schema: \"{schema}\"\n  table: \"{table}\"\n"
+    )
+}
+
+#[test]
+fn physical_identifier_rules() {
+    // `\x07` is a bell character once YAML has unescaped it.
+    let cases = [
+        ("", "aviation", "flights", "catalog", 4),
+        ("demo", "a\x07", "flights", "schema", 5),
+        ("demo", "aviation", "", "table", 6),
+        ("demo", "aviation", "x\x07y", "table", 6),
+    ];
+    for (catalog, schema, table, key, line) in cases {
+        let out = load_binding(&source_binding(catalog, schema, table));
+        let d = only(&out);
+        assert_eq!(d.code, codes::V16, "{key}");
+        assert_eq!(d.line, line, "{key}: points at the value");
+        assert!(
+            d.message.contains(&format!("`{key}`")),
+            "{key}: {}",
+            d.message
+        );
+    }
+    let out = load_binding(&source_binding("demo", "aviation", "flights"));
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+
+    let text = flight_binding_with("columns:\n  status: { column: \"\" }\n");
+    let out = load_binding(&text);
+    let d = only(&out);
+    assert_eq!(d.code, codes::V16);
+    assert_eq!(d.line, 5, "points at the empty column value");
+    assert!(d.message.contains("column"), "{}", d.message);
+}
+
+#[test]
+fn fixture_reference_rules() {
+    for (file, needle) in [
+        ("../../../x.csv", "leaves the ontology directory"),
+        ("fixtures/x.txt", "`.csv` or `.json`"),
+        ("/abs.csv", "relative"),
+        ("fixtures/missing.csv", "not found"),
+    ] {
+        let text = flight_binding_with(&format!("fixture: {{ file: {file} }}\n"));
+        let out = load_binding(&text);
+        let d = only(&out);
+        assert_eq!(d.code, codes::V16, "{file}");
+        assert_eq!(d.file, "bindings/dev/flight.yaml");
+        assert_eq!(
+            (d.line, d.column),
+            (4, 18),
+            "{file}: points at fixture.file"
+        );
+        assert!(d.message.contains(needle), "{file}: {}", d.message);
+    }
+    // A fixture that exists is accepted, and its content is not read.
+    let text = flight_binding_with("fixture: { file: fixtures/rows.csv }\n");
+    let out = load_with(&[
+        ("bindings/dev/flight.yaml", text.as_str()),
+        (
+            "bindings/dev/fixtures/rows.csv",
+            "\u{0}not,even\u{1},a header",
+        ),
+    ]);
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+}
+
+#[test]
+fn oversized_fixture_is_v16() {
+    use camino::Utf8Path;
+    use ontoforge_schema::load_dir;
+    use ontoforge_schema::loader::MAX_FILE_BYTES;
+
+    let dir = tempfile::tempdir().expect("tempdir");
+    let write = |name: &str, text: &str| {
+        let path = dir.path().join(name);
+        std::fs::create_dir_all(path.parent().expect("parent")).expect("mkdir");
+        std::fs::write(path, text).expect("write");
+    };
+    write("ontology.yaml", MANIFEST);
+    write("objects.yaml", FLIGHT);
+    write("pilots.yaml", PILOT);
+    write("links.yaml", CREW);
+    let text = flight_binding_with("fixture: { file: fixtures/big.csv }\n");
+    write("bindings/dev/flight.yaml", &text);
+    let big = dir.path().join("bindings/dev/fixtures/big.csv");
+    std::fs::create_dir_all(big.parent().expect("parent")).expect("mkdir");
+    std::fs::write(
+        &big,
+        vec![b'a'; usize::try_from(MAX_FILE_BYTES + 1).expect("fits")],
+    )
+    .expect("write big fixture");
+
+    let root = Utf8Path::from_path(dir.path()).expect("utf-8 temp dir");
+    let out = load_dir(root);
+    let d = only(&out);
+    assert_eq!(d.code, codes::V16);
+    assert!(d.message.contains("over the"), "{}", d.message);
+    assert_eq!(d.file, "bindings/dev/flight.yaml");
+
+    // At the limit the file is accepted.
+    std::fs::write(
+        &big,
+        vec![b'a'; usize::try_from(MAX_FILE_BYTES).expect("fits")],
+    )
+    .expect("write limit fixture");
+    let out = load_dir(root);
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+
+    // A missing file is reported as such.
+    std::fs::remove_file(&big).expect("remove");
+    let out = load_dir(root);
+    let d = only(&out);
+    assert!(d.message.contains("not found"), "{}", d.message);
+
+    // A directory is not a fixture.
+    std::fs::create_dir_all(&big).expect("mkdir big.csv");
+    let out = load_dir(root);
+    let d = only(&out);
+    assert_eq!(d.code, codes::V16);
+    assert!(d.message.contains("not a regular file"), "{}", d.message);
+}
+
+#[cfg(unix)]
+#[test]
+fn symlinked_fixture_is_v16() {
+    use camino::Utf8Path;
+    use ontoforge_schema::load_dir;
+
+    let dir = tempfile::tempdir().expect("tempdir");
+    let write = |name: &str, text: &str| {
+        let path = dir.path().join(name);
+        std::fs::create_dir_all(path.parent().expect("parent")).expect("mkdir");
+        std::fs::write(path, text).expect("write");
+    };
+    write("ontology.yaml", MANIFEST);
+    write("objects.yaml", FLIGHT);
+    write("pilots.yaml", PILOT);
+    write("links.yaml", CREW);
+    write(
+        "bindings/dev/flight.yaml",
+        &flight_binding_with("fixture: { file: fixtures/link.csv }\n"),
+    );
+    write("real.csv", "a,b\n");
+    std::fs::create_dir_all(dir.path().join("bindings/dev/fixtures")).expect("mkdir");
+    std::os::unix::fs::symlink(
+        dir.path().join("real.csv"),
+        dir.path().join("bindings/dev/fixtures/link.csv"),
+    )
+    .expect("symlink");
+    let out = load_dir(Utf8Path::from_path(dir.path()).expect("utf-8"));
+    let d = only(&out);
+    assert_eq!(d.code, codes::V16);
+    assert!(d.message.contains("not a regular file"), "{}", d.message);
+}
+
+#[test]
+fn timezone_value_rules() {
+    for ok in ["Europe/Berlin", "aware", "UTC", "Asia/Shanghai"] {
+        let text = flight_binding_with(&format!("columns:\n  departedAt: {{ timezone: {ok} }}\n"));
+        let out = load_binding(&text);
+        assert!(out.diagnostics.is_empty(), "{ok}: {:#?}", out.diagnostics);
+    }
+    for bad in ["Mars/Base", "berlin", "+02:00", "Aware"] {
+        let text = flight_binding_with(&format!(
+            "columns:\n  departedAt: {{ timezone: \"{bad}\" }}\n"
+        ));
+        let out = load_binding(&text);
+        let d = only(&out);
+        assert_eq!(d.code, codes::V16, "{bad}");
+        assert!(
+            d.message.contains("IANA time zone name or `aware`"),
+            "{bad}: {}",
+            d.message
+        );
+        assert!(d.message.contains(bad), "{bad}: {}", d.message);
+        assert_eq!(d.line, 5, "{bad}: points at the value");
+    }
+}
+
+#[test]
+fn precision_on_non_decimal_is_v06() {
+    let object = |property: &str| {
+        format!(
+            "kind: ObjectType\napiName: Invoice\nprimaryKey: id\nproperties:\n  id: {{ type: string, required: true }}\n  {property}\nbacking: editOnly\n"
+        )
+    };
+    let bad = object("ref: { type: string, precision: 10 }");
+    let out = load_from_memory(&[("ontology.yaml", "apiName: demo\n"), ("invoice.yaml", &bad)]);
+    let d = only(&out);
+    assert_eq!(d.code, codes::V06);
+    assert_eq!(d.file, "invoice.yaml");
+    assert_eq!((d.line, d.column), (6, 24), "points at the precision key");
+
+    let bad = object("ref: { type: array, items: string, scale: 2 }");
+    let out = load_from_memory(&[("ontology.yaml", "apiName: demo\n"), ("invoice.yaml", &bad)]);
+    assert_eq!(only(&out).code, codes::V06);
+
+    for ok in [
+        "amount: { type: decimal, precision: 12, scale: 2 }",
+        "amounts: { type: array, items: decimal, precision: 12, scale: 2 }",
+        "plain: { type: decimal }",
+    ] {
+        let good = object(ok);
+        let out = load_from_memory(&[
+            ("ontology.yaml", "apiName: demo\n"),
+            ("invoice.yaml", &good),
+        ]);
+        assert!(out.diagnostics.is_empty(), "{ok}: {:#?}", out.diagnostics);
+    }
+}

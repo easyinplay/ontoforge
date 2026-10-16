@@ -1,0 +1,4 @@
+kind: SourceBinding
+target: { objectType: Flight }
+source: { catalog: demo, schema: aviation, table: flights }
+fixture: { file: ../../../flights.csv }

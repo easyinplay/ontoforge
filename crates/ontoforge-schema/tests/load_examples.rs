@@ -124,3 +124,29 @@ fn aviation_dev_profile_binds_every_source_type() {
         );
     }
 }
+
+#[test]
+fn aviation_cost_property() {
+    for name in ["aviation", "aviation-json"] {
+        let ontology = load_example(name).ontology.expect("ontology");
+        let cost = &ontology.object_types["MaintenanceRecord"].properties["cost"];
+        assert_eq!(
+            cost.base_type,
+            ontoforge_schema::ir::BaseType::Decimal,
+            "{name}"
+        );
+        assert_eq!(cost.effective_decimal(), (12, 2), "{name}");
+        // The dev fixture already carries the column, bound by the default mapping.
+        let binding = &ontology.bindings["dev"].objects["MaintenanceRecord"];
+        let columns = ontology.bound_columns(binding);
+        let cost_column = columns
+            .iter()
+            .find(|c| c.key == "cost")
+            .expect("cost column");
+        assert_eq!(
+            (cost_column.column, cost_column.explicit),
+            ("cost", false),
+            "{name}"
+        );
+    }
+}

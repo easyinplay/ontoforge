@@ -1,0 +1,14 @@
+kind: ObjectType
+apiName: Flight
+primaryKey: flightId
+properties:
+  flightId: { type: string, required: true }
+  flightNumber: { type: string }
+backing: source
+---
+kind: ObjectType
+apiName: Pilot
+primaryKey: employeeId
+properties:
+  employeeId: { type: string, required: true }
+backing: source

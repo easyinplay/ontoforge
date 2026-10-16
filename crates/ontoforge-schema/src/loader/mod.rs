@@ -16,11 +16,13 @@ use crate::ir::{
 
 mod discover;
 mod dispatch;
+mod fixture;
 mod parse;
 pub mod sourcemap;
 
 pub use discover::{fixture_path, profile_dir};
 use dispatch::{Ctx, dispatch, parse_manifest};
+pub use fixture::fixture_header;
 pub use sourcemap::SourceMap;
 use sourcemap::{DefKey, DefKind, FileId, Part, Seg};
 
