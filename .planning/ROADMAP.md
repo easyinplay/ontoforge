@@ -92,7 +92,35 @@ Plans:
   4. 自有 printer 生成的 SQL 经 proptest（任意字符串值往返不改变结构）与真实 Trino / SQLite 执行验证；SQLite 替身在 Windows `cargo test` 全绿
   5. Linux CI 以 Trino + PG service container 跑集成测试，nightly 加跑 Iceberg
 
-**Plans**: TBD
+**Plans**: 10 plans（5 waves）
+
+Plans:
+
+**Wave 1**
+
+- [ ] 02-01-PLAN.md — backing 必填与 Phase 1 fixture 全量迁移、ADR-0021
+- [ ] 02-02-PLAN.md — ontoforge-engine 骨架：Engine trait、类型化 printer、SQLite 替身执行、proptest
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 02-03-PLAN.md — SourceBinding 定义层、profile 选定与完备性、aviation 绑定
+- [ ] 02-04-PLAN.md — 自写 Trino client 主路径、ontoforge-server.toml、认证 / CA / 两个服务身份
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 02-05-PLAN.md — phase tracer：`validate --online` 经 SQLite 替身比对绑定、fixture 语义
+- [ ] 02-06-PLAN.md — Trino client 不可用分类、重试、超时 / 断连 / 上限取消
+- [ ] 02-07-PLAN.md — 类型契约 lint ONT-E13..E16 与 ONT-W17
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [ ] 02-08-PLAN.md — D-13 完整兼容表、drift 状态模型、绑定规范文档
+- [ ] 02-09-PLAN.md — `--server-config` / Trino 路径、退出码 3、`--check-pk`、sqlite_dir
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
+- [ ] 02-10-PLAN.md — Linux CI：Trino + PG 集成作业、nightly Iceberg、私有 fixture 入口
+
 **Details**: `.planning/phases/02-source-binding-engine/`
 
 ### Phase 3: Edit Store & Scope Model
@@ -193,7 +221,7 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7（纵切片
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Workspace, Schema & Lint | 14/14 | Complete    | 2026-10-16 |
-| 2. Source Binding & Engine | 0/TBD | Not started | - |
+| 2. Source Binding & Engine | 0/10 | Planned | - |
 | 3. Edit Store & Scope Model | 0/TBD | Not started | - |
 | 4. Scoped L0 Read | 0/TBD | Not started | - |
 | 5. Online Action | 0/TBD | Not started | - |
