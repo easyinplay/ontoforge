@@ -180,8 +180,14 @@ fn online_type_family_mismatch() {
     assert_eq!(found[0].severity, Severity::Error);
     assert!(found[0].message.contains("seats"));
 
-    // Within one family, 02-08 decides; this plan reports nothing.
+    // Within the integer family only widening is lossless (D-13): integer cannot read bigint.
     physical[2] = column("seats", PhysicalType::Bigint);
+    let found = compare_binding(&ontology, &binding, Some(&physical));
+    assert_eq!(found.len(), 1, "{found:#?}");
+    assert_eq!(found[0].kind, MismatchKind::TypeIncompatible);
+    assert_eq!(found[0].severity, Severity::Error);
+
+    physical[2] = column("seats", PhysicalType::Smallint);
     assert_eq!(
         compare_binding(&ontology, &binding, Some(&physical)),
         Vec::new()

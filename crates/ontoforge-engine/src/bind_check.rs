@@ -463,3 +463,6 @@ pub async fn check_drift(
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod compat_tests;

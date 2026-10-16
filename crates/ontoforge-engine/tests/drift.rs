@@ -316,3 +316,28 @@ fn degrade_reason_code() {
         "SOURCE_UNREADABLE"
     );
 }
+
+#[test]
+fn warnings_do_not_degrade() {
+    let ontology = pure_ontology();
+    let padded = PhysicalColumn {
+        name: "flightId".to_owned(),
+        physical: PhysicalType::Char { length: 8 },
+        nullable: false,
+    };
+    let all = [
+        described("Flight", "flights", Ok(Some(vec![padded]))),
+        described("Pilot", "pilots", Ok(Some(vec![key_column("employeeId")]))),
+    ];
+    let report = drift_report(&ontology, &dev(), &all);
+    assert!(report.is_healthy(), "{report:#?}");
+    match &report.objects[&object("Flight")] {
+        TargetHealth::Healthy { warnings } => {
+            assert_eq!(warnings.len(), 1, "{warnings:#?}");
+            assert_eq!(warnings[0].kind, MismatchKind::CharPadding);
+        }
+        other @ TargetHealth::Degraded { .. } => {
+            panic!("expected Flight to stay healthy, got {other:?}")
+        }
+    }
+}
