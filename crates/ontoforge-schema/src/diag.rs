@@ -207,6 +207,17 @@ pub mod codes {
     pub const V14: &str = "ONT-V14";
     /// Lint configuration.
     pub const V15: &str = "ONT-V15";
+    /// Source binding definition, profile selection and fixture references.
+    pub const V16: &str = "ONT-V16";
+    /// Online binding check: the physical table does not match the binding.
+    pub const V17: &str = "ONT-V17";
+    /// Duplicate or NULL primary keys found by `--check-pk`.
+    pub const V18: &str = "ONT-V18";
+    /// The online check could not complete because of the engine (unavailable,
+    /// authentication, timeout, protocol or query error).
+    pub const V19: &str = "ONT-V19";
+    /// Server configuration (`ontoforge-server.toml`).
+    pub const V20: &str = "ONT-V20";
 }
 
 #[cfg(test)]

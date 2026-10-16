@@ -25,7 +25,7 @@ pub use link::{Cardinality, LinkEnd, LinkType};
 pub use manifest::Manifest;
 pub use names::{
     ActionTypeName, LinkEndName, LinkTypeName, ObjectTypeName, OntologyName, ParameterName,
-    PropertyName,
+    ProfileName, PropertyName,
 };
 pub use object::{ObjectType, PropertyDef};
 

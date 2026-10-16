@@ -25,7 +25,7 @@ use toml::de::{DeString, DeTable, DeValue};
 
 use super::{KNOWN_RULE_IDS, Level, LintRule, registry};
 use crate::diag::{Diagnostic, Severity, SourceLocation, codes, did_you_mean, offset_to_line_col};
-use crate::loader::{ReadFailure, SourceMap, read_limited, too_large};
+use crate::loader::{MAX_FILE_BYTES, ReadFailure, SourceMap, read_limited, too_large};
 
 /// File name of the configuration at the ontology root.
 pub const CONFIG_FILE: &str = "ontoforge.toml";
@@ -330,7 +330,7 @@ pub fn load_config(
     };
     // The root file comes with the (possibly untrusted) ontology, so a symbolic link
     // there is refused; an explicit `--config` path may be a link (CR-03).
-    let bytes = match read_limited(path.as_std_path(), required) {
+    let bytes = match read_limited(path.as_std_path(), required, MAX_FILE_BYTES) {
         Ok(bytes) => bytes,
         Err(ReadFailure::Io(std::io::ErrorKind::NotFound)) if !required => {
             return (LintConfig::default(), Vec::new());

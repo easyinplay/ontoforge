@@ -151,7 +151,7 @@ fn missing_manifest() -> Diagnostic {
 
 /// Why [`read_limited`] returned no bytes.
 #[derive(Debug, PartialEq, Eq)]
-pub(crate) enum ReadFailure {
+pub enum ReadFailure {
     Io(std::io::ErrorKind),
     /// A symbolic link (when links are not followed), directory, device or pipe.
     NotRegular,
@@ -163,9 +163,10 @@ pub(crate) enum ReadFailure {
 /// false a symbolic link is refused, so a checked-in link cannot point the loader at
 /// a device or at a file outside the ontology. The read itself is bounded too, so a
 /// file that grows or lies about its size still cannot exhaust memory.
-pub(crate) fn read_limited(
+pub fn read_limited(
     path: &std::path::Path,
     follow_links: bool,
+    _max_bytes: u64,
 ) -> Result<Vec<u8>, ReadFailure> {
     use std::io::Read;
 
@@ -194,7 +195,7 @@ pub(crate) fn read_limited(
 fn read_text(root: &Utf8Path, name: &str) -> Text {
     let v14 =
         |message: String| Diagnostic::without_location(codes::V14, Severity::Error, message, name);
-    match read_limited(root.join(name).as_std_path(), false) {
+    match read_limited(root.join(name).as_std_path(), false, MAX_FILE_BYTES) {
         Ok(bytes) => String::from_utf8(bytes).map_err(|_| {
             Diagnostic::without_location(
                 codes::V01,
@@ -426,5 +427,54 @@ fn merge(
         Definition::ActionType(a) => {
             defs.actions.insert(a.api_name.clone(), a);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{ReadFailure, read_limited};
+
+    #[test]
+    fn read_limited_custom_limit() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let at_limit = dir.path().join("at-limit.txt");
+        std::fs::write(&at_limit, vec![b'a'; 65_536]).expect("write");
+        let over = dir.path().join("over.txt");
+        std::fs::write(&over, vec![b'a'; 65_537]).expect("write");
+
+        assert_eq!(
+            read_limited(&at_limit, false, 65_536).map(|bytes| bytes.len()),
+            Ok(65_536)
+        );
+        assert_eq!(
+            read_limited(&over, false, 65_536).map(|bytes| bytes.len()),
+            Err(ReadFailure::TooLarge(Some(65_537)))
+        );
+    }
+
+    #[test]
+    fn read_limited_missing_and_directory() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        assert_eq!(
+            read_limited(&dir.path().join("nope"), false, 16),
+            Err(ReadFailure::Io(std::io::ErrorKind::NotFound))
+        );
+        assert_eq!(
+            read_limited(dir.path(), false, 16),
+            Err(ReadFailure::NotRegular)
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn read_limited_follows_links_only_when_asked() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let target = dir.path().join("target.txt");
+        std::fs::write(&target, b"hello").expect("write");
+        let link = dir.path().join("link.txt");
+        std::os::unix::fs::symlink(&target, &link).expect("symlink");
+
+        assert_eq!(read_limited(&link, false, 16), Err(ReadFailure::NotRegular));
+        assert_eq!(read_limited(&link, true, 16), Ok(b"hello".to_vec()));
     }
 }

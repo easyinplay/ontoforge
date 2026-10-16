@@ -202,10 +202,103 @@ api_name!(
     ParameterName, Initial::Lower, "parameter", "^[a-z][A-Za-z0-9]{0,99}$", &CEL_RESERVED_WORDS
 );
 
+/// Name of a deployment profile (stub).
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize)]
+#[serde(try_from = "String")]
+pub struct ProfileName(String);
+
+impl ProfileName {
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl TryFrom<String> for ProfileName {
+    type Error = String;
+
+    fn try_from(value: String) -> Result<Self, String> {
+        Ok(Self(value))
+    }
+}
+
+impl Serialize for ProfileName {
+    fn serialize<S: Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        s.serialize_str(&self.0)
+    }
+}
+
+impl fmt::Display for ProfileName {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+
+impl Borrow<str> for ProfileName {
+    fn borrow(&self) -> &str {
+        &self.0
+    }
+}
+
+impl JsonSchema for ProfileName {
+    fn schema_name() -> Cow<'static, str> {
+        Cow::Borrowed("ProfileName")
+    }
+
+    fn json_schema(_generator: &mut SchemaGenerator) -> Schema {
+        json_schema!({ "type": "string" })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::diag::parse_custom_de_error;
+
+    #[test]
+    fn profile_name_rules() {
+        for ok in ["dev", "prod-eu", "a", "a_1", &"a".repeat(32)] {
+            assert!(ProfileName::try_from(ok.to_owned()).is_ok(), "{ok}");
+        }
+        let too_long = "a".repeat(33);
+        for bad in [
+            "Prod",
+            "1dev",
+            "",
+            too_long.as_str(),
+            "dev/x",
+            "dev x",
+            "-dev",
+            "dev.x",
+        ] {
+            let e = ProfileName::try_from(bad.to_owned()).expect_err(bad);
+            let e = parse_custom_de_error(&e).expect("custom error");
+            assert_eq!(e.code, "ONT-V16", "{bad}");
+            assert!(
+                e.message.contains("[a-z][a-z0-9_-]{0,31}"),
+                "{bad}: {}",
+                e.message
+            );
+            assert!(e.help.is_some(), "{bad}");
+        }
+    }
+
+    #[test]
+    fn profile_name_schema_has_pattern() {
+        let mut g = SchemaGenerator::default();
+        let s = ProfileName::json_schema(&mut g);
+        assert_eq!(
+            s.get("pattern").and_then(|p| p.as_str()),
+            Some("^[a-z][a-z0-9_-]{0,31}$")
+        );
+    }
+
+    #[test]
+    fn profile_name_deserializes_through_serde() {
+        let ok: ProfileName = serde_json::from_str("\"dev\"").expect("valid");
+        assert_eq!(ok.as_str(), "dev");
+        let err = serde_json::from_str::<ProfileName>("\"Dev\"").expect_err("uppercase");
+        assert!(err.to_string().contains("ONT-V16"), "{err}");
+    }
 
     fn err(r: Result<ObjectTypeName, String>) -> crate::diag::CustomDeError {
         parse_custom_de_error(&r.unwrap_err()).unwrap()
