@@ -1,7 +1,7 @@
 //! Comparison of a source binding with the physical table it names (BIND-03).
 //!
 //! `compare_binding` is the one implementation of the comparison: the CLI's
-//! `validate --online` and the later drift check both call it.
+//! `validate --online` and the drift check ([`check_drift`]) both call it.
 
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 
@@ -343,7 +343,10 @@ impl DegradeReason {
     /// Stable upper-snake code.
     #[must_use]
     pub fn code(&self) -> &'static str {
-        ""
+        match self {
+            Self::SourceSchemaDrift => "SOURCE_SCHEMA_DRIFT",
+            Self::SourceUnreadable { .. } => "SOURCE_UNREADABLE",
+        }
     }
 }
 
@@ -370,31 +373,84 @@ impl DriftReport {
     /// Whether every target is [`TargetHealth::Healthy`].
     #[must_use]
     pub fn is_healthy(&self) -> bool {
-        true
+        self.objects
+            .values()
+            .chain(self.links.values())
+            .all(|health| matches!(health, TargetHealth::Healthy { .. }))
     }
 }
 
-/// The health of a target whose comparison found `mismatches`.
-#[allow(dead_code, reason = "RED stub, wired in by the GREEN commit")]
-fn health_of(_mismatches: Vec<Mismatch>) -> TargetHealth {
-    TargetHealth::Healthy { warnings: vec![] }
+/// The health of a target whose comparison found `mismatches`: any error is drift, warnings
+/// alone leave the target healthy and are kept (E12).
+fn health_of(mismatches: Vec<Mismatch>) -> TargetHealth {
+    if mismatches.iter().any(|m| m.severity == Severity::Error) {
+        TargetHealth::Degraded {
+            reason: DegradeReason::SourceSchemaDrift,
+            mismatches,
+        }
+    } else {
+        TargetHealth::Healthy {
+            warnings: mismatches,
+        }
+    }
 }
 
 /// Judges every described binding of `profile`.
+///
+/// A binding whose table could not be read is degraded on its own (E3); the others are
+/// compared with [`compare_binding`], the same comparison `validate --online` uses (D-15).
 #[must_use]
 pub fn drift_report(
-    _ontology: &Ontology,
+    ontology: &Ontology,
     profile: &ProfileName,
-    _described: &[DescribedBinding],
+    described: &[DescribedBinding],
 ) -> DriftReport {
-    DriftReport {
+    let bindings = ontology.profile_bindings(profile);
+    let mut report = DriftReport {
         profile: profile.clone(),
         objects: BTreeMap::new(),
         links: BTreeMap::new(),
+    };
+    for entry in described {
+        let health = match &entry.physical {
+            Err(e) => TargetHealth::Degraded {
+                reason: DegradeReason::SourceUnreadable {
+                    error: e.to_string(),
+                },
+                mismatches: Vec::new(),
+            },
+            Ok(physical) => {
+                let binding = bindings.and_then(|b| match &entry.key.target {
+                    BindingTarget::ObjectType(name) => b.objects.get(name),
+                    BindingTarget::LinkType(name) => b.links.get(name),
+                });
+                let Some(binding) = binding else {
+                    // `described` comes from this profile's bindings, so this is not reachable.
+                    continue;
+                };
+                health_of(compare_binding(ontology, binding, physical.as_deref()))
+            }
+        };
+        match &entry.key.target {
+            BindingTarget::ObjectType(name) => report.objects.insert(name.clone(), health),
+            BindingTarget::LinkType(name) => report.links.insert(name.clone(), health),
+        };
     }
+    report
 }
 
-/// Describes the bindings of `profile` and judges them.
+/// Describes the bindings of `profile` and judges them (BIND-03).
+///
+/// Only an engine wide error ([`EngineError::is_engine_wide`]: unavailable, authentication
+/// failure and the like) is returned as `Err`; a report is never made from an engine that could
+/// not answer, because engine health and schema drift are different things. One target whose
+/// metadata cannot be read is [`DegradeReason::SourceUnreadable`] and the others are judged as
+/// usual.
+///
+/// Starting and scheduling the check, and exposing the result on `/health`, belong to the
+/// service process of Phase 7 (D-15). The duplicate primary key check (`--check-pk`) is not
+/// drift: ADR-0015 lets it degrade a type only when asked for explicitly, so drift never scans
+/// a table.
 pub async fn check_drift(
     engine: &AnyEngine,
     ontology: &Ontology,
