@@ -145,10 +145,14 @@ fn basic_over_http_is_rejected() {
     let ok = with_trino("http://trino.example:8080", "auth = \"none\"");
     assert!(parse_server_config(&ok).is_ok());
 
-    let text = format!(
-        "[trino]\nurl = \"https://trino.example\"\nnext_uri_origins = [\"http://trino.example\"]\n\n[trino.identities.ontology]\nuser = \"svc\"\n"
-    );
-    let errs = errors(&text);
+    let text = "[trino]
+url = \"https://trino.example\"
+next_uri_origins = [\"http://trino.example\"]
+
+[trino.identities.ontology]
+user = \"svc\"
+";
+    let errs = errors(text);
     assert!(
         errs.iter().any(|e| e.message.contains("scheme")),
         "{errs:?}"

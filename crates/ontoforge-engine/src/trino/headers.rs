@@ -1,15 +1,21 @@
 //! Per request header assembly. The client is stateless: every request carries everything
 //! it needs and nothing the server sends back (`X-Trino-Set-*`) is remembered.
 
-use reqwest::header::{HeaderMap, HeaderName, HeaderValue};
-
+use super::Auth;
 use crate::QueryContext;
 use crate::error::EngineError;
+use reqwest::header::{HeaderMap, HeaderName, HeaderValue};
+use secrecy::ExposeSecret;
 
 const TRACE_TOKEN_MAX: usize = 128;
 const CLIENT_TAG_MAX: usize = 64;
 /// Slack between the server side execution limit and the client side one, in seconds.
 const SESSION_LIMIT_SLACK_SECS: u64 = 5;
+
+/// Whether `tag` may be sent as an `X-Trino-Client-Tags` entry.
+pub(super) fn is_client_tag(tag: &str) -> bool {
+    is_token(tag, CLIENT_TAG_MAX)
+}
 
 fn is_token(s: &str, max: usize) -> bool {
     !s.is_empty()
@@ -26,7 +32,7 @@ pub(super) fn validate_context(ctx: &QueryContext) -> Result<(), EngineError> {
             "trace token must be 1 to {TRACE_TOKEN_MAX} characters from [A-Za-z0-9._:-]"
         )));
     }
-    if ctx.client_tags.iter().any(|t| !is_token(t, CLIENT_TAG_MAX)) {
+    if ctx.client_tags.iter().any(|t| !is_client_tag(t)) {
         return Err(EngineError::Config(format!(
             "client tags must be 1 to {CLIENT_TAG_MAX} characters from [A-Za-z0-9._:-]"
         )));
@@ -94,10 +100,13 @@ pub(super) fn statement_headers(
 pub(super) fn apply_auth(
     builder: reqwest::RequestBuilder,
     user: &str,
-    auth: &super::Auth,
+    auth: &Auth,
 ) -> reqwest::RequestBuilder {
-    let _ = (user, auth);
-    builder
+    match auth {
+        Auth::None => builder,
+        Auth::Basic { password } => builder.basic_auth(user, Some(password.expose_secret())),
+        Auth::Bearer { token } => builder.bearer_auth(token.expose_secret()),
+    }
 }
 
 #[cfg(test)]
@@ -105,7 +114,6 @@ mod tests {
     use secrecy::SecretString;
 
     use super::*;
-    use crate::trino::Auth;
 
     fn authorization(auth: &Auth) -> Option<String> {
         let request = apply_auth(
