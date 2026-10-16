@@ -1,0 +1,45 @@
+---
+source: crates/ontoforge-schema/src/lint/binding/e14.rs
+expression: found
+---
+[
+  {
+    "code": "ONT-E14",
+    "severity": "error",
+    "message": "timestamp property `scheduledDeparture` of `Flight` needs `timezone` in this binding",
+    "file": "bindings/dev/flight.yaml",
+    "line": 5,
+    "column": 3,
+    "span": {
+      "offset": 116,
+      "length": 18
+    },
+    "help": "use an IANA name such as `Europe/Berlin` when the source column has no time zone, or `aware` when it has one"
+  },
+  {
+    "code": "ONT-E14",
+    "severity": "error",
+    "message": "`timezone` does not apply to property `status` of `Flight`: it is not a timestamp",
+    "file": "bindings/dev/flight.yaml",
+    "line": 6,
+    "column": 13,
+    "span": {
+      "offset": 166,
+      "length": 8
+    },
+    "help": "remove `timezone` from this column"
+  },
+  {
+    "code": "ONT-E14",
+    "severity": "error",
+    "message": "timestamp property `performedAt` of `Maintenance` needs `timezone` in this binding",
+    "file": "bindings/dev/maintenance.yaml",
+    "line": 2,
+    "column": 1,
+    "span": {
+      "offset": 20,
+      "length": 6
+    },
+    "help": "use an IANA name such as `Europe/Berlin` when the source column has no time zone, or `aware` when it has one"
+  }
+]

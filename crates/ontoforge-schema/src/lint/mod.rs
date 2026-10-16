@@ -11,8 +11,8 @@ use crate::ir::Ontology;
 use crate::loader::SourceMap;
 use crate::loader::sourcemap::{DefKey, Part, Seg};
 
-pub mod config;
 mod binding;
+pub mod config;
 mod e08;
 mod e09;
 mod naming;

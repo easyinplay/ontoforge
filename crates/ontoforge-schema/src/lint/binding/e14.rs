@@ -1,6 +1,9 @@
 //! ONT-E14: a timestamp binding must say how the column is read (BIND-02).
 
-use super::super::{Finding, Level, LintCx, LintRule};
+use super::{all_bindings, binding_def, describe, element_type};
+use crate::ir::BaseType;
+use crate::lint::{Finding, Level, LintCx, LintRule};
+use crate::loader::sourcemap::{Part, Seg};
 
 pub(super) struct E14;
 
@@ -15,7 +18,45 @@ impl LintRule for E14 {
         Level::Error
     }
 
-    fn check(&self, _cx: &LintCx<'_>, _out: &mut Vec<Finding>) {}
+    fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {
+        for (profile, binding) in all_bindings(cx.ontology) {
+            let def = binding_def(profile, binding);
+            let finding = |path: &[&str], message: String, help: &str| Finding {
+                def: def.clone(),
+                path: path.iter().map(|k| Seg::Key((*k).to_owned())).collect(),
+                part: Part::Key,
+                message,
+                help: Some(help.to_owned()),
+                severity: None,
+            };
+            for column in cx.ontology.bound_columns(binding) {
+                let is_timestamp = element_type(column.property) == BaseType::Timestamp;
+                let what = describe(binding, column.key);
+                match (is_timestamp, binding.timezone_for(column.key)) {
+                    (true, None) => {
+                        // Without an entry for the column there is nothing finer than
+                        // `target` to point at.
+                        let path: &[&str] = if binding.columns.contains_key(column.key) {
+                            &["columns", column.key]
+                        } else {
+                            &["target"]
+                        };
+                        out.push(finding(
+                            path,
+                            format!("timestamp {what} needs `timezone` in this binding"),
+                            "use an IANA name such as `Europe/Berlin` when the source column has no time zone, or `aware` when it has one",
+                        ));
+                    }
+                    (false, Some(_)) => out.push(finding(
+                        &["columns", column.key, "timezone"],
+                        format!("`timezone` does not apply to {what}: it is not a timestamp"),
+                        "remove `timezone` from this column",
+                    )),
+                    _ => {}
+                }
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -93,9 +134,8 @@ backing: editOnly
 
         let flight = &bindings[0].1;
         let maintenance = &bindings[1].1;
-        let by_file = |file: &str| -> Vec<&Diagnostic> {
-            found.iter().filter(|d| d.file == file).collect()
-        };
+        let by_file =
+            |file: &str| -> Vec<&Diagnostic> { found.iter().filter(|d| d.file == file).collect() };
         let in_flight = by_file("bindings/dev/flight.yaml");
         let texts: Vec<&str> = in_flight.iter().map(|d| flagged(flight, d)).collect();
         assert_eq!(texts, ["scheduledDeparture", "timezone"]);
@@ -132,11 +172,17 @@ backing: editOnly
                 ),
                 (
                     "bindings/prod/flight.yaml",
-                    binding("Flight", "columns:\n  scheduledDeparture: { timezone: aware }\n"),
+                    binding(
+                        "Flight",
+                        "columns:\n  scheduledDeparture: { timezone: aware }\n",
+                    ),
                 ),
                 (
                     "bindings/dev/maintenance.yaml",
-                    binding("Maintenance", "columns:\n  performedAt: { timezone: aware }\n"),
+                    binding(
+                        "Maintenance",
+                        "columns:\n  performedAt: { timezone: aware }\n",
+                    ),
                 ),
             ],
             None,
@@ -158,7 +204,10 @@ backing: editOnly
                 ),
                 (
                     "bindings/prod/flight.yaml",
-                    binding("Flight", "columns:\n  scheduledDeparture: { column: sched }\n"),
+                    binding(
+                        "Flight",
+                        "columns:\n  scheduledDeparture: { column: sched }\n",
+                    ),
                 ),
             ],
             None,
