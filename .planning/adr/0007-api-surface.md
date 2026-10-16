@@ -1,6 +1,6 @@
 # ADR-0007 对外接口：REST + MCP，MVP 不做 GraphQL
 
-- status: accepted
+- status: accepted（MCP 工具面由 ADR-0019 修订，2026-10-16）
 - date: 2026-10-15
 
 ## Decision

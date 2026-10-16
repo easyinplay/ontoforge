@@ -1,6 +1,6 @@
 # ADR-0003 Ontology 定义格式：YAML / JSON → 单一 IR
 
-- status: accepted
+- status: accepted（IR 数据源绑定与类型契约由 ADR-0015 扩展，2026-10-16）
 - date: 2026-10-15
 - 依据：`.planning/research/rust-stack.md` §1
 

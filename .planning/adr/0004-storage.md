@@ -1,6 +1,6 @@
 # ADR-0004 存储：StorageProvider trait，Postgres 生产 / SQLite dev-test
 
-- status: accepted
+- status: superseded by ADR-0016（2026-10-16）
 - date: 2026-10-15
 - 依据：`.planning/research/rust-stack.md` §2
 
