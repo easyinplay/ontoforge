@@ -5,6 +5,7 @@ use crate::ir::Ontology;
 use crate::loader::SourceMap;
 
 mod actions;
+mod bindings;
 mod links;
 mod objects;
 
@@ -14,5 +15,6 @@ pub fn validate(ontology: &Ontology, sources: &SourceMap) -> Vec<Diagnostic> {
     objects::check(ontology, sources, &mut out);
     links::check(ontology, sources, &mut out);
     actions::check(ontology, sources, &mut out);
+    bindings::check(ontology, sources, &mut out);
     out
 }

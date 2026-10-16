@@ -4,10 +4,14 @@ use std::collections::BTreeMap;
 
 use camino::Utf8Path;
 
-use crate::diag::{Diagnostic, Severity, SourceLocation, codes, has_errors, sort_diagnostics};
+use crate::diag::{
+    Diagnostic, Severity, SourceLocation, codes, has_errors, parse_custom_de_error,
+    sort_diagnostics,
+};
 use crate::ir::{
-    ActionType, ActionTypeName, Definition, LinkType, LinkTypeName, Manifest, ObjectType,
-    ObjectTypeName, Ontology, ProfileBindings, ProfileName,
+    ActionType, ActionTypeName, BindingTarget, Definition, LinkType, LinkTypeName, Manifest,
+    ObjectType, ObjectTypeName, Ontology, ProfileBindings, ProfileName, SourceBinding,
+    binding_def_name,
 };
 
 mod discover;
@@ -390,6 +394,34 @@ fn merge(
             return;
         }
     };
+    let path = sources.path(file).to_owned();
+    let def = match def {
+        Definition::SourceBinding(binding) => {
+            merge_binding(sources, file, &path, doc, binding, defs, diags);
+            return;
+        }
+        other => other,
+    };
+    if path.starts_with(&format!("{}/", discover::BINDINGS_DIR)) {
+        let label = match &def {
+            Definition::ObjectType(_) => "ObjectType",
+            Definition::LinkType(_) => "LinkType",
+            Definition::ActionType(_) => "ActionType",
+            Definition::SourceBinding(_) => "SourceBinding",
+        };
+        let at = sources.locate_in(file, &doc, &[Seg::Key("kind".into())], Part::Value);
+        diags.push(
+            Diagnostic::error(
+                codes::V16,
+                format!(
+                    "a {label} document cannot be placed under `bindings/`, which holds only SourceBinding documents"
+                ),
+                &at,
+            )
+            .with_help("move this file out of `bindings/`"),
+        );
+        return;
+    }
     let (kind, label, api_name, duplicate) = match &def {
         Definition::ObjectType(o) => (
             DefKind::ObjectType,
@@ -409,6 +441,7 @@ fn merge(
             a.api_name.to_string(),
             defs.actions.contains_key(a.api_name.as_str()),
         ),
+        // Handled above.
         Definition::SourceBinding(_) => return,
     };
     let key = DefKey { kind, api_name };
@@ -438,6 +471,95 @@ fn merge(
             defs.actions.insert(a.api_name.clone(), a);
         }
         Definition::SourceBinding(_) => {}
+    }
+}
+
+/// Place a `SourceBinding` document: it must sit under `bindings/<profile>/` with a
+/// valid profile name, and each target may be bound once per profile. The profile is
+/// taken from the directory and used only as a map key.
+fn merge_binding(
+    sources: &mut SourceMap,
+    file: FileId,
+    path: &str,
+    doc: parse::Node,
+    binding: SourceBinding,
+    defs: &mut Defs,
+    diags: &mut Vec<Diagnostic>,
+) {
+    let kind_at = |sources: &SourceMap| {
+        sources.locate_in(file, &doc, &[Seg::Key("kind".into())], Part::Value)
+    };
+    let Some(dir) = discover::profile_dir(path) else {
+        diags.push(
+            Diagnostic::error(
+                codes::V16,
+                "a SourceBinding document must be placed under `bindings/<profile>/`",
+                &kind_at(sources),
+            )
+            .with_help("move this file to `bindings/<profile>/`, for example `bindings/dev/`"),
+        );
+        return;
+    };
+    let profile = match ProfileName::try_from(dir.to_owned()) {
+        Ok(profile) => profile,
+        Err(raw) => {
+            let (message, help) =
+                parse_custom_de_error(&raw).map_or((raw, None), |c| (c.message, c.help));
+            let d = Diagnostic::error(
+                codes::V16,
+                format!("{message} (the profile is the directory name under `bindings/`)"),
+                &kind_at(sources),
+            );
+            diags.push(match help {
+                Some(h) => d.with_help(h),
+                None => d,
+            });
+            return;
+        }
+    };
+
+    let (target_key, target_name, duplicate) = {
+        let bound = defs.bindings.entry(profile.clone()).or_default();
+        match &binding.target {
+            BindingTarget::ObjectType(n) => (
+                "objectType",
+                n.as_str().to_owned(),
+                bound.objects.contains_key(n.as_str()),
+            ),
+            BindingTarget::LinkType(n) => (
+                "linkType",
+                n.as_str().to_owned(),
+                bound.links.contains_key(n.as_str()),
+            ),
+        }
+    };
+    let key = DefKey {
+        kind: DefKind::SourceBinding,
+        api_name: binding_def_name(&profile, &target_name),
+    };
+    let name_path = [Seg::Key("target".into()), Seg::Key(target_key.into())];
+    if duplicate {
+        let first = sources.locate(&key, &name_path, Part::Value);
+        let at = sources.locate_in(file, &doc, &name_path, Part::Value);
+        diags.push(Diagnostic::error(
+            codes::V08,
+            format!(
+                "duplicate SourceBinding for `{target_name}` in profile `{profile}`; first defined at {}:{}:{}",
+                first.file, first.line, first.column
+            ),
+            &at,
+        ));
+        return;
+    }
+    sources.register_def(key, file, doc);
+    let bound = defs.bindings.entry(profile).or_default();
+    match &binding.target {
+        BindingTarget::ObjectType(n) => {
+            bound.objects.insert(n.clone(), binding);
+        }
+        BindingTarget::LinkType(n) => {
+            bound.links.insert(n.clone(), binding);
+        }
     }
 }
 

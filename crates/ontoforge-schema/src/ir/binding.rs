@@ -11,9 +11,9 @@ use indexmap::IndexMap;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+use super::Ontology;
 use super::names::{LinkTypeName, ObjectTypeName};
 use super::object::PropertyDef;
-use super::Ontology;
 
 /// The data source an object type or many-to-many link declares.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
@@ -165,7 +165,37 @@ impl Ontology {
     /// The only derivation of expected physical column names; the offline fixture
     /// check and the online comparison both call it.
     pub fn bound_columns<'a>(&'a self, binding: &'a SourceBinding) -> Vec<BoundColumn<'a>> {
-        let _ = binding;
-        Vec::new()
+        let column = |key: &'a str, property: &'a PropertyDef| BoundColumn {
+            key,
+            column: binding.column_for(key),
+            explicit: binding.columns.get(key).is_some_and(|c| c.column.is_some()),
+            property,
+        };
+        match &binding.target {
+            BindingTarget::ObjectType(name) => self
+                .object_types
+                .get(name.as_str())
+                .map(|object| {
+                    object
+                        .properties
+                        .iter()
+                        .map(|(key, property)| column(key.as_str(), property))
+                        .collect()
+                })
+                .unwrap_or_default(),
+            BindingTarget::LinkType(name) => {
+                let Some(link) = self.link_types.get(name.as_str()) else {
+                    return Vec::new();
+                };
+                [("from", &link.from), ("to", &link.to)]
+                    .into_iter()
+                    .filter_map(|(key, end)| {
+                        let object = self.object_types.get(end.object_type.as_str())?;
+                        let property = object.properties.get(object.primary_key.as_str())?;
+                        Some(column(key, property))
+                    })
+                    .collect()
+            }
+        }
     }
 }

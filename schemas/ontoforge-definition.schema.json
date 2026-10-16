@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "ontoforge definition document",
-  "description": "An ObjectType, LinkType or ActionType document (ADR-0012), selected by its `kind`; JSON files may hold an array of them.",
+  "description": "An ObjectType, LinkType, ActionType or SourceBinding document (ADR-0012, ADR-0021), selected by its `kind`; JSON files may hold an array of them.",
   "anyOf": [
     {
       "$ref": "#/$defs/Definition"
@@ -15,7 +15,7 @@
   ],
   "$defs": {
     "Definition": {
-      "description": "One definition document: an ObjectType, LinkType or ActionType, selected by `kind`.",
+      "description": "One definition document: an ObjectType, LinkType, ActionType or SourceBinding, selected by `kind`.",
       "oneOf": [
         {
           "description": "A kind of object, for example `Flight`.",
@@ -213,6 +213,49 @@
             "apiName",
             "rules"
           ]
+        },
+        {
+          "description": "Binds one object type or one many-to-many link to a physical table or view.\n\nThe profile is not written in the document: it is the name of the directory\nthe file sits in, `bindings/<profile>/`.",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "SourceBinding"
+            },
+            "target": {
+              "description": "What is bound: `{ objectType: Flight }` or `{ linkType: flightCrew }`. Only\n`manyToMany` links can be bound.",
+              "$ref": "#/$defs/BindingTarget"
+            },
+            "source": {
+              "description": "The physical table or view the target reads from.",
+              "$ref": "#/$defs/SourceRef"
+            },
+            "columns": {
+              "description": "Column mappings that differ from the default. Keys are property apiNames for\nan object type, or `from` and `to` for a link. A property that is not listed\nis read from the column of the same name (D-03).",
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/ColumnBinding"
+              },
+              "default": {}
+            },
+            "fixture": {
+              "description": "Sample rows that stand in for the table when no Trino is available; used\nonly by the SQLite stand-in engine.",
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/FixtureRef"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "target",
+            "source"
+          ]
         }
       ]
     },
@@ -276,6 +319,24 @@
               "type": "null"
             }
           ]
+        },
+        "precision": {
+          "description": "Total number of digits of a `decimal` (or of an `array` of `decimal`).\nDefaults to 38 (ADR-0015, ADR-0021).",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
+        "scale": {
+          "description": "Number of digits after the decimal point of a `decimal` (or of an `array`\nof `decimal`). Defaults to 10 (ADR-0015, ADR-0021).",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
         }
       },
       "additionalProperties": false,
@@ -683,6 +744,122 @@
       "required": [
         "condition",
         "failureMessage"
+      ]
+    },
+    "BindingTarget": {
+      "description": "What a [`SourceBinding`] binds. Externally tagged so that error paths survive\ndeserialization (ADR-0003).",
+      "oneOf": [
+        {
+          "description": "An object type, by its `PascalCase` apiName.",
+          "type": "object",
+          "properties": {
+            "objectType": {
+              "$ref": "#/$defs/ObjectTypeName"
+            }
+          },
+          "required": [
+            "objectType"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "description": "A many-to-many link type, by its `camelCase` apiName.",
+          "type": "object",
+          "properties": {
+            "linkType": {
+              "$ref": "#/$defs/LinkTypeName"
+            }
+          },
+          "required": [
+            "linkType"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "SourceRef": {
+      "description": "A physical table or view in the data source.\n\nIt is one table or view. To combine several tables, create a view in Trino and\nbind that (D-04).",
+      "type": "object",
+      "properties": {
+        "catalog": {
+          "description": "Trino catalog.",
+          "type": "string"
+        },
+        "schema": {
+          "description": "Schema inside the catalog.",
+          "type": "string"
+        },
+        "table": {
+          "description": "Table or view name.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "catalog",
+        "schema",
+        "table"
+      ]
+    },
+    "ColumnBinding": {
+      "description": "How one property (or one link end) maps to a column.",
+      "type": "object",
+      "properties": {
+        "column": {
+          "description": "Physical column name. Defaults to the property apiName (D-03).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "timezone": {
+          "description": "IANA time zone name for a timestamp column that carries no zone, for\nexample `Europe/Berlin`; write `aware` when the column already has one\n(ADR-0021).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "collation": {
+          "description": "How string comparison treats case on this column.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Collation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "Collation": {
+      "description": "String comparison semantics of a column.",
+      "oneOf": [
+        {
+          "description": "Upper and lower case letters differ.",
+          "type": "string",
+          "const": "caseSensitive"
+        },
+        {
+          "description": "Upper and lower case letters compare equal.",
+          "type": "string",
+          "const": "caseInsensitive"
+        }
+      ]
+    },
+    "FixtureRef": {
+      "description": "Sample rows for the stand-in engine.",
+      "type": "object",
+      "properties": {
+        "file": {
+          "description": "Path relative to the directory of the binding file. Only `.csv` and `.json`\nfiles inside the ontology directory are accepted.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "file"
       ]
     }
   }

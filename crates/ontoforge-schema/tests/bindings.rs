@@ -2,6 +2,7 @@
 //! `bindings/<profile>/`, references and the shared helper functions on the IR.
 
 use ontoforge_schema::diag::{Diagnostic, codes};
+use ontoforge_schema::ir::ProfileName;
 use ontoforge_schema::{LoadOutput, load_from_memory};
 
 const MANIFEST: &str = "apiName: demo\ndefaultProfile: dev\n";
@@ -57,7 +58,8 @@ columns:
   to: { column: pilot_id }
 ";
 
-const FLIGHTS_CSV: &str = "flightId,flight_no,status,departed_at\nF1,LH100,ok,2026-03-29T01:30:00\n";
+const FLIGHTS_CSV: &str =
+    "flightId,flight_no,status,departed_at\nF1,LH100,ok,2026-03-29T01:30:00\n";
 
 /// The shared definitions plus `extra` files.
 fn load_with(extra: &[(&str, &str)]) -> LoadOutput {
@@ -90,7 +92,7 @@ fn flight_binding_loads_under_dev_profile() {
     assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
     let ontology = out.ontology.expect("ontology");
     assert_eq!(
-        ontology.default_profile.as_ref().map(|p| p.as_str()),
+        ontology.default_profile.as_ref().map(ProfileName::as_str),
         Some("dev")
     );
     let binding = &ontology.bindings["dev"].objects["Flight"];
@@ -115,7 +117,10 @@ fn binding_outside_bindings_dir_is_v16() {
     assert_eq!(d.file, "defs/flight.yaml");
     assert_eq!((d.line, d.column), (1, 7), "points at the kind value");
     assert!(
-        d.help.as_deref().unwrap_or_default().contains("bindings/<profile>/"),
+        d.help
+            .as_deref()
+            .unwrap_or_default()
+            .contains("bindings/<profile>/"),
         "{d:?}"
     );
     assert!(out.ontology.is_none());

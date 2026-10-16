@@ -68,7 +68,6 @@ pub struct PropertyDef {
     pub scale: Option<u32>,
 }
 
-
 /// Precision of a `decimal` that does not write `precision`.
 pub const DEFAULT_DECIMAL_PRECISION: u32 = 38;
 
@@ -81,7 +80,10 @@ impl PropertyDef {
     /// The only definition of the decimal defaults; lint, the engine and the binding
     /// comparison all call it.
     pub fn effective_decimal(&self) -> (u32, u32) {
-        (0, 0)
+        (
+            self.precision.unwrap_or(DEFAULT_DECIMAL_PRECISION),
+            self.scale.unwrap_or(DEFAULT_DECIMAL_SCALE),
+        )
     }
 }
 
@@ -107,9 +109,6 @@ mod tests {
         assert_eq!(decimal(Some(12), None).effective_decimal(), (12, 10));
         assert_eq!(decimal(None, Some(2)).effective_decimal(), (38, 2));
         assert_eq!(decimal(Some(12), Some(2)).effective_decimal(), (12, 2));
-        assert_eq!(
-            (DEFAULT_DECIMAL_PRECISION, DEFAULT_DECIMAL_SCALE),
-            (38, 10)
-        );
+        assert_eq!((DEFAULT_DECIMAL_PRECISION, DEFAULT_DECIMAL_SCALE), (38, 10));
     }
 }

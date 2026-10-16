@@ -16,6 +16,12 @@ const DEFAULT_INCLUDE: [&str; 3] = ["**/*.yaml", "**/*.yml", "**/*.json"];
 /// Directories never searched for definitions (besides those starting with `.`).
 const SKIPPED_DIRS: [&str; 2] = ["target", "node_modules"];
 
+/// Directory that holds source bindings, one subdirectory per profile.
+pub const BINDINGS_DIR: &str = "bindings";
+
+/// Directory below a profile directory that holds fixture rows.
+const FIXTURES_DIR: &str = "fixtures";
+
 /// Lint configuration file; never a definition file.
 const LINT_CONFIG: &str = "ontoforge.toml";
 
@@ -46,13 +52,28 @@ fn is_candidate(rel: &str) -> bool {
     !rel.eq_ignore_ascii_case(MANIFEST)
         && !file.eq_ignore_ascii_case(LINT_CONFIG)
         && !parts.iter().any(|d| dir_is_skipped(d))
+        && !is_binding_fixture(rel)
 }
 
 /// The profile directory of a normalized relative path: `bindings/<x>/...` gives
 /// `<x>`. A file directly under `bindings/` has none.
 pub fn profile_dir(rel: &str) -> Option<&str> {
-    let _ = rel;
-    None
+    let mut parts = rel.split('/');
+    if parts.next()? != BINDINGS_DIR {
+        return None;
+    }
+    let profile = parts.next()?;
+    // A file or directory must follow: `bindings/<x>` alone has no profile.
+    parts.next()?;
+    Some(profile)
+}
+
+/// Whether `rel` is a file under `bindings/<profile>/fixtures/`. Those files hold
+/// sample rows, not definitions (E5); `fixtures` directories anywhere else are
+/// ordinary.
+fn is_binding_fixture(rel: &str) -> bool {
+    let parts: Vec<&str> = rel.split('/').collect();
+    parts.len() >= 4 && parts[0] == BINDINGS_DIR && parts[2] == FIXTURES_DIR
 }
 
 /// Resolve `fixture_file`, written relative to the directory of `binding_file`, to a
@@ -62,8 +83,51 @@ pub fn profile_dir(rel: &str) -> Option<&str> {
 /// Fails when the path is absolute, names a drive, passes above the root, or does
 /// not end in `.csv` or `.json`.
 pub fn fixture_path(binding_file: &str, fixture_file: &str) -> Result<String, String> {
-    let _ = (binding_file, fixture_file);
-    Err("not implemented".to_owned())
+    let fixture = normalize(fixture_file);
+    if fixture.is_empty() {
+        return Err("the fixture path is empty".to_owned());
+    }
+    if fixture.starts_with('/') || fixture.as_bytes().get(1) == Some(&b':') {
+        return Err(
+            "the fixture path must be relative to the binding file, not absolute or on a drive"
+                .to_owned(),
+        );
+    }
+    if fixture.chars().any(char::is_control) {
+        return Err("the fixture path contains a control character".to_owned());
+    }
+    if fixture
+        .rsplit('/')
+        .next()
+        .is_none_or(|last| matches!(last, "" | "." | ".."))
+    {
+        return Err("the fixture path must name a file".to_owned());
+    }
+    let binding = normalize(binding_file);
+    let mut resolved: Vec<&str> = binding.split('/').collect();
+    resolved.pop(); // the binding file's own name
+    for segment in fixture.split('/') {
+        match segment {
+            "" | "." => {}
+            ".." => {
+                if resolved.pop().is_none() {
+                    return Err("the fixture path leaves the ontology directory".to_owned());
+                }
+            }
+            s if s.contains(':') => {
+                return Err("the fixture path must not contain `:`".to_owned());
+            }
+            s => resolved.push(s),
+        }
+    }
+    let path = resolved.join("/");
+    let allowed = Utf8Path::new(&path)
+        .extension()
+        .is_some_and(|e| e.eq_ignore_ascii_case("csv") || e.eq_ignore_ascii_case("json"));
+    if !allowed {
+        return Err("a fixture must be a `.csv` or `.json` file".to_owned());
+    }
+    Ok(path)
 }
 
 /// V14 for a root file that is the manifest in other letter case: it is opened as

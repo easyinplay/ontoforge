@@ -44,13 +44,13 @@ pub fn definition_schema() -> Value {
     let mut schema = with_header(
         serde_json::to_value(schema_for!(DefinitionFile)).expect("schema serializes"),
         "ontoforge definition document",
-        "An ObjectType, LinkType or ActionType document (ADR-0012), selected by its `kind`; \
+        "An ObjectType, LinkType, ActionType or SourceBinding document (ADR-0012, ADR-0021), selected by its `kind`; \
          JSON files may hold an array of them.",
     );
     describe_def(
         &mut schema,
         "Definition",
-        "One definition document: an ObjectType, LinkType or ActionType, selected by `kind`.",
+        "One definition document: an ObjectType, LinkType, ActionType or SourceBinding, selected by `kind`.",
     );
     describe_def(
         &mut schema,

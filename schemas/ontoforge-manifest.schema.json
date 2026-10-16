@@ -26,6 +26,17 @@
       "items": {
         "type": "string"
       }
+    },
+    "defaultProfile": {
+      "description": "Profile used when neither `--profile` nor `ONTOFORGE_PROFILE` selects one: the\nname of a directory under `bindings/` (D-05).",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ProfileName"
+        },
+        {
+          "type": "null"
+        }
+      ]
     }
   },
   "additionalProperties": false,
@@ -36,6 +47,10 @@
     "OntologyName": {
       "type": "string",
       "pattern": "^[a-z][A-Za-z0-9]{0,99}$"
+    },
+    "ProfileName": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]{0,31}$"
     }
   },
   "description": "The ontology.yaml manifest naming the ontology and listing definition files."

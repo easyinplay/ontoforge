@@ -13,9 +13,9 @@ use crate::diag::{Diagnostic, SourceLocation, codes, did_you_mean, parse_custom_
 use crate::ir::{Definition, Manifest};
 
 /// Kinds a definition document may declare.
-const KINDS: [&str; 3] = ["ObjectType", "LinkType", "ActionType"];
+const KINDS: [&str; 4] = ["ObjectType", "LinkType", "ActionType", "SourceBinding"];
 /// Kinds whose deserialization exists in this build.
-const IMPLEMENTED_KINDS: [&str; 3] = ["ObjectType", "LinkType", "ActionType"];
+const IMPLEMENTED_KINDS: [&str; 4] = ["ObjectType", "LinkType", "ActionType", "SourceBinding"];
 /// Rule kinds an action may use; `function` is recognised only to reject it.
 const RULE_KINDS: [&str; 5] = [
     "createObject",

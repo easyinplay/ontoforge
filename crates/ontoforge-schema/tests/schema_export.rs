@@ -71,7 +71,7 @@ fn definition_variants_are_discriminated_by_kind() {
                 .and_then(|d| d.get("oneOf"))
                 .and_then(Value::as_array);
             if let Some(branches) = one_of {
-                assert_eq!(branches.len(), 3, "Definition has three branches");
+                assert_eq!(branches.len(), 4, "Definition has four branches");
                 for branch in branches {
                     let kind = branch["properties"]["kind"]["const"]
                         .as_str()
@@ -87,7 +87,10 @@ fn definition_variants_are_discriminated_by_kind() {
         }
     }
     found.sort();
-    assert_eq!(found, ["ActionType", "LinkType", "ObjectType"]);
+    assert_eq!(
+        found,
+        ["ActionType", "LinkType", "ObjectType", "SourceBinding"]
+    );
 }
 
 #[test]

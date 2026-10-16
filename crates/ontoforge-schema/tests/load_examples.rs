@@ -3,6 +3,7 @@
 //! both without touching this test.
 
 use camino::Utf8PathBuf;
+use ontoforge_schema::ir::ProfileName;
 use ontoforge_schema::{LoadOutput, load_dir, load_from_memory};
 
 fn example(name: &str) -> Utf8PathBuf {
@@ -68,4 +69,25 @@ fn aviation_file_order_does_not_matter() {
         from_memory.diagnostics
     );
     assert_eq!(from_memory.ontology, load_example("aviation").ontology);
+}
+
+#[test]
+fn aviation_dev_profile_binds_flight() {
+    for name in ["aviation", "aviation-json"] {
+        let ontology = load_example(name).ontology.expect("ontology");
+        assert_eq!(
+            ontology.default_profile.as_ref().map(ProfileName::as_str),
+            Some("dev"),
+            "{name}"
+        );
+        let flight = &ontology.bindings["dev"].objects["Flight"];
+        assert_eq!(flight.source.table, "flights", "{name}");
+        assert_eq!(flight.column_for("flightNumber"), "flight_no", "{name}");
+        assert_eq!(flight.column_for("tags"), "tags", "{name}");
+        assert_eq!(
+            flight.timezone_for("scheduledDeparture"),
+            Some("Europe/Berlin"),
+            "{name}"
+        );
+    }
 }

@@ -30,9 +30,7 @@ pub use names::{
     ActionTypeName, LinkEndName, LinkTypeName, ObjectTypeName, OntologyName, ParameterName,
     ProfileName, PropertyName,
 };
-pub use object::{
-    DEFAULT_DECIMAL_PRECISION, DEFAULT_DECIMAL_SCALE, ObjectType, PropertyDef,
-};
+pub use object::{DEFAULT_DECIMAL_PRECISION, DEFAULT_DECIMAL_SCALE, ObjectType, PropertyDef};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields, rename_all = "camelCase")]

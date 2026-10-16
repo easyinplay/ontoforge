@@ -1,0 +1,4 @@
+flight_id,flight_no,departure_airport,arrival_airport,tail_number,scheduled_departure,status,delay_minutes,tags
+F-1001,LH100,FRA,JFK,D-AAAA,2026-03-28T09:15:00,scheduled,0,"[""domestic""]"
+F-1002,LH205,MUC,LHR,D-AAAB,2026-03-29T01:30:00,delayed,25,"[""charter"",""night""]"
+F-1003,LH310,BER,CDG,D-AAAC,2026-04-02T14:40:00,scheduled,0,[]
