@@ -155,18 +155,23 @@ pub enum ReadFailure {
     Io(std::io::ErrorKind),
     /// A symbolic link (when links are not followed), directory, device or pipe.
     NotRegular,
-    /// Over [`MAX_FILE_BYTES`]; the size when the file system reported it.
+    /// Over the caller's limit; the size when the file system reported it.
     TooLarge(Option<u64>),
 }
 
-/// Read a regular file of at most [`MAX_FILE_BYTES`] (CR-03). With `follow_links`
-/// false a symbolic link is refused, so a checked-in link cannot point the loader at
-/// a device or at a file outside the ontology. The read itself is bounded too, so a
+/// Read a regular file of at most `max_bytes` (CR-03). With `follow_links` false a
+/// symbolic link is refused, so a checked-in link cannot point the loader at a
+/// device or at a file outside the ontology. The read itself is bounded too, so a
 /// file that grows or lies about its size still cannot exhaust memory.
+///
+/// Repository content (definitions, binding files, fixtures) is read with
+/// `follow_links = false` and [`MAX_FILE_BYTES`]. Paths the deployer supplies
+/// (server configuration, secret files, CA files) may use `true`, because Kubernetes
+/// mounts secrets and config maps as symbolic links.
 pub fn read_limited(
     path: &std::path::Path,
     follow_links: bool,
-    _max_bytes: u64,
+    max_bytes: u64,
 ) -> Result<Vec<u8>, ReadFailure> {
     use std::io::Read;
 
@@ -179,14 +184,14 @@ pub fn read_limited(
     if !meta.file_type().is_file() {
         return Err(ReadFailure::NotRegular);
     }
-    if meta.len() > MAX_FILE_BYTES {
+    if meta.len() > max_bytes {
         return Err(ReadFailure::TooLarge(Some(meta.len())));
     }
     let mut bytes = Vec::new();
     std::fs::File::open(path)
-        .and_then(|f| f.take(MAX_FILE_BYTES + 1).read_to_end(&mut bytes))
+        .and_then(|f| f.take(max_bytes.saturating_add(1)).read_to_end(&mut bytes))
         .map_err(|e| ReadFailure::Io(e.kind()))?;
-    if bytes.len() as u64 > MAX_FILE_BYTES {
+    if bytes.len() as u64 > max_bytes {
         return Err(ReadFailure::TooLarge(None));
     }
     Ok(bytes)

@@ -202,7 +202,14 @@ api_name!(
     ParameterName, Initial::Lower, "parameter", "^[a-z][A-Za-z0-9]{0,99}$", &CEL_RESERVED_WORDS
 );
 
-/// Name of a deployment profile (stub).
+/// Pattern a [`ProfileName`] must match.
+const PROFILE_PATTERN: &str = "^[a-z][a-z0-9_-]{0,31}$";
+
+/// Name of a deployment profile (D-05), for example `dev` or `prod-eu`.
+///
+/// Source bindings live under `bindings/<profile>/` and the server configuration
+/// keys `[profiles.<name>]` by the same name, so both use this one type. A profile
+/// name is only ever a map key: it must never be joined into a file system path.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize)]
 #[serde(try_from = "String")]
 pub struct ProfileName(String);
@@ -217,6 +224,19 @@ impl TryFrom<String> for ProfileName {
     type Error = String;
 
     fn try_from(value: String) -> Result<Self, String> {
+        let mut chars = value.chars();
+        let well_formed = chars.next().is_some_and(|c| c.is_ascii_lowercase())
+            && value.len() <= 32
+            && chars.all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_' || c == '-');
+        if !well_formed {
+            return Err(custom_de_error(
+                codes::V16,
+                &format!("invalid profile name `{value}`: must match {PROFILE_PATTERN}"),
+                Some(
+                    "profile names are lowercase letters, digits, `_` and `-`, starting with a letter, at most 32 characters",
+                ),
+            ));
+        }
         Ok(Self(value))
     }
 }
@@ -245,7 +265,7 @@ impl JsonSchema for ProfileName {
     }
 
     fn json_schema(_generator: &mut SchemaGenerator) -> Schema {
-        json_schema!({ "type": "string" })
+        json_schema!({ "type": "string", "pattern": PROFILE_PATTERN })
     }
 }
 
