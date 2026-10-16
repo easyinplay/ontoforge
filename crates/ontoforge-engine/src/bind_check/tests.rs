@@ -187,3 +187,39 @@ fn online_type_family_mismatch() {
         Vec::new()
     );
 }
+
+fn mismatch(kind: MismatchKind, severity: Severity) -> super::Mismatch {
+    super::Mismatch {
+        kind,
+        severity,
+        path: Vec::new(),
+        message: format!("{kind:?}"),
+        help: None,
+    }
+}
+
+#[test]
+fn warnings_do_not_degrade() {
+    use super::{DegradeReason, TargetHealth, health_of};
+
+    let warning = mismatch(MismatchKind::CharPadding, Severity::Warning);
+    assert_eq!(
+        health_of(vec![warning.clone()]),
+        TargetHealth::Healthy {
+            warnings: vec![warning.clone()]
+        }
+    );
+    assert_eq!(
+        health_of(Vec::new()),
+        TargetHealth::Healthy { warnings: vec![] }
+    );
+
+    let error = mismatch(MismatchKind::ColumnMissing, Severity::Error);
+    assert_eq!(
+        health_of(vec![warning.clone(), error.clone()]),
+        TargetHealth::Degraded {
+            reason: DegradeReason::SourceSchemaDrift,
+            mismatches: vec![warning, error],
+        }
+    );
+}

@@ -7,7 +7,8 @@ use std::collections::{BTreeMap, BTreeSet, HashMap};
 
 use ontoforge_schema::diag::Severity;
 use ontoforge_schema::ir::{
-    BaseType, BindingTarget, Ontology, ProfileName, SourceBinding, binding_def_name,
+    BaseType, BindingTarget, LinkTypeName, ObjectTypeName, Ontology, ProfileName, SourceBinding,
+    binding_def_name,
 };
 use ontoforge_schema::loader::sourcemap::Seg;
 
@@ -327,6 +328,81 @@ pub async fn describe_bindings(
             }
         })
         .collect())
+}
+
+/// Why a binding target is degraded (BIND-03).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DegradeReason {
+    /// The physical table no longer matches the binding.
+    SourceSchemaDrift,
+    /// The table's metadata could not be read; `error` is the engine error's text.
+    SourceUnreadable { error: String },
+}
+
+impl DegradeReason {
+    /// Stable upper-snake code.
+    #[must_use]
+    pub fn code(&self) -> &'static str {
+        ""
+    }
+}
+
+/// The state of one bound object type or link type.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TargetHealth {
+    /// No error: the warnings, if any, are kept for the report.
+    Healthy { warnings: Vec<Mismatch> },
+    Degraded {
+        reason: DegradeReason,
+        mismatches: Vec<Mismatch>,
+    },
+}
+
+/// The outcome of one drift check of one profile.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DriftReport {
+    pub profile: ProfileName,
+    pub objects: BTreeMap<ObjectTypeName, TargetHealth>,
+    pub links: BTreeMap<LinkTypeName, TargetHealth>,
+}
+
+impl DriftReport {
+    /// Whether every target is [`TargetHealth::Healthy`].
+    #[must_use]
+    pub fn is_healthy(&self) -> bool {
+        true
+    }
+}
+
+/// The health of a target whose comparison found `mismatches`.
+#[allow(dead_code, reason = "RED stub, wired in by the GREEN commit")]
+fn health_of(_mismatches: Vec<Mismatch>) -> TargetHealth {
+    TargetHealth::Healthy { warnings: vec![] }
+}
+
+/// Judges every described binding of `profile`.
+#[must_use]
+pub fn drift_report(
+    _ontology: &Ontology,
+    profile: &ProfileName,
+    _described: &[DescribedBinding],
+) -> DriftReport {
+    DriftReport {
+        profile: profile.clone(),
+        objects: BTreeMap::new(),
+        links: BTreeMap::new(),
+    }
+}
+
+/// Describes the bindings of `profile` and judges them.
+pub async fn check_drift(
+    engine: &AnyEngine,
+    ontology: &Ontology,
+    profile: &ProfileName,
+    ctx: &QueryContext,
+) -> Result<DriftReport, EngineError> {
+    let described = describe_bindings(engine, ontology, profile, ctx).await?;
+    Ok(drift_report(ontology, profile, &described))
 }
 
 #[cfg(test)]
