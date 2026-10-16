@@ -1,18 +1,18 @@
 ---
 gsd_state_version: "1.0"
-current_phase: 1
+current_phase: 01
 current_phase_name: Workspace, Schema & Lint
 status: executing
-stopped_at: Completed 01-11-PLAN.md
-last_updated: "2026-10-15T16:49:28.250Z"
-last_activity: 2026-10-15
-last_activity_desc: Phase 1 execution started
-state_head: 69bb151425ae67e9ad5a00407db6ff82addc629b
+stopped_at: Completed 01-14-PLAN.md
+last_updated: "2026-10-16T02:06:48.530Z"
+last_activity: 2026-10-16
+last_activity_desc: Phase 01 execution started
+state_head: 99641e477256c7591e3d6e8bcf791c48792b23ed
 progress:
   total_phases: 7
   completed_phases: 0
-  total_plans: 13
-  completed_plans: 13
+  total_plans: 14
+  completed_plans: 14
   percent: 0
 ---
 
@@ -23,14 +23,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-15)
 
 **Core value:** 定义一次 ontology，应用和 agent 就能通过 REST 与 MCP 对同一份对象图做受控读写：写入一律经 Action 校验与授权，每次写入都可审计。
-**Current focus:** Phase 1 — Workspace, Schema & Lint
+**Current focus:** Phase 01 — Workspace, Schema & Lint
 
 ## Current Position
 
-Phase: 1 (Workspace, Schema & Lint) — EXECUTING
-Plan: 13 of 13 done; Phase 1 gate green, verify next
+Phase: 01 (Workspace, Schema & Lint) — EXECUTING
+Plan: 14 of 14 (all plans complete; phase verification pending)
 Status: Ready for verification
-Last activity: 2026-10-15 — Phase 1 execution started
+Last activity: 2026-10-16 — Phase 01 execution started
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -55,6 +55,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P13 | n/a | 3 tasks | 12 files |
 | Phase 01 P10 | 15 min | 2 tasks | 16 files |
 | Phase 01 P11 | 8 min | 2 tasks | 19 files |
+| Phase 01 P14 | 12 min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -75,6 +76,7 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 1]: [Phase 01] 01-13: diag::offset_to_line_col is the only byte-offset to line:col implementation; expr keeps walk::char_pos only to widen to usize
 - [Phase 1]: 01-10: naming rules W01-W05 are heuristics whose help text always ends with the way to switch the rule off; split_camel stays (convert_case adds two new crates for no gain)
 - [Phase 1]: [Phase 01] 01-11: structure rules W06-W11 group before comparing (W07 by primary key, W08 by keys held by 3+ types); W08 counts the primary key like any property, so three types sharing key name id already share one property
+- [Phase 01]: 01-14: exclude ontology.yaml manifests from the definition-schema yaml.schemas glob (28 modeline-less manifests otherwise get 4 false positives each)
 
 ### Pending Todos
 
@@ -93,6 +95,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-15T16:49:28.217Z
-Stopped at: Completed 01-11-PLAN.md
+Last session: 2026-10-16T02:06:48.471Z
+Stopped at: Completed 01-14-PLAN.md
 Resume file: None
