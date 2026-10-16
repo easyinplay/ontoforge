@@ -40,9 +40,6 @@ pub enum PrintError {
     /// An `AND` / `OR` without operands.
     #[error("AND / OR has no operands")]
     EmptyBoolList,
-    /// An AST shape the printer does not support yet.
-    #[error("unsupported construct: {0}")]
-    Unsupported(&'static str),
 }
 
 /// A failure of an [`crate::Engine`].

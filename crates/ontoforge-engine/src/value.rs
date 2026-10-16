@@ -37,7 +37,70 @@ impl PhysicalType {
     /// crate does not model becomes [`PhysicalType::Other`].
     #[must_use]
     pub fn parse(s: &str) -> Self {
-        Self::Other(s.trim().to_owned())
+        let text = s.trim();
+        // ASCII lower-casing keeps byte offsets, so `lower` and `text` index alike.
+        let lower = text.to_ascii_lowercase();
+        if let Some(inner) = lower
+            .strip_prefix("array(")
+            .and_then(|rest| rest.strip_suffix(')'))
+        {
+            let start = text.len() - inner.len() - 1;
+            return Self::Array(Box::new(Self::parse(&text[start..start + inner.len()])));
+        }
+        Self::parse_scalar(&lower).unwrap_or_else(|| Self::Other(text.to_owned()))
+    }
+
+    fn parse_scalar(lower: &str) -> Option<Self> {
+        let simple = match lower {
+            "boolean" | "bool" => Some(Self::Boolean),
+            "tinyint" => Some(Self::Tinyint),
+            "smallint" => Some(Self::Smallint),
+            "integer" | "int" => Some(Self::Integer),
+            "bigint" => Some(Self::Bigint),
+            "real" => Some(Self::Real),
+            "double" | "double precision" => Some(Self::Double),
+            "number" => Some(Self::Number),
+            "varchar" | "text" => Some(Self::Varchar { length: None }),
+            "date" => Some(Self::Date),
+            _ => None,
+        };
+        if simple.is_some() {
+            return simple;
+        }
+        if let Some(args) = call_args(lower, "decimal") {
+            let (p, s) = args.split_once(',').unwrap_or((args, "0"));
+            return Some(Self::Decimal {
+                precision: p.trim().parse().ok()?,
+                scale: s.trim().parse().ok()?,
+            });
+        }
+        if let Some(args) = call_args(lower, "varchar") {
+            return Some(Self::Varchar {
+                length: Some(args.trim().parse().ok()?),
+            });
+        }
+        if let Some(args) = call_args(lower, "char") {
+            return Some(Self::Char {
+                length: args.trim().parse().ok()?,
+            });
+        }
+        let rest = lower.strip_prefix("timestamp")?;
+        let (precision, rest) = match rest.strip_prefix('(') {
+            Some(after) => {
+                let (digits, tail) = after.split_once(')')?;
+                (digits.trim().parse().ok()?, tail)
+            }
+            None => (3, rest),
+        };
+        let with_time_zone = match rest.trim() {
+            "" | "without time zone" => false,
+            "with time zone" => true,
+            _ => return None,
+        };
+        Some(Self::Timestamp {
+            precision,
+            with_time_zone,
+        })
     }
 
     /// Canonical lower-case Trino spelling.
@@ -119,8 +182,29 @@ pub struct DecimalParts<'a> {
 /// The one implementation of this syntax: the printer's literal check and fixture conversion
 /// share it. It only splits; precision rules are applied by the caller.
 #[must_use]
-pub fn split_decimal(_s: &str) -> Option<DecimalParts<'_>> {
-    None
+pub fn split_decimal(s: &str) -> Option<DecimalParts<'_>> {
+    let (negative, rest) = match s.strip_prefix('-') {
+        Some(rest) => (true, rest),
+        None => (false, s),
+    };
+    let (integer, fraction) = match rest.split_once('.') {
+        Some((integer, fraction)) => (integer, Some(fraction)),
+        None => (rest, None),
+    };
+    let digits = |t: &str| !t.is_empty() && t.bytes().all(|b| b.is_ascii_digit());
+    if !digits(integer) || fraction.is_some_and(|f| !digits(f)) {
+        return None;
+    }
+    Some(DecimalParts {
+        negative,
+        integer,
+        fraction: fraction.unwrap_or(""),
+    })
+}
+
+/// The text between `name(` and the final `)`, if `s` has that shape.
+fn call_args<'a>(s: &'a str, name: &str) -> Option<&'a str> {
+    s.strip_prefix(name)?.strip_prefix('(')?.strip_suffix(')')
 }
 
 #[cfg(test)]
