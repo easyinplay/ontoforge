@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 2
 current_phase_name: Source Binding & Engine
 status: executing
-stopped_at: Phase 2 context gathered
-last_updated: "2026-10-16T18:26:12.285Z"
+stopped_at: Completed 02-01-PLAN.md
+last_updated: "2026-10-16T18:46:56.075Z"
 last_activity: 2026-10-17
 last_activity_desc: Phase 2 execution started
-state_head: 6d53a8ed6d4efc096458559d8a55d2a0b7eeba6f
+state_head: 8119bb0f8573478fb9739db84af7bd26054fe0b0
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 24
-  completed_plans: 14
+  completed_plans: 15
   percent: 0
 ---
 
@@ -28,8 +28,8 @@ See: .planning/PROJECT.md (updated 2026-10-16)
 ## Current Position
 
 Phase: 2 (Source Binding & Engine) — EXECUTING
-Plan: 1 of 10
-Status: Executing Phase 2
+Plan: 2 of 10
+Status: Ready to execute
 Last activity: 2026-10-17 — Phase 2 execution started
 
 Progress: [░░░░░░░░░░] 0%
@@ -56,6 +56,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P10 | 15 min | 2 tasks | 16 files |
 | Phase 01 P11 | 8 min | 2 tasks | 19 files |
 | Phase 01 P14 | 12 min | 3 tasks | 7 files |
+| Phase 2 P01 | 35 min | 3 tasks | 84 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,8 @@ Progress: [░░░░░░░░░░] 0%
 - [Roadmap]: 原 7 个 phase 按 schema → storage → action / query → auth → REST → MCP 排列；Phase 2+ 待按设计文档纵切片顺序重排
 - [Phase 1]: 已交付并通过 UAT 3/3、VERIFICATION passed、SECURITY 47/47 closed（详: `phases/01-workspace-schema-lint/`）
 - [Design]: Trino 主引擎 + 分级 SQL 方向通过 office-hours / CEO / eng review（详: `docs/designs/trino-engine-sql-tiers.md`「Eng Review 决策」）
+- [Phase 2]: backing 必填且无默认：缺失 ONT-V05，非 manyToMany link 多写 ONT-V11（ADR-0021，ADR-0012 向后兼容惯例的有意例外） — 可选默认 editOnly 拦不住同时漏写 backing 与绑定，部署方会读到空集
+- [Phase 2]: read_limited(path, follow_links, max_bytes)、ProfileName、诊断码 V16..V20 在 wave 1 公开，02-03 与 02-04 共用 — 避免 wave 2 两个并行 plan 互相依赖或各复刻一份有界读取（E10、E14）
 
 ### Pending Todos
 
@@ -92,6 +95,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-16T15:01:31.707Z
-Stopped at: Phase 2 context gathered
-Resume file: .planning/phases/02-source-binding-engine/02-CONTEXT.md
+Last session: 2026-10-16T18:46:56.017Z
+Stopped at: Completed 02-01-PLAN.md
+Resume file: None

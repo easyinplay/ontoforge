@@ -265,7 +265,7 @@ status: complete
 
 ## TDD Gate Compliance
 
-- Task 1：RED `f131989`（`test(02-01)`）→ GREEN `bcafe8d`（`feat(02-01)`），RED 时 6 个行为测试中除 `unknown_backing_value_is_v06` 外都因断言失败（V04 代替 V05 / V06 / V11、缺字段无诊断、aviation 无 backing）；`both_backing_values_load` 与 `one_to_one_with_backing_is_v11` 为补充用例。
+- Task 1：RED `f131989`（`test(02-01)`）→ GREEN `bcafe8d`（`feat(02-01)`），RED 时 8 个新测试（计划的 6 个行为测试加 `both_backing_values_load`、`one_to_one_with_backing_is_v11` 两个补充用例）全部因断言失败：缺 backing 时无诊断、写了 `backing` 被报 V04 而不是 V06 / V11、aviation 的 `backing` 为 null。
 - Task 3：RED `b199cfc` → GREEN `9feb588`。
 - 无 REFACTOR 提交。
 - 局限：`read_limited_follows_links_only_when_asked` 是 `#[cfg(unix)]`，在本机 Windows 上不执行，需 Linux CI 覆盖。
