@@ -3,11 +3,11 @@
 //! `ATTACH` and `:memory:` databases are per connection state, so the engine owns exactly one
 //! connection behind a mutex instead of a pool.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use camino::Utf8Path;
-
 use futures_util::TryStreamExt;
+use ontoforge_schema::loader::MAX_TOTAL_BYTES;
 use sqlx::sqlite::{SqliteConnection, SqliteRow};
 use sqlx::{
     AssertSqlSafe, Column as _, Connection, Executor, Row, SqlSafeStr, Statement, TypeInfo,
@@ -17,11 +17,14 @@ use tokio::sync::Mutex;
 
 pub mod fixture;
 
+use fixture::{FixtureError, FixtureTable, SqlValue};
+
 use crate::printer::ast::{Expr, Literal, Select, SelectItem};
-use crate::printer::print_select;
+use crate::printer::sqlite_ddl::{attach_memory, create_table, insert, query_only};
+use crate::printer::{PrintedSql, print_select};
 use crate::{
-    Column, Dialect, Engine, EngineError, EngineStatus, PhysicalColumn, PhysicalType, PrintedSql,
-    QueryContext, QueryOutput, TableRef, Value,
+    Column, Dialect, Engine, EngineError, EngineStatus, PhysicalColumn, PhysicalType, QueryContext,
+    QueryOutput, TableRef, Value,
 };
 
 /// SQLite implementation of [`Engine`].
@@ -42,19 +45,143 @@ impl SqliteEngine {
         })
     }
 
-    /// Builds an engine holding the given fixture tables.
+    /// Builds an engine holding the given fixture tables, read from under `root`.
+    ///
+    /// Every table is created in the attached database `{catalog}__{schema}`. When all tables
+    /// are loaded the connection is made read only, so nothing can write to the stand-in
+    /// afterwards.
     pub async fn from_fixtures(
-        _root: &Utf8Path,
-        _tables: &[fixture::FixtureTable],
-    ) -> Result<Self, Vec<fixture::FixtureError>> {
-        Self::in_memory().await.map_err(|e| {
-            vec![fixture::FixtureError {
+        root: &Utf8Path,
+        tables: &[FixtureTable],
+    ) -> Result<Self, Vec<FixtureError>> {
+        Self::from_fixtures_with_budget(root, tables, MAX_TOTAL_BYTES).await
+    }
+
+    /// [`Self::from_fixtures`] with an explicit limit on the bytes of all fixture files.
+    pub(crate) async fn from_fixtures_with_budget(
+        root: &Utf8Path,
+        tables: &[FixtureTable],
+        budget: u64,
+    ) -> Result<Self, Vec<FixtureError>> {
+        let general = |message: String| {
+            vec![FixtureError {
                 file: String::new(),
                 line: None,
-                message: e.to_string(),
+                message,
             }]
-        })
+        };
+        let mut engine = Self::in_memory()
+            .await
+            .map_err(|e| general(e.to_string()))?;
+        let Self {
+            conn,
+            tables: described,
+        } = &mut engine;
+        let conn = conn.get_mut();
+
+        let mut errors = Vec::new();
+        let mut attached = BTreeSet::new();
+        let mut used = 0_u64;
+        for table in tables {
+            let loaded = match fixture::load_table(root, table, budget.saturating_sub(used), budget)
+            {
+                Ok(loaded) => loaded,
+                Err(e) => {
+                    errors.push(e);
+                    continue;
+                }
+            };
+            used += loaded.bytes;
+            let target = lower(&table.table);
+            let result = store(conn, &mut attached, &table.file, &target, loaded).await;
+            match result {
+                Ok(columns) => {
+                    described.insert(target, columns);
+                }
+                Err(e) => errors.push(e),
+            }
+        }
+        if errors.is_empty() {
+            run_ddl(conn, &query_only())
+                .await
+                .map_err(|e| general(map_sqlx(e).to_string()))?;
+            Ok(engine)
+        } else {
+            Err(errors)
+        }
     }
+}
+
+/// The table with every part in lower case: how the stand-in files it.
+fn lower(table: &TableRef) -> TableRef {
+    TableRef {
+        catalog: table.catalog.to_lowercase(),
+        schema: table.schema.to_lowercase(),
+        table: table.table.to_lowercase(),
+    }
+}
+
+async fn run_ddl(conn: &mut SqliteConnection, sql: &PrintedSql) -> Result<(), sqlx::Error> {
+    sqlx::query(AssertSqlSafe(sql.as_str().to_owned()))
+        .execute(conn)
+        .await
+        .map(|_| ())
+}
+
+/// Creates `target` and inserts the rows of `loaded`; returns the columns it reports.
+async fn store(
+    conn: &mut SqliteConnection,
+    attached: &mut BTreeSet<String>,
+    file: &str,
+    target: &TableRef,
+    loaded: fixture::LoadedTable,
+) -> Result<Vec<PhysicalColumn>, FixtureError> {
+    let fail = |message: String| FixtureError {
+        file: file.to_owned(),
+        line: None,
+        message,
+    };
+    let database = |e: sqlx::Error| fail(map_sqlx(e).to_string());
+    let print = |e: crate::PrintError| fail(e.to_string());
+
+    let schema_name = target.sqlite_schema_name();
+    if !attached.contains(&schema_name) {
+        run_ddl(conn, &attach_memory(&schema_name).map_err(print)?)
+            .await
+            .map_err(database)?;
+        attached.insert(schema_name);
+    }
+    let layout: Vec<_> = loaded
+        .columns
+        .iter()
+        .map(|c| (c.name.clone(), c.storage))
+        .collect();
+    run_ddl(conn, &create_table(target, &layout).map_err(print)?)
+        .await
+        .map_err(database)?;
+    let names: Vec<String> = loaded.columns.iter().map(|c| c.name.clone()).collect();
+    let sql = insert(target, &names).map_err(print)?;
+    for row in loaded.rows {
+        let mut query = sqlx::query(AssertSqlSafe(sql.as_str().to_owned()));
+        for value in row {
+            query = match value {
+                SqlValue::Null => query.bind(None::<String>),
+                SqlValue::Text(s) => query.bind(s),
+                SqlValue::Integer(i) => query.bind(i),
+                SqlValue::Real(f) => query.bind(f),
+            };
+        }
+        query.execute(&mut *conn).await.map_err(database)?;
+    }
+    Ok(loaded
+        .columns
+        .into_iter()
+        .map(|c| PhysicalColumn {
+            name: c.name,
+            physical: c.physical,
+            nullable: true,
+        })
+        .collect())
 }
 
 fn map_sqlx(e: sqlx::Error) -> EngineError {
@@ -159,7 +286,8 @@ impl Engine for SqliteEngine {
         })
     }
 
-    // The stand-in answers from its in-memory metadata map; later plans make it query SQLite.
+    // The stand-in answers from the metadata it recorded while loading the fixtures; there is
+    // nothing to await. Names are compared in lower case, as Trino exposes them.
     #[allow(clippy::unused_async_trait_impl)]
     async fn describe_tables(
         &self,
@@ -176,7 +304,11 @@ impl Engine for SqliteEngine {
         }
         Ok(tables
             .iter()
-            .filter_map(|t| self.tables.get(t).map(|cols| (t.clone(), cols.clone())))
+            .filter_map(|t| {
+                self.tables
+                    .get(&lower(t))
+                    .map(|cols| (t.clone(), cols.clone()))
+            })
             .collect())
     }
 

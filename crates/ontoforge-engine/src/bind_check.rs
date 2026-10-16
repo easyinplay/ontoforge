@@ -3,13 +3,15 @@
 //! `compare_binding` is the one implementation of the comparison: the CLI's
 //! `validate --online` and the later drift check both call it.
 
+use std::collections::{BTreeMap, BTreeSet, HashMap};
+
 use ontoforge_schema::diag::Severity;
 use ontoforge_schema::ir::{
     BaseType, BindingTarget, Ontology, ProfileName, SourceBinding, binding_def_name,
 };
 use ontoforge_schema::loader::sourcemap::Seg;
 
-use crate::{AnyEngine, EngineError, PhysicalColumn, QueryContext, TableRef};
+use crate::{AnyEngine, Engine, EngineError, PhysicalColumn, PhysicalType, QueryContext, TableRef};
 
 /// Identifies one binding: the profile it belongs to and what it binds.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -92,15 +94,161 @@ pub fn expected_columns(ontology: &Ontology, binding: &SourceBinding) -> Vec<Exp
         .collect()
 }
 
+/// The type families the comparison tells apart. Rules within a family belong to 02-08.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Family {
+    Integer,
+    Float,
+    Decimal,
+    String,
+    Boolean,
+    Date,
+    Timestamp,
+    Array,
+    Other,
+}
+
+impl Family {
+    fn name(self) -> &'static str {
+        match self {
+            Self::Integer => "integer",
+            Self::Float => "floating point",
+            Self::Decimal => "decimal",
+            Self::String => "string",
+            Self::Boolean => "boolean",
+            Self::Date => "date",
+            Self::Timestamp => "timestamp",
+            Self::Array => "array",
+            Self::Other => "other",
+        }
+    }
+}
+
+/// The family a property type is stored as. A geopoint is stored as text.
+fn expected_family(base: BaseType) -> Family {
+    match base {
+        BaseType::Byte | BaseType::Short | BaseType::Integer | BaseType::Long => Family::Integer,
+        BaseType::Float | BaseType::Double => Family::Float,
+        BaseType::Decimal => Family::Decimal,
+        BaseType::String | BaseType::Geopoint => Family::String,
+        BaseType::Boolean => Family::Boolean,
+        BaseType::Date => Family::Date,
+        BaseType::Timestamp => Family::Timestamp,
+        BaseType::Array => Family::Array,
+    }
+}
+
+fn physical_family(physical: &PhysicalType) -> Family {
+    match physical {
+        PhysicalType::Tinyint
+        | PhysicalType::Smallint
+        | PhysicalType::Integer
+        | PhysicalType::Bigint => Family::Integer,
+        PhysicalType::Real | PhysicalType::Double => Family::Float,
+        PhysicalType::Decimal { .. } | PhysicalType::Number => Family::Decimal,
+        PhysicalType::Varchar { .. } | PhysicalType::Char { .. } => Family::String,
+        PhysicalType::Boolean => Family::Boolean,
+        PhysicalType::Date => Family::Date,
+        PhysicalType::Timestamp { .. } => Family::Timestamp,
+        PhysicalType::Array(_) => Family::Array,
+        PhysicalType::Other(_) => Family::Other,
+    }
+}
+
+fn table_path() -> Vec<Seg> {
+    vec![Seg::Key("source".to_owned()), Seg::Key("table".to_owned())]
+}
+
+/// Where a problem with `column` is pointed at: the written column name when there is one,
+/// otherwise the table.
+fn column_path(column: &ExpectedColumn) -> Vec<Seg> {
+    if column.explicit {
+        vec![
+            Seg::Key("columns".to_owned()),
+            Seg::Key(column.key.clone()),
+            Seg::Key("column".to_owned()),
+        ]
+    } else {
+        table_path()
+    }
+}
+
 /// Compares `binding` with `physical`: the columns of its table, or `None` when the table does
 /// not exist.
+///
+/// Column names are compared in lower case, because Trino exposes identifiers in lower case.
+/// Messages carry only apiNames and physical names, never data.
 #[must_use]
 pub fn compare_binding(
-    _ontology: &Ontology,
-    _binding: &SourceBinding,
-    _physical: Option<&[PhysicalColumn]>,
+    ontology: &Ontology,
+    binding: &SourceBinding,
+    physical: Option<&[PhysicalColumn]>,
 ) -> Vec<Mismatch> {
-    Vec::new()
+    let source = &binding.source;
+    let table = format!("{}.{}.{}", source.catalog, source.schema, source.table);
+    let Some(physical) = physical else {
+        return vec![Mismatch {
+            kind: MismatchKind::TableMissing,
+            severity: Severity::Error,
+            path: table_path(),
+            message: format!(
+                "table `{table}` bound to `{}` does not exist",
+                binding.target_name()
+            ),
+            help: Some("create the table or view, or correct `source` in the binding".to_owned()),
+        }];
+    };
+    let what = match &binding.target {
+        BindingTarget::ObjectType(_) => "property",
+        BindingTarget::LinkType(_) => "end",
+    };
+    let mut by_name: HashMap<String, &PhysicalColumn> = HashMap::new();
+    for column in physical {
+        by_name.entry(column.name.to_lowercase()).or_insert(column);
+    }
+
+    let mut found = Vec::new();
+    for expected in expected_columns(ontology, binding) {
+        let subject = format!(
+            "{what} `{}` of `{}` maps to column `{}`",
+            expected.key,
+            binding.target_name(),
+            expected.column
+        );
+        let Some(actual) = by_name.get(&expected.column.to_lowercase()) else {
+            found.push(Mismatch {
+                kind: MismatchKind::ColumnMissing,
+                severity: Severity::Error,
+                path: column_path(&expected),
+                message: format!("{subject}, but table `{table}` has no such column"),
+                help: Some(
+                    "add the column, or map it to an existing one with `columns.<key>.column`"
+                        .to_owned(),
+                ),
+            });
+            continue;
+        };
+        let want = expected_family(expected.base);
+        let have = physical_family(&actual.physical);
+        if want != have {
+            found.push(Mismatch {
+                kind: MismatchKind::TypeIncompatible,
+                severity: Severity::Error,
+                path: column_path(&expected),
+                message: format!(
+                    "{subject}, which is `{}` ({} family) but the {what} is a {} value",
+                    actual.physical.render(),
+                    have.name(),
+                    want.name()
+                ),
+                help: Some(
+                    "change the column type, or map the property to a column of a matching type"
+                        .to_owned(),
+                ),
+            });
+        }
+    }
+    found
 }
 
 /// A binding with the description of its table.
@@ -112,14 +260,73 @@ pub struct DescribedBinding {
     pub physical: Result<Option<Vec<PhysicalColumn>>, EngineError>,
 }
 
+type Described = BTreeMap<TableRef, Vec<PhysicalColumn>>;
+
 /// Describes the tables of every binding of `profile`, one request per catalog.
+///
+/// An error that is not engine wide ([`EngineError::is_engine_wide`]) is copied onto every
+/// binding of the catalog it came from and the other catalogs are still described. An engine
+/// wide error aborts the round.
 pub async fn describe_bindings(
-    _engine: &AnyEngine,
-    _ontology: &Ontology,
-    _profile: &ProfileName,
-    _ctx: &QueryContext,
+    engine: &AnyEngine,
+    ontology: &Ontology,
+    profile: &ProfileName,
+    ctx: &QueryContext,
 ) -> Result<Vec<DescribedBinding>, EngineError> {
-    Ok(Vec::new())
+    let Some(bindings) = ontology.profile_bindings(profile) else {
+        return Ok(Vec::new());
+    };
+    let entries: Vec<(BindingKey, TableRef)> = bindings
+        .objects
+        .values()
+        .chain(bindings.links.values())
+        .map(|binding| {
+            let key = BindingKey {
+                profile: profile.clone(),
+                target: binding.target.clone(),
+            };
+            let table = TableRef {
+                catalog: binding.source.catalog.clone(),
+                schema: binding.source.schema.clone(),
+                table: binding.source.table.clone(),
+            };
+            (key, table)
+        })
+        .collect();
+
+    let mut by_catalog: BTreeMap<&str, BTreeSet<&TableRef>> = BTreeMap::new();
+    for (_, table) in &entries {
+        by_catalog.entry(&table.catalog).or_default().insert(table);
+    }
+    let mut results: HashMap<String, Result<Described, EngineError>> = HashMap::new();
+    for (catalog, tables) in by_catalog {
+        let tables: Vec<TableRef> = tables.into_iter().cloned().collect();
+        match engine.describe_tables(&tables, ctx).await {
+            Ok(described) => {
+                results.insert(catalog.to_owned(), Ok(described));
+            }
+            Err(e) if e.is_engine_wide() => return Err(e),
+            Err(e) => {
+                results.insert(catalog.to_owned(), Err(e));
+            }
+        }
+    }
+
+    Ok(entries
+        .into_iter()
+        .map(|(key, table)| {
+            let physical = match results.get(table.catalog.as_str()) {
+                Some(Ok(described)) => Ok(described.get(&table).cloned()),
+                Some(Err(e)) => Err(e.clone()),
+                None => Ok(None),
+            };
+            DescribedBinding {
+                key,
+                table,
+                physical,
+            }
+        })
+        .collect())
 }
 
 #[cfg(test)]

@@ -1,0 +1,16 @@
+---
+source: crates/ontoforge/tests/cli_online.rs
+expression: stdout
+---
+ONT-V17
+
+  × property `flightNumber` of `Flight` maps to column `flight_no`, but table
+  │ `demo.aviation.flights` has no such column
+   ╭─[bindings/dev/flight.yaml:5:27]
+ 4 │ columns:
+ 5 │   flightNumber: { column: flight_no }
+   ·                           ────┬────
+   ·                               ╰── here
+ 6 │ fixture: { file: fixtures/flights.csv }
+   ╰────
+  help: add the column, or map it to an existing one with `columns.<key>.column`

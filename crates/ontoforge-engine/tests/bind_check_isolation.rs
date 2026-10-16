@@ -149,7 +149,7 @@ async fn query_error_isolated_to_its_catalog() {
         described(&all, "Pilot")
             .physical
             .as_ref()
-            .is_ok_and(|p| p.is_some())
+            .is_ok_and(Option::is_some)
     );
     match &described(&all, "Airport").physical {
         Err(EngineError::Query { error_name, .. }) => assert_eq!(error_name, "PERMISSION_DENIED"),

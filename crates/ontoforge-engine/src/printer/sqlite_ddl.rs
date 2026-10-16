@@ -1,8 +1,6 @@
 //! SQL text the SQLite stand-in needs besides queries: attaching databases, creating tables,
 //! inserting rows. Values never appear in this text; `insert` only prints placeholders.
 
-#![allow(dead_code, reason = "consumed by fixture loading in plan 02-05")]
-
 use super::dialect::table_ref;
 use super::escape::{quote_ident, quote_string};
 use super::{Dialect, PrintedSql};
