@@ -461,7 +461,7 @@ fn unknown_profile_from_manifest_points_at_default_profile() {
     let mut files: Vec<(String, &'static str)> = complete("dev");
     files.push((
         "ontology.yaml".to_owned(),
-        "apiName: demo\ndefaultProfile: prdo\n",
+        "apiName: demo\ndefaultProfile: devv\n",
     ));
     files.extend([
         ("objects.yaml".to_owned(), FLIGHT),
@@ -471,7 +471,7 @@ fn unknown_profile_from_manifest_points_at_default_profile() {
     let borrowed: Vec<(&str, &str)> = files.iter().map(|(p, t)| (p.as_str(), *t)).collect();
     let out = load_from_memory(&borrowed);
     assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
-    let found = selected(&out, Some(("prdo", ProfileOrigin::Manifest)));
+    let found = selected(&out, Some(("devv", ProfileOrigin::Manifest)));
     assert_eq!(found.len(), 1, "{found:#?}");
     assert_eq!(found[0].code, codes::V16);
     assert_eq!(found[0].file, "ontology.yaml");

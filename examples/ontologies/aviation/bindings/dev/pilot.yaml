@@ -1,0 +1,11 @@
+# yaml-language-server: $schema=../../../../../schemas/ontoforge-definition.schema.json
+# `licenseNumber` is not listed: this table keeps that one column in camelCase, so the
+# default (same name) applies.
+kind: SourceBinding
+target: { objectType: Pilot }
+source: { catalog: demo, schema: aviation, table: pilots }
+columns:
+  employeeId: { column: employee_id }
+  fullName: { column: full_name }
+  flightHours: { column: flight_hours }
+fixture: { file: fixtures/pilots.csv }

@@ -50,6 +50,8 @@ pub struct LintArgs {
     #[arg(long)]
     pub config: Option<Utf8PathBuf>,
     #[command(flatten)]
+    pub profile: ProfileArgs,
+    #[command(flatten)]
     pub output: OutputArgs,
 }
 
@@ -58,7 +60,18 @@ pub struct ValidateArgs {
     /// Ontology directory containing `ontology.yaml`.
     pub dir: Utf8PathBuf,
     #[command(flatten)]
+    pub profile: ProfileArgs,
+    #[command(flatten)]
     pub output: OutputArgs,
+}
+
+/// Which deployment profile to check the source bindings of.
+#[derive(Debug, Args)]
+pub struct ProfileArgs {
+    /// Profile whose source bindings apply: the directory `bindings/<NAME>/`. Overrides
+    /// `defaultProfile` in `ontology.yaml`.
+    #[arg(long, env = "ONTOFORGE_PROFILE", value_name = "NAME")]
+    pub profile: Option<String>,
 }
 
 #[derive(Debug, Args)]

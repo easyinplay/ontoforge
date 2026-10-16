@@ -3,7 +3,7 @@
 //! both without touching this test.
 
 use camino::Utf8PathBuf;
-use ontoforge_schema::ir::ProfileName;
+use ontoforge_schema::ir::{LinkTypeName, ObjectTypeName, ProfileName};
 use ontoforge_schema::{LoadOutput, load_dir, load_from_memory};
 
 fn example(name: &str) -> Utf8PathBuf {
@@ -97,13 +97,13 @@ fn aviation_dev_profile_binds_every_source_type() {
     for name in ["aviation", "aviation-json"] {
         let ontology = load_example(name).ontology.expect("ontology");
         let dev = &ontology.bindings["dev"];
-        let objects: Vec<&str> = dev.objects.keys().map(|k| k.as_str()).collect();
+        let objects: Vec<&str> = dev.objects.keys().map(ObjectTypeName::as_str).collect();
         assert_eq!(
             objects,
             ["Aircraft", "Flight", "MaintenanceRecord", "Pilot"],
             "{name}"
         );
-        let links: Vec<&str> = dev.links.keys().map(|k| k.as_str()).collect();
+        let links: Vec<&str> = dev.links.keys().map(LinkTypeName::as_str).collect();
         assert_eq!(links, ["flightCrew"], "{name}");
         // Each object binding leaves at least one property to the same-name default.
         for (object, binding) in &dev.objects {

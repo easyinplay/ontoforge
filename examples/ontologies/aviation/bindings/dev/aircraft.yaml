@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=../../../../../schemas/ontoforge-definition.schema.json
+# `model` is not listed: it is read from the column with the same name.
+kind: SourceBinding
+target: { objectType: Aircraft }
+source: { catalog: demo, schema: aviation, table: aircraft }
+columns:
+  tailNumber: { column: tail_number }
+  seatCapacity: { column: seat_capacity }
+  inServiceSince: { column: in_service_since }
+fixture: { file: fixtures/aircraft.csv }

@@ -58,14 +58,19 @@ fn report(out: &LoadOutput, args: &OutputArgs) -> u8 {
 }
 
 fn validate(args: &ValidateArgs) -> u8 {
-    let out = pipeline::check(&args.dir);
-    let code = report(&out, &args.output);
+    let checked = pipeline::check_with_profile(&args.dir, args.profile.profile.as_deref());
+    let out = &checked.out;
+    let code = report(out, &args.output);
     if args.output.format == Format::Human {
         let summary = match &out.ontology {
             Some(ontology) => format!(
-                "ok: ontology `{}` with {} object type(s)",
+                "ok: ontology `{}` with {} object type(s){}",
                 ontology.api_name,
-                ontology.object_types.len()
+                ontology.object_types.len(),
+                checked
+                    .profile
+                    .as_ref()
+                    .map_or_else(String::new, |p| format!(", profile `{p}`"))
             ),
             None => format!("{} problem(s) found", out.diagnostics.len()),
         };
@@ -75,7 +80,11 @@ fn validate(args: &ValidateArgs) -> u8 {
 }
 
 fn lint(args: &LintArgs) -> u8 {
-    let out = lint_cmd::lint(&args.dir, args.config.as_deref(), None);
+    let out = lint_cmd::lint(
+        &args.dir,
+        args.config.as_deref(),
+        args.profile.profile.as_deref(),
+    );
     let code = report(&out, &args.output);
     if args.output.format == Format::Human {
         eprintln!("{}", lint_summary(&out));
