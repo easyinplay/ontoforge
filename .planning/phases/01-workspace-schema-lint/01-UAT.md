@@ -1,9 +1,9 @@
 ---
-status: complete
+status: diagnosed
 phase: 01-workspace-schema-lint
 source: [01-VERIFICATION.md]
 started: 2026-10-15T17:44:12Z
-updated: 2026-10-16T01:24:06Z
+updated: 2026-10-16T01:32:07Z
 ---
 
 ## Current Test
@@ -44,5 +44,19 @@ blocked: 0
   reason: "User reported: Zed 中 objects.yaml 末尾输入 kind: 无补全、无错误标记"
   severity: minor
   test: 2
-  artifacts: []
-  missing: []
+  root_cause: "yaml-language-server 只把 modeline 应用到它所在的 YAML document（按 --- 切分，modelineUtil.getSchemaFromModeline 读 doc.documentHeaderComments）；aviation 示例只在文件第 1 行写 modeline，第 2 个及之后的 document（含 UAT 追加的 document）没有 schema，故无补全、无诊断。schema 本身（anyOf/oneOf+const/$defs/2020-12/Windows 相对路径）经 yaml-language-server 1.25.0 与 2.0.0 headless 实测均正常；Zed 侧 LSP 正常运行。上游：redhat-developer/vscode-yaml#1066、yaml-language-server#319"
+  artifacts:
+    - path: "examples/ontologies/aviation/objects.yaml"
+      issue: "modeline 仅第 1 行，其后 4 个 document 无 schema"
+    - path: "examples/ontologies/aviation/links.yaml"
+      issue: "其后 4 个 document 无 schema"
+    - path: "examples/ontologies/aviation/actions.yaml"
+      issue: "其后 2 个 document 无 schema"
+    - path: ".zed/settings.json、.vscode/settings.json（缺失）"
+      issue: "无项目级 yaml.schemas 关联"
+  missing:
+    - "新增 .zed/settings.json 与 .vscode/settings.json：yaml.schemas 把 ./schemas/ontoforge-definition.schema.json 关联到 examples/ontologies/**/*.yaml（manifest 的 modeline 优先，不受影响，已实测）"
+    - "示例 YAML 每个 --- 之后补 modeline（objects 4、links 4、actions 2）；ontoforge validate 仍 clean"
+    - "CONTRIBUTING 写明 modeline 只作用于所在 document、多文档文件用 yaml.schemas，引用 vscode-yaml#1066；补全需 Ctrl+Space"
+    - "回归测试：编辑器配置里的 schema 路径存在且 glob 覆盖示例；每个 document 头部有 modeline"
+  debug_session: ".planning/debug/g-1-2-yaml-schema-completion.md"
