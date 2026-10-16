@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 1
+open_count: 2
 waived_count: 0
 fixed_count: 2
-total_count: 3
-last_updated: 2026-10-16T20:41:53.199Z
+total_count: 4
+last_updated: 2026-10-16T21:49:10.933Z
 ---
 
 # Broken Windows Ledger
@@ -18,6 +18,7 @@ last_updated: 2026-10-16T20:41:53.199Z
 | 1 | 2 | stub | crates/ontoforge-engine/src/sqlite/mod.rs |  | SqliteEngine.describe_tables answers from an in-memory metadata map that nothing populates until plan 02-05 adds fixture loading (intentional) | fixed |  | 2026-10-16T19:03:31.155Z | 2026-10-16T20:41:31.074Z |
 | 2 | 2 | deviation | crates/ontoforge-engine/src/printer/sqlite_ddl.rs |  | sqlite_ddl carries allow(dead_code) until plan 02-05 uses attach_memory/create_table/insert/query_only outside tests | fixed |  | 2026-10-16T19:03:31.601Z | 2026-10-16T20:41:31.547Z |
 | 3 | 2 | deviation | crates/ontoforge/src/online.rs |  | ONT-V20 help text of validate --online names --server-config, a flag plan 02-09 adds; until then the flag does not exist | open |  | 2026-10-16T20:41:53.199Z |  |
+| 4 | 02 | deviation | docs/source-binding.md |  | SQLite stand-in reports float properties as double, so fixture-mode --online flags float properties as ONT-V17 (float reads only real); fix is in sqlite/fixture.rs physical_of, outside 02-08 scope | open |  | 2026-10-16T21:49:10.933Z |  |
 
 ````json
 [
@@ -55,6 +56,18 @@ last_updated: 2026-10-16T20:41:53.199Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-10-16T20:41:53.199Z",
+    "resolved_at": null
+  },
+  {
+    "id": 4,
+    "kind": "deviation",
+    "phase": "02",
+    "file": "docs/source-binding.md",
+    "line": null,
+    "description": "SQLite stand-in reports float properties as double, so fixture-mode --online flags float properties as ONT-V17 (float reads only real); fix is in sqlite/fixture.rs physical_of, outside 02-08 scope",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-16T21:49:10.933Z",
     "resolved_at": null
   }
 ]
