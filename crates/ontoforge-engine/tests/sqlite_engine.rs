@@ -256,21 +256,50 @@ async fn fx_accepts(logical: LogicalType, inputs: &[&str]) -> Vec<Value> {
 /// Loads one `v` cell that must be refused; returns the error.
 async fn fx_rejects(logical: LogicalType, input: &str) -> FixtureError {
     let text = format!("v\n{}\n", fx_csv_cell(input));
-    let errors = match fx_load("t.csv", &text, vec![("v", logical)]).await {
-        Ok(_) => panic!("{input:?} should be refused"),
-        Err(errors) => errors,
+    let Err(errors) = fx_load("t.csv", &text, vec![("v", logical)]).await else {
+        panic!("{input:?} should be refused");
     };
     assert_eq!(errors.len(), 1, "{input:?}: {errors:?}");
     let error = errors.into_iter().next().expect("one error");
     assert_eq!(error.file, "t.csv");
     assert_eq!(error.line, Some(2), "{input:?}: {error:?}");
-    if input.len() >= 3 {
-        assert!(
-            !error.message.contains(input),
-            "the message must not repeat the cell: {error:?}"
-        );
-    }
     error
+}
+
+#[tokio::test]
+async fn fixture_errors_never_repeat_cell_contents() {
+    let secret = "s3cr3t-value";
+    let types = [
+        fx_int(i64::from(i32::MIN), i64::from(i32::MAX)),
+        LogicalType::Float,
+        LogicalType::Decimal {
+            precision: 12,
+            scale: 2,
+        },
+        LogicalType::Boolean,
+        LogicalType::Date,
+        LogicalType::Timestamp { aware: false },
+        LogicalType::Timestamp { aware: true },
+        LogicalType::Array(Box::new(LogicalType::Boolean)),
+    ];
+    for logical in types {
+        let error = fx_rejects(logical.clone(), secret).await;
+        assert!(!error.message.contains(secret), "{logical:?}: {error:?}");
+    }
+    // The same through a JSON fixture and an array element.
+    let json = format!(r#"[{{"v": "{secret}"}}]"#);
+    let errors = fx_load(
+        "t.json",
+        &json,
+        vec![("v", fx_int(i64::from(i32::MIN), i64::from(i32::MAX)))],
+    )
+    .await
+    .err()
+    .expect("a string is not an integer");
+    assert!(!errors[0].message.contains(secret), "{errors:?}");
+    let element = format!(r#"["{secret}"]"#);
+    let error = fx_rejects(LogicalType::Array(Box::new(fx_int(0, 10))), &element).await;
+    assert!(!error.message.contains(secret), "{error:?}");
 }
 
 fn fx_strings(values: &[&str]) -> Vec<Value> {

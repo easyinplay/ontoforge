@@ -2,3 +2,23 @@ employee_id,full_name,licenseNumber,flight_hours
 E-001,Alex Example,LIC-1001,1520.5
 E-002,Robin Sample,LIC-1002,3010.25
 E-003,Sam Placeholder,LIC-1003,480
+E-004,Pilot Sample 004,LIC-1004,2068.48
+E-005,Pilot Sample 005,LIC-1005,2585.85
+E-006,Pilot Sample 006,LIC-1006,
+E-007,Pilot Sample 007,LIC-1007,0
+E-008,Pilot Sample 008,LIC-1008,4136.96
+E-009,Pilot Sample 009,LIC-1009,4653.33
+E-010,Pilot Sample 010,LIC-1010,5170.70
+E-011,Pilot Sample 011,LIC-1011,5687.07
+E-012,Pilot Sample 012,LIC-1012,
+E-013,Pilot Sample 013,LIC-1013,6721.81
+E-014,Pilot Sample 014,LIC-1014,7238.18
+E-015,Pilot Sample 015,LIC-1015,7755.55
+E-016,Pilot Sample 016,LIC-1016,8272.92
+E-017,Pilot Sample 017,LIC-1017,8789.29
+E-018,Pilot Sample 018,LIC-1018,
+E-019,Pilot Sample 019,LIC-1019,9823.03
+E-020,Pilot Sample 020,LIC-1020,10340.40
+E-021,Pilot Sample 021,LIC-1021,10857.77
+E-022,Pilot Sample 022,LIC-1022,11374.14
+E-023,Pilot Sample 023,LIC-1023,11891.51

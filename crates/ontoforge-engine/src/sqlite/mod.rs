@@ -63,6 +63,10 @@ impl SqliteEngine {
         tables: &[FixtureTable],
         budget: u64,
     ) -> Result<Self, Vec<FixtureError>> {
+        let preflight = check_databases(tables);
+        if !preflight.is_empty() {
+            return Err(preflight);
+        }
         let general = |message: String| {
             vec![FixtureError {
                 file: String::new(),
@@ -110,6 +114,48 @@ impl SqliteEngine {
             Err(errors)
         }
     }
+}
+
+/// SQLite allows this many `ATTACH`ed databases.
+const MAX_ATTACHED: usize = 10;
+
+/// Checks, before anything is created, that the tables fit into at most [`MAX_ATTACHED`]
+/// databases and that no two `(catalog, schema)` pairs share a database name.
+fn check_databases(tables: &[FixtureTable]) -> Vec<FixtureError> {
+    let mut errors = Vec::new();
+    let mut databases: BTreeMap<String, (String, String)> = BTreeMap::new();
+    for table in tables {
+        let table_ref = lower(&table.table);
+        let name = table_ref.sqlite_schema_name();
+        let pair = (table_ref.catalog, table_ref.schema);
+        match databases.get(&name) {
+            None => {
+                databases.insert(name, pair);
+            }
+            Some(first) if *first != pair => errors.push(FixtureError {
+                file: table.file.clone(),
+                line: None,
+                message: format!(
+                    "`{}`.`{}` and `{}`.`{}` would both be the stand-in database `{name}`; \
+                     rename a catalog or schema so that `catalog__schema` differs",
+                    first.0, first.1, pair.0, pair.1
+                ),
+            }),
+            Some(_) => {}
+        }
+    }
+    if databases.len() > MAX_ATTACHED {
+        errors.push(FixtureError {
+            file: tables.first().map(|t| t.file.clone()).unwrap_or_default(),
+            line: None,
+            message: format!(
+                "the fixtures span {} catalog and schema pairs; the stand-in database holds at \
+                 most {MAX_ATTACHED}",
+                databases.len()
+            ),
+        });
+    }
+    errors
 }
 
 /// The table with every part in lower case: how the stand-in files it.
@@ -200,12 +246,12 @@ fn map_sqlx(e: sqlx::Error) -> EngineError {
 /// Decodes column `i` of `row` and returns the value with the number of TEXT / BLOB bytes
 /// it holds.
 fn decode(row: &SqliteRow, i: usize) -> Result<(Value, usize), EngineError> {
-    let type_name = row
-        .try_get_raw(i)
-        .map_err(map_sqlx)?
-        .type_info()
-        .name()
-        .to_owned();
+    let raw = row.try_get_raw(i).map_err(map_sqlx)?;
+    // For NULL, sqlx reports the declared type of the column, so the value has to be asked.
+    if raw.is_null() {
+        return Ok((Value::Null, 0));
+    }
+    let type_name = raw.type_info().name().to_owned();
     match type_name.as_str() {
         "INTEGER" => Ok((Value::Long(row.try_get(i).map_err(map_sqlx)?), 0)),
         "REAL" => Ok((Value::Double(row.try_get(i).map_err(map_sqlx)?), 0)),
