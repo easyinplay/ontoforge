@@ -137,3 +137,89 @@ Error authenticating: IneligibleTierError: This client is no longer supported fo
 
 ### Divergent Views
 无（仅一个有效 lane）。
+
+---
+
+## Eng Review (gstack /plan-eng-review)
+
+审查日期 2026-10-17。证据来自对 10 个 PLAN 与现有源码的逐行核对（plan 行号写作 `02-NN:行`）。Step 0 复杂度门触发（1 个新 crate、约 75–85 个新文件），但成功标准与锁定决策要求了几乎全部范围；按用户「决策自主」偏好由 orchestrator 按推荐项自决，以下每条都是 `--reviews` 修订必须落进 PLAN 的 actionable finding（用户可推翻）。
+
+### Codex 疑虑核验结果
+
+- 成立：02-02 SQLite `fetch_all` 后截断；02-04 凭据 HTTPS 约束只在配置层；02-05 共享物理表重复建表与类型同源比对；02-07/08 W17 静默跳过、大小写歧义、`Healthy` 丢 warning；02-10 PG 端口、job 级权限、golden 值。
+- 部分成立：02-02 `PrintedSql::new`（实为源码扫描测试而非编译期约束）；02-06 POST 503 重试（spike-01:100 与 RESEARCH A13 只允许 `SERVER_STARTING_UP`）；02-09（NULL 部分成立，只读部分随 `sqlite_dir` 删除而消失）；02-01 迁移（human 快照未被漂移检查覆盖）。
+- 不成立：02-03 键冲突。`crates/ontoforge-schema/src/ir/names.rs:182` object 名 `^[A-Z]`，`:190` link 名 `^[a-z]`，命名空间不重叠；JSON 数组已由 `loader/parse.rs:148` 展开。
+
+### 范围（Step 0）
+
+- E1 删除 `sqlite_dir` 配置项（02-09:37, 210）。无成功标准或锁定决策要求它；RESEARCH:665 说的是「测试内用 sqlx 现造表」这一测试手法。CLI 类型不匹配测试改走 02-09 Task 1 已建的 wiremock Trino 路径或测试内 sqlx 表。同时消除「文件非只读打开」问题。
+- 其余范围保留：nightly Iceberg（ROADMAP SC5）、私有 fixture 入口（ENGINE-05）、drift 模型（D-15）、`--check-pk`（SC2）、两个服务身份（D-10）均被要求。
+
+### Architecture
+
+- E2 [P1] 凭据传输约束下沉到库：`TrinoEngine::new` 拒绝 Basic/Bearer 搭配非 https 的 `url`；拒绝 scheme 与 `url` 不同的 `next_uri_origins` / `nextUri`。新增测试：直接构造 `TrinoConnection` + Basic + http → 错误；https url + http 额外 origin → 错误。（02-04:157/161/233）
+- E3 [P1] 按绑定隔离引擎错误：`describe_bindings` / `check_drift` 对每个绑定记录 `Result`，只有 `Unavailable` / `Unauthorized` 中止整轮；其余 `Query` 类错误转为该 target 的 V19 诊断或 `Degraded`，其他 target 照常（BIND-03「其余照常」）。新增测试：一个 catalog 报 Query 错误时其他绑定仍出结果。（02-05:173、02-08:120）
+- E4 [P2] `PrintedSql::new` 改为 `printer` 模块私有（子模块 `printer::dialect` / `printer::sqlite_ddl` 仍可见），源码扫描测试保留作兜底；`sqlite_ddl` 改 `pub(crate)`，需要它的测试放进 crate 内。（02-02:149, 165）
+- E5 [P2] `fixtures` 跳过规则只作用于 `bindings/<profile>/fixtures`，不全局跳过名为 `fixtures` 的目录；加回归测试：顶层 `fixtures/` 下的定义文件仍被加载。（02-03:239）
+- E6 [P3] ROADMAP Phase 2 SC1「定义文件可声明 `source` 绑定」改写为「`SourceBinding` 文件 + 必填 `backing`」，02-01 的 `files_modified` 加 `.planning/ROADMAP.md`；traceability 中 BIND-03（启动 / 定时 drift）与 ENGINE-04（`serve --dev`）同 ENGINE-02 一样标注本 phase 交付范围与后续 phase 指针。
+
+### Code Quality
+
+- E7 [P2] decimal 缺省（38, 10）只定义一次：schema IR 增加 `PropertyDef::effective_decimal()` 与常量，02-05:173、02-07:179、02-08:147 全部调用它；decimal 文本校验正则（02-02:261、02-05:223）合并为一个共享函数。
+- E8 [P2] fixture 表头只解析一次：schema 提供 `fixture_header()`（CSV 只读首行、JSON 取对象键并集），W17（02-07:215）与引擎 fixture 加载（02-05:175）共用。
+- E9 [P2] 期望列名推导只写一次：schema 侧 `SourceBinding` / `Ontology` 方法给出列名（`column_for` 与 link 的 `from` / `to`），W17 与 `bind_check::expected_columns` 复用，引擎只补类型。
+- E10 [P2] `read_limited` 改为 `pub` 复用（`crates/ontoforge-schema/src/loader/mod.rs:166`），删除 02-04:233、02-05:223 的两份复刻；密钥文件读取的 64 KiB 上限与符号链接放行作为参数传入。
+- E11 [P2] `QueryContext` 由 `TrinoConfig` 的 `query_timeout_ms` / `max_rows` / `max_bytes` 构造，CLI 增加 `--timeout` 覆盖；不再硬编码 30 s / 10 000 / 16 MiB（02-04:133-135、02-05:177）。
+- E12 [P3] `TargetHealth::Healthy { warnings: Vec<Mismatch> }` 保留精度 / 时区 warning（02-08:89）。
+- E13 [P3] 小写化后绑定列出现多个候选时报 E 而非 W（02-08:154）。
+- E14 [P3] server config 的 `profiles` 键用 schema 的 `ProfileName` 类型校验（02-04:132）。
+- E15 [P3] `docs/source-binding.md` 写明 fixture 模式下 `--online` 的验证边界：物理类型由 IR 推导，只验证列存在与值转换，不证明真实源列类型兼容。
+
+### Tests
+
+- E16 [P2] POST 重试收窄：只在 429，或 503 且响应体 `errorName` 为 `SERVER_STARTING_UP`，或连接未建立时重试；`post_503_is_retried` 改为两个测试：`SERVER_STARTING_UP` 重试成功、普通 503 不重试并返回错误。（02-06:165, 169）
+- E17 [P1] PK 查重排除 NULL：重复查询加 `WHERE "<pk>" IS NOT NULL`，NULL 计数单独查询；测试覆盖 ≥2 行 NULL 主键时不出现伪重复。（02-09:196-197）
+- E18 [P2] 共享物理表：fixture 建表按物理表去重（同表多绑定共用一张表，表头取并集或要求一致，不一致报错）；测试覆盖两个 object type 绑定同一表。（02-03:401、02-05:175）
+- E19 [P2] 迁移漂移检查覆盖 human 快照：02-01:200 的检查同时比较 `×` / `help:` 行，确认 `cli_lint__e08_human.snap`、`cli__validate_unknown_field_human.snap` 等只发生行列号变化；invalid 样例实际为 27 个，按实际数量迁移。
+- E20 [P2] fixture 表头无法解析时 lint 给出可定位诊断（新 W 码或复用解析类诊断），不静默跳过（02-07:208）。
+- E21 [P2] Phase 完成门禁加入：PR `integration` job 与首次 nightly 均实跑通过（`--ignored` 实际执行 ≥1），golden 值按首跑日志定稿后才写 VERIFICATION passed。（02-10:188）
+
+### Performance
+
+- E22 [P2] 元数据查询按 catalog 批量：每个 catalog 一条 `information_schema.columns` 查询，`WHERE (table_schema, table_name)` 用 printer 已有的 Or/And 组合，取代逐绑定 `describe_table`（02-05:173）。
+- E23 [P2] fixture 计入定义文件总字节预算（`MAX_TOTAL_BYTES`，`loader/mod.rs:43`），或单设总上限；存在性检查用 metadata，不读全文件（02-03:342、02-07:215）。
+- E24 [P3] SQLite 替身执行用 `fetch(..)` 流式取 `max_rows + 1` 行，不 `fetch_all`（02-02:220）。
+
+### CI
+
+- E25 [P2] `services.postgres` 显式 `ports: ["5432:5432"]`；开 issue 放进独立 job 并在该 job 授予 `issues: write`，其他 job 保持 `contents: read`（02-10:145, 226）。
+
+### NOT in scope
+
+- `sqlite_dir` 配置项（E1 删除；需要时在 Phase 7 `serve --dev` 重新评估）。
+- `/health` 与 describe 暴露引擎状态（Phase 7 API-01）。
+- 启动与定时 drift 调度（本 phase 只交付库函数与降级状态模型，D-15）。
+- 流式查询结果（RESEARCH Open Question 3，Phase 4 按需）。
+- `doc_type_table.rs` 文档对照测试保留（成本低，防文档与代码漂移）。
+
+### What already exists（复用）
+
+`SourceMap::locate` / `DefKey`、`parse` 的 JSON 数组展开、`discover` 的 `DEFAULT_INCLUDE` / `SKIPPED_DIRS`、`diag` 编码、lint registry 与 `KNOWN_RULE_IDS`、`render::sanitize` / `exit_code`、`did_you_mean`、insta JSON 与 human 快照约定、invalid 样例目录前缀约定、`custom_de_error` newtype。重复造轮子的只有 `read_limited`（E10）。
+
+### Failure modes（新代码路径）
+
+| 路径 | 现实故障 | 测试 | 错误处理 | 用户可见 |
+|------|----------|------|----------|----------|
+| Trino client 认证 | 库调用方用 http + Basic | E2 补 | E2 补 | 构造期错误 |
+| 在线校验多 catalog | 一个 catalog 权限不足 | E3 补 | E3 补 | 该 target V19，其余正常 |
+| `--check-pk` | ≥2 行 NULL 主键 | E17 补 | E17 补 | NULL 计数，非伪重复 |
+| fixture 加载 | 两类型共享一表 | E18 补 | E18 补 | 正常或明确冲突错误 |
+| lint fixture 表头 | CSV 损坏 | E20 补 | E20 补 | 可定位诊断 |
+| POST 重试 | 网关 503 后查询已提交 | E16 补 | E16 补 | 错误返回，不重复执行 |
+| Trino golden | 线格式与推导不符 | CI 首跑 | E21 门禁 | CI 红 |
+
+修订前没有「无测试、无处理、且静默」的关键缺口残留；E3、E17、E20 若不修则属于关键缺口。
+
+### Parallelization
+
+沿用现有 wave 结构（02-01 ∥ 02-02 → 02-03 ∥ 02-04 → 02-05 ∥ 02-06 ∥ 02-07 → 02-08 ∥ 02-09 → 02-10）。E7–E9 让 02-05 / 02-07 / 02-08 依赖 schema 侧新共享函数：这些函数应放进 02-03（wave 2），保证 wave 3 并行的 02-05 与 02-07 不同时改 schema 同一文件。
