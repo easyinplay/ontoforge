@@ -20,14 +20,20 @@ path = "src/main.rs"
 [dependencies]
 ontoforge-schema = { path = "../ontoforge-schema" }
 ontoforge-expr = { path = "../ontoforge-expr" }
+ontoforge-engine = { path = "../ontoforge-engine" }
 clap.workspace = true
 miette.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 camino.workspace = true
 anstream.workspace = true
+tokio.workspace = true
+ulid.workspace = true
 
 [dev-dependencies]
 insta.workspace = true
 tempfile.workspace = true
 serde_json.workspace = true
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+sqlx.workspace = true
+wiremock.workspace = true

@@ -4,6 +4,7 @@ use std::io::Write;
 
 pub mod cli;
 pub mod lint_cmd;
+pub mod online;
 pub mod pipeline;
 pub mod render;
 
@@ -44,6 +45,12 @@ fn export_schemas(out_dir: &Utf8Path) -> u8 {
 
 /// Print the diagnostics to stdout and return the exit code.
 fn report(out: &LoadOutput, args: &OutputArgs) -> u8 {
+    print_diagnostics(out, args);
+    render::exit_code(&out.diagnostics, args.deny_warnings)
+}
+
+/// Print the diagnostics to stdout.
+fn print_diagnostics(out: &LoadOutput, args: &OutputArgs) {
     let color = match args.color {
         ColorChoice::Always => true,
         ColorChoice::Never => false,
@@ -54,10 +61,12 @@ fn report(out: &LoadOutput, args: &OutputArgs) -> u8 {
     };
     let text = render::render(&out.diagnostics, &out.sources, args.format, color);
     let _ = std::io::stdout().write_all(text.as_bytes());
-    render::exit_code(&out.diagnostics, args.deny_warnings)
 }
 
 fn validate(args: &ValidateArgs) -> u8 {
+    if args.online {
+        return validate_online(args);
+    }
     let checked = pipeline::check_with_profile(&args.dir, args.profile.profile.as_deref());
     let out = &checked.out;
     let code = report(out, &args.output);
@@ -77,6 +86,27 @@ fn validate(args: &ValidateArgs) -> u8 {
         eprintln!("{summary}");
     }
     code
+}
+
+/// `validate --online`: exit code 3 when the engine could not answer for some binding.
+fn validate_online(args: &ValidateArgs) -> u8 {
+    let run = online::run_online(args);
+    print_diagnostics(&run.out, &args.output);
+    if args.output.format == Format::Human {
+        let summary = match (&run.out.ontology, &run.profile) {
+            (Some(ontology), Some(profile)) if run.code == 0 => format!(
+                "ok: ontology `{}`, profile `{profile}`, {} binding(s) checked online",
+                ontology.api_name, run.bindings
+            ),
+            (Some(ontology), None) if run.code == 0 => format!(
+                "ok: ontology `{}`, no profile selected, nothing to check online",
+                ontology.api_name
+            ),
+            _ => format!("{} problem(s) found", run.out.diagnostics.len()),
+        };
+        eprintln!("{summary}");
+    }
+    run.code
 }
 
 fn lint(args: &LintArgs) -> u8 {

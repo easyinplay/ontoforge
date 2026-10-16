@@ -59,6 +59,12 @@ pub struct LintArgs {
 pub struct ValidateArgs {
     /// Ontology directory containing `ontology.yaml`.
     pub dir: Utf8PathBuf,
+    /// Also check the bindings of the selected profile against the engine.
+    #[arg(long)]
+    pub online: bool,
+    /// Query timeout for the online check, in milliseconds.
+    #[arg(long, value_name = "MS", requires = "online")]
+    pub timeout: Option<u64>,
     #[command(flatten)]
     pub profile: ProfileArgs,
     #[command(flatten)]

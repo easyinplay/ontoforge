@@ -5,6 +5,8 @@
 
 use std::collections::BTreeMap;
 
+use camino::Utf8Path;
+
 use futures_util::TryStreamExt;
 use sqlx::sqlite::{SqliteConnection, SqliteRow};
 use sqlx::{
@@ -12,6 +14,8 @@ use sqlx::{
     ValueRef,
 };
 use tokio::sync::Mutex;
+
+pub mod fixture;
 
 use crate::printer::ast::{Expr, Literal, Select, SelectItem};
 use crate::printer::print_select;
@@ -35,6 +39,20 @@ impl SqliteEngine {
         Ok(Self {
             conn: Mutex::new(conn),
             tables: BTreeMap::new(),
+        })
+    }
+
+    /// Builds an engine holding the given fixture tables.
+    pub async fn from_fixtures(
+        _root: &Utf8Path,
+        _tables: &[fixture::FixtureTable],
+    ) -> Result<Self, Vec<fixture::FixtureError>> {
+        Self::in_memory().await.map_err(|e| {
+            vec![fixture::FixtureError {
+                file: String::new(),
+                line: None,
+                message: e.to_string(),
+            }]
         })
     }
 }

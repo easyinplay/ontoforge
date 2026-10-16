@@ -7,6 +7,7 @@
 use std::collections::BTreeMap;
 use std::time::Duration;
 
+pub mod bind_check;
 pub mod config;
 pub mod error;
 pub mod printer;
