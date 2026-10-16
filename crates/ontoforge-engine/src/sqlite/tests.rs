@@ -130,3 +130,59 @@ async fn max_bytes_truncates() {
     assert_eq!(out.rows.len(), 2);
     assert!(out.truncated);
 }
+
+fn fixture_table(file: &str) -> super::fixture::FixtureTable {
+    super::fixture::FixtureTable {
+        def_names: vec!["dev/Test".to_owned()],
+        table: table(),
+        file: file.to_owned(),
+        columns: vec![super::fixture::FixtureColumn {
+            name: "v".to_owned(),
+            logical: super::fixture::LogicalType::String,
+        }],
+    }
+}
+
+fn root(dir: &tempfile::TempDir) -> &camino::Utf8Path {
+    camino::Utf8Path::from_path(dir.path()).expect("utf-8 temp dir")
+}
+
+#[tokio::test]
+async fn query_only_after_load() {
+    let dir = tempfile::TempDir::new().unwrap();
+    std::fs::write(dir.path().join("t.csv"), "v\nx\n").unwrap();
+    let engine = SqliteEngine::from_fixtures(root(&dir), &[fixture_table("t.csv")])
+        .await
+        .unwrap();
+    let ins = insert(&table(), &["v".to_owned()]).unwrap();
+    let err = run(&engine, &ins, &["y"]).await;
+    assert!(
+        err.is_err(),
+        "insert must fail once the fixtures are loaded"
+    );
+    let sql = print_select(&select_all(&["v"]), Dialect::Sqlite).unwrap();
+    let out = engine.execute(&sql, &ctx()).await.unwrap();
+    assert_eq!(out.rows, vec![vec![Value::String("x".to_owned())]]);
+}
+
+#[tokio::test]
+async fn total_fixture_bytes_capped() {
+    let dir = tempfile::TempDir::new().unwrap();
+    let body = format!("v\n{}\n", "x".repeat(596));
+    assert_eq!(body.len(), 599);
+    std::fs::write(dir.path().join("a.csv"), &body).unwrap();
+    std::fs::write(dir.path().join("b.csv"), &body).unwrap();
+    let mut second = fixture_table("b.csv");
+    second.table.table = "other".to_owned();
+    let errors = SqliteEngine::from_fixtures_with_budget(
+        root(&dir),
+        &[fixture_table("a.csv"), second],
+        1024,
+    )
+    .await
+    .err()
+    .expect("the second fixture exceeds the budget");
+    assert_eq!(errors.len(), 1, "{errors:?}");
+    assert_eq!(errors[0].file, "b.csv");
+    assert!(errors[0].message.contains("byte budget"), "{errors:?}");
+}

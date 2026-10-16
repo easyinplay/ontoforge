@@ -189,3 +189,57 @@ fn timeout_requires_online() {
     let out = ontoforge(&["validate", AVIATION, "--online", "--timeout", "1500"]);
     assert_eq!(out.status.code(), Some(0));
 }
+
+fn fixture_files(root: &str) -> Vec<(String, Vec<u8>)> {
+    let dir = Path::new(root).join("bindings/dev/fixtures");
+    let mut files: Vec<(String, Vec<u8>)> = std::fs::read_dir(&dir)
+        .expect("fixtures directory")
+        .map(|entry| {
+            let path = entry.expect("entry").path();
+            let name = path
+                .file_name()
+                .expect("name")
+                .to_string_lossy()
+                .into_owned();
+            (name, std::fs::read(&path).expect("read fixture"))
+        })
+        .collect();
+    files.sort();
+    files
+}
+
+#[test]
+fn aviation_fixture_data() {
+    let files = fixture_files(AVIATION);
+    assert_eq!(files.len(), 5);
+    let mut all = String::new();
+    for (name, bytes) in &files {
+        let text = String::from_utf8(bytes.clone()).expect("utf-8 fixture");
+        let records = text.lines().count().saturating_sub(1);
+        assert!(records >= 20, "{name} has only {records} records");
+        all.push_str(&text);
+    }
+    // The boundaries ADR-0021 asks the demo data to exercise.
+    for needle in [
+        "9999999999.99",
+        "-9999999999.99",
+        "0.01",
+        "2026-03-29",
+        "2026-10-25",
+        "+01:00",
+        "+02:00",
+        "Z",
+        "[]",
+    ] {
+        assert!(all.contains(needle), "no fixture row contains `{needle}`");
+    }
+    let out = ontoforge(&[
+        "validate", AVIATION, "--online", "--format", "json", "--color", "never",
+    ]);
+    assert_eq!(out.status.code(), Some(0));
+}
+
+#[test]
+fn aviation_json_fixtures_match_yaml_fixtures() {
+    assert_eq!(fixture_files(AVIATION), fixture_files(AVIATION_JSON));
+}
