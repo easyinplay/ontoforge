@@ -47,3 +47,6 @@ pub enum Dialect {
 pub fn print_select(select: &ast::Select, dialect: Dialect) -> Result<PrintedSql, PrintError> {
     dialect::print_select(select, dialect)
 }
+
+#[cfg(test)]
+mod tests;

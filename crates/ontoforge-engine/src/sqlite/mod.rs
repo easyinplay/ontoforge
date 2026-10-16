@@ -190,3 +190,6 @@ impl Engine for SqliteEngine {
         }
     }
 }
+
+#[cfg(test)]
+mod tests;

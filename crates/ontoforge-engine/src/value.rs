@@ -33,6 +33,13 @@ pub enum PhysicalType {
 }
 
 impl PhysicalType {
+    /// Parses a type name as Trino (or the SQLite stand-in) spells it. Never fails: text this
+    /// crate does not model becomes [`PhysicalType::Other`].
+    #[must_use]
+    pub fn parse(s: &str) -> Self {
+        Self::Other(s.trim().to_owned())
+    }
+
     /// Canonical lower-case Trino spelling.
     #[must_use]
     pub fn render(&self) -> String {
@@ -97,4 +104,125 @@ pub enum Value {
     Array(Vec<Value>),
     /// A value of a type the decoder does not understand; keeps the raw JSON.
     Unsupported(serde_json::Value),
+}
+
+/// The syntactic parts of a decimal text.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DecimalParts<'a> {
+    pub negative: bool,
+    pub integer: &'a str,
+    pub fraction: &'a str,
+}
+
+/// Splits decimal text `^-?[0-9]+(\.[0-9]+)?$`; `None` if `s` does not match.
+///
+/// The one implementation of this syntax: the printer's literal check and fixture conversion
+/// share it. It only splits; precision rules are applied by the caller.
+#[must_use]
+pub fn split_decimal(_s: &str) -> Option<DecimalParts<'_>> {
+    None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn physical_type_parse_table() {
+        use PhysicalType as P;
+        let cases: Vec<(&str, P)> = vec![
+            (
+                "decimal(10,2)",
+                P::Decimal {
+                    precision: 10,
+                    scale: 2,
+                },
+            ),
+            ("varchar", P::Varchar { length: None }),
+            ("varchar(255)", P::Varchar { length: Some(255) }),
+            ("char(3)", P::Char { length: 3 }),
+            (
+                "timestamp(3)",
+                P::Timestamp {
+                    precision: 3,
+                    with_time_zone: false,
+                },
+            ),
+            (
+                "timestamp(6) with time zone",
+                P::Timestamp {
+                    precision: 6,
+                    with_time_zone: true,
+                },
+            ),
+            (
+                "timestamp",
+                P::Timestamp {
+                    precision: 3,
+                    with_time_zone: false,
+                },
+            ),
+            (
+                "timestamp with time zone",
+                P::Timestamp {
+                    precision: 3,
+                    with_time_zone: true,
+                },
+            ),
+            (
+                "array(varchar)",
+                P::Array(Box::new(P::Varchar { length: None })),
+            ),
+            (
+                "array(array(integer))",
+                P::Array(Box::new(P::Array(Box::new(P::Integer)))),
+            ),
+            ("number", P::Number),
+            ("text", P::Varchar { length: None }),
+            ("int", P::Integer),
+            ("TINYINT", P::Tinyint),
+            ("  BigInt ", P::Bigint),
+            ("boolean", P::Boolean),
+            ("date", P::Date),
+            (
+                "map(varchar,integer)",
+                P::Other("map(varchar,integer)".to_owned()),
+            ),
+        ];
+        for (text, expected) in cases {
+            assert_eq!(PhysicalType::parse(text), expected, "parse({text:?})");
+            let rendered = expected.render();
+            assert_eq!(
+                PhysicalType::parse(&rendered),
+                expected,
+                "render/parse round trip of {rendered:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn split_decimal_rules() {
+        assert_eq!(
+            split_decimal("1.50"),
+            Some(DecimalParts {
+                negative: false,
+                integer: "1",
+                fraction: "50"
+            })
+        );
+        assert_eq!(
+            split_decimal("-0"),
+            Some(DecimalParts {
+                negative: true,
+                integer: "0",
+                fraction: ""
+            })
+        );
+        assert!(split_decimal("007").is_some());
+        for bad in [
+            "1e5", "+1", "1.", ".5", "", "-", "1.2.3", " 1", "1 ", "\u{0661}",
+        ] {
+            assert_eq!(split_decimal(bad), None, "split_decimal({bad:?})");
+        }
+    }
 }
