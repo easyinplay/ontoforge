@@ -331,3 +331,54 @@ fn lint_honors_the_profile_flag_and_variable() {
         .expect("spawn ontoforge");
     assert_eq!(out.status.code(), Some(1));
 }
+
+/// A source-backed type whose timestamp property has no `timezone` in its binding:
+/// ONT-E14, located in the binding file.
+fn e14_dir() -> tempfile::TempDir {
+    let dir = tempfile::tempdir().unwrap();
+    write(
+        dir.path(),
+        "ontology.yaml",
+        "apiName: demo\ndefaultProfile: dev\n",
+    );
+    write(
+        dir.path(),
+        "objects.yaml",
+        "kind: ObjectType\napiName: Flight\nprimaryKey: flightId\nproperties:\n  flightId: { type: string, required: true }\n  scheduledDeparture: { type: timestamp }\nbacking: source\n",
+    );
+    let bindings = dir.path().join("bindings/dev");
+    std::fs::create_dir_all(&bindings).unwrap();
+    write(
+        &bindings,
+        "flight.yaml",
+        "kind: SourceBinding\ntarget: { objectType: Flight }\nsource: { catalog: demo, schema: aviation, table: flights }\ncolumns:\n  scheduledDeparture: { column: scheduled_departure }\n",
+    );
+    dir
+}
+
+#[test]
+fn e14_human() {
+    let dir = e14_dir();
+    let out = ontoforge(&["lint", path(&dir), "--color", "never"]);
+    assert_eq!(out.status.code(), Some(1));
+    let stdout = String::from_utf8(out.stdout).unwrap();
+    assert!(stdout.contains("ONT-E14"), "{stdout}");
+    assert!(
+        stdout.contains("bindings/dev/flight.yaml:5:3"),
+        "the finding is located in the binding file: {stdout}"
+    );
+    insta::assert_snapshot!("e14_human", stdout);
+}
+
+#[test]
+fn e14_can_be_disabled() {
+    let dir = e14_dir();
+    write(
+        dir.path(),
+        "ontoforge.toml",
+        "[lint]\n\"ONT-E14\" = \"off\"\n",
+    );
+    let (out, diags) = lint_json(path(&dir), &[]);
+    assert_eq!(out.status.code(), Some(0), "{diags:#?}");
+    assert!(diags.is_empty(), "{diags:#?}");
+}

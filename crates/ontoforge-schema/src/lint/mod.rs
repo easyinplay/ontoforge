@@ -12,6 +12,7 @@ use crate::loader::SourceMap;
 use crate::loader::sourcemap::{DefKey, Part, Seg};
 
 pub mod config;
+mod binding;
 mod e08;
 mod e09;
 mod naming;
@@ -146,17 +147,21 @@ pub trait LintRule: Sync {
     fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>);
 }
 
-/// Every rule id that `ontoforge.toml` may mention (D-12: E08, E09 and W01 to W11).
-pub const KNOWN_RULE_IDS: [&str; 13] = [
+/// Every rule id that `ontoforge.toml` may mention (D-12: E08, E09 and W01 to W11;
+/// the binding rules E13 to E16 and W17 come from `binding`, and E10 to E12 and W12 to
+/// W16 are taken by the foundry spec).
+pub const KNOWN_RULE_IDS: [&str; 14] = [
     "ONT-E08", "ONT-E09", "ONT-W01", "ONT-W02", "ONT-W03", "ONT-W04", "ONT-W05", "ONT-W06",
-    "ONT-W07", "ONT-W08", "ONT-W09", "ONT-W10", "ONT-W11",
+    "ONT-W07", "ONT-W08", "ONT-W09", "ONT-W10", "ONT-W11", "ONT-E14",
 ];
 
-/// All rules, E rules first. The W rules come from `naming` and `structure`.
+/// All rules, E rules first. The W rules come from `naming` and `structure`, the
+/// binding rules from `binding`.
 pub fn registry() -> Vec<&'static dyn LintRule> {
     let mut rules: Vec<&'static dyn LintRule> = vec![&e08::RULE, &e09::RULE];
     rules.extend(naming::rules());
     rules.extend(structure::rules());
+    rules.extend(binding::rules());
     rules
 }
 
