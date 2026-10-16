@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V08",
+    "severity": "error",
+    "message": "duplicate SourceBinding for `Flight` in profile `dev`; first defined at bindings/dev/a.yaml:2:23",
+    "file": "bindings/dev/b.yaml",
+    "line": 2,
+    "column": 23,
+    "span": {
+      "offset": 42,
+      "length": 6
+    },
+    "help": null
+  }
+]

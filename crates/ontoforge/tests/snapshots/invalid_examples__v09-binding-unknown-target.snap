@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V09",
+    "severity": "error",
+    "message": "binding in profile `dev` targets unknown object type `Flihgt`",
+    "file": "bindings/dev/flight.yaml",
+    "line": 2,
+    "column": 23,
+    "span": {
+      "offset": 42,
+      "length": 6
+    },
+    "help": "did you mean `Flight`?"
+  }
+]

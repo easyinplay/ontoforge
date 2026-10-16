@@ -1,4 +1,5 @@
-//! Object type structural checks (hard errors): primary key, title key, `items`.
+//! Object type structural checks (hard errors): primary key, title key, `items`,
+//! `precision` and `scale` placement.
 //!
 //! Discouraged primary key types and nested arrays are lint territory (E09), not
 //! errors here; both read [`pk_suitability`].
@@ -22,6 +23,7 @@ pub fn check(ontology: &Ontology, sources: &SourceMap, out: &mut Vec<Diagnostic>
         primary_key(object, &at, out);
         title_key(object, &at, out);
         items(object, &at, out);
+        decimal_arguments(object, &at, out);
     }
 }
 
@@ -116,6 +118,39 @@ fn items(object: &ObjectType, at: &At, out: &mut Vec<Diagnostic>) {
                 .with_help("remove `items`, or change the type to `array`"),
             ),
             _ => {}
+        }
+    }
+}
+
+/// `precision` and `scale` belong to `decimal` properties, or to `array` properties
+/// whose elements are `decimal`. Their value ranges are lint territory (E13).
+fn decimal_arguments(object: &ObjectType, at: &At, out: &mut Vec<Diagnostic>) {
+    for (name, prop) in &object.properties {
+        let name = name.as_str();
+        let takes_arguments = prop.base_type == BaseType::Decimal
+            || (prop.base_type == BaseType::Array && prop.items == Some(BaseType::Decimal));
+        if takes_arguments {
+            continue;
+        }
+        for (key, present) in [
+            ("precision", prop.precision.is_some()),
+            ("scale", prop.scale.is_some()),
+        ] {
+            if present {
+                out.push(
+                    Diagnostic::error(
+                        codes::V06,
+                        format!(
+                            "`{key}` is only allowed on decimal properties, but `{name}` is `{}`",
+                            prop.base_type.as_str()
+                        ),
+                        &at(&["properties", name, key], Part::Key),
+                    )
+                    .with_help(format!(
+                        "remove `{key}`, or change the type to `decimal` (or an `array` of `decimal`)"
+                    )),
+                );
+            }
         }
     }
 }

@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V06",
+    "severity": "error",
+    "message": "`precision` is only allowed on decimal properties, but `reference` is `string`",
+    "file": "objects.yaml",
+    "line": 6,
+    "column": 30,
+    "span": {
+      "offset": 143,
+      "length": 9
+    },
+    "help": "remove `precision`, or change the type to `decimal` (or an `array` of `decimal`)"
+  }
+]

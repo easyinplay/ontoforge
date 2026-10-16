@@ -25,6 +25,8 @@ camino.workspace = true
 regex.workspace = true
 chrono.workspace = true
 heck.workspace = true
+chrono-tz.workspace = true
+csv.workspace = true
 
 [dev-dependencies]
 insta.workspace = true

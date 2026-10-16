@@ -59,7 +59,8 @@ pub fn load_dir(root: &Utf8Path) -> LoadOutput {
             candidates,
             diagnostics,
         };
-        assemble(manifest, listing, &|name| read_text(root, name))
+        let probe = |rel: &str| probe_disk(root, rel);
+        assemble(manifest, listing, &|name| read_text(root, name), &probe)
     })
 }
 
@@ -88,7 +89,18 @@ fn load_from_memory_inner(files: &[(&str, &str)]) -> LoadOutput {
         candidates: by_path.keys().cloned().collect(),
         diagnostics: Vec::new(),
     };
-    assemble(read(MANIFEST), listing, &read)
+    let probe = |rel: &str| match by_path.get(rel) {
+        Some(t) => {
+            let len = t.len() as u64;
+            if len > MAX_FILE_BYTES {
+                Err(too_large(Some(len)))
+            } else {
+                Ok(len)
+            }
+        }
+        None => Err("not found".to_owned()),
+    };
+    assemble(read(MANIFEST), listing, &read, &probe)
 }
 
 /// Stack size of the loader thread. The recursive-descent parsers need far more
@@ -204,6 +216,25 @@ pub fn read_limited(
     Ok(bytes)
 }
 
+/// Size of the fixture at `rel` (relative to `root`) from its metadata alone: it must be a
+/// regular file, not a symbolic link, within [`MAX_FILE_BYTES`] (E23).
+fn probe_disk(root: &Utf8Path, rel: &str) -> Result<u64, String> {
+    let meta = std::fs::symlink_metadata(root.join(rel).as_std_path()).map_err(|e| {
+        if e.kind() == std::io::ErrorKind::NotFound {
+            "not found".to_owned()
+        } else {
+            format!("cannot be read: {}", e.kind())
+        }
+    })?;
+    if !meta.file_type().is_file() {
+        return Err("not a regular file (symbolic links are not followed)".to_owned());
+    }
+    if meta.len() > MAX_FILE_BYTES {
+        return Err(too_large(Some(meta.len())));
+    }
+    Ok(meta.len())
+}
+
 fn read_text(root: &Utf8Path, name: &str) -> Text {
     let v14 =
         |message: String| Diagnostic::without_location(codes::V14, Severity::Error, message, name);
@@ -236,7 +267,16 @@ fn syntax_diagnostic(sources: &SourceMap, file: FileId, e: &parse::ParseError) -
     Diagnostic::error(codes::V01, e.message.clone(), &at)
 }
 
-fn assemble(manifest: Text, listing: Listing, read: &dyn Fn(&str) -> Text) -> LoadOutput {
+/// What [`assemble`] asks about a fixture file: its size, or why it cannot be used. Only
+/// metadata is looked at; the content is never read here.
+type Probe<'a> = &'a dyn Fn(&str) -> Result<u64, String>;
+
+fn assemble(
+    manifest: Text,
+    listing: Listing,
+    read: &dyn Fn(&str) -> Text,
+    probe: Probe,
+) -> LoadOutput {
     let mut sources = SourceMap::default();
     let mut diags = Vec::new();
     let manifest = load_manifest(&mut sources, manifest, &mut diags);
@@ -311,6 +351,7 @@ fn assemble(manifest: Text, listing: Listing, read: &dyn Fn(&str) -> Text) -> Lo
     });
     if let Some(o) = &ontology {
         diags.extend(crate::validate::validate(o, &sources));
+        diags.extend(crate::validate::check_fixture_files(o, &sources, probe));
     }
     sort_diagnostics(&mut diags);
     if has_errors(&diags) {

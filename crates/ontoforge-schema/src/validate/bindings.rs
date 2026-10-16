@@ -4,10 +4,10 @@
 use crate::diag::{Diagnostic, Severity, SourceLocation, codes, did_you_mean};
 use crate::ir::{
     Backing, BindingTarget, Cardinality, LinkTypeName, ObjectTypeName, Ontology, ProfileName,
-    SourceBinding, binding_def_name,
+    PropertyName, SourceBinding, binding_def_name,
 };
 use crate::loader::sourcemap::{DefKey, DefKind, Part, Seg};
-use crate::loader::{MANIFEST, SourceMap};
+use crate::loader::{MANIFEST, SourceMap, fixture_path};
 
 type At<'a> = dyn Fn(&[&str], Part) -> SourceLocation + 'a;
 
@@ -42,7 +42,171 @@ pub fn check(ontology: &Ontology, sources: &SourceMap, out: &mut Vec<Diagnostic>
         let at = locate(sources, &key);
         if target_exists(ontology, profile, binding, &at, out) {
             may_be_bound(ontology, binding, &at, out);
+            column_keys(ontology, binding, &at, out);
         }
+        physical_names(binding, &at, out);
+        time_zones(binding, &at, out);
+        fixture_reference(binding, &at, out);
+    }
+}
+
+/// Fixture existence and size, per binding, through `probe` (metadata only: the
+/// content is never read here). A fixture path that is itself invalid was already
+/// reported by [`check`] and is skipped.
+pub(crate) fn check_fixture_files(
+    ontology: &Ontology,
+    sources: &SourceMap,
+    probe: &dyn Fn(&str) -> Result<u64, String>,
+) -> Vec<Diagnostic> {
+    let mut out = Vec::new();
+    for (profile, binding) in all_bindings(ontology) {
+        let Some(fixture) = &binding.fixture else {
+            continue;
+        };
+        let key = DefKey {
+            kind: DefKind::SourceBinding,
+            api_name: binding_def_name(profile, binding.target_name()),
+        };
+        let at = locate(sources, &key);
+        let Ok(resolved) = fixture_path(&at(&[], Part::Value).file, &fixture.file) else {
+            continue;
+        };
+        if let Err(reason) = probe(&resolved) {
+            out.push(Diagnostic::error(
+                codes::V16,
+                format!("fixture `{resolved}`: {reason}"),
+                &at(&["fixture", "file"], Part::Value),
+            ));
+        }
+    }
+    out
+}
+
+/// `columns` keys: property names for an object type, exactly `from` and `to` for a
+/// link (D-03).
+fn column_keys(ontology: &Ontology, binding: &SourceBinding, at: &At, out: &mut Vec<Diagnostic>) {
+    match &binding.target {
+        BindingTarget::ObjectType(name) => {
+            let Some(object) = ontology.object_types.get(name.as_str()) else {
+                return;
+            };
+            for key in binding.columns.keys() {
+                if object.properties.contains_key(key.as_str()) {
+                    continue;
+                }
+                let d = Diagnostic::error(
+                    codes::V09,
+                    format!(
+                        "`{key}` is not a property of `{name}`, so it cannot be mapped to a column"
+                    ),
+                    &at(&["columns", key], Part::Key),
+                );
+                let candidates = object.properties.keys().map(PropertyName::as_str);
+                out.push(match did_you_mean(key, candidates) {
+                    Some(s) => d.with_help(format!("did you mean `{s}`?")),
+                    None => d,
+                });
+            }
+        }
+        BindingTarget::LinkType(name) => {
+            for end in LINK_ENDS {
+                if !binding.columns.contains_key(end) {
+                    out.push(
+                        Diagnostic::error(
+                            codes::V16,
+                            format!("the binding of link `{name}` must map the `{end}` end to a column"),
+                            &at(&["columns"], Part::Value),
+                        )
+                        .with_help(format!(
+                            "add `columns: {{ {end}: {{ column: <column holding the {end} key> }} }}`"
+                        )),
+                    );
+                }
+            }
+            for key in binding.columns.keys() {
+                if !LINK_ENDS.contains(&key.as_str()) {
+                    out.push(
+                        Diagnostic::error(
+                            codes::V09,
+                            format!("`{key}` is not an end of link `{name}`"),
+                            &at(&["columns", key], Part::Key),
+                        )
+                        .with_help("a link binding maps only `from` and `to`"),
+                    );
+                }
+            }
+        }
+    }
+}
+
+/// The two ends of a link binding, in the order columns are derived.
+const LINK_ENDS: [&str; 2] = ["from", "to"];
+
+/// Catalog, schema, table and column names must be non-empty text without control
+/// characters (T-02-09). They are quoted when printed; this keeps them readable.
+fn physical_names(binding: &SourceBinding, at: &At, out: &mut Vec<Diagnostic>) {
+    let mut check = |what: &str, value: &str, path: &[&str]| {
+        let problem = if value.is_empty() {
+            "must not be empty"
+        } else if value.chars().any(char::is_control) {
+            "must not contain control characters"
+        } else {
+            return;
+        };
+        out.push(Diagnostic::error(
+            codes::V16,
+            format!("`{what}` {problem}"),
+            &at(path, Part::Value),
+        ));
+    };
+    check("catalog", &binding.source.catalog, &["source", "catalog"]);
+    check("schema", &binding.source.schema, &["source", "schema"]);
+    check("table", &binding.source.table, &["source", "table"]);
+    for (key, mapping) in &binding.columns {
+        if let Some(column) = &mapping.column {
+            check("column", column, &["columns", key, "column"]);
+        }
+    }
+}
+
+/// A `timezone` is an IANA name or `aware`. Whether a timestamp property needs one is
+/// lint territory (E14).
+fn time_zones(binding: &SourceBinding, at: &At, out: &mut Vec<Diagnostic>) {
+    for (key, mapping) in &binding.columns {
+        let Some(zone) = &mapping.timezone else {
+            continue;
+        };
+        if zone == AWARE || zone.parse::<chrono_tz::Tz>().is_ok() {
+            continue;
+        }
+        out.push(
+            Diagnostic::error(
+                codes::V16,
+                format!("`{zone}` is not an IANA time zone name or `aware`"),
+                &at(&["columns", key, "timezone"], Part::Value),
+            )
+            .with_help(
+                "write a name such as `Europe/Berlin`, or `aware` when the column already carries a time zone",
+            ),
+        );
+    }
+}
+
+/// Timezone value for a column that already carries its zone.
+const AWARE: &str = "aware";
+
+/// The fixture path must stay inside the ontology directory and name a `.csv` or
+/// `.json` file (T-02-07). Existence is checked by [`check_fixture_files`].
+fn fixture_reference(binding: &SourceBinding, at: &At, out: &mut Vec<Diagnostic>) {
+    let Some(fixture) = &binding.fixture else {
+        return;
+    };
+    if let Err(reason) = fixture_path(&at(&[], Part::Value).file, &fixture.file) {
+        out.push(Diagnostic::error(
+            codes::V16,
+            format!("fixture file `{}` cannot be used: {reason}", fixture.file),
+            &at(&["fixture", "file"], Part::Value),
+        ));
     }
 }
 

@@ -9,6 +9,7 @@ mod bindings;
 mod links;
 mod objects;
 
+pub(crate) use bindings::check_fixture_files;
 pub use bindings::{ProfileOrigin, check_profile};
 
 /// All structural checks on a fully merged ontology.

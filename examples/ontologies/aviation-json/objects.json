@@ -77,7 +77,8 @@
       "aircraftTailNumber": { "type": "string", "required": true, "displayName": "Aircraft tail number" },
       "performedAt": { "type": "timestamp", "displayName": "Performed at" },
       "performedBy": { "type": "string", "displayName": "Performed by" },
-      "summary": { "type": "string", "displayName": "Summary" }
+      "summary": { "type": "string", "displayName": "Summary" },
+      "cost": { "type": "decimal", "precision": 12, "scale": 2, "displayName": "Cost" }
     },
     "backing": "source"
   }

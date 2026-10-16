@@ -157,7 +157,11 @@ fn bad_profile_dir_is_v16() {
 #[test]
 fn profile_name_length_boundaries() {
     let ok = format!("bindings/{}/flight.yaml", "a".repeat(32));
-    let out = load_with(&[(ok.as_str(), FLIGHT_BINDING)]);
+    let ok_csv = format!("bindings/{}/fixtures/flights.csv", "a".repeat(32));
+    let out = load_with(&[
+        (ok.as_str(), FLIGHT_BINDING),
+        (ok_csv.as_str(), FLIGHTS_CSV),
+    ]);
     assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
     let too_long = format!("bindings/{}/flight.yaml", "a".repeat(33));
     let out = load_with(&[(too_long.as_str(), FLIGHT_BINDING)]);
@@ -184,7 +188,9 @@ fn duplicate_binding_is_v08() {
 fn same_target_in_two_profiles_is_not_a_duplicate() {
     let out = load_with(&[
         ("bindings/dev/a.yaml", FLIGHT_BINDING),
+        ("bindings/dev/fixtures/flights.csv", FLIGHTS_CSV),
         ("bindings/prod/a.yaml", FLIGHT_BINDING),
+        ("bindings/prod/fixtures/flights.csv", FLIGHTS_CSV),
     ]);
     assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
     let ontology = out.ontology.expect("ontology");
@@ -194,7 +200,10 @@ fn same_target_in_two_profiles_is_not_a_duplicate() {
 #[test]
 fn unknown_target_is_v09() {
     let text = FLIGHT_BINDING.replace("Flight", "Flihgt");
-    let out = load_with(&[("bindings/dev/flight.yaml", text.as_str())]);
+    let out = load_with(&[
+        ("bindings/dev/flight.yaml", text.as_str()),
+        ("bindings/dev/fixtures/flights.csv", FLIGHTS_CSV),
+    ]);
     let d = only(&out);
     assert_eq!(d.code, codes::V09);
     assert_eq!(d.file, "bindings/dev/flight.yaml");
@@ -558,9 +567,9 @@ fn physical_identifier_rules() {
     // `\x07` is a bell character once YAML has unescaped it.
     let cases = [
         ("", "aviation", "flights", "catalog", 4),
-        ("demo", "a\x07", "flights", "schema", 5),
+        ("demo", "a\\x07", "flights", "schema", 5),
         ("demo", "aviation", "", "table", 6),
-        ("demo", "aviation", "x\x07y", "table", 6),
+        ("demo", "aviation", "x\\x07y", "table", 6),
     ];
     for (catalog, schema, table, key, line) in cases {
         let out = load_binding(&source_binding(catalog, schema, table));

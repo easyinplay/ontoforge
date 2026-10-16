@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V16",
+    "severity": "error",
+    "message": "object type `Pilot` is `backing: source`, but profile `dev` has no binding for it",
+    "file": "objects.yaml",
+    "line": 14,
+    "column": 10,
+    "span": {
+      "offset": 287,
+      "length": 6
+    },
+    "help": "add a SourceBinding with `target: { objectType: Pilot }` under `bindings/dev/`"
+  }
+]
