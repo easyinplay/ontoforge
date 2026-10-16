@@ -31,6 +31,17 @@ jsonschema = { version = "0.58.6", default-features = false }
 tempfile = "3.27.0"
 heck = "0.5.0"
 anstream = "1.0.0"
+reqwest = { version = "0.13.5", default-features = false, features = ["rustls"] }
+tokio = { version = "1.53.3", features = ["rt", "time", "sync"] }
+sqlx = { version = "0.9.0", default-features = false, features = ["sqlite", "runtime-tokio"] }
+secrecy = "0.10.3"
+csv = "1.4.0"
+chrono-tz = { version = "0.10.4", default-features = false }
+ulid = "3.0.0"
+wiremock = "0.6.5"
+proptest = "1.12.0"
+sqlparser = "0.63.0"
+futures-util = { version = "0.3.34", default-features = false }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"
