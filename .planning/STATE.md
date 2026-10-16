@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 2
 current_phase_name: Source Binding & Engine
 status: executing
-stopped_at: Completed 02-07-PLAN.md
-last_updated: "2026-10-16T21:25:34.891Z"
+stopped_at: Completed 02-08-PLAN.md
+last_updated: "2026-10-16T21:50:59.498Z"
 last_activity: 2026-10-17
 last_activity_desc: Phase 2 execution started
-state_head: c8a03bf2273d97d6bbb9d7313046396549b6fb9b
+state_head: 0f717a1306830eaf4216c6997a6edf264541b220
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 24
-  completed_plans: 21
+  completed_plans: 22
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-16)
 ## Current Position
 
 Phase: 2 (Source Binding & Engine) — EXECUTING
-Plan: 8 of 10
+Plan: 9 of 10
 Status: Ready to execute
 Last activity: 2026-10-17 — Phase 2 execution started
 
@@ -63,6 +63,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 02 P05 | 30 min | 2 tasks | 26 files |
 | Phase 02 P06 | 11 min | 3 tasks | 6 files |
 | Phase 02 P07 | 25min | 3 tasks | 22 files |
+| Phase 02 P08 | 21min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -88,6 +89,7 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 02]: QueryGuard 持有预构造的 DELETE 请求而非 URL，guard 不接触凭据；服务端已报告 Query 错误时不发 DELETE，其余错误、超时、截断都会 cancel_now — 02-06：取消只发往已通过同源校验的 nextUri（T-02-27）
 - [Phase 02]: E13 的规则按属性最多报一条，缺省 scale 取 effective_decimal 并在提示里插值，不写死数字
 - [Phase 02]: ONT-W17 同时承担表头不可读的提示，不新开码；fixture 字节与定义文件共用 MAX_TOTAL_BYTES，同一路径只读一次
+- [Phase 02]: 02-08: decimal 兼容用 s ≤ S 且 p - s ≤ P - S；绑定列大小写歧义为 CaseCollision error；check_drift 只在整轮引擎错误时返回 Err，单目标不可读为 SourceUnreadable — ADR-0021 / E3 / E12 / E13；文档类型表由 doc_type_table 测试逐行锁定
 
 ### Pending Todos
 
@@ -114,6 +116,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-16T21:25:34.830Z
-Stopped at: Completed 02-07-PLAN.md
+Last session: 2026-10-16T21:50:59.435Z
+Stopped at: Completed 02-08-PLAN.md
 Resume file: None
