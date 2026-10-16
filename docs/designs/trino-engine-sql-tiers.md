@@ -92,8 +92,8 @@ properties: ...
 
 - **对象当前状态 = source 行（经 Trino）按属性叠加 edit（PG edit store）**，edit-only 对象只来自 edit store。两条执行路径、一份叠加规则（D2）：
   - get-by-pk 与 Action 前置读：PG 直读 edit store → 命中则按规则合并（未设置的属性需要时再经 Trino 单表 pk 查 source）；未命中 → Trino 单表 pk 查 source；合并、行谓词与列遮蔽在 Rust 内完成（CEL 单行求值，D12）。
-  - list / filter / aggregate / searchAround：Trino 内叠加（source anti-join edit UNION ALL edit），形态待 spike 3b 定案（D16）。
-  - Rust 叠加实现同时是差分测试的参考实现，两条路径由差分测试强制等价。
+  - list / filter / aggregate / searchAround：Rust 两段归并（D24，ADR-0020）—— Trino 只跑单表 source 查询，edit 经 PG 直连，按 pk ≤ 256 分批回查，在 Rust 内叠加、分页、分解聚合。
+  - 叠加规则只有 Rust 一份生产实现，proptest 对照内存参考模型。
 - **读后写一致**：PG 提交后下一条 Trino 查询必然可见（spike 3 A2.2 已验证）；edit store catalog 不得开启数据 / 结果缓存。
 - **叠加规则（D17：按属性 patch，取代原「整行快照」）**：edit 行只存被 Action 设置过的属性，`set_mask` 标记哪些列有效；未设置的属性始终读 source（继续跟随 ETL）。tombstone 压制同 pk 的 source 行，不会「复活」，直到 release。release 是显式状态（D22），版本号单调递增、永不重置，release 后对象回到纯 source。ETL 删除了有 edit 的 source 行：对象以 edit 中已设置的属性存在、未设置属性为 null，并在 describe 中标记 source 缺失。重复 source pk 返回 `AmbiguousObject`（D18）。
 - **版本令牌（D4 / D13）**：读返回不透明 `_version` token = HMAC(server_key, principal_id ‖ type ‖ pk ‖ 规范化(edit 行 + source 行))。未编辑对象内部版本为 0，第一次 edit 为 1。
@@ -315,10 +315,11 @@ L2 边界（显式例外）：
                  │ ③ Rust 叠加：source ⊕ edit(set_mask)；tombstone → NotFound；released → 纯 source
                  │ ④ CEL 单行求值行谓词 + 列遮蔽（与 SQL 编译同源，差分测试强制等价）
                  └──────────────────────────────────────────────────────────┘
-                 ┌──────────────── list / filter / aggregate / searchAround ─┐
- L0 ───────────► │ scoped 基关系（谓词下推原列，遮蔽只在投影层，待 spike 3b 证实）
-                 │ source(谓词 + TopN, 循环补取) anti-join edit  UNION ALL  edit ⊕ source
-                 │ Rust 侧 pk 去重 + has_more 游标（非快照一致，文档明示）
+                 ┌──────────────── list / filter / aggregate / searchAround（D24）┐
+ L0 ───────────► │ 并行：Trino 单表 source（role 谓词 AND 原列过滤 + TopN over-fetch）
+                 │       PG 直连 edit 候选（合并后满足过滤的 edit 行）
+                 │ 按 pk ≤ 256 一批回查 source / edit → Rust 合并、遮蔽、去重
+                 │ 补取循环 + has_more 游标；聚合按 D24 分解（非快照一致，文档明示）
                  └──────────────────────────────────────────────────────────┘
  Action 提交 ───► 鉴权管线 ①-⑨（D5）→ PG 单事务：edit 行 + edit log + action_commands + webhook outbox
 ```
@@ -328,7 +329,7 @@ L2 边界（显式例外）：
 | # | 主题 | 决定 |
 |---|---|---|
 | D1 | 范围 | B-boundary 全量，不缩减（Codex #12 建议 L2 拆独立 milestone，用户已在 D1 定，记录分歧不再议） |
-| D2 | 读路径 | 双路径：pk / Action 前置读走 PG 直读 + Rust 叠加；列表 / 聚合 / 遍历走 Trino 内叠加；Rust 实现即参考实现，差分测试强制等价。Action 只在需要 Trino 时 fail-closed（细化 1A） |
+| D2 | 读路径 | **列表部分已被 D24 取代。** 双路径：pk / Action 前置读走 PG 直读 + Rust 叠加；列表 / 聚合 / 遍历走 Trino 内叠加；Rust 实现即参考实现，差分测试强制等价。Action 只在需要 Trino 时 fail-closed（细化 1A） |
 | D3 | edit store 形态 | 每个 object type 一张强类型表（DDL 由定义生成）；新增类变更在 reload 事务内自动执行，破坏性变更 lint E + `ontoforge migrate --plan/--apply`（旧列归档）；STORE-02 改写 |
 | D4 | 并发 | 版本令牌比对在前置读完成；edit 读集在 PG 事务内加锁；不对 source 二次读取；剩余几百毫秒窗口写入保证边界文档 |
 | D5 | Action 鉴权管线 | ① 认证 ② 执行权 ③ 前置读原始行 ④ 行可见（拒绝 = 不存在）⑤ 写字段 ⊆ 可见列且非系统字段 ⑥ criteria 只在调用者遮蔽视图求值，引用当前行被遮蔽列即 ScopeDenied；reload 与 role 变更时 lint：被授予 action 的 role 列集须覆盖 criteria 列，否则 E ⑦ 合成新状态 ⑧ 写后可见（link 两端、release）⑨ 单事务提交 |
@@ -336,20 +337,22 @@ L2 边界（显式例外）：
 | D7 | 重复 pk | **已被 D18 取代** |
 | D8 | 类型契约 | Decimal 可选 precision/scale（缺省 38,10），Rust 用 bigdecimal、传输用规范化字符串；无时区 timestamp 列须在绑定声明 `timezone`（否则 E）；Geopoint 不支持 source 绑定（E）；Array ↔ Trino array / PG array；edit store text 列 `COLLATE "C"` |
 | D9 | CI 矩阵 | PR：Trino + PG（source 与 edit store 两个 catalog）；nightly：+ Iceberg（JDBC catalog + MinIO），失败自动开 issue；SQL Server 走 `ONTOFORGE_PRIVATE_FIXTURES` |
-| D10 | 延迟预算（provisional，待 D16） | pk 读 p95 < 500ms、Action p95 < 1s、过滤 p95 < 2s，前提是专用 Trino resource group 或空闲集群；已编辑对象 PG 直读 p95 < 50ms；共享繁忙集群只监测不承诺 |
+| D10 | 延迟预算（**已被 D25 取代**） | pk 读 p95 < 500ms、Action p95 < 1s、过滤 p95 < 2s，前提是专用 Trino resource group 或空闲集群；已编辑对象 PG 直读 p95 < 50ms；共享繁忙集群只监测不承诺 |
 | D11 | 读审计 | 有界队列异步批量写；积压或持续写失败 → 读请求 `AuditUnavailable`（承诺措辞见 D15） |
 | D12 | PG 路径 scope | Rust 内用 CEL 单行求值行谓词与列遮蔽；行谓词只能引用同行属性与 `principal.attrs`（validate 强制）；差分测试覆盖「Rust 求值 ≡ SQL 编译」 |
 | D13 | 版本令牌 | `HMAC(server_key, principal_id ‖ type ‖ pk ‖ 规范化(edit 行 + source 行))`，对外不透明；密钥轮换使旧令牌一律冲突；conformance：令牌不可反推被遮蔽列 |
 | D14 | renderer | 自有小型类型化 printer（只覆盖编译器产出子集），字面量 / 标识符仅经两个转义函数，proptest + 真实 Trino / SQLite 执行验证；sqlparser 只用于 L2 输入与往返自检 |
 | D15 | 审计承诺 | 写入审计与事务同生同灭；读审计至多丢失约 1 秒（崩溃），积压时 fail-closed；已写入 Success Criteria |
-| D16 | spike 3b 门禁 | GSD 规划前测：① 多 role 遮蔽 scoped SQL 的 EXPLAIN / 延迟及「谓词下推原列、遮蔽在投影层」形态 ② Rust 两段归并 vs Trino 内叠加 ③ 可分解聚合改写 ④ 专用 resource group 效果。结果定 D2 列表路径与 D10 |
+| D16 | spike 3b 门禁（**已完成**，`.planning/research/spike-03b-scoped-overlay.md`） | GSD 规划前测：① 多 role 遮蔽 scoped SQL 的 EXPLAIN / 延迟及「谓词下推原列、遮蔽在投影层」形态 ② Rust 两段归并 vs Trino 内叠加 ③ 可分解聚合改写 ④ 专用 resource group 效果。结果定 D2 列表路径与 D10 |
 | D17 | 叠加粒度 | 按属性 patch（`set_mask`）取代整行快照（supersede CEO review 已批规则）；未设置属性跟随 source ETL |
 | D18 | 重复 pk | pk 级 `AmbiguousObject` 并拒绝该对象的 Action；列表 Rust 侧去重并告警；type 级降级只由 `validate --online --check-pk` 触发 |
-| D19 | link 叠加 | FK 型 link 由叠加后对象决定；每个 M:N link type 一张 edit 表 `(a_pk, b_pk, deleted, version)`，与对象同一 anti-join + UNION ALL 形态；两端都做 scope 可见检查 |
+| D19 | link 叠加 | FK 型 link 由叠加后对象决定；每个 M:N link type 一张 edit 表 `(a_pk, b_pk, deleted, version)`，与对象同一叠加规则（执行方式见 D24）；两端都做 scope 可见检查 |
 | D20 | reload 加固 | DDL 后 Trino `flush_metadata_cache` 并探测新列可见再切换定义；DDL `lock_timeout`，超时保留旧定义；新增 required 属性须带 default，否则按破坏性处理；`def_version` 栅栏拒绝旧定义写入 |
 | D21 | L2 元数据泄露 | allow-list 硬排除 `system` 元数据表；启动自检「L2 身份读 `system.runtime.queries` 只见自己的查询」，否则禁用 L2 |
 | D22 | 路径修正 | 先 Trino 后 PG 事务、稳定锁顺序；release 为显式状态；over-fetch 循环补取 + `has_more`（短页不等于结束）；列表 pk 去重；非快照一致边界写入文档 |
 | D23 | 差分成本 / collation | 完整 proptest 只跑 Rust vs SQLite；Trino 端跑固定种子语料 + 历史反例；source 绑定可声明 collation，大小写不敏感列禁止下推字符串比较与排序 |
+| D24 | 列表 / 聚合路径（spike 3b 后） | Rust 两段归并为主：Trino 只跑单表查询（source 谓词 + TopN 补取、按 pk ≤ 256 分批回查），edit 经 PG 直连；叠加、分页、可分解聚合（count / sum / avg 分解，min / max 走 TopN 补取，count distinct 分组计数或报错收窄）在 Rust 完成；scoped 编译用「role 谓词 AND 原列过滤、遮蔽只在投影层」形态；Trino 内叠加退为不承诺延迟的备选（ADR-0020） |
+| D25 | 延迟预算（spike 3b 后） | 删除 resource group 前提（实测排队 ≤ 1ms）；安静或隔离集群下 pk 读 p95 < 500ms、列表 / 过滤 p95 < 1s、聚合 p95 < 1.5s、Action p95 < 1s、已编辑对象 PG 直读 p95 < 50ms；ontoforge 强制 Trino 查询单表、≤ 2 fragment；繁忙共享集群只监测不承诺，繁忙对照列为 CI / 私有 fixture 验证项 |
 
 自决项（D-misc，按「决策自主」原则，用户可否决）：`command_id` 表 `action_commands` 唯一键 `(principal_id, command_id)` + `params_hash`，同键异参 `CommandIdReused`，回放前重新鉴权，`get_command_result` 查询，默认保留 7 天；webhook 用事务性 outbox，至少一次投递，`event_id` 幂等；SQLite 替身以 `ATTACH` 库名 `catalog__schema` 映射 catalog；edit store 索引 = pk + 行谓词引用属性 + `indexed: true` 属性；叠加列表页上限 200；Trino client keep-alive 池、`nextUri` 退避、断连 `DELETE` 取消；PG catalog `statistics.enabled` 作为 CI 探针核实。
 
@@ -415,8 +418,8 @@ L2 边界（显式例外）：
 冲突提示：B 与 C 都可能改 `ontoforge-expr`（CEL 求值入口），由 C 独占该 crate 的修改。
 
 ### Implementation Tasks（eng review）
-- [ ] **E1 (P1, human ~0.5d / CC ~30min)** — research — spike 3b（D16）
-- [ ] **E2 (P1, human ~1d / CC ~30min)** — adr — 写 / 修订 ADR 0003、0004、0005、0008 与新 engine ADR，标注 supersede（D2–D23）
+- [x] **E1 (P1, human ~0.5d / CC ~30min)** — research — spike 3b（D16）→ D24 / D25
+- [x] **E2 (P1, human ~1d / CC ~30min)** — adr — ADR-0015..0020 已写； 写 / 修订 ADR 0003、0004、0005、0008 与新 engine ADR，标注 supersede（D2–D23）
 - [ ] **E3 (P1, human ~1.5d / CC ~30min)** — schema — Decimal precision/scale、binding timezone / collation、Geopoint lint（D8、D23）
 - [ ] **E4 (P1, human ~4d / CC ~1.5h)** — engine — Trino client、自有 printer、SQLite 替身（D14）
 - [ ] **E5 (P1, human ~3d / CC ~1h)** — storage — DDL 生成 / diff / migrate、link edit 表、reload 加固（D3、D19、D20）

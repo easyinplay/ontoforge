@@ -1,6 +1,6 @@
 # ADR-0005 查询层：自有 ObjectSet AST → sea-query
 
-- status: accepted
+- status: superseded by ADR-0020（2026-10-16；ObjectSet AST 部分保留）
 - date: 2026-10-15
 - 依据：`.planning/research/rust-stack.md` §3
 
