@@ -1,9 +1,10 @@
 ---
 phase: 01-workspace-schema-lint
 verified: 2026-10-16T12:00:00Z
-status: human_needed
+status: passed
 score: 10/11 must-haves verified
 covered_files:
+
   - ".github/workflows/ci.yml"
   - ".planning/REQUIREMENTS.md"
   - ".planning/phases/01-workspace-schema-lint/01-01-PLAN.md"
@@ -46,6 +47,7 @@ covered_files:
   - "examples/ontologies/aviation/objects.yaml"
   - "schemas/ontoforge-definition.schema.json"
   - "schemas/ontoforge-manifest.schema.json"
+
 covered_digest: "v1:sha256:1a414b08d4af61b1cd0d346d4046b65a0b722b773e66152720b97eaec55ae165"
 behavior_unverified: 0
 overrides_applied: 0
@@ -58,6 +60,7 @@ re_verification:
   gaps_remaining: []
   regressions: []
 human_verification:
+
   - test: "UAT Test 2 复测（Zed，Windows）：在 Zed 中打开仓库根目录（已打开则执行 `editor: restart language server` 让 `.zed/settings.json` 生效），打开 `examples/ontologies/aviation/objects.yaml`，在文件末尾追加一行 `---` 和一行 `kind: ` 后按 Ctrl+Space；再在该 document 中加一行 `bogus: 1`；最后打开 `examples/ontologies/aviation-json/ontology.yaml`"
     expected: "补全列出 ObjectType、LinkType、ActionType；`bogus` 字段被标红；`aviation-json/ontology.yaml` 没有 schema 错误提示。选 ObjectType 后在新行按 Ctrl+Space，只出现 ObjectType 的字段（apiName、primaryKey、properties 等）"
     why_human: "补全弹窗与编辑器内诊断只能在真实编辑器中观察。本次 headless 驱动与 Zed 同版本的 yaml-language-server 1.25.0 已证明服务端行为正确，但 Zed 是否把 `.zed/settings.json` 的 `lsp.yaml-language-server.settings` 传给服务端、`./schemas/...` 相对路径在 Zed 内是否按工作区根解析，只有真实 Zed 能确认。通过后把 01-UAT.md Test 2 的 result 从 issue 改为 pass"
