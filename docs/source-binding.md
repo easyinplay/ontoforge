@@ -118,7 +118,7 @@ fixture 是 SQLite 替身使用的样例数据，替身让 Windows 本机不需�
 
 ## fixture 模式的验证边界
 
-未给 `--server-config` 时，`validate --online` 用 fixture 加载内存 SQLite 替身。替身对外报告的物理列类型是由绑定与 IR 推导出来的：整数按属性范围报告 `tinyint` 到 `bigint`，`float` 与 `double` 都报告 `double`，decimal 用属性的 `precision` 与 `scale`，timestamp 为 `timestamp(3)`（`aware` 时带时区），string 为 `varchar`。
+未给 `--server-config` 时，`validate --online` 用 fixture 加载内存 SQLite 替身。替身对外报告的物理列类型是由绑定与 IR 推导出来的：整数按属性范围报告 `tinyint` 到 `bigint`，`float` 报告 `real`、`double` 报告 `double`，decimal 用属性的 `precision` 与 `scale`，timestamp 为 `timestamp(3)`（`aware` 时带时区），string 为 `varchar`。
 
 因此 fixture 模式下 `--online` 只验证两件事：
 
@@ -126,8 +126,6 @@ fixture 是 SQLite 替身使用的样例数据，替身让 Windows 本机不需�
 2. fixture 的值可以按声明的类型转换。
 
 它不能证明真实源列的类型兼容：类型表的判定在 fixture 模式下对着推导出来的类型比较，几乎总是通过。部署前必须用 `--server-config` 对真实 Trino 再跑一次。
-
-已知限制：替身把 `float` 属性报告为 `double`，按下表 `float` 读 `double` 是 error，所以含 `float` 属性的绑定在 fixture 模式会得到 `ONT-V17`。需要 fixture 模式时把属性声明为 `double`。
 
 ## 类型兼容表
 

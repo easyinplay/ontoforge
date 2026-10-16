@@ -848,3 +848,18 @@ async fn float_columns_report_real() {
         .expect("described");
     assert_eq!(described[&fx_ref("t")][0].physical.render(), "real");
 }
+
+#[tokio::test]
+async fn double_columns_report_double() {
+    let engine = fx_load("t.csv", "v\n1.5\n", vec![("v", LogicalType::Double)])
+        .await
+        .expect("loads");
+    let described = engine
+        .describe_tables(
+            &[fx_ref("t")],
+            &QueryContext::new("t".to_owned(), Vec::new()),
+        )
+        .await
+        .expect("described");
+    assert_eq!(described[&fx_ref("t")][0].physical.render(), "double");
+}

@@ -20,12 +20,23 @@ use crate::{PhysicalType, TableRef};
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LogicalType {
     String,
-    Integer { min: i64, max: i64 },
+    Integer {
+        min: i64,
+        max: i64,
+    },
+    /// A `float` property: single precision, reported as `real`.
     Float,
-    Decimal { precision: u32, scale: u32 },
+    /// A `double` property: reported as `double`.
+    Double,
+    Decimal {
+        precision: u32,
+        scale: u32,
+    },
     Boolean,
     Date,
-    Timestamp { aware: bool },
+    Timestamp {
+        aware: bool,
+    },
     Array(Box<LogicalType>),
 }
 
@@ -91,7 +102,8 @@ fn logical_type(column: &ExpectedColumn) -> LogicalType {
             min: i64::MIN,
             max: i64::MAX,
         },
-        BaseType::Float | BaseType::Double => LogicalType::Float,
+        BaseType::Float => LogicalType::Float,
+        BaseType::Double => LogicalType::Double,
         BaseType::Decimal => LogicalType::Decimal {
             precision: column.precision,
             scale: column.scale,
@@ -274,7 +286,7 @@ pub(super) struct LoadedTable {
 fn storage_of(logical: &LogicalType) -> SqliteStorage {
     match logical {
         LogicalType::Integer { .. } | LogicalType::Boolean => SqliteStorage::Integer,
-        LogicalType::Float => SqliteStorage::Real,
+        LogicalType::Float | LogicalType::Double => SqliteStorage::Real,
         _ => SqliteStorage::Text,
     }
 }
@@ -293,7 +305,8 @@ fn physical_of(logical: &LogicalType) -> PhysicalType {
                 PhysicalType::Bigint
             }
         }
-        LogicalType::Float => PhysicalType::Double,
+        LogicalType::Float => PhysicalType::Real,
+        LogicalType::Double => PhysicalType::Double,
         LogicalType::Decimal { precision, scale } => PhysicalType::Decimal {
             precision: u8::try_from(*precision).unwrap_or(u8::MAX),
             scale: u8::try_from(*scale).unwrap_or(u8::MAX),
@@ -514,7 +527,7 @@ fn convert_text(logical: &LogicalType, cell: &str) -> Result<SqlValue, String> {
                 .ok_or_else(|| "expected an integer".to_owned())
                 .and_then(|n| check_range(n, *min, *max))
         }
-        LogicalType::Float => cell
+        LogicalType::Float | LogicalType::Double => cell
             .parse::<f64>()
             .ok()
             .filter(|f| f.is_finite())
@@ -552,12 +565,12 @@ fn convert_json(logical: &LogicalType, value: &serde_json::Value) -> Result<SqlV
             .ok_or_else(|| "expected an integer".to_owned())
             .and_then(|n| check_range(n, *min, *max)),
         (LogicalType::Integer { .. }, _) => Err("expected a JSON integer".to_owned()),
-        (LogicalType::Float, Json::Number(n)) => n
+        (LogicalType::Float | LogicalType::Double, Json::Number(n)) => n
             .as_f64()
             .filter(|f| f.is_finite())
             .map(SqlValue::Real)
             .ok_or_else(|| "expected a finite number".to_owned()),
-        (LogicalType::Float, _) => Err("expected a JSON number".to_owned()),
+        (LogicalType::Float | LogicalType::Double, _) => Err("expected a JSON number".to_owned()),
         (LogicalType::Decimal { precision, scale }, Json::String(s)) => {
             normalize_decimal(s, *precision, *scale).map(SqlValue::Text)
         }
