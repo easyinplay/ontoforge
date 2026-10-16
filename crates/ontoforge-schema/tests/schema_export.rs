@@ -399,3 +399,35 @@ fn aviation_definition_documents_start_with_modeline() {
         );
     }
 }
+
+#[test]
+fn aviation_bindings_validate() {
+    let definition = validator(&definition_schema());
+    let dir = example_dir("aviation").join("bindings/dev");
+    let mut checked = 0;
+    for entry in std::fs::read_dir(&dir).expect("aviation bindings/dev") {
+        let path = entry.expect("dir entry").path();
+        if path.extension().and_then(|e| e.to_str()) != Some("yaml") {
+            continue;
+        }
+        for (i, doc) in yaml_documents(&path).iter().enumerate() {
+            let errors: Vec<String> = definition
+                .iter_errors(doc)
+                .map(|e| format!("{e} at {}", e.instance_path()))
+                .collect();
+            assert!(
+                errors.is_empty(),
+                "{} document {i}: {errors:#?}",
+                path.display()
+            );
+            checked += 1;
+        }
+    }
+    assert_eq!(checked, 5, "one binding per source type and link");
+    let json = json_document(&example_dir("aviation-json").join("bindings/dev/bindings.json"));
+    let errors: Vec<String> = definition
+        .iter_errors(&json)
+        .map(|e| format!("{e} at {}", e.instance_path()))
+        .collect();
+    assert!(errors.is_empty(), "bindings.json: {errors:#?}");
+}

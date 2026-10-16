@@ -80,3 +80,22 @@ fn target_exists(
         None => d,
     });
 }
+
+/// Where the selected profile name came from; decides how a bad name is located.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ProfileOrigin {
+    /// `--profile` or `ONTOFORGE_PROFILE`: there is no file position to point at.
+    Flag,
+    /// The manifest's `defaultProfile`.
+    Manifest,
+}
+
+/// Checks that depend on the selected profile (D-02, D-05).
+pub fn check_profile(
+    ontology: &Ontology,
+    sources: &SourceMap,
+    selection: Option<(&ProfileName, ProfileOrigin)>,
+) -> Vec<Diagnostic> {
+    let _ = (ontology, sources, selection);
+    Vec::new()
+}

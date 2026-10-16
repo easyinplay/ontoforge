@@ -91,3 +91,36 @@ fn aviation_dev_profile_binds_flight() {
         );
     }
 }
+
+#[test]
+fn aviation_dev_profile_binds_every_source_type() {
+    for name in ["aviation", "aviation-json"] {
+        let ontology = load_example(name).ontology.expect("ontology");
+        let dev = &ontology.bindings["dev"];
+        let objects: Vec<&str> = dev.objects.keys().map(|k| k.as_str()).collect();
+        assert_eq!(
+            objects,
+            ["Aircraft", "Flight", "MaintenanceRecord", "Pilot"],
+            "{name}"
+        );
+        let links: Vec<&str> = dev.links.keys().map(|k| k.as_str()).collect();
+        assert_eq!(links, ["flightCrew"], "{name}");
+        // Each object binding leaves at least one property to the same-name default.
+        for (object, binding) in &dev.objects {
+            let columns = ontology.bound_columns(binding);
+            assert!(
+                columns.iter().any(|c| !c.explicit),
+                "{name}: {object} has no property bound by the default"
+            );
+        }
+        let crew = ontology.bound_columns(&dev.links["flightCrew"]);
+        let pairs: Vec<(&str, &str)> = crew.iter().map(|c| (c.key, c.column)).collect();
+        assert_eq!(pairs, [("from", "flight_id"), ("to", "pilot_id")], "{name}");
+        let performed_at = &dev.objects["MaintenanceRecord"];
+        assert_eq!(
+            performed_at.timezone_for("performedAt"),
+            Some("aware"),
+            "{name}"
+        );
+    }
+}

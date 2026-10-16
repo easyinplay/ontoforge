@@ -9,6 +9,8 @@ mod bindings;
 mod links;
 mod objects;
 
+pub use bindings::{ProfileOrigin, check_profile};
+
 /// All structural checks on a fully merged ontology.
 pub fn validate(ontology: &Ontology, sources: &SourceMap) -> Vec<Diagnostic> {
     let mut out = Vec::new();

@@ -75,7 +75,7 @@ fn validate(args: &ValidateArgs) -> u8 {
 }
 
 fn lint(args: &LintArgs) -> u8 {
-    let out = lint_cmd::lint(&args.dir, args.config.as_deref());
+    let out = lint_cmd::lint(&args.dir, args.config.as_deref(), None);
     let code = report(&out, &args.output);
     if args.output.format == Format::Human {
         eprintln!("{}", lint_summary(&out));

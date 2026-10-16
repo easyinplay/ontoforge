@@ -295,3 +295,207 @@ fn bound_columns_object_and_link() {
         &ontology.object_types["Pilot"].properties["employeeId"]
     );
 }
+
+// ---------------------------------------------------------------------------
+// Profile selection and completeness (D-02, D-05)
+// ---------------------------------------------------------------------------
+
+use ontoforge_schema::validate::{ProfileOrigin, check_profile};
+
+const PILOT_BINDING: &str = "\
+kind: SourceBinding
+target: { objectType: Pilot }
+source: { catalog: demo, schema: aviation, table: pilots }
+columns:
+  employeeId: { column: employee_id }
+  fullName: { column: full_name }
+";
+
+const GATE: &str = "\
+kind: ObjectType
+apiName: Gate
+primaryKey: id
+properties:
+  id: { type: string, required: true }
+backing: editOnly
+";
+
+fn profile(name: &str) -> ProfileName {
+    name.to_owned().try_into().expect("profile name")
+}
+
+/// Run `check_profile` on a loaded ontology.
+fn selected(out: &LoadOutput, selection: Option<(&str, ProfileOrigin)>) -> Vec<Diagnostic> {
+    let ontology = out.ontology.as_ref().expect("ontology");
+    let chosen = selection.map(|(name, origin)| (profile(name), origin));
+    check_profile(
+        ontology,
+        &out.sources,
+        chosen.as_ref().map(|(p, o)| (p, *o)),
+    )
+}
+
+fn complete(profile_dir: &str) -> Vec<(String, &'static str)> {
+    vec![
+        (
+            format!("bindings/{profile_dir}/flight.yaml"),
+            FLIGHT_BINDING,
+        ),
+        (format!("bindings/{profile_dir}/pilot.yaml"), PILOT_BINDING),
+        (format!("bindings/{profile_dir}/crew.yaml"), CREW_BINDING),
+        (
+            format!("bindings/{profile_dir}/fixtures/flights.csv"),
+            FLIGHTS_CSV,
+        ),
+    ]
+}
+
+fn load_complete(profiles: &[&str]) -> LoadOutput {
+    let mut extra: Vec<(String, &'static str)> = Vec::new();
+    for p in profiles {
+        extra.extend(complete(p));
+    }
+    let borrowed: Vec<(&str, &str)> = extra.iter().map(|(p, t)| (p.as_str(), *t)).collect();
+    load_with(&borrowed)
+}
+
+#[test]
+fn complete_profile_has_no_diagnostics() {
+    let out = load_complete(&["dev"]);
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+    assert!(selected(&out, Some(("dev", ProfileOrigin::Manifest))).is_empty());
+}
+
+#[test]
+fn source_type_without_binding_is_v16() {
+    let out = load_with(&[
+        ("bindings/dev/flight.yaml", FLIGHT_BINDING),
+        ("bindings/dev/crew.yaml", CREW_BINDING),
+        ("bindings/dev/fixtures/flights.csv", FLIGHTS_CSV),
+    ]);
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+    let found = selected(&out, Some(("dev", ProfileOrigin::Manifest)));
+    assert_eq!(found.len(), 1, "{found:#?}");
+    let d = &found[0];
+    assert_eq!(d.code, codes::V16);
+    assert_eq!(d.file, "pilots.yaml");
+    assert_eq!((d.line, d.column), (7, 10), "points at the backing value");
+    assert!(
+        d.message.contains("Pilot") && d.message.contains("dev"),
+        "{}",
+        d.message
+    );
+    let help = d.help.as_deref().unwrap_or_default();
+    assert!(help.contains("target: { objectType: Pilot }"), "{help}");
+    assert!(help.contains("bindings/dev/"), "{help}");
+}
+
+#[test]
+fn many_to_many_without_binding_is_v16() {
+    let out = load_with(&[
+        ("bindings/dev/flight.yaml", FLIGHT_BINDING),
+        ("bindings/dev/pilot.yaml", PILOT_BINDING),
+        ("bindings/dev/fixtures/flights.csv", FLIGHTS_CSV),
+    ]);
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+    let found = selected(&out, Some(("dev", ProfileOrigin::Manifest)));
+    assert_eq!(found.len(), 1, "{found:#?}");
+    assert_eq!(found[0].code, codes::V16);
+    assert_eq!(found[0].file, "links.yaml");
+    assert_eq!((found[0].line, found[0].column), (4, 10));
+    let help = found[0].help.as_deref().unwrap_or_default();
+    assert!(help.contains("target: { linkType: flightCrew }"), "{help}");
+}
+
+#[test]
+fn edit_only_type_with_binding_is_v16() {
+    let text = "kind: SourceBinding\ntarget: { objectType: Gate }\nsource: { catalog: demo, schema: aviation, table: gates }\n";
+    let out = load_with(&[("gates.yaml", GATE), ("bindings/prod/gate.yaml", text)]);
+    let d = only(&out);
+    assert_eq!(d.code, codes::V16);
+    assert_eq!(d.file, "bindings/prod/gate.yaml");
+    assert_eq!((d.line, d.column), (2, 23));
+    assert!(d.message.contains("editOnly"), "{}", d.message);
+    assert!(
+        d.help
+            .as_deref()
+            .unwrap_or_default()
+            .contains("backing: source"),
+        "{d:?}"
+    );
+}
+
+#[test]
+fn one_to_many_link_binding_is_v16() {
+    let leg = "kind: ObjectType\napiName: Leg\nprimaryKey: legId\nproperties:\n  legId: { type: string, required: true }\n  gateId: { type: string }\nbacking: editOnly\n";
+    let link = "kind: LinkType\napiName: gateLegs\ncardinality: oneToMany\nfrom: { objectType: Gate, apiName: legs }\nto: { objectType: Leg, apiName: gate, foreignKey: gateId }\n";
+    let binding = "kind: SourceBinding\ntarget: { linkType: gateLegs }\nsource: { catalog: demo, schema: aviation, table: gate_legs }\ncolumns:\n  from: { column: a }\n  to: { column: b }\n";
+    let out = load_with(&[
+        ("gates.yaml", GATE),
+        ("legs.yaml", leg),
+        ("gate-legs.yaml", link),
+        ("bindings/prod/gate-legs.yaml", binding),
+    ]);
+    let d = only(&out);
+    assert_eq!(d.code, codes::V16);
+    assert_eq!(d.file, "bindings/prod/gate-legs.yaml");
+    assert!(d.message.contains("manyToMany"), "{}", d.message);
+}
+
+#[test]
+fn unknown_profile_from_flag_is_v16_with_suggestion() {
+    let out = load_complete(&["dev", "prod"]);
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+    let found = selected(&out, Some(("prdo", ProfileOrigin::Flag)));
+    assert_eq!(found.len(), 1, "{found:#?}");
+    let d = &found[0];
+    assert_eq!(d.code, codes::V16);
+    assert_eq!(d.file, "ontology.yaml");
+    assert_eq!(d.line, 0, "a flag has no file position");
+    assert!(d.message.contains("prdo"), "{}", d.message);
+    assert_eq!(d.help.as_deref(), Some("did you mean `prod`?"));
+}
+
+#[test]
+fn unknown_profile_from_manifest_points_at_default_profile() {
+    let mut files: Vec<(String, &'static str)> = complete("dev");
+    files.push((
+        "ontology.yaml".to_owned(),
+        "apiName: demo\ndefaultProfile: prdo\n",
+    ));
+    files.extend([
+        ("objects.yaml".to_owned(), FLIGHT),
+        ("pilots.yaml".to_owned(), PILOT),
+        ("links.yaml".to_owned(), CREW),
+    ]);
+    let borrowed: Vec<(&str, &str)> = files.iter().map(|(p, t)| (p.as_str(), *t)).collect();
+    let out = load_from_memory(&borrowed);
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+    let found = selected(&out, Some(("prdo", ProfileOrigin::Manifest)));
+    assert_eq!(found.len(), 1, "{found:#?}");
+    assert_eq!(found[0].code, codes::V16);
+    assert_eq!(found[0].file, "ontology.yaml");
+    assert_eq!((found[0].line, found[0].column), (2, 17));
+    assert_eq!(found[0].help.as_deref(), Some("did you mean `dev`?"));
+}
+
+#[test]
+fn no_profile_selected_is_v16() {
+    let out = load_complete(&["dev"]);
+    let found = selected(&out, None);
+    assert_eq!(found.len(), 1, "{found:#?}");
+    let d = &found[0];
+    assert_eq!(d.code, codes::V16);
+    assert_eq!(d.file, "ontology.yaml");
+    let help = d.help.as_deref().unwrap_or_default();
+    for way in ["--profile", "ONTOFORGE_PROFILE", "defaultProfile"] {
+        assert!(help.contains(way), "{way} missing from {help}");
+    }
+}
+
+#[test]
+fn all_edit_only_needs_no_profile() {
+    let out = load_from_memory(&[("ontology.yaml", "apiName: demo\n"), ("gates.yaml", GATE)]);
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+    assert!(selected(&out, None).is_empty());
+}

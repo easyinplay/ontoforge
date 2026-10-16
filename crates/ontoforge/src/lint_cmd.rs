@@ -9,13 +9,14 @@ use ontoforge_schema::lint;
 
 use crate::pipeline;
 
-/// Check the ontology under `root`; when it has no errors, load the lint
+/// Check the ontology under `root` for `profile` (see [`pipeline::check_with_profile`]);
+/// when it has no errors, load the lint
 /// configuration (`config` overrides `<root>/ontoforge.toml`) and run the rules.
 ///
 /// Structural errors (`ONT-V*`) and configuration errors (`ONT-V15`) stop the run
 /// before any rule executes; they are returned as the only error diagnostics.
-pub fn lint(root: &Utf8Path, config: Option<&Utf8Path>) -> LoadOutput {
-    let mut out = pipeline::check(root);
+pub fn lint(root: &Utf8Path, config: Option<&Utf8Path>, profile: Option<&str>) -> LoadOutput {
+    let mut out = pipeline::check_with_profile(root, profile).out;
     if has_errors(&out.diagnostics) {
         return out;
     }

@@ -80,6 +80,7 @@ fn warn_dir() -> tempfile::TempDir {
 fn ontoforge(args: &[&str]) -> Output {
     Command::new(env!("CARGO_BIN_EXE_ontoforge"))
         .args(args)
+        .env_remove("ONTOFORGE_PROFILE")
         .env("NO_COLOR", "1")
         .output()
         .expect("spawn ontoforge")
@@ -289,4 +290,44 @@ fn e08_human() {
     let stdout = String::from_utf8(out.stdout).unwrap();
     assert!(stdout.contains("ONT-E08"), "{stdout}");
     insta::assert_snapshot!("e08_human", stdout);
+}
+
+/// A source-backed type with a binding in `dev` only.
+fn profile_lint_dir() -> tempfile::TempDir {
+    let dir = tempfile::tempdir().unwrap();
+    write(
+        dir.path(),
+        "ontology.yaml",
+        "apiName: demo\ndefaultProfile: dev\n",
+    );
+    write(
+        dir.path(),
+        "objects.yaml",
+        "kind: ObjectType\napiName: Flight\nprimaryKey: flightId\nproperties:\n  flightId: { type: string, required: true }\nbacking: source\n",
+    );
+    let bindings = dir.path().join("bindings/dev");
+    std::fs::create_dir_all(&bindings).unwrap();
+    write(
+        &bindings,
+        "flight.yaml",
+        "kind: SourceBinding\ntarget: { objectType: Flight }\nsource: { catalog: demo, schema: aviation, table: flights }\n",
+    );
+    dir
+}
+
+#[test]
+fn lint_honors_the_profile_flag_and_variable() {
+    let dir = profile_lint_dir();
+    let (out, diags) = lint_json(path(&dir), &[]);
+    assert_eq!(out.status.code(), Some(0), "{diags:#?}");
+    let (out, diags) = lint_json(path(&dir), &["--profile", "prod"]);
+    assert_eq!(out.status.code(), Some(1));
+    assert_eq!(codes(&diags), ["ONT-V16"]);
+    let out = Command::new(env!("CARGO_BIN_EXE_ontoforge"))
+        .args(["lint", path(&dir), "--format", "json"])
+        .env("NO_COLOR", "1")
+        .env("ONTOFORGE_PROFILE", "prod")
+        .output()
+        .expect("spawn ontoforge");
+    assert_eq!(out.status.code(), Some(1));
 }
