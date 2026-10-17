@@ -32,22 +32,41 @@ pub enum PhysicalType {
     Other(String),
 }
 
+/// Deepest `array(...)` nesting [`PhysicalType::parse`] models. The type text comes from the
+/// engine (network input); deeper nesting becomes [`PhysicalType::Other`], so no type string
+/// can overflow the stack while parsing, rendering or dropping the value (WR-E06).
+pub const MAX_TYPE_DEPTH: usize = 32;
+
 impl PhysicalType {
     /// Parses a type name as Trino (or the SQLite stand-in) spells it. Never fails: text this
-    /// crate does not model becomes [`PhysicalType::Other`].
+    /// crate does not model, including `array` nesting deeper than [`MAX_TYPE_DEPTH`], becomes
+    /// [`PhysicalType::Other`].
     #[must_use]
     pub fn parse(s: &str) -> Self {
         let text = s.trim();
         // ASCII lower-casing keeps byte offsets, so `lower` and `text` index alike.
         let lower = text.to_ascii_lowercase();
-        if let Some(inner) = lower
+        // Peel the `array(...)` layers in a loop: `start..end` is the trimmed inner text.
+        let (mut start, mut end) = (0, text.len());
+        let mut depth = 0;
+        while let Some(inner) = lower[start..end]
             .strip_prefix("array(")
             .and_then(|rest| rest.strip_suffix(')'))
         {
-            let start = text.len() - inner.len() - 1;
-            return Self::Array(Box::new(Self::parse(&text[start..start + inner.len()])));
+            if depth == MAX_TYPE_DEPTH {
+                return Self::Other(text.to_owned());
+            }
+            depth += 1;
+            let inner_start = start + "array(".len();
+            start = inner_start + (inner.len() - inner.trim_start().len());
+            end = start + inner.trim().len();
         }
-        Self::parse_scalar(&lower).unwrap_or_else(|| Self::Other(text.to_owned()))
+        let mut parsed = Self::parse_scalar(&lower[start..end])
+            .unwrap_or_else(|| Self::Other(text[start..end].to_owned()));
+        for _ in 0..depth {
+            parsed = Self::Array(Box::new(parsed));
+        }
+        parsed
     }
 
     fn parse_scalar(lower: &str) -> Option<Self> {
@@ -210,6 +229,43 @@ fn call_args<'a>(s: &'a str, name: &str) -> Option<&'a str> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn nested(depth: usize, leaf: &str) -> String {
+        format!("{}{leaf}{}", "array(".repeat(depth), ")".repeat(depth))
+    }
+
+    #[test]
+    fn array_nesting_is_bounded() {
+        // WR-E06: the type text is network input; hostile nesting must neither overflow the
+        // stack nor build an unbounded `Box` chain.
+        let deep = nested(200_000, "x");
+        assert_eq!(
+            PhysicalType::parse(&deep),
+            PhysicalType::Other(deep.clone())
+        );
+
+        let mut at_limit = PhysicalType::parse(&nested(MAX_TYPE_DEPTH, " Integer "));
+        for _ in 0..MAX_TYPE_DEPTH {
+            let PhysicalType::Array(inner) = at_limit else {
+                panic!("expected an array, got {at_limit:?}");
+            };
+            at_limit = *inner;
+        }
+        assert_eq!(at_limit, PhysicalType::Integer);
+
+        let over = nested(MAX_TYPE_DEPTH + 1, "integer");
+        assert_eq!(
+            PhysicalType::parse(&over),
+            PhysicalType::Other(over.clone())
+        );
+        // Whitespace inside a layer is trimmed as before; the leaf keeps its spelling.
+        assert_eq!(
+            PhysicalType::parse("ARRAY( array( Map(x,y) ) )"),
+            PhysicalType::Array(Box::new(PhysicalType::Array(Box::new(
+                PhysicalType::Other("Map(x,y)".to_owned())
+            ))))
+        );
+    }
 
     #[test]
     fn physical_type_parse_table() {
