@@ -30,7 +30,7 @@ use ontoforge_schema::diag::{
 };
 use ontoforge_schema::ir::{BindingTarget, Ontology, ProfileName, SourceBinding};
 use ontoforge_schema::loader::sourcemap::{DefKey, DefKind, Part, Seg};
-use ontoforge_schema::loader::{MANIFEST, MAX_FILE_BYTES, SourceMap, read_limited};
+use ontoforge_schema::loader::{MANIFEST, SourceMap};
 
 use crate::cli::ValidateArgs;
 use crate::{pipeline, render};
@@ -65,7 +65,7 @@ pub fn run_online(args: &ValidateArgs) -> OnlineRun {
         };
     };
 
-    let (found, bindings) = check_online(args, &ontology, &mut out.sources, &profile);
+    let (found, bindings) = check_online(args, &ontology, &out.sources, &profile);
     out.diagnostics.extend(found);
     sort_diagnostics(&mut out.diagnostics);
     if !has_errors(&out.diagnostics) {
@@ -145,10 +145,10 @@ struct TrinoBackend {
 fn check_online(
     args: &ValidateArgs,
     ontology: &Ontology,
-    sources: &mut SourceMap,
+    sources: &SourceMap,
     profile: &ProfileName,
 ) -> (Vec<Diagnostic>, usize) {
-    let backend = match select_backend(args, sources, profile) {
+    let backend = match select_backend(args, profile) {
         Ok(backend) => backend,
         Err(found) => return (found, 0),
     };
@@ -183,7 +183,6 @@ fn check_online(
             return (vec![diagnostic], 0);
         }
     };
-    let sources: &SourceMap = sources;
     let check = Check {
         ontology,
         sources,
@@ -339,24 +338,15 @@ fn pk_diagnostics(finding: &PkFinding, sources: &SourceMap) -> Vec<Diagnostic> {
 }
 
 /// Picks the engine: the SQLite stand-in unless `--server-config` maps the profile to Trino.
-fn select_backend(
-    args: &ValidateArgs,
-    sources: &mut SourceMap,
-    profile: &ProfileName,
-) -> Result<Backend, Vec<Diagnostic>> {
+fn select_backend(args: &ValidateArgs, profile: &ProfileName) -> Result<Backend, Vec<Diagnostic>> {
     let Some(path) = &args.server_config else {
         return Ok(Backend::Fixtures);
     };
     let file = path.as_str();
-    let (config, _text) = load_server_config(path).map_err(|errors| {
-        // The text is read again for the line and column of the errors; when the file is gone
-        // or unreadable the errors carry no span either.
-        let text = read_limited(path.as_std_path(), true, MAX_FILE_BYTES)
-            .ok()
-            .and_then(|bytes| String::from_utf8(bytes).ok());
-        if let Some(text) = &text {
-            sources.add_file(file, text.clone());
-        }
+    let (config, _text) = load_server_config(path).map_err(|(errors, text)| {
+        // The text only turns spans into line and column. It is never registered as a source:
+        // a rejected line may hold a plaintext secret (a `password`, a `token`, the userinfo of
+        // `url`), and the human renderer prints the lines around a span (CR-C01).
         errors
             .iter()
             .map(|e| config_diagnostic(e, file, text.as_deref()))

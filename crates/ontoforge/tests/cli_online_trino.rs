@@ -555,6 +555,46 @@ async fn secret_never_printed() {
     }
 }
 
+/// CR-C01: a rejected plaintext secret, or the userinfo of `url`, never reaches the output,
+/// also in the human format, which prints the lines around a span of a registered source.
+#[tokio::test(flavor = "multi_thread")]
+async fn rejected_plaintext_secret_never_printed() {
+    const SECRET: &str = "Hunter2SuperSecret";
+    let dir = ontology(false);
+    let configs = [
+        format!(
+            "[trino]\nurl = \"https://127.0.0.1:9\"\n\n[trino.identities.ontology]\n\
+             user = \"u\"\npassword = \"{SECRET}\"\n\n[profiles.dev]\nengine = \"trino\"\n"
+        ),
+        format!(
+            "[trino]\nurl = \"https://127.0.0.1:9\"\n\n[trino.identities.ontology]\n\
+             user = \"u\"\ntoken = \"{SECRET}\"\n\n[profiles.dev]\nengine = \"trino\"\n"
+        ),
+        format!(
+            "[trino]\nurl = \"https://alice:{SECRET}@127.0.0.1:9\"\n\n\
+             [trino.identities.ontology]\nuser = \"u\"\nauth = \"none\"\n\n\
+             [profiles.dev]\nengine = \"trino\"\n"
+        ),
+    ];
+    for text in configs {
+        let (_cfg_dir, cfg) = config_file(&text);
+        for extra in [&[][..], &["--format", "json"][..]] {
+            let out = ontoforge(online_args(dir.path(), &cfg, extra), Vec::new()).await;
+            let stdout = String::from_utf8_lossy(&out.stdout);
+            let stderr = String::from_utf8_lossy(&out.stderr);
+            assert_eq!(out.status.code(), Some(1), "{extra:?}\n{stdout}\n{stderr}");
+            assert!(stdout.contains("ONT-V20"), "{extra:?}\n{stdout}");
+            assert!(!stdout.contains(SECRET), "{extra:?}\n{stdout}");
+            assert!(!stderr.contains(SECRET), "{extra:?}\n{stderr}");
+            if extra.is_empty() {
+                // The human format still names the place of the problem.
+                let file_line = format!("{cfg}:");
+                assert!(stdout.contains(&file_line), "{stdout}");
+            }
+        }
+    }
+}
+
 #[tokio::test(flavor = "multi_thread")]
 async fn config_errors_are_v20_with_location() {
     let dir = ontology(false);

@@ -192,17 +192,30 @@ pub fn parse_server_config(text: &str) -> Result<ServerConfig, Vec<ConfigError>>
 }
 
 /// Reads and parses the file at `path`; also returns its text so the caller can turn spans
-/// into line and column.
-pub fn load_server_config(path: &Utf8Path) -> Result<(ServerConfig, String), Vec<ConfigError>> {
-    let bytes = read_limited(path.as_std_path(), true, MAX_FILE_BYTES)
-        .map_err(|f| vec![read_error("configuration file", path, &f, MAX_FILE_BYTES)])?;
-    let text = String::from_utf8(bytes).map_err(|_| {
-        vec![ConfigError::new(format!(
-            "configuration file `{path}` is not valid UTF-8"
-        ))]
+/// into line and column. On failure the text comes back with the errors when the file could be
+/// read, so the spans refer to exactly the text that was parsed (no second read). The text may
+/// hold a rejected plaintext secret: use it for line and column only, never print it.
+pub fn load_server_config(
+    path: &Utf8Path,
+) -> Result<(ServerConfig, String), (Vec<ConfigError>, Option<String>)> {
+    let bytes = read_limited(path.as_std_path(), true, MAX_FILE_BYTES).map_err(|f| {
+        (
+            vec![read_error("configuration file", path, &f, MAX_FILE_BYTES)],
+            None,
+        )
     })?;
-    let cfg = parse_server_config(&text)?;
-    Ok((cfg, text))
+    let text = String::from_utf8(bytes).map_err(|_| {
+        (
+            vec![ConfigError::new(format!(
+                "configuration file `{path}` is not valid UTF-8"
+            ))],
+            None,
+        )
+    })?;
+    match parse_server_config(&text) {
+        Ok(cfg) => Ok((cfg, text)),
+        Err(errors) => Err((errors, Some(text))),
+    }
 }
 
 fn read_error(what: &str, path: &Utf8Path, failure: &ReadFailure, limit: u64) -> ConfigError {

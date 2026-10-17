@@ -56,17 +56,29 @@ fn to_report(d: &Diagnostic, sources: &SourceMap) -> Report {
         Severity::Warning => MietteSeverity::Warning,
         Severity::Info => MietteSeverity::Advice,
     };
-    let mut diag = MietteDiagnostic::new(sanitize(&d.message))
-        .with_code(sanitize(&d.code))
-        .with_severity(severity);
-    if let Some(help) = &d.help {
-        diag = diag.with_help(sanitize(help));
-    }
     let text = if d.line == 0 {
         None
     } else {
         sources.text(&d.file)
     };
+    let message = match text {
+        // A located diagnostic in a file that is not a registered source (the server
+        // configuration, whose lines may hold a secret, CR-C01): name the place, print no line.
+        None if d.line > 0 => format!(
+            "{}\n  at {}:{}:{}",
+            sanitize(&d.message),
+            sanitize(&d.file),
+            d.line,
+            d.column
+        ),
+        _ => sanitize(&d.message),
+    };
+    let mut diag = MietteDiagnostic::new(message)
+        .with_code(sanitize(&d.code))
+        .with_severity(severity);
+    if let Some(help) = &d.help {
+        diag = diag.with_help(sanitize(help));
+    }
     let Some(text) = text else {
         return Report::new(diag);
     };
@@ -164,6 +176,27 @@ mod tests {
         );
         assert!(out.contains("?]52;c;aGk=?.yaml"), "{out}");
         assert!(!out.contains('\u{1b}') && !out.contains('\u{7}'), "{out:?}");
+    }
+
+    /// CR-C01: a located diagnostic whose file is not a registered source names its place
+    /// and prints no line of that file.
+    #[test]
+    fn located_diagnostic_without_source_names_the_place() {
+        let at = ontoforge_schema::diag::SourceLocation {
+            file: "cfg/server.toml".into(),
+            line: 6,
+            column: 1,
+            offset: 40,
+            length: 8,
+        };
+        let out = render(
+            &[Diagnostic::error("ONT-V20", "plaintext", &at)],
+            &SourceMap::default(),
+            Format::Human,
+            false,
+        );
+        assert!(out.contains("cfg/server.toml:6:1"), "{out}");
+        assert!(!out.contains("╭─["), "no source snippet: {out}");
     }
 
     #[test]

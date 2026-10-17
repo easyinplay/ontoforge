@@ -402,8 +402,17 @@ fn load_server_config_reads_the_file() {
     assert_eq!(text, FULL);
     assert_eq!(cfg.profiles.len(), 2);
 
-    let errs = load_server_config(&base.join("missing.toml")).expect_err("absent");
+    let (errs, text) = load_server_config(&base.join("missing.toml")).expect_err("absent");
     assert!(errs[0].message.contains("missing.toml"), "{errs:?}");
+    assert!(text.is_none());
+
+    // CR-C01: a parse failure hands back the text that was parsed, so the caller never reads
+    // the file a second time.
+    let bad = "[profiles.Prod]\nengine = \"sqlite\"\n";
+    std::fs::write(base.join("bad.toml"), bad).expect("write");
+    let (errs, text) = load_server_config(&base.join("bad.toml")).expect_err("invalid");
+    assert!(!errs.is_empty());
+    assert_eq!(text.as_deref(), Some(bad));
 }
 
 #[test]
