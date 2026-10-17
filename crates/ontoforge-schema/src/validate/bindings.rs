@@ -3,8 +3,8 @@
 
 use crate::diag::{Diagnostic, Severity, SourceLocation, codes, did_you_mean};
 use crate::ir::{
-    Backing, BindingTarget, Cardinality, LinkTypeName, ObjectTypeName, Ontology, ProfileName,
-    PropertyName, SourceBinding, binding_def_name,
+    Backing, BindingTarget, BoundColumn, Cardinality, LinkTypeName, ObjectTypeName, Ontology,
+    ProfileName, PropertyName, SourceBinding, binding_def_name,
 };
 use crate::loader::sourcemap::{DefKey, DefKind, Part, Seg};
 use crate::loader::{MANIFEST, SourceMap, fixture_path};
@@ -43,6 +43,7 @@ pub fn check(ontology: &Ontology, sources: &SourceMap, out: &mut Vec<Diagnostic>
         if target_exists(ontology, profile, binding, &at, out) {
             may_be_bound(ontology, binding, &at, out);
             column_keys(ontology, binding, &at, out);
+            distinct_columns(ontology, binding, &at, out);
         }
         physical_names(binding, &at, out);
         time_zones(binding, &at, out);
@@ -148,6 +149,43 @@ fn column_keys(ontology: &Ontology, binding: &SourceBinding, at: &At, out: &mut 
 
 /// The two ends of a link binding, in the order columns are derived.
 const LINK_ENDS: [&str; 2] = ["from", "to"];
+
+/// V16 when two keys read the same physical column (compared in lower case, as the
+/// engines do). The engine would give both the type of the first, silently (WR-S04).
+/// Points at the explicit `column` of the pair, the later one when both are explicit.
+fn distinct_columns(
+    ontology: &Ontology,
+    binding: &SourceBinding,
+    at: &At,
+    out: &mut Vec<Diagnostic>,
+) {
+    let mut seen: std::collections::HashMap<String, BoundColumn<'_>> =
+        std::collections::HashMap::new();
+    for c in ontology.bound_columns(binding) {
+        let Some(first) = seen.get(&c.column.to_lowercase()).copied() else {
+            seen.insert(c.column.to_lowercase(), c);
+            continue;
+        };
+        let here = if c.explicit {
+            at(&["columns", c.key, "column"], Part::Value)
+        } else if first.explicit {
+            at(&["columns", first.key, "column"], Part::Value)
+        } else {
+            at(&["target"], Part::Value)
+        };
+        out.push(
+            Diagnostic::error(
+                codes::V16,
+                format!(
+                    "`{}` and `{}` are both read from column `{}`",
+                    first.key, c.key, c.column
+                ),
+                &here,
+            )
+            .with_help("map each key to a column of its own"),
+        );
+    }
+}
 
 /// Catalog, schema, table and column names must be non-empty text without control
 /// characters (T-02-09). They are quoted when printed; this keeps them readable.

@@ -536,6 +536,31 @@ fn column_key_unknown_property_is_v09() {
     assert_eq!(d.help.as_deref(), Some("did you mean `flightNumber`?"));
 }
 
+/// WR-S04: two keys reading one physical column are refused, explicit or by default name,
+/// compared in lower case.
+#[test]
+fn two_keys_on_one_column_is_v16() {
+    // `flightNumber` explicitly reads `status`, which `status` reads by default.
+    let text = flight_binding_with("columns:\n  flightNumber: { column: STATUS }\n");
+    let out = load_binding(&text);
+    let d = only(&out);
+    assert_eq!(d.code, codes::V16);
+    assert_eq!(d.file, "bindings/dev/flight.yaml");
+    assert_eq!(d.line, 5, "points at the explicit column");
+    assert!(
+        d.message.contains("`flightNumber`") && d.message.contains("`status`"),
+        "{}",
+        d.message
+    );
+
+    // Both ends of a link on one column.
+    let same = "kind: SourceBinding\ntarget: { linkType: flightCrew }\nsource: { catalog: demo, schema: aviation, table: flight_crew }\ncolumns:\n  from: { column: id }\n  to: { column: id }\n";
+    let out = load_with(&[("bindings/dev/crew.yaml", same)]);
+    let d = only(&out);
+    assert_eq!(d.code, codes::V16);
+    assert_eq!(d.line, 6, "points at the later end");
+}
+
 #[test]
 fn link_columns_need_from_and_to() {
     let only_from = "kind: SourceBinding\ntarget: { linkType: flightCrew }\nsource: { catalog: demo, schema: aviation, table: flight_crew }\ncolumns:\n  from: { column: flight_id }\n";
