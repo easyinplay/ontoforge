@@ -110,7 +110,14 @@ fn column_keys(ontology: &Ontology, binding: &SourceBinding, at: &At, out: &mut 
         }
         BindingTarget::LinkType(name) => {
             for end in LINK_ENDS {
-                if !binding.columns.contains_key(end) {
+                // `from: {}` names no column either: the end would fall back to a column
+                // literally named `from` (WR-S03).
+                if binding
+                    .columns
+                    .get(end)
+                    .and_then(|c| c.column.as_deref())
+                    .is_none()
+                {
                     out.push(
                         Diagnostic::error(
                             codes::V16,

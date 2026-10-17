@@ -143,7 +143,7 @@ backing: source
     fn e15_link_end() {
         let bind = binding(
             "{ linkType: flightCrew }",
-            "  from: { collation: caseInsensitive }\n  to: { collation: caseInsensitive }\n",
+            "  from: { column: flight_id, collation: caseInsensitive }\n  to: { column: pilot_id, collation: caseInsensitive }\n",
         );
         let found = run(&[("bindings/dev/flight-crew.yaml", bind)], None);
         assert_eq!(found.len(), 1, "{found:#?}");

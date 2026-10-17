@@ -554,6 +554,13 @@ fn link_columns_need_from_and_to() {
     let d = only(&out);
     assert_eq!(d.code, codes::V09);
     assert!(d.message.contains("via"), "{}", d.message);
+
+    // WR-S03: an end without `column` maps to no column either.
+    let no_column = "kind: SourceBinding\ntarget: { linkType: flightCrew }\nsource: { catalog: demo, schema: aviation, table: flight_crew }\ncolumns:\n  from: { collation: caseSensitive }\n  to: { column: pilot_id }\n";
+    let out = load_with(&[("bindings/dev/crew.yaml", no_column)]);
+    let d = only(&out);
+    assert_eq!(d.code, codes::V16);
+    assert!(d.message.contains("`from`"), "{}", d.message);
 }
 
 fn source_binding(catalog: &str, schema: &str, table: &str) -> String {
