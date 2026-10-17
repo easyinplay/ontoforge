@@ -350,26 +350,13 @@ pub(super) fn load_table(
     }
     let text = String::from_utf8(bytes)
         .map_err(|_| err(None, "the fixture is not valid UTF-8".to_owned()))?;
+    // The rows are parsed here; the header rules (byte order mark, unnamed and duplicate
+    // columns) are `fixture_header`'s alone, shared with the lint (WR-S01).
     let text = text.strip_prefix('\u{feff}').unwrap_or(&text);
     let header = fixture_header(file, text).map_err(|message| err(None, message))?;
 
-    let mut seen = std::collections::HashSet::new();
     let mut columns = Vec::with_capacity(header.len());
     for name in header {
-        if name.is_empty() {
-            return Err(err(
-                None,
-                "the fixture has a column without a name".to_owned(),
-            ));
-        }
-        if !seen.insert(name.to_lowercase()) {
-            return Err(err(
-                None,
-                format!(
-                    "the fixture has two columns named `{name}` (names are compared in lower case)"
-                ),
-            ));
-        }
         let logical = table
             .columns
             .iter()

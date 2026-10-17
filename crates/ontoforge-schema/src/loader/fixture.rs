@@ -8,21 +8,35 @@ use indexmap::IndexSet;
 
 /// The column names of a fixture, in file order.
 ///
-/// A `.csv` file's header is its first record (a leading UTF-8 byte order mark is
-/// ignored). A `.json` file is a top-level array of objects whose header is the union
-/// of all keys, in order of first appearance. The error text names a structural
-/// problem only and never repeats data from the file.
+/// A leading UTF-8 byte order mark is ignored in either format. A `.csv` file's header
+/// is its first record. A `.json` file is a top-level array of objects whose header is
+/// the union of all keys, in order of first appearance. A column without a name, or two
+/// names that are equal in lower case, are errors: the engine could not load such a
+/// fixture, so the lint must not look clean either (WR-S01). The error text names a
+/// structural problem only and never repeats data from the file.
 pub fn fixture_header(file: &str, text: &str) -> Result<Vec<String>, String> {
+    let text = text.strip_prefix('\u{feff}').unwrap_or(text);
     let extension = Utf8Path::new(file).extension().map(str::to_ascii_lowercase);
-    match extension.as_deref() {
+    let header = match extension.as_deref() {
         Some("csv") => csv_header(text),
         Some("json") => json_header(text),
         _ => Err("a fixture must be a `.csv` or `.json` file".to_owned()),
+    }?;
+    let mut seen = std::collections::HashSet::new();
+    for name in &header {
+        if name.is_empty() {
+            return Err("the fixture has a column without a name".to_owned());
+        }
+        if !seen.insert(name.to_lowercase()) {
+            return Err(format!(
+                "the fixture has two columns named `{name}` (names are compared in lower case)"
+            ));
+        }
     }
+    Ok(header)
 }
 
 fn csv_header(text: &str) -> Result<Vec<String>, String> {
-    let text = text.strip_prefix('\u{feff}').unwrap_or(text);
     let mut reader = csv::ReaderBuilder::new()
         .has_headers(true)
         .flexible(true)
@@ -93,6 +107,25 @@ mod tests {
         // Anything else is not a fixture.
         assert!(fixture_header("rows.txt", "a,b").is_err());
         assert!(fixture_header("rows", "a,b").is_err());
+    }
+
+    /// WR-S01: the header rules the engine loads with live here, so the lint agrees with it.
+    #[test]
+    fn fixture_header_matches_the_engine_rules() {
+        // A byte order mark is ignored in JSON too (Notepad writes one).
+        assert_eq!(
+            fixture_header("rows.json", "\u{FEFF}[{\"a\":1}]").unwrap(),
+            ["a"]
+        );
+        // A column without a name, and names equal in lower case, are refused.
+        for (file, text) in [
+            ("rows.csv", "id,,name\n"),
+            ("rows.csv", "id,ID\n"),
+            ("rows.json", r#"[{"id":1,"":2}]"#),
+            ("rows.json", r#"[{"Id":1},{"iD":2}]"#),
+        ] {
+            assert!(fixture_header(file, text).is_err(), "{file}: {text:?}");
+        }
     }
 
     #[test]
