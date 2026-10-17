@@ -10,6 +10,7 @@ use std::time::Duration;
 pub mod bind_check;
 pub mod config;
 pub mod error;
+pub mod pk_check;
 pub mod printer;
 pub mod sqlite;
 pub mod trino;
