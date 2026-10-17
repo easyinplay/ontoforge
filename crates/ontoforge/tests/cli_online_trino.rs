@@ -449,6 +449,65 @@ async fn timeout_flag_is_sent() {
     assert_eq!(session(&requests[1]), "query_max_execution_time=15s");
 }
 
+/// WR-C05: when the CLI's query times out, the `DELETE nextUri` that cancels it on the
+/// coordinator goes out before the process ends.
+#[tokio::test(flavor = "multi_thread")]
+async fn timed_out_query_is_cancelled_before_exit() {
+    let server = MockServer::start().await;
+    let next = "/v1/statement/executing/q1/slug/1";
+    Mock::given(method("POST"))
+        .and(path("/v1/statement"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+            "id": "q1",
+            "nextUri": format!("{}{next}", server.uri()),
+            "stats": { "state": "QUEUED" }
+        })))
+        .mount(&server)
+        .await;
+    // The next page never arrives in time.
+    Mock::given(method("GET"))
+        .and(path(next))
+        .respond_with(
+            ResponseTemplate::new(200)
+                .set_body_json(page(&flight_rows()))
+                .set_delay(std::time::Duration::from_secs(30)),
+        )
+        .mount(&server)
+        .await;
+    Mock::given(method("DELETE"))
+        .and(path(next))
+        .respond_with(ResponseTemplate::new(204))
+        .mount(&server)
+        .await;
+    let dir = ontology(false);
+    let (_cfg_dir, cfg) = config_file(&trino_config(&server.uri(), ""));
+
+    let started = std::time::Instant::now();
+    let out = ontoforge(
+        online_args(dir.path(), &cfg, &["--timeout", "500", "--format", "json"]),
+        Vec::new(),
+    )
+    .await;
+    assert!(
+        started.elapsed() < std::time::Duration::from_secs(20),
+        "the CLI waited for the slow page"
+    );
+    assert_eq!(out.status.code(), Some(3));
+    let diags = diagnostics(&out);
+    assert!(
+        diags
+            .iter()
+            .any(|d| d["code"] == "ONT-V19" && d["message"].as_str().unwrap().contains("timed out")),
+        "{diags:#?}"
+    );
+    let requests = server.received_requests().await.expect("recorded");
+    let deletes = requests
+        .iter()
+        .filter(|r| r.method == wiremock::http::Method::DELETE && r.url.path() == next)
+        .count();
+    assert_eq!(deletes, 1, "the timed-out query is cancelled once");
+}
+
 #[tokio::test(flavor = "multi_thread")]
 async fn trino_unavailable_exits_3() {
     let port = closed_port();
