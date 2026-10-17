@@ -316,8 +316,43 @@ fn secret_from_file_follows_symlink_and_trims() {
     assert!(err.message.contains("big.txt"), "{err:?}");
     assert!(!err.message.contains(SECRET));
 
+    // WR-E01: a reference that names no file is not echoed (it may be the secret itself).
     let err = resolve_secret(None, Some("absent.txt"), base, &no_env).expect_err("absent");
-    assert!(err.message.contains("absent.txt"), "{err:?}");
+    assert!(err.message.contains("does not exist"), "{err:?}");
+    assert!(!err.message.contains("absent.txt"), "{err:?}");
+}
+
+#[test]
+fn secret_written_into_a_reference_key_is_never_echoed() {
+    // WR-E01: the secret value pasted into `*_env` / `*_file` instead of a name or a path.
+    const PASTED: &str = "Pa55w0rd!xyz";
+    const JWT: &str = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.c2lnbmF0dXJl";
+    let mut seen: Vec<String> = Vec::new();
+    for identity in [
+        format!("auth = \"basic\"\npassword_env = \"{PASTED}\""),
+        format!("auth = \"bearer\"\ntoken_env = \"{PASTED}\""),
+    ] {
+        let errs = errors(&with_trino("https://t.example", &identity));
+        assert!(
+            errs.iter()
+                .any(|e| e.message.contains("must be an environment variable name")),
+            "{errs:?}"
+        );
+        seen.extend(errs.iter().map(|e| format!("{e} {e:?}")));
+    }
+    let e = resolve_secret(Some(PASTED), None, Utf8Path::new("."), &no_env).expect_err("env");
+    assert!(e.message.contains("not a valid variable name"), "{e:?}");
+    seen.push(format!("{e} {e:?}"));
+    let dir = tempfile::tempdir().expect("tempdir");
+    let e = resolve_secret(None, Some(JWT), utf8(dir.path()), &no_env).expect_err("file");
+    seen.push(format!("{e} {e:?}"));
+    for text in &seen {
+        assert!(!text.contains(PASTED) && !text.contains(JWT), "{text}");
+    }
+    // A well-formed variable name is still named, so the operator knows what to set.
+    let e =
+        resolve_secret(Some("TRINO_PW_2"), None, Utf8Path::new("."), &no_env).expect_err("unset");
+    assert!(e.message.contains("TRINO_PW_2"), "{e:?}");
 }
 
 #[test]

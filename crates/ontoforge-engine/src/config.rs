@@ -452,7 +452,28 @@ impl<'a> Checker<'a> {
                 "identity `{label}` with auth = \"{kind}\" has secret references that do not apply"
             ));
         }
+        // A value that is not a variable name is most likely the secret itself, pasted into
+        // the wrong key: name the key, never the value.
+        for (key, name) in [
+            ("password_env", &identity.password_env),
+            ("token_env", &identity.token_env),
+        ] {
+            if name.as_deref().is_some_and(|n| !is_env_name(n)) {
+                problem(format!(
+                    "identity `{label}`: `{key}` must be an environment variable name ([A-Za-z_][A-Za-z0-9_]*)"
+                ));
+            }
+        }
     }
+}
+
+/// Whether `s` has the shape of an environment variable name.
+fn is_env_name(s: &str) -> bool {
+    let mut bytes = s.bytes();
+    bytes
+        .next()
+        .is_some_and(|c| c == b'_' || c.is_ascii_alphabetic())
+        && bytes.all(|c| c == b'_' || c.is_ascii_alphanumeric())
 }
 
 /// Looks up an environment variable. The library never reads the process environment
@@ -461,7 +482,9 @@ pub type EnvLookup<'a> = &'a dyn Fn(&str) -> Option<String>;
 
 /// Reads a secret named by `env_name` or stored in `file` (relative to `config_dir`).
 ///
-/// Errors name the variable or the path, never a value.
+/// Errors name the variable or the path, never a value. A variable name that is not one, and
+/// a file that does not exist, are not echoed either: such a reference is most likely the
+/// secret itself, written into the wrong key.
 pub fn resolve_secret(
     env_name: Option<&str>,
     file: Option<&str>,
@@ -469,6 +492,9 @@ pub fn resolve_secret(
     env: EnvLookup,
 ) -> Result<SecretString, ConfigError> {
     match (env_name, file) {
+        (Some(name), None) if !is_env_name(name) => Err(ConfigError::new(
+            "the environment variable reference is not a valid variable name ([A-Za-z_][A-Za-z0-9_]*); it is not shown in case it is the secret itself",
+        )),
         (Some(name), None) => match env(name) {
             Some(value) if !value.is_empty() => Ok(SecretString::from(value)),
             Some(_) => Err(ConfigError::new(format!(
@@ -480,8 +506,16 @@ pub fn resolve_secret(
         },
         (None, Some(file)) => {
             let path = config_dir.join(file);
-            let bytes = read_limited(path.as_std_path(), true, MAX_SECRET_FILE_BYTES)
-                .map_err(|f| read_error("secret file", &path, &f, MAX_SECRET_FILE_BYTES))?;
+            let bytes =
+                read_limited(path.as_std_path(), true, MAX_SECRET_FILE_BYTES).map_err(|f| {
+                    if matches!(f, ReadFailure::Io(std::io::ErrorKind::NotFound)) {
+                        ConfigError::new(format!(
+                            "the secret file does not exist (looked under `{config_dir}`); the reference is not shown in case it is the secret itself"
+                        ))
+                    } else {
+                        read_error("secret file", &path, &f, MAX_SECRET_FILE_BYTES)
+                    }
+                })?;
             let text = String::from_utf8(bytes).map_err(|_| {
                 ConfigError::new(format!("secret file `{path}` is not valid UTF-8"))
             })?;
