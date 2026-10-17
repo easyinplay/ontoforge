@@ -323,7 +323,7 @@ drift 检查在运行时发现物理表与绑定不再一致，并只让受影�
 - `Healthy { warnings }`：没有 error 级不匹配。精度、时区、char 填充这类 warning 保留在 `warnings` 中，目标不降级。
 - `Degraded { reason, mismatches }`：
   - `SOURCE_SCHEMA_DRIFT`：有 error 级不匹配（表或列消失、类型变得不兼容等），`mismatches` 是全部不匹配。
-  - `SOURCE_UNREADABLE`：这个目标的元数据查询失败（例如权限被收回），`error` 是引擎错误的文本（不含凭据）；其余目标照常判定。
+  - `SOURCE_UNREADABLE`：这个目标的元数据查询失败（例如权限被收回）；其余目标照常判定。可以对外暴露的只有 `code`（引擎错误码，如 `ENGINE_QUERY_FAILED`）与 `error_name`（引擎报告的错误名，如 `PERMISSION_DENIED`，形状不像错误名时为空）。引擎错误的原文放在 `detail`，可能含内部主机、存储路径或数据值，只供日志与运维工具读取（`detail.text()`，最多 2048 字节）；它的 `Debug` 只显示长度。
 
 `check_drift` 只在整轮引擎错误（不可用、认证失败等）时返回 `Err`，不会因此产生「全部降级」或「全部健康」的报告：引擎健康与 schema drift 是两件事。drift 与 `validate --online` 共用同一个 `compare_binding`。
 

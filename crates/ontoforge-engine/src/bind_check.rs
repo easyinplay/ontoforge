@@ -583,8 +583,78 @@ pub async fn describe_bindings(
 pub enum DegradeReason {
     /// The physical table no longer matches the binding.
     SourceSchemaDrift,
-    /// The table's metadata could not be read; `error` is the engine error's text.
-    SourceUnreadable { error: String },
+    /// The table's metadata could not be read. `code` and `error_name` may be shown to any
+    /// caller (the `/health` of Phase 7); `detail` may not (WR-E07).
+    SourceUnreadable {
+        /// [`EngineError::code`] of the failure, e.g. `ENGINE_QUERY_FAILED`.
+        code: &'static str,
+        /// The error name the engine reported (Trino `errorName`, e.g. `PERMISSION_DENIED`),
+        /// kept only when it has the shape of one: 1 to 64 of `[A-Z0-9_]`, starting with a
+        /// letter.
+        error_name: Option<String>,
+        /// The engine error text, for logs and operators only.
+        detail: OperatorDetail,
+    },
+}
+
+/// Most bytes of engine error text an [`OperatorDetail`] keeps.
+pub const MAX_DETAIL_BYTES: usize = 2048;
+
+/// Engine error text for logs and operator tools only. A Trino message can name internal
+/// hosts, metastore and storage paths, or quote data values, so it is kept apart from the
+/// exposable fields of [`DegradeReason`]: `Debug` prints only its length, and the text is read
+/// with [`OperatorDetail::text`]. At most [`MAX_DETAIL_BYTES`] bytes.
+#[derive(Clone, PartialEq, Eq)]
+pub struct OperatorDetail(String);
+
+impl OperatorDetail {
+    /// Keeps `text`, cut to [`MAX_DETAIL_BYTES`] at a character boundary.
+    #[must_use]
+    pub fn new(text: &str) -> Self {
+        if text.len() <= MAX_DETAIL_BYTES {
+            return Self(text.to_owned());
+        }
+        let mut end = MAX_DETAIL_BYTES;
+        while !text.is_char_boundary(end) {
+            end -= 1;
+        }
+        Self(format!("{}...", &text[..end]))
+    }
+
+    /// The text. Not for responses to API callers.
+    #[must_use]
+    pub fn text(&self) -> &str {
+        &self.0
+    }
+}
+
+impl std::fmt::Debug for OperatorDetail {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "OperatorDetail(<{} bytes>)", self.0.len())
+    }
+}
+
+/// The exposable shape of an engine failure on one target.
+fn unreadable(e: &EngineError) -> DegradeReason {
+    let error_name = match e {
+        EngineError::Query { error_name, .. } if is_error_name(error_name) => {
+            Some(error_name.clone())
+        }
+        _ => None,
+    };
+    DegradeReason::SourceUnreadable {
+        code: e.code(),
+        error_name,
+        detail: OperatorDetail::new(&e.to_string()),
+    }
+}
+
+/// Whether `s` looks like an engine error name such as `PERMISSION_DENIED`.
+fn is_error_name(s: &str) -> bool {
+    s.len() <= 64
+        && s.starts_with(|c: char| c.is_ascii_uppercase())
+        && s.bytes()
+            .all(|b| b.is_ascii_uppercase() || b.is_ascii_digit() || b == b'_')
 }
 
 impl DegradeReason {
@@ -662,9 +732,7 @@ pub fn drift_report(
     for entry in described {
         let health = match &entry.physical {
             Err(e) => TargetHealth::Degraded {
-                reason: DegradeReason::SourceUnreadable {
-                    error: e.to_string(),
-                },
+                reason: unreadable(e),
                 mismatches: Vec::new(),
             },
             Ok(physical) => {

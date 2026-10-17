@@ -9,8 +9,8 @@ use std::time::Duration;
 
 use camino::Utf8Path;
 use ontoforge_engine::bind_check::{
-    BindingKey, DegradeReason, DescribedBinding, DriftReport, MismatchKind, TargetHealth,
-    check_drift, drift_report,
+    BindingKey, DegradeReason, DescribedBinding, DriftReport, MAX_DETAIL_BYTES, MismatchKind,
+    OperatorDetail, TargetHealth, check_drift, drift_report,
 };
 use ontoforge_engine::sqlite::SqliteEngine;
 use ontoforge_engine::sqlite::fixture::plan_fixture_tables;
@@ -246,10 +246,17 @@ fn query_error_degrades_only_that_target() {
     assert!(!report.is_healthy());
     match &report.objects[&object("Flight")] {
         TargetHealth::Degraded {
-            reason: DegradeReason::SourceUnreadable { error },
+            reason:
+                DegradeReason::SourceUnreadable {
+                    code,
+                    error_name,
+                    detail,
+                },
             mismatches,
         } => {
-            assert!(error.contains("PERMISSION_DENIED"), "{error}");
+            assert_eq!(*code, "ENGINE_QUERY_FAILED");
+            assert_eq!(error_name.as_deref(), Some("PERMISSION_DENIED"));
+            assert!(detail.text().contains("denied"), "{}", detail.text());
             assert!(mismatches.is_empty());
         }
         other => panic!("expected Flight to be unreadable, got {other:?}"),
@@ -310,10 +317,68 @@ fn degrade_reason_code() {
     );
     assert_eq!(
         DegradeReason::SourceUnreadable {
-            error: "x".to_owned()
+            code: "ENGINE_QUERY_FAILED",
+            error_name: None,
+            detail: OperatorDetail::new("x"),
         }
         .code(),
         "SOURCE_UNREADABLE"
+    );
+}
+
+#[test]
+fn unreadable_reason_keeps_engine_text_out_of_the_exposable_fields() {
+    // WR-E07: Trino messages name internal hosts and quote data values; only the error code
+    // and a well-formed error name may reach a caller, the text stays operator-only.
+    let ontology = pure_ontology();
+    let leaky = "Failed connecting to Hive metastore: [thrift://10.0.0.5:9083] Cannot cast 'alice@corp' to INTEGER";
+    let all = [
+        described(
+            "Flight",
+            "flights",
+            Err(EngineError::Query {
+                error_name: "HIVE_METASTORE_ERROR".to_owned(),
+                message: leaky.to_owned(),
+            }),
+        ),
+        described(
+            "Pilot",
+            "pilots",
+            Err(EngineError::Query {
+                error_name: "not a name: thrift://10.0.0.5".to_owned(),
+                message: "x".repeat(10_000),
+            }),
+        ),
+    ];
+    let report = drift_report(&ontology, &dev(), &all);
+    let debug = format!("{report:?}");
+    for secret in ["10.0.0.5", "alice@corp", "thrift"] {
+        assert!(!debug.contains(secret), "{debug}");
+    }
+    let unreadable = |name: &str| match &report.objects[&object(name)] {
+        TargetHealth::Degraded {
+            reason:
+                DegradeReason::SourceUnreadable {
+                    code,
+                    error_name,
+                    detail,
+                },
+            ..
+        } => (*code, error_name.clone(), detail.clone()),
+        other => panic!("expected {name} to be unreadable, got {other:?}"),
+    };
+    let (code, error_name, detail) = unreadable("Flight");
+    assert_eq!(code, "ENGINE_QUERY_FAILED");
+    assert_eq!(error_name.as_deref(), Some("HIVE_METASTORE_ERROR"));
+    // Operators still get the whole text.
+    assert!(detail.text().contains(leaky), "{}", detail.text());
+
+    let (_, error_name, detail) = unreadable("Pilot");
+    assert_eq!(error_name, None, "a malformed error name is dropped");
+    assert!(
+        detail.text().len() <= MAX_DETAIL_BYTES + 3,
+        "{}",
+        detail.text().len()
     );
 }
 
