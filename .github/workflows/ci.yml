@@ -80,6 +80,22 @@ jobs:
         env:
           ONTOFORGE_TRINO_URL: http://localhost:8080
         run: cargo test -p ontoforge-engine --test trino_it --locked -- --ignored
+      - name: CLI integration tests
+        env:
+          ONTOFORGE_TRINO_URL: http://localhost:8080
+        run: cargo test -p ontoforge --test cli_trino_it --locked -- --ignored
+      # A green run must not mean "nothing ran" (RESEARCH Pitfall 8).
+      - name: Ignored tests are actually there
+        run: |
+          for target in "ontoforge-engine trino_it" "ontoforge cli_trino_it"; do
+            set -- $target
+            count=$(cargo test -p "$1" --test "$2" --locked -- --ignored --list | grep -c ': test$' || true)
+            echo "$2: $count ignored tests"
+            if [ "$count" -eq 0 ]; then
+              echo "::error::$2 lists no ignored tests"
+              exit 1
+            fi
+          done
       - name: Trino logs
         if: failure()
         run: docker logs trino

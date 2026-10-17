@@ -14,7 +14,13 @@ const REPO: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../..");
 
 /// The Trino URL taken from `value`; panics when it is absent.
 fn trino_url(value: Option<String>) -> String {
-    value.unwrap_or_default()
+    match value {
+        Some(url) if !url.trim().is_empty() => url,
+        _ => panic!(
+            "{URL_VAR} is not set: the Trino integration tests need a running Trino \
+             (see CONTRIBUTING.md, \"Integration tests\")"
+        ),
+    }
 }
 
 #[test]
