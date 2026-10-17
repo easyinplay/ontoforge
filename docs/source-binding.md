@@ -280,7 +280,7 @@ ontoforge validate <DIR> --online [--profile <NAME>] [--server-config <FILE>] [-
 | `[trino]` | `ca_file` | PEM 文件，附加的根证书，与平台根证书合并 |
 | `[trino]` | `connect_timeout_ms` | 连接超时，缺省 5000 |
 | `[trino]` | `query_timeout_ms` | 单次查询超时，缺省 30000 |
-| `[trino]` | `max_rows` / `max_bytes` / `max_page_bytes` | 结果行数、字节数与单页字节数上限，须大于 0 |
+| `[trino]` | `max_rows` / `max_bytes` / `max_page_bytes` | 结果行数、字节数与单页字节数上限，须大于 0；缺省 10000、16 MiB、16 MiB。单页先整页缓冲，再逐行解析，超过行数上限的行不解析 |
 | `[trino]` | `next_uri_origins` | 除 `url` 外 `nextUri` 可以指向的 origin（Trino 前面有网关时用），形如 `scheme://host[:port]`，scheme 必须与 `url` 相同 |
 | `[trino]` | `client_tags` | 客户端标签，每个 1 到 64 个字符，取自 `[A-Za-z0-9._:-]`，缺省 `["ontoforge"]`；随每次查询发送，调用方自己的标签（如 CLI 的 `validate-online`）追加在后，重复的不再追加 |
 | `[trino.identities.ontology]` | `user`、`auth`、`password_env` / `password_file`、`token_env` / `token_file` | ontology 服务身份；`auth` 为 `none`、`basic` 或 `bearer` |

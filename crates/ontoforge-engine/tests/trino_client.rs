@@ -221,6 +221,57 @@ async fn data_spans_pages() {
 }
 
 #[tokio::test]
+async fn rows_past_the_row_limit_are_not_parsed() {
+    // WR-E05: a page is parsed row by row, and only while rows are kept. The rows after the
+    // limit here are not even arrays; parsing the page as a whole would reject it.
+    let server = MockServer::start().await;
+    mount_post(
+        &server,
+        json!({
+            "id": "q1",
+            "columns": [{ "name": "_col0", "type": "integer" }],
+            "data": [[1], [2], "not a row", { "x": 1 }],
+            "stats": { "state": "FINISHED" }
+        }),
+    )
+    .await;
+    let mut c = ctx();
+    c.max_rows = 2;
+    let output = engine_for(&server)
+        .execute(&select_one(), &c)
+        .await
+        .expect("the rows past the limit are skipped");
+    assert_eq!(
+        output.rows,
+        vec![vec![Value::Long(1)], vec![Value::Long(2)]]
+    );
+    assert!(output.truncated);
+}
+
+#[tokio::test]
+async fn kept_row_that_is_not_an_array_is_protocol_error() {
+    let server = MockServer::start().await;
+    mount_post(
+        &server,
+        json!({
+            "id": "q1",
+            "columns": [{ "name": "_col0", "type": "varchar" }],
+            "data": [["fine"], "cell-secret-value"],
+            "stats": { "state": "FINISHED" }
+        }),
+    )
+    .await;
+    let err = engine_for(&server)
+        .execute(&select_one(), &ctx())
+        .await
+        .expect_err("a row must be an array");
+    let EngineError::Protocol(message) = &err else {
+        panic!("{err:?}");
+    };
+    assert!(!message.contains("cell-secret-value"), "{message}");
+}
+
+#[tokio::test]
 async fn foreign_next_uri_is_rejected() {
     let server = MockServer::start().await;
     let other = MockServer::start().await;

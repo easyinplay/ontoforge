@@ -75,6 +75,9 @@ fn parses_full_example() {
     assert_eq!(trino.query_timeout_ms, DEFAULT_QUERY_TIMEOUT_MS);
     assert_eq!(trino.query_timeout_ms, 30_000);
     assert_eq!(trino.max_rows, 10_000);
+    // WR-E05: one page is of the order of the whole result limit, not four times it.
+    assert_eq!(trino.max_page_bytes, 16 * 1024 * 1024);
+    assert_eq!(trino.max_page_bytes, DEFAULT_MAX_BYTES);
     assert_eq!(trino.client_tags, vec!["ontoforge".to_owned()]);
     assert_eq!(trino.identities.ontology.auth, AuthKind::Basic);
     assert_eq!(

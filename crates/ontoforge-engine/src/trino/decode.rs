@@ -12,8 +12,10 @@ pub(super) struct QueryResults {
     pub next_uri: Option<String>,
     #[serde(default)]
     pub columns: Option<Vec<WireColumn>>,
+    /// Rows as unparsed JSON: a row is turned into values only once the collector keeps it,
+    /// so a page never balloons into a `serde_json::Value` tree as a whole (WR-E05).
     #[serde(default)]
-    pub data: Option<Vec<Vec<serde_json::Value>>>,
+    pub data: Option<Vec<Box<serde_json::value::RawValue>>>,
     #[serde(default)]
     pub error: Option<WireError>,
 }

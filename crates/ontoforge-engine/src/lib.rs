@@ -28,6 +28,9 @@ pub const DEFAULT_MAX_ROWS: usize = 10_000;
 /// Default maximum number of result bytes a query may return. See
 /// [`DEFAULT_QUERY_TIMEOUT_MS`].
 pub const DEFAULT_MAX_BYTES: usize = 16 * 1024 * 1024;
+/// Default maximum size of one Trino response page, as read off the wire. Of the order of
+/// [`DEFAULT_MAX_BYTES`]: a page is buffered whole before its rows are parsed (WR-E05).
+pub const DEFAULT_MAX_PAGE_BYTES: usize = 16 * 1024 * 1024;
 
 /// A physical table: `catalog.schema.table`.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]

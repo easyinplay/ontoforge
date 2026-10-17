@@ -278,12 +278,25 @@ impl Collector {
         {
             self.columns = Some(decode::columns(wire));
         }
-        for row in page.data.unwrap_or_default() {
+        for raw in page.data.unwrap_or_default() {
             let Some(columns) = &self.columns else {
                 return Err(EngineError::Protocol(
                     "a data page arrived before any column description".to_owned(),
                 ));
             };
+            // Rows past the row limit are never parsed.
+            if self.rows.len() >= self.max_rows {
+                self.truncated = true;
+                break;
+            }
+            let row: Vec<serde_json::Value> = serde_json::from_str(raw.get()).map_err(|e| {
+                // The serde message can quote cell values; keep to the position.
+                EngineError::Protocol(format!(
+                    "a row is not a JSON array ({:?}) at column {}",
+                    e.classify(),
+                    e.column()
+                ))
+            })?;
             if row.len() != columns.len() {
                 return Err(EngineError::Protocol(format!(
                     "a row has {} cells but the result has {} columns",
@@ -292,9 +305,7 @@ impl Collector {
                 )));
             }
             let row_bytes = json_len(&row);
-            if self.rows.len() >= self.max_rows
-                || self.bytes.saturating_add(row_bytes) > self.max_bytes
-            {
+            if self.bytes.saturating_add(row_bytes) > self.max_bytes {
                 self.truncated = true;
                 break;
             }

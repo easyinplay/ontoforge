@@ -19,7 +19,8 @@ use toml::de::{DeTable, DeValue};
 
 use crate::trino::{Auth, TrinoConnection, TrinoEngine, is_valid_client_tag};
 use crate::{
-    DEFAULT_MAX_BYTES, DEFAULT_MAX_ROWS, DEFAULT_QUERY_TIMEOUT_MS, EngineError, QueryContext,
+    DEFAULT_MAX_BYTES, DEFAULT_MAX_PAGE_BYTES, DEFAULT_MAX_ROWS, DEFAULT_QUERY_TIMEOUT_MS,
+    EngineError, QueryContext,
 };
 
 /// Largest accepted secret file.
@@ -78,7 +79,7 @@ fn default_max_bytes() -> usize {
 }
 
 fn default_max_page_bytes() -> usize {
-    64 * 1024 * 1024
+    DEFAULT_MAX_PAGE_BYTES
 }
 
 fn default_client_tags() -> Vec<String> {
