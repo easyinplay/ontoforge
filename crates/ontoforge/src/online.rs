@@ -54,15 +54,22 @@ pub fn run_online(args: &ValidateArgs) -> OnlineRun {
     let pipeline::Checked { mut out, profile } =
         pipeline::check_with_profile(&args.dir, args.profile.profile.as_deref());
     let deny_warnings = args.output.deny_warnings;
-    // `ontology` is `Some` only when the offline checks found no error.
-    let (Some(ontology), Some(profile)) = (out.ontology.take(), profile.clone()) else {
+    let offline_only = |out: LoadOutput, profile: Option<ProfileName>| {
         let code = render::exit_code(&out.diagnostics, deny_warnings);
-        return OnlineRun {
+        OnlineRun {
             out,
             code,
             profile,
             bindings: 0,
-        };
+        }
+    };
+    // Without a profile the ontology stays in `out` for the summary (WR-C01).
+    let Some(profile) = profile else {
+        return offline_only(out, None);
+    };
+    // `ontology` is `Some` only when the offline checks found no error.
+    let Some(ontology) = out.ontology.take() else {
+        return offline_only(out, Some(profile));
     };
 
     let (found, bindings) = check_online(args, &ontology, &out.sources, &profile);

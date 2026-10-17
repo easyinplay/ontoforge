@@ -182,6 +182,26 @@ fn offline_validate_unchanged() {
     assert!(!stderr.contains("online"), "{stderr}");
 }
 
+/// WR-C01: without a selected profile there is nothing to check online, and the summary says
+/// so instead of "0 problem(s) found".
+#[test]
+fn online_without_profile_says_so() {
+    // No `defaultProfile`, and an edit-only type that needs no binding.
+    let dir = TempDir::new().expect("tempdir");
+    write(dir.path(), "ontology.yaml", "apiName: demo\n");
+    write(
+        dir.path(),
+        "objects.yaml",
+        "kind: ObjectType\napiName: Note\nprimaryKey: noteId\nproperties:\n  \
+         noteId: { type: string, required: true }\nbacking: editOnly\n",
+    );
+    let out = online(dir.path(), &[]);
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert_eq!(out.status.code(), Some(0), "{stderr}");
+    assert!(stderr.contains("no profile selected"), "{stderr}");
+    assert!(!stderr.contains("problem(s) found"), "{stderr}");
+}
+
 #[test]
 fn timeout_requires_online() {
     let out = ontoforge(&["validate", AVIATION, "--timeout", "1500"]);
