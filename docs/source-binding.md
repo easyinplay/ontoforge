@@ -103,7 +103,7 @@ object type 与 manyToMany link type 必须写 `backing`，没有缺省值：
 fixture 是 SQLite 替身使用的样例数据，替身让 Windows 本机不需要 Trino 就能跑通全部测试。
 
 - 格式：`.csv` 或 `.json`（JSON 是对象数组）。路径相对绑定文件所在目录，必须在 ontology 目录之内。
-- 位置：放在 `bindings/<profile>/fixtures/` 下。只有这个目录不参与定义文件扫描；放在别处的 `.json` fixture 会被当作定义文件读取。
+- 位置：必须放在 `bindings/<profile>/fixtures/` 下（可以有子目录，也可以引用其他 profile 的 fixtures 目录）。只有这个目录不参与定义文件扫描，所以解析到别处的 fixture 路径报 `ONT-V16`。
 - 列：CSV 的表头、JSON 的键并集对应物理列名。绑定没有映射的多余列按 varchar 保留。
 - NULL：CSV 的空单元格对所有类型（包括 string）都是 NULL；JSON 用真正的 `null`，缺失的键也是 NULL。
 - 类型转换严格，错误只带文件、记录行号、列名与类型说明，不复述单元格内容：

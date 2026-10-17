@@ -80,8 +80,10 @@ fn is_binding_fixture(rel: &str) -> bool {
 /// path relative to the ontology root (`/` separated). Pure string arithmetic: no
 /// file system access, so it behaves the same on disk and in memory.
 ///
-/// Fails when the path is absolute, names a drive, passes above the root, or does
-/// not end in `.csv` or `.json`.
+/// Fails when the path is absolute, names a drive, passes above the root, does not
+/// end in `.csv` or `.json`, or does not resolve to a file under
+/// `bindings/<profile>/fixtures/`: only that directory is left out of the definition
+/// scan, so a fixture anywhere else would also be parsed as a definition (WR-S02).
 pub fn fixture_path(binding_file: &str, fixture_file: &str) -> Result<String, String> {
     let fixture = normalize(fixture_file);
     if fixture.is_empty() {
@@ -126,6 +128,12 @@ pub fn fixture_path(binding_file: &str, fixture_file: &str) -> Result<String, St
         .is_some_and(|e| e.eq_ignore_ascii_case("csv") || e.eq_ignore_ascii_case("json"));
     if !allowed {
         return Err("a fixture must be a `.csv` or `.json` file".to_owned());
+    }
+    if !is_binding_fixture(&path) {
+        return Err(format!(
+            "the fixture resolves to `{path}`, but fixtures must be placed under \
+             `{BINDINGS_DIR}/<profile>/{FIXTURES_DIR}/` (files elsewhere are read as definitions)"
+        ));
     }
     Ok(path)
 }
@@ -320,11 +328,28 @@ mod tests {
             fixture_path(binding, "fixtures/flights.csv").as_deref(),
             Ok("bindings/dev/fixtures/flights.csv")
         );
-        assert_eq!(fixture_path(binding, "../../x.csv").as_deref(), Ok("x.csv"));
         assert_eq!(
-            fixture_path(binding, "./a/../rows.JSON").as_deref(),
-            Ok("bindings/dev/rows.JSON")
+            fixture_path(binding, "./fixtures/a/../rows.JSON").as_deref(),
+            Ok("bindings/dev/fixtures/rows.JSON")
         );
+        assert_eq!(
+            fixture_path(binding, "../prod/fixtures/deep/x.csv").as_deref(),
+            Ok("bindings/prod/fixtures/deep/x.csv")
+        );
+        // WR-S02: outside `bindings/<profile>/fixtures/` a fixture would also be read as a
+        // definition file.
+        for outside in [
+            "../../x.csv",
+            "./a/../rows.JSON",
+            "rows.json",
+            "../fixtures.csv",
+        ] {
+            let err = fixture_path(binding, outside).expect_err(outside);
+            assert!(
+                err.contains("bindings/<profile>/fixtures/"),
+                "{outside}: {err}"
+            );
+        }
         for bad in [
             "../../../x.csv",
             "/abs.csv",

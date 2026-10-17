@@ -600,6 +600,9 @@ fn fixture_reference_rules() {
         ("fixtures/x.txt", "`.csv` or `.json`"),
         ("/abs.csv", "relative"),
         ("fixtures/missing.csv", "not found"),
+        // WR-S02: outside `bindings/<profile>/fixtures/` the file is also a definition.
+        ("rows.json", "bindings/<profile>/fixtures/"),
+        ("../../data/rows.csv", "bindings/<profile>/fixtures/"),
     ] {
         let text = flight_binding_with(&format!("fixture: {{ file: {file} }}\n"));
         let out = load_binding(&text);
