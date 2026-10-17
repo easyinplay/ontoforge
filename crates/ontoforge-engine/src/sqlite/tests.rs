@@ -4,7 +4,7 @@ use super::SqliteEngine;
 use crate::printer::ast::{CompareOp, Expr, Literal, OrderItem, Select, SelectItem};
 use crate::printer::sqlite_ddl::{SqliteStorage, attach_memory, create_table, insert, query_only};
 use crate::printer::{Dialect, PrintedSql, print_select};
-use crate::{Engine, QueryContext, TableRef, Value};
+use crate::{Engine, EngineError, QueryContext, TableRef, Value};
 
 fn table() -> TableRef {
     TableRef {
@@ -340,6 +340,54 @@ fn collations_are_total_orders() {
         assert_eq!(super::compare_timestamp(a, b), want, "{a} vs {b}");
         assert_eq!(super::compare_timestamp(b, a), want.reverse(), "{b} vs {a}");
     }
+}
+
+#[tokio::test]
+async fn timeout_covers_waiting_for_the_connection() {
+    // WR-E04: a query stuck behind another one gets its timeout instead of waiting forever.
+    use std::time::Duration;
+    let engine = engine_with_rows(&["a".to_owned()]).await;
+    let sql = print_select(&select_all(&["v"]), Dialect::Sqlite).unwrap();
+    let mut short = ctx();
+    short.timeout = Duration::from_millis(100);
+    let held = engine.conn.lock().await;
+    let result = tokio::time::timeout(Duration::from_secs(10), engine.execute(&sql, &short)).await;
+    drop(held);
+    assert!(
+        matches!(result, Ok(Err(EngineError::Timeout { after_ms: 100 }))),
+        "{result:?}"
+    );
+    assert_eq!(engine.execute(&sql, &ctx()).await.unwrap().rows.len(), 1);
+}
+
+#[tokio::test]
+async fn deadline_interrupts_a_running_statement() {
+    // WR-E04: SQLite itself stops a statement whose deadline has passed, so an abandoned query
+    // does not keep the connection busy.
+    let rows: Vec<String> = (0..5_000).map(|i| i.to_string()).collect();
+    let engine = engine_with_rows(&rows).await;
+    let mut select = select_all(&[]);
+    select.projection = vec![SelectItem {
+        expr: Expr::CountStar,
+        alias: None,
+    }];
+    // A filter keeps SQLite from answering `count(*)` from the b-tree without a scan.
+    select.filter = Some(Expr::IsNull {
+        expr: Box::new(Expr::Column("v".to_owned())),
+        negated: true,
+    });
+    let sql = print_select(&select, Dialect::Sqlite).unwrap();
+
+    let result = engine
+        .execute_until(&sql, &ctx(), Some(std::time::Instant::now()))
+        .await;
+    assert!(
+        matches!(result, Err(EngineError::Timeout { .. })),
+        "{result:?}"
+    );
+    // The next query replaces the handler and runs to the end.
+    let out = engine.execute(&sql, &ctx()).await.unwrap();
+    assert_eq!(out.rows, vec![vec![Value::Long(5_000)]]);
 }
 
 #[tokio::test]

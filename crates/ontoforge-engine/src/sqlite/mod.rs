@@ -6,6 +6,7 @@
 use std::cmp::{Ordering, Reverse};
 use std::collections::{BTreeMap, BTreeSet};
 use std::str::FromStr;
+use std::time::Instant;
 
 use camino::Utf8Path;
 use chrono::{NaiveDateTime, TimeDelta};
@@ -359,20 +360,41 @@ fn decode(row: &SqliteRow, i: usize) -> Result<(Value, usize), EngineError> {
     }
 }
 
-impl Engine for SqliteEngine {
-    fn dialect(&self) -> Dialect {
-        Dialect::Sqlite
-    }
+/// SQLite calls the progress handler about every this many virtual machine instructions.
+const PROGRESS_OPS: i32 = 1_000;
 
-    async fn execute(
+fn timeout_error(ctx: &QueryContext) -> EngineError {
+    EngineError::Timeout {
+        after_ms: u64::try_from(ctx.timeout.as_millis()).unwrap_or(u64::MAX),
+    }
+}
+
+impl SqliteEngine {
+    /// The body of [`Engine::execute`]. SQLite interrupts the statement once `deadline` (if
+    /// any) has passed; the failure that causes is reported as a timeout.
+    async fn execute_until(
         &self,
         sql: &PrintedSql,
         ctx: &QueryContext,
+        deadline: Option<Instant>,
     ) -> Result<QueryOutput, EngineError> {
+        let expired = move || deadline.is_some_and(|d| Instant::now() >= d);
+        let fail = |e: sqlx::Error| {
+            if expired() {
+                timeout_error(ctx)
+            } else {
+                map_sqlx(e)
+            }
+        };
         // `PrintedSql` is the proof that this text came out of the printer.
         let sql_text = AssertSqlSafe(sql.as_str().to_owned()).into_sql_str();
         let mut conn = self.conn.lock().await;
-        let statement = (&mut *conn).prepare(sql_text).await.map_err(map_sqlx)?;
+        // Replaces the handler an earlier query left behind.
+        conn.lock_handle()
+            .await
+            .map_err(map_sqlx)?
+            .set_progress_handler(PROGRESS_OPS, move || !expired());
+        let statement = (&mut *conn).prepare(sql_text).await.map_err(fail)?;
         let columns: Vec<Column> = statement
             .columns()
             .iter()
@@ -393,7 +415,7 @@ impl Engine for SqliteEngine {
         let mut bytes = 0usize;
         let mut truncated = false;
         let mut stream = statement.query().fetch(&mut *conn);
-        while let Some(row) = stream.try_next().await.map_err(map_sqlx)? {
+        while let Some(row) = stream.try_next().await.map_err(fail)? {
             if rows.len() >= ctx.max_rows {
                 truncated = true;
                 break;
@@ -417,6 +439,28 @@ impl Engine for SqliteEngine {
             rows,
             truncated,
         })
+    }
+}
+
+impl Engine for SqliteEngine {
+    fn dialect(&self) -> Dialect {
+        Dialect::Sqlite
+    }
+
+    /// Runs `sql` within `ctx.timeout`, waiting for the connection included (WR-E04). When
+    /// the time is up the caller gets [`EngineError::Timeout`] at once, and SQLite itself
+    /// interrupts the statement at the same deadline, so an abandoned query does not keep the
+    /// one connection busy.
+    async fn execute(
+        &self,
+        sql: &PrintedSql,
+        ctx: &QueryContext,
+    ) -> Result<QueryOutput, EngineError> {
+        let deadline = Instant::now().checked_add(ctx.timeout);
+        match tokio::time::timeout(ctx.timeout, self.execute_until(sql, ctx, deadline)).await {
+            Ok(result) => result,
+            Err(_) => Err(timeout_error(ctx)),
+        }
     }
 
     // The stand-in answers from the metadata it recorded while loading the fixtures; there is
