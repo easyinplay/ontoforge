@@ -286,7 +286,9 @@ async fn check_pk_on_trino() {
         .expect("duplicate query sent");
     assert!(duplicate_query.contains("IS NOT NULL"), "{duplicate_query}");
     assert!(
-        bodies.iter().any(|b| b.contains("IS NULL") && !b.contains("GROUP BY")),
+        bodies
+            .iter()
+            .any(|b| b.contains("IS NULL") && !b.contains("GROUP BY")),
         "{bodies:#?}"
     );
 }
@@ -383,8 +385,10 @@ async fn exit_code_table() {
     assert_eq!(out.status.code(), Some(2), "usage");
 
     // 3: Trino cannot be reached.
-    let (_closed_dir, closed) =
-        config_file(&trino_config(&format!("http://127.0.0.1:{}", closed_port())));
+    let (_closed_dir, closed) = config_file(&trino_config(&format!(
+        "http://127.0.0.1:{}",
+        closed_port()
+    )));
     let out = ontoforge(args(
         dir.path(),
         &[

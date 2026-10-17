@@ -2,6 +2,8 @@
 //!
 //! The duplicate query leaves NULL out; NULL keys are only counted by the second query (E17).
 
+use std::fmt::Write as _;
+
 use camino::Utf8Path;
 use tempfile::TempDir;
 
@@ -96,7 +98,7 @@ async fn check(csv: &str) -> Vec<PkFinding> {
 fn csv(groups: usize, nulls: usize) -> String {
     let mut text = String::from("flight_id,status\nU1,ok\n");
     for i in 0..groups {
-        text.push_str(&format!("F{i:03},a\nF{i:03},b\n"));
+        writeln!(text, "F{i:03},a\nF{i:03},b").expect("write to a String");
     }
     for _ in 0..nulls {
         text.push_str(",ok\n");
@@ -117,10 +119,7 @@ fn pk_queries_are_printed() {
             "{}",
             queries.duplicates
         );
-        insta::assert_snapshot!(
-            format!("pk_duplicates_{name}"),
-            queries.duplicates.as_str()
-        );
+        insta::assert_snapshot!(format!("pk_duplicates_{name}"), queries.duplicates.as_str());
         insta::assert_snapshot!(format!("pk_nulls_{name}"), queries.nulls.as_str());
     }
 }

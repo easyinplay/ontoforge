@@ -18,6 +18,9 @@ use ontoforge_engine::bind_check::{
 use ontoforge_engine::config::{
     ConfigError, EngineKind, ServerConfig, TrinoConfig, build_trino_engines, load_server_config,
 };
+use ontoforge_engine::pk_check::{
+    MAX_DUPLICATE_SAMPLES, PkFinding, check_primary_keys, display_value,
+};
 use ontoforge_engine::sqlite::SqliteEngine;
 use ontoforge_engine::sqlite::fixture::{FixtureError, plan_fixture_tables};
 use ontoforge_engine::{AnyEngine, EngineError, QueryContext};
@@ -181,10 +184,15 @@ fn check_online(
         }
     };
     let sources: &SourceMap = sources;
+    let check = Check {
+        ontology,
+        sources,
+        profile,
+    };
     runtime.block_on(async {
         match (backend, fixtures) {
             (Backend::Trino(trino), _) => {
-                match compare_all(&trino.engine, &trino.ctx, ontology, sources, profile).await {
+                match compare_all(&trino.engine, &trino.ctx, check, args.check_pk).await {
                     Ok((compared, count)) => {
                         let mut found = ignored_fixtures(ontology, sources, profile);
                         found.extend(compared);
@@ -200,7 +208,7 @@ fn check_online(
                     Err(errors) => return (fixture_diagnostics(&errors), 0),
                 };
                 let ctx = query_context(None, args.timeout);
-                compare_all(&engine, &ctx, ontology, sources, profile)
+                compare_all(&engine, &ctx, check, args.check_pk)
                     .await
                     .unwrap_or_else(|failure| (vec![failure], 0))
             }
@@ -209,23 +217,125 @@ fn check_online(
     })
 }
 
-/// Describes and compares every binding of `profile` on `engine`; `Err` is the ONT-V19 of a
-/// failure that stopped the whole round.
+/// Describes and compares every binding of `profile` on `engine`, then checks the primary
+/// keys when `check_pk`; `Err` is the ONT-V19 of a failure that stopped the whole round.
 async fn compare_all(
     engine: &AnyEngine,
     ctx: &QueryContext,
-    ontology: &Ontology,
-    sources: &SourceMap,
-    profile: &ProfileName,
+    check: Check<'_>,
+    check_pk: bool,
 ) -> Result<(Vec<Diagnostic>, usize), Diagnostic> {
-    let described = describe_bindings(engine, ontology, profile, ctx)
+    let described = describe_bindings(engine, check.ontology, check.profile, ctx)
         .await
         .map_err(|e| engine_error_diagnostic(&e, MANIFEST))?;
-    let found = described
-        .iter()
-        .flat_map(|d| binding_diagnostics(d, ontology, sources))
-        .collect();
+    let mut found = Vec::new();
+    let mut pk_keys = Vec::new();
+    for d in &described {
+        let diagnostics = binding_diagnostics(d, check.ontology, check.sources);
+        // A table that does not match its binding, or could not be described, is not scanned.
+        let usable = !diagnostics.iter().any(|d| d.severity == Severity::Error);
+        if usable && matches!(d.key.target, BindingTarget::ObjectType(_)) {
+            pk_keys.push(d.key.clone());
+        }
+        found.extend(diagnostics);
+    }
+    if check_pk {
+        found.extend(check_keys(engine, ctx, check, &pk_keys).await?);
+    }
     Ok((found, described.len()))
+}
+
+/// What the online check runs over.
+#[derive(Clone, Copy)]
+struct Check<'a> {
+    ontology: &'a Ontology,
+    sources: &'a SourceMap,
+    profile: &'a ProfileName,
+}
+
+/// `--check-pk`: one ONT-V18 per binding with duplicate keys and one per binding with NULL
+/// keys. Each binding is checked on its own so that an error of one catalog only costs the
+/// bindings of that catalog.
+async fn check_keys(
+    engine: &AnyEngine,
+    ctx: &QueryContext,
+    check: Check<'_>,
+    keys: &[BindingKey],
+) -> Result<Vec<Diagnostic>, Diagnostic> {
+    let mut found = Vec::new();
+    for key in keys {
+        match check_primary_keys(
+            engine,
+            check.ontology,
+            check.profile,
+            std::slice::from_ref(key),
+            ctx,
+        )
+        .await
+        {
+            Ok(findings) => {
+                for finding in &findings {
+                    found.extend(pk_diagnostics(finding, check.sources));
+                }
+            }
+            Err(e) if e.is_engine_wide() => return Err(engine_error_diagnostic(&e, MANIFEST)),
+            Err(e) => found.push(binding_failure(key, &e, check.sources)),
+        }
+    }
+    Ok(found)
+}
+
+/// The ONT-V18 diagnostics of one finding, located at the binding's `source.table`.
+fn pk_diagnostics(finding: &PkFinding, sources: &SourceMap) -> Vec<Diagnostic> {
+    let at = sources.locate(
+        &source_key(&finding.key),
+        &[Seg::Key("source".to_owned()), Seg::Key("table".to_owned())],
+        Part::Value,
+    );
+    let name = target_name(&finding.key);
+    let table = format!(
+        "{}.{}.{}",
+        finding.table.catalog, finding.table.schema, finding.table.table
+    );
+    let mut found = Vec::new();
+    if !finding.duplicates.is_empty() {
+        let values = finding
+            .duplicates
+            .iter()
+            .map(|(value, n)| format!("`{}` ×{n}", display_value(value)))
+            .collect::<Vec<_>>()
+            .join(", ");
+        let more = if finding.more_duplicates {
+            format!(", and more (showing up to {MAX_DUPLICATE_SAMPLES})")
+        } else {
+            String::new()
+        };
+        found.push(
+            Diagnostic::error(
+                codes::V18,
+                format!(
+                    "`{name}` has {} duplicate primary key value(s) in `{table}`: {values}{more}",
+                    finding.duplicates.len()
+                ),
+                &at,
+            )
+            .with_help("a primary key value must identify exactly one row"),
+        );
+    }
+    if finding.null_count > 0 {
+        found.push(
+            Diagnostic::error(
+                codes::V18,
+                format!(
+                    "`{name}` has {} row(s) with a NULL primary key in `{table}`",
+                    finding.null_count
+                ),
+                &at,
+            )
+            .with_help("every row needs a primary key value"),
+        );
+    }
+    found
 }
 
 /// Picks the engine: the SQLite stand-in unless `--server-config` maps the profile to Trino.
@@ -420,6 +530,25 @@ fn binding_of<'a>(ontology: &'a Ontology, key: &BindingKey) -> Option<&'a Source
     }
 }
 
+/// ONT-V19 for an engine failure that only concerns the binding `key`.
+fn binding_failure(key: &BindingKey, e: &EngineError, sources: &SourceMap) -> Diagnostic {
+    let at = sources.locate(
+        &source_key(key),
+        &[Seg::Key("source".to_owned())],
+        Part::Value,
+    );
+    Diagnostic::error(
+        codes::V19,
+        format!(
+            "the online check of `{}` could not complete: {}",
+            target_name(key),
+            engine_failure(e)
+        ),
+        &at,
+    )
+    .with_help(format!("engine error `{}`", e.code()))
+}
+
 /// The diagnostics of one described binding: ONT-V19 when the engine failed for it, otherwise
 /// one ONT-V17 per mismatch.
 fn binding_diagnostics(
@@ -430,25 +559,7 @@ fn binding_diagnostics(
     let key = &described.key;
     let physical = match &described.physical {
         Ok(physical) => physical,
-        Err(e) => {
-            let at = sources.locate(
-                &source_key(key),
-                &[Seg::Key("source".to_owned())],
-                Part::Value,
-            );
-            return vec![
-                Diagnostic::error(
-                    codes::V19,
-                    format!(
-                        "the online check of `{}` could not complete: {}",
-                        target_name(key),
-                        engine_failure(e)
-                    ),
-                    &at,
-                )
-                .with_help(format!("engine error `{}`", e.code())),
-            ];
-        }
+        Err(e) => return vec![binding_failure(key, e, sources)],
     };
     let Some(binding) = binding_of(ontology, key) else {
         return Vec::new();
