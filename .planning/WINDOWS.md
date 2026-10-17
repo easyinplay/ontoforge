@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 1
+open_count: 3
 waived_count: 0
 fixed_count: 3
-total_count: 4
-last_updated: 2026-10-16T21:55:10.377Z
+total_count: 6
+last_updated: 2026-10-17T01:06:08.569Z
 ---
 
 # Broken Windows Ledger
@@ -19,6 +19,8 @@ last_updated: 2026-10-16T21:55:10.377Z
 | 2 | 2 | deviation | crates/ontoforge-engine/src/printer/sqlite_ddl.rs |  | sqlite_ddl carries allow(dead_code) until plan 02-05 uses attach_memory/create_table/insert/query_only outside tests | fixed |  | 2026-10-16T19:03:31.601Z | 2026-10-16T20:41:31.547Z |
 | 3 | 2 | deviation | crates/ontoforge/src/online.rs |  | ONT-V20 help text of validate --online names --server-config, a flag plan 02-09 adds; until then the flag does not exist | open |  | 2026-10-16T20:41:53.199Z |  |
 | 4 | 02 | deviation | docs/source-binding.md |  | SQLite stand-in reports float properties as double, so fixture-mode --online flags float properties as ONT-V17 (float reads only real); fix is in sqlite/fixture.rs physical_of, outside 02-08 scope | fixed |  | 2026-10-16T21:49:10.933Z | 2026-10-16T21:55:10.377Z |
+| 5 | 02 | unrun-verify | .github/workflows/ci.yml |  | integration job (PostgreSQL + Trino 483, trino_it / cli_trino_it --ignored) not yet run on GitHub; describe_types_golden and decode_golden are PROVISIONAL until the first run (E21) | open |  | 2026-10-17T01:06:08.093Z |  |
+| 6 | 02 | unrun-verify | .github/workflows/nightly.yml |  | nightly Iceberg workflow (Trino 483/484, local-warehouse JDBC catalog, report-failure issue job) not yet run; needs a workflow_dispatch run (E21) | open |  | 2026-10-17T01:06:08.569Z |  |
 
 ````json
 [
@@ -69,6 +71,30 @@ last_updated: 2026-10-16T21:55:10.377Z
     "reason": "",
     "recorded_at": "2026-10-16T21:49:10.933Z",
     "resolved_at": "2026-10-16T21:55:10.377Z"
+  },
+  {
+    "id": 5,
+    "kind": "unrun-verify",
+    "phase": "02",
+    "file": ".github/workflows/ci.yml",
+    "line": null,
+    "description": "integration job (PostgreSQL + Trino 483, trino_it / cli_trino_it --ignored) not yet run on GitHub; describe_types_golden and decode_golden are PROVISIONAL until the first run (E21)",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-17T01:06:08.093Z",
+    "resolved_at": null
+  },
+  {
+    "id": 6,
+    "kind": "unrun-verify",
+    "phase": "02",
+    "file": ".github/workflows/nightly.yml",
+    "line": null,
+    "description": "nightly Iceberg workflow (Trino 483/484, local-warehouse JDBC catalog, report-failure issue job) not yet run; needs a workflow_dispatch run (E21)",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-17T01:06:08.569Z",
+    "resolved_at": null
   }
 ]
 ````
