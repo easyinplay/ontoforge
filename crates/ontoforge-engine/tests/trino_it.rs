@@ -30,7 +30,13 @@ const AVIATION: &str = concat!(
 ///
 /// Panics when the value is absent, so that `--ignored` without the environment fails loudly.
 fn trino_url(value: Option<String>) -> String {
-    value.unwrap_or_default()
+    match value {
+        Some(url) if !url.trim().is_empty() => url,
+        _ => panic!(
+            "{URL_VAR} is not set: the Trino integration tests need a running Trino \
+             (see CONTRIBUTING.md, \"Integration tests\")"
+        ),
+    }
 }
 
 /// A Trino engine for the URL in `ONTOFORGE_TRINO_URL`, as user `ontoforge` without
@@ -150,7 +156,9 @@ async fn describe_demo_flights() {
         .describe_tables(std::slice::from_ref(&flights), &ctx())
         .await
         .expect("describe");
-    let columns = described.get(&flights).expect("demo.aviation.flights exists");
+    let columns = described
+        .get(&flights)
+        .expect("demo.aviation.flights exists");
     let actual: BTreeSet<String> = columns.iter().map(|c| c.name.clone()).collect();
     assert_eq!(actual, expected);
 }

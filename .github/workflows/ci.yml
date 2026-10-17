@@ -26,3 +26,60 @@ jobs:
       - run: cargo fmt --all --check
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - run: cargo test --workspace --locked
+
+  # Real PostgreSQL + Trino 483 on Linux (ENGINE-05, ADR-0017). The tests are #[ignore]d so
+  # that Windows needs no Docker; this job runs them with --ignored.
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          # Throwaway password that only exists inside this job's containers.
+          POSTGRES_PASSWORD: ontoforge-ci-only
+        # Published to the runner so that the host network Trino and the runner's psql can
+        # reach localhost:5432 (E25).
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: ontoforge-ci-only
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # v1
+        with:
+          toolchain: "1.98.0"
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - name: Seed PostgreSQL from the aviation fixtures
+        run: |
+          psql -v ON_ERROR_STOP=1 -d postgres -c 'CREATE DATABASE demo' -c 'CREATE DATABASE editstore'
+          psql -v ON_ERROR_STOP=1 -v fixtures="$PWD/examples/ontologies/aviation/bindings/dev/fixtures" -d demo -f ci/pg/seed.sql
+      # A service container starts before checkout and cannot mount repository files, so Trino
+      # is started here (RESEARCH Pitfall 7).
+      - name: Start Trino 483
+        run: docker run -d --name trino --network host -v "$PWD/ci/trino/catalog:/etc/trino/catalog:ro" trinodb/trino:483
+      - name: Wait for Trino
+        run: |
+          deadline=$((SECONDS + 180))
+          until curl -fsS http://localhost:8080/v1/info | jq -e '.starting == false' >/dev/null 2>&1; do
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "Trino did not finish starting within 180 s"
+              docker logs trino
+              exit 1
+            fi
+            sleep 2
+          done
+          echo "Trino is ready after ${SECONDS} s"
+      - name: Engine integration tests
+        env:
+          ONTOFORGE_TRINO_URL: http://localhost:8080
+        run: cargo test -p ontoforge-engine --test trino_it --locked -- --ignored
+      - name: Trino logs
+        if: failure()
+        run: docker logs trino
