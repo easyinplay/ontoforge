@@ -321,6 +321,29 @@ fn physical_of(logical: &LogicalType) -> PhysicalType {
     }
 }
 
+/// Refuses a decimal column outside `1 <= precision <= 38`, `scale <= precision`. ONT-E13
+/// reports this as a lint finding (ADR-0021 §4), but lint can be turned down and `validate`
+/// does not run it, so the stand-in refuses such a type instead of describing a clamped
+/// `decimal(255, ..)` that no engine has (WR-S05).
+fn check_decimal_types(table: &FixtureTable) -> Result<(), String> {
+    for column in &table.columns {
+        let mut logical = &column.logical;
+        while let LogicalType::Array(inner) = logical {
+            logical = inner;
+        }
+        if let LogicalType::Decimal { precision, scale } = logical
+            && (!(1..=MAX_DECIMAL_DIGITS).contains(precision) || scale > precision)
+        {
+            return Err(format!(
+                "column `{}` is decimal({precision}, {scale}); precision must be 1 to \
+                 {MAX_DECIMAL_DIGITS} and scale at most the precision (ONT-E13)",
+                column.name
+            ));
+        }
+    }
+    Ok(())
+}
+
 /// A column of the file: the declared type of the table column, or none for a column the
 /// binding does not map.
 struct FileColumn {
@@ -338,6 +361,7 @@ pub(super) fn load_table(
 ) -> Result<LoadedTable, FixtureError> {
     let file = table.file.as_str();
     let err = |line: Option<u64>, message: String| FixtureError::new(file, line, message);
+    check_decimal_types(table).map_err(|message| err(None, message))?;
     // No symbolic link or junction anywhere between `root` and the file (CR-S01).
     let bytes = read_beneath(root, file, MAX_FILE_BYTES)
         .map_err(|failure| err(None, format!("the fixture cannot be read: {failure:?}")))?;

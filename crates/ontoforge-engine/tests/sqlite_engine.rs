@@ -275,6 +275,31 @@ async fn fixture_behind_directory_link_is_refused() {
     assert!(errors[0].message.contains("cannot be read"), "{errors:?}");
 }
 
+/// WR-S05: a decimal type outside ONT-E13's range is refused, never clamped to
+/// `decimal(255, ..)`, even when no cell would be converted.
+#[tokio::test]
+async fn out_of_range_decimal_type_is_refused() {
+    let decimal = |precision, scale| LogicalType::Decimal { precision, scale };
+    for logical in [
+        decimal(1000, 2),
+        decimal(0, 0),
+        decimal(12, 13),
+        LogicalType::Array(Box::new(decimal(40, 2))),
+    ] {
+        let Err(errors) = fx_load("rows.csv", "amount\n", vec![("amount", logical.clone())]).await
+        else {
+            panic!("{logical:?} was accepted");
+        };
+        assert!(
+            errors[0].message.contains("precision must be 1 to 38"),
+            "{errors:?}"
+        );
+    }
+    fx_load("rows.csv", "amount\n", vec![("amount", decimal(38, 38))])
+        .await
+        .expect("decimal(38, 38) is valid");
+}
+
 fn fx_csv_cell(cell: &str) -> String {
     format!("\"{}\"", cell.replace('"', "\"\""))
 }
