@@ -254,7 +254,7 @@ ontoforge validate <DIR> --online [--profile <NAME>] [--server-config <FILE>] [-
 - `--profile <NAME>`：选定 profile，优先于环境变量 `ONTOFORGE_PROFILE` 与 `defaultProfile`。
 - `--server-config <FILE>`：读取 `ontoforge-server.toml`，对映射到 Trino 的 profile 连接真实 Trino。配置映射到 Trino 而绑定仍带 `fixture` 时给出 warning。本 phase 不做服务配置的隐式查找。
 - `--check-pk`：在显式要求时，对每个绑定的主键列查重复值。重复值查询排除 NULL 主键，NULL 主键单独计数，二者都报 `ONT-V18`。drift 检查不做这件事，因为它需要扫描全表。
-- `--timeout <MS>`：覆盖每个元数据请求的超时（毫秒），只能与 `--online` 同用。
+- `--timeout <MS>`：覆盖每个元数据请求的超时（毫秒），只能与 `--online` 同用，至少为 1（`0` 是用法错误，exit 2）。
 
 每个 catalog 只发一次元数据请求。
 

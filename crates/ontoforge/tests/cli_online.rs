@@ -210,6 +210,15 @@ fn timeout_requires_online() {
     assert_eq!(out.status.code(), Some(0));
 }
 
+/// WR-C04: a zero timeout is a usage error (exit 2), not an engine that timed out (exit 3).
+#[test]
+fn zero_timeout_is_a_usage_error() {
+    let out = ontoforge(&["validate", AVIATION, "--online", "--timeout", "0"]);
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert_eq!(out.status.code(), Some(2), "{stderr}");
+    assert!(stderr.contains("--timeout"), "{stderr}");
+}
+
 fn fixture_files(root: &str) -> Vec<(String, Vec<u8>)> {
     let dir = Path::new(root).join("bindings/dev/fixtures");
     let mut files: Vec<(String, Vec<u8>)> = std::fs::read_dir(&dir)

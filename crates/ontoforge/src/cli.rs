@@ -62,8 +62,13 @@ pub struct ValidateArgs {
     /// Also check the bindings of the selected profile against the engine.
     #[arg(long)]
     pub online: bool,
-    /// Query timeout for the online check, in milliseconds.
-    #[arg(long, value_name = "MS", requires = "online")]
+    /// Query timeout for the online check, in milliseconds (at least 1).
+    #[arg(
+        long,
+        value_name = "MS",
+        requires = "online",
+        value_parser = clap::value_parser!(u64).range(1..)
+    )]
     pub timeout: Option<u64>,
     /// Report duplicate and NULL primary keys of every bound object type (full table scan;
     /// explicit only).
