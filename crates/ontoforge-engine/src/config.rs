@@ -86,10 +86,17 @@ fn default_client_tags() -> Vec<String> {
 }
 
 impl TrinoConfig {
-    /// A [`QueryContext`] carrying this configuration's limits. The one place the limits are
-    /// turned into a context.
+    /// A [`QueryContext`] carrying this configuration's limits and client tags. The one place
+    /// the limits are turned into a context. `extra_tags` (the caller's own tags) follow the
+    /// configured `client_tags`; a tag already present is not repeated.
     #[must_use]
-    pub fn query_context(&self, trace_token: String, client_tags: Vec<String>) -> QueryContext {
+    pub fn query_context(&self, trace_token: String, extra_tags: Vec<String>) -> QueryContext {
+        let mut client_tags = self.client_tags.clone();
+        for tag in extra_tags {
+            if !client_tags.contains(&tag) {
+                client_tags.push(tag);
+            }
+        }
         QueryContext {
             trace_token,
             client_tags,

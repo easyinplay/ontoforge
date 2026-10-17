@@ -282,7 +282,7 @@ ontoforge validate <DIR> --online [--profile <NAME>] [--server-config <FILE>] [-
 | `[trino]` | `query_timeout_ms` | 单次查询超时，缺省 30000 |
 | `[trino]` | `max_rows` / `max_bytes` / `max_page_bytes` | 结果行数、字节数与单页字节数上限，须大于 0 |
 | `[trino]` | `next_uri_origins` | 除 `url` 外 `nextUri` 可以指向的 origin（Trino 前面有网关时用），形如 `scheme://host[:port]`，scheme 必须与 `url` 相同 |
-| `[trino]` | `client_tags` | 客户端标签，每个 1 到 64 个字符，取自 `[A-Za-z0-9._:-]` |
+| `[trino]` | `client_tags` | 客户端标签，每个 1 到 64 个字符，取自 `[A-Za-z0-9._:-]`，缺省 `["ontoforge"]`；随每次查询发送，调用方自己的标签（如 CLI 的 `validate-online`）追加在后，重复的不再追加 |
 | `[trino.identities.ontology]` | `user`、`auth`、`password_env` / `password_file`、`token_env` / `token_file` | ontology 服务身份；`auth` 为 `none`、`basic` 或 `bearer` |
 | `[trino.identities.l2]` | 同上 | 可选的第二个身份，本 phase 只解析不使用 |
 | `[profiles.<name>]` | `engine` | `"trino"` 或 `"sqlite"` |

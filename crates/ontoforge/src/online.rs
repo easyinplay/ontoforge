@@ -607,5 +607,19 @@ mod tests {
         let ctx = query_context(Some(&trino), Some(2_000));
         assert_eq!(ctx.timeout, Duration::from_secs(2));
         assert_eq!(ctx.max_rows, 50);
+        assert_eq!(ctx.client_tags, ["ontoforge", "validate-online"]);
+    }
+
+    #[test]
+    fn trino_context_sends_the_configured_client_tags() {
+        // WR-E02: `[trino].client_tags` reaches the queries.
+        let config = parse_server_config(
+            "[trino]\nurl = \"http://127.0.0.1:8080\"\nclient_tags = [\"team-a\"]\n\
+             [trino.identities.ontology]\nuser = \"u\"\n",
+        )
+        .expect("valid");
+        let trino = config.trino.expect("trino section");
+        let ctx = query_context(Some(&trino), None);
+        assert_eq!(ctx.client_tags, ["team-a", "ontoforge", "validate-online"]);
     }
 }

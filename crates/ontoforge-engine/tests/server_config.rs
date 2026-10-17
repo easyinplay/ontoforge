@@ -243,7 +243,15 @@ fn query_context_from_config() {
     assert_eq!(ctx.max_rows, DEFAULT_MAX_ROWS);
     assert_eq!(ctx.max_bytes, DEFAULT_MAX_BYTES);
     assert_eq!(ctx.trace_token, "trace-1");
-    assert_eq!(ctx.client_tags, vec!["a".to_owned()]);
+    // WR-E02: the configured tags (default `ontoforge`) come first, then the caller's.
+    assert_eq!(ctx.client_tags, ["ontoforge", "a"]);
+
+    let cfg = trino(&with_trino("https://t.example", "").replace(
+        "[trino.identities",
+        "client_tags = [\"team-a\", \"x\"]\n\n[trino.identities",
+    ));
+    let ctx = cfg.query_context("t".to_owned(), vec!["x".to_owned(), "b".to_owned()]);
+    assert_eq!(ctx.client_tags, ["team-a", "x", "b"]);
 
     let text = format!(
         "{}query_timeout_ms = 5000\n",
