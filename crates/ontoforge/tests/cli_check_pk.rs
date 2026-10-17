@@ -293,6 +293,105 @@ async fn check_pk_on_trino() {
     );
 }
 
+/// WR-C02: an engine-wide failure while scanning keys keeps what the round already found
+/// (the described bindings and the keys scanned before), next to the ONT-V19.
+#[tokio::test(flavor = "multi_thread")]
+async fn check_pk_engine_failure_keeps_earlier_findings() {
+    const AIRPORT: &str = "\
+kind: ObjectType
+apiName: Airport
+primaryKey: code
+properties:
+  code: { type: string, required: true }
+backing: source
+";
+    const AIRPORT_BINDING: &str = "\
+kind: SourceBinding
+target: { objectType: Airport }
+source: { catalog: demo, schema: aviation, table: airports }
+fixture: { file: fixtures/airports.csv }
+";
+    let server = MockServer::start().await;
+    mount_info(
+        &server,
+        json!([
+            ["aviation", "airports", "code", "varchar", "NO"],
+            ["aviation", "flights", "flightid", "varchar", "NO"],
+            ["aviation", "flights", "status", "varchar", "YES"]
+        ]),
+    )
+    .await;
+    // `Airport` is scanned first and has a duplicate key; then Trino stops accepting the
+    // service identity.
+    let airports = "FROM \"demo\".\"aviation\".\"airports\"";
+    let columns = json!([{ "name": "pk", "type": "varchar" }, { "name": "n", "type": "bigint" }]);
+    Mock::given(method("POST"))
+        .and(path("/v1/statement"))
+        .and(body_string_contains("GROUP BY"))
+        .and(body_string_contains(airports))
+        .respond_with(
+            ResponseTemplate::new(200).set_body_json(page(&columns, &json!([["FRA", 2]]))),
+        )
+        .mount(&server)
+        .await;
+    Mock::given(method("POST"))
+        .and(path("/v1/statement"))
+        .and(body_string_contains("IS NULL"))
+        .and(body_string_contains(airports))
+        .respond_with(ResponseTemplate::new(200).set_body_json(page(
+            &json!([{ "name": "n", "type": "bigint" }]),
+            &json!([[0]]),
+        )))
+        .mount(&server)
+        .await;
+    Mock::given(method("POST"))
+        .and(path("/v1/statement"))
+        .and(body_string_contains(
+            "FROM \"demo\".\"aviation\".\"flights\"",
+        ))
+        .respond_with(ResponseTemplate::new(401))
+        .mount(&server)
+        .await;
+
+    let dir = ontology(CLEAN_CSV);
+    write(
+        dir.path(),
+        "objects.yaml",
+        &format!("{FLIGHT}---\n{AIRPORT}"),
+    );
+    write(dir.path(), "bindings/dev/airport.yaml", AIRPORT_BINDING);
+    write(
+        dir.path(),
+        "bindings/dev/fixtures/airports.csv",
+        "code\nFRA\n",
+    );
+    let (_cfg_dir, cfg) = config_file(&trino_config(&server.uri()));
+
+    let out = ontoforge(args(
+        dir.path(),
+        &[
+            "--online",
+            "--server-config",
+            &cfg,
+            "--check-pk",
+            "--format",
+            "json",
+        ],
+    ))
+    .await;
+    let diags = diagnostics(&out);
+    assert_eq!(out.status.code(), Some(3), "{diags:#?}");
+    let v19 = with_code(&diags, "ONT-V19");
+    assert_eq!(v19.len(), 1, "{diags:#?}");
+    assert!(message(v19[0]).contains("authentication"), "{diags:#?}");
+    let v18 = with_code(&diags, "ONT-V18");
+    assert_eq!(v18.len(), 1, "{diags:#?}");
+    assert_eq!(v18[0]["file"], "bindings/dev/airport.yaml");
+    assert!(message(v18[0]).contains("FRA"), "{diags:#?}");
+    // The ONT-V17 warnings of the described bindings are kept as well.
+    assert_eq!(with_code(&diags, "ONT-V17").len(), 2, "{diags:#?}");
+}
+
 #[tokio::test(flavor = "multi_thread")]
 async fn check_pk_skips_mismatched_bindings() {
     let server = MockServer::start().await;

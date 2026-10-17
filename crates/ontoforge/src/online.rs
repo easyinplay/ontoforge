@@ -246,7 +246,9 @@ async fn compare_all(
         found.extend(diagnostics);
     }
     if check_pk {
-        found.extend(check_keys(engine, ctx, check, &pk_keys).await?);
+        // The round has reached the engine: a failure of the key scan joins what was found
+        // so far instead of replacing it (WR-C02).
+        found.extend(check_keys(engine, ctx, check, &pk_keys).await);
     }
     Ok((found, described.len()))
 }
@@ -261,13 +263,14 @@ struct Check<'a> {
 
 /// `--check-pk`: one ONT-V18 per binding with duplicate keys and one per binding with NULL
 /// keys. Each binding is checked on its own so that an error of one catalog only costs the
-/// bindings of that catalog.
+/// bindings of that catalog. An engine-wide failure ends the scan with its ONT-V19 after the
+/// findings of the bindings scanned before it.
 async fn check_keys(
     engine: &AnyEngine,
     ctx: &QueryContext,
     check: Check<'_>,
     keys: &[BindingKey],
-) -> Result<Vec<Diagnostic>, Diagnostic> {
+) -> Vec<Diagnostic> {
     let mut found = Vec::new();
     for key in keys {
         match check_primary_keys(
@@ -284,11 +287,14 @@ async fn check_keys(
                     found.extend(pk_diagnostics(finding, check.sources));
                 }
             }
-            Err(e) if e.is_engine_wide() => return Err(engine_error_diagnostic(&e, MANIFEST)),
+            Err(e) if e.is_engine_wide() => {
+                found.push(engine_error_diagnostic(&e, MANIFEST));
+                break;
+            }
             Err(e) => found.push(binding_failure(key, &e, check.sources)),
         }
     }
-    Ok(found)
+    found
 }
 
 /// The ONT-V18 diagnostics of one finding, located at the binding's `source.table`.
