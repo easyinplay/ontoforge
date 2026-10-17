@@ -92,7 +92,7 @@ Plans:
   4. 自有 printer 生成的 SQL 经 proptest（任意字符串值往返不改变结构）与真实 Trino / SQLite 执行验证；SQLite 替身在 Windows `cargo test` 全绿
   5. Linux CI 以 Trino + PG service container 跑集成测试，nightly 加跑 Iceberg
 
-**Plans**: 8/10 plans executed（5 waves）
+**Plans**: 9/10 plans executed（5 waves）
 
 Plans:
 
@@ -115,7 +115,7 @@ Plans:
 **Wave 4** *(blocked on Wave 3 completion)*
 
 - [x] 02-08-PLAN.md — D-13 完整兼容表、drift 状态模型、绑定规范文档
-- [ ] 02-09-PLAN.md — `--server-config` / Trino 路径、退出码 3、`--check-pk`（查重排除 NULL）
+- [x] 02-09-PLAN.md — `--server-config` / Trino 路径、退出码 3、`--check-pk`（查重排除 NULL）
 
 **Wave 5** *(blocked on Wave 4 completion)*
 
@@ -221,7 +221,7 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7（纵切片
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Workspace, Schema & Lint | 14/14 | Complete    | 2026-10-16 |
-| 2. Source Binding & Engine | 8/10 | In Progress|  |
+| 2. Source Binding & Engine | 9/10 | In Progress|  |
 | 3. Edit Store & Scope Model | 0/TBD | Not started | - |
 | 4. Scoped L0 Read | 0/TBD | Not started | - |
 | 5. Online Action | 0/TBD | Not started | - |
