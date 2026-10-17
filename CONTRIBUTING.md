@@ -27,11 +27,11 @@ cargo test --workspace
 在装有 Docker 的 Linux 上手动复现（与 CI 步骤相同）：
 
 ```
-docker run -d --name ontoforge-pg -p 5432:5432 -e POSTGRES_PASSWORD=ontoforge-ci-only postgres:17
+docker run -d --name ontoforge-pg -p 5432:5432 -e POSTGRES_PASSWORD=ontoforge-ci-only postgres:17.11@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3
 export PGHOST=localhost PGUSER=postgres PGPASSWORD=ontoforge-ci-only
 psql -v ON_ERROR_STOP=1 -d postgres -c 'CREATE DATABASE demo' -c 'CREATE DATABASE editstore'
 psql -v ON_ERROR_STOP=1 -v fixtures="$PWD/examples/ontologies/aviation/bindings/dev/fixtures" -d demo -f ci/pg/seed.sql
-docker run -d --name trino --network host -v "$PWD/ci/trino/catalog:/etc/trino/catalog:ro" trinodb/trino:483
+docker run -d --name trino --network host -v "$PWD/ci/trino/catalog:/etc/trino/catalog:ro" trinodb/trino:483@sha256:db58cc93e593a2706553745f276bb119c9810e69918be56ecde088ba7ccb0534
 # 等到 curl -fsS http://localhost:8080/v1/info 的 "starting" 为 false
 ONTOFORGE_TRINO_URL=http://localhost:8080 cargo test -p ontoforge-engine --test trino_it -- --ignored
 ONTOFORGE_TRINO_URL=http://localhost:8080 cargo test -p ontoforge --test cli_trino_it -- --ignored

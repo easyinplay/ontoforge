@@ -14,13 +14,20 @@ jobs:
   iceberg:
     strategy:
       fail-fast: false
+      # Images are pinned to the digest their tag had when it was pinned, like the actions
+      # (WR-C06). The `Digest:` line of `docker buildx imagetools inspect trinodb/trino:<tag>`
+      # is the value to refresh it with.
       matrix:
-        trino: ["483", "484"]
+        include:
+          - trino: "483"
+            digest: "sha256:db58cc93e593a2706553745f276bb119c9810e69918be56ecde088ba7ccb0534"
+          - trino: "484"
+            digest: "sha256:2704eb53935af5e582d63d6033e9bf99d20c325e9b0e30b1016ef59a4773979f"
     runs-on: ubuntu-latest
     timeout-minutes: 60
     services:
       postgres:
-        image: postgres:17
+        image: postgres:17.11@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3
         env:
           # Throwaway password that only exists inside this job's containers.
           POSTGRES_PASSWORD: ontoforge-ci-only
@@ -52,6 +59,7 @@ jobs:
       - name: Start Trino ${{ matrix.trino }}
         env:
           TRINO_VERSION: ${{ matrix.trino }}
+          TRINO_DIGEST: ${{ matrix.digest }}
         run: |
           mkdir -p "$RUNNER_TEMP/catalog" "$RUNNER_TEMP/iceberg"
           cp ci/trino/catalog/*.properties ci/trino/iceberg/*.properties "$RUNNER_TEMP/catalog/"
@@ -59,7 +67,7 @@ jobs:
           docker run -d --name trino --network host \
             -v "$RUNNER_TEMP/catalog:/etc/trino/catalog:ro" \
             -v "$RUNNER_TEMP/iceberg:/tmp/iceberg" \
-            "trinodb/trino:$TRINO_VERSION"
+            "trinodb/trino:$TRINO_VERSION@$TRINO_DIGEST"
       - name: Wait for Trino
         run: |
           deadline=$((SECONDS + 180))

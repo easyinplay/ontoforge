@@ -34,7 +34,9 @@ jobs:
     timeout-minutes: 45
     services:
       postgres:
-        image: postgres:17
+        # Container images are pinned to a digest, like the actions to a commit SHA; the tag
+        # names the version (WR-C06).
+        image: postgres:17.11@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3
         env:
           # Throwaway password that only exists inside this job's containers.
           POSTGRES_PASSWORD: ontoforge-ci-only
@@ -63,7 +65,7 @@ jobs:
       # A service container starts before checkout and cannot mount repository files, so Trino
       # is started here (RESEARCH Pitfall 7).
       - name: Start Trino 483
-        run: docker run -d --name trino --network host -v "$PWD/ci/trino/catalog:/etc/trino/catalog:ro" trinodb/trino:483
+        run: docker run -d --name trino --network host -v "$PWD/ci/trino/catalog:/etc/trino/catalog:ro" trinodb/trino:483@sha256:db58cc93e593a2706553745f276bb119c9810e69918be56ecde088ba7ccb0534
       - name: Wait for Trino
         run: |
           deadline=$((SECONDS + 180))
