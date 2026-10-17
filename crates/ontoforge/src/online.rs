@@ -2,9 +2,12 @@
 //! engine (BIND-03).
 //!
 //! Without `--server-config` the engine is the SQLite stand-in, loaded from the fixtures the
-//! bindings name (ADR-0021). Every physical table is described once per catalog and compared
-//! with its binding by `ontoforge_engine::bind_check::compare_binding`; each difference
-//! becomes an `ONT-V17` pointing into the binding file.
+//! bindings name (ADR-0021). With it, the profile's `engine` entry decides: `sqlite` is the
+//! same stand-in, `trino` is the deployment's Trino, reached with the ontology service
+//! identity. Every physical table is described once per catalog and compared with its
+//! binding by `ontoforge_engine::bind_check::compare_binding`; each difference becomes an
+//! `ONT-V17` pointing into the binding file. An engine that cannot answer is `ONT-V19` and
+//! exit code 3, never a pass (ENGINE-02).
 
 use std::time::Duration;
 
@@ -12,15 +15,19 @@ use camino::Utf8Path;
 use ontoforge_engine::bind_check::{
     BindingKey, DescribedBinding, compare_binding, describe_bindings,
 };
+use ontoforge_engine::config::{
+    ConfigError, EngineKind, ServerConfig, TrinoConfig, build_trino_engines, load_server_config,
+};
 use ontoforge_engine::sqlite::SqliteEngine;
 use ontoforge_engine::sqlite::fixture::{FixtureError, plan_fixture_tables};
 use ontoforge_engine::{AnyEngine, EngineError, QueryContext};
 use ontoforge_schema::LoadOutput;
-use ontoforge_schema::diag::{Diagnostic, Severity, codes, has_errors, sort_diagnostics};
+use ontoforge_schema::diag::{
+    Diagnostic, Severity, SourceLocation, codes, has_errors, offset_to_line_col, sort_diagnostics,
+};
 use ontoforge_schema::ir::{BindingTarget, Ontology, ProfileName, SourceBinding};
-use ontoforge_schema::loader::MANIFEST;
-use ontoforge_schema::loader::SourceMap;
 use ontoforge_schema::loader::sourcemap::{DefKey, DefKind, Part, Seg};
+use ontoforge_schema::loader::{MANIFEST, MAX_FILE_BYTES, SourceMap, read_limited};
 
 use crate::cli::ValidateArgs;
 use crate::{pipeline, render};
@@ -55,8 +62,7 @@ pub fn run_online(args: &ValidateArgs) -> OnlineRun {
         };
     };
 
-    let (found, bindings) =
-        check_online(&args.dir, args.timeout, &ontology, &out.sources, &profile);
+    let (found, bindings) = check_online(args, &ontology, &mut out.sources, &profile);
     out.diagnostics.extend(found);
     sort_diagnostics(&mut out.diagnostics);
     if !has_errors(&out.diagnostics) {
@@ -81,50 +87,84 @@ pub fn validate_online(args: &ValidateArgs) -> (LoadOutput, u8) {
     (run.out, run.code)
 }
 
-/// ONT-V19 for an engine failure that stops the whole round (not tied to a binding).
-pub fn engine_error_diagnostic(e: &EngineError, file: &str) -> Diagnostic {
-    Diagnostic::without_location(
-        codes::V19,
-        Severity::Error,
-        format!("the online check could not complete: {e}"),
-        file,
-    )
-    .with_help(format!("engine error `{}`", e.code()))
+/// What an engine failure means to the operator.
+fn engine_failure(e: &EngineError) -> String {
+    match e {
+        EngineError::Unavailable { reason, .. } => format!("Trino is unavailable: {reason}"),
+        EngineError::Unauthorized { reason } => format!("Trino authentication failed: {reason}"),
+        EngineError::Timeout { after_ms } => {
+            format!("the query timed out after {after_ms} ms")
+        }
+        EngineError::Protocol(message) => format!("Trino protocol error: {message}"),
+        EngineError::Query {
+            error_name,
+            message,
+        } => format!("query failed ({error_name}): {message}"),
+        other => other.to_string(),
+    }
 }
 
-/// The context of the online check's queries.
-pub(crate) fn query_context(timeout_ms: Option<u64>) -> QueryContext {
-    let mut ctx = QueryContext::new(
-        format!("ontoforge-cli-{}", ulid::Ulid::generate()),
-        vec!["ontoforge".to_owned(), "validate-online".to_owned()],
-    );
+/// ONT-V19 for an engine failure that stops the whole round (not tied to a binding).
+pub fn engine_error_diagnostic(e: &EngineError, file: &str) -> Diagnostic {
+    Diagnostic::without_location(codes::V19, Severity::Error, engine_failure(e), file)
+        .with_help(format!("engine error `{}`", e.code()))
+}
+
+/// The context of the online check's queries: the limits of `trino` when the check runs
+/// against it, and `--timeout` over its query timeout.
+pub(crate) fn query_context(trino: Option<&TrinoConfig>, timeout_ms: Option<u64>) -> QueryContext {
+    let token = format!("ontoforge-cli-{}", ulid::Ulid::generate());
+    let tags = vec!["ontoforge".to_owned(), "validate-online".to_owned()];
+    let mut ctx = match trino {
+        Some(trino) => trino.query_context(token, tags),
+        None => QueryContext::new(token, tags),
+    };
     if let Some(ms) = timeout_ms {
         ctx.timeout = Duration::from_millis(ms);
     }
     ctx
 }
 
+/// The engine the check runs against.
+enum Backend {
+    /// The SQLite stand-in loaded from the fixtures of the bindings.
+    Fixtures,
+    /// The deployment's Trino.
+    Trino(Box<TrinoBackend>),
+}
+
+struct TrinoBackend {
+    engine: AnyEngine,
+    ctx: QueryContext,
+}
+
 /// The findings of the online check and how many bindings were compared.
 fn check_online(
-    root: &Utf8Path,
-    timeout_ms: Option<u64>,
+    args: &ValidateArgs,
     ontology: &Ontology,
-    sources: &SourceMap,
+    sources: &mut SourceMap,
     profile: &ProfileName,
 ) -> (Vec<Diagnostic>, usize) {
-    let plan = match plan_fixture_tables(ontology, sources, profile) {
-        Ok(plan) => plan,
-        Err(errors) => return (fixture_diagnostics(&errors), 0),
+    let backend = match select_backend(args, sources, profile) {
+        Ok(backend) => backend,
+        Err(found) => return (found, 0),
     };
-    if !plan.without_fixture.is_empty() {
-        // Skipping a binding silently would report a profile as checked that was not.
-        let found = plan
-            .without_fixture
-            .iter()
-            .map(|key| missing_fixture_diagnostic(key, ontology, sources))
-            .collect();
-        return (found, 0);
-    }
+    let fixtures = match &backend {
+        Backend::Fixtures => match plan_fixture_tables(ontology, sources, profile) {
+            Ok(plan) if plan.without_fixture.is_empty() => Some(plan),
+            Ok(plan) => {
+                // Skipping a binding silently would report a profile as checked that was not.
+                let found = plan
+                    .without_fixture
+                    .iter()
+                    .map(|key| missing_fixture_diagnostic(key, sources))
+                    .collect();
+                return (found, 0);
+            }
+            Err(errors) => return (fixture_diagnostics(&errors), 0),
+        },
+        Backend::Trino(_) => None,
+    };
     let runtime = match tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()
@@ -140,22 +180,189 @@ fn check_online(
             return (vec![diagnostic], 0);
         }
     };
+    let sources: &SourceMap = sources;
     runtime.block_on(async {
-        let engine = match SqliteEngine::from_fixtures(root, &plan.tables).await {
-            Ok(engine) => AnyEngine::Sqlite(engine),
-            Err(errors) => return (fixture_diagnostics(&errors), 0),
-        };
-        let ctx = query_context(timeout_ms);
-        let described = match describe_bindings(&engine, ontology, profile, &ctx).await {
-            Ok(described) => described,
-            Err(e) => return (vec![engine_error_diagnostic(&e, MANIFEST)], 0),
-        };
-        let found = described
-            .iter()
-            .flat_map(|d| binding_diagnostics(d, ontology, sources))
-            .collect();
-        (found, described.len())
+        match (backend, fixtures) {
+            (Backend::Trino(trino), _) => {
+                match compare_all(&trino.engine, &trino.ctx, ontology, sources, profile).await {
+                    Ok((compared, count)) => {
+                        let mut found = ignored_fixtures(ontology, sources, profile);
+                        found.extend(compared);
+                        (found, count)
+                    }
+                    // A round that never reached Trino reports nothing but the failure.
+                    Err(failure) => (vec![failure], 0),
+                }
+            }
+            (Backend::Fixtures, Some(plan)) => {
+                let engine = match SqliteEngine::from_fixtures(&args.dir, &plan.tables).await {
+                    Ok(engine) => AnyEngine::Sqlite(engine),
+                    Err(errors) => return (fixture_diagnostics(&errors), 0),
+                };
+                let ctx = query_context(None, args.timeout);
+                compare_all(&engine, &ctx, ontology, sources, profile)
+                    .await
+                    .unwrap_or_else(|failure| (vec![failure], 0))
+            }
+            (Backend::Fixtures, None) => (Vec::new(), 0),
+        }
     })
+}
+
+/// Describes and compares every binding of `profile` on `engine`; `Err` is the ONT-V19 of a
+/// failure that stopped the whole round.
+async fn compare_all(
+    engine: &AnyEngine,
+    ctx: &QueryContext,
+    ontology: &Ontology,
+    sources: &SourceMap,
+    profile: &ProfileName,
+) -> Result<(Vec<Diagnostic>, usize), Diagnostic> {
+    let described = describe_bindings(engine, ontology, profile, ctx)
+        .await
+        .map_err(|e| engine_error_diagnostic(&e, MANIFEST))?;
+    let found = described
+        .iter()
+        .flat_map(|d| binding_diagnostics(d, ontology, sources))
+        .collect();
+    Ok((found, described.len()))
+}
+
+/// Picks the engine: the SQLite stand-in unless `--server-config` maps the profile to Trino.
+fn select_backend(
+    args: &ValidateArgs,
+    sources: &mut SourceMap,
+    profile: &ProfileName,
+) -> Result<Backend, Vec<Diagnostic>> {
+    let Some(path) = &args.server_config else {
+        return Ok(Backend::Fixtures);
+    };
+    let file = path.as_str();
+    let (config, _text) = load_server_config(path).map_err(|errors| {
+        // The text is read again for the line and column of the errors; when the file is gone
+        // or unreadable the errors carry no span either.
+        let text = read_limited(path.as_std_path(), true, MAX_FILE_BYTES)
+            .ok()
+            .and_then(|bytes| String::from_utf8(bytes).ok());
+        if let Some(text) = &text {
+            sources.add_file(file, text.clone());
+        }
+        errors
+            .iter()
+            .map(|e| config_diagnostic(e, file, text.as_deref()))
+            .collect::<Vec<_>>()
+    })?;
+    match engine_of(&config, profile, file)? {
+        EngineKind::Sqlite => Ok(Backend::Fixtures),
+        EngineKind::Trino => {
+            let Some(trino) = &config.trino else {
+                let error = ConfigError {
+                    message: format!(
+                        "profile `{profile}` uses engine \"trino\" but there is no [trino] section"
+                    ),
+                    help: Some("add a [trino] section, or use engine = \"sqlite\"".to_owned()),
+                    span: None,
+                };
+                return Err(vec![config_diagnostic(&error, file, None)]);
+            };
+            let config_dir = path
+                .parent()
+                .filter(|p| !p.as_str().is_empty())
+                .unwrap_or(Utf8Path::new("."));
+            let engines = build_trino_engines(trino, config_dir, &|name| std::env::var(name).ok())
+                .map_err(|errors| {
+                    errors
+                        .iter()
+                        .map(|e| config_diagnostic(e, file, None))
+                        .collect::<Vec<_>>()
+                })?;
+            Ok(Backend::Trino(Box::new(TrinoBackend {
+                engine: AnyEngine::Trino(engines.ontology),
+                ctx: query_context(Some(trino), args.timeout),
+            })))
+        }
+    }
+}
+
+/// The engine kind `config` maps `profile` to.
+fn engine_of(
+    config: &ServerConfig,
+    profile: &ProfileName,
+    file: &str,
+) -> Result<EngineKind, Vec<Diagnostic>> {
+    match config.profiles.get(profile) {
+        Some(entry) => Ok(entry.engine),
+        None => Err(vec![
+            Diagnostic::without_location(
+                codes::V20,
+                Severity::Error,
+                format!("profile `{profile}` has no engine in the server configuration"),
+                file,
+            )
+            .with_help(format!(
+                "add a `[profiles.{profile}]` section with `engine = \"trino\"` or `engine = \"sqlite\"`"
+            )),
+        ]),
+    }
+}
+
+/// ONT-V20 for a problem of the server configuration, located when the error has a span.
+fn config_diagnostic(e: &ConfigError, file: &str, text: Option<&str>) -> Diagnostic {
+    let diagnostic = match (&e.span, text) {
+        (Some(span), Some(text)) => {
+            let (line, column) = offset_to_line_col(text, span.start);
+            let at = SourceLocation {
+                file: file.to_owned(),
+                line,
+                column,
+                offset: span.start,
+                length: span.len(),
+            };
+            Diagnostic::error(codes::V20, e.message.clone(), &at)
+        }
+        _ => Diagnostic::without_location(codes::V20, Severity::Error, e.message.clone(), file),
+    };
+    match &e.help {
+        Some(help) => diagnostic.with_help(help.clone()),
+        None => diagnostic,
+    }
+}
+
+/// One ONT-V17 warning per binding that names a fixture the Trino check does not use.
+fn ignored_fixtures(
+    ontology: &Ontology,
+    sources: &SourceMap,
+    profile: &ProfileName,
+) -> Vec<Diagnostic> {
+    let Some(bindings) = ontology.profile_bindings(profile) else {
+        return Vec::new();
+    };
+    bindings
+        .objects
+        .values()
+        .chain(bindings.links.values())
+        .filter(|binding| binding.fixture.is_some())
+        .map(|binding| {
+            let key = BindingKey {
+                profile: profile.clone(),
+                target: binding.target.clone(),
+            };
+            let at = sources.locate(
+                &source_key(&key),
+                &[Seg::Key("fixture".to_owned()), Seg::Key("file".to_owned())],
+                Part::Value,
+            );
+            Diagnostic::new(
+                codes::V17,
+                Severity::Warning,
+                format!(
+                    "the fixture of `{}` is ignored because profile `{profile}` is checked against Trino",
+                    target_name(&key)
+                ),
+                &at,
+            )
+        })
+        .collect()
 }
 
 /// ONT-V16 for fixture data that cannot be loaded.
@@ -188,12 +395,7 @@ fn target_name(key: &BindingKey) -> &str {
 }
 
 /// ONT-V20: a binding without a fixture cannot be checked without `--server-config`.
-fn missing_fixture_diagnostic(
-    key: &BindingKey,
-    ontology: &Ontology,
-    sources: &SourceMap,
-) -> Diagnostic {
-    let _ = ontology;
+fn missing_fixture_diagnostic(key: &BindingKey, sources: &SourceMap) -> Diagnostic {
     let at = sources.locate(
         &source_key(key),
         &[Seg::Key("source".to_owned())],
@@ -238,8 +440,9 @@ fn binding_diagnostics(
                 Diagnostic::error(
                     codes::V19,
                     format!(
-                        "the online check of `{}` could not complete: {e}",
-                        target_name(key)
+                        "the online check of `{}` could not complete: {}",
+                        target_name(key),
+                        engine_failure(e)
                     ),
                     &at,
                 )
@@ -267,20 +470,41 @@ fn binding_diagnostics(
 mod tests {
     use std::time::Duration;
 
+    use ontoforge_engine::config::parse_server_config;
     use ontoforge_engine::{DEFAULT_MAX_BYTES, DEFAULT_MAX_ROWS, DEFAULT_QUERY_TIMEOUT_MS};
 
     use super::query_context;
 
     #[test]
     fn query_context_uses_defaults_and_timeout_flag() {
-        let ctx = query_context(None);
+        let ctx = query_context(None, None);
         assert_eq!(ctx.timeout, Duration::from_millis(DEFAULT_QUERY_TIMEOUT_MS));
         assert_eq!(ctx.max_rows, DEFAULT_MAX_ROWS);
         assert_eq!(ctx.max_bytes, DEFAULT_MAX_BYTES);
         assert!(ctx.trace_token.starts_with("ontoforge-cli-"));
+        assert_eq!(ctx.client_tags, ["ontoforge", "validate-online"]);
 
-        let ctx = query_context(Some(1500));
+        let ctx = query_context(None, Some(1500));
         assert_eq!(ctx.timeout, Duration::from_millis(1500));
         assert_eq!(ctx.max_rows, DEFAULT_MAX_ROWS);
+    }
+
+    #[test]
+    fn trino_context_takes_the_configured_limits() {
+        let config = parse_server_config(
+            "[trino]\nurl = \"http://127.0.0.1:8080\"\nquery_timeout_ms = 12000\nmax_rows = 50\n\
+             [trino.identities.ontology]\nuser = \"u\"\n",
+        )
+        .expect("valid");
+        let trino = config.trino.expect("trino section");
+
+        let ctx = query_context(Some(&trino), None);
+        assert_eq!(ctx.timeout, Duration::from_secs(12));
+        assert_eq!(ctx.max_rows, 50);
+        assert!(ctx.trace_token.starts_with("ontoforge-cli-"));
+
+        let ctx = query_context(Some(&trino), Some(2_000));
+        assert_eq!(ctx.timeout, Duration::from_secs(2));
+        assert_eq!(ctx.max_rows, 50);
     }
 }

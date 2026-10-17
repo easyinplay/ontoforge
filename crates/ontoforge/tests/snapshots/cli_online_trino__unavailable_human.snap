@@ -1,0 +1,8 @@
+---
+source: crates/ontoforge/tests/cli_online_trino.rs
+expression: stdout
+---
+ONT-V19
+
+  × Trino is unavailable: <reason>
+  help: engine error `ENGINE_UNAVAILABLE`

@@ -482,12 +482,21 @@ async fn trino_unavailable_exits_3() {
     );
     // The reason carries the operating system's wording and the port; neither belongs in a
     // snapshot that is compared on every platform.
+    // The renderer wraps a long reason onto `│` continuation lines, which go with it.
     let stdout = String::from_utf8_lossy(&human.stdout).replace(&port.to_string(), "<port>");
+    let mut in_reason = false;
     let stdout: String = stdout
         .lines()
-        .map(|line| match line.split_once("Trino is unavailable:") {
-            Some((head, _)) => format!("{head}Trino is unavailable: <reason>"),
-            None => line.to_owned(),
+        .filter_map(|line| match line.split_once("Trino is unavailable:") {
+            Some((head, _)) => {
+                in_reason = true;
+                Some(format!("{head}Trino is unavailable: <reason>"))
+            }
+            None if in_reason && line.trim_start().starts_with('│') => None,
+            None => {
+                in_reason = false;
+                Some(line.to_owned())
+            }
         })
         .collect::<Vec<_>>()
         .join("\n");

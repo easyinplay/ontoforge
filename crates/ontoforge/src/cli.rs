@@ -65,6 +65,13 @@ pub struct ValidateArgs {
     /// Query timeout for the online check, in milliseconds.
     #[arg(long, value_name = "MS", requires = "online")]
     pub timeout: Option<u64>,
+    /// Report duplicate and NULL primary keys of every bound object type (full table scan;
+    /// explicit only).
+    #[arg(long, requires = "online")]
+    pub check_pk: bool,
+    /// Server configuration with the Trino connection and the profile to engine mapping.
+    #[arg(long, value_name = "FILE", requires = "online")]
+    pub server_config: Option<Utf8PathBuf>,
     #[command(flatten)]
     pub profile: ProfileArgs,
     #[command(flatten)]

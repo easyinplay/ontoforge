@@ -94,6 +94,7 @@ fn validate_online(args: &ValidateArgs) -> u8 {
     print_diagnostics(&run.out, &args.output);
     if args.output.format == Format::Human {
         let summary = match (&run.out.ontology, &run.profile) {
+            _ if run.code == 3 => engine_summary(&run.out),
             (Some(ontology), Some(profile)) if run.code == 0 => format!(
                 "ok: ontology `{}`, profile `{profile}`, {} binding(s) checked online",
                 ontology.api_name, run.bindings
@@ -160,4 +161,14 @@ fn lint_summary(out: &LoadOutput) -> String {
 
 fn plural(n: usize, one: &str, many: &str) -> String {
     format!("{n} {}", if n == 1 { one } else { many })
+}
+
+/// The stderr line when the engine could not answer: the first ONT-V19 message.
+fn engine_summary(out: &LoadOutput) -> String {
+    let reason = out
+        .diagnostics
+        .iter()
+        .find(|d| d.code == codes::V19)
+        .map_or_else(String::new, |d| render::sanitize(&d.message));
+    format!("online check could not complete: {reason}")
 }
