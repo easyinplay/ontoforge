@@ -232,6 +232,49 @@ async fn fx_rows(engine: &SqliteEngine, names: &[&str]) -> Vec<Vec<Value>> {
         .rows
 }
 
+/// `link` becomes a directory symbolic link to `target`.
+#[cfg(unix)]
+fn link_dir(target: &std::path::Path, link: &std::path::Path) {
+    std::os::unix::fs::symlink(target, link).expect("symlink");
+}
+
+/// `link` becomes a directory junction to `target` (no privilege needed, unlike a symlink).
+#[cfg(windows)]
+fn link_dir(target: &std::path::Path, link: &std::path::Path) {
+    let status = std::process::Command::new("cmd")
+        .arg("/C")
+        .arg("mklink")
+        .arg("/J")
+        .arg(link)
+        .arg(target)
+        .stdout(std::process::Stdio::null())
+        .status()
+        .expect("run mklink");
+    assert!(status.success(), "mklink /J failed");
+}
+
+/// CR-S01: the stand-in never loads rows from behind a directory link (a junction on Windows)
+/// below the ontology root, even when the plan names such a file.
+#[cfg(any(unix, windows))]
+#[tokio::test]
+async fn fixture_behind_directory_link_is_refused() {
+    let outside = TempDir::new().expect("tempdir");
+    std::fs::write(outside.path().join("secret.csv"), "id\nleaked\n").expect("write");
+    let dir = TempDir::new().expect("tempdir");
+    link_dir(outside.path(), &dir.path().join("fixtures"));
+    let table = fx_table(
+        "t",
+        "fixtures/secret.csv",
+        vec![("id", LogicalType::String)],
+    );
+    let Err(errors) = SqliteEngine::from_fixtures(fx_root(&dir), &[table]).await else {
+        panic!("a fixture behind a junction or symlink was loaded");
+    };
+    assert_eq!(errors.len(), 1, "{errors:?}");
+    assert_eq!(errors[0].file, "fixtures/secret.csv");
+    assert!(errors[0].message.contains("cannot be read"), "{errors:?}");
+}
+
 fn fx_csv_cell(cell: &str) -> String {
     format!("\"{}\"", cell.replace('"', "\"\""))
 }

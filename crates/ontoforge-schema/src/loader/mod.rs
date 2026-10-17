@@ -179,12 +179,13 @@ pub enum ReadFailure {
 }
 
 /// Read a regular file of at most `max_bytes` (CR-03). With `follow_links` false a
-/// symbolic link is refused, so a checked-in link cannot point the loader at a
-/// device or at a file outside the ontology. The read itself is bounded too, so a
-/// file that grows or lies about its size still cannot exhaust memory.
+/// symbolic link as the last component is refused; a link on a directory on the way is
+/// not, so repository content goes through [`read_beneath`], which refuses those too
+/// (CR-S01). The read itself is bounded, so a file that grows or lies about its size
+/// still cannot exhaust memory.
 ///
 /// Repository content (definitions, binding files, fixtures) is read with
-/// `follow_links = false` and [`MAX_FILE_BYTES`]. Paths the deployer supplies
+/// [`read_beneath`] and [`MAX_FILE_BYTES`]. Paths the deployer supplies
 /// (server configuration, secret files, CA files) may use `true`, because Kubernetes
 /// mounts secrets and config maps as symbolic links.
 pub fn read_limited(
@@ -216,9 +217,57 @@ pub fn read_limited(
     Ok(bytes)
 }
 
+/// Refuse `rel` (`/` separated, relative to `root`) when a symbolic link or junction sits
+/// anywhere on the way from `root` to it, or when the resolved path is not below the resolved
+/// `root` (CR-S01). `lstat` on the full path only looks at the last component, so a checked-in
+/// directory link (a junction on Windows) would otherwise lead a read out of the ontology.
+/// A component that does not exist is left to the caller's own open, which reports it.
+pub fn check_beneath(root: &Utf8Path, rel: &str) -> Result<(), ReadFailure> {
+    let mut at = root.as_std_path().to_path_buf();
+    for segment in rel.split('/').filter(|s| !s.is_empty() && *s != ".") {
+        if segment == ".." {
+            return Err(ReadFailure::NotRegular);
+        }
+        at.push(segment);
+        match std::fs::symlink_metadata(&at) {
+            // On Windows this is true for symbolic links and junctions alike.
+            Ok(meta) if meta.file_type().is_symlink() => return Err(ReadFailure::NotRegular),
+            Ok(_) => {}
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+            Err(e) => return Err(ReadFailure::Io(e.kind())),
+        }
+    }
+    // Defense in depth: whatever the file system did, the real path stays under the root.
+    let resolved = std::fs::canonicalize(&at).map_err(|e| ReadFailure::Io(e.kind()))?;
+    let base = std::fs::canonicalize(root.as_std_path()).map_err(|e| ReadFailure::Io(e.kind()))?;
+    if resolved.starts_with(&base) {
+        Ok(())
+    } else {
+        Err(ReadFailure::NotRegular)
+    }
+}
+
+/// [`read_limited`] of repository content at `rel` below `root`, links refused on the whole
+/// way there ([`check_beneath`]). The schema loader and the engine's fixture loader both read
+/// fixtures through this.
+pub fn read_beneath(root: &Utf8Path, rel: &str, max_bytes: u64) -> Result<Vec<u8>, ReadFailure> {
+    check_beneath(root, rel)?;
+    read_limited(root.join(rel).as_std_path(), false, max_bytes)
+}
+
 /// Size of the fixture at `rel` (relative to `root`) from its metadata alone: it must be a
-/// regular file, not a symbolic link, within [`MAX_FILE_BYTES`] (E23).
+/// regular file inside the ontology directory, with no symbolic link or junction on the way,
+/// within [`MAX_FILE_BYTES`] (E23, CR-S01).
 fn probe_disk(root: &Utf8Path, rel: &str) -> Result<u64, String> {
+    const NOT_REGULAR: &str = "not a regular file inside the ontology directory (symbolic links and junctions are not followed)";
+    match check_beneath(root, rel) {
+        Ok(()) => {}
+        Err(ReadFailure::Io(std::io::ErrorKind::NotFound)) => return Err("not found".to_owned()),
+        Err(ReadFailure::Io(kind)) => return Err(format!("cannot be read: {kind}")),
+        Err(ReadFailure::NotRegular | ReadFailure::TooLarge(_)) => {
+            return Err(NOT_REGULAR.to_owned());
+        }
+    }
     let meta = std::fs::symlink_metadata(root.join(rel).as_std_path()).map_err(|e| {
         if e.kind() == std::io::ErrorKind::NotFound {
             "not found".to_owned()
@@ -227,7 +276,7 @@ fn probe_disk(root: &Utf8Path, rel: &str) -> Result<u64, String> {
         }
     })?;
     if !meta.file_type().is_file() {
-        return Err("not a regular file (symbolic links are not followed)".to_owned());
+        return Err(NOT_REGULAR.to_owned());
     }
     if meta.len() > MAX_FILE_BYTES {
         return Err(too_large(Some(meta.len())));
@@ -238,7 +287,7 @@ fn probe_disk(root: &Utf8Path, rel: &str) -> Result<u64, String> {
 fn read_text(root: &Utf8Path, name: &str) -> Text {
     let v14 =
         |message: String| Diagnostic::without_location(codes::V14, Severity::Error, message, name);
-    match read_limited(root.join(name).as_std_path(), false, MAX_FILE_BYTES) {
+    match read_beneath(root, name, MAX_FILE_BYTES) {
         Ok(bytes) => String::from_utf8(bytes).map_err(|_| {
             Diagnostic::without_location(
                 codes::V01,

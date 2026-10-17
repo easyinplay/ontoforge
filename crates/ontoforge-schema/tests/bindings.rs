@@ -714,6 +714,62 @@ fn symlinked_fixture_is_v16() {
     assert!(d.message.contains("not a regular file"), "{}", d.message);
 }
 
+/// `link` becomes a directory symbolic link to `target`.
+#[cfg(unix)]
+fn link_dir(target: &std::path::Path, link: &std::path::Path) {
+    std::os::unix::fs::symlink(target, link).expect("symlink");
+}
+
+/// `link` becomes a directory junction to `target` (no privilege needed, unlike a symlink).
+#[cfg(windows)]
+fn link_dir(target: &std::path::Path, link: &std::path::Path) {
+    let status = std::process::Command::new("cmd")
+        .arg("/C")
+        .arg("mklink")
+        .arg("/J")
+        .arg(link)
+        .arg(target)
+        .stdout(std::process::Stdio::null())
+        .status()
+        .expect("run mklink");
+    assert!(status.success(), "mklink /J failed");
+}
+
+/// CR-S01: a directory link (a junction on Windows) on the way to the fixture must not lead
+/// the loader out of the ontology directory.
+#[cfg(any(unix, windows))]
+#[test]
+fn fixture_behind_directory_link_is_v16() {
+    use camino::Utf8Path;
+    use ontoforge_schema::load_dir;
+
+    let outside = tempfile::tempdir().expect("tempdir");
+    std::fs::write(outside.path().join("secret.csv"), "nope,password\n").expect("write");
+    let dir = tempfile::tempdir().expect("tempdir");
+    let write = |name: &str, text: &str| {
+        let path = dir.path().join(name);
+        std::fs::create_dir_all(path.parent().expect("parent")).expect("mkdir");
+        std::fs::write(path, text).expect("write");
+    };
+    write("ontology.yaml", MANIFEST);
+    write("objects.yaml", FLIGHT);
+    write("pilots.yaml", PILOT);
+    write("links.yaml", CREW);
+    write(
+        "bindings/dev/flight.yaml",
+        &flight_binding_with("fixture: { file: fixtures/secret.csv }\n"),
+    );
+    link_dir(
+        outside.path(),
+        &dir.path().join("bindings").join("dev").join("fixtures"),
+    );
+    let out = load_dir(Utf8Path::from_path(dir.path()).expect("utf-8"));
+    let d = only(&out);
+    assert_eq!(d.code, codes::V16);
+    assert!(d.message.contains("not a regular file"), "{}", d.message);
+    assert!(out.ontology.is_none());
+}
+
 #[test]
 fn timezone_value_rules() {
     for ok in ["Europe/Berlin", "aware", "UTC", "Asia/Shanghai"] {

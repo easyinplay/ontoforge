@@ -8,7 +8,7 @@ use chrono::{NaiveDate, NaiveTime};
 use ontoforge_schema::ir::{BaseType, Ontology, ProfileName};
 use ontoforge_schema::loader::sourcemap::{DefKey, DefKind, Part};
 use ontoforge_schema::loader::{
-    MAX_FILE_BYTES, SourceMap, fixture_header, fixture_path, read_limited,
+    MAX_FILE_BYTES, SourceMap, fixture_header, fixture_path, read_beneath,
 };
 
 use crate::bind_check::{BindingKey, ExpectedColumn, expected_columns};
@@ -338,7 +338,8 @@ pub(super) fn load_table(
 ) -> Result<LoadedTable, FixtureError> {
     let file = table.file.as_str();
     let err = |line: Option<u64>, message: String| FixtureError::new(file, line, message);
-    let bytes = read_limited(root.join(file).as_std_path(), false, MAX_FILE_BYTES)
+    // No symbolic link or junction anywhere between `root` and the file (CR-S01).
+    let bytes = read_beneath(root, file, MAX_FILE_BYTES)
         .map_err(|failure| err(None, format!("the fixture cannot be read: {failure:?}")))?;
     let size = bytes.len() as u64;
     if size > remaining {
