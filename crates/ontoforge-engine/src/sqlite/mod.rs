@@ -3,12 +3,15 @@
 //! `ATTACH` and `:memory:` databases are per connection state, so the engine owns exactly one
 //! connection behind a mutex instead of a pool.
 
+use std::cmp::{Ordering, Reverse};
 use std::collections::{BTreeMap, BTreeSet};
+use std::str::FromStr;
 
 use camino::Utf8Path;
+use chrono::{NaiveDateTime, TimeDelta};
 use futures_util::TryStreamExt;
 use ontoforge_schema::loader::MAX_TOTAL_BYTES;
-use sqlx::sqlite::{SqliteConnection, SqliteRow};
+use sqlx::sqlite::{SqliteConnectOptions, SqliteConnection, SqliteRow};
 use sqlx::{
     AssertSqlSafe, Column as _, Connection, Executor, Row, SqlSafeStr, Statement, TypeInfo,
     ValueRef,
@@ -20,8 +23,11 @@ pub mod fixture;
 use fixture::{FixtureError, FixtureTable, SqlValue};
 
 use crate::printer::ast::{Expr, Literal, Select, SelectItem};
-use crate::printer::sqlite_ddl::{attach_memory, create_table, insert, query_only};
+use crate::printer::sqlite_ddl::{
+    DECIMAL_COLLATION, TIMESTAMP_COLLATION, attach_memory, create_table, insert, query_only,
+};
 use crate::printer::{PrintedSql, print_select};
+use crate::value::split_decimal;
 use crate::{
     Column, Dialect, Engine, EngineError, EngineStatus, PhysicalColumn, PhysicalType, QueryContext,
     QueryOutput, TableRef, Value,
@@ -36,7 +42,11 @@ pub struct SqliteEngine {
 impl SqliteEngine {
     /// Opens an empty in-memory engine.
     pub async fn in_memory() -> Result<Self, EngineError> {
-        let conn = SqliteConnection::connect("sqlite::memory:")
+        let options = SqliteConnectOptions::from_str("sqlite::memory:")
+            .map_err(map_sqlx)?
+            .collation(DECIMAL_COLLATION, compare_decimal)
+            .collation(TIMESTAMP_COLLATION, compare_timestamp);
+        let conn = SqliteConnection::connect_with(&options)
             .await
             .map_err(map_sqlx)?;
         Ok(Self {
@@ -156,6 +166,83 @@ fn check_databases(tables: &[FixtureTable]) -> Vec<FixtureError> {
         });
     }
     errors
+}
+
+/// Orders `a` and `b` by `key`. Text without a key (never stored by the fixture loader, but a
+/// query may compare against anything) sorts after every keyed text, by bytes, which keeps the
+/// order total as SQLite requires of a collation.
+fn compare_by<'a, K: Ord>(a: &'a str, b: &'a str, key: impl Fn(&'a str) -> Option<K>) -> Ordering {
+    match (key(a), key(b)) {
+        (Some(x), Some(y)) => x.cmp(&y),
+        (Some(_), None) => Ordering::Less,
+        (None, Some(_)) => Ordering::Greater,
+        (None, None) => a.cmp(b),
+    }
+}
+
+/// The magnitude of a decimal: integer digit count, integer digits (no leading zeros),
+/// fraction digits (no trailing zeros). Ordering these tuples orders the magnitudes.
+type Magnitude<'a> = (usize, &'a str, &'a str);
+
+/// The value of a decimal text; variants are declared in ascending order.
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
+enum DecimalKey<'a> {
+    Negative(Reverse<Magnitude<'a>>),
+    NonNegative(Magnitude<'a>),
+}
+
+fn decimal_key(s: &str) -> Option<DecimalKey<'_>> {
+    let parts = split_decimal(s)?;
+    let integer = parts.integer.trim_start_matches('0');
+    let fraction = parts.fraction.trim_end_matches('0');
+    let magnitude = (integer.len(), integer, fraction);
+    let zero = integer.is_empty() && fraction.is_empty();
+    Some(if parts.negative && !zero {
+        DecimalKey::Negative(Reverse(magnitude))
+    } else {
+        DecimalKey::NonNegative(magnitude)
+    })
+}
+
+/// [`DECIMAL_COLLATION`]: decimal text by value.
+fn compare_decimal(a: &str, b: &str) -> Ordering {
+    compare_by(a, b, decimal_key)
+}
+
+/// The UTC instant of `YYYY-MM-DD HH:MM:SS[.f]` (1 to 9 fraction digits) followed by nothing,
+/// `Z` or `+HH:MM` / `-HH:MM`. No offset means UTC, the session zone the Trino client sets.
+fn timestamp_key(s: &str) -> Option<NaiveDateTime> {
+    let clock = NaiveDateTime::parse_from_str(s.get(..19)?, "%Y-%m-%d %H:%M:%S").ok()?;
+    let mut rest = &s[19..];
+    let mut nanos = 0_i64;
+    if let Some(after) = rest.strip_prefix('.') {
+        let digits = after.bytes().take_while(u8::is_ascii_digit).count();
+        if !(1..=9).contains(&digits) {
+            return None;
+        }
+        let padded = format!("{:0<9}", &after[..digits]);
+        nanos = padded.parse().ok()?;
+        rest = &after[digits..];
+    }
+    let offset_minutes = match rest.as_bytes() {
+        [] | [b'Z'] => 0,
+        [sign @ (b'+' | b'-'), h1, h2, b':', m1, m2]
+            if [h1, h2, m1, m2].iter().all(|d| d.is_ascii_digit()) =>
+        {
+            let minutes = i64::from((h1 - b'0') * 10 + (h2 - b'0')) * 60
+                + i64::from((m1 - b'0') * 10 + (m2 - b'0'));
+            if *sign == b'-' { -minutes } else { minutes }
+        }
+        _ => return None,
+    };
+    clock
+        .checked_add_signed(TimeDelta::nanoseconds(nanos))?
+        .checked_sub_signed(TimeDelta::minutes(offset_minutes))
+}
+
+/// [`TIMESTAMP_COLLATION`]: timestamp text by instant.
+fn compare_timestamp(a: &str, b: &str) -> Ordering {
+    compare_by(a, b, timestamp_key)
 }
 
 /// The table with every part in lower case: how the stand-in files it.

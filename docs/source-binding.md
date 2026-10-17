@@ -118,7 +118,7 @@ fixture 是 SQLite 替身使用的样例数据，替身让 Windows 本机不需�
 
 ## fixture 模式的验证边界
 
-未给 `--server-config` 时，`validate --online` 用 fixture 加载内存 SQLite 替身。替身对外报告的物理列类型是由绑定与 IR 推导出来的：整数按属性范围报告 `tinyint` 到 `bigint`，`float` 报告 `real`、`double` 报告 `double`，decimal 用属性的 `precision` 与 `scale`，timestamp 为 `timestamp(3)`（`aware` 时带时区），string 为 `varchar`。
+未给 `--server-config` 时，`validate --online` 用 fixture 加载内存 SQLite 替身。替身对外报告的物理列类型是由绑定与 IR 推导出来的：整数按属性范围报告 `tinyint` 到 `bigint`，`float` 报告 `real`、`double` 报告 `double`，decimal 用属性的 `precision` 与 `scale`，timestamp 为 `timestamp(3)`（`aware` 时带时区），string 为 `varchar`。替身把 decimal 与 timestamp 存成规范化文本，但比较与排序按值进行，与 Trino 一致：decimal 按数值（`1.5` 等于 `1.50`），timestamp 按时刻（不带偏移的值按 UTC，即 Trino 客户端设置的会话时区）。
 
 因此 fixture 模式下 `--online` 只验证两件事：
 

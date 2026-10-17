@@ -1,7 +1,7 @@
 use sqlx::AssertSqlSafe;
 
 use super::SqliteEngine;
-use crate::printer::ast::{Expr, Select, SelectItem};
+use crate::printer::ast::{CompareOp, Expr, Literal, OrderItem, Select, SelectItem};
 use crate::printer::sqlite_ddl::{SqliteStorage, attach_memory, create_table, insert, query_only};
 use crate::printer::{Dialect, PrintedSql, print_select};
 use crate::{Engine, QueryContext, TableRef, Value};
@@ -163,6 +163,183 @@ async fn query_only_after_load() {
     let sql = print_select(&select_all(&["v"]), Dialect::Sqlite).unwrap();
     let out = engine.execute(&sql, &ctx()).await.unwrap();
     assert_eq!(out.rows, vec![vec![Value::String("x".to_owned())]]);
+}
+
+/// The `id`s of the rows matching `filter`, in `order_by` order (then by `id`).
+async fn ids(
+    engine: &SqliteEngine,
+    filter: impl Into<Option<Expr>>,
+    order_by: &str,
+) -> Vec<String> {
+    let mut select = select_all(&["id"]);
+    select.filter = filter.into();
+    select.order_by = [order_by, "id"]
+        .iter()
+        .map(|c| OrderItem {
+            expr: Expr::Column((*c).to_owned()),
+            descending: false,
+            nulls_first: false,
+        })
+        .collect();
+    let sql = print_select(&select, Dialect::Sqlite).unwrap();
+    let out = engine.execute(&sql, &ctx()).await.unwrap();
+    out.rows
+        .into_iter()
+        .map(|row| match &row[0] {
+            Value::String(s) => s.clone(),
+            other => panic!("{other:?}"),
+        })
+        .collect()
+}
+
+fn compare(column: &str, op: CompareOp, literal: Literal) -> Expr {
+    Expr::Compare {
+        left: Box::new(Expr::Column(column.to_owned())),
+        op,
+        right: Box::new(Expr::Literal(literal)),
+    }
+}
+
+#[tokio::test]
+async fn decimal_and_timestamp_compare_by_value() {
+    // WR-E03: decimals are stored as fixed-scale text and timestamps as millisecond text; the
+    // stand-in must still compare them the way Trino compares DECIMAL and TIMESTAMP values.
+    use super::fixture::{FixtureColumn, FixtureTable, LogicalType};
+    let dir = tempfile::TempDir::new().unwrap();
+    std::fs::write(
+        dir.path().join("t.csv"),
+        "id,amount,ts,tsz\n\
+         a,1.5,2026-01-01 00:00:00,2026-01-01 08:00:00+08:00\n\
+         b,9,2026-01-01 00:00:00.5,2026-01-01 00:00:00Z\n\
+         c,10,2026-01-02 00:00:00,2026-01-01 01:00:00+00:00\n\
+         d,-2,2025-12-31 23:59:59.999,2025-12-31 18:00:00-05:00\n\
+         e,-10,2025-06-01 00:00:00,2025-06-01 00:00:00Z\n",
+    )
+    .unwrap();
+    let column = |name: &str, logical| FixtureColumn {
+        name: name.to_owned(),
+        logical,
+    };
+    let fixture = FixtureTable {
+        def_names: vec!["dev/Test".to_owned()],
+        table: table(),
+        file: "t.csv".to_owned(),
+        columns: vec![
+            column("id", LogicalType::String),
+            column(
+                "amount",
+                LogicalType::Decimal {
+                    precision: 12,
+                    scale: 2,
+                },
+            ),
+            column("ts", LogicalType::Timestamp { aware: false }),
+            column("tsz", LogicalType::Timestamp { aware: true }),
+        ],
+    };
+    let engine = SqliteEngine::from_fixtures(root(&dir), &[fixture])
+        .await
+        .unwrap();
+    let decimal = |t: &str| Literal::Decimal(t.to_owned());
+    let timestamp = |t: &str| Literal::Timestamp(t.to_owned());
+
+    // `1.5` is stored as `1.50`.
+    let found = ids(
+        &engine,
+        compare("amount", CompareOp::Eq, decimal("1.5")),
+        "amount",
+    )
+    .await;
+    assert_eq!(found, ["a"]);
+    // By value, not by text: `10.00 > 9`, and negative numbers in numeric order.
+    let found = ids(
+        &engine,
+        compare("amount", CompareOp::Gt, decimal("9")),
+        "amount",
+    )
+    .await;
+    assert_eq!(found, ["c"]);
+    let found = ids(
+        &engine,
+        compare("amount", CompareOp::Lt, decimal("-2.0")),
+        "amount",
+    )
+    .await;
+    assert_eq!(found, ["e"]);
+    assert_eq!(
+        ids(&engine, None, "amount").await,
+        ["e", "d", "a", "b", "c"]
+    );
+
+    // `2026-01-01 00:00:00` is stored as `2026-01-01 00:00:00.000`.
+    let midnight = "2026-01-01 00:00:00";
+    let found = ids(
+        &engine,
+        compare("ts", CompareOp::Eq, timestamp(midnight)),
+        "ts",
+    )
+    .await;
+    assert_eq!(found, ["a"]);
+    let found = ids(
+        &engine,
+        compare("ts", CompareOp::Gt, timestamp(midnight)),
+        "ts",
+    )
+    .await;
+    assert_eq!(found, ["b", "c"]);
+    let found = ids(
+        &engine,
+        compare("ts", CompareOp::Gt, timestamp("2026-01-01 00:00:00.4999")),
+        "ts",
+    )
+    .await;
+    assert_eq!(found, ["b", "c"]);
+
+    // Aware values compare by instant; a literal without an offset is UTC.
+    let found = ids(
+        &engine,
+        compare("tsz", CompareOp::Eq, timestamp(midnight)),
+        "tsz",
+    )
+    .await;
+    assert_eq!(found, ["a", "b"]);
+    assert_eq!(ids(&engine, None, "tsz").await, ["e", "d", "a", "b", "c"]);
+}
+
+#[test]
+fn collations_are_total_orders() {
+    use std::cmp::Ordering::{Equal, Greater, Less};
+    for (a, b, want) in [
+        ("1.50", "1.5", Equal),
+        ("-0.00", "0", Equal),
+        ("-10.00", "9.00", Less),
+        ("10.00", "9.00", Greater),
+        ("-1.25", "-1.2", Less),
+        ("0.05", "0.5", Less),
+        ("1.00", "not a number", Less),
+        ("x", "y", Less),
+    ] {
+        assert_eq!(super::compare_decimal(a, b), want, "{a} vs {b}");
+        assert_eq!(super::compare_decimal(b, a), want.reverse(), "{b} vs {a}");
+    }
+    for (a, b, want) in [
+        ("2026-01-01 00:00:00.000", "2026-01-01 00:00:00", Equal),
+        (
+            "2026-01-01 08:00:00.000+08:00",
+            "2026-01-01 00:00:00.000Z",
+            Equal,
+        ),
+        (
+            "2026-01-01 00:00:00.000-01:00",
+            "2026-01-01 00:30:00.000+00:00",
+            Greater,
+        ),
+        ("2026-01-01 00:00:00.123", "2026-01-01 00:00:00.1234", Less),
+        ("2026-01-01 00:00:00.000", "garbage", Less),
+    ] {
+        assert_eq!(super::compare_timestamp(a, b), want, "{a} vs {b}");
+        assert_eq!(super::compare_timestamp(b, a), want.reverse(), "{b} vs {a}");
+    }
 }
 
 #[tokio::test]

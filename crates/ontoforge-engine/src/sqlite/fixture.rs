@@ -287,6 +287,8 @@ fn storage_of(logical: &LogicalType) -> SqliteStorage {
     match logical {
         LogicalType::Integer { .. } | LogicalType::Boolean => SqliteStorage::Integer,
         LogicalType::Float | LogicalType::Double => SqliteStorage::Real,
+        LogicalType::Decimal { .. } => SqliteStorage::Decimal,
+        LogicalType::Timestamp { .. } => SqliteStorage::Timestamp,
         _ => SqliteStorage::Text,
     }
 }

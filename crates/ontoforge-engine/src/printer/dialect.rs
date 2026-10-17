@@ -4,7 +4,9 @@
 //!
 //! * table references: `"cat"."sch"."tbl"` vs. `"cat__sch"."tbl"` (the ATTACH name),
 //! * typed literals: Trino gets `DECIMAL '..'`, `DOUBLE '..'`, `DATE '..'`, `TIMESTAMP '..'`;
-//!   SQLite gets plain strings / numbers,
+//!   SQLite gets plain strings / numbers; the stand-in's decimal and timestamp columns carry
+//!   collations that compare such strings by value (`sqlite_ddl::DECIMAL_COLLATION`,
+//!   `sqlite_ddl::TIMESTAMP_COLLATION`), so `'1.5'` equals a stored `1.50` as in Trino,
 //! * `ORDER BY` always spells out `NULLS FIRST` / `NULLS LAST` because the defaults differ.
 
 use chrono::{NaiveDate, NaiveDateTime};
