@@ -39,7 +39,7 @@ fn trino_url(value: Option<String>) -> String {
         Some(url) if !url.trim().is_empty() => url,
         _ => panic!(
             "{URL_VAR} is not set: the Trino integration tests need a running Trino \
-             (see CONTRIBUTING.md, \"Integration tests\")"
+             (see CONTRIBUTING.md)"
         ),
     }
 }
@@ -586,4 +586,64 @@ async fn drift_is_healthy_on_ci_trino() {
         .await
         .expect("the CI Trino answers");
     assert!(report.is_healthy(), "{report:#?}");
+}
+
+/// Turns on the Iceberg checks; only the nightly workflow sets it to `1`.
+const ICEBERG_VAR: &str = "ONTOFORGE_TRINO_ICEBERG";
+
+/// `SELECT count(*) AS "n" FROM <table>`.
+async fn row_count(engine: &TrinoEngine, from: &TableRef) -> Vec<Vec<Value>> {
+    let select = Select {
+        projection: vec![SelectItem {
+            expr: Expr::CountStar,
+            alias: Some("n".to_owned()),
+        }],
+        from: Some(from.clone()),
+        filter: None,
+        group_by: Vec::new(),
+        having: None,
+        order_by: Vec::new(),
+        limit: None,
+    };
+    let sql = print_select(&select, Dialect::Trino).expect("printable");
+    engine
+        .execute(&sql, &ctx())
+        .await
+        .unwrap_or_else(|e| {
+            panic!(
+                "count of {}.{}.{}: {e}",
+                from.catalog, from.schema, from.table
+            )
+        })
+        .rows
+}
+
+/// The nightly workflow copies `demo.aviation.flights` into `iceberg.aviation.flights` (JDBC
+/// catalog) and sets `ONTOFORGE_TRINO_ICEBERG=1`. The PR job has no Iceberg catalog, so
+/// without that variable this test checks nothing beyond `ONTOFORGE_TRINO_URL` being set.
+#[tokio::test]
+#[ignore = "needs ONTOFORGE_TRINO_URL (Linux CI)"]
+async fn iceberg_table_is_readable() {
+    let engine = trino();
+    if std::env::var(ICEBERG_VAR).as_deref() != Ok("1") {
+        return;
+    }
+    let iceberg = table("iceberg", "aviation", "flights");
+    let described = engine
+        .describe_tables(std::slice::from_ref(&iceberg), &ctx())
+        .await
+        .expect("describe the Iceberg table");
+    let columns = described
+        .get(&iceberg)
+        .expect("iceberg.aviation.flights exists");
+    assert!(!columns.is_empty());
+
+    let copied = row_count(&engine, &iceberg).await;
+    let source = row_count(&engine, &table("demo", "aviation", "flights")).await;
+    assert_ne!(
+        source,
+        vec![vec![Value::Long(0)]],
+        "the source table is seeded"
+    );
+    assert_eq!(copied, source);
 }

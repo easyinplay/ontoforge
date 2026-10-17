@@ -12,6 +12,44 @@ cargo test --workspace
 
 工具链由 `rust-toolchain.toml` 固定为 1.98.0，CI 使用同一版本。
 
+## 集成测试
+
+本机 `cargo test --workspace` 不需要 Docker、Trino 或 PostgreSQL：连接真实引擎的测试全部标为 `#[ignore]`，在本机只编译、不运行。
+
+### Trino 集成测试（Linux CI）
+
+- `crates/ontoforge-engine/tests/trino_it.rs`：真实 Trino 上的查询、`describe_tables` 类型 golden、值解码 golden、printer 固定语料往返、超时后服务端查询被取消、catalog 可见性与 drift。
+- `crates/ontoforge/tests/cli_trino_it.rs`：`ontoforge validate --online --check-pk --server-config ci/ontoforge-server.ci.toml examples/ontologies/aviation` 退出码 0。
+- 两者都读环境变量 `ONTOFORGE_TRINO_URL`；以 `--ignored` 运行而该变量缺失时测试会 panic，不会静默通过。
+- PR 的 `integration` 作业（`.github/workflows/ci.yml`）起 PostgreSQL 17 与 Trino 483，用 `ci/pg/seed.sql` 从 aviation fixture 导入数据，再运行这两个目标；另有一步检查两个目标列出的 ignored 测试数都大于 0。
+- golden 预期值写在测试源码的内联快照里。标有 `PROVISIONAL` 注释的预期值尚未经真实 Trino 确认，首次 CI 运行不一致时按日志修正并删除该注释。
+
+在装有 Docker 的 Linux 上手动复现（与 CI 步骤相同）：
+
+```
+docker run -d --name ontoforge-pg -p 5432:5432 -e POSTGRES_PASSWORD=ontoforge-ci-only postgres:17
+export PGHOST=localhost PGUSER=postgres PGPASSWORD=ontoforge-ci-only
+psql -v ON_ERROR_STOP=1 -d postgres -c 'CREATE DATABASE demo' -c 'CREATE DATABASE editstore'
+psql -v ON_ERROR_STOP=1 -v fixtures="$PWD/examples/ontologies/aviation/bindings/dev/fixtures" -d demo -f ci/pg/seed.sql
+docker run -d --name trino --network host -v "$PWD/ci/trino/catalog:/etc/trino/catalog:ro" trinodb/trino:483
+# 等到 curl -fsS http://localhost:8080/v1/info 的 "starting" 为 false
+ONTOFORGE_TRINO_URL=http://localhost:8080 cargo test -p ontoforge-engine --test trino_it -- --ignored
+ONTOFORGE_TRINO_URL=http://localhost:8080 cargo test -p ontoforge --test cli_trino_it -- --ignored
+```
+
+### nightly Iceberg 作业
+
+`.github/workflows/nightly.yml` 每天运行一次（也可手动触发 `workflow_dispatch`），在 Trino 483 与 484 上重复上述步骤，并额外配置 Iceberg catalog（`ci/trino/iceberg/iceberg.properties`：JDBC catalog 存在同一 PostgreSQL 的 `iceberg_catalog` 库，表由 `ci/pg/iceberg_catalog.sql` 创建，warehouse 用 Trino 本地文件系统），把 `demo.aviation.flights` 复制成 `iceberg.aviation.flights` 后以 `ONTOFORGE_TRINO_ICEBERG=1` 运行 `trino_it`。任一版本失败时，独立的 `report-failure` 作业创建带 `nightly-failure` 标签的 issue，已有未关闭的同标签 issue 时改为追加评论。只有该作业拥有 `issues: write`，测试作业只有 `contents: read`。
+
+### 私有 fixture（SQL Server 等公司环境）
+
+公司环境与不能公开的数据只通过 `crates/ontoforge/tests/private_fixtures.rs` 在本地验证，CI 不运行这个测试目标。
+
+- 环境变量 `ONTOFORGE_PRIVATE_FIXTURES` 指向**仓库之外**的目录。
+- 目录约定：每个子目录 `<name>/` 是一组 fixture，包含 `<name>/ontology/`（ontology 目录）与 `<name>/ontoforge-server.toml`（服务配置，密钥只用 `*_env` / `*_file` 引用）。缺任一项的子目录被跳过。
+- 运行：`ONTOFORGE_PRIVATE_FIXTURES=/path/outside/repo cargo test -p ontoforge --test private_fixtures -- --ignored`。每组执行 `ontoforge validate --online --server-config <name>/ontoforge-server.toml <name>/ontology`，退出码必须为 0。
+- 不得把公司的绑定、catalog / 表名、配置或数据提交进仓库，也不得出现在 issue、PR 或 CI 日志中。
+
 ## 快照测试（insta）
 
 诊断输出、CLI 输出等用 `insta` 快照固定。

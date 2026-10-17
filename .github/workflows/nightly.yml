@@ -1,0 +1,124 @@
+name: nightly
+
+# Trino 483 and 484 with the Iceberg connector on top of the PR integration setup (ENGINE-05,
+# D9). A failure opens an issue labelled `nightly-failure`, or comments on the open one.
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  iceberg:
+    strategy:
+      fail-fast: false
+      matrix:
+        trino: ["483", "484"]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          # Throwaway password that only exists inside this job's containers.
+          POSTGRES_PASSWORD: ontoforge-ci-only
+        # Published to the runner so that the host network Trino and the runner's psql can
+        # reach localhost:5432 (E25).
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: ontoforge-ci-only
+    steps:
+      # Third-party actions are pinned to full commit SHAs, the same ones as ci.yml.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # v1
+        with:
+          toolchain: "1.98.0"
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - name: Seed PostgreSQL from the aviation fixtures
+        run: |
+          psql -v ON_ERROR_STOP=1 -d postgres -c 'CREATE DATABASE demo' -c 'CREATE DATABASE editstore' -c 'CREATE DATABASE iceberg_catalog'
+          psql -v ON_ERROR_STOP=1 -v fixtures="$PWD/examples/ontologies/aviation/bindings/dev/fixtures" -d demo -f ci/pg/seed.sql
+          psql -v ON_ERROR_STOP=1 -d iceberg_catalog -f ci/pg/iceberg_catalog.sql
+      # The PR catalogs and the Iceberg catalog are mounted as one catalog directory.
+      - name: Start Trino ${{ matrix.trino }}
+        env:
+          TRINO_VERSION: ${{ matrix.trino }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/catalog" "$RUNNER_TEMP/iceberg"
+          cp ci/trino/catalog/*.properties ci/trino/iceberg/*.properties "$RUNNER_TEMP/catalog/"
+          chmod 0777 "$RUNNER_TEMP/iceberg"
+          docker run -d --name trino --network host \
+            -v "$RUNNER_TEMP/catalog:/etc/trino/catalog:ro" \
+            -v "$RUNNER_TEMP/iceberg:/tmp/iceberg" \
+            "trinodb/trino:$TRINO_VERSION"
+      - name: Wait for Trino
+        run: |
+          deadline=$((SECONDS + 180))
+          until curl -fsS http://localhost:8080/v1/info | jq -e '.starting == false' >/dev/null 2>&1; do
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "Trino did not finish starting within 180 s"
+              docker logs trino
+              exit 1
+            fi
+            sleep 2
+          done
+          echo "Trino is ready after ${SECONDS} s"
+      - name: Copy flights into Iceberg
+        run: |
+          docker exec trino trino --execute "CREATE SCHEMA iceberg.aviation"
+          docker exec trino trino --execute "CREATE TABLE iceberg.aviation.flights AS SELECT flight_id, flight_no, departure_airport, arrival_airport, tail_number, CAST(scheduled_departure AS timestamp(6)) AS scheduled_departure, status, delay_minutes, tags FROM demo.aviation.flights"
+      - name: Engine integration tests (with Iceberg)
+        env:
+          ONTOFORGE_TRINO_URL: http://localhost:8080
+          ONTOFORGE_TRINO_ICEBERG: "1"
+        run: cargo test -p ontoforge-engine --test trino_it --locked -- --ignored
+      - name: CLI integration tests
+        env:
+          ONTOFORGE_TRINO_URL: http://localhost:8080
+        run: cargo test -p ontoforge --test cli_trino_it --locked -- --ignored
+      - name: Ignored tests are actually there
+        run: |
+          for target in "ontoforge-engine trino_it" "ontoforge cli_trino_it"; do
+            set -- $target
+            count=$(cargo test -p "$1" --test "$2" --locked -- --ignored --list | grep -c ': test$' || true)
+            echo "$2: $count ignored tests"
+            if [ "$count" -eq 0 ]; then
+              echo "::error::$2 lists no ignored tests"
+              exit 1
+            fi
+          done
+      - name: Trino logs
+        if: failure()
+        run: docker logs trino
+
+  # Only this job may write issues. It checks out nothing and runs no repository code; the
+  # test job above keeps the read-only token (E25).
+  report-failure:
+    needs: iceberg
+    if: ${{ failure() }}
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Open or update the nightly-failure issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          body="The nightly integration workflow failed: $RUN_URL (the run shows which Trino version failed)."
+          existing=$(gh issue list --repo "${{ github.repository }}" --label nightly-failure --state open --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "${{ github.repository }}" --body "$body"
+          else
+            gh label create nightly-failure --repo "${{ github.repository }}" --color B60205 --description "Nightly workflow failure" || true
+            gh issue create --repo "${{ github.repository }}" --title "Nightly integration run failed" --label nightly-failure --body "$body"
+          fi

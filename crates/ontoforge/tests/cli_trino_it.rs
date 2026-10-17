@@ -18,7 +18,7 @@ fn trino_url(value: Option<String>) -> String {
         Some(url) if !url.trim().is_empty() => url,
         _ => panic!(
             "{URL_VAR} is not set: the Trino integration tests need a running Trino \
-             (see CONTRIBUTING.md, \"Integration tests\")"
+             (see CONTRIBUTING.md)"
         ),
     }
 }
