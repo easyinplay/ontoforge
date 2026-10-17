@@ -19,7 +19,7 @@ cargo test --workspace
 ### Trino 集成测试（Linux CI）
 
 - `crates/ontoforge-engine/tests/trino_it.rs`：真实 Trino 上的查询、`describe_tables` 类型 golden、值解码 golden、printer 固定语料往返、超时后服务端查询被取消、catalog 可见性与 drift。
-- `crates/ontoforge/tests/cli_trino_it.rs`：`ontoforge validate --online --check-pk --server-config ci/ontoforge-server.ci.toml examples/ontologies/aviation` 退出码 0。
+- `crates/ontoforge/tests/cli_trino_it.rs`：`ontoforge validate --online --check-pk --server-config ci/ontoforge-server.ci.toml examples/ontologies/aviation` 退出码 0；另用临时 ontology 绑定 seed 中唯一没有 PRIMARY KEY 约束的 `demo.aviation.flights_dup`，断言 `--check-pk` 报出重复键与 NULL 键两条 `ONT-V18`、退出码 1。
 - 两者都读环境变量 `ONTOFORGE_TRINO_URL`；以 `--ignored` 运行而该变量缺失时测试会 panic，不会静默通过。
 - PR 的 `integration` 作业（`.github/workflows/ci.yml`）起 PostgreSQL 17 与 Trino 483，用 `ci/pg/seed.sql` 从 aviation fixture 导入数据，再运行这两个目标；另有一步检查两个目标列出的 ignored 测试数都大于 0。
 - golden 预期值写在测试源码的内联快照里。标有 `PROVISIONAL` 注释的预期值尚未经真实 Trino 确认，首次 CI 运行不一致时按日志修正并删除该注释。

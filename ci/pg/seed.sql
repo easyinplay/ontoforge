@@ -151,4 +151,19 @@ INSERT INTO aviation.flight_crew
 SELECT flight_id, pilot_id
 FROM stage_flight_crew;
 
+-- Not part of the aviation example. Every table above has a PRIMARY KEY constraint, so
+-- `--check-pk` on them can only find nothing; this one has none and holds one duplicate key
+-- and two NULL keys, so that crates/ontoforge/tests/cli_trino_it.rs runs the duplicate and
+-- NULL queries on Trino and decodes what they return (WR-C07).
+CREATE TABLE aviation.flights_dup (
+    flight_id varchar(16),
+    status text
+);
+INSERT INTO aviation.flights_dup (flight_id, status) VALUES
+    ('F-DUP-1', 'scheduled'),
+    ('F-DUP-1', 'cancelled'),
+    ('F-UNIQUE', 'scheduled'),
+    (NULL, 'scheduled'),
+    (NULL, 'delayed');
+
 COMMIT;
