@@ -30,6 +30,7 @@
 ### 行谓词语义
 - **D-06:** null 语义以 **SQL 三值逻辑**为准：Rust 单行求值器实现 Kleene 三值逻辑，最终 unknown → 不可见。因此 `object.x != 'a'` 在 x 为 null 时不可见；想让 null 可见须显式写 `object.x == null || …`。此语义与标准 CEL 不同，必须写入用户文档与谓词规范。— **Reversibility:** one-way — 一旦有用户按此语义写了 role，改语义会静默改变可见范围（安全回归）；差分测试语料与反例集也随之作废。
 - **D-07:** 行谓词允许的 CEL 子集：比较运算（== != < <= > >=）、`&&` `||` `!`、`== null` / `!= null`、`in`（右侧为列表字面量或 list 型 `principal.attrs`）、字符串 `startsWith` / `endsWith` / `contains`（编译为带转义的 LIKE）。拒绝：宏（all / exists / map / filter）、`matches`、算术、`size`、其他函数。超出子集 → validate / apply 报 E。
+  - **Refinement (plan-phase, 2026-10-20)：** 实现中「报 E」细化为报不可关闭的 V 级诊断（行谓词为 ONT-V22，phase 新码 ONT-V21..V27 见 03-02）。原因：E 级是可在 `ontoforge.toml` 中关闭或降级的 lint 规则，而 SCOPE-06 与本条要求超出子集的谓词「报错不生效」、不可被配置绕过。语义（拒绝集合）不变，只提高诊断级别；ADR-0025（03-05）记录此细化。
 - **D-08:** 行谓词引用了在绑定中声明为大小写不敏感 collation 的列 → E（列表路径必须把谓词下推到 Trino，D23 禁止此类列下推字符串比较）。
 - **D-09:** 差分测试按 D23：完整 proptest 只跑 Rust vs SQLite；Trino 端跑固定种子语料 + 历史反例（Linux CI）。
 

@@ -38,25 +38,25 @@ created: "2026-10-19"
 
 ## Per-Task Verification Map
 
-Task IDs filled in by the planner (2026-10-20). Test targets follow the plans; the research draft's separate `replay` / `append_only` targets were folded into the shared conformance harness (`tests/conformance/mod.rs`, run by `conformance_sqlite` and `conformance_pg`) and are selected by test-name filter.
+Task IDs filled in by the planner (2026-10-20); renumbered after plan-checker iteration 1 split the old reload plan into 03-03 / 03-04 and the old edit-log plan into 03-08 / 03-09 (2026-10-20). Test targets follow the plans; the research draft's separate `replay` / `append_only` targets were folded into the shared conformance harness (`tests/conformance/mod.rs`, run by `conformance_sqlite` and `conformance_pg`) and are selected by test-name filter.
 
 | Requirement | Plan / Task | Test Type | Automated Command | File Exists | Status |
 |-------------|-------------|-----------|-------------------|-------------|--------|
-| STORE-01 | 03-03 T2-T3, 03-07 T2-T3, 03-11 T3, 03-18 T1 | integration | `cargo test -p ontoforge-storage --test conformance_sqlite --locked`; PG: `cargo test -p ontoforge-storage --test conformance_pg --test reload_pg --test scope_store --locked -- --ignored` (`ONTOFORGE_PG_URL` or `--features embedded-pg`) | ❌ W0 | ⬜ pending |
-| STORE-02 | 03-03 T2, 03-08 T1-T2, 03-13 T1-T2, 03-16 T1-T3 | integration | `cargo test -p ontoforge-storage --test reload --test migrate --locked`; `cargo test -p ontoforge --test cli_reload --test cli_migrate --locked`; Trino: `cargo test -p ontoforge-storage --test reload_trino_it --locked -- --ignored` | ❌ W0 | ⬜ pending |
-| STORE-03 | 03-07 T2-T3 | integration | `cargo test -p ontoforge-storage --test conformance_sqlite --locked commit_appends_one_log_record`; `... replay`; `... append_only` | ❌ W0 | ⬜ pending |
-| STORE-04 | 03-15 T1-T2 | integration | `cargo test -p ontoforge-storage --test history_masking --locked` | ❌ W0 | ⬜ pending |
-| STORE-05 | 03-08 T1, 03-11 T1/T3 | integration | `cargo test -p ontoforge-storage --test reload --locked one_to_one_unique_index_rejects_second_row`; `cargo test -p ontoforge-storage --test conformance_sqlite --locked concurrent_fk_claims_one_wins` | ❌ W0 | ⬜ pending |
-| STORE-06 | 03-17 T1-T2 | integration | `cargo test -p ontoforge-storage --test import --locked`; `cargo test -p ontoforge --test cli_import --locked` | ❌ W0 | ⬜ pending |
-| STORE-07 | 03-07 T2, 03-11 T1-T2 | property | `cargo test -p ontoforge-storage --test model_prop --locked` | ❌ W0 | ⬜ pending |
-| SCOPE-01 / SCOPE-07 | 03-05, 03-06, 03-12, 03-14 T1-T2, 03-16 T1 | integration | `cargo test -p ontoforge --test cli_scope --locked`; `cargo test -p ontoforge-storage --test scope_store --locked` | ❌ W0 | ⬜ pending |
-| SCOPE-02 | 03-05 T1-T2, 03-12 T1-T2 | unit/snapshot | `cargo test -p ontoforge-schema --test scope_documents --locked`; `cargo test -p ontoforge-auth --test scope_compile --locked` | ❌ W0 | ⬜ pending |
-| SCOPE-03 | 03-09 T3 | property + example | `cargo test -p ontoforge-auth --test scope_merge --locked` | ❌ W0 | ⬜ pending |
-| SCOPE-04 | 03-04 T2-T3, 03-09 T1-T2, 03-18 T2 | property / integration | `cargo test -p ontoforge-expr --test rowpred_eval --locked`; `cargo test -p ontoforge-auth --test rowpred_diff --locked`; Trino: `cargo test -p ontoforge-auth --test rowpred_trino_it --locked -- --ignored` | ❌ W0 | ⬜ pending |
-| SCOPE-05 | 03-04 T3, 03-09 T3, 03-12 T2 | unit | `cargo test -p ontoforge-expr --test rowpred_subset --locked` | ❌ W0 | ⬜ pending |
-| SCOPE-06 | 03-12 T2, 03-14 T1, 03-16 T2 | unit/integration | `cargo test -p ontoforge-auth --test criteria_coverage --locked`; `cargo test -p ontoforge-storage --test reload --locked reload_rechecks_applied_roles` | ❌ W0 | ⬜ pending |
-| AUTH-01 | 03-06 T1-T2 | unit (wiremock) | `cargo test -p ontoforge-auth --test oidc --locked` | ❌ W0 | ⬜ pending |
-| AUTH-02 | 03-10 T1-T2 | unit | `cargo test -p ontoforge-auth --test dev_token --locked`; `cargo test -p ontoforge --test cli_dev_token --locked` | ❌ W0 | ⬜ pending |
+| STORE-01 | 03-03 T2, 03-04 T2, 03-08 T2, 03-09 T1-T2, 03-13 T3, 03-20 T1 | integration | `cargo test -p ontoforge-storage --test conformance_sqlite --locked`; PG: `cargo test -p ontoforge-storage --test conformance_pg --test reload_pg --test scope_store --locked -- --ignored` (`ONTOFORGE_PG_URL` or `--features embedded-pg`) | ❌ W0 | ⬜ pending |
+| STORE-02 | 03-03 T2, 03-04 T1, 03-10 T1-T2, 03-15 T1-T2, 03-18 T1-T3 | integration | `cargo test -p ontoforge-storage --test reload --test migrate --locked`; `cargo test -p ontoforge --test cli_reload --test cli_migrate --locked`; Trino: `cargo test -p ontoforge-storage --test reload_trino_it --locked -- --ignored` | ❌ W0 | ⬜ pending |
+| STORE-03 | 03-08 T2, 03-09 T1-T2 | integration | `cargo test -p ontoforge-storage --test conformance_sqlite --locked commit_appends_one_log_record`; `... replay`; `... append_only` | ❌ W0 | ⬜ pending |
+| STORE-04 | 03-17 T1-T2 | integration | `cargo test -p ontoforge-storage --test history_masking --locked` | ❌ W0 | ⬜ pending |
+| STORE-05 | 03-10 T1, 03-13 T1/T3 | integration | `cargo test -p ontoforge-storage --test reload --locked one_to_one_unique_index_rejects_second_row`; `cargo test -p ontoforge-storage --test conformance_sqlite --locked concurrent_fk_claims_one_wins` | ❌ W0 | ⬜ pending |
+| STORE-06 | 03-19 T1-T2 | integration | `cargo test -p ontoforge-storage --test import --locked`; `cargo test -p ontoforge --test cli_import --locked` | ❌ W0 | ⬜ pending |
+| STORE-07 | 03-08 T2, 03-13 T1-T2 | property | `cargo test -p ontoforge-storage --test model_prop --locked` | ❌ W0 | ⬜ pending |
+| SCOPE-01 / SCOPE-07 | 03-06, 03-07, 03-14, 03-16 T1-T2, 03-18 T1 | integration | `cargo test -p ontoforge --test cli_scope --locked`; `cargo test -p ontoforge-storage --test scope_store --locked` | ❌ W0 | ⬜ pending |
+| SCOPE-02 | 03-06 T1-T2, 03-14 T1-T2 | unit/snapshot | `cargo test -p ontoforge-schema --test scope_documents --locked`; `cargo test -p ontoforge-auth --test scope_compile --locked` | ❌ W0 | ⬜ pending |
+| SCOPE-03 | 03-11 T3 | property + example | `cargo test -p ontoforge-auth --test scope_merge --locked` | ❌ W0 | ⬜ pending |
+| SCOPE-04 | 03-05 T2-T3, 03-11 T1-T2, 03-20 T2 | property / integration | `cargo test -p ontoforge-expr --test rowpred_eval --locked`; `cargo test -p ontoforge-auth --test rowpred_diff --locked`; Trino: `cargo test -p ontoforge-auth --test rowpred_trino_it --locked -- --ignored` | ❌ W0 | ⬜ pending |
+| SCOPE-05 | 03-05 T3, 03-11 T3, 03-14 T2 | unit | `cargo test -p ontoforge-expr --test rowpred_subset --locked` | ❌ W0 | ⬜ pending |
+| SCOPE-06 | 03-14 T2, 03-16 T1, 03-18 T2 | unit/integration | `cargo test -p ontoforge-auth --test criteria_coverage --locked`; `cargo test -p ontoforge-storage --test reload --locked reload_rechecks_applied_roles` | ❌ W0 | ⬜ pending |
+| AUTH-01 | 03-07 T1-T2 | unit (wiremock) | `cargo test -p ontoforge-auth --test oidc --locked` | ❌ W0 | ⬜ pending |
+| AUTH-02 | 03-12 T1-T2 | unit | `cargo test -p ontoforge-auth --test dev_token --locked`; `cargo test -p ontoforge --test cli_dev_token --locked` | ❌ W0 | ⬜ pending |
 | guard | 03-01 T3, 03-03 T3 | static | `cargo test -p ontoforge-storage --test sql_exit_guard --locked`; `cargo tree --workspace --features ontoforge-storage/embedded-pg -i openssl` reports "did not match any packages" | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*

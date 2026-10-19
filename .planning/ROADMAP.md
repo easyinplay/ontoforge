@@ -138,7 +138,7 @@ Plans:
   4. 角色可授予 object type、属性 allow-list、CEL 行谓词、action、SQL 级别与 toolset；行谓词只能引用同行属性与 `principal.attrs`，缺失属性按 false；多 role 合并不产生「A 的列 × B 的行」泄露
   5. 同一 CEL 行谓词的 SQL 编译结果与 Rust 单行求值经差分测试一致；criteria 列覆盖 lint 在 reload 与 role 变更时生效；OIDC JWT 与 dev token 均可认证
 
-**Plans**: 18 plans（7 waves）
+**Plans**: 20 plans（8 waves）
 
 Plans:
 
@@ -149,37 +149,42 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 03-03-PLAN.md — tracer：物理格式 checkpoint + `ontoforge reload` 建 edit 表（SQLite / PG，ADR-0024）
-- [ ] 03-04-PLAN.md — 行谓词：D-06 checkpoint、CEL 子集 → `Pred` → Kleene 求值（ADR-0025）
-- [ ] 03-05-PLAN.md — `Role` / `RoleBinding` 文档、scope 加载器与 JSON Schema
-- [ ] 03-06-PLAN.md — OIDC JWT 认证与 JWKS 缓存
+- [ ] 03-03-PLAN.md — tracer：物理格式 checkpoint + `reload` 库函数在 SQLite 建 edit 表、SQL 出口守卫（ADR-0024）
+- [ ] 03-05-PLAN.md — 行谓词：D-06 checkpoint、CEL 子集 → `Pred` → Kleene 求值（ADR-0025）
+- [ ] 03-06-PLAN.md — `Role` / `RoleBinding` 文档、scope 加载器与 JSON Schema
+- [ ] 03-07-PLAN.md — OIDC JWT 认证与 JWKS 缓存
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 03-07-PLAN.md — edit log 格式 checkpoint、commit 写路径、append-only、重放（ADR-0026）
-- [ ] 03-08-PLAN.md — 索引（含 1:1 部分唯一索引）、物理名上限与 ONT-V24
-- [ ] 03-09-PLAN.md — 行谓词降为 SQL、`StringMatch`、差分 proptest、多 role 合并
-- [ ] 03-10-PLAN.md — dev token 与 `ontoforge dev-token`
+- [ ] 03-04-PLAN.md — `ontoforge reload` 子命令、PostgreSQL 后端与两种方言 DDL 快照
+- [ ] 03-11-PLAN.md — 行谓词降为 SQL、`StringMatch`、差分 proptest、多 role 合并
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 03-11-PLAN.md — 完整叠加状态机、参考模型 proptest、基数与并发
-- [ ] 03-12-PLAN.md — scope 编译：引用 / 谓词 / criteria 列覆盖 / collation
-- [ ] 03-13-PLAN.md — `ontoforge migrate --plan/--apply`、改名与归档
+- [ ] 03-08-PLAN.md — edit log 格式 checkpoint、commit 写路径与双后端 conformance 框架
+- [ ] 03-10-PLAN.md — 索引（含 1:1 部分唯一索引）、物理名上限与 ONT-V24
+- [ ] 03-12-PLAN.md — dev token 与 `ontoforge dev-token`
+- [ ] 03-14-PLAN.md — scope 编译：引用 / 谓词 / criteria 列覆盖 / collation
 
 **Wave 5** *(blocked on Wave 4 completion)*
 
-- [ ] 03-14-PLAN.md — `ontoforge scope plan|apply`、管理审计、user 记录
-- [ ] 03-15-PLAN.md — 变更历史 API 与当前 scope 遮蔽
+- [ ] 03-09-PLAN.md — append-only 触发器、重放重建 edit store、重复提交（ADR-0026）
+- [ ] 03-15-PLAN.md — `ontoforge migrate --plan/--apply`、改名与归档
 
 **Wave 6** *(blocked on Wave 5 completion)*
 
-- [ ] 03-16-PLAN.md — reload 加固：栅栏、lock_timeout、D-18 复核、Trino 可见探测
-- [ ] 03-17-PLAN.md — `ontoforge import`（editOnly）
+- [ ] 03-13-PLAN.md — 完整叠加状态机、参考模型 proptest、基数与并发
+- [ ] 03-16-PLAN.md — `ontoforge scope plan|apply`、管理审计、user 记录
 
 **Wave 7** *(blocked on Wave 6 completion)*
 
-- [ ] 03-18-PLAN.md — Linux CI（PG conformance、Trino 语料与探测）与 `docs/edit-store.md`
+- [ ] 03-17-PLAN.md — 变更历史 API 与当前 scope 遮蔽
+- [ ] 03-18-PLAN.md — reload 加固：栅栏、lock_timeout、D-18 复核、Trino 可见探测
+- [ ] 03-19-PLAN.md — `ontoforge import`（editOnly）
+
+**Wave 8** *(blocked on Wave 7 completion)*
+
+- [ ] 03-20-PLAN.md — Linux CI（PG conformance、Trino 语料与探测）与 `docs/edit-store.md`
 
 **Details**: `.planning/phases/03-edit-store-scope-model/`
 
