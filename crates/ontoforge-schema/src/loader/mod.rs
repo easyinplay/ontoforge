@@ -18,11 +18,13 @@ mod discover;
 mod dispatch;
 mod fixture;
 mod parse;
+mod scope;
 pub mod sourcemap;
 
 pub use discover::{fixture_path, profile_dir};
 use dispatch::{Ctx, dispatch, parse_manifest};
 pub use fixture::fixture_header;
+pub use scope::{ScopeLoadOutput, load_scope_dir, load_scope_from_memory};
 pub use sourcemap::SourceMap;
 use sourcemap::{DefKey, DefKind, FileId, FixtureColumns, Part, Seg};
 
