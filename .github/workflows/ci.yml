@@ -24,6 +24,14 @@ jobs:
           components: "clippy, rustfmt"
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
       - run: cargo fmt --all --check
+      # A second TLS / crypto stack widens the supply chain and makes Linux CI need system
+      # headers; postgresql_embedded pulls native-tls unless its default features are off
+      # (RESEARCH Pitfall 5). `cargo tree -i` exits non-zero when the package is absent.
+      - name: No OpenSSL or native-tls in the dependency graph
+        shell: bash
+        run: |
+          ! cargo tree --workspace --locked --features ontoforge-storage/embedded-pg -e normal,build,dev -i openssl
+          ! cargo tree --workspace --locked --features ontoforge-storage/embedded-pg -e normal,build,dev -i native-tls
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - run: cargo test --workspace --locked
 

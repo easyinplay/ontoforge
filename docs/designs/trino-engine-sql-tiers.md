@@ -366,7 +366,7 @@ L2 边界（显式例外）：
 | `ontoforge-auth` | principal / role / grants、CEL 行谓词（SQL 编译 + 单行求值）、criteria 列覆盖 lint、L2 AST 白名单（sqlparser） |
 | `ontoforge-action` | D5 管线 |
 
-依赖方向：`schema/expr → auth → query → engine/storage → action → api/server`。`ontoforge-query` 叠加模块与 `ontoforge-action` 管线入口放上述 ASCII 图作为代码注释。
+依赖方向：`schema/expr → auth → query → engine/storage → action → api/server`（Phase 3 起以 ADR-0023 为准：auth → engine，storage → auth / expr / engine，query → storage）。`ontoforge-query` 叠加模块与 `ontoforge-action` 管线入口放上述 ASCII 图作为代码注释。
 
 ### NOT in scope（本 eng review 补充；CEO 版见上文）
 - 行谓词引用 link / 其他对象（D12 限制同行属性）：下一 milestone。
