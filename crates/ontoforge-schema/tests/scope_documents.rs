@@ -2,7 +2,7 @@
 
 use camino::Utf8Path;
 use ontoforge_schema::diag::{Diagnostic, codes};
-use ontoforge_schema::ir::{Subject, Toolset};
+use ontoforge_schema::ir::{RoleName, Subject, Toolset};
 use ontoforge_schema::{ScopeLoadOutput, load_scope_dir, load_scope_from_memory};
 
 const AVIATION_SCOPE: &str = concat!(
@@ -32,7 +32,7 @@ fn loads_aviation_scope_example() {
     assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
     let scope = out.scope.expect("the example loads");
 
-    let names: Vec<&str> = scope.roles.keys().map(|n| n.as_str()).collect();
+    let names: Vec<&str> = scope.roles.keys().map(RoleName::as_str).collect();
     assert_eq!(names, ["crewScheduler", "dispatcher", "maintenanceLead"]);
     assert_eq!(
         scope.roles["dispatcher"].object_types["Flight"]

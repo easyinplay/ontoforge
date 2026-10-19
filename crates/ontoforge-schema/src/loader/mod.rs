@@ -54,7 +54,7 @@ pub const MAX_TOTAL_BYTES: u64 = 64 * 1024 * 1024;
 /// Load the ontology under `root`: parse, merge and validate (every `ONT-V`
 /// check except CEL, which `ontoforge-expr` owns).
 pub fn load_dir(root: &Utf8Path) -> LoadOutput {
-    isolated(|| {
+    isolated(internal_error, || {
         let manifest = read_text(root, MANIFEST);
         let (candidates, diagnostics) = discover::walk(root);
         let listing = Listing {
@@ -69,15 +69,20 @@ pub fn load_dir(root: &Utf8Path) -> LoadOutput {
 /// Same pipeline over in-memory files; paths use `/` (`\` is accepted) and are
 /// the diagnostic `file`s.
 pub fn load_from_memory(files: &[(&str, &str)]) -> LoadOutput {
-    isolated(|| load_from_memory_inner(files))
+    isolated(internal_error, || load_from_memory_inner(files))
 }
 
-fn load_from_memory_inner(files: &[(&str, &str)]) -> LoadOutput {
-    let by_path: BTreeMap<String, &str> = files
+/// In-memory files by normalized path.
+fn memory_files<'a>(files: &[(&str, &'a str)]) -> BTreeMap<String, &'a str> {
+    files
         .iter()
         .map(|(p, t)| (discover::normalize(p), *t))
-        .collect();
-    let read = |name: &str| match by_path.get(name) {
+        .collect()
+}
+
+/// Reads one in-memory file, applying the same size limit as the disk reader.
+fn read_memory(by_path: &BTreeMap<String, &str>, name: &str) -> Text {
+    match by_path.get(name) {
         Some(t) => check_size(name, t.len() as u64).map(|()| (*t).to_owned()),
         None if name == MANIFEST => Err(missing_manifest()),
         None => Err(Diagnostic::without_location(
@@ -86,7 +91,12 @@ fn load_from_memory_inner(files: &[(&str, &str)]) -> LoadOutput {
             format!("cannot read `{name}`: not found"),
             name,
         )),
-    };
+    }
+}
+
+fn load_from_memory_inner(files: &[(&str, &str)]) -> LoadOutput {
+    let by_path = memory_files(files);
+    let read = |name: &str| read_memory(&by_path, name);
     let listing = Listing {
         candidates: by_path.keys().cloned().collect(),
         diagnostics: Vec::new(),
@@ -110,9 +120,9 @@ fn load_from_memory_inner(files: &[(&str, &str)]) -> LoadOutput {
 const LOADER_STACK_BYTES: usize = 32 << 20;
 
 /// Run the whole load on a thread with a large stack, so callers never depend on
-/// their own stack size. A panic becomes a diagnostic instead of unwinding into
-/// the caller.
-fn isolated<'a>(work: impl FnOnce() -> LoadOutput + Send + 'a) -> LoadOutput {
+/// their own stack size. A panic becomes the `failed` output instead of unwinding
+/// into the caller.
+fn isolated<'a, T: Send>(failed: fn() -> T, work: impl FnOnce() -> T + Send + 'a) -> T {
     let outcome = std::thread::scope(|scope| {
         std::thread::Builder::new()
             .stack_size(LOADER_STACK_BYTES)
@@ -120,16 +130,24 @@ fn isolated<'a>(work: impl FnOnce() -> LoadOutput + Send + 'a) -> LoadOutput {
             .ok()
             .and_then(|handle| handle.join().ok())
     });
-    outcome.unwrap_or_else(|| LoadOutput {
+    outcome.unwrap_or_else(failed)
+}
+
+fn internal_error_diagnostic(file: &str) -> Diagnostic {
+    Diagnostic::without_location(
+        codes::V01,
+        Severity::Error,
+        "internal error while loading",
+        file,
+    )
+}
+
+fn internal_error() -> LoadOutput {
+    LoadOutput {
         ontology: None,
         sources: SourceMap::default(),
-        diagnostics: vec![Diagnostic::without_location(
-            codes::V01,
-            Severity::Error,
-            "internal error while loading",
-            MANIFEST,
-        )],
-    })
+        diagnostics: vec![internal_error_diagnostic(MANIFEST)],
+    }
 }
 
 /// Candidate definition files plus problems found while listing them.
