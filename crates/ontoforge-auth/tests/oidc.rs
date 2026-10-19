@@ -669,7 +669,7 @@ async fn alg_none_is_rejected() {
 async fn hs256_with_the_public_key_as_secret_is_rejected() {
     let key = TestKey::rs256("k1");
     let jwk = key.jwk();
-    let (server, authn) = authn_with(&[jwk.clone()]).await;
+    let (server, authn) = authn_with(std::slice::from_ref(&jwk)).await;
     // The classic algorithm confusion: sign with HMAC, using public key material as secret.
     let secret = jwk["n"].as_str().expect("modulus").as_bytes().to_vec();
     let header = Header {

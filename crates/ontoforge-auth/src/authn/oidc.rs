@@ -56,7 +56,11 @@ impl OidcVerifier {
                 cfg.issuer
             ))
         })?;
-        let policy = JwksPolicy::default();
+        let policy = JwksPolicy {
+            min_refresh: Duration::from_secs(cfg.jwks_min_refresh_secs),
+            max_stale: Duration::from_secs(cfg.jwks_max_stale_secs),
+            ..JwksPolicy::default()
+        };
         let mut builder = reqwest::Client::builder()
             .redirect(reqwest::redirect::Policy::none())
             .connect_timeout(Duration::from_secs(5))
