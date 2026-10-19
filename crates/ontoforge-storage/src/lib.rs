@@ -3,6 +3,13 @@
 //! Dependency direction: storage -> schema, expr, auth, engine. `ontoforge-query` (Phase 4) and
 //! `ontoforge-action` depend on this crate, never the other way round.
 
+pub mod ddl;
+pub mod diff;
+pub mod error;
+pub mod naming;
+pub mod physical;
+pub mod reload;
+mod sql_exit;
 pub mod store;
 
 /// Cargo package name of this crate.
