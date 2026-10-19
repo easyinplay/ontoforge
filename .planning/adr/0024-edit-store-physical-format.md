@@ -52,3 +52,20 @@ ADR-0016 规定每个 object type 一张强类型 edit 表、按属性 patch、�
 - 03-04 的 PG 方言按本表的类型列实现，并为两种方言加 DDL 快照；03-08 的 commit 写路径以 `<col>__set` 记录按属性 patch；03-10 实现长度上限、碰撞检查（ONT-V24）与索引；03-15 的 migrate 用 `RENAME COLUMN` 同步移动 `<col>` 与 `<col>__set`。
 - 每个属性多一列，edit 表比位图方案宽；换来的是没有属性数上限、没有注册表。
 - 改动上面任何一项（编码、命名、系统列、取值编码、schema 划分），都需要对每张 edit 表做数据迁移，并重写所有已存档的 `physical_json`。
+
+## Amendment 2026-10-20（plan 03-04：PostgreSQL 系统列的类型与默认值）
+- status: accepted（只补充第 4、7 点，不改变任何已有取值编码，因此不需要迁移）
+- 决定：PostgreSQL 的系统列与 SQLite 保持同一物理形状，`NOT NULL` 的系统列同样带默认值。
+
+  | 列 | PostgreSQL | SQLite |
+  |---|---|---|
+  | `of_version`、`of_def_version` | `bigint NOT NULL DEFAULT 0` | `INTEGER NOT NULL DEFAULT 0` |
+  | `of_deleted`、`of_released` | `boolean NOT NULL DEFAULT false` | `INTEGER NOT NULL DEFAULT 0` |
+  | `of_log_seq` | `bigint NULL` | `INTEGER NULL` |
+
+- 理由：
+  1. reload 的补列路径（`apply_step`：建表 `IF NOT EXISTS`，再按内省结果对缺列 `ADD COLUMN`）对两个后端是同一份代码。PostgreSQL 对非空表执行 `ADD COLUMN .. NOT NULL` 而无默认值会失败，所以表在手工修改或恢复备份后缺系统列时，没有默认值就无法用同一路径修复。
+  2. 同一份 `DdlStep` 与 `physical_json` 同时描述两个后端，PG 与 SQLite 的 DDL 快照只在类型名上不同，评审与 Phase 4 的谓词不需要区分「某后端有无默认值」。
+  3. 没有成本：PostgreSQL 11 起常量默认值只改元数据，不重写表；Trino 的 PG connector 只读列值，不受默认值影响。
+- 代价：默认值会掩盖写入路径漏设 `of_def_version` 的错误。SQLite 早已如此；写入路径总是显式设置该列，03-08 的 conformance 套件在两个后端上断言这一点。
+- PostgreSQL 的 DDL 一律可重放：`CREATE TABLE IF NOT EXISTS`、`ADD COLUMN IF NOT EXISTS`，表名带 `schema_edit` 限定；系统表 `of_def_version` 的 `ontology_json`、`physical_json`、`migration_json` 为 `jsonb`，`created_at`、`activated_at` 为 `timestamptz`（SQLite 为 `TEXT`）。系统表只用不带限定的名字，由连接级 `search_path = schema_sys` 解析，所以 sqlx 的 `_sqlx_migrations` 也落在 `schema_sys`。
