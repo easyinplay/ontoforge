@@ -4,12 +4,14 @@
 //!
 //! - authentication ([`authn`]): OIDC JWT verification with a cached JWKS, and the
 //!   [`Principal`] it produces. Dev tokens join in a later plan.
-//! - role and scope compilation and merging (added by later plans).
+//! - row predicate scope ([`scope`]): lowering a row predicate to the printer AST and, in
+//!   later plans, merging the roles of a principal.
 //!
 //! Dependency direction is fixed by ADR-0023: this crate depends on `ontoforge-schema`,
 //! `ontoforge-expr` and `ontoforge-engine`, never on storage.
 
 pub mod authn;
+pub mod scope;
 
 pub use authn::{Authenticator, AuthnError, Principal, PrincipalId};
 
