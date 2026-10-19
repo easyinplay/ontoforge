@@ -1,0 +1,97 @@
+//! Authentication: bearer token to [`Principal`].
+//!
+//! OIDC access tokens are verified against the issuer's JWKS (AUTH-01). Dev tokens join
+//! the same entry point in a later plan; they add one more branch in the algorithm routing.
+
+use std::collections::BTreeMap;
+
+use camino::Utf8Path;
+use jsonwebtoken::AlgorithmFamily;
+use jsonwebtoken::dangerous::insecure_decode_claims;
+use jsonwebtoken::decode_header;
+use ontoforge_engine::config::{AuthConfig, PrincipalAttrConfig};
+use serde_json::Value;
+
+pub mod jwks;
+mod oidc;
+pub mod principal;
+
+use oidc::OidcVerifier;
+pub use principal::{Principal, PrincipalId};
+
+/// Why a bearer token was not accepted. `Display` names the kind of failure, and at most a
+/// configured issuer, attribute or claim name; it never contains token or claim values.
+#[derive(Debug, thiserror::Error)]
+pub enum AuthnError {
+    #[error("the token is malformed")]
+    Malformed,
+    #[error("the token algorithm is not accepted")]
+    UnsupportedAlgorithm,
+    #[error("the token issuer is not trusted")]
+    UnknownIssuer,
+    #[error("no signing key matches the token")]
+    UnknownKey,
+    #[error("the token signature is invalid")]
+    InvalidSignature,
+    #[error("the token has expired")]
+    Expired,
+    #[error("invalid token claims: {0}")]
+    InvalidClaims(String),
+    #[error("the signing keys are unavailable: {0}")]
+    JwksUnavailable(String),
+    #[error("invalid authentication configuration: {0}")]
+    Config(String),
+}
+
+/// Verifies bearer tokens.
+pub struct Authenticator {
+    oidc: Vec<OidcVerifier>,
+    attrs: BTreeMap<String, PrincipalAttrConfig>,
+}
+
+impl Authenticator {
+    /// Builds the verifiers of `cfg`. Relative paths resolve against `config_dir`.
+    pub fn from_config(cfg: &AuthConfig, config_dir: &Utf8Path) -> Result<Self, AuthnError> {
+        let oidc = cfg
+            .oidc
+            .iter()
+            .map(|entry| OidcVerifier::from_config(entry, config_dir))
+            .collect::<Result<Vec<_>, _>>()?;
+        Ok(Self {
+            oidc,
+            attrs: cfg.principal_attrs.clone(),
+        })
+    }
+
+    /// Authenticates `bearer` (the token without the `Bearer ` prefix).
+    pub async fn authenticate(&self, bearer: &str) -> Result<Principal, AuthnError> {
+        let header = decode_header(bearer).map_err(|_| AuthnError::Malformed)?;
+        // The route is decided by the header algorithm alone. Symmetric algorithms have no
+        // OIDC route; a later plan adds the dev token route here.
+        if header.alg.family() == AlgorithmFamily::Hmac {
+            return Err(AuthnError::UnsupportedAlgorithm);
+        }
+        let kid = header.kid.as_deref().ok_or(AuthnError::Malformed)?;
+        let verifier = self.verifier_for(bearer)?;
+        verifier
+            .verify(bearer, header.alg, kid, self.oidc.len() > 1, &self.attrs)
+            .await
+    }
+
+    /// The verifier for the token's issuer. With one trusted issuer it is that issuer; with
+    /// several, the unverified `iss` selects it and the verification enforces it.
+    fn verifier_for(&self, bearer: &str) -> Result<&OidcVerifier, AuthnError> {
+        if let [only] = self.oidc.as_slice() {
+            return Ok(only);
+        }
+        let claims: Value = insecure_decode_claims(bearer).map_err(|_| AuthnError::Malformed)?;
+        let issuer = claims
+            .get("iss")
+            .and_then(Value::as_str)
+            .ok_or(AuthnError::UnknownIssuer)?;
+        self.oidc
+            .iter()
+            .find(|verifier| verifier.issuer() == issuer)
+            .ok_or(AuthnError::UnknownIssuer)
+    }
+}
