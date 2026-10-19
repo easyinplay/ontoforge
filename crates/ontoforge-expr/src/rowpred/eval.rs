@@ -4,8 +4,10 @@ use std::collections::BTreeMap;
 
 use ontoforge_schema::ir::PropertyName;
 
-use super::ir::Pred;
-use super::value::{Attrs, Scalar};
+use std::cmp::Ordering;
+
+use super::ir::{CmpOp, Operand, Pred};
+use super::value::{AttrValue, Attrs, Scalar};
 
 /// A truth value that can be unknown. Only [`Tri::True`] makes a row visible.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -70,7 +72,6 @@ impl RowValues for BTreeMap<PropertyName, Scalar> {
     }
 }
 
-#[allow(clippy::only_used_in_recursion)] // RED stub; leaves with the Cmp implementation
 /// Evaluates `pred` against one row and the caller's principal attributes.
 pub fn eval(pred: &Pred, row: &impl RowValues, attrs: &Attrs) -> Tri {
     match pred {
@@ -84,7 +85,54 @@ pub fn eval(pred: &Pred, row: &impl RowValues, attrs: &Attrs) -> Tri {
             left => left.or(eval(b, row, attrs)),
         },
         Pred::Not(p) => eval(p, row, attrs).not(),
+        Pred::Cmp { left, op, right } => {
+            compare(&scalar(left, row, attrs), *op, &scalar(right, row, attrs))
+        }
+        Pred::IsNull { operand, negated } => {
+            let is_null = scalar(operand, row, attrs) == Scalar::Null;
+            Tri::from(is_null != *negated)
+        }
         // Filled in by the full subset (plan 03-05 Task 3).
-        _ => Tri::Unknown,
+        Pred::InList { .. } | Pred::StrMatch { .. } => Tri::Unknown,
     }
+}
+
+/// The value of an operand. A principal attribute that is missing, or a list where a
+/// scalar is expected, is Null (D-05).
+fn scalar(operand: &Operand, row: &impl RowValues, attrs: &Attrs) -> Scalar {
+    match operand {
+        Operand::Column(c) => row.value(c),
+        Operand::Lit(s) => s.clone(),
+        Operand::Attr(name) => match attrs.get(name) {
+            AttrValue::Scalar(s) => s.clone(),
+            AttrValue::Null | AttrValue::List(_) => Scalar::Null,
+        },
+    }
+}
+
+/// Order of two non-null values of the same family; `None` when either side is Null,
+/// the families differ, or a double is NaN.
+fn ordering(a: &Scalar, b: &Scalar) -> Option<Ordering> {
+    match (a, b) {
+        (Scalar::Bool(a), Scalar::Bool(b)) => Some(a.cmp(b)),
+        (Scalar::Int(a), Scalar::Int(b)) => Some(a.cmp(b)),
+        (Scalar::Double(a), Scalar::Double(b)) => a.partial_cmp(b),
+        // Byte order of UTF-8 equals code point order: SQLite BINARY, PG `COLLATE "C"`.
+        (Scalar::String(a), Scalar::String(b)) => Some(a.as_bytes().cmp(b.as_bytes())),
+        _ => None,
+    }
+}
+
+fn compare(a: &Scalar, op: CmpOp, b: &Scalar) -> Tri {
+    let Some(ord) = ordering(a, b) else {
+        return Tri::Unknown;
+    };
+    Tri::from(match op {
+        CmpOp::Eq => ord == Ordering::Equal,
+        CmpOp::Ne => ord != Ordering::Equal,
+        CmpOp::Lt => ord == Ordering::Less,
+        CmpOp::Le => ord != Ordering::Greater,
+        CmpOp::Gt => ord == Ordering::Greater,
+        CmpOp::Ge => ord != Ordering::Less,
+    })
 }
