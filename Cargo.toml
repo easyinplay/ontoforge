@@ -25,7 +25,7 @@ globset = "0.4.20"
 walkdir = "2.5.0"
 camino = "1.2.6"
 regex = "1.13.1"
-chrono = { version = "0.4.45", default-features = false, features = ["std"] }
+chrono = { version = "0.4.45", default-features = false, features = ["std", "clock"] }
 insta = { version = "1.49.0", features = ["json"] }
 jsonschema = { version = "0.58.6", default-features = false }
 tempfile = "3.27.0"
@@ -33,7 +33,7 @@ heck = "0.5.0"
 anstream = "1.0.0"
 reqwest = { version = "0.13.5", default-features = false, features = ["rustls"] }
 tokio = { version = "1.53.3", features = ["rt", "time", "sync"] }
-sqlx = { version = "0.9.0", default-features = false, features = ["sqlite", "runtime-tokio"] }
+sqlx = { version = "0.9.0", default-features = false, features = ["sqlite", "runtime-tokio", "postgres", "migrate", "macros", "json", "chrono", "tls-rustls-aws-lc-rs"] }
 secrecy = "0.10.3"
 csv = "1.4.0"
 chrono-tz = { version = "0.10.4", default-features = false }
@@ -42,6 +42,12 @@ wiremock = "0.6.5"
 proptest = "1.12.0"
 sqlparser = "0.63.0"
 futures-util = { version = "0.3.34", default-features = false }
+sea-query = { version = "1.0.2", default-features = false, features = ["backend-postgres", "backend-sqlite", "with-json", "with-chrono", "postgres-array"] }
+sea-query-sqlx = { version = "0.9.1", default-features = false, features = ["sqlx-postgres", "sqlx-sqlite", "runtime-tokio", "with-json", "with-chrono", "postgres-array"] }
+# RED: no crypto backend yet (jsonwebtoken panics without one, RESEARCH Pitfall 6).
+jsonwebtoken = { version = "11.1.0", default-features = false }
+getrandom = "0.4.3"
+postgresql_embedded = { version = "0.21.0", default-features = false, features = ["tokio", "theseus", "tls-rustls-aws-lc-rs"] }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

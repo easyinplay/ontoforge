@@ -1,6 +1,6 @@
 [package]
 name = "ontoforge-auth"
-description = "Authentication and authorization"
+description = "Principals, OIDC and dev token authentication, roles and row predicate scope"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -11,3 +11,27 @@ workspace = true
 
 [dependencies]
 ontoforge-schema = { path = "../ontoforge-schema" }
+ontoforge-expr = { path = "../ontoforge-expr" }
+ontoforge-engine = { path = "../ontoforge-engine" }
+jsonwebtoken.workspace = true
+getrandom.workspace = true
+reqwest.workspace = true
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+secrecy.workspace = true
+camino.workspace = true
+chrono.workspace = true
+indexmap.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+wiremock.workspace = true
+proptest.workspace = true
+sqlx.workspace = true
+insta.workspace = true
+tempfile.workspace = true
+serde_json.workspace = true
+# PEM reading only in test builds, for RS256 / ES256 test tokens (03-07); resolver 3 keeps it out of normal builds.
+jsonwebtoken = { workspace = true, features = ["use_pem"] }
