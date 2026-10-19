@@ -259,7 +259,7 @@ async fn describe_types_golden() {
             .expect("write to String");
         }
     }
-    // PROVISIONAL: confirm against first CI run (E21)
+    // Confirmed against the first CI run, run 39219827829 (E21)
     insta::assert_snapshot!(text, @r"
     demo.aviation.aircraft.tail_number varchar(16) not null
     demo.aviation.aircraft.model varchar not null
@@ -361,7 +361,7 @@ async fn decode_golden() {
         assert!(!out.truncated, "{label}");
         text.push_str(&render(label, &out));
     }
-    // PROVISIONAL: confirm against first CI run (E21)
+    // Confirmed against the first CI run, run 39219827829 (E21)
     insta::assert_snapshot!(text, @r#"
     -- flights: flight_id varchar(16) | scheduled_departure timestamp(3) | delay_minutes integer | tags array(varchar)
     [String("F-1001"), Timestamp("2026-03-28 09:15:00.000"), Long(0), Array([String("domestic")])]
