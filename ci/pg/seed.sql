@@ -10,10 +10,11 @@
 -- `ontoforge validate --online` against this database is clean. An empty CSV cell is NULL.
 --
 -- `\copy` does not expand psql variables, so the script changes into the fixture directory
--- and names the files relative to it.
+-- and names the files relative to it. In \cd a quoted :'fixtures' keeps its quotes, so the
+-- variable is interpolated bare; the path must not contain spaces.
 
 \set ON_ERROR_STOP on
- :fixtures
+\cd :fixtures
 
 BEGIN;
 
