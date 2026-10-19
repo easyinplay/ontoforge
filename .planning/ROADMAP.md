@@ -138,7 +138,7 @@ Plans:
   4. 角色可授予 object type、属性 allow-list、CEL 行谓词、action、SQL 级别与 toolset；行谓词只能引用同行属性与 `principal.attrs`，缺失属性按 false；多 role 合并不产生「A 的列 × B 的行」泄露
   5. 同一 CEL 行谓词的 SQL 编译结果与 Rust 单行求值经差分测试一致；criteria 列覆盖 lint 在 reload 与 role 变更时生效；OIDC JWT 与 dev token 均可认证
 
-**Plans**: 5/20 plans executed（8 waves）
+**Plans**: 6/20 plans executed（8 waves）
 
 Plans:
 
@@ -152,7 +152,7 @@ Plans:
 - [x] 03-03-PLAN.md — tracer：物理格式 checkpoint + `reload` 库函数在 SQLite 建 edit 表、SQL 出口守卫（ADR-0024）
 - [x] 03-05-PLAN.md — 行谓词：D-06 checkpoint、CEL 子集 → `Pred` → Kleene 求值（ADR-0025）
 - [x] 03-06-PLAN.md — `Role` / `RoleBinding` 文档、scope 加载器与 JSON Schema
-- [ ] 03-07-PLAN.md — OIDC JWT 认证与 JWKS 缓存
+- [x] 03-07-PLAN.md — OIDC JWT 认证与 JWKS 缓存
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -269,7 +269,7 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7（纵切片
 |-------|----------------|--------|-----------|
 | 1. Workspace, Schema & Lint | 14/14 | Complete    | 2026-10-16 |
 | 2. Source Binding & Engine | 10/10 | Complete    | 2026-10-19 |
-| 3. Edit Store & Scope Model | 5/20 | In Progress|  |
+| 3. Edit Store & Scope Model | 6/20 | In Progress|  |
 | 4. Scoped L0 Read | 0/TBD | Not started | - |
 | 5. Online Action | 0/TBD | Not started | - |
 | 6. L2 Raw DQL, Toolsets & Audit | 0/TBD | Not started | - |
