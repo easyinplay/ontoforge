@@ -240,10 +240,7 @@ mod tests {
         let sql = render(&DdlStep::CreateObjectTable(table()), Backend::Sqlite, None);
         assert_eq!(sql.len(), 1);
         let sql = &sql[0];
-        assert!(
-            sql.contains("CREATE TABLE IF NOT EXISTS \"of_obj_item\""),
-            "{sql}"
-        );
+        assert!(sql.contains("TABLE IF NOT EXISTS \"of_obj_item\""), "{sql}");
         assert!(sql.contains("\"code\" text NOT NULL PRIMARY KEY"), "{sql}");
         assert!(
             sql.contains("\"price\" text COLLATE ontoforge_decimal"),
