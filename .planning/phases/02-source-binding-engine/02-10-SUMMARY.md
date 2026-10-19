@@ -158,7 +158,7 @@ status: complete
 4. **`timeout_cancels_server_query`**：确认 `system.runtime.queries` 有 `source` / `query` / `state` / `error_code` 列，超时后 2 s 内该查询为 `FAILED` + `USER_CANCELED`（A5）。若 Trino 实际报告不同的错误码或需要更久，按日志调整并在下一个 SUMMARY / VERIFICATION 记录。
 5. **`printer_corpus_round_trips`**：别名回读假设 Trino 保留带引号别名的大小写与原样字符（含换行、10 000 字符的别名）；如 Trino 对别名有长度或字符限制，按日志收窄别名语料并说明原因。
 6. **`drift_is_healthy_on_ci_trino` 与 CLI 退出码 0**：确认种子表类型对 D-13 类型表无 error（`scheduled_departure` 无时区 + `Europe/Berlin`、`performed_at` 带时区 + `aware`），且 `--check-pk` 无 ONT-V18。
-7. **首次 nightly（手动 `workflow_dispatch`）**：483 与 484 两个矩阵 job 都绿；Iceberg JDBC catalog（`ci/pg/iceberg_catalog.sql` 的 V1 表结构）与本地 warehouse 属性（`fs.local.enabled`、`local.location=local:///tmp/iceberg`、`default-warehouse-dir=local:///tmp/iceberg/warehouse`）能建 schema 与 CTAS（A12）；两个目标的 ignored 执行数各 ≥ 1。
+7. **首次 nightly（手动 `workflow_dispatch`）**：（2026-10-19 更正：本条原为预期，写成了已发生。实际首跑 run 39220997866 两个 job 均失败，原因是 `local.location` 写成 URI；修复后 run 39221684753 两个 job 均通过，见 `02-UAT.md` 测试 2）原文：483 与 484 两个矩阵 job 都绿；Iceberg JDBC catalog（`ci/pg/iceberg_catalog.sql` 的 V1 表结构）与本地 warehouse 属性（`fs.local.enabled`、`local.location=local:///tmp/iceberg`、`default-warehouse-dir=local:///tmp/iceberg/warehouse`）能建 schema 与 CTAS（A12）；两个目标的 ignored 执行数各 ≥ 1。
 8. **`report-failure`**：人为制造一次失败（例如临时改坏一个 nightly 断言后手动触发）时创建或评论 `nightly-failure` issue；`iceberg` job 的 token 没有 issues 权限。
 
 上述 1、7 已登记为 `.planning/WINDOWS.md` 第 5、6 条（`unrun-verify`，open）。
