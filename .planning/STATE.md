@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Edit Store & Scope Model
 status: executing
-stopped_at: Completed 03-05-PLAN.md
-last_updated: "2026-10-19T18:43:59.185Z"
+stopped_at: Completed 03-06-PLAN.md
+last_updated: "2026-10-19T19:10:33.279Z"
 last_activity: 2026-10-20
 last_activity_desc: Phase 03 execution started
-state_head: f92a598bd6c07e231a1c2e0750c559bea047140c
+state_head: 6e19a928dba0d4bd57113ca6b706cfe5db7c9689
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 44
-  completed_plans: 28
+  completed_plans: 29
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-19)
 ## Current Position
 
 Phase: 03 (Edit Store & Scope Model) — EXECUTING
-Plan: 5 of 20
+Plan: 6 of 20
 Status: Ready to execute
 Last activity: 2026-10-20 — Phase 03 execution started
 
@@ -44,6 +44,7 @@ Progress: [██████████░░░░░░░░░░] 24/44 p
 | Phase 03 P02 | 30min | 2 tasks | 13 files |
 | Phase 03 P03 | 90min | 3 tasks | 14 files |
 | Phase 03 P05 | 80min | 3 tasks | 12 files |
+| Phase 03 P06 | 21 min | 2 tasks | 17 files |
 
 ## Accumulated Context
 
@@ -59,6 +60,7 @@ Progress: [██████████░░░░░░░░░░] 24/44 p
 - [Phase 03]: [Phase 03-02]: ONT-V21..V27 are V-level (not suppressible via ontoforge.toml); OIDC issuer must not contain '|'; PG connection string only via url_env/url_file
 - [Phase 03]: [Phase 03-03]: edit store set_mask is one <col>__set boolean per non-pk property (ADR-0024, option-a); no set_mask bigint or slot registry; SQLite flag/system columns default 0 so reload can repair tables
 - [Phase 03]: [Phase 03-05]: Row predicates parse with cel but evaluate with own Kleene Pred evaluator (ADR-0025); x in [] is False, no null list elements, string match case-sensitive with literal wildcards, no special case for missing attributes; supersedes ADR-0018's 'missing attribute is false'
+- [Phase 03]: 03-06: an empty scope directory is ONT-V14, not an empty ScopeSet; TypeGrant.properties is required but may be empty (03-14 judges it) — A mistyped scope path must not silently grant nothing; allow-list content is an ontology-level check
 
 ### Pending Todos
 
@@ -77,6 +79,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-19T18:43:59.065Z
-Stopped at: Completed 03-05-PLAN.md
+Last session: 2026-10-19T19:10:13.296Z
+Stopped at: Completed 03-06-PLAN.md
 Resume file: None
