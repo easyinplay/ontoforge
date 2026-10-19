@@ -441,7 +441,8 @@ fn config_diagnostic(e: &ConfigError, file: &str, text: Option<&str>) -> Diagnos
     }
 }
 
-/// One ONT-V17 warning per binding that names a fixture the Trino check does not use.
+/// One ONT-V17 info per binding that names a fixture the Trino check does not use: runtime
+/// information rather than drift, so `--deny-warnings` does not fail on it (ADR-0022).
 fn ignored_fixtures(
     ontology: &Ontology,
     sources: &SourceMap,
@@ -467,7 +468,7 @@ fn ignored_fixtures(
             );
             Diagnostic::new(
                 codes::V17,
-                Severity::Warning,
+                Severity::Info,
                 format!(
                     "the fixture of `{}` is ignored because profile `{profile}` is checked against Trino",
                     target_name(&key)

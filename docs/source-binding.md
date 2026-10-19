@@ -232,7 +232,7 @@ s ≤ S  且  p - s ≤ P - S
 | `ONT-V05` | validate | error | 缺少必填字段，包括 object type 与 manyToMany link 缺 `backing` |
 | `ONT-V11` | validate | error | link type 一致性，包括 `backing` 出现在非 manyToMany link 上 |
 | `ONT-V16` | validate | error | 绑定定义与完备性：profile 名、绑定目标、fixture 引用与 fixture 内容；`source` 但选定 profile 无绑定、`editOnly` 却有绑定 |
-| `ONT-V17` | validate --online | error 或 warning | 在线绑定不匹配：表不存在、列缺失、类型不兼容、精度或时区变化、char 填充、大小写歧义、不支持的类型 |
+| `ONT-V17` | validate --online | error、warning 或 info | 在线绑定不匹配：表不存在、列缺失、类型不兼容、精度或时区变化、char 填充、大小写歧义、不支持的类型；对 Trino 复核时绑定的 `fixture` 被忽略是 info |
 | `ONT-V18` | validate --check-pk | error | 主键列存在重复值或 NULL |
 | `ONT-V19` | validate --online | error | 因引擎侧原因无法完成在线校验：不可用、认证失败、超时、协议或查询错误 |
 | `ONT-V20` | validate / 服务配置 | error | 服务配置（`ontoforge-server.toml`）错误；也用于选定 profile 的绑定没有 fixture 又没有 `--server-config` 时 |
@@ -252,7 +252,7 @@ ontoforge validate <DIR> --online [--profile <NAME>] [--server-config <FILE>] [-
 
 - `--online`：对选定 profile 的每个绑定描述物理表并比对。未给 `--server-config` 时，选定 profile 的绑定必须全部带 `fixture`，用内存 SQLite 替身；否则报 `ONT-V20` 并提示 `--server-config`。
 - `--profile <NAME>`：选定 profile，优先于环境变量 `ONTOFORGE_PROFILE` 与 `defaultProfile`。
-- `--server-config <FILE>`：读取 `ontoforge-server.toml`，对映射到 Trino 的 profile 连接真实 Trino。配置映射到 Trino 而绑定仍带 `fixture` 时给出 warning。本 phase 不做服务配置的隐式查找。
+- `--server-config <FILE>`：读取 `ontoforge-server.toml`，对映射到 Trino 的 profile 连接真实 Trino。配置映射到 Trino 而绑定仍带 `fixture` 时给出 info（`ONT-V17`，fixture 被忽略属于运行信息而非绑定漂移，`--deny-warnings` 不会因此失败，见 ADR-0022）。本 phase 不做服务配置的隐式查找。
 - `--check-pk`：在显式要求时，对每个绑定的主键列查重复值。重复值查询排除 NULL 主键，NULL 主键单独计数，二者都报 `ONT-V18`。drift 检查不做这件事，因为它需要扫描全表。
 - `--timeout <MS>`：覆盖每个元数据请求的超时（毫秒），只能与 `--online` 同用，至少为 1（`0` 是用法错误，exit 2）。
 
