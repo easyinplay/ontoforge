@@ -61,7 +61,7 @@ created: "2026-10-17"
 | T-02-45 | DoS / Repudiation | 单 catalog 错误影响整轮 | medium | mitigate | `bind_check.rs:546-562`；`error.rs:100-108`；`online.rs:81-85`；测试 `bind_check_isolation.rs:112,164` | closed |
 | T-02-21 | Spoofing | 物理名含终端控制序列 | low | mitigate | `render.rs:64-91` | closed |
 | T-02-22 | Information Disclosure | 诊断泄露数据值 | low | mitigate | `sqlite/fixture.rs:469,560-666`；测试 `sqlite_engine.rs:338` | closed |
-| T-02-23 | Denial of Service | 失控查询占用共享 Trino | high | mitigate | `trino/mod.rs:358-383`；`trino/cancel.rs:57-70`；`headers.rs:93-101`；测试 `cli_online_trino.rs:455` | closed |
+| T-02-23 | Denial of Service | 失控查询占用共享 Trino | high | mitigate | `trino/mod.rs:358-383`；`trino/cancel.rs:57-70`；`headers.rs:93-101`；测试 `cli_online_trino.rs:455`。范围限定：首个 POST 响应解析出 `nextUri` 前 guard 无 DELETE 目标（`cancel.rs:22`、`trino/mod.rs:214,231`），该窗口由服务端 `query_max_execution_time` 兜底（Codex 二审） | closed |
 | T-02-24 | Denial of Service | 超大响应页 | high | mitigate | `trino/client.rs:108-125`；`lib.rs:33` | closed |
 | T-02-25 | Denial of Service | 恶意 Retry-After | medium | mitigate | `trino/classify.rs:29,55-61`；`trino/mod.rs:358` | closed |
 | T-02-26 | DoS / Tampering | 503 后重复提交查询 | medium | mitigate | `classify.rs:93-107,133-141`；测试 `trino_resilience.rs:443,465` | closed |
@@ -84,7 +84,7 @@ created: "2026-10-17"
 | T-02-40 | Tampering | 第三方 action / 镜像供应链 | high | mitigate | action 全部钉 40 位 SHA；镜像钉 digest（`ci.yml:39,68`、`nightly.yml:23,25,30,70`）；`--locked` | closed |
 | T-02-41 | Information Disclosure | CI 一次性口令写在仓库 | low | accept | 见 Accepted Risks Log AR-02-02 | closed |
 | T-02-42 | Information Disclosure | 公司数据进入公开 CI | high | mitigate | `.github/`、`ci/` 无 private 引用；`ci/pg/seed.sql` 只用 aviation fixture；`tests/private_fixtures.rs:69` `#[ignore]` 且不在 CI 目标内 | closed |
-| T-02-43 | Repudiation | 集成测试静默跳过 / golden 未经真实运行 | medium | mitigate | `trino_it.rs:40`、`cli_trino_it.rs:19`（缺环境变量 panic）；`ci.yml:90-100`、`nightly.yml:96-106` 执行数门禁；golden 标 PROVISIONAL，`02-VERIFICATION.md` 保持 `human_needed` | closed |
+| T-02-43 | Repudiation | 集成测试静默跳过 / golden 未经真实运行 | medium | mitigate | `trino_it.rs:40`、`cli_trino_it.rs:19`（缺环境变量 panic）；`ci.yml:90-100`、`nightly.yml:96-106` 执行数门禁；golden 标 PROVISIONAL，`02-VERIFICATION.md` 保持 `human_needed`。缓解的后半（CI 首跑通过、golden 定稿）未完成：`trino_it.rs:262,364` 仍为 PROVISIONAL（Codex 二审） | open — below high threshold (non-blocking) |
 
 *Status: open · closed · open — below high threshold (non-blocking)*
 *Severity: critical > high > medium > low — only open threats at or above workflow.security_block_on count toward threats_open*
@@ -97,7 +97,7 @@ created: "2026-10-17"
 | Risk ID | Threat Ref | Rationale | Accepted By | Date |
 |---------|------------|-----------|-------------|------|
 | AR-02-01 | T-02-28 | E13-E16 / W17 是可配置 lint（LINT-04 既定设计）；结构性 ONT-V 不可配置（`lint/config.rs:152-157`）；关闭 E 规则后 `--online` 的 V17 仍报告真实不匹配 | plan-time（02-07-PLAN.md） | 2026-10-17 |
-| AR-02-02 | T-02-41 | CI PostgreSQL / Trino catalog 口令 `ontoforge-ci-only` 只存在于 CI 临时容器；`5432:5432` 只发布到临时 runner 本机；不保护任何真实数据。威胁描述中的 MinIO 当前 workflow 未使用 | plan-time（02-10-PLAN.md） | 2026-10-17 |
+| AR-02-02 | T-02-41 | CI PostgreSQL / Trino catalog 口令 `ontoforge-ci-only` 以字面量入库（`ci/trino/catalog/demo.properties:6`、`.github/workflows/ci.yml:43`），只用于 CI 临时容器；`5432:5432` 只发布到临时 runner 本机；不保护任何真实数据。威胁描述中的 MinIO 当前 workflow 未使用 | plan-time（02-10-PLAN.md） | 2026-10-17 |
 
 *Accepted risks do not resurface in future audit runs.*
 
@@ -106,7 +106,7 @@ created: "2026-10-17"
 ## Observations（非阻塞，后续 phase 可跟进）
 
 1. T-02-07：`check_beneath` 与后续 open 之间仍有 TOCTOU 窗口（02-REVIEW-FIX CR-S01 已记录），根治需 beneath-open（如 `cap-std`）。
-2. T-02-43：`trino_it.rs:262,364` 两处 PROVISIONAL golden 与 WR-C07 待 CI 首跑定稿（对应 `02-UAT.md` 测试 1、3、5）。
+2. T-02-43（open，medium）：`trino_it.rs:262,364` 两处 PROVISIONAL golden 与 WR-C07 待 CI 首跑定稿（对应 `02-UAT.md` 测试 1、3、5）；首跑通过并定稿后改为 closed。
 3. T-02-13：`clippy.toml` 只禁 `danger_*`，`use_preconfigured_tls` + 自定义 verifier 不在禁令内（REVIEW IN-C05）；当前代码无此用法。
 4. T-02-39：测试 job 的 `actions/checkout` 未设 `persist-credentials: false`（REVIEW IN-C04），token 只有 `contents: read`。
 5. T-02-09 / 21 / 38：`sanitize` 只作用于 human 输出，JSON 输出保留原文；物理名只拒绝 Cc 类控制字符，不拒绝 bidi Cf 字符（REVIEW IN-S01）。
@@ -119,6 +119,7 @@ created: "2026-10-17"
 | Audit Date | Threats Total | Closed | Open | Run By |
 |------------|---------------|--------|------|--------|
 | 2026-10-17 | 50 | 50 | 0 | gsd-security-auditor（Claude Opus；Codex 因 sandbox 故障与 429 限流未能运行） |
+| 2026-10-19 | 50 | 49 | 0（1 条 medium open，低于阈值） | Codex 二审（静态核查；修正 T-02-43 状态、T-02-23 范围、AR-02-02 措辞） |
 
 ---
 
