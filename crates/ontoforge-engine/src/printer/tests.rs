@@ -1,4 +1,6 @@
-use super::ast::{AggregateFunc, CompareOp, Expr, Literal, OrderItem, Select, SelectItem};
+use super::ast::{
+    AggregateFunc, CompareOp, Expr, Literal, MatchKind, OrderItem, Select, SelectItem,
+};
 use super::{Dialect, print_select};
 use crate::TableRef;
 
@@ -80,4 +82,108 @@ fn print_trino_and_sqlite() {
     let sqlite = print_select(&select, Dialect::Sqlite).unwrap();
     insta::assert_snapshot!("print_trino", trino.as_str());
     insta::assert_snapshot!("print_sqlite", sqlite.as_str());
+}
+
+/// The text after `WHERE` of `SELECT 1 FROM .. WHERE <e>`.
+fn where_text(e: Expr, dialect: Dialect) -> Result<String, crate::error::PrintError> {
+    let select = Select {
+        projection: vec![SelectItem {
+            expr: Expr::Literal(Literal::Long(1)),
+            alias: None,
+        }],
+        from: Some(TableRef {
+            catalog: "demo".to_owned(),
+            schema: "s".to_owned(),
+            table: "t".to_owned(),
+        }),
+        filter: Some(e),
+        group_by: Vec::new(),
+        having: None,
+        order_by: Vec::new(),
+        limit: None,
+    };
+    let sql = print_select(&select, dialect)?;
+    Ok(sql
+        .as_str()
+        .split_once(" WHERE ")
+        .expect("a WHERE clause")
+        .1
+        .to_owned())
+}
+
+fn matches(needle: &str, kind: MatchKind) -> Expr {
+    Expr::StringMatch {
+        expr: Box::new(col("s")),
+        needle: needle.to_owned(),
+        kind,
+    }
+}
+
+#[test]
+fn string_match_escapes_wildcards_in_both_dialects() {
+    let e = matches("a%_\\b", MatchKind::StartsWith);
+    assert_eq!(
+        where_text(e.clone(), Dialect::Trino).unwrap(),
+        r#""s" LIKE 'a\%\_\\b%' ESCAPE '\'"#
+    );
+    assert_eq!(
+        where_text(e, Dialect::Sqlite).unwrap(),
+        r#""s" GLOB 'a%_\b*'"#
+    );
+}
+
+#[test]
+fn string_match_kinds_place_the_wildcards() {
+    for (kind, trino, sqlite) in [
+        (MatchKind::StartsWith, "'ab%'", "'ab*'"),
+        (MatchKind::EndsWith, "'%ab'", "'*ab'"),
+        (MatchKind::Contains, "'%ab%'", "'*ab*'"),
+    ] {
+        let e = matches("ab", kind);
+        assert_eq!(
+            where_text(e.clone(), Dialect::Trino).unwrap(),
+            format!(r#""s" LIKE {trino} ESCAPE '\'"#)
+        );
+        assert_eq!(
+            where_text(e, Dialect::Sqlite).unwrap(),
+            format!(r#""s" GLOB {sqlite}"#)
+        );
+    }
+}
+
+#[test]
+fn glob_pattern_escapes_the_glob_metacharacters() {
+    assert_eq!(
+        where_text(matches("[*?", MatchKind::Contains), Dialect::Sqlite).unwrap(),
+        r#""s" GLOB '*[[][*][?]*'"#
+    );
+}
+
+#[test]
+fn string_match_quotes_the_needle_and_rejects_nul() {
+    assert_eq!(
+        where_text(matches("it's", MatchKind::Contains), Dialect::Sqlite).unwrap(),
+        r#""s" GLOB '*it''s*'"#
+    );
+    for dialect in [Dialect::Trino, Dialect::Sqlite] {
+        assert_eq!(
+            where_text(matches("a\0b", MatchKind::Contains), dialect).unwrap_err(),
+            crate::error::PrintError::NulInString
+        );
+    }
+}
+
+#[test]
+fn string_match_is_parenthesized_inside_connectives() {
+    let e = Expr::Not(Box::new(Expr::And(vec![
+        matches("a", MatchKind::StartsWith),
+        Expr::IsNull {
+            expr: Box::new(col("t")),
+            negated: false,
+        },
+    ])));
+    assert_eq!(
+        where_text(e, Dialect::Sqlite).unwrap(),
+        r#"NOT (("s" GLOB 'a*') AND ("t" IS NULL))"#
+    );
 }

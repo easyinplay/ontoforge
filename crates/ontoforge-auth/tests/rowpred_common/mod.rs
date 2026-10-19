@@ -12,9 +12,15 @@ use std::collections::BTreeMap;
 use ontoforge_engine::printer::ast::{CompareOp, Expr, Literal, OrderItem, Select, SelectItem};
 use ontoforge_engine::printer::print_select;
 use ontoforge_engine::{Dialect, TableRef};
-use ontoforge_expr::{PredContext, Scalar, Tri};
+use ontoforge_expr::{
+    AttrValue, Attrs, CmpOp, ListSource, MatchKind, Operand, Pred, PredContext, Scalar, Tri,
+    compile_row_filter, eval,
+};
 use ontoforge_schema::ir::{AttrType, ObjectType, PropertyName};
 use ontoforge_schema::load_from_memory;
+use proptest::prelude::*;
+use proptest::strategy::ValueTree;
+use proptest::test_runner::{Config, RngAlgorithm, TestRng, TestRunner};
 use sqlx::sqlite::SqliteConnection;
 use sqlx::{AssertSqlSafe, Connection, Row};
 
@@ -253,4 +259,391 @@ impl Fixture {
             attrs: &self.attrs,
         }
     }
+}
+
+// ---------------------------------------------------------------------------------------
+// Strategies: type-correct predicates, rows and principal attributes.
+// ---------------------------------------------------------------------------------------
+
+/// The four value families a comparison can have (ADR-0025 section 4).
+#[derive(Debug, Clone, Copy)]
+pub enum Fam {
+    Bool,
+    Int,
+    Dbl,
+    Str,
+}
+
+fn pick<T: Clone + std::fmt::Debug + 'static>(items: &[T]) -> BoxedStrategy<T> {
+    prop::sample::select(items.to_vec()).boxed()
+}
+
+fn maybe<T: std::fmt::Debug + 'static>(
+    s: impl Strategy<Value = T> + 'static,
+) -> BoxedStrategy<Option<T>> {
+    prop::option::weighted(0.75, s).boxed()
+}
+
+/// Strings built from pieces that matter to `LIKE` / `GLOB` / quoting / case folding.
+pub fn string_value() -> BoxedStrategy<String> {
+    let fragments = pick(&[
+        "",
+        "a",
+        "A",
+        "ab",
+        "AB",
+        "acme",
+        "ACME",
+        "eu",
+        "us",
+        "%",
+        "_",
+        "\\",
+        "[",
+        "]",
+        "*",
+        "?",
+        "'",
+        "\"",
+        "é",
+        "É",
+        "ß",
+        "\u{1F600}",
+        " ",
+        "a%b",
+        "a_b",
+        "a[b]",
+        "a*b",
+        "a?b",
+    ]);
+    prop_oneof![
+        4 => fragments.clone().prop_map(str::to_owned),
+        4 => prop::collection::vec(fragments, 0..4).prop_map(|v| v.concat()),
+        1 => any::<String>().prop_map(|s| s.replace('\0', "")),
+    ]
+    .boxed()
+}
+
+pub fn int_value() -> BoxedStrategy<i64> {
+    prop_oneof![
+        6 => -3i64..4,
+        1 => Just(i64::MIN),
+        1 => Just(i64::MAX),
+        1 => any::<i64>(),
+    ]
+    .boxed()
+}
+
+/// Finite doubles only: NaN and the infinities are outside the guarantee (ADR-0025).
+pub fn double_value() -> BoxedStrategy<f64> {
+    prop_oneof![
+        4 => pick(&[-1.5f64, 0.0, -0.0, 1.5, 2.0, 1e21, 1e-7, 0.1]),
+        2 => prop::num::f64::POSITIVE
+            | prop::num::f64::NEGATIVE
+            | prop::num::f64::NORMAL
+            | prop::num::f64::SUBNORMAL
+            | prop::num::f64::ZERO,
+    ]
+    .boxed()
+}
+
+fn literal(f: Fam) -> BoxedStrategy<Scalar> {
+    match f {
+        Fam::Str => string_value().prop_map(Scalar::String).boxed(),
+        Fam::Int => int_value().prop_map(Scalar::Int).boxed(),
+        Fam::Dbl => double_value().prop_map(Scalar::Double).boxed(),
+        Fam::Bool => any::<bool>().prop_map(Scalar::Bool).boxed(),
+    }
+}
+
+fn column(names: &[&'static str]) -> BoxedStrategy<Operand> {
+    pick(names).prop_map(|n| Operand::Column(prop(n))).boxed()
+}
+
+fn attr(names: &[&'static str]) -> BoxedStrategy<Operand> {
+    pick(names)
+        .prop_map(|n| Operand::Attr(n.to_owned()))
+        .boxed()
+}
+
+fn operand(f: Fam) -> BoxedStrategy<Operand> {
+    let lit = literal(f).prop_map(Operand::Lit);
+    match f {
+        Fam::Str => prop_oneof![
+            3 => column(&["s", "t"]),
+            2 => lit,
+            2 => attr(&["tenant", "prefix"]),
+        ]
+        .boxed(),
+        Fam::Int => prop_oneof![3 => column(&["i"]), 2 => lit, 1 => attr(&["level"])].boxed(),
+        Fam::Dbl => prop_oneof![3 => column(&["d"]), 2 => lit].boxed(),
+        Fam::Bool => prop_oneof![2 => column(&["b"]), 1 => lit, 1 => attr(&["active"])].boxed(),
+    }
+}
+
+fn family() -> BoxedStrategy<Fam> {
+    pick(&[Fam::Str, Fam::Int, Fam::Dbl, Fam::Bool])
+}
+
+fn cmp_pred() -> BoxedStrategy<Pred> {
+    family()
+        .prop_flat_map(|f| {
+            let ops = match f {
+                Fam::Bool => vec![CmpOp::Eq, CmpOp::Ne],
+                _ => vec![
+                    CmpOp::Eq,
+                    CmpOp::Ne,
+                    CmpOp::Lt,
+                    CmpOp::Le,
+                    CmpOp::Gt,
+                    CmpOp::Ge,
+                ],
+            };
+            (operand(f), pick(&ops), operand(f))
+        })
+        .prop_map(|(left, op, right)| Pred::Cmp { left, op, right })
+        .boxed()
+}
+
+fn is_null_pred() -> BoxedStrategy<Pred> {
+    let target = prop_oneof![
+        column(&["b", "i", "d", "s", "t"]),
+        attr(&["tenant", "prefix", "level", "active"]),
+    ];
+    (target, any::<bool>())
+        .prop_map(|(operand, negated)| Pred::IsNull { operand, negated })
+        .boxed()
+}
+
+fn in_pred() -> BoxedStrategy<Pred> {
+    let literal_list = family().prop_flat_map(|f| {
+        (operand(f), prop::collection::vec(literal(f), 0..4)).prop_map(|(operand, items)| {
+            Pred::InList {
+                operand,
+                list: ListSource::Literal(items),
+            }
+        })
+    });
+    let attr_list = prop_oneof![
+        (operand(Fam::Str), Just("regions")),
+        (operand(Fam::Int), Just("nums")),
+    ]
+    .prop_map(|(operand, name)| Pred::InList {
+        operand,
+        list: ListSource::Attr(name.to_owned()),
+    });
+    prop_oneof![3 => literal_list, 1 => attr_list].boxed()
+}
+
+fn match_pred() -> BoxedStrategy<Pred> {
+    (
+        pick(&["s", "t"]),
+        prop_oneof![
+            2 => string_value().prop_map(|s| Operand::Lit(Scalar::String(s))),
+            1 => attr(&["tenant", "prefix"]),
+        ],
+        pick(&[
+            MatchKind::StartsWith,
+            MatchKind::EndsWith,
+            MatchKind::Contains,
+        ]),
+    )
+        .prop_map(|(name, needle, kind)| Pred::StrMatch {
+            column: prop(name),
+            needle,
+            kind,
+        })
+        .boxed()
+}
+
+fn leaf() -> BoxedStrategy<Pred> {
+    prop_oneof![
+        1 => any::<bool>().prop_map(Pred::Const),
+        4 => cmp_pred(),
+        2 => is_null_pred(),
+        2 => in_pred(),
+        3 => match_pred(),
+    ]
+    .boxed()
+}
+
+/// Random type-correct predicates covering every node kind, depth at most 4.
+pub fn pred() -> BoxedStrategy<Pred> {
+    leaf()
+        .prop_recursive(4, 32, 2, |inner| {
+            prop_oneof![
+                (inner.clone(), inner.clone())
+                    .prop_map(|(a, b)| Pred::And(Box::new(a), Box::new(b))),
+                (inner.clone(), inner.clone())
+                    .prop_map(|(a, b)| Pred::Or(Box::new(a), Box::new(b))),
+                inner.prop_map(|a| Pred::Not(Box::new(a))),
+            ]
+        })
+        .boxed()
+}
+
+/// A row with id 1; every column may be NULL.
+pub fn row_strategy() -> BoxedStrategy<TestRow> {
+    (
+        maybe(any::<bool>()),
+        maybe(int_value()),
+        maybe(double_value()),
+        maybe(string_value()),
+        maybe(string_value()),
+    )
+        .prop_map(|(b, i, d, s, t)| TestRow {
+            id: 1,
+            b,
+            i,
+            d,
+            s,
+            t,
+        })
+        .boxed()
+}
+
+/// Principal attributes: each may be missing; lists may be empty.
+pub fn attrs_strategy() -> BoxedStrategy<Attrs> {
+    let str_list = maybe(prop::collection::vec(
+        string_value().prop_map(Scalar::String),
+        0..4,
+    ));
+    let int_list = maybe(prop::collection::vec(
+        int_value().prop_map(Scalar::Int),
+        0..4,
+    ));
+    (
+        maybe(string_value()),
+        maybe(string_value()),
+        maybe(int_value()),
+        maybe(any::<bool>()),
+        str_list,
+        int_list,
+    )
+        .prop_map(|(tenant, prefix, level, active, regions, nums)| {
+            let mut out = Attrs::new();
+            let mut put = |name: &str, v: Option<AttrValue>| {
+                if let Some(v) = v {
+                    out.insert(name, v).expect("attribute");
+                }
+            };
+            put(
+                "tenant",
+                tenant.map(|s| AttrValue::Scalar(Scalar::String(s))),
+            );
+            put(
+                "prefix",
+                prefix.map(|s| AttrValue::Scalar(Scalar::String(s))),
+            );
+            put("level", level.map(|i| AttrValue::Scalar(Scalar::Int(i))));
+            put("active", active.map(|b| AttrValue::Scalar(Scalar::Bool(b))));
+            put("regions", regions.map(AttrValue::List));
+            put("nums", nums.map(AttrValue::List));
+            out
+        })
+        .boxed()
+}
+
+/// Predicates and attributes from a fixed seed: the same `n` pairs on every run and machine,
+/// for the Trino side of the differential (D-09).
+pub fn fixed_seed_cases(n: usize) -> Vec<(Pred, Attrs)> {
+    let mut runner = TestRunner::new_with_rng(
+        Config::default(),
+        TestRng::from_seed(RngAlgorithm::ChaCha, &[7u8; 32]),
+    );
+    let strategy = (pred(), attrs_strategy());
+    (0..n)
+        .map(|_| {
+            strategy
+                .new_tree(&mut runner)
+                .expect("value tree")
+                .current()
+        })
+        .collect()
+}
+
+// ---------------------------------------------------------------------------------------
+// The fixed corpus (tests/data/rowpred_corpus.json).
+// ---------------------------------------------------------------------------------------
+
+const CORPUS: &str = include_str!("../data/rowpred_corpus.json");
+
+pub struct Case {
+    pub src: String,
+    pub attrs: Attrs,
+}
+
+pub struct Corpus {
+    pub rows: Vec<TestRow>,
+    pub cases: Vec<Case>,
+}
+
+fn json_scalar(v: &serde_json::Value) -> Scalar {
+    match v {
+        serde_json::Value::Bool(b) => Scalar::Bool(*b),
+        serde_json::Value::Number(n) => Scalar::Int(n.as_i64().expect("integer attribute")),
+        serde_json::Value::String(s) => Scalar::String(s.clone()),
+        other => panic!("unsupported attribute value {other}"),
+    }
+}
+
+fn json_attrs(v: &serde_json::Value) -> Attrs {
+    let mut out = Attrs::new();
+    for (name, value) in v.as_object().expect("attrs object") {
+        let value = match value {
+            serde_json::Value::Array(items) => {
+                AttrValue::List(items.iter().map(json_scalar).collect())
+            }
+            other => AttrValue::Scalar(json_scalar(other)),
+        };
+        out.insert(name.as_str(), value).expect("attribute");
+    }
+    out
+}
+
+fn json_row(v: &serde_json::Value) -> TestRow {
+    let opt = |name: &str| v.get(name).filter(|x| !x.is_null());
+    TestRow {
+        id: v["id"].as_i64().expect("row id"),
+        b: opt("b").map(|x| x.as_bool().expect("bool")),
+        i: opt("i").map(|x| x.as_i64().expect("integer")),
+        d: opt("d").map(|x| x.as_f64().expect("double")),
+        s: opt("s").map(|x| x.as_str().expect("string").to_owned()),
+        t: opt("t").map(|x| x.as_str().expect("string").to_owned()),
+    }
+}
+
+pub fn load_corpus() -> Corpus {
+    let json: serde_json::Value = serde_json::from_str(CORPUS).expect("corpus JSON");
+    Corpus {
+        rows: json["rows"]
+            .as_array()
+            .expect("rows")
+            .iter()
+            .map(json_row)
+            .collect(),
+        cases: json["cases"]
+            .as_array()
+            .expect("cases")
+            .iter()
+            .map(|c| Case {
+                src: c["pred"].as_str().expect("pred").to_owned(),
+                attrs: json_attrs(&c["attrs"]),
+            })
+            .collect(),
+    }
+}
+
+impl Case {
+    pub fn pred(&self) -> Pred {
+        compile_row_filter(&self.src, &Fixture::new().cx())
+            .unwrap_or_else(|e| panic!("corpus predicate {}: {e:?}", self.src))
+    }
+}
+
+/// What Rust says about every row: `(id, eval)`.
+pub fn rust_all(p: &Pred, attrs: &Attrs, rows: &[TestRow]) -> Vec<(i64, Tri)> {
+    rows.iter()
+        .map(|r| (r.id, eval(p, &r.values(), attrs)))
+        .collect()
 }

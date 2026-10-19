@@ -7,12 +7,15 @@
 //!   SQLite gets plain strings / numbers; the stand-in's decimal and timestamp columns carry
 //!   collations that compare such strings by value (`sqlite_ddl::DECIMAL_COLLATION`,
 //!   `sqlite_ddl::TIMESTAMP_COLLATION`), so `'1.5'` equals a stored `1.50` as in Trino,
+//! * string matching: Trino `LIKE '<pattern>' ESCAPE '\'`, SQLite `GLOB '<pattern>'`. `LIKE` is
+//!   case insensitive for ASCII in SQLite, `GLOB` is case sensitive like Trino's `LIKE`, so the
+//!   stand-in is never wider than production (ADR-0025),
 //! * `ORDER BY` always spells out `NULLS FIRST` / `NULLS LAST` because the defaults differ.
 
 use chrono::{NaiveDate, NaiveDateTime};
 
 use super::ast::{AggregateFunc, CompareOp, Expr, Literal, OrderItem, Select, SelectItem};
-use super::escape::{quote_ident, quote_string};
+use super::escape::{glob_pattern, like_pattern, quote_ident, quote_string};
 use super::{Dialect, PrintedSql};
 use crate::TableRef;
 use crate::error::PrintError;
@@ -147,6 +150,23 @@ fn expr(e: &Expr, dialect: Dialect) -> Result<String, PrintError> {
             operand(inner, dialect)?,
             if *negated { "NOT " } else { "" }
         )),
+        Expr::StringMatch {
+            expr: inner,
+            needle,
+            kind,
+        } => match dialect {
+            Dialect::Trino => Ok(format!(
+                "{} LIKE {} ESCAPE {}",
+                operand(inner, dialect)?,
+                quote_string(&like_pattern(needle, *kind)?)?,
+                quote_string("\\")?
+            )),
+            Dialect::Sqlite => Ok(format!(
+                "{} GLOB {}",
+                operand(inner, dialect)?,
+                quote_string(&glob_pattern(needle, *kind)?)?
+            )),
+        },
         Expr::And(parts) => bool_list(parts, " AND ", dialect),
         Expr::Or(parts) => bool_list(parts, " OR ", dialect),
         Expr::Not(inner) => Ok(format!("NOT ({})", expr(inner, dialect)?)),
@@ -161,6 +181,7 @@ fn operand(e: &Expr, dialect: Dialect) -> Result<String, PrintError> {
         Expr::Compare { .. }
             | Expr::InList { .. }
             | Expr::IsNull { .. }
+            | Expr::StringMatch { .. }
             | Expr::And(_)
             | Expr::Or(_)
             | Expr::Not(_)

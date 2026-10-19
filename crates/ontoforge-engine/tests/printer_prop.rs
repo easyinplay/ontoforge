@@ -6,7 +6,7 @@
 //! identifier back unchanged. The Trino side of the same inputs is covered by the fixed
 //! corpus that runs against a real server (plan 02-10).
 
-use ontoforge_engine::printer::ast::{CompareOp, Expr, Literal, Select, SelectItem};
+use ontoforge_engine::printer::ast::{CompareOp, Expr, Literal, MatchKind, Select, SelectItem};
 use ontoforge_engine::printer::print_select;
 use ontoforge_engine::sqlite::SqliteEngine;
 use ontoforge_engine::{Dialect, Engine, PrintError, QueryContext, TableRef, Value};
@@ -48,6 +48,12 @@ fn tricky_string() -> impl Strategy<Value = String> {
         " ",
         "%",
         "_",
+        "[",
+        "*",
+        "?",
+        "",
+        "a",
+        "A",
         "\u{1F600}",
         "\u{10FFFF}",
         "\u{0}",
@@ -170,8 +176,63 @@ fn ansi_dialect_has_no_backslash_escape() {
     assert_eq!(single_quoted(where_rhs(&mut stmt)), r"a\b");
 }
 
+/// A haystack, a needle (mostly a piece of the haystack, so that matches happen) and a match
+/// kind. No NUL: the printer rejects it, which the unit tests cover.
+fn match_case() -> impl Strategy<Value = (String, String, MatchKind)> {
+    tricky_string()
+        .prop_map(|s| s.replace('\0', ""))
+        .prop_flat_map(|haystack| {
+            let chars: Vec<char> = haystack.chars().collect();
+            let len = chars.len();
+            let needle = prop_oneof![
+                2 => tricky_string().prop_map(|s| s.replace('\0', "")),
+                3 => (0..=len, 0..=len).prop_map(move |(a, b)| {
+                    chars[a.min(b)..a.max(b)].iter().collect::<String>()
+                }),
+            ];
+            let kind = prop::sample::select(vec![
+                MatchKind::StartsWith,
+                MatchKind::EndsWith,
+                MatchKind::Contains,
+            ]);
+            (Just(haystack), needle, kind)
+        })
+}
+
 proptest! {
     #![proptest_config(config())]
+
+    /// SQLite `GLOB` of the printed pattern agrees with `starts_with` / `ends_with` /
+    /// `contains` for every haystack and needle: case sensitive, wildcards literal.
+    #[test]
+    fn string_match_matches_rust_on_sqlite((haystack, needle, kind) in match_case()) {
+        let expected = match kind {
+            MatchKind::StartsWith => haystack.starts_with(&needle),
+            MatchKind::EndsWith => haystack.ends_with(&needle),
+            MatchKind::Contains => haystack.contains(&needle),
+        };
+        let select = Select {
+            projection: vec![SelectItem {
+                expr: Expr::StringMatch {
+                    expr: Box::new(Expr::Literal(Literal::String(haystack))),
+                    needle,
+                    kind,
+                },
+                alias: Some("v".to_owned()),
+            }],
+            from: None,
+            filter: None,
+            group_by: Vec::new(),
+            having: None,
+            order_by: Vec::new(),
+            limit: None,
+        };
+        let sql = print_select(&select, Dialect::Sqlite).unwrap();
+        let rt = runtime();
+        let engine = rt.block_on(SqliteEngine::in_memory()).unwrap();
+        let out = rt.block_on(engine.execute(&sql, &ctx())).unwrap();
+        prop_assert_eq!(out.rows, vec![vec![Value::Long(i64::from(expected))]]);
+    }
 
     #[test]
     fn string_literal_keeps_statement_structure(s in tricky_string()) {
