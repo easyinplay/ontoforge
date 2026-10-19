@@ -61,9 +61,9 @@ jobs:
           TRINO_VERSION: ${{ matrix.trino }}
           TRINO_DIGEST: ${{ matrix.digest }}
         run: |
-          mkdir -p "$RUNNER_TEMP/catalog" "$RUNNER_TEMP/iceberg"
+          mkdir -p "$RUNNER_TEMP/catalog" "$RUNNER_TEMP/iceberg/warehouse"
           cp ci/trino/catalog/*.properties ci/trino/iceberg/*.properties "$RUNNER_TEMP/catalog/"
-          chmod 0777 "$RUNNER_TEMP/iceberg"
+          chmod -R 0777 "$RUNNER_TEMP/iceberg"
           docker run -d --name trino --network host \
             -v "$RUNNER_TEMP/catalog:/etc/trino/catalog:ro" \
             -v "$RUNNER_TEMP/iceberg:/tmp/iceberg" \
