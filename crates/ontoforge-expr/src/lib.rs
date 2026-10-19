@@ -10,6 +10,10 @@ pub mod walk;
 pub use analyze::{ExprError, analyze};
 pub use check::check_ontology;
 pub use limits::{MAX_EXPR_CHARS, MAX_EXPR_NESTING};
+pub use rowpred::{
+    AttrValue, AttrValueError, Attrs, CmpOp, ListSource, MatchKind, Operand, Pred, PredContext,
+    PredIssue, RowValues, Scalar, Tri, compile_row_filter, eval,
+};
 pub use walk::{MemberPath, member_paths};
 
 /// Cargo package name of this crate.
