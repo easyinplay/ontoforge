@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Edit Store & Scope Model
 status: executing
-stopped_at: Completed 03-07-PLAN.md
-last_updated: "2026-10-19T19:27:45.335Z"
+stopped_at: Completed 03-04-PLAN.md
+last_updated: "2026-10-19T19:50:59.462Z"
 last_activity: 2026-10-20
 last_activity_desc: Phase 03 execution started
-state_head: 25677d09c460134ea38dbaddc285c9f5f9879cda
+state_head: 1a964ff95a7a0c86115e89b364d69d84c529cdd3
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 44
-  completed_plans: 30
+  completed_plans: 31
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-19)
 ## Current Position
 
 Phase: 03 (Edit Store & Scope Model) — EXECUTING
-Plan: 7 of 20
+Plan: 8 of 20
 Status: Ready to execute
 Last activity: 2026-10-20 — Phase 03 execution started
 
@@ -46,6 +46,7 @@ Progress: [██████████░░░░░░░░░░] 24/44 p
 | Phase 03 P05 | 80min | 3 tasks | 12 files |
 | Phase 03 P06 | 21 min | 2 tasks | 17 files |
 | Phase 03 P07 | 50 min | 2 tasks | 9 files |
+| Phase 03 P04 | 80 min | 2 tasks | 16 files |
 
 ## Accumulated Context
 
@@ -63,6 +64,7 @@ Progress: [██████████░░░░░░░░░░] 24/44 p
 - [Phase 03]: [Phase 03-05]: Row predicates parse with cel but evaluate with own Kleene Pred evaluator (ADR-0025); x in [] is False, no null list elements, string match case-sensitive with literal wildcards, no special case for missing attributes; supersedes ADR-0018's 'missing attribute is false'
 - [Phase 03]: 03-06: an empty scope directory is ONT-V14, not an empty ScopeSet; TypeGrant.properties is required but may be empty (03-14 judges it) — A mistyped scope path must not silently grant nothing; allow-list content is an ontology-level check
 - [Phase 03]: 03-07: key of another type or declared alg is UnknownKey; null attr claim reads as absent; list claim with null/foreign element rejects the token — Cross-issuer forgery with shared kid fails closed; absent attribute is invisible under D-06; ADR-0025 rule 2
+- [Phase 03]: PostgreSQL system columns share SQLite defaults (of_version/of_def_version bigint DEFAULT 0, of_deleted/of_released boolean DEFAULT false); ADR-0024 amended — One repair path (ADD COLUMN after interrupted reload) and one physical_json for both backends; no cost on PG 11+
 
 ### Pending Todos
 
@@ -81,6 +83,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-19T19:27:45.213Z
-Stopped at: Completed 03-07-PLAN.md
+Last session: 2026-10-19T19:50:59.332Z
+Stopped at: Completed 03-04-PLAN.md
 Resume file: None
