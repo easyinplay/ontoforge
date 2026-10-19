@@ -5,9 +5,10 @@ use std::time::Duration;
 
 use camino::Utf8Path;
 use ontoforge_engine::config::{
-    AuthKind, ConfigError, EngineKind, TrinoConfig, build_trino_engines, load_server_config,
-    parse_server_config, resolve_secret,
+    AuthConfig, AuthKind, ConfigError, EngineKind, StoreConfig, StoreKind, TrinoConfig,
+    build_trino_engines, load_server_config, parse_server_config, resolve_secret,
 };
+use ontoforge_schema::ir::AttrType;
 use ontoforge_engine::trino::{Auth, TrinoConnection, TrinoEngine};
 use ontoforge_engine::{
     DEFAULT_MAX_BYTES, DEFAULT_MAX_ROWS, DEFAULT_QUERY_TIMEOUT_MS, EngineError,
@@ -481,4 +482,248 @@ fn engine_debug_names_the_identity_user() {
     .collect();
     assert!(by_user["ontology"].contains("ontoforge-ontology"));
     assert!(by_user["l2"].contains("ontoforge-l2"));
+}
+
+// ---------------------------------------------------------------------------------------------
+// `[store]` and `[auth]` (Phase 3, plan 03-02)
+// ---------------------------------------------------------------------------------------------
+
+/// The text a configuration error points at.
+fn span_text<'a>(text: &'a str, e: &ConfigError) -> &'a str {
+    &text[e.span.clone().expect("span")]
+}
+
+fn store(text: &str) -> StoreConfig {
+    parse_server_config(text)
+        .expect("valid configuration")
+        .store
+        .expect("store section")
+}
+
+fn auth(text: &str) -> AuthConfig {
+    parse_server_config(text)
+        .expect("valid configuration")
+        .auth
+        .expect("auth section")
+}
+
+#[test]
+fn store_sqlite_defaults() {
+    let s = store("[store]\nkind = \"sqlite\"\npath = \"edit.db\"\n");
+    assert_eq!(s.kind, StoreKind::Sqlite);
+    assert_eq!(s.path.as_deref(), Some("edit.db"));
+    assert_eq!(s.schema_edit, "ontoforge_edit");
+    assert_eq!(s.schema_sys, "ontoforge_sys");
+    assert_eq!(s.lock_timeout_ms, 5_000);
+    assert_eq!(s.probe_timeout_ms, 60_000);
+    assert!(s.trino.is_none());
+}
+
+#[test]
+fn store_postgres_with_trino_catalog() {
+    let s = store(
+        "[store]\nkind = \"postgres\"\nurl_env = \"ONTOFORGE_PG_URL\"\n\n[store.trino]\ncatalog = \"edit_pg\"\n",
+    );
+    assert_eq!(s.kind, StoreKind::Postgres);
+    assert_eq!(s.url_env.as_deref(), Some("ONTOFORGE_PG_URL"));
+    assert_eq!(s.trino.expect("trino").catalog, "edit_pg");
+    let s = store("[store]\nkind = \"postgres\"\nurl_file = \"pg.url\"\n");
+    assert_eq!(s.url_file.as_deref(), Some("pg.url"));
+}
+
+#[test]
+fn store_postgres_requires_exactly_one_url_source() {
+    for body in [
+        "kind = \"postgres\"\n",
+        "kind = \"postgres\"\nurl_env = \"A\"\nurl_file = \"b\"\n",
+    ] {
+        let text = format!("[store]\n{body}");
+        let errs = errors(&text);
+        assert_eq!(errs.len(), 1, "{body}: {errs:?}");
+        assert!(
+            errs[0].message.contains("url_env") && errs[0].message.contains("url_file"),
+            "{errs:?}"
+        );
+        assert!(errs[0].span.is_some(), "{errs:?}");
+    }
+}
+
+#[test]
+fn store_sqlite_rejects_url_and_postgres_rejects_path() {
+    let text = "[store]\nkind = \"sqlite\"\npath = \"edit.db\"\nurl_env = \"A\"\n";
+    let errs = errors(text);
+    assert_eq!(errs.len(), 1, "{errs:?}");
+    assert!(errs[0].message.contains("sqlite"), "{errs:?}");
+    let text = "[store]\nkind = \"postgres\"\nurl_env = \"A\"\npath = \"edit.db\"\n";
+    let errs = errors(text);
+    assert_eq!(errs.len(), 1, "{errs:?}");
+    assert!(errs[0].message.contains("postgres"), "{errs:?}");
+    let errs = errors("[store]\nkind = \"sqlite\"\n");
+    assert!(errs[0].message.contains("path"), "{errs:?}");
+}
+
+#[test]
+fn store_plaintext_url_is_rejected() {
+    let text = "[store]\nkind = \"postgres\"\nurl = \"postgres://u:p@h/db\"\n";
+    let errs = errors(text);
+    let e = &errs[0];
+    assert!(e.message.contains("plaintext"), "{e:?}");
+    let help = e.help.as_deref().expect("help");
+    assert!(help.contains("url_env") && help.contains("url_file"), "{help}");
+    assert_eq!(span_text(text, e), "url");
+    assert!(!format!("{errs:?}").contains("u:p"));
+}
+
+#[test]
+fn store_schema_names_are_validated() {
+    let text = "[store]\nkind = \"sqlite\"\npath = \"e.db\"\nschema_edit = \"Edit\"\n";
+    let errs = errors(text);
+    assert_eq!(errs.len(), 1, "{errs:?}");
+    assert_eq!(span_text(text, &errs[0]), "\"Edit\"");
+
+    let text = "[store]\nkind = \"sqlite\"\npath = \"e.db\"\nschema_edit = \"same\"\nschema_sys = \"same\"\n";
+    let errs = errors(text);
+    assert_eq!(errs.len(), 1, "{errs:?}");
+    assert!(errs[0].message.contains("differ"), "{errs:?}");
+
+    let text = "[store]\nkind = \"sqlite\"\npath = \"e.db\"\nlock_timeout_ms = 0\n";
+    let errs = errors(text);
+    assert_eq!(errs.len(), 1, "{errs:?}");
+    assert_eq!(span_text(text, &errs[0]), "0");
+
+    let text = "[store]\nkind = \"sqlite\"\npath = \"e.db\"\nprobe_timeout_ms = 3600001\n";
+    assert_eq!(errors(text).len(), 1);
+
+    let text =
+        "[store]\nkind = \"postgres\"\nurl_env = \"A\"\n\n[store.trino]\ncatalog = \"Bad-Name\"\n";
+    let errs = errors(text);
+    assert_eq!(errs.len(), 1, "{errs:?}");
+    assert_eq!(span_text(text, &errs[0]), "\"Bad-Name\"");
+}
+
+#[test]
+fn oidc_two_issuers_with_defaults() {
+    let a = auth(
+        "[[auth.oidc]]\nissuer = \"https://idp-a.example\"\naudience = \"ontoforge\"\njwks_uri = \"https://idp-a.example/jwks\"\n\n[[auth.oidc]]\nissuer = \"https://idp-b.example\"\naudience = \"ontoforge\"\njwks_uri = \"https://idp-b.example/jwks\"\ngroups_claim = \"roles\"\nleeway_secs = 5\n",
+    );
+    assert_eq!(a.oidc.len(), 2);
+    assert_eq!(a.oidc[0].groups_claim, "groups");
+    assert_eq!(a.oidc[0].algorithms, ["RS256", "ES256", "EdDSA"]);
+    assert_eq!(a.oidc[0].leeway_secs, 30);
+    assert_eq!(a.oidc[0].jwks_min_refresh_secs, 30);
+    assert_eq!(a.oidc[0].jwks_max_stale_secs, 86_400);
+    assert!(a.oidc[0].ca_file.is_none());
+    assert_eq!(a.oidc[1].groups_claim, "roles");
+    assert_eq!(a.oidc[1].leeway_secs, 5);
+}
+
+const OIDC: &str = "[[auth.oidc]]\nissuer = \"https://idp.example\"\naudience = \"ontoforge\"\njwks_uri = \"https://idp.example/jwks\"\n";
+
+#[test]
+fn oidc_rejects_symmetric_and_none_algorithms() {
+    for list in ["[\"HS256\"]", "[\"none\"]", "[]", "[\"RS256\", \"HS512\"]"] {
+        let text = format!("{OIDC}algorithms = {list}\n");
+        let errs = errors(&text);
+        assert_eq!(errs.len(), 1, "{list}: {errs:?}");
+        assert!(errs[0].message.contains("algorithms"), "{list}: {errs:?}");
+        assert!(errs[0].span.is_some());
+    }
+    let bad = format!("{OIDC}algorithms = [\"PS384\", \"ES512x\"]\n");
+    assert!(!errors(&bad).is_empty());
+    let ok = format!("{OIDC}algorithms = [\"PS384\", \"EdDSA\"]\n");
+    assert_eq!(auth(&ok).oidc[0].algorithms, ["PS384", "EdDSA"]);
+}
+
+#[test]
+fn oidc_issuer_rules() {
+    let with = |issuer: &str, jwks: &str| {
+        format!("[[auth.oidc]]\nissuer = \"{issuer}\"\naudience = \"a\"\njwks_uri = \"{jwks}\"\n")
+    };
+    let text = with("http://idp.example.com", "https://idp.example.com/jwks");
+    let errs = errors(&text);
+    assert_eq!(errs.len(), 1, "{errs:?}");
+    assert_eq!(span_text(&text, &errs[0]), "\"http://idp.example.com\"");
+
+    let text = with("https://a|b", "https://a/jwks");
+    let errs = errors(&text);
+    assert_eq!(errs.len(), 1, "{errs:?}");
+    assert!(errs[0].message.contains('|'), "{errs:?}");
+
+    let text = with("https://idp.example", "http://jwks.example/keys");
+    assert_eq!(errors(&text).len(), 1);
+
+    let text = format!(
+        "{}\n{}",
+        with("https://idp.example", "https://idp.example/jwks"),
+        with("https://idp.example", "https://idp.example/jwks2")
+    );
+    let errs = errors(&text);
+    assert_eq!(errs.len(), 1, "{errs:?}");
+    assert!(errs[0].message.contains("duplicate"), "{errs:?}");
+
+    let text = with("http://127.0.0.1:9000", "http://localhost:9000/jwks");
+    assert_eq!(auth(&text).oidc.len(), 1);
+}
+
+#[test]
+fn oidc_numeric_bounds() {
+    for extra in [
+        "leeway_secs = 301",
+        "jwks_min_refresh_secs = 0",
+        "jwks_min_refresh_secs = 100\njwks_max_stale_secs = 50",
+        "groups_claim = \"\"",
+    ] {
+        let text = format!("{OIDC}{extra}\n");
+        assert_eq!(errors(&text).len(), 1, "{extra}");
+    }
+}
+
+#[test]
+fn principal_attrs_types() {
+    let a = auth(
+        "[auth.principal_attrs.tenantId]\nclaim = \"tenant\"\ntype = \"string\"\n[auth.principal_attrs.level]\nclaim = \"lvl\"\ntype = \"integer\"\n[auth.principal_attrs.admin]\nclaim = \"adm\"\ntype = \"boolean\"\n[auth.principal_attrs.regions]\nclaim = \"regs\"\ntype = \"string_list\"\n[auth.principal_attrs.sites]\nclaim = \"sites\"\ntype = \"integer_list\"\n",
+    );
+    assert_eq!(a.principal_attrs.len(), 5);
+    assert_eq!(a.principal_attrs["regions"].ty, AttrType::StringList);
+    assert_eq!(a.principal_attrs["level"].claim, "lvl");
+
+    let text = "[auth.principal_attrs.regions]\nclaim = \"r\"\ntype = \"list<string>\"\n";
+    let errs = errors(text);
+    assert_eq!(errs.len(), 1, "{errs:?}");
+    assert!(errs[0].span.is_some());
+
+    for name in ["TenantId", "in"] {
+        let text = format!("[auth.principal_attrs.{name}]\nclaim = \"c\"\ntype = \"string\"\n");
+        let errs = errors(&text);
+        assert_eq!(errs.len(), 1, "{name}: {errs:?}");
+        assert!(text[errs[0].span.clone().expect("span")].contains(name));
+    }
+    let text = "[auth.principal_attrs.tenantId]\nclaim = \"\"\ntype = \"string\"\n";
+    assert_eq!(errors(text).len(), 1);
+}
+
+#[test]
+fn dev_auth_key_file() {
+    let a = auth("[auth.dev]\nkey_file = \"dev.key\"\n");
+    assert_eq!(a.dev.expect("dev").key_file.as_deref(), Some("dev.key"));
+    let a = auth("[auth.dev]\n");
+    assert!(a.dev.expect("dev").key_file.is_none());
+}
+
+#[test]
+fn unknown_key_in_store_or_auth_is_v20() {
+    let text = "[store]\nkind = \"sqlite\"\npath = \"e.db\"\nfoo = 1\n";
+    let errs = errors(text);
+    assert!(errs[0].message.contains("unknown field"), "{errs:?}");
+    assert_eq!(span_text(text, &errs[0]), "foo");
+    let text = format!("{OIDC}x = 1\n");
+    let errs = errors(&text);
+    assert!(errs[0].message.contains("unknown field"), "{errs:?}");
+    assert_eq!(span_text(&text, &errs[0]), "x");
+}
+
+#[test]
+fn store_and_auth_are_optional() {
+    let cfg = parse_server_config("").expect("empty config");
+    assert!(cfg.store.is_none() && cfg.auth.is_none());
 }
