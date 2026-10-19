@@ -24,6 +24,8 @@ pub enum Command {
     Lint(LintArgs),
     /// Work with the JSON Schema of the definition format.
     Schema(SchemaArgs),
+    /// Bring the edit store's tables in line with the definitions.
+    Reload(ReloadArgs),
 }
 
 #[derive(Debug, Args)]
@@ -77,6 +79,22 @@ pub struct ValidateArgs {
     /// Server configuration with the Trino connection and the profile to engine mapping.
     #[arg(long, value_name = "FILE", requires = "online")]
     pub server_config: Option<Utf8PathBuf>,
+    #[command(flatten)]
+    pub profile: ProfileArgs,
+    #[command(flatten)]
+    pub output: OutputArgs,
+}
+
+#[derive(Debug, Args)]
+pub struct ReloadArgs {
+    /// Ontology directory containing `ontology.yaml`.
+    pub dir: Utf8PathBuf,
+    /// Server configuration with the `[store]` section.
+    #[arg(long, value_name = "FILE")]
+    pub server_config: Utf8PathBuf,
+    /// Print the DDL that would run and change nothing.
+    #[arg(long)]
+    pub dry_run: bool,
     #[command(flatten)]
     pub profile: ProfileArgs,
     #[command(flatten)]

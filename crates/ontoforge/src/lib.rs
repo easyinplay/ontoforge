@@ -6,6 +6,7 @@ pub mod cli;
 pub mod lint_cmd;
 pub mod online;
 pub mod pipeline;
+pub mod reload;
 pub mod render;
 
 use camino::Utf8Path;
@@ -19,6 +20,7 @@ pub fn run(cli: Cli) -> u8 {
     match cli.command {
         Command::Validate(args) => validate(&args),
         Command::Lint(args) => lint(&args),
+        Command::Reload(args) => reload::run(&args),
         Command::Schema(args) => match args.command {
             SchemaCommand::Export { out_dir } => export_schemas(&out_dir),
         },
@@ -51,6 +53,15 @@ fn report(out: &LoadOutput, args: &OutputArgs) -> u8 {
 
 /// Print the diagnostics to stdout.
 fn print_diagnostics(out: &LoadOutput, args: &OutputArgs) {
+    print_rendered(&out.diagnostics, &out.sources, args);
+}
+
+/// Print `diagnostics` to stdout in the format and colors `args` ask for.
+fn print_rendered(
+    diagnostics: &[ontoforge_schema::diag::Diagnostic],
+    sources: &ontoforge_schema::loader::SourceMap,
+    args: &OutputArgs,
+) {
     let color = match args.color {
         ColorChoice::Always => true,
         ColorChoice::Never => false,
@@ -59,7 +70,7 @@ fn print_diagnostics(out: &LoadOutput, args: &OutputArgs) {
             anstream::AutoStream::choice(&std::io::stdout()) != anstream::ColorChoice::Never
         }
     };
-    let text = render::render(&out.diagnostics, &out.sources, args.format, color);
+    let text = render::render(diagnostics, sources, args.format, color);
     let _ = std::io::stdout().write_all(text.as_bytes());
 }
 
