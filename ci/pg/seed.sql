@@ -13,7 +13,7 @@
 -- and names the files relative to it.
 
 \set ON_ERROR_STOP on
-\cd :'fixtures'
+ :fixtures
 
 BEGIN;
 
