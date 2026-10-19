@@ -225,6 +225,22 @@ mod tests {
     use super::*;
 
     #[test]
+    fn phase3_codes() {
+        let all = [
+            codes::V21,
+            codes::V22,
+            codes::V23,
+            codes::V24,
+            codes::V25,
+            codes::V26,
+            codes::V27,
+        ];
+        for (offset, code) in all.iter().enumerate() {
+            assert_eq!(*code, format!("ONT-V{}", 21 + offset));
+        }
+    }
+
+    #[test]
     fn custom_error_round_trips() {
         let s = custom_de_error(codes::V07, "bad name", Some("use Flight"));
         let parsed = parse_custom_de_error(&s).unwrap();

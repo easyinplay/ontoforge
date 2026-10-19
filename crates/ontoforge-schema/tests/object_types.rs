@@ -315,3 +315,26 @@ fn aviation_backing_values() {
         }
     }
 }
+
+#[test]
+fn indexed_defaults_to_false() {
+    let out = load(&good_with("  status: { type: string }\n"));
+    let o = object(&out, "Airport");
+    assert!(!o.properties["status"].indexed);
+}
+
+#[test]
+fn indexed_true_is_kept() {
+    let out = load(&good_with("  status: { type: string, indexed: true }\n"));
+    let o = object(&out, "Airport");
+    assert!(o.properties["status"].indexed);
+}
+
+#[test]
+fn indexed_must_be_boolean() {
+    let out = load(&good_with("  status: { type: string, indexed: \"yes\" }\n"));
+    let d = only(&out);
+    assert_eq!(d.code, codes::V06);
+    // `  status: { type: string, indexed: "yes" }` -> the value starts at column 35.
+    assert_eq!(d.column, 35, "{d:?}");
+}
