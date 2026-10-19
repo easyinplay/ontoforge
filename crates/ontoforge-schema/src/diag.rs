@@ -176,6 +176,10 @@ pub fn did_you_mean<'a>(
 }
 
 /// Validate diagnostic codes. Codes are never reused once published.
+///
+/// V21..V27 (Phase 3) are V-level, not lint E-level: an E rule can be turned off or
+/// downgraded in `ontoforge.toml`, but scope, row-predicate and destructive-change
+/// failures must never be silenced (SCOPE-06, D-07, STORE-02).
 pub mod codes {
     /// Syntax error, duplicate key, budget exceeded, or non-UTF-8 input.
     pub const V01: &str = "ONT-V01";
@@ -218,6 +222,29 @@ pub mod codes {
     pub const V19: &str = "ONT-V19";
     /// Server configuration (`ontoforge-server.toml`).
     pub const V20: &str = "ONT-V20";
+    /// Scope document structure and references: a `Role` / `RoleBinding` refers to an
+    /// unknown object type, property, action or role; a property allow-list omits
+    /// the primary key; empty or duplicate subjects.
+    pub const V21: &str = "ONT-V21";
+    /// Row predicate (`rowFilter`): outside the allowed CEL subset, type error,
+    /// reference other than same-row properties and declared `principal.attrs`, or
+    /// a case-insensitive collation column (D-07, D-08).
+    pub const V22: &str = "ONT-V22";
+    /// Criteria column coverage: a role granted an action cannot see a property
+    /// its submission criteria read (SCOPE-06).
+    pub const V23: &str = "ONT-V23";
+    /// Edit store physical name: two definitions map to the same physical table,
+    /// column or index name.
+    pub const V24: &str = "ONT-V24";
+    /// Destructive definition change found by reload; apply it with
+    /// `ontoforge migrate`.
+    pub const V25: &str = "ONT-V25";
+    /// The edit store or the Trino visibility probe could not complete:
+    /// connection, lock timeout, probe timeout, stale definition.
+    pub const V26: &str = "ONT-V26";
+    /// Import data: unreadable file, unknown column, value that does not convert
+    /// to the property type, or an existing object.
+    pub const V27: &str = "ONT-V27";
 }
 
 #[cfg(test)]

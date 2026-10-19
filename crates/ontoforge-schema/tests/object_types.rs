@@ -335,6 +335,6 @@ fn indexed_must_be_boolean() {
     let out = load(&good_with("  status: { type: string, indexed: \"yes\" }\n"));
     let d = only(&out);
     assert_eq!(d.code, codes::V06);
-    // `  status: { type: string, indexed: "yes" }` -> the value starts at column 35.
-    assert_eq!(d.column, 35, "{d:?}");
+    // `  status: { type: string, indexed: "yes" }` -> the value `"yes"` starts at column 36.
+    assert_eq!((d.line, d.column), (7, 36), "{d:?}");
 }
