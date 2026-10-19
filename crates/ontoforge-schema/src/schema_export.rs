@@ -69,6 +69,11 @@ pub fn manifest_schema() -> Value {
     )
 }
 
+/// Schema of one scope file. Stub: replaced by the real schema in the next commit.
+pub fn scope_schema() -> Value {
+    json!({})
+}
+
 /// File name and content of each exported schema; content is pretty JSON ending in a
 /// newline and identical on every call.
 pub fn rendered_schemas() -> Vec<(&'static str, String)> {
@@ -83,5 +88,6 @@ pub fn rendered_schemas() -> Vec<(&'static str, String)> {
             render(&definition_schema()),
         ),
         ("ontoforge-manifest.schema.json", render(&manifest_schema())),
+        ("ontoforge-scope.schema.json", render(&scope_schema())),
     ]
 }

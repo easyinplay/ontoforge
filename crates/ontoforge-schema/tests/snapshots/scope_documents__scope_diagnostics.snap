@@ -1,0 +1,110 @@
+---
+source: crates/ontoforge-schema/tests/scope_documents.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V21",
+    "severity": "error",
+    "message": "RoleBinding refers to role `ghost`, which is not defined",
+    "file": "bindings.yaml",
+    "line": 2,
+    "column": 7,
+    "span": {
+      "offset": 24,
+      "length": 5
+    },
+    "help": "define a `kind: Role` with `apiName: ghost`"
+  },
+  {
+    "code": "ONT-V21",
+    "severity": "error",
+    "message": "RoleBinding for `dispatcher` has no subjects",
+    "file": "bindings.yaml",
+    "line": 8,
+    "column": 11,
+    "span": {
+      "offset": 102,
+      "length": 1
+    },
+    "help": "list at least one `user: \"<iss>|<sub>\"` or `group: <name>`"
+  },
+  {
+    "code": "ONT-V21",
+    "severity": "error",
+    "message": "RoleBinding refers to role `planner`, which is not defined",
+    "file": "bindings.yaml",
+    "line": 11,
+    "column": 7,
+    "span": {
+      "offset": 133,
+      "length": 7
+    },
+    "help": "define a `kind: Role` with `apiName: planner`"
+  },
+  {
+    "code": "ONT-V21",
+    "severity": "error",
+    "message": "user `alice` is not a principal id `<iss>|<sub>`",
+    "file": "bindings.yaml",
+    "line": 13,
+    "column": 11,
+    "span": {
+      "offset": 161,
+      "length": 5
+    },
+    "help": "write the issuer and the subject separated by one `|`, for example `ontoforge-dev|mia`"
+  },
+  {
+    "code": "ONT-V21",
+    "severity": "error",
+    "message": "duplicate subject in the RoleBinding for `planner`",
+    "file": "bindings.yaml",
+    "line": 15,
+    "column": 5,
+    "span": {
+      "offset": 184,
+      "length": 1
+    },
+    "help": "remove the repeated entry"
+  },
+  {
+    "code": "ONT-V03",
+    "severity": "error",
+    "message": "kind `ObjectType` belongs in the ontology directory",
+    "file": "misplaced.yaml",
+    "line": 1,
+    "column": 7,
+    "span": {
+      "offset": 6,
+      "length": 10
+    },
+    "help": "move it to the ontology directory"
+  },
+  {
+    "code": "ONT-V08",
+    "severity": "error",
+    "message": "duplicate Role `dispatcher`; first defined at roles.yaml:2:10",
+    "file": "roles.yaml",
+    "line": 5,
+    "column": 10,
+    "span": {
+      "offset": 55,
+      "length": 10
+    },
+    "help": null
+  },
+  {
+    "code": "ONT-V04",
+    "severity": "error",
+    "message": "unknown field `rowfilter`",
+    "file": "roles.yaml",
+    "line": 12,
+    "column": 5,
+    "span": {
+      "offset": 152,
+      "length": 9
+    },
+    "help": "did you mean `rowFilter`?"
+  }
+]

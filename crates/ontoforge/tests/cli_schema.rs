@@ -5,9 +5,10 @@ const AVIATION: &str = concat!(
     "/../../examples/ontologies/aviation"
 );
 const COMMITTED: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../schemas");
-const FILES: [&str; 2] = [
+const FILES: [&str; 3] = [
     "ontoforge-definition.schema.json",
     "ontoforge-manifest.schema.json",
+    "ontoforge-scope.schema.json",
 ];
 
 fn ontoforge(args: &[&str]) -> Output {
