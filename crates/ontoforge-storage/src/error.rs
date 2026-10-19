@@ -10,7 +10,7 @@ pub enum StoreError {
     #[error("edit store migration failed: {0}")]
     Migrate(String),
     /// A statement failed. `sqlstate` is the database's error code when it reported one.
-    #[error("edit store query failed{}: {message}", sqlstate_suffix(.sqlstate))]
+    #[error("edit store query failed{}: {message}", sqlstate_suffix(.sqlstate.as_ref()))]
     Query {
         sqlstate: Option<String>,
         message: String,
@@ -23,11 +23,8 @@ pub enum StoreError {
     Corrupt(String),
 }
 
-fn sqlstate_suffix(sqlstate: &Option<String>) -> String {
-    sqlstate
-        .as_deref()
-        .map(|s| format!(" (code {s})"))
-        .unwrap_or_default()
+fn sqlstate_suffix(sqlstate: Option<&String>) -> String {
+    sqlstate.map(|s| format!(" (code {s})")).unwrap_or_default()
 }
 
 impl StoreError {
@@ -37,7 +34,7 @@ impl StoreError {
         match error {
             sqlx::Error::Configuration(_) => Self::Config("invalid connection settings".to_owned()),
             sqlx::Error::Database(db) => Self::Query {
-                sqlstate: db.code().map(|c| c.into_owned()),
+                sqlstate: db.code().map(std::borrow::Cow::into_owned),
                 message: db.message().to_owned(),
             },
             other => Self::Query {

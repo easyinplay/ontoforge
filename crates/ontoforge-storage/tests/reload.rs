@@ -239,7 +239,7 @@ async fn destructive_changes_are_rejected() {
                 "  code: { type: string }\n  name: { type: string, required: true }\n  capacity: { type: integer }\n",
                 true,
             ),
-            1,
+            2,
         ),
     ];
 

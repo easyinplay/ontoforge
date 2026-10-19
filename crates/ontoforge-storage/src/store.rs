@@ -186,6 +186,14 @@ impl EditStore {
         }
     }
 
+    /// The PostgreSQL schema of the edit tables, `None` on SQLite.
+    pub(crate) fn schema_edit(&self) -> Option<&str> {
+        match &self.db {
+            Db::Sqlite(_) => None,
+            Db::Postgres { schema_edit, .. } => Some(schema_edit),
+        }
+    }
+
     /// The definition the edit tables currently follow, `None` before the first reload.
     pub async fn active_definition(&self) -> Option<Arc<ActiveDefinition>> {
         self.active.read().await.clone()
