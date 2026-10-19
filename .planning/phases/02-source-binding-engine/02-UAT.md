@@ -1,5 +1,5 @@
 ---
-status: partial
+status: complete
 phase: 02-source-binding-engine
 source: [02-VERIFICATION.md]
 started: 2026-10-17T00:00:00Z
@@ -8,7 +8,7 @@ updated: 2026-10-19T00:00:00Z
 
 ## Current Test
 
-[testing paused — 1 item outstanding]
+[testing complete]
 
 ## Tests
 
@@ -19,9 +19,8 @@ note: "CI run 39219827829：trino_it 9 passed、cli_trino_it 2 passed（首跑 3
 
 ### 2. 首次 nightly（Trino 483、484 矩阵）
 expected: 手动触发 nightly，两个版本的 Iceberg 作业都通过
-result: blocked
-blocked_by: server
-reason: "nightly.yml 只在默认分支上可 workflow_dispatch / schedule（gh 返回 HTTP 404 not found on the default branch），需 PR #2 合并后触发"
+result: pass
+note: "首跑 run 39220997866 失败（iceberg.properties 的 local.location 写成 URI，Trino 无法启动，issue #3）；修复后 run 39221684753 中 483 / 484 各 Engine 9 passed、CLI 2 passed"
 
 ### 3. E21 golden 定稿
 expected: 按首跑日志修正 `describe_types_golden` 与 `decode_golden`，删除 `crates/ontoforge-engine/tests/trino_it.rs` 中的 `PROVISIONAL` 注释并提交
@@ -46,10 +45,10 @@ note: "选定方案 (a)：ADR-0022 修订 ADR-0021 第 7 条；落地 commit 4d6
 ## Summary
 
 total: 6
-passed: 5
+passed: 6
 issues: 0
 pending: 0
 skipped: 0
-blocked: 1
+blocked: 0
 
 ## Gaps
