@@ -8,11 +8,11 @@ use ontoforge_engine::config::{
     AuthConfig, AuthKind, ConfigError, EngineKind, StoreConfig, StoreKind, TrinoConfig,
     build_trino_engines, load_server_config, parse_server_config, resolve_secret,
 };
-use ontoforge_schema::ir::AttrType;
 use ontoforge_engine::trino::{Auth, TrinoConnection, TrinoEngine};
 use ontoforge_engine::{
     DEFAULT_MAX_BYTES, DEFAULT_MAX_ROWS, DEFAULT_QUERY_TIMEOUT_MS, EngineError,
 };
+use ontoforge_schema::ir::AttrType;
 use secrecy::{ExposeSecret, SecretString};
 
 const SECRET: &str = "s3cr3t-value";
@@ -569,7 +569,10 @@ fn store_plaintext_url_is_rejected() {
     let e = &errs[0];
     assert!(e.message.contains("plaintext"), "{e:?}");
     let help = e.help.as_deref().expect("help");
-    assert!(help.contains("url_env") && help.contains("url_file"), "{help}");
+    assert!(
+        help.contains("url_env") && help.contains("url_file"),
+        "{help}"
+    );
     assert_eq!(span_text(text, e), "url");
     assert!(!format!("{errs:?}").contains("u:p"));
 }

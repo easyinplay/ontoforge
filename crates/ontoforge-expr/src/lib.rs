@@ -4,6 +4,7 @@ pub mod analyze;
 pub mod check;
 pub mod infer;
 pub mod limits;
+pub mod rowpred;
 pub mod walk;
 
 pub use analyze::{ExprError, analyze};

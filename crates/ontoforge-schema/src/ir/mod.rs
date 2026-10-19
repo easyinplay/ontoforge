@@ -8,6 +8,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 pub mod action;
+pub mod attrs;
 pub mod basetype;
 pub mod binding;
 pub mod link;
@@ -19,6 +20,7 @@ pub use action::{
     ActionType, CreateObjectRule, DeleteObjectRule, Empty, LinkRule, ModifyObjectRule, ParamType,
     ParameterDef, Rule, SubmissionCriterion, ValueSource,
 };
+pub use attrs::AttrType;
 pub use basetype::BaseType;
 pub use binding::{
     Backing, BindingTarget, BoundColumn, Collation, ColumnBinding, FixtureRef, ProfileBindings,

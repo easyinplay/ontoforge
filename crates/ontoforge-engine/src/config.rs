@@ -1,8 +1,9 @@
-//! `ontoforge-server.toml`: Trino connection, service identities and engine profiles
-//! (D-06..D-10).
+//! `ontoforge-server.toml`: Trino connection, service identities, engine profiles
+//! (D-06..D-10), the edit store (`[store]`) and authentication (`[auth]`).
 //!
 //! Secrets are never written into the file: an identity names an environment variable
-//! (`*_env`) or a file (`*_file`) that holds the value.
+//! (`*_env`) or a file (`*_file`) that holds the value. The same holds for the edit
+//! store's PostgreSQL connection string (`url_env` / `url_file`).
 
 use std::collections::BTreeMap;
 use std::ops::Range;
@@ -10,7 +11,8 @@ use std::time::Duration;
 
 use camino::Utf8Path;
 use ontoforge_schema::diag::parse_custom_de_error;
-use ontoforge_schema::ir::ProfileName;
+use ontoforge_schema::ir::names::CEL_RESERVED_WORDS;
+use ontoforge_schema::ir::{AttrType, ProfileName};
 use ontoforge_schema::loader::{MAX_FILE_BYTES, ReadFailure, read_limited};
 use reqwest::Url;
 use secrecy::SecretString;
@@ -34,6 +36,12 @@ pub struct ServerConfig {
     pub trino: Option<TrinoConfig>,
     #[serde(default)]
     pub profiles: BTreeMap<ProfileName, ProfileEngine>,
+    /// Where the edit store lives.
+    #[serde(default)]
+    pub store: Option<StoreConfig>,
+    /// How callers authenticate.
+    #[serde(default)]
+    pub auth: Option<AuthConfig>,
 }
 
 /// The `[trino]` section.
@@ -158,6 +166,157 @@ pub enum EngineKind {
     Sqlite,
 }
 
+/// Which database holds the edit store.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum StoreKind {
+    Sqlite,
+    Postgres,
+}
+
+/// The `[store]` section (ADR-0016).
+///
+/// A `sqlite` store needs `path`. A `postgres` store needs exactly one of `url_env` and
+/// `url_file`; the connection string itself is never written into the file.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct StoreConfig {
+    pub kind: StoreKind,
+    /// SQLite database file, relative to the configuration file.
+    #[serde(default)]
+    pub path: Option<String>,
+    /// Environment variable that holds the PostgreSQL connection string.
+    #[serde(default)]
+    pub url_env: Option<String>,
+    /// File that holds the PostgreSQL connection string, relative to the configuration file.
+    #[serde(default)]
+    pub url_file: Option<String>,
+    /// PostgreSQL schema of the typed edit tables.
+    #[serde(default = "default_schema_edit")]
+    pub schema_edit: String,
+    /// PostgreSQL schema of system tables (edit log, definition snapshots).
+    #[serde(default = "default_schema_sys")]
+    pub schema_sys: String,
+    /// How long a write waits for a lock.
+    #[serde(default = "default_lock_timeout_ms")]
+    pub lock_timeout_ms: u64,
+    /// How long the Trino visibility probe may take.
+    #[serde(default = "default_probe_timeout_ms")]
+    pub probe_timeout_ms: u64,
+    /// Trino access to a PostgreSQL edit store.
+    #[serde(default)]
+    pub trino: Option<StoreTrinoConfig>,
+}
+
+/// The `[store.trino]` section.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct StoreTrinoConfig {
+    /// Trino catalog that maps the edit store's PostgreSQL schemas.
+    pub catalog: String,
+}
+
+fn default_schema_edit() -> String {
+    "ontoforge_edit".to_owned()
+}
+
+fn default_schema_sys() -> String {
+    "ontoforge_sys".to_owned()
+}
+
+fn default_lock_timeout_ms() -> u64 {
+    5_000
+}
+
+fn default_probe_timeout_ms() -> u64 {
+    60_000
+}
+
+/// The `[auth]` section.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct AuthConfig {
+    /// Trusted identity providers. Group names are namespaced by issuer, so several
+    /// issuers can be trusted at once.
+    #[serde(default)]
+    pub oidc: Vec<OidcConfig>,
+    /// Principal attributes by name: which token claim feeds them and their type (D-05).
+    #[serde(default)]
+    pub principal_attrs: BTreeMap<String, PrincipalAttrConfig>,
+    /// Development tokens signed with a local key.
+    #[serde(default)]
+    pub dev: Option<DevAuthConfig>,
+}
+
+/// One `[[auth.oidc]]` entry.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct OidcConfig {
+    pub issuer: String,
+    pub audience: String,
+    pub jwks_uri: String,
+    #[serde(default = "default_groups_claim")]
+    pub groups_claim: String,
+    /// Accepted signature algorithms: asymmetric ones only.
+    #[serde(default = "default_algorithms")]
+    pub algorithms: Vec<String>,
+    #[serde(default = "default_leeway_secs")]
+    pub leeway_secs: u64,
+    #[serde(default = "default_jwks_min_refresh_secs")]
+    pub jwks_min_refresh_secs: u64,
+    #[serde(default = "default_jwks_max_stale_secs")]
+    pub jwks_max_stale_secs: u64,
+    /// PEM file with extra root certificates for the key set fetch, relative to the
+    /// configuration file.
+    #[serde(default)]
+    pub ca_file: Option<String>,
+}
+
+fn default_groups_claim() -> String {
+    "groups".to_owned()
+}
+
+fn default_algorithms() -> Vec<String> {
+    ["RS256", "ES256", "EdDSA"].map(str::to_owned).to_vec()
+}
+
+fn default_leeway_secs() -> u64 {
+    30
+}
+
+fn default_jwks_min_refresh_secs() -> u64 {
+    30
+}
+
+fn default_jwks_max_stale_secs() -> u64 {
+    86_400
+}
+
+/// One `[auth.principal_attrs.<name>]` entry.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PrincipalAttrConfig {
+    pub claim: String,
+    #[serde(rename = "type")]
+    pub ty: AttrType,
+}
+
+/// The `[auth.dev]` section.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DevAuthConfig {
+    /// File with the signing key for development tokens, relative to the configuration
+    /// file. Without it the server generates a key at start.
+    #[serde(default)]
+    pub key_file: Option<String>,
+}
+
+/// Signature algorithms an OIDC issuer may be configured with. Symmetric algorithms and
+/// `none` are not on the list (algorithm confusion).
+const OIDC_ALGORITHMS: [&str; 9] = [
+    "RS256", "RS384", "RS512", "PS256", "PS384", "PS512", "ES256", "ES384", "EdDSA",
+];
+
 /// Something wrong with the configuration. Texts name keys, variables and paths, never
 /// secret values.
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
@@ -267,7 +426,23 @@ fn from_toml_error(e: &toml::de::Error) -> ConfigError {
         .help(help)
         .at(span);
     }
+    if unknown == Some("url") && raw.contains("`url_env`") {
+        return ConfigError::new(
+            "plaintext secrets are not accepted in ontoforge-server.toml (found `url`)",
+        )
+        .help(
+            "reference the connection string with `url_env` (an environment variable name) or `url_file` (a file path)",
+        )
+        .at(span);
+    }
     ConfigError::new(raw).at(span)
+}
+
+/// One step of a path into the parsed document.
+#[derive(Clone, Copy)]
+enum Seg<'s> {
+    Key(&'s str),
+    Idx(usize),
 }
 
 /// Semantic checks on a configuration that deserialized.
@@ -303,10 +478,53 @@ impl<'a> Checker<'a> {
         Some(key.span())
     }
 
+    /// Span of the value at `path` (keys and array indexes), for error reports that
+    /// should point at what is wrong rather than at the key.
+    fn value_span(&self, path: &[Seg<'_>]) -> Option<Range<usize>> {
+        enum Cur<'c, 'i> {
+            Table(&'c DeTable<'i>),
+            Array(&'c [toml::Spanned<DeValue<'i>>]),
+            Leaf,
+        }
+        fn descend<'c, 'i>(value: &'c DeValue<'i>) -> Cur<'c, 'i> {
+            match value {
+                DeValue::Table(t) => Cur::Table(t),
+                DeValue::Array(a) => Cur::Array(a),
+                _ => Cur::Leaf,
+            }
+        }
+        let mut cur = Cur::Table(self.root.as_ref()?.get_ref());
+        let mut found = None;
+        for seg in path {
+            let value = match (&cur, seg) {
+                (Cur::Table(table), Seg::Key(name)) => {
+                    table
+                        .iter()
+                        .find(|(k, _)| {
+                            let key: &str = k.get_ref().as_ref();
+                            key == *name
+                        })?
+                        .1
+                }
+                (Cur::Array(items), Seg::Idx(i)) => items.get(*i)?,
+                _ => return None,
+            };
+            found = Some(value.span());
+            cur = descend(value.get_ref());
+        }
+        found
+    }
+
     fn check(&self, cfg: &ServerConfig) -> Vec<ConfigError> {
         let mut errors = Vec::new();
         if let Some(trino) = &cfg.trino {
             self.check_trino(trino, &mut errors);
+        }
+        if let Some(store) = &cfg.store {
+            self.check_store(store, &mut errors);
+        }
+        if let Some(auth) = &cfg.auth {
+            self.check_auth(auth, &mut errors);
         }
         for (name, profile) in &cfg.profiles {
             if profile.engine == EngineKind::Trino && cfg.trino.is_none() {
@@ -412,6 +630,185 @@ impl<'a> Checker<'a> {
         }
     }
 
+    fn check_store(&self, store: &StoreConfig, errors: &mut Vec<ConfigError>) {
+        use Seg::Key;
+        let at = |key: &str| self.value_span(&[Key("store"), Key(key)]);
+        match store.kind {
+            StoreKind::Sqlite => {
+                match store.path.as_deref() {
+                    None => {
+                        errors.push(ConfigError::new("a sqlite store needs `path`").at(at("kind")));
+                    }
+                    Some("") => {
+                        errors.push(ConfigError::new("`path` must not be empty").at(at("path")));
+                    }
+                    Some(_) => {}
+                }
+                if store.url_env.is_some() || store.url_file.is_some() {
+                    errors.push(
+                        ConfigError::new(
+                            "a sqlite store must not set `url_env` or `url_file`; they belong to a postgres store",
+                        )
+                        .at(at("url_env").or_else(|| at("url_file"))),
+                    );
+                }
+            }
+            StoreKind::Postgres => {
+                let sources =
+                    usize::from(store.url_env.is_some()) + usize::from(store.url_file.is_some());
+                if sources != 1 {
+                    errors.push(
+                        ConfigError::new(
+                            "a postgres store needs exactly one of `url_env` and `url_file`",
+                        )
+                        .help("the connection string is read from that variable or file, never from this file")
+                        .at(at("kind")),
+                    );
+                }
+                if store.path.is_some() {
+                    errors.push(
+                        ConfigError::new(
+                            "a postgres store must not set `path`; it belongs to a sqlite store",
+                        )
+                        .at(at("path")),
+                    );
+                }
+                if store.url_env.as_deref().is_some_and(|n| !is_env_name(n)) {
+                    errors.push(
+                        ConfigError::new(
+                            "`url_env` must be an environment variable name ([A-Za-z_][A-Za-z0-9_]*)",
+                        )
+                        .at(at("url_env")),
+                    );
+                }
+            }
+        }
+        for (key, name) in [
+            ("schema_edit", &store.schema_edit),
+            ("schema_sys", &store.schema_sys),
+        ] {
+            if !is_schema_name(name) {
+                errors.push(
+                    ConfigError::new(format!("`{key}` must match ^[a-z_][a-z0-9_]{{0,62}}$"))
+                        .at(at(key)),
+                );
+            }
+        }
+        if store.schema_edit == store.schema_sys {
+            errors.push(
+                ConfigError::new("`schema_edit` and `schema_sys` must differ").at(at("schema_sys")),
+            );
+        }
+        for (key, value, max) in [
+            ("lock_timeout_ms", store.lock_timeout_ms, 600_000),
+            ("probe_timeout_ms", store.probe_timeout_ms, 3_600_000),
+        ] {
+            if !(1..=max).contains(&value) {
+                errors.push(
+                    ConfigError::new(format!("`{key}` must be between 1 and {max}")).at(at(key)),
+                );
+            }
+        }
+        if let Some(trino) = &store.trino
+            && !is_catalog_name(&trino.catalog)
+        {
+            errors.push(
+                ConfigError::new("`catalog` must match ^[a-z][a-z0-9_]{0,62}$")
+                    .at(self.value_span(&[Key("store"), Key("trino"), Key("catalog")])),
+            );
+        }
+    }
+
+    fn check_auth(&self, auth: &AuthConfig, errors: &mut Vec<ConfigError>) {
+        use Seg::{Idx, Key};
+        let mut seen: Vec<&str> = Vec::new();
+        for (index, oidc) in auth.oidc.iter().enumerate() {
+            let at = |key: &str| self.value_span(&[Key("auth"), Key("oidc"), Idx(index), Key(key)]);
+            if oidc.issuer.contains('|') {
+                errors.push(
+                    ConfigError::new("`issuer` must not contain `|`")
+                        .help("`|` separates the issuer from a group name in namespaced group keys")
+                        .at(at("issuer")),
+                );
+            } else {
+                if let Some(problem) = oidc_url_problem(&oidc.issuer) {
+                    errors.push(ConfigError::new(format!("`issuer` {problem}")).at(at("issuer")));
+                }
+                if seen.contains(&oidc.issuer.as_str()) {
+                    errors.push(
+                        ConfigError::new("duplicate `issuer` in [[auth.oidc]]").at(at("issuer")),
+                    );
+                }
+                seen.push(&oidc.issuer);
+            }
+            if let Some(problem) = oidc_url_problem(&oidc.jwks_uri) {
+                errors.push(ConfigError::new(format!("`jwks_uri` {problem}")).at(at("jwks_uri")));
+            }
+            for (key, value) in [
+                ("audience", &oidc.audience),
+                ("groups_claim", &oidc.groups_claim),
+            ] {
+                if value.is_empty() {
+                    errors.push(ConfigError::new(format!("`{key}` must not be empty")).at(at(key)));
+                }
+            }
+            if oidc.algorithms.is_empty() {
+                errors.push(
+                    ConfigError::new("`algorithms` must list at least one algorithm")
+                        .at(at("algorithms")),
+                );
+            }
+            for algorithm in &oidc.algorithms {
+                if !OIDC_ALGORITHMS.contains(&algorithm.as_str()) {
+                    errors.push(
+                        ConfigError::new(format!("`algorithms` entry `{algorithm}` is not allowed"))
+                            .help("only asymmetric algorithms are accepted: RS256, RS384, RS512, PS256, PS384, PS512, ES256, ES384, EdDSA")
+                            .at(at("algorithms")),
+                    );
+                }
+            }
+            if oidc.leeway_secs > 300 {
+                errors.push(
+                    ConfigError::new("`leeway_secs` must be at most 300").at(at("leeway_secs")),
+                );
+            }
+            if oidc.jwks_min_refresh_secs < 1 {
+                errors.push(
+                    ConfigError::new("`jwks_min_refresh_secs` must be at least 1")
+                        .at(at("jwks_min_refresh_secs")),
+                );
+            }
+            if oidc.jwks_max_stale_secs < oidc.jwks_min_refresh_secs {
+                errors.push(
+                    ConfigError::new(
+                        "`jwks_max_stale_secs` must not be smaller than `jwks_min_refresh_secs`",
+                    )
+                    .at(at("jwks_max_stale_secs")),
+                );
+            }
+        }
+        for (name, attr) in &auth.principal_attrs {
+            if !is_attr_name(name) || CEL_RESERVED_WORDS.contains(&name.as_str()) {
+                errors.push(
+                    ConfigError::new(format!(
+                        "principal attribute name `{name}` must match ^[a-z][A-Za-z0-9]{{0,99}}$ and not be a CEL reserved word"
+                    ))
+                    .at(self.key_span(&["auth", "principal_attrs", name.as_str()])),
+                );
+            }
+            if attr.claim.is_empty() {
+                errors.push(
+                    ConfigError::new("`claim` must not be empty").at(self.value_span(&[
+                        Key("auth"),
+                        Key("principal_attrs"),
+                        Key(name.as_str()),
+                        Key("claim"),
+                    ])),
+                );
+            }
+        }
+    }
+
     fn check_identity(
         &self,
         label: &str,
@@ -482,6 +879,57 @@ fn is_env_name(s: &str) -> bool {
         .next()
         .is_some_and(|c| c == b'_' || c.is_ascii_alphabetic())
         && bytes.all(|c| c == b'_' || c.is_ascii_alphanumeric())
+}
+
+/// Why `value` cannot be an OIDC endpoint, or `None` when it can: https, or http to a
+/// loopback host (a local test identity provider).
+fn oidc_url_problem(value: &str) -> Option<&'static str> {
+    let Ok(url) = Url::parse(value) else {
+        return Some("is not a valid URL");
+    };
+    if !url.username().is_empty() || url.password().is_some() {
+        return Some("must not carry user information");
+    }
+    let Some(host) = url.host_str() else {
+        return Some("has no host");
+    };
+    let loopback = host == "localhost"
+        || host
+            .trim_start_matches('[')
+            .trim_end_matches(']')
+            .parse::<std::net::IpAddr>()
+            .is_ok_and(|ip| ip.is_loopback());
+    match url.scheme() {
+        "https" => None,
+        "http" if loopback => None,
+        _ => Some("must use https (http is accepted only for a loopback host)"),
+    }
+}
+
+/// `^[a-z_][a-z0-9_]{0,62}$`.
+fn is_schema_name(s: &str) -> bool {
+    let mut bytes = s.bytes();
+    s.len() <= 63
+        && bytes
+            .next()
+            .is_some_and(|c| c == b'_' || c.is_ascii_lowercase())
+        && bytes.all(|c| c == b'_' || c.is_ascii_lowercase() || c.is_ascii_digit())
+}
+
+/// `^[a-z][a-z0-9_]{0,62}$`.
+fn is_catalog_name(s: &str) -> bool {
+    let mut bytes = s.bytes();
+    s.len() <= 63
+        && bytes.next().is_some_and(|c| c.is_ascii_lowercase())
+        && bytes.all(|c| c == b'_' || c.is_ascii_lowercase() || c.is_ascii_digit())
+}
+
+/// `^[a-z][A-Za-z0-9]{0,99}$`, the property apiName shape.
+fn is_attr_name(s: &str) -> bool {
+    let mut bytes = s.bytes();
+    s.len() <= 100
+        && bytes.next().is_some_and(|c| c.is_ascii_lowercase())
+        && bytes.all(|c| c.is_ascii_alphanumeric())
 }
 
 /// Looks up an environment variable. The library never reads the process environment
