@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Edit Store & Scope Model
 status: executing
-stopped_at: Completed 03-01-PLAN.md
-last_updated: "2026-10-19T17:44:38.954Z"
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-10-19T18:04:50.333Z"
 last_activity: 2026-10-20
 last_activity_desc: Phase 03 execution started
-state_head: e6d4823e83de1781ebaf99623b216c0fc507a165
+state_head: eff2304be38a39310f7282dfeaf68a3d499de027
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 44
-  completed_plans: 25
+  completed_plans: 26
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-19)
 ## Current Position
 
 Phase: 03 (Edit Store & Scope Model) — EXECUTING
-Plan: 2 of 20
+Plan: 3 of 20
 Status: Ready to execute
 Last activity: 2026-10-20 — Phase 03 execution started
 
@@ -41,6 +41,7 @@ Progress: [██████████░░░░░░░░░░] 24/44 p
 | Plan | Duration | Tasks | Files |
 |------|----------|-------|-------|
 | Phase 03 P01 | 40min | 3 tasks | 15 files |
+| Phase 03 P02 | 30min | 2 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -53,6 +54,7 @@ Progress: [██████████░░░░░░░░░░] 24/44 p
 - [Phase 2]: nightly Iceberg 用 Trino 本地文件系统代替 MinIO；换 S3 兼容镜像属供应链决策，留给用户（详: `phases/02-source-binding-engine/02-10-SUMMARY.md`）
 - [Design]: Trino 主引擎 + 分级 SQL，ADR-0015..0020（详: `docs/designs/trino-engine-sql-tiers.md`）
 - [Phase 03]: [Phase 03-01]: Crate direction storage -> schema/expr/auth/engine, auth -> schema/expr/engine (ADR-0023); jsonwebtoken aws_lc_rs only; postgresql_embedded test-only under embedded-pg
+- [Phase 03]: [Phase 03-02]: ONT-V21..V27 are V-level (not suppressible via ontoforge.toml); OIDC issuer must not contain '|'; PG connection string only via url_env/url_file
 
 ### Pending Todos
 
@@ -71,6 +73,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-19T17:44:38.838Z
-Stopped at: Completed 03-01-PLAN.md
+Last session: 2026-10-19T18:04:50.217Z
+Stopped at: Completed 03-02-PLAN.md
 Resume file: None

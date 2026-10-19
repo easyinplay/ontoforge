@@ -16,7 +16,7 @@
     {
       "number": "3",
       "name": "Edit Store & Scope Model",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "number": "4",
@@ -44,5 +44,5 @@
     "label": "Advance to the next step",
     "reason": "Phase 03 of 7 · 0% · executing"
   },
-  "updated_at": "2026-10-19T17:44:36.322Z"
+  "updated_at": "2026-10-19T18:04:47.599Z"
 }
