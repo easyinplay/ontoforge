@@ -24,9 +24,8 @@ pub mod fixture;
 use fixture::{FixtureError, FixtureTable, SqlValue};
 
 use crate::printer::ast::{Expr, Literal, Select, SelectItem};
-use crate::printer::sqlite_ddl::{
-    DECIMAL_COLLATION, TIMESTAMP_COLLATION, attach_memory, create_table, insert, query_only,
-};
+pub use crate::printer::sqlite_ddl::{DECIMAL_COLLATION, TIMESTAMP_COLLATION};
+use crate::printer::sqlite_ddl::{attach_memory, create_table, insert, query_only};
 use crate::printer::{PrintedSql, print_select};
 use crate::value::split_decimal;
 use crate::{
@@ -206,7 +205,10 @@ fn decimal_key(s: &str) -> Option<DecimalKey<'_>> {
 }
 
 /// [`DECIMAL_COLLATION`]: decimal text by value.
-fn compare_decimal(a: &str, b: &str) -> Ordering {
+///
+/// The edit store's SQLite connection reuses this implementation, so it has the same semantics
+/// as the stand-in.
+pub fn compare_decimal(a: &str, b: &str) -> Ordering {
     compare_by(a, b, decimal_key)
 }
 
@@ -242,7 +244,10 @@ fn timestamp_key(s: &str) -> Option<NaiveDateTime> {
 }
 
 /// [`TIMESTAMP_COLLATION`]: timestamp text by instant.
-fn compare_timestamp(a: &str, b: &str) -> Ordering {
+///
+/// The edit store's SQLite connection reuses this implementation, so it has the same semantics
+/// as the stand-in.
+pub fn compare_timestamp(a: &str, b: &str) -> Ordering {
     compare_by(a, b, timestamp_key)
 }
 

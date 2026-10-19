@@ -44,8 +44,7 @@ sqlparser = "0.63.0"
 futures-util = { version = "0.3.34", default-features = false }
 sea-query = { version = "1.0.2", default-features = false, features = ["backend-postgres", "backend-sqlite", "with-json", "with-chrono", "postgres-array"] }
 sea-query-sqlx = { version = "0.9.1", default-features = false, features = ["sqlx-postgres", "sqlx-sqlite", "runtime-tokio", "with-json", "with-chrono", "postgres-array"] }
-# RED: no crypto backend yet (jsonwebtoken panics without one, RESEARCH Pitfall 6).
-jsonwebtoken = { version = "11.1.0", default-features = false }
+jsonwebtoken = { version = "11.1.0", default-features = false, features = ["aws_lc_rs"] }
 getrandom = "0.4.3"
 postgresql_embedded = { version = "0.21.0", default-features = false, features = ["tokio", "theseus", "tls-rustls-aws-lc-rs"] }
 
