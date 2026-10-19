@@ -234,7 +234,7 @@ async fn trino_profile_clean() {
     assert_eq!(diags.len(), 1, "{diags:#?}");
     let d = &diags[0];
     assert_eq!(d["code"], "ONT-V17");
-    assert_eq!(d["severity"], "warning");
+    assert_eq!(d["severity"], "info");
     assert_eq!(d["file"], "bindings/dev/flight.yaml");
     assert!(d["message"].as_str().unwrap().contains("fixture"));
     let offset = offset_of(FLIGHT_BINDING, "fixtures/flights.csv");
@@ -264,6 +264,26 @@ async fn trino_profile_clean() {
         !body.to_uppercase().contains("GROUP BY"),
         "no full table scan without --check-pk: {body}"
     );
+}
+
+/// WR-C03: an ignored fixture is information, not drift, so `--deny-warnings` does not fail.
+#[tokio::test(flavor = "multi_thread")]
+async fn ignored_fixture_info_passes_deny_warnings() {
+    let server = MockServer::start().await;
+    mount_rows(&server, "demo", &flight_rows()).await;
+    let dir = ontology(false);
+    let (_cfg_dir, cfg) = config_file(&trino_config(&server.uri(), ""));
+
+    let out = ontoforge(
+        online_args(dir.path(), &cfg, &["--format", "json", "--deny-warnings"]),
+        Vec::new(),
+    )
+    .await;
+    let diags = diagnostics(&out);
+    assert_eq!(out.status.code(), Some(0), "{diags:#?}");
+    assert_eq!(diags.len(), 1, "{diags:#?}");
+    assert_eq!(diags[0]["code"], "ONT-V17");
+    assert_eq!(diags[0]["severity"], "info");
 }
 
 #[tokio::test(flavor = "multi_thread")]

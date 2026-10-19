@@ -36,7 +36,7 @@ fn missing_env_panics() {
 }
 
 /// Every binding of the aviation example names a fixture that the Trino check does not use,
-/// so the only diagnostics are those ONT-V17 warnings; the exit code is 0.
+/// so the only diagnostics are those ONT-V17 infos; the exit code is 0.
 #[test]
 #[ignore = "needs ONTOFORGE_TRINO_URL (Linux CI)"]
 fn validate_online_against_ci_trino() {
@@ -79,7 +79,7 @@ fn validate_online_against_ci_trino() {
     assert_eq!(diagnostics.len(), 5, "one per binding: {diagnostics:#?}");
     for d in diagnostics {
         assert_eq!(d["code"], "ONT-V17", "{d:#?}");
-        assert_eq!(d["severity"], "warning", "{d:#?}");
+        assert_eq!(d["severity"], "info", "{d:#?}");
         let message = d["message"].as_str().unwrap_or_default();
         assert!(message.contains("fixture"), "{d:#?}");
         assert!(message.contains("is ignored"), "{d:#?}");

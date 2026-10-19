@@ -388,7 +388,7 @@ fixture: { file: fixtures/airports.csv }
     assert_eq!(v18.len(), 1, "{diags:#?}");
     assert_eq!(v18[0]["file"], "bindings/dev/airport.yaml");
     assert!(message(v18[0]).contains("FRA"), "{diags:#?}");
-    // The ONT-V17 warnings of the described bindings are kept as well.
+    // The ONT-V17 infos of the described bindings are kept as well.
     assert_eq!(with_code(&diags, "ONT-V17").len(), 2, "{diags:#?}");
 }
 
