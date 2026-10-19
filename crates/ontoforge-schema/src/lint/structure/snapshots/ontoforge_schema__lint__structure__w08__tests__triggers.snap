@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge-schema/src/lint/structure/w08.rs
+expression: found
+---
+[
+  {
+    "code": "ONT-W08",
+    "severity": "warning",
+    "message": "object types `Alpha`, `Beta`, `Gamma` share the properties `createdAt`, `ownerId`, `updatedAt`",
+    "file": "defs.yaml",
+    "line": 2,
+    "column": 10,
+    "span": {
+      "offset": 26,
+      "length": 5
+    },
+    "help": "extract an interface or a shared property for them (a v2 capability); if this is intentional, set \"ONT-W08\" = \"off\" under [lint] in ontoforge.toml"
+  }
+]

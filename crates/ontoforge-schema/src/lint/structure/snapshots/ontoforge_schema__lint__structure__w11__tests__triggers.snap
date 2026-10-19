@@ -1,0 +1,45 @@
+---
+source: crates/ontoforge-schema/src/lint/structure/w11.rs
+expression: found
+---
+[
+  {
+    "code": "ONT-W11",
+    "severity": "warning",
+    "message": "link name `relatedFlights` is generic",
+    "file": "defs.yaml",
+    "line": 19,
+    "column": 10,
+    "span": {
+      "offset": 377,
+      "length": 14
+    },
+    "help": "name the relationship by what it means, for example `departingFlights`; if this is intentional, set \"ONT-W11\" = \"off\" under [lint] in ontoforge.toml"
+  },
+  {
+    "code": "ONT-W11",
+    "severity": "warning",
+    "message": "link name `link1` is generic",
+    "file": "defs.yaml",
+    "line": 27,
+    "column": 39,
+    "span": {
+      "offset": 634,
+      "length": 5
+    },
+    "help": "name the relationship by what it means, for example `departingFlights`; if this is intentional, set \"ONT-W11\" = \"off\" under [lint] in ontoforge.toml"
+  },
+  {
+    "code": "ONT-W11",
+    "severity": "warning",
+    "message": "link name `relatedAirport` is generic",
+    "file": "defs.yaml",
+    "line": 34,
+    "column": 36,
+    "span": {
+      "offset": 859,
+      "length": 14
+    },
+    "help": "name the relationship by what it means, for example `departingFlights`; if this is intentional, set \"ONT-W11\" = \"off\" under [lint] in ontoforge.toml"
+  }
+]

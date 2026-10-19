@@ -1,0 +1,37 @@
+[package]
+name = "ontoforge-engine"
+description = "Query engine abstraction: Trino client, SQL printer and SQLite stand-in"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+ontoforge-schema = { path = "../ontoforge-schema" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+camino.workspace = true
+toml.workspace = true
+chrono.workspace = true
+indexmap.workspace = true
+reqwest.workspace = true
+tokio.workspace = true
+sqlx.workspace = true
+secrecy.workspace = true
+csv.workspace = true
+chrono-tz.workspace = true
+futures-util.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+wiremock.workspace = true
+proptest.workspace = true
+sqlparser.workspace = true
+insta.workspace = true
+tempfile.workspace = true
+walkdir.workspace = true
+regex.workspace = true

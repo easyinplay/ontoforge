@@ -1,0 +1,2 @@
+apiName: v09RuleCase
+description: Fixture for ONT-V09, a modifyObject rule assigns a property the object type does not have.

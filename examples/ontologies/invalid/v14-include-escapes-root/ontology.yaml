@@ -1,0 +1,3 @@
+apiName: v14Case
+description: Fixture for ONT-V14, the include pattern climbs out of the ontology root.
+include: ["../**/*.yaml"]

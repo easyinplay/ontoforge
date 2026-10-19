@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V06",
+    "severity": "error",
+    "message": "unknown value `strng`",
+    "file": "objects.yaml",
+    "line": 5,
+    "column": 17,
+    "span": {
+      "offset": 79,
+      "length": 5
+    },
+    "help": "did you mean `string`?"
+  }
+]

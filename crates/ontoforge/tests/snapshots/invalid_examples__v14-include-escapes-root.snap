@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V14",
+    "severity": "error",
+    "message": "include pattern `../**/*.yaml` escapes the ontology root",
+    "file": "ontology.yaml",
+    "line": 3,
+    "column": 11,
+    "span": {
+      "offset": 114,
+      "length": 14
+    },
+    "help": "use a path relative to the ontology directory, without `..`"
+  }
+]

@@ -1,0 +1,45 @@
+---
+source: crates/ontoforge-schema/src/lint/e09.rs
+expression: found
+---
+[
+  {
+    "code": "ONT-E09",
+    "severity": "warning",
+    "message": "primary key `at` is a timestamp, which is discouraged",
+    "file": "objects.yaml",
+    "line": 3,
+    "column": 13,
+    "span": {
+      "offset": 44,
+      "length": 2
+    },
+    "help": "prefer string, integer or short for a primary key"
+  },
+  {
+    "code": "ONT-E09",
+    "severity": "warning",
+    "message": "primary key `n` is a long, which is discouraged",
+    "file": "objects.yaml",
+    "line": 10,
+    "column": 13,
+    "span": {
+      "offset": 169,
+      "length": 1
+    },
+    "help": "prefer string, integer or short for a primary key"
+  },
+  {
+    "code": "ONT-E09",
+    "severity": "error",
+    "message": "array property `cells` has array items; nested arrays are not supported",
+    "file": "objects.yaml",
+    "line": 20,
+    "column": 32,
+    "span": {
+      "offset": 369,
+      "length": 5
+    },
+    "help": "use a scalar element type, or model the inner list as its own object type"
+  }
+]

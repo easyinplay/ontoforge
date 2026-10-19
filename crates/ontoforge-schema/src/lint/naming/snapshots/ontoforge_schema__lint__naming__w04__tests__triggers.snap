@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge-schema/src/lint/naming/w04.rs
+expression: found
+---
+[
+  {
+    "code": "ONT-W04",
+    "severity": "warning",
+    "message": "`createdDate` uses the xxxDate / xxxAt / xxxTime style, but most date properties here use the dateOfXxx style (such as `dateOfBirth`)",
+    "file": "objects.yaml",
+    "line": 6,
+    "column": 3,
+    "span": {
+      "offset": 100,
+      "length": 11
+    },
+    "help": "rename it to follow the dateOfXxx style so dates are named one way; if the name is intentional, set \"ONT-W04\" = \"off\" under [lint] in ontoforge.toml"
+  }
+]

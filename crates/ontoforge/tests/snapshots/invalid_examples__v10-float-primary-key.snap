@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V10",
+    "severity": "error",
+    "message": "primary key property `code` has type `double`, which cannot identify an object",
+    "file": "objects.yaml",
+    "line": 3,
+    "column": 13,
+    "span": {
+      "offset": 46,
+      "length": 4
+    },
+    "help": "use a `string`, `integer` or `short` property as the primary key"
+  }
+]

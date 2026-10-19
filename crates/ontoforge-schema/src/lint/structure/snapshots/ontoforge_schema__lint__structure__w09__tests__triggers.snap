@@ -1,0 +1,32 @@
+---
+source: crates/ontoforge-schema/src/lint/structure/w09.rs
+expression: found
+---
+[
+  {
+    "code": "ONT-W09",
+    "severity": "warning",
+    "message": "11 actions change object type `Flight`, more than the limit of 10",
+    "file": "defs.yaml",
+    "line": 2,
+    "column": 10,
+    "span": {
+      "offset": 26,
+      "length": 6
+    },
+    "help": "merge actions that differ only in the property they set, or split the object type; if this is intentional, set \"ONT-W09\" = \"off\" under [lint] in ontoforge.toml"
+  },
+  {
+    "code": "ONT-W09",
+    "severity": "warning",
+    "message": "action `setStatus` only sets one property of one object",
+    "file": "defs.yaml",
+    "line": 151,
+    "column": 10,
+    "span": {
+      "offset": 3284,
+      "length": 9
+    },
+    "help": "an action should express a business intent (`closeAccount`, not `setStatus`); if this is intentional, set \"ONT-W09\" = \"off\" under [lint] in ontoforge.toml"
+  }
+]

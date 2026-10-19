@@ -1,0 +1,5 @@
+---
+source: crates/ontoforge-engine/tests/pk_check.rs
+expression: queries.nulls.as_str()
+---
+SELECT count(*) AS "n" FROM "demo"."aviation"."flights" WHERE "flight_id" IS NULL

@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V16",
+    "severity": "error",
+    "message": "a SourceBinding document must be placed under `bindings/<profile>/`",
+    "file": "flight-binding.yaml",
+    "line": 1,
+    "column": 7,
+    "span": {
+      "offset": 6,
+      "length": 13
+    },
+    "help": "move this file to `bindings/<profile>/`, for example `bindings/dev/`"
+  }
+]

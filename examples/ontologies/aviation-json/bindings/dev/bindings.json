@@ -1,0 +1,62 @@
+[
+  {
+    "kind": "SourceBinding",
+    "target": { "objectType": "Aircraft" },
+    "source": { "catalog": "demo", "schema": "aviation", "table": "aircraft" },
+    "columns": {
+      "tailNumber": { "column": "tail_number" },
+      "seatCapacity": { "column": "seat_capacity" },
+      "inServiceSince": { "column": "in_service_since" }
+    },
+    "fixture": { "file": "fixtures/aircraft.csv" }
+  },
+  {
+    "kind": "SourceBinding",
+    "target": { "objectType": "Flight" },
+    "source": { "catalog": "demo", "schema": "aviation", "table": "flights" },
+    "columns": {
+      "flightId": { "column": "flight_id" },
+      "flightNumber": { "column": "flight_no" },
+      "departureAirportCode": { "column": "departure_airport" },
+      "arrivalAirportCode": { "column": "arrival_airport" },
+      "aircraftTailNumber": { "column": "tail_number" },
+      "scheduledDeparture": { "column": "scheduled_departure", "timezone": "Europe/Berlin" },
+      "status": { "collation": "caseInsensitive" },
+      "delayMinutes": { "column": "delay_minutes" }
+    },
+    "fixture": { "file": "fixtures/flights.csv" }
+  },
+  {
+    "kind": "SourceBinding",
+    "target": { "objectType": "Pilot" },
+    "source": { "catalog": "demo", "schema": "aviation", "table": "pilots" },
+    "columns": {
+      "employeeId": { "column": "employee_id" },
+      "fullName": { "column": "full_name" },
+      "flightHours": { "column": "flight_hours" }
+    },
+    "fixture": { "file": "fixtures/pilots.csv" }
+  },
+  {
+    "kind": "SourceBinding",
+    "target": { "objectType": "MaintenanceRecord" },
+    "source": { "catalog": "demo", "schema": "aviation", "table": "maintenance_records" },
+    "columns": {
+      "recordId": { "column": "record_id" },
+      "aircraftTailNumber": { "column": "tail_number" },
+      "performedAt": { "column": "performed_at", "timezone": "aware" },
+      "performedBy": { "column": "performed_by" }
+    },
+    "fixture": { "file": "fixtures/maintenance_records.csv" }
+  },
+  {
+    "kind": "SourceBinding",
+    "target": { "linkType": "flightCrew" },
+    "source": { "catalog": "demo", "schema": "aviation", "table": "flight_crew" },
+    "columns": {
+      "from": { "column": "flight_id" },
+      "to": { "column": "pilot_id" }
+    },
+    "fixture": { "file": "fixtures/flight_crew.csv" }
+  }
+]

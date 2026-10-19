@@ -12,20 +12,20 @@ ontoforge 是一个用 Rust 实现、可自托管的开源 Ontology 操作层，
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ ontology-as-code：YAML/JSON → 单一 IR，line:col 诊断，导出 JSON Schema 供编辑器补全 — Phase 1
+- ✓ lint 引擎：E 级规则 + W01–W11，human / JSON 双格式，`ontoforge.toml` 配置 — Phase 1
 
 ### Active
 
-- [ ] ontology-as-code：YAML/JSON 定义 object type（primary key、title key、description、aliases、hidden）、属性 base types 子集、link type（1:1、1:N 外键、M:N join）、action type；解析到单一 IR，报错带 line:col
-- [ ] lint 引擎：`foundry-docs-spec.md` §4 的 E 级规则 + W01–W11，CLI 输出人类可读与 JSON 两种格式
-- [ ] object set 查询：filter（WhereClause 运算符）、全文搜索、排序、游标分页、`searchAround` 遍历、union / intersect / subtract、聚合（count / sum / avg / min / max / distinct，groupBy）
-- [ ] Action 执行：参数校验、rules（create / modify / delete 对象，add / remove link）、CEL submission criteria、validate-only、batch all-or-nothing、标准化 edits 响应
-- [ ] 不可变 edit log + 对象历史；对象只能经 Action（或受审计的批量导入）写入
-- [ ] 批量导入：CLI 从 JSON / CSV 导入初始对象，作为系统 edit 写入 edit log
-- [ ] REST API（OpenAPI 3.1 导出）+ Rust client + TS 平台层 client（由 OpenAPI 生成）
-- [ ] MCP server（stdio + streamable HTTP）：describe ontology、object set 查询工具、每个 action 一个工具（支持 validate-only 作为 dry run）
-- [ ] 认证（OIDC JWT + dev token）与授权（ontology / object type / action type 级 RBAC，fail-closed）
-- [ ] 存储双后端：PostgreSQL（生产）与 SQLite（dev / test），同一套 conformance 测试；单二进制 dev 模式
+- [ ] 数据源绑定与 Trino 连接（ontoforge 只带连接能力，不打包 Trino）— ADR-0015、ADR-0017
+- [ ] edit store 按 object type 强类型分表、按属性 patch，不可变 edit log — ADR-0016
+- [ ] 用户 / 组 / 角色与 scope 模型（行列级安全提前进 v1）、Action 鉴权管线 — ADR-0018
+- [ ] scoped L0 读：Rust 编排叠加，Trino 只跑单表查询 — ADR-0020
+- [ ] online Action：并发令牌、`command_id`、webhook outbox
+- [ ] L2 Raw DQL（AST 白名单 + Trino 侧权限自检）与全级别读审计
+- [ ] REST（OpenAPI 3.1 + Rust / TS client）与 MCP（toolset 分层）两个出口；`serve --dev` 单二进制演示 — ADR-0019
+
+需求编号与 phase 映射见 `.planning/REQUIREMENTS.md`；方向依据 `docs/designs/trino-engine-sql-tiers.md`。
 
 ### Out of Scope
 
@@ -61,12 +61,13 @@ v2 候选（不在当前 milestone）：interfaces 与 shared properties、struc
 |----------|-----------|---------|
 | 品牌名 ontoforge（ADR-0001） | 规避 Palantir "Foundry" 商标风险 | — Pending |
 | 应用 + Agent 双出口定位 | 同一核心同时服务业务系统与 AI agent，MCP 是 REST 之上的薄封装 | — Pending |
-| YAML/JSON → 单一 IR（ADR-0003） | LLM 友好、diff 友好、line:col 诊断 | — Pending |
-| Postgres 生产 + SQLite dev/test（ADR-0004） | 单二进制开发体验 + 生产可靠性，conformance 测试保证一致 | — Pending |
+| YAML/JSON → 单一 IR（ADR-0003） | LLM 友好、diff 友好、line:col 诊断 | ✓ Good — Phase 1 交付，多文档 YAML 需项目级 yaml.schemas（G-1-2） |
+| Postgres 生产 + SQLite dev/test（ADR-0004） | 单二进制开发体验 + 生产可靠性，conformance 测试保证一致 | ⚠️ Revisited — 被 ADR-0016 取代：业务数据经 Trino，PG 只存系统数据与 edit store |
 | 写入只经 Action + 不可变 edit log（ADR-0004） | 审计与后续 scenario / branch 的基础 | — Pending |
 | CEL 做表达式（ADR-0006） | 非图灵完备、可静态检查、进程内求值 | — Pending |
-| 自研 RBAC，fail-closed（ADR-0008） | 单二进制，不依赖外部授权服务 | — Pending |
+| 自研 RBAC，fail-closed（ADR-0008） | 单二进制，不依赖外部授权服务 | ⚠️ Revisited — AuthZ 被 ADR-0018（scope 模型）取代 |
 | Functions 延后到 v2（ADR-0010） | MVP 只定 trait，控制范围 | — Pending |
+| Trino 主引擎 + 分级 SQL（L0 / L2），ontoforge 只带连接能力 | 复用企业湖仓与联邦查询；可验证的 agent 权限边界 | — Pending（ADR-0015..0020，ROADMAP Phase 2–7 已重排） |
 
 决策全文见 `.planning/adr/`。
 
@@ -88,4 +89,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-10-15 after initialization*
+*Last updated: 2026-10-16 after Phase 1*

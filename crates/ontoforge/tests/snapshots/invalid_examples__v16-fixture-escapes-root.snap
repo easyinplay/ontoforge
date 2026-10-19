@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V16",
+    "severity": "error",
+    "message": "fixture file `../../../flights.csv` cannot be used: the fixture path leaves the ontology directory",
+    "file": "bindings/dev/flight.yaml",
+    "line": 4,
+    "column": 18,
+    "span": {
+      "offset": 128,
+      "length": 20
+    },
+    "help": null
+  }
+]

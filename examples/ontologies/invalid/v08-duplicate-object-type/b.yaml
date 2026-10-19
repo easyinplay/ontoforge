@@ -1,0 +1,6 @@
+kind: ObjectType
+apiName: Airport
+primaryKey: icao
+properties:
+  icao: { type: string, required: true }
+backing: editOnly

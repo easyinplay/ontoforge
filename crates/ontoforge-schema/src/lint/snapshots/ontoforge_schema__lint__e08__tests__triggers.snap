@@ -1,0 +1,71 @@
+---
+source: crates/ontoforge-schema/src/lint/e08.rs
+expression: found
+---
+[
+  {
+    "code": "ONT-E08",
+    "severity": "error",
+    "message": "addLink only works on manyToMany links, but `departures` is oneToMany",
+    "file": "actions.yaml",
+    "line": 7,
+    "column": 28,
+    "span": {
+      "offset": 215,
+      "length": 10
+    },
+    "help": "use modifyObject on `Flight` to set `originCode` instead"
+  },
+  {
+    "code": "ONT-E08",
+    "severity": "error",
+    "message": "removeLink only works on manyToMany links, but `pilotBadge` is oneToOne",
+    "file": "actions.yaml",
+    "line": 15,
+    "column": 31,
+    "span": {
+      "offset": 468,
+      "length": 10
+    },
+    "help": "use modifyObject on `Badge` to set `pilotId` instead"
+  },
+  {
+    "code": "ONT-E08",
+    "severity": "error",
+    "message": "`flight` is modified here but rules[0] already deletes it",
+    "file": "actions.yaml",
+    "line": 24,
+    "column": 13,
+    "span": {
+      "offset": 713,
+      "length": 6
+    },
+    "help": null
+  },
+  {
+    "code": "ONT-E08",
+    "severity": "error",
+    "message": "`flight` is deleted here but rules[0] already deletes it",
+    "file": "actions.yaml",
+    "line": 34,
+    "column": 35,
+    "span": {
+      "offset": 972,
+      "length": 6
+    },
+    "help": null
+  },
+  {
+    "code": "ONT-E08",
+    "severity": "error",
+    "message": "rules[0] already creates a `Flight` with the same primary key; the object would be created twice",
+    "file": "actions.yaml",
+    "line": 46,
+    "column": 17,
+    "span": {
+      "offset": 1212,
+      "length": 6
+    },
+    "help": null
+  }
+]

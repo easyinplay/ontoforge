@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V03",
+    "severity": "error",
+    "message": "function-backed rules are not supported in v1",
+    "file": "defs.yaml",
+    "line": 15,
+    "column": 11,
+    "span": {
+      "offset": 325,
+      "length": 8
+    },
+    "help": "use one of: `createObject`, `modifyObject`, `deleteObject`, `addLink`, `removeLink`"
+  }
+]

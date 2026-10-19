@@ -1,0 +1,71 @@
+---
+source: crates/ontoforge-schema/src/lint/binding/e13.rs
+expression: found
+---
+[
+  {
+    "code": "ONT-E13",
+    "severity": "error",
+    "message": "decimal property `tooWide` has precision 39, which is outside 1 to 38",
+    "file": "objects.yaml",
+    "line": 6,
+    "column": 40,
+    "span": {
+      "offset": 137,
+      "length": 2
+    },
+    "help": "write a `precision` between 1 and 38"
+  },
+  {
+    "code": "ONT-E13",
+    "severity": "error",
+    "message": "decimal property `zero` has precision 0, which is outside 1 to 38",
+    "file": "objects.yaml",
+    "line": 7,
+    "column": 37,
+    "span": {
+      "offset": 178,
+      "length": 1
+    },
+    "help": "write a `precision` between 1 and 38"
+  },
+  {
+    "code": "ONT-E13",
+    "severity": "error",
+    "message": "decimal property `scaleAbove` has scale 13, which is greater than its precision 12",
+    "file": "objects.yaml",
+    "line": 8,
+    "column": 54,
+    "span": {
+      "offset": 235,
+      "length": 2
+    },
+    "help": "write a `scale` between 0 and 12"
+  },
+  {
+    "code": "ONT-E13",
+    "severity": "error",
+    "message": "decimal property `defaultScale` has precision 5, which is smaller than the default scale 10",
+    "file": "objects.yaml",
+    "line": 9,
+    "column": 45,
+    "span": {
+      "offset": 284,
+      "length": 1
+    },
+    "help": "the default scale is 10; declare `scale` explicitly"
+  },
+  {
+    "code": "ONT-E13",
+    "severity": "error",
+    "message": "decimal property `list` has precision 40, which is outside 1 to 38",
+    "file": "objects.yaml",
+    "line": 10,
+    "column": 51,
+    "span": {
+      "offset": 338,
+      "length": 2
+    },
+    "help": "write a `precision` between 1 and 38"
+  }
+]

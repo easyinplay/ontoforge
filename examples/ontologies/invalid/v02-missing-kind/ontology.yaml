@@ -1,0 +1,2 @@
+apiName: v02MissingKind
+description: Fixture for ONT-V02, the document in objects.yaml has no kind.

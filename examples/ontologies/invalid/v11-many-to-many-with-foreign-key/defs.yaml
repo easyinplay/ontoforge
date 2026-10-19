@@ -1,0 +1,20 @@
+kind: ObjectType
+apiName: Flight
+primaryKey: flightId
+properties:
+  flightId: { type: string, required: true }
+backing: editOnly
+---
+kind: ObjectType
+apiName: Pilot
+primaryKey: employeeId
+properties:
+  employeeId: { type: string, required: true }
+backing: editOnly
+---
+kind: LinkType
+apiName: flightCrew
+cardinality: manyToMany
+from: { objectType: Flight, apiName: crew }
+to: { objectType: Pilot, apiName: assignedFlights, foreignKey: employeeId }
+backing: editOnly

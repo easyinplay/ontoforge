@@ -6,43 +6,43 @@
     {
       "number": "1",
       "name": "Workspace, Schema & Lint",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "number": "2",
-      "name": "Storage & Edit Log",
-      "status": "pending"
+      "name": "Source Binding & Engine",
+      "status": "in_progress"
     },
     {
       "number": "3",
-      "name": "Action Execution",
+      "name": "Edit Store & Scope Model",
       "status": "pending"
     },
     {
       "number": "4",
-      "name": "Object Set Query",
+      "name": "Scoped L0 Read",
       "status": "pending"
     },
     {
       "number": "5",
-      "name": "Auth & RBAC",
+      "name": "Online Action",
       "status": "pending"
     },
     {
       "number": "6",
-      "name": "REST API & Clients",
+      "name": "L2 Raw DQL, Toolsets & Audit",
       "status": "pending"
     },
     {
       "number": "7",
-      "name": "MCP Server",
+      "name": "REST & MCP Shell",
       "status": "pending"
     }
   ],
   "next": {
     "command": "/gsd:progress --next",
-    "label": "Advance to the next step",
-    "reason": "Phase 1 of 7 · 0% · executing"
+    "label": "Advance to the next step (verify)",
+    "reason": "Phase 2 of 7 · 0% · ready to verify"
   },
-  "updated_at": "2026-10-15T13:53:17.938Z"
+  "updated_at": "2026-10-17T01:08:25.613Z"
 }

@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V12",
+    "severity": "error",
+    "message": "`currentTime` can only be assigned to a timestamp property, but `status` is `string`",
+    "file": "defs.yaml",
+    "line": 18,
+    "column": 30,
+    "span": {
+      "offset": 402,
+      "length": 1
+    },
+    "help": null
+  }
+]

@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../../../../schemas/ontoforge-definition.schema.json
+# Binds the Flight object type to the table demo.aviation.flights. Properties that are
+# not listed under `columns` are read from the column with the same name (here: tags).
+kind: SourceBinding
+target: { objectType: Flight }
+source: { catalog: demo, schema: aviation, table: flights }
+columns:
+  flightId: { column: flight_id }
+  flightNumber: { column: flight_no }
+  departureAirportCode: { column: departure_airport }
+  arrivalAirportCode: { column: arrival_airport }
+  aircraftTailNumber: { column: tail_number }
+  # The column has no time zone, so the wall-clock values are read in this zone.
+  scheduledDeparture: { column: scheduled_departure, timezone: Europe/Berlin }
+  # Same column name, but comparisons ignore case.
+  status: { collation: caseInsensitive }
+  delayMinutes: { column: delay_minutes }
+fixture: { file: fixtures/flights.csv }

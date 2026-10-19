@@ -1,0 +1,2 @@
+apiName: v12ModifyKeyCase
+description: Fixture for ONT-V12, a modifyObject rule assigns the primary key.

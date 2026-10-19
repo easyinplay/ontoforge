@@ -1,0 +1,7 @@
+kind: ObjectType
+apiName: Invoice
+primaryKey: invoiceId
+properties:
+  invoiceId: { type: string, required: true }
+  reference: { type: string, precision: 10 }
+backing: editOnly

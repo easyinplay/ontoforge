@@ -1,0 +1,8 @@
+# D-09: the Trino client may add root certificates (`ca_file`) but must never skip
+# certificate or host name verification.
+disallowed-methods = [
+    { path = "reqwest::ClientBuilder::danger_accept_invalid_certs", reason = "D-09: certificate verification cannot be disabled; configure ca_file instead" },
+    { path = "reqwest::ClientBuilder::danger_accept_invalid_hostnames", reason = "D-09: certificate verification cannot be disabled; configure ca_file instead" },
+    { path = "reqwest::ClientBuilder::tls_danger_accept_invalid_certs", reason = "D-09: certificate verification cannot be disabled; configure ca_file instead" },
+    { path = "reqwest::ClientBuilder::tls_danger_accept_invalid_hostnames", reason = "D-09: certificate verification cannot be disabled; configure ca_file instead" },
+]

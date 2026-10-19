@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=../../../../../schemas/ontoforge-definition.schema.json
+# `summary` and `cost` are read from the columns with the same name.
+kind: SourceBinding
+target: { objectType: MaintenanceRecord }
+source: { catalog: demo, schema: aviation, table: maintenance_records }
+columns:
+  recordId: { column: record_id }
+  aircraftTailNumber: { column: tail_number }
+  # The column is a timestamp with time zone, so no zone is applied on top.
+  performedAt: { column: performed_at, timezone: aware }
+  performedBy: { column: performed_by }
+fixture: { file: fixtures/maintenance_records.csv }

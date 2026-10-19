@@ -1,0 +1,16 @@
+[package]
+name = "ontoforge-server"
+description = "axum REST and rmcp MCP server"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+ontoforge-action = { path = "../ontoforge-action" }
+ontoforge-auth = { path = "../ontoforge-auth" }
+ontoforge-api = { path = "../ontoforge-api" }
+ontoforge-query = { path = "../ontoforge-query" }

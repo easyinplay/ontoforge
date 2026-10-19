@@ -1,0 +1,45 @@
+---
+source: crates/ontoforge-schema/src/lint/binding/w17.rs
+expression: found
+---
+[
+  {
+    "code": "ONT-W17",
+    "severity": "warning",
+    "message": "fixture `fixtures/crew.csv` has no column `pilot_id` for `to`",
+    "file": "bindings/dev/flight-crew.yaml",
+    "line": 6,
+    "column": 17,
+    "span": {
+      "offset": 162,
+      "length": 8
+    },
+    "help": "add the column to the fixture, or map the property with `columns.<key>.column`"
+  },
+  {
+    "code": "ONT-W17",
+    "severity": "warning",
+    "message": "fixture `fixtures/flights.csv` has no column `flight_no` for `flightNumber`",
+    "file": "bindings/dev/flight.yaml",
+    "line": 5,
+    "column": 27,
+    "span": {
+      "offset": 140,
+      "length": 9
+    },
+    "help": "add the column to the fixture, or map the property with `columns.<key>.column`"
+  },
+  {
+    "code": "ONT-W17",
+    "severity": "warning",
+    "message": "fixture `fixtures/flights.csv` has no column `status` for `status`",
+    "file": "bindings/dev/flight.yaml",
+    "line": 6,
+    "column": 18,
+    "span": {
+      "offset": 169,
+      "length": 20
+    },
+    "help": "add the column to the fixture, or map the property with `columns.<key>.column`"
+  }
+]

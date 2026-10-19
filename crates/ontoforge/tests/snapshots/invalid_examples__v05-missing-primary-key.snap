@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V05",
+    "severity": "error",
+    "message": "missing required field `primaryKey`",
+    "file": "objects.yaml",
+    "line": 1,
+    "column": 7,
+    "span": {
+      "offset": 6,
+      "length": 10
+    },
+    "help": null
+  }
+]

@@ -1,0 +1,320 @@
+//! Static checks of submission criteria: references (Task 1) and types (Task 2).
+
+use ontoforge_expr::check_ontology;
+use ontoforge_schema::diag::{Diagnostic, Severity, codes};
+use ontoforge_schema::load_from_memory;
+
+const MANIFEST: &str = "apiName: demo\n";
+
+const OBJECTS: &str = "kind: ObjectType
+apiName: Flight
+primaryKey: flightId
+properties:
+  flightId: { type: string, required: true }
+  status: { type: string }
+  delayMinutes: { type: integer }
+  departure: { type: timestamp }
+  flightDate: { type: date }
+  fare: { type: decimal }
+  position: { type: geopoint }
+backing: editOnly
+";
+
+/// Header of the single action; the criterion line is appended by `check`.
+const ACTION_HEAD: &str = "kind: ActionType
+apiName: delayFlight
+parameters:
+  flight: { type: { objectReference: Flight }, required: true }
+  delayMinutes: { type: integer, required: true }
+  tags: { type: array, items: string }
+rules:
+  - kind: modifyObject
+    object: flight
+    properties:
+      status: { static: DELAYED }
+submissionCriteria:
+";
+
+fn actions_for(condition: &str) -> String {
+    let quoted = condition.replace('\\', "\\\\").replace('"', "\\\"");
+    format!("{ACTION_HEAD}  - condition: \"{quoted}\"\n    failureMessage: nope\n")
+}
+
+fn run(condition: &str) -> Vec<Diagnostic> {
+    let actions = actions_for(condition);
+    let out = load_from_memory(&[
+        ("ontology.yaml", MANIFEST),
+        ("objects.yaml", OBJECTS),
+        ("actions.yaml", &actions),
+    ]);
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+    let ontology = out.ontology.expect("ontology");
+    check_ontology(&ontology, &out.sources)
+}
+
+fn only(condition: &str) -> Diagnostic {
+    let mut diags = run(condition);
+    assert_eq!(diags.len(), 1, "{condition}: {diags:#?}");
+    diags.remove(0)
+}
+
+fn assert_clean(condition: &str) {
+    let diags = run(condition);
+    assert!(diags.is_empty(), "{condition}: {diags:#?}");
+}
+
+#[test]
+fn aviation_criteria_pass() {
+    let dir = concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../examples/ontologies/aviation"
+    );
+    let texts: Vec<(String, String)> = [
+        "ontology.yaml",
+        "objects.yaml",
+        "links.yaml",
+        "actions.yaml",
+    ]
+    .iter()
+    .map(|n| {
+        let text = std::fs::read_to_string(format!("{dir}/{n}")).expect("aviation file");
+        ((*n).to_owned(), text)
+    })
+    .collect();
+    let files: Vec<(&str, &str)> = texts
+        .iter()
+        .map(|(n, t)| (n.as_str(), t.as_str()))
+        .collect();
+    let out = load_from_memory(&files);
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+    let ontology = out.ontology.expect("ontology");
+    let diags = check_ontology(&ontology, &out.sources);
+    assert!(diags.is_empty(), "{diags:#?}");
+}
+
+#[test]
+fn analyzer_errors_become_v13() {
+    let too_long = only(&"a".repeat(5000));
+    assert_eq!(too_long.code, codes::V13);
+    assert!(too_long.message.contains("4096"), "{}", too_long.message);
+
+    let too_deep = only(&format!("{}1{}", "(".repeat(40), ")".repeat(40)));
+    assert_eq!(too_deep.code, codes::V13);
+    assert!(too_deep.message.contains("nesting"), "{}", too_deep.message);
+
+    let syntax = only("params.delayMinutes +");
+    assert_eq!(syntax.code, codes::V13);
+    assert_eq!(syntax.severity, Severity::Error);
+    assert!(
+        syntax.message.contains("(at 1:22 in expression)"),
+        "{}",
+        syntax.message
+    );
+}
+
+#[test]
+fn unknown_root_variable() {
+    let d = only("foo.bar == 1");
+    assert_eq!(d.code, codes::V13);
+    assert!(d.message.contains("`foo`"), "{}", d.message);
+    assert!(
+        d.message.contains("(at 1:1 in expression)"),
+        "{}",
+        d.message
+    );
+    let help = d.help.expect("help");
+    assert!(
+        help.contains("params") && help.contains("user") && help.contains("objects"),
+        "{help}"
+    );
+}
+
+#[test]
+fn unknown_parameter_suggests() {
+    let d = only("params.delayMinute > 0");
+    assert_eq!(d.code, codes::V13);
+    assert!(d.message.contains("`delayMinute`"), "{}", d.message);
+    assert!(d.help.expect("help").contains("delayMinutes"));
+}
+
+#[test]
+fn objects_requires_object_reference_param() {
+    let d = only("objects.delayMinutes.x == 1");
+    assert_eq!(d.code, codes::V13);
+    assert!(d.message.contains("objectReference"), "{}", d.message);
+    assert!(d.help.expect("help").contains("flight"));
+}
+
+#[test]
+fn unknown_object_property_suggests() {
+    let d = only("objects.flight.statu == 'X'");
+    assert_eq!(d.code, codes::V13);
+    assert!(d.message.contains("`statu`"), "{}", d.message);
+    assert!(d.help.expect("help").contains("status"));
+}
+
+#[test]
+fn user_fields_are_id_and_groups() {
+    let d = only("user.email != ''");
+    assert_eq!(d.code, codes::V13);
+    assert!(d.message.contains("`email`"), "{}", d.message);
+    assert_clean("user.id != ''");
+    assert_clean("'ops' in user.groups");
+}
+
+#[test]
+fn comprehension_variable_is_not_reported() {
+    assert_clean("params.tags.all(t, t != '')");
+}
+
+#[test]
+fn same_path_reported_once() {
+    let diags = run("params.nope > 0 && params.nope < 9");
+    assert_eq!(diags.len(), 1, "{diags:#?}");
+}
+
+#[test]
+fn diagnostic_points_at_condition_value() {
+    let actions = actions_for("params.delayMinute > 0");
+    let out = load_from_memory(&[
+        ("ontology.yaml", MANIFEST),
+        ("objects.yaml", OBJECTS),
+        ("actions.yaml", &actions),
+    ]);
+    let ontology = out.ontology.expect("ontology");
+    let diags = check_ontology(&ontology, &out.sources);
+    assert_eq!(diags.len(), 1, "{diags:#?}");
+    let d = &diags[0];
+    let line_idx = actions
+        .lines()
+        .position(|l| l.contains("condition:"))
+        .expect("condition line");
+    let col = actions.lines().nth(line_idx).unwrap().find('"').unwrap() + 1;
+    assert_eq!(d.file, "actions.yaml");
+    assert_eq!(d.line as usize, line_idx + 1);
+    assert_eq!(d.column as usize, col);
+    let covered = &actions[d.span.offset..d.span.offset + d.span.length];
+    assert!(covered.contains("params.delayMinute > 0"), "{covered}");
+    assert!(
+        d.message.contains("(at 1:1 in expression)"),
+        "{}",
+        d.message
+    );
+}
+
+#[test]
+fn non_bool_condition() {
+    let d = only("params.delayMinutes + 1");
+    assert_eq!(d.code, codes::V13);
+    assert!(
+        d.message.contains("must evaluate to bool, found int"),
+        "{}",
+        d.message
+    );
+}
+
+#[test]
+fn comparison_type_mismatch() {
+    let d = only("params.delayMinutes == 'ten'");
+    assert_eq!(d.code, codes::V13);
+    assert!(
+        d.message.contains("int") && d.message.contains("string"),
+        "{}",
+        d.message
+    );
+    assert!(d.message.contains("in expression)"), "{}", d.message);
+    assert_clean("params.delayMinutes > 1.5");
+    assert_clean("objects.flight.delayMinutes >= params.delayMinutes");
+    let d = only("objects.flight.status == 5");
+    assert_eq!(d.code, codes::V13);
+}
+
+#[test]
+fn unknown_types_are_any() {
+    assert_clean("objects.flight.departure == 'x'");
+    assert_clean("objects.flight.flightDate > 3");
+    assert_clean("objects.flight.fare > 1");
+    assert_clean("objects.flight.position == 1");
+    assert_clean("params.flight == 'x'");
+    assert_clean("someFunction(params.delayMinutes) == 'x'");
+    assert_clean("params.delayMinutes.someMethod() == 'x'");
+}
+
+#[test]
+fn comprehension_result_types() {
+    assert_clean("params.tags.all(t, t != '')");
+    assert_clean("params.tags.exists(t, t == 'a') && params.tags.exists_one(t, t == 'b')");
+    let d = only("params.tags.map(t, t)");
+    assert!(d.message.contains("found list"), "{}", d.message);
+    let d = only("params.tags.all(t, t == 1)");
+    assert_eq!(d.code, codes::V13);
+}
+
+#[test]
+fn unknown_reference_is_any() {
+    let d = only("params.nope == 'x'");
+    assert!(d.message.contains("unknown parameter"), "{}", d.message);
+}
+
+#[test]
+fn builtin_functions_have_known_result_types() {
+    assert_clean("size(params.tags) > 0 && 'ops'.startsWith('o') && has(params.delayMinutes)");
+    assert_clean("params.delayMinutes > 0 ? true : false");
+    let d = only("size(params.tags)");
+    assert!(d.message.contains("found int"), "{}", d.message);
+}
+
+/// WR-01: `cel` evaluates arithmetic only on operands of the same numeric type.
+#[test]
+fn mixed_int_and_double_arithmetic_is_an_error() {
+    assert_clean("params.delayMinutes * 2 > 1 && 1.5 * 2.0 > 1.0 && params.delayMinutes > 1.5");
+    let d = only("params.delayMinutes * 1.5 > 2.0");
+    assert_eq!(d.code, codes::V13);
+    assert!(
+        d.message.contains("cannot apply * to int and double"),
+        "{}",
+        d.message
+    );
+    let d = only("1.0 - params.delayMinutes < 0.0");
+    assert!(
+        d.message.contains("cannot apply - to double and int"),
+        "{}",
+        d.message
+    );
+}
+
+/// WR-02: a string-literal index is checked like a field selection.
+#[test]
+fn literal_index_is_checked_like_a_field() {
+    assert_clean("params['delayMinutes'] > 0 && objects['flight'].status == 'x'");
+    assert_clean("params.tags[0] == 'a' && objects.flight['status'] == 'x'");
+    let d = only("params['typo'] > 0");
+    assert_eq!(d.code, codes::V13);
+    assert!(
+        d.message.contains("unknown parameter `typo`"),
+        "{}",
+        d.message
+    );
+    let d = only("objects.flight['nope'] == 'x'");
+    assert!(d.message.contains("no property `nope`"), "{}", d.message);
+}
+
+/// WR-02: an index that is not a literal cannot be checked where a name is expected.
+#[test]
+fn dynamic_index_on_a_checked_root_is_an_error() {
+    let d = only("params[params.tags[0]] == 1");
+    assert_eq!(d.code, codes::V13);
+    assert!(d.message.contains("dynamic index"), "{}", d.message);
+    let d = only("objects.flight[params.tags[0]] == 1");
+    assert!(d.message.contains("dynamic index"), "{}", d.message);
+}
+
+/// WR-08: the CEL parser's recursion limit is reported without its internals.
+#[test]
+fn parser_recursion_limit_has_a_clean_message() {
+    let deep = format!("{}true", "true ? false : ".repeat(120));
+    let d = only(&deep);
+    assert_eq!(d.code, codes::V13);
+    assert!(d.message.contains("too deeply"), "{}", d.message);
+    assert!(!d.message.contains("OtherError"), "{}", d.message);
+}

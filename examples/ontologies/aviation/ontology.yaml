@@ -1,0 +1,5 @@
+# yaml-language-server: $schema=../../../schemas/ontoforge-manifest.schema.json
+apiName: aviation
+displayName: Aviation
+description: Minimal aviation ontology used by the walking skeleton and the docs.
+defaultProfile: dev

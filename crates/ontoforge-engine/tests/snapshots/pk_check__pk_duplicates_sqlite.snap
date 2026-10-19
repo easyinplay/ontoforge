@@ -1,0 +1,5 @@
+---
+source: crates/ontoforge-engine/tests/pk_check.rs
+expression: queries.duplicates.as_str()
+---
+SELECT "flight_id" AS "pk", count(*) AS "n" FROM "demo__aviation"."flights" WHERE "flight_id" IS NOT NULL GROUP BY "flight_id" HAVING count(*) > 1 ORDER BY count(*) DESC NULLS LAST, "flight_id" ASC NULLS LAST LIMIT 21

@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V13",
+    "severity": "error",
+    "message": "unknown parameter `delayMinute` in `params.delayMinute` (at 1:1 in expression)",
+    "file": "defs.yaml",
+    "line": 20,
+    "column": 16,
+    "span": {
+      "offset": 475,
+      "length": 24
+    },
+    "help": "did you mean `delayMinutes`?"
+  }
+]

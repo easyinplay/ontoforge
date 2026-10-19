@@ -2,7 +2,7 @@
 
 ## Overview
 
-按依赖链 schema → storage / edit log → action 与 query → auth → REST + clients → MCP 逐层交付，每个 phase 都能用命令或测试端到端验证。Phase 1、2 定死两份长期契约（IR 与 edit log 格式）；Phase 3、4 分别打通受控写路径与读路径；Phase 5 统一套上认证授权；Phase 6、7 通过 REST 与 MCP 两个同等地位的出口对外。需求全文见 `.planning/REQUIREMENTS.md`，决策见 `.planning/adr/`。
+Phase 1 定死 IR 契约。2026-10-16 起 Phase 2–7 按 `docs/designs/trino-engine-sql-tiers.md`（office-hours / CEO / eng review，决策 D1–D26）与 ADR-0015..0020 的纵切片重排：数据源绑定与引擎 → edit store 与 scope 模型 → scoped L0 读 → online Action → L2 / toolset / 审计 → REST 与 MCP 外壳。业务数据经 Trino 读取企业已有数据源，PG 只存系统数据与 edit store；读写都受同一套 scope 约束。需求全文见 `.planning/REQUIREMENTS.md`，决策见 `.planning/adr/`。
 
 ## Phases
 
@@ -11,13 +11,13 @@
 - Integer phases (1, 2, 3): 本 milestone 计划内工作
 - Decimal phases (2.1, 2.2): 紧急插入（标注 INSERTED）
 
-- [ ] **Phase 1: Workspace, Schema & Lint** - cargo workspace 骨架，YAML/JSON 到单一 IR，E/W lint 规则与 line:col 诊断
-- [ ] **Phase 2: Storage & Edit Log** - SQLite + PostgreSQL 双后端，不可变 edit log 与对象历史，`ontoforge import`
-- [ ] **Phase 3: Action Execution** - 参数校验、rules 单事务执行、CEL submission criteria、validate-only 与 batch
-- [ ] **Phase 4: Object Set Query** - filter / 全文搜索 / 排序与游标分页 / searchAround / 集合运算 / 聚合，双后端等价
-- [ ] **Phase 5: Auth & RBAC** - OIDC JWT 与 dev token 认证，三级 RBAC，fail-closed
-- [ ] **Phase 6: REST API & Clients** - OpenAPI 3.1、Rust 与 TS client、`ontoforge serve --dev` 端到端演示
-- [ ] **Phase 7: MCP Server** - stdio + streamable HTTP，describe / 查询 / 每个 action 一个工具
+- [x] **Phase 1: Workspace, Schema & Lint** - cargo workspace 骨架，YAML/JSON 到单一 IR，E/W lint 规则与 line:col 诊断 (completed 2026-10-16)
+- [ ] **Phase 2: Source Binding & Engine** - IR 数据源绑定与类型契约，`ontoforge-engine`（自写 Trino client、自有 SQL printer、SQLite 替身），`validate --online` 与 drift 校验
+- [ ] **Phase 3: Edit Store & Scope Model** - 按 type 强类型 edit store、DDL diff / migrate / reload 加固、edit log；用户 / 组 / 角色、CEL 行谓词（SQL 编译 + Rust 单行求值）
+- [ ] **Phase 4: Scoped L0 Read** - Rust 编排叠加读：pk 读、列表、聚合分解、searchAround、keyset 分页、HMAC 版本令牌
+- [ ] **Phase 5: Online Action** - Action 鉴权管线 ①-⑨、并发令牌、`command_id`、webhook outbox
+- [ ] **Phase 6: L2 Raw DQL, Toolsets & Audit** - L2 AST 白名单与自检、读审计、定义 reload 门禁与 role 管理通道
+- [ ] **Phase 7: REST & MCP Shell** - REST + OpenAPI + clients、MCP toolset（core / full / sql:raw）、`serve --dev`、release
 
 ## Phase Details
 
@@ -36,160 +36,194 @@
   4. `ontoforge lint` 运行适用于 v1 schema 范围的 ONT-E 规则与 ONT-W01–W11，输出人类可读（带源码定位）与 JSON 两种格式；有 E 级问题时退出码非 0；配置文件可按规则 ID 关闭规则或调整严重级
   5. 开发者可以导出 ontology 定义的 JSON Schema，仓库内示例 ontology 通过该 Schema 校验
 
-**Plans**: 12 plans（6 waves）
+**Plans**: 14/14 plans executed（6 waves + gap closure）
 
 Plans:
+
 **Wave 1**
 
-- [ ] 01-01-PLAN.md — 定义格式契约 checkpoint + Walking Skeleton tracer（ObjectType YAML → IR → `ontoforge validate` line:col）
+- [x] 01-01-PLAN.md — 定义格式契约 checkpoint + Walking Skeleton tracer（ObjectType YAML → IR → `ontoforge validate` line:col）
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 01-02-PLAN.md — 其余 8 个 crate 骨架、CI、CONTRIBUTING、ADR-0003 回写
-- [ ] 01-03-PLAN.md — 加载层：include glob、路径安全、严格 JSON、栈安全、确定性
-- [ ] 01-04-PLAN.md — object type 与 13 个 base type、V10 校验、aviation 双格式示例
+- [x] 01-02-PLAN.md — 其余 8 个 crate 骨架、CI、CONTRIBUTING、ADR-0003 回写
+- [x] 01-03-PLAN.md — 加载层：include glob、路径安全、严格 JSON、栈安全、确定性
+- [x] 01-04-PLAN.md — object type 与 13 个 base type、V10 校验、aviation 双格式示例
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 01-05-PLAN.md — link type（1:1 / 1:N / M:N）与 V08 / V09 / V11
-- [ ] 01-07-PLAN.md — CEL 预检、大栈线程隔离编译、作用域感知成员路径遍历
+- [x] 01-05-PLAN.md — link type（1:1 / 1:N / M:N）与 V08 / V09 / V11
+- [x] 01-07-PLAN.md — CEL 预检、大栈线程隔离编译、作用域感知成员路径遍历
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 01-06-PLAN.md — action type（参数、rules、值来源、criteria 结构）与 V09 / V12
+- [x] 01-06-PLAN.md — action type（参数、rules、值来源、criteria 结构）与 V09 / V12
 
 **Wave 5** *(blocked on Wave 4 completion)*
 
-- [ ] 01-08-PLAN.md — lint 框架、ontoforge.toml、ONT-E08 / E09、`ontoforge lint`
-- [ ] 01-12-PLAN.md — CEL 引用检查与类型推断（V13）接入 validate、ADR-0006 回写
+- [x] 01-08-PLAN.md — lint 框架、ontoforge.toml、ONT-E08 / E09、`ontoforge lint`
+- [x] 01-12-PLAN.md — CEL 引用检查与类型推断（V13）接入 validate、ADR-0006 回写
 
 **Wave 6** *(blocked on Wave 5 completion)*
 
-- [ ] 01-09-PLAN.md — JSON Schema 导出（`ontoforge schema export`）
-- [ ] 01-10-PLAN.md — ONT-W01..W05 命名规则
-- [ ] 01-11-PLAN.md — ONT-W06..W11 结构规则与 phase 门禁
+- [x] 01-09-PLAN.md — JSON Schema 导出（`ontoforge schema export`）
+- [x] 01-13-PLAN.md — 用现成 crate 替换手写实现（toml DeTable、heck、anstream、行列换算去重）
+- [x] 01-10-PLAN.md — ONT-W01..W05 命名规则
+- [x] 01-11-PLAN.md — ONT-W06..W11 结构规则与 phase 门禁
+
+**Gap closure**（UAT G-1-2）
+
+- [x] 01-14-PLAN.md — 多文档 YAML 的编辑器 schema 关联（项目级 yaml.schemas、每个 document 的 modeline、回归测试）
 
 **Details**: `.planning/phases/01-workspace-schema-lint/`
 
-### Phase 2: Storage & Edit Log
+### Phase 2: Source Binding & Engine
 
-**Goal**: 对象与 link 可以持久化到 SQLite 或 PostgreSQL，每次写入追加到不可变 edit log，示例数据可经 `ontoforge import` 批量导入并追溯历史
+**Goal**: 开发者可以把 object type / M:N link 绑定到 Trino 物理表，ontoforge 经自写 client 连接已有 Trino 并校验绑定；Windows 本机用 SQLite 替身零外部依赖跑通
 **Mode:** mvp
 **Depends on**: Phase 1
-**Requirements**: STORE-01, STORE-02, STORE-03, STORE-04, STORE-05, STORE-06
-**Spike**: 进入前验证 `postgresql_embedded` 在 Windows 上的表现，以及 `sea-query` 的 JSON 表达式与表达式索引；phase research 决定通用 JSON 表与热点属性物化列的取舍、edit log 格式（为 scenario / branch overlay 预留字段），edit log 格式在本 phase 定死并写 ADR
+**Requirements**: BIND-01, BIND-02, BIND-03, ENGINE-01, ENGINE-02, ENGINE-03, ENGINE-04, ENGINE-05
+**Spike**: 已完成（spike 1 Trino client、spike 2 sqlparser）；决策见 ADR-0015、ADR-0017
 **Success Criteria** (what must be TRUE):
 
-  1. 同一套 conformance 测试在 SQLite（Windows 默认 `cargo test`）与 PostgreSQL（本机 `postgresql_embedded`、CI service container）上全部通过
-  2. 加载新增 object type 或属性的新版 ontology 后，不写任何 DDL 迁移即可写入并读出新类型的对象
-  3. `ontoforge import` 从 JSON / CSV 导入示例对象与 link，每次导入作为系统 edit 追加到 edit log（含 actor、来源、时间、edits）；已有 edit log 记录无法被修改或删除
-  4. 违反 1:1 / 1:N 基数的 link 写入被存储层拒绝并返回明确错误
-  5. 按 primary key 可以读出某个对象的完整变更历史，每条历史对应一条 edit log 记录
+  1. 定义以 `backing: source | editOnly` 显式声明数据来源，`SourceBinding` 绑定文件（按 profile 分目录）声明 source 绑定；decimal 精度、无时区 timestamp 的 `timezone`、collation、geopoint 不支持等契约违反时 lint 报 E，示例 ontology 仍 lint clean
+  2. `ontoforge validate --online` 对真实 Trino 校验绑定（列存在、类型兼容）并报告不匹配；`--check-pk` 报告重复主键
+  3. Trino client 能执行查询、按超时与客户端断连取消、带 trace token 与 client tags；Trino 不可达时返回 `EngineUnavailable`
+  4. 自有 printer 生成的 SQL 经 proptest（任意字符串值往返不改变结构）与真实 Trino / SQLite 执行验证；SQLite 替身在 Windows `cargo test` 全绿
+  5. Linux CI 以 Trino + PG service container 跑集成测试，nightly 加跑 Iceberg
 
-**Plans**: TBD
-**Details**: `.planning/phases/02-storage-edit-log/`
+**Plans**: 10/10 plans executed（5 waves）
 
-### Phase 3: Action Execution
+Plans:
 
-**Goal**: 对象图只能经 action 修改：参数校验、rules 单事务执行、CEL submission criteria、validate-only 与 batch 全部可用，每次成功提交都留下 edit log 记录
+**Wave 1**
+
+- [x] 02-01-PLAN.md — backing 必填与 Phase 1 fixture 全量迁移、ADR-0021、wave 2 共用前置（read_limited / ProfileName / V16-V20）
+- [x] 02-02-PLAN.md — ontoforge-engine 骨架：Engine trait、类型化 printer、SQLite 替身执行、proptest
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [x] 02-03-PLAN.md — SourceBinding 定义层、profile 选定与完备性、aviation 绑定
+- [x] 02-04-PLAN.md — 自写 Trino client 主路径、ontoforge-server.toml、认证 / CA / 两个服务身份
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [x] 02-05-PLAN.md — phase tracer：`validate --online` 经 SQLite 替身比对绑定、fixture 语义
+- [x] 02-06-PLAN.md — Trino client 不可用分类、重试、超时 / 断连 / 上限取消
+- [x] 02-07-PLAN.md — 类型契约 lint ONT-E13..E16 与 ONT-W17
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [x] 02-08-PLAN.md — D-13 完整兼容表、drift 状态模型、绑定规范文档
+- [x] 02-09-PLAN.md — `--server-config` / Trino 路径、退出码 3、`--check-pk`（查重排除 NULL）
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
+- [x] 02-10-PLAN.md — Linux CI：Trino + PG 集成作业、nightly Iceberg、私有 fixture 入口
+
+**Details**: `.planning/phases/02-source-binding-engine/`
+
+### Phase 3: Edit Store & Scope Model
+
+**Goal**: edit store 按 object type 生成强类型表并安全演进，所有写入有不可变 edit log；用户 / 组 / 角色与 scope 规则可配置，同一份 CEL 行谓词既能编译成 SQL 也能在 Rust 中对单行求值且结果一致
 **Mode:** mvp
 **Depends on**: Phase 2
-**Requirements**: ACTION-01, ACTION-02, ACTION-03, ACTION-04, ACTION-05, ACTION-06, ACTION-07
-**Spike**: 进入前验证 `cel` crate 的静态类型检查能力，结论写回 ADR-0006
+**Requirements**: STORE-01, STORE-02, STORE-03, STORE-04, STORE-05, STORE-06, STORE-07, SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05, SCOPE-06, SCOPE-07, AUTH-01, AUTH-02
+**Spike**: 无（spike 3 已定 edit store 形态）；决策见 ADR-0016、ADR-0018
 **Success Criteria** (what must be TRUE):
 
-  1. 提交类型错误、缺少 required 参数或违反约束的 action，得到逐参数的错误列表，且不产生任何写入
-  2. 合法 action 在单个事务内执行 create / modify / delete object 与 add / remove link rules，返回标准化 edits 摘要（新增 / 修改 / 删除的对象与 link），并追加一条 edit log 记录（actor、action、时间、参数、edits）；任一 rule 失败则整体回滚
-  3. submission criteria（引用参数、当前用户、对象当前属性）不满足时 action 被拒绝，返回 ontology 中配置的失败信息
-  4. validate-only 提交返回与真实提交一致的校验结果但不写入；批量提交同一 action 时全部成功或全部回滚
-  5. 被配置为仅允许经 action 编辑的 object type，除 action 与可审计的 `ontoforge import` 外不存在其他写入途径（测试覆盖存储层公开 API）
+  1. 加载示例 ontology 后生成每个 object type 与 M:N link type 的 edit 表；新增类定义变更在 reload 时自动执行，破坏性变更被 lint 拦下且 `ontoforge migrate --plan/--apply` 可完成并归档旧列；reload 失败时保留旧定义
+  2. 同一套 conformance 测试在 SQLite（Windows 默认）与 PostgreSQL 上通过；edit log 与历史表只能追加
+  3. 按属性 patch 的叠加语义（set_mask、tombstone、release、版本单调）由内存参考模型的 proptest 覆盖
+  4. 角色可授予 object type、属性 allow-list、CEL 行谓词、action、SQL 级别与 toolset；行谓词只能引用同行属性与 `principal.attrs`，缺失属性按 false；多 role 合并不产生「A 的列 × B 的行」泄露
+  5. 同一 CEL 行谓词的 SQL 编译结果与 Rust 单行求值经差分测试一致；criteria 列覆盖 lint 在 reload 与 role 变更时生效；OIDC JWT 与 dev token 均可认证
 
 **Plans**: TBD
-**Details**: `.planning/phases/03-action-execution/`
+**Details**: `.planning/phases/03-edit-store-scope-model/`
 
-### Phase 4: Object Set Query
+### Phase 4: Scoped L0 Read
 
-**Goal**: 客户端可以用 ObjectSet AST 读取对象图：按主键取对象、过滤、全文搜索、排序与游标分页、searchAround、集合运算与聚合，SQLite 与 PostgreSQL 结果一致
+**Goal**: 调用者只能在自己的 scope 内读取对象：按 pk、过滤、排序分页、searchAround、集合运算与聚合都由 Rust 编排叠加完成，Trino 只承担单表查询
 **Mode:** mvp
-**Depends on**: Phase 2（与 Phase 3 无依赖，可调换顺序）
-**Requirements**: QUERY-01, QUERY-02, QUERY-03, QUERY-04, QUERY-05, QUERY-06, QUERY-07, QUERY-08
-**Spike**: 无；phase research 覆盖查询编译器（ObjectSet AST → `sea-query`、递归 CTE 遍历与深度上限）
+**Depends on**: Phase 3
+**Requirements**: QUERY-01, QUERY-02, QUERY-03, QUERY-04, QUERY-05, QUERY-06, QUERY-07, QUERY-08, QUERY-09, QUERY-10
+**Spike**: 已完成（spike 3、spike 3b）；决策见 ADR-0020
 **Success Criteria** (what must be TRUE):
 
-  1. 按 primary key 获取单个对象时可指定属性子集；WhereClause 全部运算符（eq / gt / gte / lt / lte / isNull / in / startsWith / containsAnyTerm / containsAllTerms / and / or / not）与 String 属性全文搜索在示例数据上返回正确结果
-  2. 结果可按属性排序，用游标分页遍历完整结果集时不重复、不遗漏
-  3. searchAround 沿 1:1 / 1:N / M:N link 遍历得到关联对象集合，单个对象的关联对象查询可用
-  4. union / intersect / subtract 可用；count / sum / avg / min / max / approximate 与 exact distinct 聚合可用，groupBy 支持 exact 值、固定宽度与范围分桶
-  5. 同一组查询在 SQLite 与 PostgreSQL 上返回相同结果，由等价测试与集合代数律 property test 覆盖
+  1. 已编辑对象经 PG 直读返回，未编辑对象经 Trino 单表 pk 查询返回，tombstone 不可见、release 后回到 source；重复 source pk 返回 `AmbiguousObject`
+  2. WhereClause 全部运算符、排序与 keyset 分页（`has_more` 判定结束，补取循环凑满页）在示例数据上正确，结果按 pk 去重；String 搜索按 token 匹配
+  3. searchAround、集合运算可用；count / sum / avg 分解聚合与朴素叠加结果相等，min / max / distinct 按 ADR-0020 处理
+  4. 越权 conformance（换 ID、伪造主体属性、多 role 列 × 行交叉、谓词 / 聚合反推、令牌反推）全部被拒绝；L0 输入输出与错误不含物理名；结果超限带 `truncated`
+  5. 编译器保证每条 Trino 查询单表、≤ 2 fragment；安静或隔离集群下 pk 读 p95 < 500ms、列表 p95 < 1s、聚合 p95 < 1.5s（私有 fixture 实测记录）
 
 **Plans**: TBD
-**Details**: `.planning/phases/04-object-set-query/`
+**Details**: `.planning/phases/04-scoped-l0-read/`
 
-### Phase 5: Auth & RBAC
+### Phase 5: Online Action
 
-**Goal**: 每次读写都带已认证身份并经 RBAC 检查：OIDC JWT 与 dev token 都能认证，角色可在 ontology / object type / action type 级授予，未授权一律拒绝
+**Goal**: 对象图只能经 Action 修改：参数校验、鉴权管线 ①-⑨、submission criteria、乐观并发与 `command_id` 幂等全部可用，每次提交都原子写入 edit 与 edit log 并通知下游
 **Mode:** mvp
-**Depends on**: Phase 3, Phase 4
-**Requirements**: AUTH-01, AUTH-02, AUTH-03, AUTH-04, AUTH-05
-**Spike**: 无（RBAC 范围小，可跳过 phase research）
+**Depends on**: Phase 4
+**Requirements**: ACTION-01, ACTION-02, ACTION-03, ACTION-04, ACTION-05, ACTION-06, ACTION-07, ACTION-08, ACTION-09, ACTION-10, ACTION-11, ACTION-12
+**Spike**: 无；决策见 ADR-0016、ADR-0018
 **Success Criteria** (what must be TRUE):
 
-  1. OIDC 签发的 JWT 通过认证，JWKS 自动拉取并缓存（测试用本地 mock IdP 验证）；过期、签名错误或缺失的 token 被拒绝
-  2. dev 模式下开发者用 CLI 生成本地 token 即可认证，无需外部 IdP；dev 模式同样执行真实授权检查，不存在 allow-all
-  3. 管理员在 ontology、object type、action type 级授予角色（viewer / editor / owner 等）后，对应身份的读写权限随之生效；未获任何授权的身份读写一律被拒绝
-  4. 列表与 object set 查询结果先按权限过滤再分页，无权对象不出现在结果中，也不计入分页与聚合
-  5. 执行 action 时先检查执行权限再求值 submission criteria；无权执行时返回的错误不包含任何对象状态
+  1. 参数错误返回逐参数错误且不写入；合法 Action 在单个 PG 事务内写 edit、edit log、`action_commands` 与 webhook outbox，任一失败整体回滚；validate-only 与批量提交可用
+  2. 写字段超出调用者可见列、criteria 引用当前行被遮蔽的列、写后对象对调用者不可见（含 link 两端与 release）时一律 `ScopeDenied`，错误不泄露对象状态
+  3. 同 pk 并发提交恰好一个成功、其余 `VersionConflict`；过期 `_version` 令牌被拒绝；`command_id` 重放返回缓存结果、同键异参 `CommandIdReused`、回放前失权则拒绝
+  4. 目标或读集需要 Trino 时 Trino 不可用返回 `EngineUnavailable`；只涉及已编辑对象的 Action 照常执行
+  5. 提交后下一次读取可见；下游 webhook 至少收到一次带 `event_id` 的事件
 
 **Plans**: TBD
-**Details**: `.planning/phases/05-auth-rbac/`
+**Details**: `.planning/phases/05-online-action/`
 
-### Phase 6: REST API & Clients
+### Phase 6: L2 Raw DQL, Toolsets & Audit
 
-**Goal**: 应用可以通过 REST（OpenAPI 3.1）、`ontoforge-client`（Rust）与 TS 平台层 client 使用全部能力；单个二进制 `ontoforge serve --dev` 在本机跑通示例 ontology 的端到端演示
+**Goal**: 受信主体可以在 allow-list 内执行只读 Trino SQL，且只有在 Trino 侧权限可证明安全时才开放；所有级别的读取都留下元数据审计；定义与授权的变更只经部署方与管理通道
 **Mode:** mvp
 **Depends on**: Phase 5
-**Requirements**: API-01, API-02, API-03, API-04, API-05, DX-01, DX-02
-**Spike**: 无（axum + utoipa 常规用法，可跳过 phase research）
+**Requirements**: L2-01, L2-02, L2-03, L2-04, AUDIT-01
+**Spike**: 进入前在 Trino 483 上复验 spike 2 语料；决策见 ADR-0018、ADR-0019
 **Success Criteria** (what must be TRUE):
 
-  1. `ontoforge serve --dev` 单个二进制在 Windows 本机启动完整服务（SQLite + dev token），无需任何外部依赖
-  2. REST API 覆盖 ontology 元数据、对象读取、object set 查询、action 提交与 edit 历史；所有错误响应统一为 `{ errorCode, errorName, parameters }`
-  3. 服务导出 OpenAPI 3.1 文档并纳入快照测试，接口与实现出现漂移时测试失败
-  4. `ontoforge-client`（Rust）与由 OpenAPI 生成的 TS 平台层 client 都能调用全部 REST 能力，集成测试覆盖每个端点组
-  5. 按仓库内说明，用示例 ontology 完成 导入 → 查询 → 执行 action → 查看 edit 历史 的端到端演示
+  1. L2 执行器只接受 SELECT / WITH，拒绝 `TABLE()` 表函数、`CALL`、`EXECUTE`、多语句与会话 / 事务语句，执行时发送重序列化后的 SQL；spike 2 语料全部按预期放行或拒绝
+  2. allow-list 外 catalog、edit store catalog 与 `system` 元数据表全部被拒绝
+  3. 启动自检无法证明 L2 身份受限（含只能看到自己的 `system.runtime.queries`）时 L2 被禁用并在 `/health` 告警
+  4. 所有级别的读取写入元数据审计（主体、工具、对象类型、apiName 级条件、生效 role、SQL 哈希、行数、耗时、request_id），不含结果数据；审计积压时读请求返回 `AuditUnavailable`
+  5. role / scope 只能经管理通道或 L3 修改并审计；定义 reload 先 validate / lint，失败不切换；每个请求固定使用开始时的定义版本
 
 **Plans**: TBD
-**Details**: `.planning/phases/06-rest-api-clients/`
+**Details**: `.planning/phases/06-l2-toolsets-audit/`
 
-### Phase 7: MCP Server
+### Phase 7: REST & MCP Shell
 
-**Goal**: AI agent 通过 MCP（stdio 与 streamable HTTP）读取 ontology 结构、查询对象、调用 action，与 REST 共用同一套授权与 edit log
+**Goal**: 应用经 REST（OpenAPI 3.1、Rust / TS client），agent 经 MCP（按主体过滤的 toolset）使用全部能力；`ontoforge serve --dev` 单二进制在本机跑通端到端演示，并发布三平台二进制
 **Mode:** mvp
 **Depends on**: Phase 6
-**Requirements**: MCP-01, MCP-02, MCP-03, MCP-04, MCP-05, MCP-06
-**Spike**: 进入前验证 `rmcp` 动态 tool 列表；phase research 覆盖 MCP 工具面设计
+**Requirements**: API-01, API-02, API-03, API-04, API-05, MCP-01, MCP-02, MCP-03, MCP-04, MCP-05, MCP-06, MCP-07, MCP-08, DX-01, DX-02, DX-04
+**Spike**: 进入前验证 `rmcp` 动态 tool 列表
 **Success Criteria** (what must be TRUE):
 
-  1. agent 可以通过 `ontoforge mcp`（stdio）或 `ontoforge serve` 进程挂载的 `/mcp`（streamable HTTP）连接 MCP server
-  2. describe 工具返回 object types、属性、links、actions 及其描述；查询工具可执行 filter / search / searchAround / aggregate
-  3. 每个 action type 自动暴露为一个 MCP 工具，输入 schema 由参数定义派生，工具列表由当前加载的 ontology 生成而非手写
-  4. 以 validate-only 方式调用 action 工具只返回校验结果，不产生写入
-  5. 同一身份经 MCP 与 REST 得到相同的授权结果；经 MCP 提交的 action 与 REST 提交的写入同样记入 edit log
+  1. REST 覆盖元数据、对象读取、查询、Action 提交与历史；错误统一为结构化错误码；OpenAPI 3.1 纳入快照测试；Rust 与 TS client 覆盖每个端点组
+  2. agent 经 stdio 或 `/mcp` 连接；`list_tools` 只返回主体被授予的 toolset（core / full / sql:raw），L3 与任何变更工具不出现
+  3. 每个 action type 自动暴露为 MCP 工具（含 validate-only）；6 个 L2 工具与 mcp-trino 名称参数一致，结果按 allow-list 过滤
+  4. 同一身份经 MCP 与 REST 得到相同授权结果，写入同样记入 edit log
+  5. `ontoforge serve --dev`（SQLite 替身 + dev token）在 Windows 本机零外部依赖跑通示例 ontology 的查询 → Action → 历史演示；release workflow 发布 Linux / macOS / Windows 二进制
 
 **Plans**: TBD
-**Details**: `.planning/phases/07-mcp-server/`
+**Details**: `.planning/phases/07-rest-mcp-shell/`
 
 ## Progress
 
 **Execution Order:**
-Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7（Phase 3 与 4 互不依赖，可调换）
+Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7（纵切片，严格顺序依赖）
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Workspace, Schema & Lint | 0/11 | Planned | - |
-| 2. Storage & Edit Log | 0/TBD | Not started | - |
-| 3. Action Execution | 0/TBD | Not started | - |
-| 4. Object Set Query | 0/TBD | Not started | - |
-| 5. Auth & RBAC | 0/TBD | Not started | - |
-| 6. REST API & Clients | 0/TBD | Not started | - |
-| 7. MCP Server | 0/TBD | Not started | - |
+| 1. Workspace, Schema & Lint | 14/14 | Complete    | 2026-10-16 |
+| 2. Source Binding & Engine | 10/10 | In Progress|  |
+| 3. Edit Store & Scope Model | 0/TBD | Not started | - |
+| 4. Scoped L0 Read | 0/TBD | Not started | - |
+| 5. Online Action | 0/TBD | Not started | - |
+| 6. L2 Raw DQL, Toolsets & Audit | 0/TBD | Not started | - |
+| 7. REST & MCP Shell | 0/TBD | Not started | - |

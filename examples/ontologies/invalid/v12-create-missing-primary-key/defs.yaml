@@ -1,0 +1,18 @@
+kind: ObjectType
+apiName: Flight
+primaryKey: flightId
+properties:
+  flightId: { type: string, required: true }
+  status: { type: string }
+  delayMinutes: { type: integer }
+backing: editOnly
+---
+kind: ActionType
+apiName: openFlight
+parameters:
+  status: { type: string, required: true }
+rules:
+  - kind: createObject
+    objectType: Flight
+    properties:
+      status: { param: status }

@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge/tests/invalid_examples.rs
+expression: out.diagnostics
+---
+[
+  {
+    "code": "ONT-V08",
+    "severity": "error",
+    "message": "duplicate ObjectType `Airport`; first defined at a.yaml:2:10",
+    "file": "b.yaml",
+    "line": 2,
+    "column": 10,
+    "span": {
+      "offset": 26,
+      "length": 7
+    },
+    "help": null
+  }
+]

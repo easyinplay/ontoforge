@@ -1,0 +1,2 @@
+apiName: v13NonBoolCase
+description: Fixture for ONT-V13, the condition evaluates to an integer.

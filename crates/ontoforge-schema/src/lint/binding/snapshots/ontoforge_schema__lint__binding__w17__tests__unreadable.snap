@@ -1,0 +1,19 @@
+---
+source: crates/ontoforge-schema/src/lint/binding/w17.rs
+expression: found
+---
+[
+  {
+    "code": "ONT-W17",
+    "severity": "warning",
+    "message": "cannot read the header of fixture `fixtures/flights.json`: expected an array of objects at the top level; bound columns cannot be checked offline",
+    "file": "bindings/dev/flight.yaml",
+    "line": 6,
+    "column": 18,
+    "span": {
+      "offset": 169,
+      "length": 21
+    },
+    "help": "fix the fixture, or run `ontoforge validate --online` to check the binding"
+  }
+]

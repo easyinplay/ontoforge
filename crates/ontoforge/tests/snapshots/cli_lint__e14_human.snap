@@ -1,0 +1,15 @@
+---
+source: crates/ontoforge/tests/cli_lint.rs
+expression: stdout
+---
+ONT-E14
+
+  × timestamp property `scheduledDeparture` of `Flight` needs `timezone` in this binding
+   ╭─[bindings/dev/flight.yaml:5:3]
+ 4 │ columns:
+ 5 │   scheduledDeparture: { column: scheduled_departure }
+   ·   ─────────┬────────
+   ·            ╰── here
+   ╰────
+  help: use an IANA name such as `Europe/Berlin` when the source column has no time zone, or
+        `aware` when it has one

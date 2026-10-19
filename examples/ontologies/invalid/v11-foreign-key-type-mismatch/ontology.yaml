@@ -1,0 +1,2 @@
+apiName: v11KeyTypeCase
+description: Fixture for ONT-V11, the foreign key type differs from the primary key type.

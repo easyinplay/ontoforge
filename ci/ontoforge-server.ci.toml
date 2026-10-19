@@ -1,0 +1,15 @@
+# Server configuration for the CI Trino (Linux job `integration`). Profile `dev` of the
+# aviation example is checked against it; its bindings name catalog `demo`, which is the CI
+# PostgreSQL catalog in ci/trino/catalog/demo.properties. The CI Trino has no authentication,
+# so this file holds no credentials.
+
+[trino]
+url = "http://localhost:8080"
+connect_timeout_ms = 5000
+
+[trino.identities.ontology]
+user = "ontoforge"
+auth = "none"
+
+[profiles.dev]
+engine = "trino"

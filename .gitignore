@@ -2,3 +2,5 @@
 .ruff_cache/
 *.sqlite
 *.db
+.gsd/
+.planning/milestone.lock

@@ -1,0 +1,14 @@
+[package]
+name = "ontoforge-storage"
+description = "StorageProvider trait and backends"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+ontoforge-schema = { path = "../ontoforge-schema" }
+ontoforge-query = { path = "../ontoforge-query" }

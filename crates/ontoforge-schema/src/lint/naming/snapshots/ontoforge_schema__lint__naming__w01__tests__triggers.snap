@@ -1,0 +1,58 @@
+---
+source: crates/ontoforge-schema/src/lint/naming/w01.rs
+expression: found
+---
+[
+  {
+    "code": "ONT-W01",
+    "severity": "warning",
+    "message": "object type `Data` is named with generic words only",
+    "file": "objects.yaml",
+    "line": 2,
+    "column": 10,
+    "span": {
+      "offset": 26,
+      "length": 4
+    },
+    "help": "name what the objects are, such as `Flight` or `MaintenanceRecord`; if the name is intentional, set \"ONT-W01\" = \"off\" under [lint] in ontoforge.toml"
+  },
+  {
+    "code": "ONT-W01",
+    "severity": "warning",
+    "message": "object type `DataRecord` is named with generic words only",
+    "file": "objects.yaml",
+    "line": 9,
+    "column": 10,
+    "span": {
+      "offset": 145,
+      "length": 10
+    },
+    "help": "name what the objects are, such as `Flight` or `MaintenanceRecord`; if the name is intentional, set \"ONT-W01\" = \"off\" under [lint] in ontoforge.toml"
+  },
+  {
+    "code": "ONT-W01",
+    "severity": "warning",
+    "message": "object type `Flights` looks plural",
+    "file": "objects.yaml",
+    "line": 16,
+    "column": 10,
+    "span": {
+      "offset": 270,
+      "length": 7
+    },
+    "help": "an object type names one object; try `Flight`; if the name is intentional, set \"ONT-W01\" = \"off\" under [lint] in ontoforge.toml"
+  },
+  {
+    "code": "ONT-W01",
+    "severity": "warning",
+    "message": "object type `Categories` looks plural",
+    "file": "objects.yaml",
+    "line": 23,
+    "column": 10,
+    "span": {
+      "offset": 392,
+      "length": 10
+    },
+    "help": "an object type names one object; try `Category`; if the name is intentional, set \"ONT-W01\" = \"off\" under [lint] in ontoforge.toml"
+  }
+]

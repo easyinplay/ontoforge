@@ -1,0 +1,21 @@
+kind: ObjectType
+apiName: Airport
+primaryKey: code
+properties:
+  code: { type: string, required: true }
+backing: editOnly
+---
+kind: ObjectType
+apiName: Flight
+primaryKey: flightId
+properties:
+  flightId: { type: string, required: true }
+  departureAirportCode: { type: string }
+  status: { type: string }
+backing: editOnly
+---
+kind: LinkType
+apiName: flightDepartureAirport
+cardinality: oneToMany
+from: { objectType: Airport, apiName: departingFlights }
+to: { objectType: Flight, apiName: status, foreignKey: departureAirportCode }

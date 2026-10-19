@@ -1,0 +1,18 @@
+kind: ObjectType
+apiName: Flight
+primaryKey: flightId
+properties:
+  flightId: { type: string, required: true }
+  status: { type: string }
+  delayMinutes: { type: integer }
+backing: editOnly
+---
+kind: ActionType
+apiName: stampFlight
+parameters:
+  flight: { type: { objectReference: Flight }, required: true }
+rules:
+  - kind: modifyObject
+    object: flight
+    properties:
+      status: { currentTime: {} }
