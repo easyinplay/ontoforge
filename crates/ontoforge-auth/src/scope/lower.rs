@@ -9,8 +9,8 @@
 //! - `x in principal.attrs.<list>` with a missing list is Unknown for every `x`, which is
 //!   `<operand> = NULL` in SQL.
 
-use ontoforge_engine::printer::ast::{CompareOp, Expr, Literal};
-use ontoforge_expr::{AttrValue, Attrs, CmpOp, ListSource, Operand, Pred, Scalar};
+use ontoforge_engine::printer::ast::{CompareOp, Expr, Literal, MatchKind as SqlMatchKind};
+use ontoforge_expr::{AttrValue, Attrs, CmpOp, ListSource, MatchKind, Operand, Pred, Scalar};
 use ontoforge_schema::ir::PropertyName;
 
 /// Lowers `pred` to a printer expression. `column` maps a property to its SQL column name.
@@ -30,8 +30,11 @@ pub fn lower(pred: &Pred, attrs: &Attrs, column: &dyn Fn(&PropertyName) -> Strin
             negated: *negated,
         },
         Pred::InList { operand: o, list } => in_list(o, list, attrs, column),
-        // Replaced by the real `StringMatch` lowering together with the printer node.
-        Pred::StrMatch { column: c, .. } => unknown(Expr::Column(column(c))),
+        Pred::StrMatch {
+            column: c,
+            needle,
+            kind,
+        } => string_match(c, needle, *kind, attrs, column),
         Pred::And(..) => {
             let mut parts = Vec::new();
             collect(pred, true, attrs, column, &mut parts);
@@ -101,6 +104,41 @@ fn in_list(
             list: items.iter().map(literal).collect(),
             negated: false,
         },
+    }
+}
+
+/// `startsWith` / `endsWith` / `contains`. The needle reaches the printer raw: only the
+/// printer's pattern escapes (`like_pattern`, `glob_pattern`) turn it into SQL text.
+///
+/// A needle that is not a string (a missing attribute, or a type the type rules do not
+/// allow) makes the match Unknown, as in `eval`.
+fn string_match(
+    property: &PropertyName,
+    needle: &Operand,
+    kind: MatchKind,
+    attrs: &Attrs,
+    column: &dyn Fn(&PropertyName) -> String,
+) -> Expr {
+    let target = Expr::Column(column(property));
+    let needle = match needle {
+        Operand::Lit(Scalar::String(s)) => Some(s),
+        Operand::Attr(name) => match attrs.get(name) {
+            AttrValue::Scalar(Scalar::String(s)) => Some(s),
+            _ => None,
+        },
+        _ => None,
+    };
+    match needle {
+        Some(needle) => Expr::StringMatch {
+            expr: Box::new(target),
+            needle: needle.clone(),
+            kind: match kind {
+                MatchKind::StartsWith => SqlMatchKind::StartsWith,
+                MatchKind::EndsWith => SqlMatchKind::EndsWith,
+                MatchKind::Contains => SqlMatchKind::Contains,
+            },
+        },
+        None => unknown(target),
     }
 }
 
