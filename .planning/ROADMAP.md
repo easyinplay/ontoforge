@@ -12,7 +12,7 @@ Phase 1 定死 IR 契约。2026-10-16 起 Phase 2–7 按 `docs/designs/trino-en
 - Decimal phases (2.1, 2.2): 紧急插入（标注 INSERTED）
 
 - [x] **Phase 1: Workspace, Schema & Lint** - cargo workspace 骨架，YAML/JSON 到单一 IR，E/W lint 规则与 line:col 诊断 (completed 2026-10-16)
-- [ ] **Phase 2: Source Binding & Engine** - IR 数据源绑定与类型契约，`ontoforge-engine`（自写 Trino client、自有 SQL printer、SQLite 替身），`validate --online` 与 drift 校验
+- [x] **Phase 2: Source Binding & Engine** - IR 数据源绑定与类型契约，`ontoforge-engine`（自写 Trino client、自有 SQL printer、SQLite 替身），`validate --online` 与 drift 校验 (completed 2026-10-19)
 - [ ] **Phase 3: Edit Store & Scope Model** - 按 type 强类型 edit store、DDL diff / migrate / reload 加固、edit log；用户 / 组 / 角色、CEL 行谓词（SQL 编译 + Rust 单行求值）
 - [ ] **Phase 4: Scoped L0 Read** - Rust 编排叠加读：pk 读、列表、聚合分解、searchAround、keyset 分页、HMAC 版本令牌
 - [ ] **Phase 5: Online Action** - Action 鉴权管线 ①-⑨、并发令牌、`command_id`、webhook outbox
@@ -221,7 +221,7 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7（纵切片
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Workspace, Schema & Lint | 14/14 | Complete    | 2026-10-16 |
-| 2. Source Binding & Engine | 10/10 | In Progress|  |
+| 2. Source Binding & Engine | 10/10 | Complete    | 2026-10-19 |
 | 3. Edit Store & Scope Model | 0/TBD | Not started | - |
 | 4. Scoped L0 Read | 0/TBD | Not started | - |
 | 5. Online Action | 0/TBD | Not started | - |

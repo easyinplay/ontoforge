@@ -3,11 +3,13 @@ phase: 02-source-binding-engine
 iteration: 1
 parts: 3
 status: partial
-fixed: 18
-skipped: 2
-pending_ci: 1
-skipped_ids: [WR-C03, WR-C05]
-pending_ci_ids: [WR-C07]
+fixed: 20
+skipped: 1
+pending_ci: 0
+skipped_ids: [WR-C05]
+pending_ci_ids: []
+resolved_after_iteration: [WR-C03, WR-C07]
+updated: 2026-10-19
 ---
 
 # Phase 2 Review Fix
@@ -148,11 +150,11 @@ fixer 在写本报告前被会话结束中断；7 条修复均已逐条提交，
 |---------|------|--------|
 | WR-C01 | fixed | 79f9649 |
 | WR-C02 | fixed | 3564d4d |
-| WR-C03 | skipped（与 ADR-0021 第 7 条冲突） | — |
+| WR-C03 | skipped（与 ADR-0021 第 7 条冲突）；2026-10-19 resolved，见 Addendum | 4d681aa, 05362e5, 4950d00 |
 | WR-C04 | fixed | 5c640ab |
 | WR-C05 | skipped（不可复现，补了守护测试） | bc506a6 |
 | WR-C06 | fixed | 3cfdc66 |
-| WR-C07 | pending-ci | c474b39 |
+| WR-C07 | pending-ci；2026-10-19 verified on CI，见 Addendum | c474b39 |
 
 ## Fixed Issues
 
@@ -232,3 +234,11 @@ fixer 在写本报告前被会话结束中断；7 条修复均已逐条提交，
 
 _Fixer: Claude (gsd-code-fixer)_
 _Iteration: 1_
+
+---
+
+## Addendum (2026-10-19)
+
+- WR-C03 resolved：用户在 UAT 02 测试 6 选定方案 (a)，被忽略的 fixture 诊断降为 Info（code 仍为 ONT-V17），决策见 ADR-0022（`.planning/adr/0022-ignored-fixture-diagnostic-is-info.md`）。Commits：4d681aa（test）、05362e5（fix）、4950d00（ADR）。
+- WR-C07 verified：`check_pk_finds_duplicate_and_null_keys_on_ci_trino` 在 CI run 39219827829 的 `integration` 作业通过；nightly run 39221684753 通过。
+- 剩余 skipped 只有 WR-C05（不可复现，守护测试 bc506a6），因此 status 保持 `partial`。

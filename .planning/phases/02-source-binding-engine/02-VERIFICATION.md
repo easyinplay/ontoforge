@@ -131,7 +131,7 @@ covered_files:
   - "docs/source-binding.md"
   - "schemas/ontoforge-definition.schema.json"
   - "schemas/ontoforge-manifest.schema.json"
-covered_digest: "v1:sha256:88af27a98b44656b0e52056802037fbd907df188c881af6b9ff535682875eea5"
+covered_digest: "v1:sha256:4379f0c1c1541bb8eb26bac831830f9ede8fc410f9e2ac2ad5b0487b36b24e39"
 behavior_unverified: 0
 overrides_applied: 0
 re_verification:

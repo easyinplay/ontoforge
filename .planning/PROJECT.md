@@ -14,10 +14,10 @@ ontoforge 是一个用 Rust 实现、可自托管的开源 Ontology 操作层，
 
 - ✓ ontology-as-code：YAML/JSON → 单一 IR，line:col 诊断，导出 JSON Schema 供编辑器补全 — Phase 1
 - ✓ lint 引擎：E 级规则 + W01–W11，human / JSON 双格式，`ontoforge.toml` 配置 — Phase 1
+- ✓ 数据源绑定与 Trino 连接（BIND-01..03、ENGINE-01..05）：`SourceBinding` 文件与必填 `backing`、类型契约 lint、`validate --online` / `--check-pk`、自写 Trino client、自有 SQL printer、SQLite 替身、Linux CI Trino + PG 与 nightly Iceberg；ontoforge 只带连接能力，不打包 Trino（ADR-0015、ADR-0017、ADR-0021） — Phase 2
 
 ### Active
 
-- [ ] 数据源绑定与 Trino 连接（ontoforge 只带连接能力，不打包 Trino）— ADR-0015、ADR-0017
 - [ ] edit store 按 object type 强类型分表、按属性 patch，不可变 edit log — ADR-0016
 - [ ] 用户 / 组 / 角色与 scope 模型（行列级安全提前进 v1）、Action 鉴权管线 — ADR-0018
 - [ ] scoped L0 读：Rust 编排叠加，Trino 只跑单表查询 — ADR-0020
@@ -68,6 +68,8 @@ v2 候选（不在当前 milestone）：interfaces 与 shared properties、struc
 | 自研 RBAC，fail-closed（ADR-0008） | 单二进制，不依赖外部授权服务 | ⚠️ Revisited — AuthZ 被 ADR-0018（scope 模型）取代 |
 | Functions 延后到 v2（ADR-0010） | MVP 只定 trait，控制范围 | — Pending |
 | Trino 主引擎 + 分级 SQL（L0 / L2），ontoforge 只带连接能力 | 复用企业湖仓与联邦查询；可验证的 agent 权限边界 | — Pending（ADR-0015..0020，ROADMAP Phase 2–7 已重排） |
+| 绑定独立成 `SourceBinding` 文件、`backing` 必填无默认（ADR-0021） | 可选默认值拦不住同时漏写 backing 与绑定 | ✓ Good — Phase 2 交付 |
+| 被忽略的 fixture 诊断降为 Info（ADR-0022） | 同一份绑定 dev 用替身、prod 对 Trino 复核是常态；W 级会让 `--deny-warnings` 在任何 Trino 配置下失败 | ✓ Good — Phase 2 UAT 用户选定 |
 
 决策全文见 `.planning/adr/`。
 
@@ -89,4 +91,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-10-16 after Phase 1*
+*Last updated: 2026-10-19 after Phase 2*
