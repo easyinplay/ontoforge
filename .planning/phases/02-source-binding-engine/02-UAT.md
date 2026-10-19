@@ -21,7 +21,7 @@ note: "CI run 39219827829：trino_it 9 passed、cli_trino_it 2 passed（首跑 3
 expected: 手动触发 nightly，两个版本的 Iceberg 作业都通过
 result: blocked
 blocked_by: server
-reason: "分支未推送，nightly 未触发"
+reason: "nightly.yml 只在默认分支上可 workflow_dispatch / schedule（gh 返回 HTTP 404 not found on the default branch），需 PR #2 合并后触发"
 
 ### 3. E21 golden 定稿
 expected: 按首跑日志修正 `describe_types_golden` 与 `decode_golden`，删除 `crates/ontoforge-engine/tests/trino_it.rs` 中的 `PROVISIONAL` 注释并提交
