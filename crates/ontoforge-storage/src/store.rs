@@ -1,8 +1,11 @@
 //! The edit store: settings, connection and the active definition (ADR-0016, ADR-0024).
 //!
-//! One `EditStore` serves one backend, SQLite or PostgreSQL. The PostgreSQL backend is added
-//! in plan 03-04; until then it is refused at `open` with a clear error.
+//! One `EditStore` serves one backend, SQLite or PostgreSQL. On PostgreSQL the typed edit tables
+//! live in `schema_edit` and everything else (definitions, migration bookkeeping) in `schema_sys`;
+//! every connection has `schema_sys` as its `search_path`, so system tables are addressed by
+//! bare name and edit tables always by qualified name.
 
+use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -12,7 +15,8 @@ use ontoforge_engine::sqlite::{
     DECIMAL_COLLATION, TIMESTAMP_COLLATION, compare_decimal, compare_timestamp,
 };
 use ontoforge_schema::ir::Ontology;
-use secrecy::SecretString;
+use secrecy::{ExposeSecret, SecretString};
+use sqlx::postgres::{PgConnectOptions, PgPoolOptions};
 use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions};
 use sqlx::{PgPool, Postgres, Sqlite, SqlitePool};
 use tokio::sync::RwLock;
@@ -114,27 +118,35 @@ impl StoreSettings {
 }
 
 /// The connection of an open store.
-#[allow(
-    dead_code,
-    reason = "the PostgreSQL variants are constructed by plan 03-04"
-)]
 pub(crate) enum Db {
     Sqlite(SqlitePool),
-    Postgres {
-        pool: PgPool,
-        schema_edit: String,
-        schema_sys: String,
-    },
+    Postgres { pool: PgPool, schema_edit: String },
 }
 
 /// A write transaction. SQLite takes the write lock at `BEGIN`.
-#[allow(
-    dead_code,
-    reason = "the PostgreSQL variant is constructed by plan 03-04"
-)]
 pub(crate) enum WriteTx<'c> {
     Sqlite(sqlx::Transaction<'c, Sqlite>),
-    Postgres(sqlx::Transaction<'c, Postgres>),
+    Postgres {
+        tx: sqlx::Transaction<'c, Postgres>,
+        schema_edit: String,
+    },
+}
+
+impl WriteTx<'_> {
+    pub(crate) fn backend(&self) -> Backend {
+        match self {
+            Self::Sqlite(_) => Backend::Sqlite,
+            Self::Postgres { .. } => Backend::Postgres,
+        }
+    }
+
+    /// The PostgreSQL schema of the edit tables, `None` on SQLite.
+    pub(crate) fn schema_edit(&self) -> Option<&str> {
+        match self {
+            Self::Sqlite(_) => None,
+            Self::Postgres { schema_edit, .. } => Some(schema_edit),
+        }
+    }
 }
 
 /// The definition the edit tables currently follow.
@@ -148,7 +160,7 @@ pub struct ActiveDefinition {
 /// The edit store.
 pub struct EditStore {
     pub(crate) db: Db,
-    #[allow(dead_code, reason = "read by the PostgreSQL backend and by plan 03-18")]
+    #[allow(dead_code, reason = "read by plan 03-18")]
     pub(crate) settings: StoreSettings,
     pub(crate) active: RwLock<Option<Arc<ActiveDefinition>>>,
 }
@@ -162,14 +174,18 @@ impl EditStore {
                     .max_connections(5)
                     .connect_with(sqlite_connect_options(path))
                     .await
-                    .map_err(|e| StoreError::Connect(e.to_string()))?;
+                    .map_err(|e| connect_error(&e))?;
                 sqlx::migrate!("./migrations/sqlite")
                     .run(&pool)
                     .await
                     .map_err(|e| StoreError::Migrate(e.to_string()))?;
                 Db::Sqlite(pool)
             }
-            BackendSettings::Postgres { .. } => return Err(StoreError::postgres_unsupported()),
+            BackendSettings::Postgres {
+                url,
+                schema_edit,
+                schema_sys,
+            } => open_postgres(url, schema_edit, schema_sys).await?,
         };
         let active = sql_exit::read_active_definition(&db).await?;
         Ok(Self {
@@ -202,5 +218,44 @@ impl EditStore {
     /// Starts a write transaction. SQLite: `BEGIN IMMEDIATE`.
     pub(crate) async fn begin_write(&self) -> Result<WriteTx<'_>, StoreError> {
         sql_exit::begin_write(&self.db).await
+    }
+}
+
+/// Connects to PostgreSQL, creates the two schemas and runs the system migrations.
+///
+/// The connection string is a secret: it is parsed here and never appears in an error.
+async fn open_postgres(
+    url: &SecretString,
+    schema_edit: &str,
+    schema_sys: &str,
+) -> Result<Db, StoreError> {
+    let options = PgConnectOptions::from_str(url.expose_secret())
+        .map_err(|_| StoreError::Config("the PostgreSQL connection string is invalid".to_owned()))?
+        .options([("search_path", schema_sys)]);
+    let pool = PgPoolOptions::new()
+        .max_connections(5)
+        .connect_with(options)
+        .await
+        .map_err(|e| connect_error(&e))?;
+    for schema in [schema_sys, schema_edit] {
+        sql_exit::create_schema(&pool, schema).await?;
+    }
+    sqlx::migrate!("./migrations/postgres")
+        .run(&pool)
+        .await
+        .map_err(|e| StoreError::Migrate(e.to_string()))?;
+    Ok(Db::Postgres {
+        pool,
+        schema_edit: schema_edit.to_owned(),
+    })
+}
+
+/// A connect failure without anything that could echo the connection string.
+fn connect_error(error: &sqlx::Error) -> StoreError {
+    match error {
+        sqlx::Error::Configuration(_) => {
+            StoreError::Connect("invalid connection settings".to_owned())
+        }
+        other => StoreError::Connect(other.to_string()),
     }
 }

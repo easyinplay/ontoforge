@@ -43,8 +43,4 @@ impl StoreError {
             },
         }
     }
-
-    pub(crate) fn postgres_unsupported() -> Self {
-        Self::Config("the PostgreSQL edit store is not available in this build".to_owned())
-    }
 }

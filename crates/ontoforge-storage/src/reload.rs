@@ -127,11 +127,14 @@ pub async fn reload(
 /// Runs one step so that it can be repeated: a table is created only if missing, and columns are
 /// added only if the table lacks them. A table left behind by an interrupted run is completed.
 async fn apply_step(tx: &mut WriteTx<'_>, step: &DdlStep) -> Result<(), StoreError> {
-    if let Some(create) = ddl::create_sql(step) {
+    let backend = tx.backend();
+    let schema = tx.schema_edit().map(str::to_owned);
+    let schema = schema.as_deref();
+    if let Some(create) = ddl::create_sql(step, backend, schema) {
         sql_exit::execute_ddl(tx, &create).await?;
     }
-    let (table, columns) = ddl::step_columns(step);
-    let existing = sql_exit::table_columns(tx, None, table).await?;
+    let (table, columns) = ddl::step_columns(step, backend);
+    let existing = sql_exit::table_columns(tx, schema, table).await?;
     for col in columns.iter().filter(|c| !existing.contains(&c.name)) {
         if col.key {
             return Err(StoreError::Corrupt(format!(
@@ -139,7 +142,7 @@ async fn apply_step(tx: &mut WriteTx<'_>, step: &DdlStep) -> Result<(), StoreErr
                 col.name
             )));
         }
-        sql_exit::execute_ddl(tx, &ddl::add_column_sql(table, col)).await?;
+        sql_exit::execute_ddl(tx, &ddl::add_column_sql(table, col, backend, schema)).await?;
     }
     Ok(())
 }

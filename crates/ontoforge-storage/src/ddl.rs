@@ -1,15 +1,22 @@
 //! DDL of the edit tables (ADR-0024).
 //!
-//! Statements are produced by `sea-query`, which quotes every identifier. This plan renders the
-//! SQLite dialect; the PostgreSQL dialect and the snapshot tests of both come with plan 03-04.
+//! Statements are produced by `sea-query`, which quotes every identifier. Two dialects:
 //!
-//! SQLite columns: integer types, boolean and the `__set` flags are `INTEGER`; float and double
-//! are `REAL`; string, date, array and geopoint are `TEXT` (arrays and geopoints hold JSON);
-//! decimal and timestamp are `TEXT` with the engine's collations, so comparisons follow numeric
-//! and instant order.
+//! - SQLite: integer types, boolean and the `__set` flags are `INTEGER`; float and double are
+//!   `REAL`; string, date, array and geopoint are `TEXT` (arrays and geopoints hold JSON);
+//!   decimal and timestamp are `TEXT` with the engine's collations, so comparisons follow numeric
+//!   and instant order.
+//! - PostgreSQL: native types (see `pg_type`); tables are qualified with the edit schema; every
+//!   statement is re-runnable (`IF NOT EXISTS`), so an interrupted reload can be repeated.
+//!
+//! Both dialects give the system columns the same defaults (`0` / `false`), so a table that lacks
+//! one can be completed with `ADD COLUMN`.
 
 use ontoforge_engine::sqlite::{DECIMAL_COLLATION, TIMESTAMP_COLLATION};
-use sea_query::{Alias, ColumnDef, Index, SqliteQueryBuilder, Table};
+use sea_query::{
+    Alias, ColumnDef, Index, IntoTableRef, PostgresQueryBuilder, SqliteQueryBuilder, Table,
+    TableRef,
+};
 
 use crate::physical::{ColumnType, KeyColumn, LinkTable, ObjectTable, PropertyColumn};
 use crate::store::Backend;
@@ -37,62 +44,92 @@ pub(crate) struct Col {
 ///
 /// `schema_edit` is the PostgreSQL schema of the edit tables; SQLite has none.
 pub fn render(step: &DdlStep, backend: Backend, schema_edit: Option<&str>) -> Vec<String> {
-    match backend {
-        Backend::Sqlite => match step {
-            DdlStep::AddPropertyColumn { table, column } => property_columns(column)
-                .iter()
-                .map(|col| add_column_sql(table, col))
-                .collect(),
-            DdlStep::CreateObjectTable(_) | DdlStep::CreateLinkTable(_) => {
-                create_sql(step).into_iter().collect()
-            }
-        },
-        Backend::Postgres => {
-            // Added with the PostgreSQL backend in plan 03-04; no PostgreSQL store can be
-            // opened before that.
-            let _ = schema_edit;
-            Vec::new()
+    match step {
+        DdlStep::AddPropertyColumn { table, column } => property_columns(column, backend)
+            .iter()
+            .map(|col| add_column_sql(table, col, backend, schema_edit))
+            .collect(),
+        DdlStep::CreateObjectTable(_) | DdlStep::CreateLinkTable(_) => {
+            create_sql(step, backend, schema_edit).into_iter().collect()
         }
     }
 }
 
 /// Every column of the table of `step`, or the added columns of an `AddPropertyColumn`.
-pub(crate) fn step_columns(step: &DdlStep) -> (&str, Vec<Col>) {
+pub(crate) fn step_columns(step: &DdlStep, backend: Backend) -> (&str, Vec<Col>) {
     match step {
-        DdlStep::CreateObjectTable(table) => (&table.table, object_columns(table)),
-        DdlStep::CreateLinkTable(table) => (&table.table, link_columns(table)),
-        DdlStep::AddPropertyColumn { table, column } => (table, property_columns(column)),
+        DdlStep::CreateObjectTable(table) => (&table.table, object_columns(table, backend)),
+        DdlStep::CreateLinkTable(table) => (&table.table, link_columns(table, backend)),
+        DdlStep::AddPropertyColumn { table, column } => (table, property_columns(column, backend)),
     }
 }
 
-/// The statements that create the table of a create step, `None` for other steps.
-pub(crate) fn create_sql(step: &DdlStep) -> Option<String> {
+/// The statement that creates the table of a create step, `None` for other steps.
+pub(crate) fn create_sql(
+    step: &DdlStep,
+    backend: Backend,
+    schema_edit: Option<&str>,
+) -> Option<String> {
     match step {
         DdlStep::CreateObjectTable(table) => Some(create_table_sql(
             &table.table,
-            &object_columns(table),
+            &object_columns(table, backend),
             &[&table.pk.column],
+            backend,
+            schema_edit,
         )),
         DdlStep::CreateLinkTable(table) => Some(create_table_sql(
             &table.table,
-            &link_columns(table),
+            &link_columns(table, backend),
             &[&table.a.column, &table.b.column],
+            backend,
+            schema_edit,
         )),
         DdlStep::AddPropertyColumn { .. } => None,
     }
 }
 
-/// `ALTER TABLE .. ADD COLUMN ..` for one column.
-pub(crate) fn add_column_sql(table: &str, col: &Col) -> String {
-    Table::alter()
-        .table(Alias::new(table))
-        .add_column(col.def.clone())
-        .to_string(SqliteQueryBuilder)
+/// `ALTER TABLE .. ADD COLUMN ..` for one column. On PostgreSQL the column is added only if
+/// missing.
+pub(crate) fn add_column_sql(
+    table: &str,
+    col: &Col,
+    backend: Backend,
+    schema_edit: Option<&str>,
+) -> String {
+    let mut alter = Table::alter();
+    alter.table(table_ref(table, backend, schema_edit));
+    match backend {
+        Backend::Sqlite => alter
+            .add_column(col.def.clone())
+            .to_string(SqliteQueryBuilder),
+        Backend::Postgres => alter
+            .add_column_if_not_exists(col.def.clone())
+            .to_string(PostgresQueryBuilder),
+    }
 }
 
-fn create_table_sql(table: &str, columns: &[Col], primary_key: &[&String]) -> String {
+/// The table, qualified with the edit schema on PostgreSQL.
+fn table_ref(table: &str, backend: Backend, schema_edit: Option<&str>) -> TableRef {
+    match (backend, schema_edit) {
+        (Backend::Postgres, Some(schema)) => {
+            (Alias::new(schema), Alias::new(table)).into_table_ref()
+        }
+        _ => Alias::new(table).into_table_ref(),
+    }
+}
+
+fn create_table_sql(
+    table: &str,
+    columns: &[Col],
+    primary_key: &[&String],
+    backend: Backend,
+    schema_edit: Option<&str>,
+) -> String {
     let mut create = Table::create();
-    create.table(Alias::new(table)).if_not_exists();
+    create
+        .table(table_ref(table, backend, schema_edit))
+        .if_not_exists();
     for col in columns {
         create.col(col.def.clone());
     }
@@ -103,10 +140,46 @@ fn create_table_sql(table: &str, columns: &[Col], primary_key: &[&String]) -> St
         }
         create.primary_key(&mut key);
     }
-    create.to_string(SqliteQueryBuilder)
+    match backend {
+        Backend::Sqlite => create.to_string(SqliteQueryBuilder),
+        Backend::Postgres => create.to_string(PostgresQueryBuilder),
+    }
 }
 
-fn apply_type(def: &mut ColumnDef, ty: &ColumnType) {
+/// The PostgreSQL type of a column (ADR-0024 point 7). Strings use the `C` collation so that
+/// ordering is bytewise on every server, whatever its locale. An array is its element type with
+/// `[]`; the element carries no collation.
+fn pg_type(ty: &ColumnType) -> String {
+    match ty {
+        ColumnType::Byte | ColumnType::Short => "smallint".to_owned(),
+        ColumnType::Integer => "integer".to_owned(),
+        ColumnType::Long => "bigint".to_owned(),
+        ColumnType::Float => "real".to_owned(),
+        ColumnType::Double => "double precision".to_owned(),
+        ColumnType::Boolean => "boolean".to_owned(),
+        ColumnType::String => "text COLLATE \"C\"".to_owned(),
+        ColumnType::Decimal { precision, scale } => format!("numeric({precision}, {scale})"),
+        ColumnType::Date => "date".to_owned(),
+        ColumnType::Timestamp => "timestamptz".to_owned(),
+        ColumnType::Array(element) => format!("{}[]", pg_element_type(element)),
+        ColumnType::Geopoint => "jsonb".to_owned(),
+    }
+}
+
+fn pg_element_type(ty: &ColumnType) -> String {
+    match ty {
+        ColumnType::String => "text".to_owned(),
+        other => pg_type(other),
+    }
+}
+
+fn apply_type(def: &mut ColumnDef, ty: &ColumnType, backend: Backend) {
+    if backend == Backend::Postgres {
+        // `custom` writes the name as it is; the collation has to sit right after the type,
+        // before any column constraint.
+        def.custom(Alias::new(pg_type(ty)));
+        return;
+    }
     match ty {
         ColumnType::Byte
         | ColumnType::Short
@@ -122,9 +195,9 @@ fn apply_type(def: &mut ColumnDef, ty: &ColumnType) {
     };
 }
 
-fn key_col(key: &KeyColumn, primary: bool) -> Col {
+fn key_col(key: &KeyColumn, primary: bool, backend: Backend) -> Col {
     let mut def = ColumnDef::new(Alias::new(key.column.as_str()));
-    apply_type(&mut def, &key.ty);
+    apply_type(&mut def, &key.ty, backend);
     def.not_null();
     if primary {
         def.primary_key();
@@ -136,9 +209,9 @@ fn key_col(key: &KeyColumn, primary: bool) -> Col {
     }
 }
 
-fn value_col(name: &str, ty: &ColumnType) -> Col {
+fn value_col(name: &str, ty: &ColumnType, backend: Backend) -> Col {
     let mut def = ColumnDef::new(Alias::new(name));
-    apply_type(&mut def, ty);
+    apply_type(&mut def, ty, backend);
     Col {
         name: name.to_owned(),
         key: false,
@@ -146,9 +219,13 @@ fn value_col(name: &str, ty: &ColumnType) -> Col {
     }
 }
 
-fn flag_col(name: &str) -> Col {
+/// `NOT NULL` boolean: `DEFAULT false` on PostgreSQL, `INTEGER DEFAULT 0` on SQLite.
+fn flag_col(name: &str, backend: Backend) -> Col {
     let mut def = ColumnDef::new(Alias::new(name));
-    def.integer().not_null().default(0);
+    match backend {
+        Backend::Sqlite => def.integer().not_null().default(0),
+        Backend::Postgres => def.boolean().not_null().default(false),
+    };
     Col {
         name: name.to_owned(),
         key: false,
@@ -156,24 +233,44 @@ fn flag_col(name: &str) -> Col {
     }
 }
 
-fn property_columns(column: &PropertyColumn) -> Vec<Col> {
+/// `NOT NULL` counter with `DEFAULT 0`: `bigint` on PostgreSQL, `INTEGER` on SQLite.
+fn counter_col(name: &str, backend: Backend) -> Col {
+    let mut def = ColumnDef::new(Alias::new(name));
+    match backend {
+        Backend::Sqlite => def.integer(),
+        Backend::Postgres => def.big_integer(),
+    };
+    def.not_null().default(0);
+    Col {
+        name: name.to_owned(),
+        key: false,
+        def,
+    }
+}
+
+fn property_columns(column: &PropertyColumn, backend: Backend) -> Vec<Col> {
     vec![
-        value_col(&column.column, &column.ty),
-        flag_col(&column.set_column),
+        value_col(&column.column, &column.ty, backend),
+        flag_col(&column.set_column, backend),
     ]
 }
 
-/// System columns. `of_def_version` carries a default so that a table that lacks it can be
-/// repaired with `ADD COLUMN`; writers always set it. Link tables have no `of_released`.
-fn system_columns(released: bool) -> Vec<Col> {
-    let mut names = vec!["of_version", "of_deleted"];
+/// System columns. They carry defaults so that a table that lacks one can be repaired with
+/// `ADD COLUMN`; writers always set them. Link tables have no `of_released`.
+fn system_columns(released: bool, backend: Backend) -> Vec<Col> {
+    let mut columns = vec![
+        counter_col("of_version", backend),
+        flag_col("of_deleted", backend),
+    ];
     if released {
-        names.push("of_released");
+        columns.push(flag_col("of_released", backend));
     }
-    names.push("of_def_version");
-    let mut columns: Vec<Col> = names.into_iter().map(flag_col).collect();
+    columns.push(counter_col("of_def_version", backend));
     let mut log_seq = ColumnDef::new(Alias::new("of_log_seq"));
-    log_seq.integer().null();
+    match backend {
+        Backend::Sqlite => log_seq.integer().null(),
+        Backend::Postgres => log_seq.big_integer().null(),
+    };
     columns.push(Col {
         name: "of_log_seq".to_owned(),
         key: false,
@@ -182,19 +279,22 @@ fn system_columns(released: bool) -> Vec<Col> {
     columns
 }
 
-fn object_columns(table: &ObjectTable) -> Vec<Col> {
-    let mut columns = vec![key_col(&table.pk, true)];
+fn object_columns(table: &ObjectTable, backend: Backend) -> Vec<Col> {
+    let mut columns = vec![key_col(&table.pk, true, backend)];
     for column in table.properties.values() {
-        columns.extend(property_columns(column));
+        columns.extend(property_columns(column, backend));
     }
-    columns.extend(system_columns(true));
+    columns.extend(system_columns(true, backend));
     columns
 }
 
-fn link_columns(table: &LinkTable) -> Vec<Col> {
+fn link_columns(table: &LinkTable, backend: Backend) -> Vec<Col> {
     // The composite primary key is declared on the table, not on a column.
-    let mut columns = vec![key_col(&table.a, false), key_col(&table.b, false)];
-    columns.extend(system_columns(false));
+    let mut columns = vec![
+        key_col(&table.a, false, backend),
+        key_col(&table.b, false, backend),
+    ];
+    columns.extend(system_columns(false, backend));
     columns
 }
 
@@ -203,7 +303,11 @@ mod tests {
     use super::*;
     use std::collections::BTreeMap;
 
+    use camino::Utf8Path;
     use ontoforge_schema::ir::PropertyName;
+
+    use crate::diff::diff;
+    use crate::physical::PhysicalSchema;
 
     fn property(name: &str) -> PropertyName {
         PropertyName::try_from(name.to_owned()).expect("property name")
@@ -267,5 +371,74 @@ mod tests {
         assert_eq!(sql.len(), 2);
         assert!(sql[0].contains("ADD COLUMN \"price\""), "{}", sql[0]);
         assert!(sql[1].contains("ADD COLUMN \"price__set\""), "{}", sql[1]);
+    }
+
+    #[test]
+    fn postgres_collates_the_key_before_its_constraints() {
+        let sql = render(
+            &DdlStep::CreateObjectTable(table()),
+            Backend::Postgres,
+            Some("ontoforge_edit"),
+        );
+        assert_eq!(sql.len(), 1);
+        assert!(
+            sql[0].contains("\"code\" text COLLATE \"C\" NOT NULL PRIMARY KEY"),
+            "{}",
+            sql[0]
+        );
+    }
+
+    #[test]
+    fn postgres_add_column_is_qualified_and_idempotent() {
+        let column = table().properties.values().next().cloned().expect("column");
+        let sql = render(
+            &DdlStep::AddPropertyColumn {
+                table: "of_obj_item".to_owned(),
+                column,
+            },
+            Backend::Postgres,
+            Some("ontoforge_edit"),
+        );
+        assert_eq!(sql.len(), 2);
+        for statement in &sql {
+            assert!(
+                statement.contains("\"ontoforge_edit\".\"of_obj_item\""),
+                "{statement}"
+            );
+            assert!(
+                statement.contains("ADD COLUMN IF NOT EXISTS"),
+                "{statement}"
+            );
+        }
+    }
+
+    /// Every create statement of the aviation example, one per line group.
+    fn aviation_ddl(backend: Backend, schema_edit: Option<&str>) -> String {
+        let root = Utf8Path::new(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../examples/ontologies/aviation"
+        ));
+        let out = ontoforge_schema::load_dir(root);
+        let ontology = out.ontology.expect("aviation loads");
+        let physical = PhysicalSchema::derive(&ontology).expect("physical schema");
+        let plan = diff(None, &physical);
+        assert!(plan.destructive.is_empty());
+        let mut text = String::new();
+        for step in &plan.steps {
+            for statement in render(step, backend, schema_edit) {
+                text.push_str(&statement);
+                text.push_str(";\n\n");
+            }
+        }
+        text
+    }
+
+    #[test]
+    fn ddl_snapshots() {
+        insta::assert_snapshot!("ddl_sqlite", aviation_ddl(Backend::Sqlite, None));
+        insta::assert_snapshot!(
+            "ddl_postgres",
+            aviation_ddl(Backend::Postgres, Some("ontoforge_edit"))
+        );
     }
 }
