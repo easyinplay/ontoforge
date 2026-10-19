@@ -106,7 +106,7 @@ created: "2026-10-17"
 ## Observations（非阻塞，后续 phase 可跟进）
 
 1. T-02-07：`check_beneath` 与后续 open 之间仍有 TOCTOU 窗口（02-REVIEW-FIX CR-S01 已记录），根治需 beneath-open（如 `cap-std`）。
-2. T-02-43：已于 2026-10-19 CI 首跑通过后关闭；nightly（Trino 483 / 484）仍待首跑（`02-UAT.md` 测试 2）。
+2. T-02-43：已于 2026-10-19 CI 首跑通过后关闭；nightly（Trino 483 / 484）已于 2026-10-19 通过（run 39221684753，`02-UAT.md` 测试 2）。
 3. T-02-13：`clippy.toml` 只禁 `danger_*`，`use_preconfigured_tls` + 自定义 verifier 不在禁令内（REVIEW IN-C05）；当前代码无此用法。
 4. T-02-39：测试 job 的 `actions/checkout` 未设 `persist-credentials: false`（REVIEW IN-C04），token 只有 `contents: read`。
 5. T-02-09 / 21 / 38：`sanitize` 只作用于 human 输出，JSON 输出保留原文；物理名只拒绝 Cc 类控制字符，不拒绝 bidi Cf 字符（REVIEW IN-S01）。

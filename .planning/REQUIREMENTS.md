@@ -29,11 +29,11 @@
 - [x] **BIND-01**: 开发者在独立的 `SourceBinding` 绑定文件（按 profile 分目录）中为 object type 与 M:N link 声明 source 绑定（catalog / schema / table / columns），定义中以 `backing: source | editOnly` 显式声明数据来源（ADR-0021）
 - [x] **BIND-02**: 绑定遵守类型契约（decimal 精度、无时区 timestamp 的 `timezone`、可选 collation、geopoint 不支持），违反时 lint 报 E
 - [x] **BIND-03**: `ontoforge validate --online` 对 Trino 校验绑定，`--check-pk` 查重；启动与定时 drift 校验不匹配时该 object type 降级（`SourceSchemaDrift`），其余照常
-- [ ] **ENGINE-01**: 服务经自写 Trino client 连接部署方已有的 Trino（不打包、不托管），支持超时、断连取消、trace token 与两个服务身份
+- [x] **ENGINE-01**: 服务经自写 Trino client 连接部署方已有的 Trino（不打包、不托管），支持超时、断连取消、trace token 与两个服务身份
 - [x] **ENGINE-02**: Trino 不可用时，需要 Trino 的读写 fail-closed（`EngineUnavailable`），`/health` 与 describe 暴露引擎状态
-- [ ] **ENGINE-03**: 发往 Trino / SQLite 的 SQL 由自有 printer 生成，值只经转义函数输出，注入防护由 proptest 与真实执行验证
+- [x] **ENGINE-03**: 发往 Trino / SQLite 的 SQL 由自有 printer 生成，值只经转义函数输出，注入防护由 proptest 与真实执行验证
 - [x] **ENGINE-04**: SQLite 替身引擎支撑 Windows 本机 `cargo test` 与 `serve --dev`（不承诺生产）
-- [ ] **ENGINE-05**: Linux CI 跑 Trino + PG 集成测试，nightly 加跑 Iceberg；SQL Server 由私有 fixture 验证
+- [x] **ENGINE-05**: Linux CI 跑 Trino + PG 集成测试，nightly 加跑 Iceberg；SQL Server 由私有 fixture 验证
 
 ### Edit store 与 edit log
 
@@ -193,11 +193,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BIND-01 | Phase 2 | Complete |
 | BIND-02 | Phase 2 | Complete |
 | BIND-03 | Phase 2（validate --online、--check-pk、drift 库函数与降级状态模型）+ Phase 7（启动 / 定时 drift 执行） | Complete |
-| ENGINE-01 | Phase 2 | Pending |
+| ENGINE-01 | Phase 2 | Complete |
 | ENGINE-02 | Phase 2（错误分类与 status()）+ Phase 7（/health 与 describe 暴露，API-01） | Complete |
-| ENGINE-03 | Phase 2 | Pending |
+| ENGINE-03 | Phase 2 | Complete |
 | ENGINE-04 | Phase 2（SQLite 替身支撑 Windows cargo test）+ Phase 7（serve --dev，DX-01） | Complete |
-| ENGINE-05 | Phase 2 | Pending |
+| ENGINE-05 | Phase 2 | Complete |
 | STORE-01 | Phase 3 | Pending |
 | STORE-02 | Phase 3 | Pending |
 | STORE-03 | Phase 3 | Pending |
@@ -266,4 +266,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-10-15*
-*Last updated: 2026-10-16 after Trino engine re-plan（D1–D26，ADR-0015..0020）*
+*Last updated: 2026-10-19 after Phase 2*
