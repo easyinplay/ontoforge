@@ -225,7 +225,7 @@ fn rejects_everything_outside_the_subset() {
         "object.region in principal.attrs.tenantId",
         "object.region in principal.attrs.nums",
         "object.n.startsWith('1')",
-        "'abc'.startsWith(object.code)",
+        "'abc'.startsWith('b')",
         "object.code.startsWith(object.a)",
         "object.code.startsWith(1)",
         "object.flag < true",
@@ -241,6 +241,12 @@ fn rejects_everything_outside_the_subset() {
         assert_eq!(issues.len(), 1, "{src}: {issues:#?}");
         assert!(issues[0].pos.is_some(), "{src}: {issues:#?}");
     }
+}
+
+#[test]
+fn a_literal_target_with_a_column_needle_reports_both() {
+    let issues = compile("'abc'.startsWith(object.code)").expect_err("both wrong");
+    assert_eq!(issues.len(), 2, "{issues:#?}");
 }
 
 #[test]

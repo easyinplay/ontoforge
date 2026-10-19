@@ -9,7 +9,7 @@ use cel::common::ast::operators as op;
 use cel::common::ast::{CallExpr, Expr, IdedExpr, LiteralValue, SourceInfo};
 use ontoforge_schema::ir::{AttrType, BaseType, ObjectType};
 
-use super::ir::{CmpOp, Operand, Pred};
+use super::ir::{CmpOp, ListSource, MatchKind, Operand, Pred};
 use super::value::Scalar;
 use crate::analyze::{ExprError, analyze};
 use crate::walk::char_pos;
@@ -111,6 +111,19 @@ enum Ty {
     Null,
 }
 
+/// Friendly name of an operator or function in an "is not allowed" message.
+fn describe(func: &str) -> String {
+    match func {
+        op::ADD | op::SUBSTRACT | op::MULTIPLY | op::DIVIDE | op::MODULO | op::NEGATE => {
+            "arithmetic".to_owned()
+        }
+        op::CONDITIONAL => "the conditional operator `? :`".to_owned(),
+        op::INDEX | op::OPT_INDEX => "indexing".to_owned(),
+        "size" | "matches" => format!("`{func}()`"),
+        _ => format!("`{func}`"),
+    }
+}
+
 fn property_ty(base: BaseType) -> Ty {
     match base {
         BaseType::Byte | BaseType::Short | BaseType::Integer | BaseType::Long => Ty::Fam(Fam::Int),
@@ -194,11 +207,144 @@ impl Lowerer<'_> {
             (op::LESS_EQUALS, [a, b]) => self.cmp(e.id, CmpOp::Le, a, b),
             (op::GREATER, [a, b]) => self.cmp(e.id, CmpOp::Gt, a, b),
             (op::GREATER_EQUALS, [a, b]) => self.cmp(e.id, CmpOp::Ge, a, b),
-            (name, _) => {
-                self.issue(e.id, format!("`{name}` is not allowed in a row filter"));
+            (op::IN, [x, list]) => self.in_list(e.id, x, list),
+            (name, args) => {
+                let kind = match name {
+                    "startsWith" => Some(MatchKind::StartsWith),
+                    "endsWith" => Some(MatchKind::EndsWith),
+                    "contains" => Some(MatchKind::Contains),
+                    _ => None,
+                };
+                if let (Some(kind), Some(target), [needle]) = (kind, call.target.as_deref(), args) {
+                    return self.str_match(kind, target, needle);
+                }
+                self.issue(
+                    e.id,
+                    format!("{} is not allowed in a row filter", describe(name)),
+                );
                 None
             }
         }
+    }
+
+    fn in_list(&mut self, id: u64, x: &IdedExpr, list: &IdedExpr) -> Option<Pred> {
+        let (operand, list) = (self.operand(x), self.list_source(list));
+        let ((operand, ty), (list, element)) = (operand?, list?);
+        let fam = match ty {
+            Ty::Fam(f) => f,
+            Ty::Null => {
+                self.issue(id, "`null` cannot be tested with `in`; use `== null`");
+                return None;
+            }
+            Ty::Opaque(t) => {
+                self.issue(
+                    id,
+                    format!("a {} property cannot be used with `in`", t.as_str()),
+                );
+                return None;
+            }
+            Ty::List(_) => {
+                self.issue(
+                    id,
+                    "a list-typed principal attribute can only be used on the right of `in`",
+                );
+                return None;
+            }
+        };
+        if let Some(element) = element
+            && element != fam
+        {
+            self.issue(
+                id,
+                format!(
+                    "cannot test a {} value against a list of {} values",
+                    fam.name(),
+                    element.name()
+                ),
+            );
+            return None;
+        }
+        Some(Pred::InList { operand, list })
+    }
+
+    /// The right side of `in`: a list literal of non-null literals of one family, or a
+    /// list-typed principal attribute. The family is `None` for `[]`.
+    fn list_source(&mut self, e: &IdedExpr) -> Option<(ListSource, Option<Fam>)> {
+        if let Expr::List(list) = &e.expr {
+            let mut items = Vec::with_capacity(list.elements.len());
+            let mut family: Option<Fam> = None;
+            let mut ok = true;
+            for element in &list.elements {
+                let Some((operand, ty)) = self.operand(element) else {
+                    ok = false;
+                    continue;
+                };
+                match (operand, ty) {
+                    (Operand::Lit(s), Ty::Fam(f)) => {
+                        if family.is_some_and(|first| first != f) {
+                            self.issue(element.id, "list elements must all have the same type");
+                            ok = false;
+                        }
+                        family.get_or_insert(f);
+                        items.push(s);
+                    }
+                    (_, Ty::Null) => {
+                        self.issue(
+                            element.id,
+                            "a list in a row filter must not contain `null`; test it with `== null`",
+                        );
+                        ok = false;
+                    }
+                    _ => {
+                        self.issue(element.id, "list elements must be literals");
+                        ok = false;
+                    }
+                }
+            }
+            return ok.then_some((ListSource::Literal(items), family));
+        }
+        let (operand, ty) = self.operand(e)?;
+        if let (Operand::Attr(name), Ty::List(f)) = (operand, ty) {
+            return Some((ListSource::Attr(name), Some(f)));
+        }
+        self.issue(
+            e.id,
+            "the right side of `in` must be a list literal or a list-typed              `principal.attrs.<name>`",
+        );
+        None
+    }
+
+    fn str_match(&mut self, kind: MatchKind, target: &IdedExpr, needle: &IdedExpr) -> Option<Pred> {
+        let (t, n) = (self.operand(target), self.operand(needle));
+        let column = match t {
+            Some((Operand::Column(c), Ty::Fam(Fam::Str))) => Some(c),
+            Some(_) => {
+                self.issue(
+                    target.id,
+                    "startsWith, endsWith and contains apply to an `object.<property>` of type string",
+                );
+                None
+            }
+            None => None,
+        };
+        let needle = match n {
+            Some((o @ (Operand::Lit(Scalar::String(_)) | Operand::Attr(_)), Ty::Fam(Fam::Str))) => {
+                Some(o)
+            }
+            Some(_) => {
+                self.issue(
+                    needle.id,
+                    "the argument must be a string literal or a string `principal.attrs.<name>`",
+                );
+                None
+            }
+            None => None,
+        };
+        Some(Pred::StrMatch {
+            column: column?,
+            needle: needle?,
+            kind,
+        })
     }
 
     fn cmp(&mut self, id: u64, op: CmpOp, a: &IdedExpr, b: &IdedExpr) -> Option<Pred> {

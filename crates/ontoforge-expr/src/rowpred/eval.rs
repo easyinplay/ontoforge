@@ -6,7 +6,7 @@ use ontoforge_schema::ir::PropertyName;
 
 use std::cmp::Ordering;
 
-use super::ir::{CmpOp, Operand, Pred};
+use super::ir::{CmpOp, ListSource, MatchKind, Operand, Pred};
 use super::value::{AttrValue, Attrs, Scalar};
 
 /// A truth value that can be unknown. Only [`Tri::True`] makes a row visible.
@@ -92,9 +92,48 @@ pub fn eval(pred: &Pred, row: &impl RowValues, attrs: &Attrs) -> Tri {
             let is_null = scalar(operand, row, attrs) == Scalar::Null;
             Tri::from(is_null != *negated)
         }
-        // Filled in by the full subset (plan 03-05 Task 3).
-        Pred::InList { .. } | Pred::StrMatch { .. } => Tri::Unknown,
+        Pred::InList { operand, list } => {
+            let x = scalar(operand, row, attrs);
+            match list {
+                ListSource::Literal(items) => in_items(&x, items),
+                ListSource::Attr(name) => match attrs.get(name) {
+                    AttrValue::List(items) => in_items(&x, items),
+                    // A missing list attribute is Null (D-05): unknown, not empty.
+                    AttrValue::Null | AttrValue::Scalar(_) => Tri::Unknown,
+                },
+            }
+        }
+        Pred::StrMatch {
+            column,
+            needle,
+            kind,
+        } => match (row.value(column), scalar(needle, row, attrs)) {
+            // Byte-wise on UTF-8, case-sensitive, no wildcards (ADR-0025 rule 3).
+            (Scalar::String(haystack), Scalar::String(needle)) => Tri::from(match kind {
+                MatchKind::StartsWith => haystack.starts_with(&needle),
+                MatchKind::EndsWith => haystack.ends_with(&needle),
+                MatchKind::Contains => haystack.contains(&needle),
+            }),
+            _ => Tri::Unknown,
+        },
     }
+}
+
+/// SQL `x IN (items)` (ADR-0025 rule 1): an empty list is false even for a Null `x`;
+/// otherwise a match is true, and an unknown comparison (Null `x` or Null element)
+/// leaves the result unknown.
+fn in_items(x: &Scalar, items: &[Scalar]) -> Tri {
+    if items.is_empty() {
+        return Tri::False;
+    }
+    let mut result = Tri::False;
+    for item in items {
+        result = result.or(compare(x, CmpOp::Eq, item));
+        if result == Tri::True {
+            break;
+        }
+    }
+    result
 }
 
 /// The value of an operand. A principal attribute that is missing, or a list where a
