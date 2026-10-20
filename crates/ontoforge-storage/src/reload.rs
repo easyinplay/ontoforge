@@ -8,9 +8,12 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Arc;
+use std::time::Duration;
 
 use chrono::{SecondsFormat, Utc};
+use futures_util::future::BoxFuture;
 use ontoforge_auth::scope::{ScopeInputs, compile_scope};
+use ontoforge_engine::{EngineError, PhysicalColumn, TableRef};
 use ontoforge_schema::diag::Diagnostic;
 use ontoforge_schema::ir::{
     AttrType, Cardinality, ObjectTypeName, Ontology, ProfileName, PropertyName,
@@ -28,11 +31,45 @@ use crate::sql_exit;
 use crate::store::{ActiveDefinition, Backend, EditStore, WriteTx};
 
 #[derive(Debug, Clone, Default)]
-pub struct ReloadOptions {
+pub struct ReloadOptions<'a> {
     /// Return the DDL that would run and change nothing.
     pub dry_run: bool,
     /// Check the roles in the store against the new definition first (D-18, SCOPE-06).
     pub roles: Option<RolesCheck>,
+    /// Wait until Trino sees the new tables and columns before the definition becomes active.
+    pub probe: Option<ProbeContext<'a>>,
+}
+
+/// What a reload asks Trino. An `Engine` cannot be a trait object (its methods return
+/// `impl Future`), so the two calls a probe makes are boxed here; `AnyEngine` implements it, and a
+/// test can put a script in its place.
+pub trait ProbeTarget: Send + Sync {
+    /// `CALL <catalog>.system.flush_metadata_cache()`.
+    fn flush_metadata<'a>(&'a self, catalog: &'a str) -> BoxFuture<'a, Result<(), EngineError>>;
+    /// The columns Trino shows for `tables`; a table that is absent from the map is not visible.
+    fn describe<'a>(
+        &'a self,
+        tables: &'a [TableRef],
+    ) -> BoxFuture<'a, Result<BTreeMap<TableRef, Vec<PhysicalColumn>>, EngineError>>;
+}
+
+/// Where and how long to look for the new tables and columns.
+#[derive(Clone)]
+pub struct ProbeContext<'a> {
+    pub target: &'a dyn ProbeTarget,
+    /// The Trino catalog that maps the edit store's PostgreSQL schema (`[store.trino] catalog`).
+    pub catalog: String,
+    /// How long to wait for visibility (`[store] probe_timeout_ms`).
+    pub timeout: Duration,
+}
+
+impl std::fmt::Debug for ProbeContext<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ProbeContext")
+            .field("catalog", &self.catalog)
+            .field("timeout", &self.timeout)
+            .finish_non_exhaustive()
+    }
 }
 
 /// What the role check of a reload needs besides the new definition: the declared principal
@@ -68,6 +105,10 @@ pub enum ReloadError {
     /// A lock was not free within `[store] lock_timeout_ms`; the previous definition stays.
     #[error("gave up waiting for a database lock (lock_timeout); the previous definition stays")]
     LockTimeout,
+    /// Trino did not show the new tables and columns within `[store] probe_timeout_ms`. The DDL
+    /// is committed (it only adds) and the previous definition stays active.
+    #[error("Trino does not show {} yet; the previous definition stays", .missing.join(", "))]
+    NotVisible { missing: Vec<String> },
 }
 
 /// Brings the edit tables in line with `ontology`.
@@ -88,7 +129,7 @@ pub enum ReloadError {
 pub async fn reload(
     store: &EditStore,
     ontology: &Ontology,
-    opts: &ReloadOptions,
+    opts: &ReloadOptions<'_>,
 ) -> Result<ReloadOutcome, ReloadError> {
     let physical = PhysicalSchema::derive(ontology).map_err(ReloadError::Definition)?;
     if opts.dry_run {
@@ -193,7 +234,7 @@ async fn prepare(
     tx: &mut WriteTx<'_>,
     ontology: &Ontology,
     mut physical: PhysicalSchema,
-    opts: &ReloadOptions,
+    opts: &ReloadOptions<'_>,
 ) -> Result<Prepared, ReloadError> {
     let active = sql_exit::read_active_definition_in(tx).await?;
     if let Some(active) = &active {
@@ -276,7 +317,7 @@ async fn dry_run(
     store: &EditStore,
     ontology: &Ontology,
     physical: PhysicalSchema,
-    opts: &ReloadOptions,
+    opts: &ReloadOptions<'_>,
 ) -> Result<ReloadOutcome, ReloadError> {
     let mut tx = store.begin_write().await?;
     let prepared = prepare(&mut tx, ontology, physical, opts).await;
@@ -296,7 +337,7 @@ async fn locked_reload(
     tx: &mut WriteTx<'_>,
     ontology: &Ontology,
     physical: PhysicalSchema,
-    opts: &ReloadOptions,
+    opts: &ReloadOptions<'_>,
 ) -> Result<Done, ReloadError> {
     // Before any DDL: see `sql_exit::lock_def_state`.
     sql_exit::lock_def_state(tx).await?;

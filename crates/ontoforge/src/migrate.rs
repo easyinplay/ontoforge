@@ -21,7 +21,8 @@ use ontoforge_storage::store::{EditStore, StoreSettings};
 
 use crate::cli::MigrateArgs;
 use crate::reload::{
-    EXIT_STORE, lock_timeout_diagnostic, store_diagnostic, store_failure, store_settings,
+    EXIT_STORE, lock_timeout_diagnostic, not_visible_diagnostic, store_diagnostic, store_failure,
+    store_settings,
 };
 use crate::render::{self, Format};
 use crate::{lint_cmd, print_rendered};
@@ -112,6 +113,15 @@ pub fn run(args: &MigrateArgs) -> u8 {
         Err(e @ MigrateError::LockTimeout) => {
             diagnostics.push(lock_timeout_diagnostic(&e, &args.server_config));
             fail(&diagnostics, &out.sources, EXIT_STORE, args)
+        }
+        Err(e @ MigrateError::NotVisible { .. }) => {
+            // The migration is applied and active; only Trino lags behind.
+            diagnostics.push(not_visible_diagnostic(&e, &args.server_config));
+            finish(&diagnostics, &out.sources, None, args);
+            if args.output.format == Format::Human {
+                eprintln!("migration applied, but Trino does not show the new names yet");
+            }
+            EXIT_STORE
         }
     }
 }

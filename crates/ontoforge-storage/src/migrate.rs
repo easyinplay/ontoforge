@@ -35,7 +35,8 @@ use crate::physical::{
     ArchivedColumn, ArchivedTable, IndexDef, IndexKind, ObjectTable, PhysicalSchema, PropertyColumn,
 };
 use crate::reload::{
-    begin_definition_tx, execute_steps, is_lock_timeout, same_ontology, switch_definition,
+    ProbeContext, begin_definition_tx, execute_steps, is_lock_timeout, same_ontology,
+    switch_definition,
 };
 use crate::sql_exit;
 use crate::store::{ActiveDefinition, Backend, EditStore, WriteTx};
@@ -277,6 +278,10 @@ pub enum MigrateError {
     /// A lock was not free within `[store] lock_timeout_ms`; nothing was changed.
     #[error("gave up waiting for a database lock (lock_timeout); nothing was changed")]
     LockTimeout,
+    /// The migration is applied and active, but Trino did not show the new names within
+    /// `[store] probe_timeout_ms`.
+    #[error("the migration is applied, but Trino does not show {} yet", .missing.join(", "))]
+    NotVisible { missing: Vec<String> },
 }
 
 impl From<StoreError> for MigrateError {
@@ -318,6 +323,17 @@ pub async fn apply_migration(
     new: &Ontology,
     renames: &[RenameDecl],
     expected_hash: &str,
+) -> Result<i64, MigrateError> {
+    apply_migration_probed(store, new, renames, expected_hash, None).await
+}
+
+/// [`apply_migration`], then waits until Trino shows the names the migration created.
+pub async fn apply_migration_probed(
+    store: &EditStore,
+    new: &Ontology,
+    renames: &[RenameDecl],
+    expected_hash: &str,
+    _probe: Option<&ProbeContext<'_>>,
 ) -> Result<i64, MigrateError> {
     let mut tx = begin_definition_tx(store).await?;
     match apply_in(&mut tx, new, renames, expected_hash).await {

@@ -21,6 +21,10 @@ pub enum StoreError {
     /// Stored data does not have the shape this code wrote.
     #[error("edit store content is corrupt: {0}")]
     Corrupt(String),
+    /// Someone else changed the definition while this command ran; nothing of it was lost, run
+    /// the command again.
+    #[error("the definition was changed by someone else meanwhile: {0}")]
+    Conflict(String),
 }
 
 fn sqlstate_suffix(sqlstate: Option<&String>) -> String {

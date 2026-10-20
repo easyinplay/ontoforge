@@ -75,6 +75,7 @@ pub fn run(args: &ReloadArgs) -> u8 {
             attrs: attr_types(auth.as_ref()),
             profile,
         }),
+        probe: None,
     };
     match runtime.block_on(open_and_reload(settings, ontology, &opts)) {
         Ok(outcome) => {
@@ -102,7 +103,28 @@ pub fn run(args: &ReloadArgs) -> u8 {
             diagnostics.push(lock_timeout_diagnostic(&e, &args.server_config));
             fail(&diagnostics, &out.sources, EXIT_STORE, args)
         }
+        Err(e @ ReloadError::NotVisible { .. }) => {
+            diagnostics.push(not_visible_diagnostic(&e, &args.server_config));
+            finish(&diagnostics, &out.sources, None, args);
+            if args.output.format == Format::Human {
+                eprintln!(
+                    "reload not finished: the new tables are in the database, the previous definition is still active"
+                );
+            }
+            EXIT_STORE
+        }
     }
+}
+
+/// ONT-V26 for new tables or columns that Trino does not show in time. The DDL is committed and
+/// only adds, so running the command again is safe.
+pub(crate) fn not_visible_diagnostic(
+    error: &dyn std::fmt::Display,
+    config: &Utf8Path,
+) -> Diagnostic {
+    store_diagnostic(&error.to_string(), config).with_help(
+        "check that the Trino catalog in `[store.trino]` maps the edit schema (see docs/edit-store.md), that array columns are mapped (`postgresql.array-mapping=AS_ARRAY`) and that the metadata cache can be flushed, then run the command again; raise `probe_timeout_ms` in `[store]` if Trino is slow",
+    )
 }
 
 /// ONT-V26 for a lock that was not free in time. The previous definition is still active.
@@ -118,7 +140,7 @@ pub(crate) fn lock_timeout_diagnostic(
 async fn open_and_reload(
     settings: StoreSettings,
     ontology: &Ontology,
-    opts: &ReloadOptions,
+    opts: &ReloadOptions<'_>,
 ) -> Result<ReloadOutcome, ReloadError> {
     let store = EditStore::open(settings).await?;
     ontoforge_storage::reload::reload(&store, ontology, opts).await

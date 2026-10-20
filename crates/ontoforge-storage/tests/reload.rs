@@ -5,9 +5,14 @@ mod support;
 
 use std::collections::{BTreeMap, BTreeSet};
 
+use futures_util::future::BoxFuture;
+use ontoforge_engine::{EngineError, PhysicalColumn, PhysicalType, TableRef};
 use ontoforge_schema::ir::{AttrType, ObjectTypeName, Ontology, PropertyName};
 use ontoforge_storage::commit::{Actor, Commit, Edit, EditError, ObjectOp};
-use ontoforge_storage::reload::{ReloadError, ReloadOptions, RolesCheck, reload};
+use ontoforge_storage::migrate::{MigrateError, apply_migration_probed, plan_migration};
+use ontoforge_storage::reload::{
+    ProbeContext, ProbeTarget, ReloadError, ReloadOptions, RolesCheck, reload,
+};
 use ontoforge_storage::value::PropertyValue;
 use support::{ontology_from, sqlite_store};
 
@@ -894,7 +899,7 @@ fn roles_check() -> RolesCheck {
     }
 }
 
-fn with_roles() -> ReloadOptions {
+fn with_roles() -> ReloadOptions<'static> {
     ReloadOptions {
         roles: Some(roles_check()),
         ..ReloadOptions::default()
@@ -1133,4 +1138,331 @@ async fn reload_racing_commits_never_lets_an_old_write_through() {
             "round {round}"
         );
     }
+}
+
+// ---------------------------------------------------------------------------------------------
+// The Trino visibility probe and the two step switch (plan 03-18 task 3)
+// ---------------------------------------------------------------------------------------------
+
+/// A Trino that shows the edit tables as scripted: the `base` columns from the start, the `late`
+/// ones from the `visible_from`-th `describe` on. It counts what it is asked.
+struct ScriptedTrino {
+    visible_from: usize,
+    base: BTreeMap<String, Vec<String>>,
+    late: BTreeMap<String, Vec<String>>,
+    flushes: std::sync::Mutex<Vec<String>>,
+    asked: std::sync::Mutex<Vec<Vec<String>>>,
+}
+
+impl ScriptedTrino {
+    /// Shows `of_obj_gate` without `late` until the `visible_from`-th `describe`.
+    fn gate(visible_from: usize, late: &[&str]) -> Self {
+        let columns = |names: &[&str]| names.iter().map(|n| (*n).to_owned()).collect::<Vec<_>>();
+        Self {
+            visible_from,
+            base: BTreeMap::from([
+                (
+                    "of_obj_gate".to_owned(),
+                    columns(&["code", "name", "capacity"]),
+                ),
+                ("of_obj_stand".to_owned(), columns(&["id", "label"])),
+            ]),
+            late: BTreeMap::from([("of_obj_gate".to_owned(), columns(late))]),
+            flushes: std::sync::Mutex::default(),
+            asked: std::sync::Mutex::default(),
+        }
+    }
+
+    fn describes(&self) -> usize {
+        self.asked.lock().expect("lock").len()
+    }
+
+    fn flushes(&self) -> Vec<String> {
+        self.flushes.lock().expect("lock").clone()
+    }
+
+    /// The tables of every `describe`, by name.
+    fn asked(&self) -> Vec<Vec<String>> {
+        self.asked.lock().expect("lock").clone()
+    }
+}
+
+impl ProbeTarget for ScriptedTrino {
+    fn flush_metadata<'a>(&'a self, catalog: &'a str) -> BoxFuture<'a, Result<(), EngineError>> {
+        self.flushes.lock().expect("lock").push(catalog.to_owned());
+        Box::pin(async { Ok(()) })
+    }
+
+    fn describe<'a>(
+        &'a self,
+        tables: &'a [TableRef],
+    ) -> BoxFuture<'a, Result<BTreeMap<TableRef, Vec<PhysicalColumn>>, EngineError>> {
+        let call = {
+            let mut asked = self.asked.lock().expect("lock");
+            asked.push(tables.iter().map(|t| t.table.clone()).collect());
+            asked.len()
+        };
+        let mut shown = BTreeMap::new();
+        for table in tables {
+            let Some(base) = self.base.get(&table.table) else {
+                continue;
+            };
+            let mut names = base.clone();
+            if call >= self.visible_from {
+                names.extend(self.late.get(&table.table).cloned().unwrap_or_default());
+            }
+            shown.insert(
+                table.clone(),
+                names
+                    .into_iter()
+                    .map(|name| PhysicalColumn {
+                        name,
+                        physical: PhysicalType::parse("varchar"),
+                        nullable: true,
+                    })
+                    .collect(),
+            );
+        }
+        Box::pin(async move { Ok(shown) })
+    }
+}
+
+fn probing(target: &ScriptedTrino, timeout_ms: u64) -> ReloadOptions<'_> {
+    ReloadOptions {
+        probe: Some(ProbeContext {
+            target,
+            catalog: "editstore".to_owned(),
+            timeout: std::time::Duration::from_millis(timeout_ms),
+        }),
+        ..ReloadOptions::default()
+    }
+}
+
+/// `(def_version, status)` of every definition version.
+async fn version_status(t: &support::TestStore) -> Vec<(i64, String)> {
+    let pool = t.side_pool().await;
+    sqlx::query_as("SELECT def_version, status FROM of_def_version ORDER BY def_version")
+        .fetch_all(&pool)
+        .await
+        .expect("versions")
+}
+
+fn statuses(pairs: &[(i64, &str)]) -> Vec<(i64, String)> {
+    pairs.iter().map(|(v, s)| (*v, (*s).to_owned())).collect()
+}
+
+fn with_zone_and_level() -> Ontology {
+    let properties =
+        format!("{GATE_PROPERTIES}  zone: {{ type: string }}\n  level: {{ type: byte }}\n");
+    definition("code", &properties, true)
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn probe_waits_until_visible() {
+    let t = sqlite_store().await;
+    reload(&t.store, &base(), &ReloadOptions::default())
+        .await
+        .expect("v1");
+    let trino = ScriptedTrino::gate(3, &["zone"]);
+
+    let out = reload(&t.store, &with_zone(), &probing(&trino, 5_000))
+        .await
+        .expect("reload once the column is visible");
+    assert!(out.changed);
+    assert_eq!(out.previous_def_version, Some(1));
+    assert_eq!(out.def_version, Some(2));
+    assert_eq!(trino.describes(), 3, "polled until the third look");
+    assert_eq!(
+        trino.flushes(),
+        ["editstore"],
+        "flushed once, before looking"
+    );
+    assert!(
+        trino
+            .asked()
+            .iter()
+            .all(|tables| tables == &["of_obj_gate".to_owned()]),
+        "only the table the reload changed is looked at: {:?}",
+        trino.asked()
+    );
+    assert_eq!(
+        version_status(&t).await,
+        statuses(&[(1, "superseded"), (2, "active")])
+    );
+    assert_eq!(t.active_version().await, 2);
+    assert_eq!(
+        t.store.active_definition().await.map(|a| a.def_version),
+        Some(2)
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn probe_timeout_keeps_pending() {
+    let t = sqlite_store().await;
+    reload(&t.store, &base(), &ReloadOptions::default())
+        .await
+        .expect("v1");
+    let never = ScriptedTrino::gate(usize::MAX, &["zone"]);
+
+    let result = reload(&t.store, &with_zone(), &probing(&never, 500)).await;
+    let Err(ReloadError::NotVisible { missing }) = result else {
+        panic!("expected NotVisible, got {result:?}");
+    };
+    assert_eq!(missing, ["of_obj_gate.zone"]);
+    assert!(never.describes() >= 2, "it kept looking until the timeout");
+    // The DDL is committed, the definition is not active.
+    assert!(t.columns("of_obj_gate").await.contains(&"zone".to_owned()));
+    assert_eq!(t.active_version().await, 1);
+    assert_eq!(
+        version_status(&t).await,
+        statuses(&[(1, "active"), (2, "pending")])
+    );
+    assert_eq!(
+        t.store.active_definition().await.map(|a| a.def_version),
+        Some(1)
+    );
+
+    // Run again once Trino shows the column: the pending version is the one that becomes active.
+    let visible = ScriptedTrino::gate(1, &["zone"]);
+    let out = reload(&t.store, &with_zone(), &probing(&visible, 5_000))
+        .await
+        .expect("second attempt");
+    assert_eq!(out.def_version, Some(2), "the pending version is reused");
+    assert_eq!(
+        version_status(&t).await,
+        statuses(&[(1, "superseded"), (2, "active")])
+    );
+
+    // A different definition replaces a pending one instead of piling up behind it.
+    let t = sqlite_store().await;
+    reload(&t.store, &base(), &ReloadOptions::default())
+        .await
+        .expect("v1");
+    let result = reload(&t.store, &with_zone(), &probing(&never, 300)).await;
+    assert!(
+        matches!(result, Err(ReloadError::NotVisible { .. })),
+        "{result:?}"
+    );
+    let both = ScriptedTrino::gate(1, &["zone", "level"]);
+    let out = reload(&t.store, &with_zone_and_level(), &probing(&both, 5_000))
+        .await
+        .expect("a different definition");
+    assert_eq!(out.def_version, Some(3));
+    assert_eq!(
+        version_status(&t).await,
+        statuses(&[(1, "superseded"), (2, "superseded"), (3, "active")]),
+        "no second pending version"
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn array_columns_are_not_probed() {
+    let t = sqlite_store().await;
+    reload(&t.store, &base(), &ReloadOptions::default())
+        .await
+        .expect("v1");
+    // Trino's PostgreSQL connector skips array columns unless it is told otherwise (RESEARCH
+    // Pitfall 7): a Trino that never shows `tags` must not hold the reload back.
+    let blind = ScriptedTrino::gate(usize::MAX, &["tags"]);
+
+    let tags = format!("{GATE_PROPERTIES}  tags: {{ type: array, items: string }}\n");
+    let out = reload(
+        &t.store,
+        &definition("code", &tags, true),
+        &probing(&blind, 300),
+    )
+    .await
+    .expect("an array column alone needs no probe");
+    assert_eq!(out.def_version, Some(2));
+    assert_eq!(blind.describes(), 0, "nothing to wait for, nobody asked");
+    assert!(blind.flushes().is_empty());
+
+    // Next to a column the connector does show, only that one is waited for.
+    let both = format!("{tags}  zone: {{ type: string }}\n");
+    let zone_only = ScriptedTrino::gate(2, &["zone"]);
+    let out = reload(
+        &t.store,
+        &definition("code", &both, true),
+        &probing(&zone_only, 5_000),
+    )
+    .await
+    .expect("zone becomes visible, tags never does");
+    assert_eq!(out.def_version, Some(3));
+    assert_eq!(zone_only.describes(), 2);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn metadata_only_change_needs_no_probe() {
+    let t = sqlite_store().await;
+    reload(&t.store, &base(), &ReloadOptions::default())
+        .await
+        .expect("v1");
+    let trino = ScriptedTrino::gate(usize::MAX, &[]);
+    let described = "  code: { type: string, required: true }
+  name: { type: string, displayName: Name }
+  capacity: { type: integer }
+";
+    let out = reload(
+        &t.store,
+        &definition("code", described, true),
+        &probing(&trino, 300),
+    )
+    .await
+    .expect("metadata");
+    assert!(out.changed);
+    assert_eq!(out.def_version, Some(2));
+    assert_eq!(trino.describes(), 0);
+    assert!(trino.flushes().is_empty());
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn migrate_waits_for_trino_after_the_switch() {
+    // `capacity` goes away: migrate archives the column, which cannot be undone by a retry, so
+    // the definition switches in one transaction and Trino is awaited afterwards.
+    let removed = definition(
+        "code",
+        "  code: { type: string, required: true }\n  name: { type: string }\n",
+        true,
+    );
+    let t = sqlite_store().await;
+    reload(&t.store, &base(), &ReloadOptions::default())
+        .await
+        .expect("v1");
+    let active = t.store.active_definition().await.expect("active");
+    let plan = plan_migration(&active, &removed, &[]).expect("plan");
+
+    let blind = ScriptedTrino::gate(usize::MAX, &["capacity__arch_v2"]);
+    let probe = ProbeContext {
+        target: &blind,
+        catalog: "editstore".to_owned(),
+        timeout: std::time::Duration::from_millis(300),
+    };
+    let result = apply_migration_probed(&t.store, &removed, &[], &plan.hash, Some(&probe)).await;
+    let Err(MigrateError::NotVisible { missing }) = result else {
+        panic!("expected NotVisible, got {result:?}");
+    };
+    assert_eq!(missing, ["of_obj_gate.capacity__arch_v2"]);
+    assert_eq!(
+        t.active_version().await,
+        2,
+        "the migration itself is applied"
+    );
+
+    // With a Trino that shows the archived column the call returns the new version.
+    let t = sqlite_store().await;
+    reload(&t.store, &base(), &ReloadOptions::default())
+        .await
+        .expect("v1");
+    let seeing = ScriptedTrino::gate(2, &["capacity__arch_v2"]);
+    let probe = ProbeContext {
+        target: &seeing,
+        catalog: "editstore".to_owned(),
+        timeout: std::time::Duration::from_secs(5),
+    };
+    let version = apply_migration_probed(&t.store, &removed, &[], &plan.hash, Some(&probe))
+        .await
+        .expect("migrate");
+    assert_eq!(version, 2);
+    assert_eq!(seeing.describes(), 2);
+    assert_eq!(seeing.flushes(), ["editstore"]);
 }
