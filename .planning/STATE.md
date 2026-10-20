@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Edit Store & Scope Model
 status: executing
-stopped_at: Completed 03-15-PLAN.md
-last_updated: "2026-10-20T06:24:59.663Z"
+stopped_at: Completed 03-13-PLAN.md
+last_updated: "2026-10-20T07:10:10.765Z"
 last_activity: 2026-10-20
 last_activity_desc: Phase 03 execution started
-state_head: 4f17c6b18592602184846615db4deaf10f60cd69
+state_head: 11bb27eb58b63aa8c7a12f37034a1311773be771
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 44
-  completed_plans: 38
+  completed_plans: 39
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-19)
 ## Current Position
 
 Phase: 03 (Edit Store & Scope Model) — EXECUTING
-Plan: 15 of 20
+Plan: 16 of 20
 Status: Ready to execute
 Last activity: 2026-10-20 — Phase 03 execution started
 
@@ -54,6 +54,7 @@ Progress: [██████████░░░░░░░░░░] 24/44 p
 | Phase 03 P14 | 25 min | 2 tasks | 8 files |
 | Phase 03 P09 | 32 min | 2 tasks | 6 files |
 | Phase 03 P15 | 2h | 2 tasks | 14 files |
+| Phase 03 P13 | 55 min | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -78,6 +79,7 @@ Progress: [██████████░░░░░░░░░░] 24/44 p
 - [Phase 03]: 03-14: computed object index in a submission criterion is ONT-V23 for any role granted the action (fail-closed) — Which property a criterion reads cannot be proven statically, so a dry run could probe a hidden column
 - [Phase 03]: Replay applies all log records in one transaction and requires the target to hold the records' def_version — A failed replay leaves the target untouched; cross-version replay waits for 03-15 migration_json (ADR-0026)
 - [Phase 03]: 03-15: indexes on a column or table are dropped when it is archived, not at clean-up, because index names are schema-global — A kept index would make CREATE INDEX IF NOT EXISTS on a re-added column of the same name a silent no-op
+- [Phase 03]: 03-13: a commit writes each row once in its final state in lock order; replay shares that path (ADR-0026 section 7 amended); swapping two oneToOne keys in one commit is a CardinalityViolation
 
 ### Pending Todos
 
@@ -96,6 +98,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-20T06:24:59.536Z
-Stopped at: Completed 03-15-PLAN.md
+Last session: 2026-10-20T07:10:10.636Z
+Stopped at: Completed 03-13-PLAN.md
 Resume file: None
