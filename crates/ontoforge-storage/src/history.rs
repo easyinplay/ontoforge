@@ -133,11 +133,26 @@ impl EditStore {
         };
         let backend = self.backend();
 
-        let located = sql_exit::fetch_all_as::<EntryKey>(
+        let limit = effective_limit(req.limit);
+        let mut located = sql_exit::fetch_all_as::<EntryKey>(
             &self.db,
-            locate_query(backend, &object, req.before_seq, effective_limit(req.limit)),
+            locate_query(backend, &object, req.before_seq, limit),
         )
         .await?;
+        // `before_seq` pages by record, so a page never ends inside the edits one commit made to
+        // this object: the rest of the last record is added, and the page may exceed the limit by
+        // that.
+        if let Some(&(seq, ordinal)) = located.last()
+            && located.len() >= usize::try_from(limit).unwrap_or(usize::MAX)
+        {
+            located.extend(
+                sql_exit::fetch_all_as::<EntryKey>(
+                    &self.db,
+                    rest_of_record_query(backend, &object, seq, ordinal),
+                )
+                .await?,
+            );
+        }
         if located.is_empty() {
             return Ok(Vec::new());
         }
@@ -184,8 +199,9 @@ impl EditStore {
     }
 }
 
+/// A limit of 0 reads as 1; anything above [`MAX_LIMIT`] reads as the maximum.
 fn effective_limit(limit: u32) -> u32 {
-    Ord::min(limit, MAX_LIMIT)
+    limit.clamp(1, MAX_LIMIT)
 }
 
 /// What the caller may see of the object now, or [`HistoryError::NotFound`]. No scope, no object
@@ -309,6 +325,24 @@ fn locate_query(
     sql_exit::build_for(&select, backend)
 }
 
+/// `(log_seq, ordinal)` of the entries of `object` in record `seq` below `ordinal`, newest first.
+fn rest_of_record_query(backend: Backend, object: &ObjectRef<'_>, seq: i64, ordinal: i32) -> Built {
+    let select = Query::select()
+        .column(Alias::new("log_seq"))
+        .column(Alias::new("ordinal"))
+        .from(Alias::new("of_edit_history"))
+        .and_where(Expr::col(Alias::new("kind")).eq("object"))
+        .and_where(Expr::col(Alias::new("type_name")).eq(object.type_name))
+        .and_where(
+            Expr::col(Alias::new("pk")).eq(sql_exit::typed_text(backend, &object.pk, "jsonb")),
+        )
+        .and_where(Expr::col(Alias::new("log_seq")).eq(seq))
+        .and_where(Expr::col(Alias::new("ordinal")).lt(ordinal))
+        .order_by(Alias::new("ordinal"), Order::Desc)
+        .to_owned();
+    sql_exit::build_for(&select, backend)
+}
+
 /// The log entries of `object` inside the records `seqs`.
 fn entry_query(backend: Backend, object: &ObjectRef<'_>, seqs: &[i64]) -> Built {
     let select = Query::select()
@@ -384,4 +418,18 @@ pub(crate) async fn append_snapshot(
         .to_owned();
     let built = sql_exit::build(&insert, tx);
     sql_exit::execute_built(tx, built).await.map(|_| ())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{MAX_LIMIT, effective_limit};
+
+    #[test]
+    fn limit_is_between_one_and_the_maximum() {
+        assert_eq!(effective_limit(0), 1);
+        assert_eq!(effective_limit(1), 1);
+        assert_eq!(effective_limit(MAX_LIMIT), MAX_LIMIT);
+        assert_eq!(effective_limit(10_000), 500);
+        assert_eq!(effective_limit(u32::MAX), 500);
+    }
 }
