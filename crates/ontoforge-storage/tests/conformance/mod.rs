@@ -232,8 +232,9 @@ fn text(s: &str) -> Option<String> {
     Some(s.to_owned())
 }
 
-/// The definition of the cases: an editOnly `Gate` with a column of every kind of value, an
-/// editOnly `Stand`, and the many to many link between them.
+/// The definition of the cases: an editOnly `Gate` with a column of every kind of value, a source
+/// backed `Stand`, two many to many links between them (one editOnly, one source backed) and the
+/// one to one link `gateStand`, whose foreign key is `Stand.gate`.
 const DEFS: &str = "kind: ObjectType
 apiName: Gate
 backing: editOnly
@@ -254,11 +255,12 @@ properties:
 ---
 kind: ObjectType
 apiName: Stand
-backing: editOnly
+backing: source
 primaryKey: id
 properties:
   id: { type: integer, required: true }
   label: { type: string }
+  gate: { type: string }
 ---
 kind: LinkType
 apiName: gateStands
@@ -266,6 +268,19 @@ cardinality: manyToMany
 from: { objectType: Gate, apiName: stands }
 to: { objectType: Stand, apiName: gates }
 backing: editOnly
+---
+kind: LinkType
+apiName: gateSlots
+cardinality: manyToMany
+from: { objectType: Gate, apiName: slots }
+to: { objectType: Stand, apiName: slotGates }
+backing: source
+---
+kind: LinkType
+apiName: gateStand
+cardinality: oneToOne
+from: { objectType: Gate, apiName: stand }
+to: { objectType: Stand, apiName: assignedGate, foreignKey: gate }
 ";
 
 const ALICE: &str = "https://idp.example.com|alice";
@@ -1134,6 +1149,8 @@ const STAND_COLUMNS: &[&str] = &[
     "id",
     "label",
     "label__set",
+    "gate",
+    "gate__set",
     "of_version",
     "of_deleted",
     "of_released",
@@ -1312,6 +1329,361 @@ pub async fn same_commit_twice_creates_two_records(h: &Harness) {
 }
 
 // ---------------------------------------------------------------------------------------------
+// The overlay operations (STORE-07)
+// ---------------------------------------------------------------------------------------------
+
+fn unset(names: &[&str]) -> ObjectOp {
+    ObjectOp::Unset(names.iter().map(|name| property(name)).collect())
+}
+
+fn link_edit(link: &str, a: PropertyValue, b: PropertyValue, op: LinkOp) -> Edit {
+    Edit::Link {
+        link: LinkTypeName::try_from(link.to_owned()).expect("link name"),
+        a,
+        b,
+        op,
+    }
+}
+
+/// One commit with one edit.
+fn single(def_version: i64, action: &str, edit: Edit) -> Commit {
+    commit_of(def_version, action, Value::Null, vec![edit])
+}
+
+async fn commit_err(h: &Harness, commit: Commit) -> EditError {
+    h.store()
+        .commit(commit)
+        .await
+        .expect_err("the commit must be refused")
+}
+
+const STAND_STATE: &[&str] = &[
+    "id",
+    "label",
+    "label__set",
+    "gate__set",
+    "of_version",
+    "of_deleted",
+    "of_released",
+];
+
+/// `STAND_STATE` of Stand `id`.
+async fn stand_state(h: &Harness, id: i64) -> Vec<Option<String>> {
+    h.row(
+        Tables::Edit,
+        "of_obj_stand",
+        STAND_STATE,
+        "id",
+        &id.to_string(),
+    )
+    .await
+}
+
+async fn log_len(h: &Harness) -> usize {
+    h.store().read_log(0, 1000).await.expect("read_log").len()
+}
+
+pub async fn source_object_lifecycle(h: &Harness) {
+    let v = h.load().await;
+    let on_stand = |action: &str, op: ObjectOp| single(v, action, stand_edit(7, op));
+
+    let receipt = commit_ok(
+        h,
+        on_stand("label", set(&[("label", s("S1")), ("gate", s("A1"))])),
+    )
+    .await;
+    assert_eq!(receipt.versions, vec![1]);
+
+    let receipt = commit_ok(h, on_stand("clear", unset(&["label"]))).await;
+    assert_eq!(receipt.versions, vec![2]);
+    let row = stand_state(h, 7).await;
+    assert_eq!(row[1], None, "an unset property reads as NULL");
+    assert!(!flag(&row[2]), "label__set");
+    assert!(flag(&row[3]), "gate stays set");
+    assert_eq!(row[4], text("2"));
+
+    let receipt = commit_ok(h, on_stand("remove", ObjectOp::Tombstone)).await;
+    assert_eq!(receipt.versions, vec![3]);
+    let row = stand_state(h, 7).await;
+    assert!(flag(&row[5]), "of_deleted");
+    assert!(!flag(&row[6]), "of_released");
+
+    let err = commit_err(h, on_stand("revive", set(&[("label", s("x"))]))).await;
+    assert!(matches!(err, EditError::Tombstoned), "{err:?}");
+    assert_eq!(stand_state(h, 7).await[4], text("3"));
+    assert_eq!(log_len(h).await, 3, "the refused commit left no record");
+
+    let receipt = commit_ok(h, on_stand("release", ObjectOp::Release)).await;
+    assert_eq!(receipt.versions, vec![4]);
+    let row = stand_state(h, 7).await;
+    assert!(!flag(&row[5]), "of_deleted after release");
+    assert!(flag(&row[6]), "of_released");
+    assert!(
+        !flag(&row[2]) && !flag(&row[3]),
+        "release clears every __set"
+    );
+    assert_eq!(row[4], text("4"));
+
+    let receipt = commit_ok(h, on_stand("relabel", set(&[("label", s("S2"))]))).await;
+    assert_eq!(receipt.versions, vec![5]);
+    let row = stand_state(h, 7).await;
+    assert_eq!(row[1], text("S2"));
+    assert!(flag(&row[2]));
+    assert!(!flag(&row[3]), "only what was set after the release is set");
+    assert!(!flag(&row[6]), "a set leaves the released state");
+    assert_eq!(row[4], text("5"));
+}
+
+pub async fn edit_only_rules(h: &Harness) {
+    let v = h.load().await;
+    commit_ok(h, create_gate(v, "A1")).await;
+
+    let err = commit_err(h, single(v, "r", gate_edit("A1", ObjectOp::Release))).await;
+    assert!(matches!(err, EditError::ReleaseOnEditOnly), "{err:?}");
+
+    let err = commit_err(h, single(v, "u", gate_edit("A1", unset(&["name"])))).await;
+    assert!(
+        matches!(&err, EditError::MissingRequired { property } if property == "name"),
+        "{err:?}"
+    );
+
+    let err = commit_err(h, single(v, "t", gate_edit("B2", ObjectOp::Tombstone))).await;
+    assert!(matches!(err, EditError::NotFound), "{err:?}");
+    assert_eq!(log_len(h).await, 1, "the refused commits left no record");
+
+    let receipt = commit_ok(h, single(v, "u", gate_edit("A1", unset(&["capacity"])))).await;
+    assert_eq!(receipt.versions, vec![2]);
+    let row = h
+        .row(
+            Tables::Edit,
+            "of_obj_gate",
+            &["code", "capacity", "capacity__set", "name__set"],
+            "code",
+            "A1",
+        )
+        .await;
+    assert_eq!(row[1], None);
+    assert!(!flag(&row[2]));
+    assert!(flag(&row[3]), "the required name is untouched");
+
+    let receipt = commit_ok(h, single(v, "t", gate_edit("A1", ObjectOp::Tombstone))).await;
+    assert_eq!(receipt.versions, vec![3]);
+    let err = commit_err(h, single(v, "r", gate_edit("A1", ObjectOp::Release))).await;
+    assert!(
+        matches!(err, EditError::ReleaseOnEditOnly),
+        "a deleted editOnly object cannot come back: {err:?}"
+    );
+    let err = commit_err(h, single(v, "s", gate_edit("A1", set(&[("name", s("N"))])))).await;
+    assert!(matches!(err, EditError::Tombstoned), "{err:?}");
+}
+
+/// `(of_version, of_deleted)` of the link row `A1 - 7` of `table`.
+async fn link_state(h: &Harness, table: &str) -> (Option<String>, bool) {
+    let row = h
+        .row(
+            Tables::Edit,
+            table,
+            &["a_pk", "b_pk", "of_version", "of_deleted"],
+            "a_pk",
+            "A1",
+        )
+        .await;
+    (row[2].clone(), flag(&row[3]))
+}
+
+pub async fn link_add_remove_toggle(h: &Harness) {
+    let v = h.load().await;
+    let edge = |op: LinkOp| {
+        single(
+            v,
+            "edge",
+            link_edit("gateStands", s("A1"), PropertyValue::Int(7), op),
+        )
+    };
+
+    assert_eq!(commit_ok(h, edge(LinkOp::Add)).await.versions, vec![1]);
+    assert_eq!(
+        link_state(h, "of_lnk_gate_stands").await,
+        (text("1"), false)
+    );
+
+    assert_eq!(commit_ok(h, edge(LinkOp::Remove)).await.versions, vec![2]);
+    assert_eq!(link_state(h, "of_lnk_gate_stands").await, (text("2"), true));
+
+    assert_eq!(commit_ok(h, edge(LinkOp::Add)).await.versions, vec![3]);
+    assert_eq!(
+        link_state(h, "of_lnk_gate_stands").await,
+        (text("3"), false)
+    );
+
+    let log = h.store().read_log(0, 10).await.expect("read_log");
+    let ops: Vec<EditOp> = log.iter().map(|r| r.entries[0].op).collect();
+    assert_eq!(
+        ops,
+        vec![EditOp::LinkAdd, EditOp::LinkRemove, EditOp::LinkAdd]
+    );
+    assert!(log.iter().all(|r| r.entries[0].pk == json!(["A1", 7])));
+}
+
+pub async fn link_remove_rules(h: &Harness) {
+    let v = h.load().await;
+    let on = |link: &str, op: LinkOp| {
+        single(
+            v,
+            "edge",
+            link_edit(link, s("A1"), PropertyValue::Int(7), op),
+        )
+    };
+
+    let err = commit_err(h, on("gateStands", LinkOp::Remove)).await;
+    assert!(
+        matches!(err, EditError::NotFound),
+        "an editOnly link that was never added: {err:?}"
+    );
+    assert_eq!(log_len(h).await, 0);
+
+    // A source backed link may be removed without an edit row: the row suppresses the join row.
+    let receipt = commit_ok(h, on("gateSlots", LinkOp::Remove)).await;
+    assert_eq!(receipt.versions, vec![1]);
+    assert_eq!(link_state(h, "of_lnk_gate_slots").await, (text("1"), true));
+
+    let receipt = commit_ok(h, on("gateSlots", LinkOp::Add)).await;
+    assert_eq!(receipt.versions, vec![2]);
+    assert_eq!(link_state(h, "of_lnk_gate_slots").await, (text("2"), false));
+}
+
+pub async fn log_records_every_op(h: &Harness) {
+    let v = h.load().await;
+    let on_stand = |action: &str, op: ObjectOp| single(v, action, stand_edit(7, op));
+    commit_ok(h, on_stand("a", set(&[("label", s("S1"))]))).await;
+    commit_ok(h, on_stand("b", unset(&["label"]))).await;
+    commit_ok(h, on_stand("c", ObjectOp::Tombstone)).await;
+    commit_ok(h, on_stand("d", ObjectOp::Release)).await;
+    let edge = |op: LinkOp| link_edit("gateStands", s("A1"), PropertyValue::Int(7), op);
+    commit_ok(h, single(v, "e", edge(LinkOp::Add))).await;
+    commit_ok(h, single(v, "f", edge(LinkOp::Remove))).await;
+
+    let log = h.store().read_log(0, 10).await.expect("read_log");
+    let entries: Vec<_> = log
+        .iter()
+        .map(|r| {
+            let e = &r.entries[0];
+            (e.op, e.payload.clone(), e.version_after)
+        })
+        .collect();
+    assert_eq!(
+        entries,
+        vec![
+            (EditOp::Set, Some(json!({ "label": "S1" })), 1),
+            (EditOp::Unset, Some(json!(["label"])), 2),
+            (EditOp::Tombstone, None, 3),
+            (EditOp::Release, None, 4),
+            (EditOp::LinkAdd, None, 1),
+            (EditOp::LinkRemove, None, 2),
+        ]
+    );
+
+    let history = h
+        .rows(
+            Tables::Sys,
+            "of_edit_history",
+            &["log_seq", "snapshot"],
+            None,
+        )
+        .await;
+    let snapshots: Vec<Value> = history.iter().map(|row| json_cell(&row[1])).collect();
+    assert_eq!(
+        snapshots,
+        vec![
+            json!({ "deleted": false, "released": false, "set": { "label": "S1" } }),
+            json!({ "deleted": false, "released": false, "set": {} }),
+            json!({ "deleted": true, "released": false, "set": {} }),
+            json!({ "deleted": false, "released": true, "set": {} }),
+            json!({ "deleted": false }),
+            json!({ "deleted": true }),
+        ]
+    );
+}
+
+/// A history that uses every operation, replayed into a second store.
+pub async fn replay_rebuilds_overlay_operations(h: &Harness) {
+    let v = h.load().await;
+    commit_ok(h, create_gate(v, "A1")).await;
+    commit_ok(h, create_gate(v, "A2")).await;
+    commit_ok(
+        h,
+        single(
+            v,
+            "stand",
+            stand_edit(7, set(&[("label", s("seven")), ("gate", s("A1"))])),
+        ),
+    )
+    .await;
+    commit_ok(h, single(v, "unset", stand_edit(7, unset(&["label"])))).await;
+    commit_ok(h, single(v, "suppress", stand_edit(8, ObjectOp::Tombstone))).await;
+    commit_ok(
+        h,
+        commit_of(
+            v,
+            "cycle",
+            Value::Null,
+            vec![
+                stand_edit(9, set(&[("label", s("nine"))])),
+                stand_edit(9, ObjectOp::Tombstone),
+                stand_edit(9, ObjectOp::Release),
+                stand_edit(9, set(&[("label", s("again"))])),
+            ],
+        ),
+    )
+    .await;
+    commit_ok(h, single(v, "drop", gate_edit("A2", ObjectOp::Tombstone))).await;
+    commit_ok(h, single(v, "clear", gate_edit("A1", unset(&["capacity"])))).await;
+    for (link, op) in [
+        ("gateStands", LinkOp::Add),
+        ("gateStands", LinkOp::Remove),
+        ("gateStands", LinkOp::Add),
+        ("gateSlots", LinkOp::Remove),
+        ("gateSlots", LinkOp::Add),
+        ("gateSlots", LinkOp::Remove),
+    ] {
+        commit_ok(
+            h,
+            single(
+                v,
+                "edge",
+                link_edit(link, s("A1"), PropertyValue::Int(7), op),
+            ),
+        )
+        .await;
+    }
+    let records = h.store().read_log(0, 100).await.expect("read_log");
+    let used: std::collections::BTreeSet<&str> = records
+        .iter()
+        .flat_map(|r| r.entries.iter().map(|e| e.op.as_str()))
+        .collect();
+    assert_eq!(
+        used.len(),
+        6,
+        "the history uses every kind of entry: {used:?}"
+    );
+
+    let target = h.sibling().await;
+    replay(&records, target.store()).await.expect("replay");
+
+    for (table, columns) in [
+        ("of_obj_gate", GATE_COLUMNS),
+        ("of_obj_stand", STAND_COLUMNS),
+        ("of_lnk_gate_stands", LINK_COLUMNS),
+        ("of_lnk_gate_slots", LINK_COLUMNS),
+    ] {
+        let original = h.rows(Tables::Edit, table, columns, None).await;
+        let rebuilt = target.rows(Tables::Edit, table, columns, None).await;
+        assert!(!original.is_empty(), "{table} has rows to compare");
+        assert_eq!(rebuilt, original, "{table} rebuilt from the log");
+    }
+}
+
+// ---------------------------------------------------------------------------------------------
 // Expansion
 // ---------------------------------------------------------------------------------------------
 
@@ -1347,6 +1719,12 @@ macro_rules! all_cases {
         $crate::conformance::conformance_case!($factory, replay_rebuilds_edit_store $(, $attr)?);
         $crate::conformance::conformance_case!($factory, replay_detects_version_divergence $(, $attr)?);
         $crate::conformance::conformance_case!($factory, same_commit_twice_creates_two_records $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, source_object_lifecycle $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, edit_only_rules $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, link_add_remove_toggle $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, link_remove_rules $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, log_records_every_op $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, replay_rebuilds_overlay_operations $(, $attr)?);
     };
 }
 
