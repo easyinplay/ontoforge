@@ -7,6 +7,7 @@
 mod support;
 
 use std::collections::{BTreeMap, BTreeSet};
+use std::sync::Arc;
 
 use camino::Utf8Path;
 use ontoforge_auth::scope::{RoleTypeGrant, TypeScope, merge};
@@ -18,9 +19,10 @@ use ontoforge_storage::commit::{Actor, Commit, Edit, LinkOp, ObjectOp, Receipt};
 use ontoforge_storage::history::{CallerKind, HistoryEntry, HistoryError, HistoryRequest};
 use ontoforge_storage::log::EditOp;
 use ontoforge_storage::reload::{ReloadOptions, reload};
+use ontoforge_storage::store::EditStore;
 use ontoforge_storage::value::PropertyValue;
 use serde_json::{Value, json};
-use support::{TestStore, sqlite_store};
+use support::{pg_store, sqlite_store};
 
 const AVIATION: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -30,7 +32,9 @@ const ACTOR: &str = "https://idp.example|tester";
 const DISPATCH_ROW: &str = "object.status != 'CANCELLED' || object.status == null";
 
 struct Fixture {
-    t: TestStore,
+    /// Keeps the database alive: the temporary directory or the embedded server.
+    _guard: Box<dyn std::any::Any>,
+    store: Arc<EditStore>,
     ontology: Ontology,
     def_version: i64,
 }
@@ -44,18 +48,20 @@ fn aviation() -> Ontology {
 /// An SQLite store with the aviation definition reloaded.
 async fn fixture() -> Fixture {
     let t = sqlite_store().await;
+    let store = Arc::clone(&t.store);
+    loaded(Box::new(t), store).await
+}
+
+/// `store` with the aviation definition reloaded.
+async fn loaded(guard: Box<dyn std::any::Any>, store: Arc<EditStore>) -> Fixture {
     let ontology = aviation();
-    reload(&t.store, &ontology, &ReloadOptions::default())
+    reload(&store, &ontology, &ReloadOptions::default())
         .await
         .expect("reload aviation");
-    let def_version = t
-        .store
-        .active_definition()
-        .await
-        .expect("active")
-        .def_version;
+    let def_version = store.active_definition().await.expect("active").def_version;
     Fixture {
-        t,
+        _guard: guard,
+        store,
         ontology,
         def_version,
     }
@@ -79,8 +85,7 @@ fn props(names: &[&str]) -> BTreeSet<PropertyName> {
 
 impl Fixture {
     async fn commit(&self, edits: Vec<Edit>, params: Value) -> Receipt {
-        self.t
-            .store
+        self.store
             .commit(Commit {
                 actor: Actor::Principal(ACTOR.to_owned()),
                 action: "editFlight".to_owned(),
@@ -178,7 +183,7 @@ impl Ask {
         scope: Option<&TypeScope>,
         current: Option<&dyn RowValues>,
     ) -> Result<Vec<HistoryEntry>, HistoryError> {
-        f.t.store
+        f.store
             .history(&HistoryRequest {
                 type_name: &self.ty,
                 pk: &self.pk,
@@ -388,8 +393,10 @@ async fn invisible_nonexistent_and_ungranted_are_identical() {
 /// definition a caller who cannot see the object still gets `NotFound`, not a store error.
 #[tokio::test]
 async fn invisible_check_precedes_store_access() {
+    let t = sqlite_store().await;
     let f = Fixture {
-        t: sqlite_store().await,
+        store: Arc::clone(&t.store),
+        _guard: Box::new(t),
         ontology: aviation(),
         def_version: 1,
     };
@@ -685,4 +692,54 @@ async fn link_entries_are_not_object_history() {
         .await
         .expect("history");
     assert!(entries.is_empty(), "{entries:#?}");
+}
+
+/// The same masking on PostgreSQL: jsonb keys, UTC timestamps and `Admin` params.
+/// Run with `--ignored` against `ONTOFORGE_PG_URL` or with `--features embedded-pg`.
+#[tokio::test]
+#[ignore = "needs a PostgreSQL server"]
+async fn pg_history_masks_and_pages() {
+    let pg = pg_store().await;
+    let store = Arc::clone(&pg.store);
+    let f = loaded(Box::new(pg), store).await;
+    let params = json!({ "note": "p-secret" });
+    let seqs = three_flight_commits(&f, &params).await;
+    let scope = dispatcher(&f);
+    let current = flight_row();
+
+    let entries = ask("Flight", "F1")
+        .run(&f, Some(&scope), Some(&current))
+        .await
+        .expect("history");
+    assert_eq!(
+        entries.iter().map(|e| e.seq).collect::<Vec<_>>(),
+        [seqs[2], seqs[1], seqs[0]]
+    );
+    assert_eq!(entries[0].masked_changes, props(&["aircraftTailNumber"]));
+    assert!(entries[0].committed_at.ends_with('Z'), "{entries:#?}");
+    let body = serde_json::to_string(&entries).expect("serialize");
+    assert!(
+        !body.contains("D-SECRET") && !body.contains("p-secret"),
+        "{body}"
+    );
+
+    let mut admin = ask("Flight", "F1");
+    admin.caller = CallerKind::Admin;
+    admin.limit = 1;
+    let page = admin
+        .run(&f, Some(&scope), Some(&current))
+        .await
+        .expect("history");
+    assert_eq!(page.len(), 1);
+    assert_eq!(page[0].params.as_ref(), Some(&params));
+    admin.before_seq = Some(page[0].seq);
+    let page = admin
+        .run(&f, Some(&scope), Some(&current))
+        .await
+        .expect("history");
+    assert_eq!(page[0].seq, seqs[1]);
+
+    for error in blind_errors(&f).await {
+        assert!(matches!(error, HistoryError::NotFound), "{error:?}");
+    }
 }
