@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Edit Store & Scope Model
 status: executing
-stopped_at: Completed 03-09-PLAN.md
-last_updated: "2026-10-20T05:28:16.357Z"
+stopped_at: Completed 03-15-PLAN.md
+last_updated: "2026-10-20T06:24:59.663Z"
 last_activity: 2026-10-20
 last_activity_desc: Phase 03 execution started
-state_head: 15de4172938efbe6f4b68277323ba8e7910b2fd4
+state_head: 4f17c6b18592602184846615db4deaf10f60cd69
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 44
-  completed_plans: 37
+  completed_plans: 38
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-19)
 ## Current Position
 
 Phase: 03 (Edit Store & Scope Model) — EXECUTING
-Plan: 14 of 20
+Plan: 15 of 20
 Status: Ready to execute
 Last activity: 2026-10-20 — Phase 03 execution started
 
@@ -53,6 +53,7 @@ Progress: [██████████░░░░░░░░░░] 24/44 p
 | Phase 03 P12 | 20 min | 2 tasks | 8 files |
 | Phase 03 P14 | 25 min | 2 tasks | 8 files |
 | Phase 03 P09 | 32 min | 2 tasks | 6 files |
+| Phase 03 P15 | 2h | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,7 @@ Progress: [██████████░░░░░░░░░░] 24/44 p
 - [Phase 03]: 03-14: example dev binding collation moved from Flight.status to flightNumber so the example dispatcher rowFilter satisfies D-08 — A rowFilter cannot read a caseInsensitive column (ONT-V22); the shipped dispatcher role filters on status
 - [Phase 03]: 03-14: computed object index in a submission criterion is ONT-V23 for any role granted the action (fail-closed) — Which property a criterion reads cannot be proven statically, so a dry run could probe a hidden column
 - [Phase 03]: Replay applies all log records in one transaction and requires the target to hold the records' def_version — A failed replay leaves the target untouched; cross-version replay waits for 03-15 migration_json (ADR-0026)
+- [Phase 03]: 03-15: indexes on a column or table are dropped when it is archived, not at clean-up, because index names are schema-global — A kept index would make CREATE INDEX IF NOT EXISTS on a re-added column of the same name a silent no-op
 
 ### Pending Todos
 
@@ -94,6 +96,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-20T05:28:16.227Z
-Stopped at: Completed 03-09-PLAN.md
+Last session: 2026-10-20T06:24:59.536Z
+Stopped at: Completed 03-15-PLAN.md
 Resume file: None
