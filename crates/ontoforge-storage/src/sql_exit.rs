@@ -5,8 +5,13 @@
 //! `AssertSqlSafe`; this is the only file that does so, and `tests/sql_exit_guard.rs` fails the
 //! build when another source file writes SQL text or `AssertSqlSafe`.
 
-use sea_query::{Alias, Expr, ExprTrait, Func, PostgresQueryBuilder, Query, SqliteQueryBuilder};
+use sea_query::{
+    Alias, Expr, ExprTrait, Func, IntoTableRef, PostgresQueryBuilder, Query, SqliteQueryBuilder,
+    TableRef,
+};
 use sea_query_sqlx::{SqlxBinder, SqlxValues};
+use sqlx::postgres::PgRow;
+use sqlx::sqlite::SqliteRow;
 use sqlx::{AssertSqlSafe, PgPool, Row};
 
 use crate::error::StoreError;
@@ -57,6 +62,221 @@ pub(crate) async fn begin_write(db: &Db) -> Result<WriteTx<'_>, StoreError> {
                 schema_edit: schema_edit.clone(),
             })
             .map_err(|e| StoreError::from_sqlx(&e)),
+    }
+}
+
+/// Builds `stmt` for `backend`.
+pub(crate) fn build_for<S: SqlxBinder>(stmt: &S, backend: Backend) -> Built {
+    match backend {
+        Backend::Sqlite => stmt.build_sqlx(SqliteQueryBuilder),
+        Backend::Postgres => stmt.build_sqlx(PostgresQueryBuilder),
+    }
+}
+
+/// An edit table (or any table of the edit schema): qualified on PostgreSQL, bare on SQLite.
+pub(crate) fn edit_table(schema: Option<&str>, table: &str) -> TableRef {
+    match schema {
+        Some(schema) => (Alias::new(schema), Alias::new(table)).into_table_ref(),
+        None => Alias::new(table).into_table_ref(),
+    }
+}
+
+/// `value` as a typed literal: on PostgreSQL `CAST(value AS pg_type)`, on SQLite the text itself.
+/// PostgreSQL types these columns `jsonb`, `timestamptz`, `numeric(p, s)` and so on; the values
+/// travel as text and are cast there.
+pub(crate) fn typed_text(backend: Backend, value: &str, pg_type: &str) -> Expr {
+    let expr = Expr::val(value.to_owned());
+    match backend {
+        Backend::Postgres => expr.cast_as(Alias::new(pg_type)),
+        Backend::Sqlite => expr,
+    }
+}
+
+/// UTC with milliseconds, the one timestamp text of the edit log and the typed edit tables.
+const PG_TIMESTAMP_TEXT: &str = r#"'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'"#;
+
+/// A `timestamptz` column as `YYYY-MM-DDTHH:MM:SS.fffZ` text. SQLite holds the text already.
+pub(crate) fn timestamp_text(backend: Backend, column: &str) -> Expr {
+    match backend {
+        Backend::Postgres => Expr::cust_with_expr(
+            format!("to_char($1 AT TIME ZONE 'UTC', {PG_TIMESTAMP_TEXT})"),
+            Expr::col(Alias::new(column)),
+        ),
+        Backend::Sqlite => Expr::col(Alias::new(column)),
+    }
+}
+
+/// A column read as text: `jsonb`, `numeric` and `date` are cast on PostgreSQL, SQLite text is
+/// read as it is.
+pub(crate) fn column_text(backend: Backend, column: &str) -> Expr {
+    let expr = Expr::col(Alias::new(column));
+    match backend {
+        Backend::Postgres => expr.cast_as(Alias::new("text")),
+        Backend::Sqlite => expr,
+    }
+}
+
+/// A PostgreSQL array column read as `text[]`. Timestamps are rendered in UTC with
+/// milliseconds, so the text does not depend on the session time zone.
+pub(crate) fn array_text(column: &str, timestamps: bool) -> Expr {
+    if timestamps {
+        Expr::cust_with_expr(
+            format!(
+                "ARRAY(SELECT to_char(x AT TIME ZONE 'UTC', {PG_TIMESTAMP_TEXT}) FROM unnest($1) AS x)"
+            ),
+            Expr::col(Alias::new(column)),
+        )
+    } else {
+        Expr::col(Alias::new(column)).cast_as(Alias::new("text[]"))
+    }
+}
+
+/// How to read one column of a row of a typed edit table.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum CellKind {
+    Bool,
+    Int16,
+    Int32,
+    Int64,
+    Float32,
+    Float64,
+    Text,
+    TextArray,
+}
+
+/// A column value without a driver type. SQLite holds arrays as JSON text, so there they come
+/// back as `Text`.
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) enum Cell {
+    Null,
+    Bool(bool),
+    Int(i64),
+    Float(f64),
+    Text(String),
+    TextArray(Vec<String>),
+}
+
+/// The first row of a built query as cells, `None` when there is no row.
+pub(crate) async fn fetch_cells(
+    tx: &mut WriteTx<'_>,
+    (sql, values): Built,
+    kinds: &[CellKind],
+) -> Result<Option<Vec<Cell>>, StoreError> {
+    match tx {
+        WriteTx::Sqlite(t) => {
+            let row = sqlx::query_with(AssertSqlSafe(sql), values)
+                .fetch_optional(&mut **t)
+                .await
+                .map_err(|e| StoreError::from_sqlx(&e))?;
+            row.map(|row| sqlite_cells(&row, kinds)).transpose()
+        }
+        WriteTx::Postgres { tx, .. } => {
+            let row = sqlx::query_with(AssertSqlSafe(sql), values)
+                .fetch_optional(&mut **tx)
+                .await
+                .map_err(|e| StoreError::from_sqlx(&e))?;
+            row.map(|row| pg_cells(&row, kinds)).transpose()
+        }
+    }
+}
+
+fn sqlite_cells(row: &SqliteRow, kinds: &[CellKind]) -> Result<Vec<Cell>, StoreError> {
+    let fail = |e: &sqlx::Error| StoreError::from_sqlx(e);
+    kinds
+        .iter()
+        .enumerate()
+        .map(|(i, kind)| {
+            Ok(match kind {
+                CellKind::Bool => row
+                    .try_get::<Option<bool>, _>(i)
+                    .map_err(|e| fail(&e))?
+                    .map_or(Cell::Null, Cell::Bool),
+                CellKind::Int16 | CellKind::Int32 | CellKind::Int64 => row
+                    .try_get::<Option<i64>, _>(i)
+                    .map_err(|e| fail(&e))?
+                    .map_or(Cell::Null, Cell::Int),
+                CellKind::Float32 | CellKind::Float64 => row
+                    .try_get::<Option<f64>, _>(i)
+                    .map_err(|e| fail(&e))?
+                    .map_or(Cell::Null, Cell::Float),
+                CellKind::Text | CellKind::TextArray => row
+                    .try_get::<Option<String>, _>(i)
+                    .map_err(|e| fail(&e))?
+                    .map_or(Cell::Null, Cell::Text),
+            })
+        })
+        .collect()
+}
+
+fn pg_cells(row: &PgRow, kinds: &[CellKind]) -> Result<Vec<Cell>, StoreError> {
+    let fail = |e: &sqlx::Error| StoreError::from_sqlx(e);
+    kinds
+        .iter()
+        .enumerate()
+        .map(|(i, kind)| {
+            Ok(match kind {
+                CellKind::Bool => row
+                    .try_get::<Option<bool>, _>(i)
+                    .map_err(|e| fail(&e))?
+                    .map_or(Cell::Null, Cell::Bool),
+                CellKind::Int16 => row
+                    .try_get::<Option<i16>, _>(i)
+                    .map_err(|e| fail(&e))?
+                    .map_or(Cell::Null, |v| Cell::Int(v.into())),
+                CellKind::Int32 => row
+                    .try_get::<Option<i32>, _>(i)
+                    .map_err(|e| fail(&e))?
+                    .map_or(Cell::Null, |v| Cell::Int(v.into())),
+                CellKind::Int64 => row
+                    .try_get::<Option<i64>, _>(i)
+                    .map_err(|e| fail(&e))?
+                    .map_or(Cell::Null, Cell::Int),
+                CellKind::Float32 => row
+                    .try_get::<Option<f32>, _>(i)
+                    .map_err(|e| fail(&e))?
+                    .map_or(Cell::Null, |v| Cell::Float(v.into())),
+                CellKind::Float64 => row
+                    .try_get::<Option<f64>, _>(i)
+                    .map_err(|e| fail(&e))?
+                    .map_or(Cell::Null, Cell::Float),
+                CellKind::Text => row
+                    .try_get::<Option<String>, _>(i)
+                    .map_err(|e| fail(&e))?
+                    .map_or(Cell::Null, Cell::Text),
+                CellKind::TextArray => row
+                    .try_get::<Option<Vec<String>>, _>(i)
+                    .map_err(|e| fail(&e))?
+                    .map_or(Cell::Null, Cell::TextArray),
+            })
+        })
+        .collect()
+}
+
+/// Every row of a built query, decoded into `O` (a tuple of plain types).
+pub(crate) async fn fetch_all_as<O>(db: &Db, (sql, values): Built) -> Result<Vec<O>, StoreError>
+where
+    O: for<'r> sqlx::FromRow<'r, SqliteRow> + for<'r> sqlx::FromRow<'r, PgRow> + Send + Unpin,
+{
+    match db {
+        Db::Sqlite(pool) => {
+            sqlx::query_as_with::<_, O, _>(AssertSqlSafe(sql), values)
+                .fetch_all(pool)
+                .await
+        }
+        Db::Postgres { pool, .. } => {
+            sqlx::query_as_with::<_, O, _>(AssertSqlSafe(sql), values)
+                .fetch_all(pool)
+                .await
+        }
+    }
+    .map_err(|e| StoreError::from_sqlx(&e))
+}
+
+/// Rolls the transaction back. A failed rollback is ignored: the connection is discarded then.
+pub(crate) async fn rollback(tx: WriteTx<'_>) {
+    match tx {
+        WriteTx::Sqlite(t) => drop(t.rollback().await),
+        WriteTx::Postgres { tx, .. } => drop(tx.rollback().await),
     }
 }
 

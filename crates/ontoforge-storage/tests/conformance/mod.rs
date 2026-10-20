@@ -4,7 +4,10 @@
 //! `#[tokio::test]` per case for a backend, so a new case is added in two places of this file
 //! only: its function and its line in the macro. `conformance_sqlite.rs` runs the cases, and
 //! `conformance_pg.rs` runs the same cases `#[ignore]`d behind a PostgreSQL server.
-#![allow(dead_code, reason = "each test target runs every case, but not every helper")]
+#![allow(
+    dead_code,
+    reason = "each test target runs every case, but not every helper"
+)]
 
 use std::collections::BTreeMap;
 
@@ -77,13 +80,13 @@ impl Harness {
             .map(|c| format!("CAST(\"{c}\" AS text)"))
             .collect();
         let order = format!("ORDER BY \"{}\"", columns[0]);
+        let select = select.join(", ");
         match self {
             Self::Sqlite(t) => {
-                let mut sql = format!("SELECT {} FROM \"{table}\"", select.join(", "));
-                if let Some((column, _)) = filter {
-                    sql.push_str(&format!(" WHERE CAST(\"{column}\" AS text) = ?"));
-                }
-                sql.push_str(&format!(" {order}"));
+                let filter_sql = filter
+                    .map(|(column, _)| format!(" WHERE CAST(\"{column}\" AS text) = ?"))
+                    .unwrap_or_default();
+                let sql = format!("SELECT {select} FROM \"{table}\"{filter_sql} {order}");
                 let pool = t.side_pool().await;
                 let mut query = sqlx::query(sqlx::AssertSqlSafe(sql));
                 if let Some((_, value)) = filter {
@@ -97,14 +100,11 @@ impl Harness {
                     Tables::Edit => &t.schema_edit,
                     Tables::Sys => &t.schema_sys,
                 };
-                let mut sql = format!(
-                    "SELECT {} FROM \"{schema}\".\"{table}\"",
-                    select.join(", ")
-                );
-                if let Some((column, _)) = filter {
-                    sql.push_str(&format!(" WHERE CAST(\"{column}\" AS text) = $1"));
-                }
-                sql.push_str(&format!(" {order}"));
+                let filter_sql = filter
+                    .map(|(column, _)| format!(" WHERE CAST(\"{column}\" AS text) = $1"))
+                    .unwrap_or_default();
+                let sql =
+                    format!("SELECT {select} FROM \"{schema}\".\"{table}\"{filter_sql} {order}");
                 let mut query = sqlx::query(sqlx::AssertSqlSafe(sql));
                 if let Some((_, value)) = filter {
                     query = query.bind(value.to_owned());
@@ -134,17 +134,29 @@ impl Harness {
 
 fn sqlite_cells(rows: &[sqlx::sqlite::SqliteRow], width: usize) -> Vec<Vec<Option<String>>> {
     rows.iter()
-        .map(|row| (0..width).map(|i| row.get::<Option<String>, _>(i)).collect())
+        .map(|row| {
+            (0..width)
+                .map(|i| row.get::<Option<String>, _>(i))
+                .collect()
+        })
         .collect()
 }
 
 fn pg_cells(rows: &[sqlx::postgres::PgRow], width: usize) -> Vec<Vec<Option<String>>> {
     rows.iter()
-        .map(|row| (0..width).map(|i| row.get::<Option<String>, _>(i)).collect())
+        .map(|row| {
+            (0..width)
+                .map(|i| row.get::<Option<String>, _>(i))
+                .collect()
+        })
         .collect()
 }
 
 /// A boolean cell as text.
+#[allow(
+    clippy::ref_option,
+    reason = "cells are indexed out of a row of options"
+)]
 pub fn flag(cell: &Option<String>) -> bool {
     match cell.as_deref() {
         Some("1" | "true") => true,
@@ -153,6 +165,7 @@ pub fn flag(cell: &Option<String>) -> bool {
     }
 }
 
+#[allow(clippy::unnecessary_wraps, reason = "compared with a nullable cell")]
 fn text(s: &str) -> Option<String> {
     Some(s.to_owned())
 }
@@ -254,9 +267,7 @@ async fn commit_ok(h: &Harness, commit: Commit) -> Receipt {
 async fn assert_nothing_written(h: &Harness) {
     let log = h.store().read_log(0, 100).await.expect("read_log");
     assert!(log.is_empty(), "log records: {log:#?}");
-    let gates = h
-        .rows(Tables::Edit, "of_obj_gate", &["code"], None)
-        .await;
+    let gates = h.rows(Tables::Edit, "of_obj_gate", &["code"], None).await;
     assert!(gates.is_empty(), "gate rows: {gates:#?}");
     let history = h
         .rows(Tables::Sys, "of_edit_history", &["log_seq"], None)
@@ -264,6 +275,10 @@ async fn assert_nothing_written(h: &Harness) {
     assert!(history.is_empty(), "history rows: {history:#?}");
 }
 
+#[allow(
+    clippy::ref_option,
+    reason = "cells are indexed out of a row of options"
+)]
 fn json_cell(cell: &Option<String>) -> Value {
     serde_json::from_str(cell.as_deref().expect("a json cell")).expect("json cell")
 }
@@ -439,6 +454,7 @@ pub async fn second_set_patches_only_given_properties(h: &Harness) {
     );
 }
 
+#[allow(clippy::too_many_lines, reason = "one case lists every rejection")]
 pub async fn invalid_values_are_rejected_without_writes(h: &Harness) {
     let v = h.load().await;
     let gate_commit = |edits: Vec<Edit>| commit_of(v, "createGate", json!({}), edits);
@@ -653,10 +669,7 @@ pub async fn every_value_type_round_trips(h: &Harness) {
         ("closedOn", PropertyValue::Date("2026-03-29".to_owned())),
         ("isOpen", PropertyValue::Bool(true)),
         ("weight", PropertyValue::Double(1.5)),
-        (
-            "tags",
-            PropertyValue::Array(vec![s("a"), s("b, \"c\"")]),
-        ),
+        ("tags", PropertyValue::Array(vec![s("a"), s("b, \"c\"")])),
         (
             "fees",
             PropertyValue::Array(vec![
@@ -741,7 +754,7 @@ pub async fn import_actor_is_stored_as_system_import(h: &Harness) {
     let v = h.load().await;
     let mut commit = create_gate(v, "A1");
     commit.actor = Actor::System(SystemActor::Import);
-    commit.action = "system:import".to_owned();
+    "system:import".clone_into(&mut commit.action);
     commit_ok(h, commit).await;
     let log = h.store().read_log(0, 10).await.expect("read_log");
     assert_eq!(log[0].actor, "system:import");
