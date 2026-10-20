@@ -1,14 +1,15 @@
 //! Authentication: bearer token to [`Principal`].
 //!
-//! OIDC access tokens are verified against the issuer's JWKS (AUTH-01). Dev tokens join
-//! the same entry point in a later plan; they add one more branch in the algorithm routing.
+//! OIDC access tokens are verified against the issuer's JWKS (AUTH-01). Dev tokens (AUTH-02)
+//! share the entry point: the token header's algorithm picks the route, and the dev route
+//! exists only when the caller attached a verifier with [`Authenticator::with_dev`].
 
 use std::collections::BTreeMap;
 
 use camino::Utf8Path;
-use jsonwebtoken::AlgorithmFamily;
 use jsonwebtoken::dangerous::insecure_decode_claims;
 use jsonwebtoken::decode_header;
+use jsonwebtoken::{Algorithm, AlgorithmFamily};
 use ontoforge_engine::config::{AuthConfig, PrincipalAttrConfig};
 use serde_json::Value;
 
@@ -78,9 +79,13 @@ impl Authenticator {
     pub async fn authenticate(&self, bearer: &str) -> Result<Principal, AuthnError> {
         let header = decode_header(bearer).map_err(|_| AuthnError::Malformed)?;
         // The route is decided by the header algorithm alone. Symmetric algorithms have no
-        // OIDC route; a later plan adds the dev token route here.
+        // OIDC route: HS256 goes to the dev verifier when the caller attached one, every
+        // other symmetric algorithm is refused. Asymmetric tokens never reach the dev route.
         if header.alg.family() == AlgorithmFamily::Hmac {
-            return Err(AuthnError::UnsupportedAlgorithm);
+            return match (&self.dev, header.alg) {
+                (Some(dev), Algorithm::HS256) => dev.verify(bearer),
+                _ => Err(AuthnError::UnsupportedAlgorithm),
+            };
         }
         let kid = header.kid.as_deref().ok_or(AuthnError::Malformed)?;
         let verifier = self.verifier_for(bearer)?;

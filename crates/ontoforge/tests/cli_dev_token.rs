@@ -145,7 +145,14 @@ async fn scalar_attrs_are_converted_by_declared_type() {
     let out = dev_token(
         &config_of(&dir),
         &[
-            "--sub", "bob", "--attr", "level=3", "--attr", "admin=true", "--attr", "level=4",
+            "--sub",
+            "bob",
+            "--attr",
+            "level=3",
+            "--attr",
+            "admin=true",
+            "--attr",
+            "level=4",
         ],
     );
     assert_eq!(out.status.code(), Some(0), "stderr: {}", stderr(&out));
@@ -170,7 +177,10 @@ async fn scalar_attrs_are_converted_by_declared_type() {
 #[test]
 fn undeclared_attr_is_rejected() {
     let dir = server_dir(CONFIG);
-    let out = dev_token(&config_of(&dir), &["--sub", "alice", "--attr", "tenantId=acme"]);
+    let out = dev_token(
+        &config_of(&dir),
+        &["--sub", "alice", "--attr", "tenantId=acme"],
+    );
     assert_eq!(out.status.code(), Some(1), "stderr: {}", stderr(&out));
     assert!(stderr(&out).contains("tenantId"), "{}", stderr(&out));
     assert!(stdout(&out).is_empty(), "no token on failure");

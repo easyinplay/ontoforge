@@ -102,9 +102,7 @@ fn key_file_of_wrong_length_is_a_config_error() {
     let path = key_path(&dir);
     std::fs::write(&path, [7_u8; 31]).expect("write");
 
-    let error = DevKey::load_or_create(&path)
-        .err()
-        .expect("a truncated key is refused");
+    let error = DevKey::load_or_create(&path).expect_err("a truncated key is refused");
 
     assert!(matches!(error, AuthnError::Config(_)), "{error:?}");
     // The file is neither replaced nor extended: silently changing the key would invalidate

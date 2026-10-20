@@ -123,7 +123,7 @@ impl OidcVerifier {
 }
 
 /// Maps a library error to ours without carrying any token or claim content.
-fn map_error(error: &jsonwebtoken::errors::Error) -> AuthnError {
+pub(super) fn map_error(error: &jsonwebtoken::errors::Error) -> AuthnError {
     match error.kind() {
         ErrorKind::ExpiredSignature => AuthnError::Expired,
         ErrorKind::InvalidSignature => AuthnError::InvalidSignature,
