@@ -7,7 +7,7 @@ pub mod commit;
 pub mod ddl;
 pub mod diff;
 pub mod error;
-mod history;
+pub mod history;
 mod index;
 pub mod log;
 pub mod migrate;
