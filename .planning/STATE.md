@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Edit Store & Scope Model
 status: executing
-stopped_at: Completed 03-13-PLAN.md
-last_updated: "2026-10-20T07:10:10.765Z"
+stopped_at: Completed 03-16-PLAN.md
+last_updated: "2026-10-20T07:52:43.052Z"
 last_activity: 2026-10-20
 last_activity_desc: Phase 03 execution started
-state_head: 11bb27eb58b63aa8c7a12f37034a1311773be771
+state_head: ac8924c4b43b2ce6dfd2d49e968ccc26ec8e3ec1
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 44
-  completed_plans: 39
+  completed_plans: 40
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-19)
 ## Current Position
 
 Phase: 03 (Edit Store & Scope Model) — EXECUTING
-Plan: 16 of 20
+Plan: 17 of 20
 Status: Ready to execute
 Last activity: 2026-10-20 — Phase 03 execution started
 
@@ -55,6 +55,7 @@ Progress: [██████████░░░░░░░░░░] 24/44 p
 | Phase 03 P09 | 32 min | 2 tasks | 6 files |
 | Phase 03 P15 | 2h | 2 tasks | 14 files |
 | Phase 03 P13 | 55 min | 3 tasks | 9 files |
+| Phase 03 P16 | 1h 50m | 2 tasks | 16 files |
 
 ## Accumulated Context
 
@@ -80,6 +81,7 @@ Progress: [██████████░░░░░░░░░░] 24/44 p
 - [Phase 03]: Replay applies all log records in one transaction and requires the target to hold the records' def_version — A failed replay leaves the target untouched; cross-version replay waits for 03-15 migration_json (ADR-0026)
 - [Phase 03]: 03-15: indexes on a column or table are dropped when it is archived, not at clean-up, because index names are schema-global — A kept index would make CREATE INDEX IF NOT EXISTS on a re-added column of the same name a silent no-op
 - [Phase 03]: 03-13: a commit writes each row once in its final state in lock order; replay shares that path (ADR-0026 section 7 amended); swapping two oneToOne keys in one commit is a CardinalityViolation
+- [Phase 03]: 03-16: only scope_store.rs names of_role / of_role_binding / of_admin_audit (source guard); scope apply is a full sync bound to a reviewed plan hash, re-planned in the write transaction under the definition advisory lock — SCOPE-07 / D-01..D-03; indexes created for row predicates are only ever added and are not recorded in the physical schema
 
 ### Pending Todos
 
@@ -98,6 +100,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-20T07:10:10.636Z
-Stopped at: Completed 03-13-PLAN.md
+Last session: 2026-10-20T07:52:42.921Z
+Stopped at: Completed 03-16-PLAN.md
 Resume file: None

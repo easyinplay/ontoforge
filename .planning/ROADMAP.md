@@ -138,7 +138,7 @@ Plans:
   4. 角色可授予 object type、属性 allow-list、CEL 行谓词、action、SQL 级别与 toolset；行谓词只能引用同行属性与 `principal.attrs`，缺失属性按 false；多 role 合并不产生「A 的列 × B 的行」泄露
   5. 同一 CEL 行谓词的 SQL 编译结果与 Rust 单行求值经差分测试一致；criteria 列覆盖 lint 在 reload 与 role 变更时生效；OIDC JWT 与 dev token 均可认证
 
-**Plans**: 15/20 plans executed（8 waves）
+**Plans**: 16/20 plans executed（8 waves）
 
 Plans:
 
@@ -174,7 +174,7 @@ Plans:
 **Wave 6** *(blocked on Wave 5 completion)*
 
 - [x] 03-13-PLAN.md — 完整叠加状态机、参考模型 proptest、基数与并发
-- [ ] 03-16-PLAN.md — `ontoforge scope plan|apply`、管理审计、user 记录
+- [x] 03-16-PLAN.md — `ontoforge scope plan|apply`、管理审计、user 记录
 
 **Wave 7** *(blocked on Wave 6 completion)*
 
@@ -269,7 +269,7 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7（纵切片
 |-------|----------------|--------|-----------|
 | 1. Workspace, Schema & Lint | 14/14 | Complete    | 2026-10-16 |
 | 2. Source Binding & Engine | 10/10 | Complete    | 2026-10-19 |
-| 3. Edit Store & Scope Model | 15/20 | In Progress|  |
+| 3. Edit Store & Scope Model | 16/20 | In Progress|  |
 | 4. Scoped L0 Read | 0/TBD | Not started | - |
 | 5. Online Action | 0/TBD | Not started | - |
 | 6. L2 Raw DQL, Toolsets & Audit | 0/TBD | Not started | - |
