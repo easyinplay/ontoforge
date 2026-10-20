@@ -41,6 +41,7 @@ use crate::store::{ActiveDefinition, Backend, EditStore, WriteTx};
 /// A rename the deployer declares, because a rename shows up in the diff as a removal plus an
 /// addition (D-14).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all_fields = "camelCase")]
 pub enum RenameDecl {
     /// `Type.old=new`: a property of the object type `type_name` (its name in the new definition).
     Property {
@@ -102,6 +103,7 @@ impl std::fmt::Display for RenameDecl {
 /// One step of a migration. A step does one thing; the SQL of a step may be several statements
 /// (SQLite allows one operation per `ALTER TABLE`).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all_fields = "camelCase")]
 pub enum MigrationStep {
     /// A step `reload` could also run: new tables, new columns, indexes.
     Ddl(DdlStep),
@@ -251,6 +253,7 @@ pub(crate) fn statements(
 
 /// The steps of a migration and the hash that identifies them.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct MigrationPlan {
     pub from_def_version: i64,
     pub renames: Vec<RenameDecl>,
