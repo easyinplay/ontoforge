@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Edit Store & Scope Model
 status: executing
-stopped_at: Completed 03-12-PLAN.md
-last_updated: "2026-10-20T04:20:42.611Z"
+stopped_at: Completed 03-14-PLAN.md
+last_updated: "2026-10-20T04:52:25.359Z"
 last_activity: 2026-10-20
 last_activity_desc: Phase 03 execution started
-state_head: 3c9a37041bf732cab10938a9a209349172109b2a
+state_head: f4325e9b37bcaf2e8ff56a265c793b35d48faba5
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 44
-  completed_plans: 35
+  completed_plans: 36
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-19)
 ## Current Position
 
 Phase: 03 (Edit Store & Scope Model) — EXECUTING
-Plan: 12 of 20
+Plan: 13 of 20
 Status: Ready to execute
 Last activity: 2026-10-20 — Phase 03 execution started
 
@@ -51,6 +51,7 @@ Progress: [██████████░░░░░░░░░░] 24/44 p
 | Phase 03 P08 | ~1h | 2 tasks | 14 files |
 | Phase 03 P10 | ~1h | 2 tasks | 9 files |
 | Phase 03 P12 | 20 min | 2 tasks | 8 files |
+| Phase 03 P14 | 25 min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,8 @@ Progress: [██████████░░░░░░░░░░] 24/44 p
 - [Phase 03]: PostgreSQL system columns share SQLite defaults (of_version/of_def_version bigint DEFAULT 0, of_deleted/of_released boolean DEFAULT false); ADR-0024 amended — One repair path (ADD COLUMN after interrupted reload) and one physical_json for both backends; no cost on PG 11+
 - [Phase 03]: 03-08: edit log format = plan layout + S1-S4 (UTC ms timestamps, SQLite edit column with space separator, JSON compared as values, committed_at from Rust); float rounded to f32 once; PG arrays bound as text[] — One canonical PropertyValue encoding for log, history and both backends; seq allocated after row locks keeps per-pk replay order
 - [Phase 03]: 03-10: removed plain indexes stay in the stored PhysicalSchema (keep_plain_indexes_of) so reload stays idempotent; index names checked schema-wide for ONT-V24
+- [Phase 03]: 03-14: example dev binding collation moved from Flight.status to flightNumber so the example dispatcher rowFilter satisfies D-08 — A rowFilter cannot read a caseInsensitive column (ONT-V22); the shipped dispatcher role filters on status
+- [Phase 03]: 03-14: computed object index in a submission criterion is ONT-V23 for any role granted the action (fail-closed) — Which property a criterion reads cannot be proven statically, so a dry run could probe a hidden column
 
 ### Pending Todos
 
@@ -89,6 +92,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-20T04:20:42.480Z
-Stopped at: Completed 03-12-PLAN.md
+Last session: 2026-10-20T04:52:25.235Z
+Stopped at: Completed 03-14-PLAN.md
 Resume file: None
