@@ -34,7 +34,9 @@ use crate::naming;
 use crate::physical::{
     ArchivedColumn, ArchivedTable, IndexDef, IndexKind, ObjectTable, PhysicalSchema, PropertyColumn,
 };
-use crate::reload::{execute_steps, same_ontology, switch_definition};
+use crate::reload::{
+    begin_definition_tx, execute_steps, is_lock_timeout, same_ontology, switch_definition,
+};
 use crate::sql_exit;
 use crate::store::{ActiveDefinition, Backend, EditStore, WriteTx};
 
@@ -271,10 +273,20 @@ pub enum MigrateError {
     #[error("the migration plan changed: expected {expected}, now {actual}")]
     PlanChanged { expected: String, actual: String },
     #[error(transparent)]
-    Store(#[from] StoreError),
+    Store(StoreError),
     /// A lock was not free within `[store] lock_timeout_ms`; nothing was changed.
     #[error("gave up waiting for a database lock (lock_timeout); nothing was changed")]
     LockTimeout,
+}
+
+impl From<StoreError> for MigrateError {
+    fn from(error: StoreError) -> Self {
+        if is_lock_timeout(&error) {
+            Self::LockTimeout
+        } else {
+            Self::Store(error)
+        }
+    }
 }
 
 /// A plan together with the physical schema that results from it.
@@ -307,7 +319,7 @@ pub async fn apply_migration(
     renames: &[RenameDecl],
     expected_hash: &str,
 ) -> Result<i64, MigrateError> {
-    let mut tx = store.begin_write().await?;
+    let mut tx = begin_definition_tx(store).await?;
     match apply_in(&mut tx, new, renames, expected_hash).await {
         Ok(active) => {
             sql_exit::commit(tx).await?;
@@ -328,6 +340,8 @@ async fn apply_in(
     renames: &[RenameDecl],
     expected_hash: &str,
 ) -> Result<ActiveDefinition, MigrateError> {
+    // Before any DDL: see `sql_exit::lock_def_state`.
+    sql_exit::lock_def_state(tx).await?;
     let active = active_in(tx).await?;
     let computed = compute(&active, new, renames).map_err(MigrateError::Definition)?;
     check_hash(expected_hash, &computed.plan.hash)?;
@@ -414,7 +428,7 @@ pub async fn apply_drop_archived(
     store: &EditStore,
     expected_hash: &str,
 ) -> Result<i64, MigrateError> {
-    let mut tx = store.begin_write().await?;
+    let mut tx = begin_definition_tx(store).await?;
     match drop_archived_in(&mut tx, expected_hash).await {
         Ok(active) => {
             sql_exit::commit(tx).await?;
@@ -433,6 +447,7 @@ async fn drop_archived_in(
     tx: &mut WriteTx<'_>,
     expected_hash: &str,
 ) -> Result<ActiveDefinition, MigrateError> {
+    sql_exit::lock_def_state(tx).await?;
     let active = active_in(tx).await?;
     let plan = plan_drop_archived(&active);
     check_hash(expected_hash, &plan.hash)?;

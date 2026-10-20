@@ -9,12 +9,13 @@
 //! the store configuration only names an environment variable or a file for it.
 
 use camino::Utf8Path;
+use ontoforge_auth::scope::attr_types;
 use ontoforge_engine::config::{AuthConfig, ServerConfig, load_server_config};
 use ontoforge_schema::diag::{Diagnostic, Severity, codes};
-use ontoforge_schema::ir::Ontology;
+use ontoforge_schema::ir::{Ontology, ProfileName};
 use ontoforge_schema::loader::SourceMap;
 use ontoforge_storage::error::StoreError;
-use ontoforge_storage::reload::{ReloadError, ReloadOptions, ReloadOutcome};
+use ontoforge_storage::reload::{ReloadError, ReloadOptions, ReloadOutcome, RolesCheck};
 use ontoforge_storage::store::{EditStore, StoreSettings};
 
 use crate::cli::ReloadArgs;
@@ -40,8 +41,8 @@ pub fn run(args: &ReloadArgs) -> u8 {
     };
 
     let mut diagnostics = out.diagnostics.clone();
-    let settings = match store_settings(&args.server_config) {
-        Ok(settings) => settings,
+    let (settings, auth) = match server_settings(&args.server_config) {
+        Ok(found) => found,
         Err(found) => {
             diagnostics.extend(found);
             return fail(&diagnostics, &out.sources, 1, args);
@@ -62,9 +63,18 @@ pub fn run(args: &ReloadArgs) -> u8 {
         }
     };
 
+    // A name that is not valid was rejected when the ontology was loaded (ONT-V16).
+    let profile = args
+        .profile
+        .profile
+        .clone()
+        .and_then(|name| ProfileName::try_from(name).ok());
     let opts = ReloadOptions {
         dry_run: args.dry_run,
-        roles: None,
+        roles: Some(RolesCheck {
+            attrs: attr_types(auth.as_ref()),
+            profile,
+        }),
     };
     match runtime.block_on(open_and_reload(settings, ontology, &opts)) {
         Ok(outcome) => {

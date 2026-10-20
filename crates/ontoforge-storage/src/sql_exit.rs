@@ -442,10 +442,10 @@ pub(crate) async fn existing_index_names(
         .collect())
 }
 
-/// Lock key shared by everything that changes the definition or what hangs off it: `reload`,
-/// `migrate` and `scope apply` take it, so they never run at the same time. The bytes spell
-/// `ontoforg`.
-pub(crate) const DEFINITION_LOCK_KEY: i64 = 0x6f6e_746f_666f_7267;
+/// Base of the lock key shared by everything that changes the definition or what hangs off it
+/// (`reload`, `migrate` and `scope apply`). The bytes spell `ontoforg`. See
+/// [`crate::store::definition_lock_key`].
+pub(crate) const DEFINITION_LOCK_BASE: i64 = 0x6f6e_746f_666f_7267;
 
 /// `SET LOCAL lock_timeout`: a statement of this transaction that waits longer than `ms`
 /// milliseconds for a lock fails. PostgreSQL only; SQLite waits as long as `busy_timeout` says.
@@ -466,13 +466,13 @@ pub(crate) async fn set_local_lock_timeout(
     }
 }
 
-/// Takes the transaction-scoped advisory lock `key` (released at commit or rollback). PostgreSQL
-/// only; SQLite's `BEGIN IMMEDIATE` already serializes writers.
-pub(crate) async fn advisory_xact_lock(tx: &mut WriteTx<'_>, key: i64) -> Result<(), StoreError> {
+/// Takes the transaction-scoped advisory lock of the definition changes of this store (released at
+/// commit or rollback). PostgreSQL only; SQLite's `BEGIN IMMEDIATE` already serializes writers.
+pub(crate) async fn advisory_xact_lock(tx: &mut WriteTx<'_>) -> Result<(), StoreError> {
     match tx {
         WriteTx::Sqlite(_) => Ok(()),
-        WriteTx::Postgres { tx, .. } => sqlx::query("SELECT pg_advisory_xact_lock($1)")
-            .bind(key)
+        WriteTx::Postgres { tx, schema_edit } => sqlx::query("SELECT pg_advisory_xact_lock($1)")
+            .bind(crate::store::definition_lock_key(schema_edit))
             .execute(&mut **tx)
             .await
             .map(|_| ())
@@ -609,6 +609,22 @@ pub(crate) async fn activate_definition(
         .to_owned();
     let built = build(&state, tx);
     execute_built(tx, built).await.map(|_| ())
+}
+
+/// Reads the active version number and keeps the state row locked until the transaction ends
+/// (`FOR UPDATE` on PostgreSQL; on SQLite the transaction holds the write lock already). A
+/// switch that runs DDL takes this lock before the DDL: a commit holds the state row (the fence)
+/// while it waits for table locks, so a DDL that held a table lock and then asked for the state
+/// row would deadlock with it. Asking first makes the switch wait for the commits in flight and
+/// holds later commits at their first statement instead.
+pub(crate) async fn lock_def_state(tx: &mut WriteTx<'_>) -> Result<i64, StoreError> {
+    let select = Query::select()
+        .column(Alias::new("active_def_version"))
+        .from(Alias::new(STATE_TABLE))
+        .lock(sea_query::LockType::Update)
+        .to_owned();
+    let built = build(&select, tx);
+    Ok(fetch_scalar_i64(tx, built).await?.unwrap_or(0))
 }
 
 /// Reads the active definition, `None` before the first reload.

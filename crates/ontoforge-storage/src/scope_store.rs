@@ -400,21 +400,28 @@ async fn plan_in(
     Ok(plan)
 }
 
+/// The roles and bindings in the store as a scope set, read in the transaction `tx`. `reload`
+/// reads them under the definition lock, so a role cannot arrive between its role check and its
+/// switch.
+pub(crate) async fn load_scope_in(tx: &mut WriteTx<'_>) -> Result<ScopeSet, StoreError> {
+    let stored = read_stored(tx).await?;
+    let mut roles = BTreeMap::new();
+    for (name, record) in stored.roles {
+        let role: Role = serde_json::from_str(&record.ir_json).map_err(|e| {
+            StoreError::Corrupt(format!("the stored role `{name}` cannot be read: {e}"))
+        })?;
+        roles.insert(role.api_name.clone(), role);
+    }
+    Ok(scope_from_parts(roles, stored.bindings))
+}
+
 impl EditStore {
     /// The roles and bindings in the store as a scope set.
     pub async fn load_scope(&self) -> Result<ScopeSet, StoreError> {
         let mut tx = self.begin_write().await?;
-        let stored = read_stored(&mut tx).await;
+        let scope = load_scope_in(&mut tx).await;
         sql_exit::rollback(tx).await;
-        let stored = stored?;
-        let mut roles = BTreeMap::new();
-        for (name, record) in stored.roles {
-            let role: Role = serde_json::from_str(&record.ir_json).map_err(|e| {
-                StoreError::Corrupt(format!("the stored role `{name}` cannot be read: {e}"))
-            })?;
-            roles.insert(role.api_name.clone(), role);
-        }
-        Ok(scope_from_parts(roles, stored.bindings))
+        scope
     }
 
     /// What applying `desired` would change. `row_filter_properties` are the properties its row
@@ -497,9 +504,10 @@ async fn apply_in(
     expected_hash: &str,
     actor: &str,
 ) -> Result<AppliedScope, ScopeApplyError> {
-    sql_exit::advisory_xact_lock(tx, sql_exit::DEFINITION_LOCK_KEY).await?;
+    // The timeout first: it bounds the wait for the advisory lock as well.
     let millis = u64::try_from(lock_timeout.as_millis()).unwrap_or(u64::MAX);
     sql_exit::set_local_lock_timeout(tx, millis).await?;
+    sql_exit::advisory_xact_lock(tx).await?;
     let active = sql_exit::read_active_definition_in(tx)
         .await?
         .ok_or(ScopeApplyError::NoActiveDefinition)?;

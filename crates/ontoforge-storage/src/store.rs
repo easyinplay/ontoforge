@@ -22,6 +22,7 @@ use sqlx::{PgPool, Postgres, Sqlite, SqlitePool};
 use tokio::sync::RwLock;
 
 use crate::error::StoreError;
+use crate::naming;
 use crate::physical::PhysicalSchema;
 use crate::sql_exit;
 
@@ -44,6 +45,19 @@ pub fn sqlite_connect_options(path: &Utf8Path) -> SqliteConnectOptions {
         .pragma("recursive_triggers", "ON")
         .collation(DECIMAL_COLLATION, compare_decimal)
         .collation(TIMESTAMP_COLLATION, compare_timestamp)
+}
+
+/// The PostgreSQL advisory lock key that `reload`, `migrate` and `scope apply` of the edit store
+/// whose edit tables live in `schema_edit` take, so that they never run at the same time.
+///
+/// Advisory locks belong to the database, not to a schema. The key therefore depends on the
+/// schema: two deployments in one database, or two test runs in one server, do not wait for each
+/// other's definition changes.
+#[must_use]
+pub fn definition_lock_key(schema_edit: &str) -> i64 {
+    let hash =
+        u64::from_str_radix(&naming::fnv1a64_hex(schema_edit.as_bytes()), 16).unwrap_or_default();
+    i64::from_ne_bytes(hash.to_ne_bytes()) ^ sql_exit::DEFINITION_LOCK_BASE
 }
 
 /// The database an edit store runs on.

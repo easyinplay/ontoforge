@@ -18,6 +18,7 @@ use ontoforge_storage::error::StoreError;
 use ontoforge_storage::migrate::{MigrateError, apply_migration, plan_migration};
 use ontoforge_storage::reload::{ReloadError, ReloadOptions, reload};
 use ontoforge_storage::scope_store::ScopeApplyError;
+use ontoforge_storage::store::definition_lock_key;
 use ontoforge_storage::value::PropertyValue;
 use support::{ontology_from, pg_store};
 
@@ -386,11 +387,6 @@ async fn in_flight_commit_blocks_switch_on_pg() {
 // Lock timeout, single flight and writers racing a switch (plan 03-18 task 2)
 // ---------------------------------------------------------------------------------------------
 
-/// The advisory lock key `reload`, `migrate` and `scope apply` share (`sql_exit::DEFINITION_LOCK_KEY`;
-/// the bytes spell `ontoforg`). A test holds it to stand in for "another definition change is
-/// running".
-const DEFINITION_LOCK_KEY: i64 = 0x6f6e_746f_666f_7267;
-
 #[tokio::test(flavor = "multi_thread")]
 #[ignore = "needs ONTOFORGE_PG_URL or --features embedded-pg"]
 async fn lock_timeout_keeps_old_definition() {
@@ -483,7 +479,7 @@ async fn definition_lock_is_shared_and_bounded_by_lock_timeout() {
     // Something else is changing the definition.
     let mut holder = t.side().begin().await.expect("begin");
     sqlx::query("SELECT pg_advisory_xact_lock($1)")
-        .bind(DEFINITION_LOCK_KEY)
+        .bind(definition_lock_key(&t.schema_edit))
         .execute(&mut *holder)
         .await
         .expect("hold the definition lock");
