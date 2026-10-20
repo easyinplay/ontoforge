@@ -160,7 +160,6 @@ pub struct ActiveDefinition {
 /// The edit store.
 pub struct EditStore {
     pub(crate) db: Db,
-    #[allow(dead_code, reason = "read by plan 03-18")]
     pub(crate) settings: StoreSettings,
     pub(crate) active: RwLock<Option<Arc<ActiveDefinition>>>,
 }

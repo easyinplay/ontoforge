@@ -8,7 +8,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use camino::Utf8Path;
 use ontoforge_auth::scope::{ScopeInputs, compile_scope};
 use ontoforge_schema::ir::{
-    AttrType, ObjectTypeName, Ontology, ProfileName, PropertyName, Role, ScopeSet,
+    AttrType, ObjectTypeName, Ontology, ProfileName, PropertyName, Role, RoleName, ScopeSet,
 };
 use ontoforge_schema::{load_dir, load_scope_dir};
 use ontoforge_storage::reload::{ReloadOptions, reload};
@@ -97,12 +97,10 @@ async fn count(t: &TestStore, table: &str) -> i64 {
 }
 
 fn role(scope: &ScopeSet, name: &str) -> Role {
-    scope
-        .roles
-        .iter()
-        .find(|(n, _)| n.as_str() == name)
-        .map(|(_, r)| r.clone())
-        .unwrap_or_else(|| panic!("role {name}"))
+    let Some((_, role)) = scope.roles.iter().find(|(n, _)| n.as_str() == name) else {
+        panic!("role {name}");
+    };
+    role.clone()
 }
 
 #[tokio::test]
@@ -198,7 +196,7 @@ async fn load_scope_round_trips() {
     );
     apply(&f, &f.scope).await;
     let loaded = f.t.store.load_scope().await.expect("load");
-    let names: Vec<&str> = loaded.roles.keys().map(|n| n.as_str()).collect();
+    let names: Vec<&str> = loaded.roles.keys().map(RoleName::as_str).collect();
     assert_eq!(names, ["crewScheduler", "dispatcher", "maintenanceLead"]);
     assert_eq!(loaded.bindings.len(), 3);
     assert_eq!(loaded, normalize_scope(&f.scope));

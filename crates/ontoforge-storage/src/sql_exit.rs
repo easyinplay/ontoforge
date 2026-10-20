@@ -5,6 +5,8 @@
 //! `AssertSqlSafe`; this is the only file that does so, and `tests/sql_exit_guard.rs` fails the
 //! build when another source file writes SQL text or `AssertSqlSafe`.
 
+use std::collections::BTreeSet;
+
 use sea_query::{
     Alias, Expr, ExprTrait, Func, IntoTableRef, PostgresQueryBuilder, Query, SqliteQueryBuilder,
     TableRef,
@@ -380,6 +382,99 @@ pub(crate) async fn fetch_scalar_i64(
                 .await
                 .map_err(|e| StoreError::from_sqlx(&e))
         }
+    }
+}
+
+/// Every row of a built query as cells, in order.
+pub(crate) async fn fetch_all_cells(
+    tx: &mut WriteTx<'_>,
+    (sql, values): Built,
+    kinds: &[CellKind],
+) -> Result<Vec<Vec<Cell>>, StoreError> {
+    match tx {
+        WriteTx::Sqlite(t) => {
+            let rows = sqlx::query_with(AssertSqlSafe(sql), values)
+                .fetch_all(&mut **t)
+                .await
+                .map_err(|e| StoreError::from_sqlx(&e))?;
+            rows.iter().map(|row| sqlite_cells(row, kinds)).collect()
+        }
+        WriteTx::Postgres { tx, .. } => {
+            let rows = sqlx::query_with(AssertSqlSafe(sql), values)
+                .fetch_all(&mut **tx)
+                .await
+                .map_err(|e| StoreError::from_sqlx(&e))?;
+            rows.iter().map(|row| pg_cells(row, kinds)).collect()
+        }
+    }
+}
+
+/// The names of the indexes that exist: those of the SQLite database, or those of the edit schema
+/// on PostgreSQL.
+pub(crate) async fn existing_index_names(
+    tx: &mut WriteTx<'_>,
+) -> Result<BTreeSet<String>, StoreError> {
+    let select = match tx.schema_edit() {
+        Some(schema) => {
+            let text = |column: &str| Expr::col(Alias::new(column)).cast_as(Alias::new("text"));
+            Query::select()
+                .expr(text("indexname"))
+                .from((Alias::new("pg_catalog"), Alias::new("pg_indexes")))
+                .and_where(text("schemaname").eq(schema))
+                .to_owned()
+        }
+        None => Query::select()
+            .column(Alias::new("name"))
+            .from(Alias::new("sqlite_master"))
+            .and_where(Expr::col(Alias::new("type")).eq("index"))
+            .to_owned(),
+    };
+    let built = build(&select, tx);
+    let rows = fetch_all_cells(tx, built, &[CellKind::Text]).await?;
+    Ok(rows
+        .into_iter()
+        .filter_map(|row| match row.into_iter().next() {
+            Some(Cell::Text(name)) => Some(name),
+            _ => None,
+        })
+        .collect())
+}
+
+/// Lock key shared by everything that changes the definition or what hangs off it: `reload`,
+/// `migrate` and `scope apply` take it, so they never run at the same time. The bytes spell
+/// `ontoforg`.
+pub(crate) const DEFINITION_LOCK_KEY: i64 = 0x6f6e_746f_666f_7267;
+
+/// `SET LOCAL lock_timeout`: a statement of this transaction that waits longer than `ms`
+/// milliseconds for a lock fails. PostgreSQL only; SQLite waits as long as `busy_timeout` says.
+pub(crate) async fn set_local_lock_timeout(
+    tx: &mut WriteTx<'_>,
+    ms: u64,
+) -> Result<(), StoreError> {
+    match tx {
+        WriteTx::Sqlite(_) => Ok(()),
+        WriteTx::Postgres { tx, .. } => {
+            // `SET` cannot bind a value; `ms` is an integer, so the text cannot carry anything else.
+            sqlx::query(AssertSqlSafe(format!("SET LOCAL lock_timeout = '{ms}ms'")))
+                .execute(&mut **tx)
+                .await
+                .map(|_| ())
+                .map_err(|e| StoreError::from_sqlx(&e))
+        }
+    }
+}
+
+/// Takes the transaction-scoped advisory lock `key` (released at commit or rollback). PostgreSQL
+/// only; SQLite's `BEGIN IMMEDIATE` already serializes writers.
+pub(crate) async fn advisory_xact_lock(tx: &mut WriteTx<'_>, key: i64) -> Result<(), StoreError> {
+    match tx {
+        WriteTx::Sqlite(_) => Ok(()),
+        WriteTx::Postgres { tx, .. } => sqlx::query("SELECT pg_advisory_xact_lock($1)")
+            .bind(key)
+            .execute(&mut **tx)
+            .await
+            .map(|_| ())
+            .map_err(|e| StoreError::from_sqlx(&e)),
     }
 }
 

@@ -83,9 +83,13 @@ async fn first_reload_on_pg_puts_edit_tables_in_edit_schema() {
             "_sqlx_migrations",
             "of_def_state",
             "of_def_version",
+            "of_admin_audit",
             "of_edit_history",
             "of_edit_log",
-            "of_edit_log_entry"
+            "of_edit_log_entry",
+            "of_role",
+            "of_role_binding",
+            "of_user"
         ]),
         "system tables only"
     );

@@ -9,7 +9,7 @@
 //! the store configuration only names an environment variable or a file for it.
 
 use camino::Utf8Path;
-use ontoforge_engine::config::{ServerConfig, load_server_config};
+use ontoforge_engine::config::{AuthConfig, ServerConfig, load_server_config};
 use ontoforge_schema::diag::{Diagnostic, Severity, codes};
 use ontoforge_schema::ir::Ontology;
 use ontoforge_schema::loader::SourceMap;
@@ -101,6 +101,13 @@ async fn open_and_reload(
 
 /// The `[store]` settings of the server configuration at `path`.
 pub(crate) fn store_settings(path: &Utf8Path) -> Result<StoreSettings, Vec<Diagnostic>> {
+    server_settings(path).map(|(settings, _)| settings)
+}
+
+/// The `[store]` settings and the `[auth]` section of the server configuration at `path`.
+pub(crate) fn server_settings(
+    path: &Utf8Path,
+) -> Result<(StoreSettings, Option<AuthConfig>), Vec<Diagnostic>> {
     let file = path.as_str();
     let (config, _text): (ServerConfig, String) =
         load_server_config(path).map_err(|(errors, text)| {
@@ -125,8 +132,9 @@ pub(crate) fn store_settings(path: &Utf8Path) -> Result<StoreSettings, Vec<Diagn
         .parent()
         .filter(|p| !p.as_str().is_empty())
         .unwrap_or(Utf8Path::new("."));
-    StoreSettings::from_config(store, config_dir, &|name| std::env::var(name).ok())
-        .map_err(|e| vec![store_error_diagnostic(&e, file)])
+    let settings = StoreSettings::from_config(store, config_dir, &|name| std::env::var(name).ok())
+        .map_err(|e| vec![store_error_diagnostic(&e, file)])?;
+    Ok((settings, config.auth))
 }
 
 fn store_error_diagnostic(e: &StoreError, file: &str) -> Diagnostic {
