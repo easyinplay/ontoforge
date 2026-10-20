@@ -5,6 +5,7 @@
 //! snapshots, and writes the rows. Any failure rolls everything back.
 
 use std::collections::{BTreeMap, BTreeSet};
+use std::sync::Arc;
 
 use chrono::{SecondsFormat, Utc};
 use ontoforge_schema::ir::{
@@ -133,17 +134,23 @@ pub enum EditError {
 }
 
 impl EditStore {
-    /// Applies `commit` in one transaction: every row is locked or created first, then the log
-    /// record gets its `seq`, then the rows, the entries and the history snapshots are written.
-    /// Because `seq` is allocated after all row locks, the `seq` order of two commits that touch
-    /// the same row is their commit order. Any failure rolls the transaction back.
+    /// Applies `commit` in one transaction: the definition version is checked against the
+    /// database first (the fence), then every row is locked or created, then the log record gets
+    /// its `seq`, then the rows, the entries and the history snapshots are written. Because `seq`
+    /// is allocated after all row locks, the `seq` order of two commits that touch the same row
+    /// is their commit order. Any failure rolls the transaction back.
     pub async fn commit(&self, commit: Commit) -> Result<Receipt, EditError> {
-        let active = self.active_definition().await.ok_or_else(|| {
-            StoreError::Config("no definition is loaded; run reload first".to_owned())
-        })?;
-        let plan = validate(&active, &commit)?;
+        // A commit that is malformed whatever the definition says never takes the write lock.
+        check_shape(&commit)?;
         let mut tx = self.begin_write().await?;
-        match write(&mut tx, &active, &commit, plan).await {
+        let result = match self.fence(&mut tx, commit.def_version).await {
+            Ok(def) => match validate(&def, &commit) {
+                Ok(plan) => write(&mut tx, &def, &commit, plan).await,
+                Err(error) => Err(error),
+            },
+            Err(error) => Err(error),
+        };
+        match result {
             Ok(receipt) => {
                 sql_exit::commit(tx).await?;
                 Ok(receipt)
@@ -153,6 +160,47 @@ impl EditStore {
                 Err(error)
             }
         }
+    }
+
+    /// The `def_version` fence (ADR-0016 / D20): the first statement of the write transaction
+    /// reads the active definition version from the database, `FOR SHARE` on PostgreSQL, so a
+    /// switch (which updates that row) waits for this commit to end and every commit that starts
+    /// after the switch sees the new version. A commit validated against any other version is
+    /// refused as [`EditError::DefinitionStale`]; nothing has been written yet.
+    ///
+    /// Returns the definition the commit is validated against. When the in-memory definition is
+    /// not the one the database says is active (another process switched), the active one is
+    /// read from the database and kept, also when the commit is refused, so the caller's next
+    /// attempt can use it.
+    async fn fence(
+        &self,
+        tx: &mut WriteTx<'_>,
+        expected: i64,
+    ) -> Result<Arc<ActiveDefinition>, EditError> {
+        let select = Query::select()
+            .column(col("active_def_version"))
+            .from(col(sql_exit::STATE_TABLE))
+            .lock(LockType::Share)
+            .to_owned();
+        let built = sql_exit::build(&select, tx);
+        let active = sql_exit::fetch_scalar_i64(tx, built).await?.unwrap_or(0);
+        if active == 0 {
+            return Err(
+                StoreError::Config("no definition is loaded; run reload first".to_owned()).into(),
+            );
+        }
+        let def = match self.active_definition().await {
+            Some(def) if def.def_version == active => def,
+            _ => {
+                let fresh = Arc::new(sql_exit::read_definition_in(tx, active).await?);
+                self.install_if_newer(&fresh).await;
+                fresh
+            }
+        };
+        if expected != active {
+            return Err(EditError::DefinitionStale { expected, active });
+        }
+        Ok(def)
     }
 }
 
@@ -229,7 +277,8 @@ pub(crate) enum Target<'a> {
     },
 }
 
-fn validate<'a>(def: &'a ActiveDefinition, commit: &Commit) -> Result<Vec<Planned<'a>>, EditError> {
+/// The checks that need no definition.
+fn check_shape(commit: &Commit) -> Result<(), EditError> {
     if commit.edits.is_empty() {
         return Err(value_error("edits", "a commit needs at least one edit"));
     }
@@ -249,6 +298,11 @@ fn validate<'a>(def: &'a ActiveDefinition, commit: &Commit) -> Result<Vec<Planne
             "a principal id is `{issuer}|{subject}`; other actors are the reserved system actors",
         ));
     }
+    Ok(())
+}
+
+/// The checks against the definition `def`, which the fence has shown to be the active one.
+fn validate<'a>(def: &'a ActiveDefinition, commit: &Commit) -> Result<Vec<Planned<'a>>, EditError> {
     if commit.def_version != def.def_version {
         return Err(EditError::DefinitionStale {
             expected: commit.def_version,

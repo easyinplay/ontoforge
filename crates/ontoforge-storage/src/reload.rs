@@ -160,10 +160,11 @@ pub(crate) async fn execute_steps(
     Ok(())
 }
 
-/// Records `ontology` and `physical` as the next definition version and makes it the active one,
-/// in the transaction `tx`. `migration_json` holds the steps a migration ran (ADR-0026: replay of
-/// an edit log across versions reads them); a reload passes `None`.
-pub(crate) async fn switch_definition(
+/// Records `ontology` and `physical` as the next definition version, `pending`, in the
+/// transaction `tx`. `of_def_state` still points at the previous version. `migration_json` holds
+/// the steps a migration ran (ADR-0026: replay of an edit log across versions reads them); a
+/// reload passes `None`.
+pub(crate) async fn insert_pending(
     tx: &mut WriteTx<'_>,
     ontology: &Ontology,
     physical: &PhysicalSchema,
@@ -174,14 +175,32 @@ pub(crate) async fn switch_definition(
     let migration_json = migration_json.map(to_json).transpose()?;
     let now = Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);
     let def_version = sql_exit::next_def_version(tx).await?;
-    sql_exit::supersede_active(tx).await?;
     let record = sql_exit::DefinitionRecord {
         ontology_json: &ontology_json,
         physical_json: &physical_json,
         migration_json: migration_json.as_deref(),
         now: &now,
     };
-    sql_exit::activate_definition(tx, def_version, &record).await?;
+    sql_exit::insert_pending_definition(tx, def_version, &record).await?;
+    Ok(def_version)
+}
+
+/// Makes the pending `def_version` the active one, in the transaction `tx`: from the commit of
+/// this transaction on, a write validated against an older version is refused (the fence).
+pub(crate) async fn activate(tx: &mut WriteTx<'_>, def_version: i64) -> Result<(), StoreError> {
+    let now = Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);
+    sql_exit::activate_definition(tx, def_version, &now).await
+}
+
+/// [`insert_pending`] and [`activate`] in the one transaction `tx`.
+pub(crate) async fn switch_definition(
+    tx: &mut WriteTx<'_>,
+    ontology: &Ontology,
+    physical: &PhysicalSchema,
+    migration_json: Option<&serde_json::Value>,
+) -> Result<i64, StoreError> {
+    let def_version = insert_pending(tx, ontology, physical, migration_json).await?;
+    activate(tx, def_version).await?;
     Ok(def_version)
 }
 

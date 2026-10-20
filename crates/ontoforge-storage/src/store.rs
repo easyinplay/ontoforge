@@ -214,6 +214,18 @@ impl EditStore {
         self.active.read().await.clone()
     }
 
+    /// Keeps `def` as the active definition unless a newer one is held already. A switch and the
+    /// commit fence both call this, in whatever order their tasks run.
+    pub(crate) async fn install_if_newer(&self, def: &Arc<ActiveDefinition>) {
+        let mut slot = self.active.write().await;
+        if slot
+            .as_ref()
+            .is_none_or(|current| current.def_version < def.def_version)
+        {
+            *slot = Some(Arc::clone(def));
+        }
+    }
+
     /// Starts a write transaction. SQLite: `BEGIN IMMEDIATE`.
     pub(crate) async fn begin_write(&self) -> Result<WriteTx<'_>, StoreError> {
         sql_exit::begin_write(&self.db).await

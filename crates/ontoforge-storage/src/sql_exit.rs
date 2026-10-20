@@ -24,7 +24,9 @@ pub(crate) type Built = (String, SqlxValues);
 
 const BEGIN_IMMEDIATE: &str = "BEGIN IMMEDIATE";
 
-const STATE_TABLE: &str = "of_def_state";
+/// The one-row table `of_def_state` that says which definition version is active. A commit reads
+/// it `FOR SHARE` (the fence), a switch updates it.
+pub(crate) const STATE_TABLE: &str = "of_def_state";
 const VERSION_TABLE: &str = "of_def_version";
 
 /// Builds `stmt` for the dialect of the transaction.
@@ -490,16 +492,33 @@ pub(crate) async fn next_def_version(tx: &mut WriteTx<'_>) -> Result<i64, StoreE
 
 /// Marks the active definition as superseded.
 pub(crate) async fn supersede_active(tx: &mut WriteTx<'_>) -> Result<(), StoreError> {
-    let update = Query::update()
-        .table(Alias::new(VERSION_TABLE))
-        .value(Alias::new("status"), "superseded")
-        .and_where(Expr::col(Alias::new("status")).eq("active"))
-        .to_owned();
-    let built = build(&update, tx);
-    execute_built(tx, built).await.map(|_| ())
+    set_status(tx, "active", "superseded", None)
+        .await
+        .map(|_| ())
 }
 
-/// The JSON documents and the time of a definition version that `activate_definition` stores.
+/// Moves every definition version in status `from` (but `keep`) to status `to`; returns how many
+/// rows moved.
+async fn set_status(
+    tx: &mut WriteTx<'_>,
+    from: &str,
+    to: &str,
+    keep: Option<i64>,
+) -> Result<u64, StoreError> {
+    let mut update = Query::update()
+        .table(Alias::new(VERSION_TABLE))
+        .value(Alias::new("status"), to)
+        .and_where(Expr::col(Alias::new("status")).eq(from))
+        .to_owned();
+    if let Some(keep) = keep {
+        update.and_where(Expr::col(Alias::new("def_version")).ne(keep));
+    }
+    let built = build(&update, tx);
+    execute_built(tx, built).await
+}
+
+/// The JSON documents and the time of a definition version that `insert_pending_definition`
+/// stores.
 pub(crate) struct DefinitionRecord<'a> {
     pub(crate) ontology_json: &'a str,
     pub(crate) physical_json: &'a str,
@@ -508,8 +527,19 @@ pub(crate) struct DefinitionRecord<'a> {
     pub(crate) now: &'a str,
 }
 
-/// Stores `version` as the active definition and points `of_def_state` at it.
-pub(crate) async fn activate_definition(
+/// `value` as text for a `jsonb` / `timestamptz` column: cast on PostgreSQL, as it is on SQLite.
+fn typed_column(postgres: bool, value: &str, ty: &str) -> Expr {
+    let expr = Expr::val(value.to_owned());
+    if postgres {
+        expr.cast_as(Alias::new(ty))
+    } else {
+        expr
+    }
+}
+
+/// Stores `version` with status `pending`. `of_def_state` still points at the previous version:
+/// nothing but the bookkeeping changes until [`activate_definition`].
+pub(crate) async fn insert_pending_definition(
     tx: &mut WriteTx<'_>,
     version: i64,
     record: &DefinitionRecord<'_>,
@@ -517,28 +547,19 @@ pub(crate) async fn activate_definition(
     // PostgreSQL types these columns `jsonb` and `timestamptz`; the values travel as text and
     // are cast there. SQLite stores the text as it is.
     let postgres = tx.backend() == Backend::Postgres;
-    let typed = |value: &str, ty: &str| {
-        let expr = Expr::val(value.to_owned());
-        if postgres {
-            expr.cast_as(Alias::new(ty))
-        } else {
-            expr
-        }
-    };
+    let typed = |value: &str, ty: &str| typed_column(postgres, value, ty);
     let mut columns = vec![
         Alias::new("def_version"),
         Alias::new("status"),
         Alias::new("ontology_json"),
         Alias::new("physical_json"),
         Alias::new("created_at"),
-        Alias::new("activated_at"),
     ];
     let mut values: Vec<Expr> = vec![
         version.into(),
-        "active".into(),
+        "pending".into(),
         typed(record.ontology_json, "jsonb"),
         typed(record.physical_json, "jsonb"),
-        typed(record.now, "timestamptz"),
         typed(record.now, "timestamptz"),
     ];
     if let Some(migration_json) = record.migration_json {
@@ -551,7 +572,35 @@ pub(crate) async fn activate_definition(
         .values_panic(values)
         .to_owned();
     let built = build(&insert, tx);
-    execute_built(tx, built).await?;
+    execute_built(tx, built).await.map(|_| ())
+}
+
+/// Makes the pending `version` the active definition: the previous one is superseded, `version`
+/// becomes `active` and `of_def_state` points at it. The state row is updated last, so it is
+/// locked for as short a time as the transaction allows.
+pub(crate) async fn activate_definition(
+    tx: &mut WriteTx<'_>,
+    version: i64,
+    now: &str,
+) -> Result<(), StoreError> {
+    let postgres = tx.backend() == Backend::Postgres;
+    supersede_active(tx).await?;
+    let activate = Query::update()
+        .table(Alias::new(VERSION_TABLE))
+        .value(Alias::new("status"), "active")
+        .value(
+            Alias::new("activated_at"),
+            typed_column(postgres, now, "timestamptz"),
+        )
+        .and_where(Expr::col(Alias::new("def_version")).eq(version))
+        .and_where(Expr::col(Alias::new("status")).eq("pending"))
+        .to_owned();
+    let built = build(&activate, tx);
+    if execute_built(tx, built).await? != 1 {
+        return Err(StoreError::Corrupt(format!(
+            "definition version {version} is not pending, so it cannot become active"
+        )));
+    }
 
     let state = Query::update()
         .table(Alias::new(STATE_TABLE))
@@ -657,15 +706,28 @@ fn parse_definition(
 pub(crate) async fn read_active_definition_in(
     tx: &mut WriteTx<'_>,
 ) -> Result<Option<ActiveDefinition>, StoreError> {
+    let version = read_active_version_in(tx).await?;
+    if version == 0 {
+        return Ok(None);
+    }
+    read_definition_in(tx, version).await.map(Some)
+}
+
+/// `of_def_state.active_def_version` as the transaction `tx` sees it, 0 before the first reload.
+pub(crate) async fn read_active_version_in(tx: &mut WriteTx<'_>) -> Result<i64, StoreError> {
     let select = Query::select()
         .column(Alias::new("active_def_version"))
         .from(Alias::new(STATE_TABLE))
         .to_owned();
     let built = build(&select, tx);
-    let version = fetch_scalar_i64(tx, built).await?.unwrap_or(0);
-    if version == 0 {
-        return Ok(None);
-    }
+    Ok(fetch_scalar_i64(tx, built).await?.unwrap_or(0))
+}
+
+/// The definition `version`, whatever its status, read inside the transaction `tx`.
+pub(crate) async fn read_definition_in(
+    tx: &mut WriteTx<'_>,
+    version: i64,
+) -> Result<ActiveDefinition, StoreError> {
     // `jsonb` columns are read as text.
     let backend = tx.backend();
     let select = Query::select()
@@ -681,5 +743,5 @@ pub(crate) async fn read_active_definition_in(
     let [Cell::Text(ontology_json), Cell::Text(physical_json)] = cells.as_slice() else {
         return Err(missing_version(version));
     };
-    parse_definition(version, ontology_json, physical_json).map(Some)
+    parse_definition(version, ontology_json, physical_json)
 }
