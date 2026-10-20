@@ -7,14 +7,17 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use chrono::{SecondsFormat, Utc};
-use ontoforge_schema::ir::{LinkTypeName, ObjectType, ObjectTypeName, PropertyDef, PropertyName};
+use ontoforge_schema::ir::{
+    Backing, Cardinality, LinkTypeName, ObjectType, ObjectTypeName, PropertyDef, PropertyName,
+};
 use sea_query::{Alias, Expr, ExprTrait, LockType, OnConflict, Query};
 use serde_json::{Map, Value, json};
 
 use crate::error::StoreError;
 use crate::history;
 use crate::log::{self, EditOp, EntryKind, LogEntry};
-use crate::physical::{ColumnType, LinkTable, ObjectTable};
+use crate::naming;
+use crate::physical::{ColumnType, IndexKind, LinkTable, ObjectTable};
 use crate::sql_exit::{self, Cell, CellKind};
 use crate::state::{EditRow, LinkRow, next_link_state, next_state};
 use crate::store::{ActiveDefinition, Backend, EditStore, WriteTx};
@@ -140,7 +143,7 @@ impl EditStore {
         })?;
         let plan = validate(&active, &commit)?;
         let mut tx = self.begin_write().await?;
-        match write(&mut tx, &commit, plan).await {
+        match write(&mut tx, &active, &commit, plan).await {
             Ok(receipt) => {
                 sql_exit::commit(tx).await?;
                 Ok(receipt)
@@ -167,7 +170,7 @@ fn value_error(property: &str, reason: &(impl std::fmt::Display + ?Sized)) -> Ed
 /// Which row an edit touches. The derived order is the order in which rows are locked, the same
 /// in every commit, so two commits cannot wait on each other.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-struct RowKey {
+pub(crate) struct RowKey {
     /// `0` object, `1` link.
     kind: u8,
     name: String,
@@ -176,10 +179,38 @@ struct RowKey {
 }
 
 /// A validated edit with its values in canonical form.
-struct Planned<'a> {
-    ordinal: usize,
+pub(crate) struct Planned<'a> {
+    pub(crate) ordinal: usize,
     key: RowKey,
-    target: Target<'a>,
+    pub(crate) target: Target<'a>,
+}
+
+impl<'a> Planned<'a> {
+    /// The edit `target` on the object type or link type `name`.
+    pub(crate) fn new(ordinal: usize, name: &str, target: Target<'a>) -> Self {
+        let (kind, pk) = match &target {
+            Target::Object { pk, .. } => (0, pk.to_json().to_string()),
+            Target::Link { a, b, .. } => (1, json!([a.to_json(), b.to_json()]).to_string()),
+        };
+        Self {
+            ordinal,
+            key: RowKey {
+                kind,
+                name: name.to_owned(),
+                pk,
+            },
+            target,
+        }
+    }
+
+    pub(crate) fn type_name(&self) -> &str {
+        &self.key.name
+    }
+}
+
+/// Puts the edits in lock order. The sort is stable, so edits of one row keep their order.
+pub(crate) fn sort_plan(plan: &mut [Planned<'_>]) {
+    plan.sort_by(|x, y| x.key.cmp(&y.key));
 }
 
 pub(crate) enum Target<'a> {
@@ -191,6 +222,7 @@ pub(crate) enum Target<'a> {
     },
     Link {
         table: &'a LinkTable,
+        backing: Backing,
         a: PropertyValue,
         b: PropertyValue,
         op: LinkOp,
@@ -249,15 +281,11 @@ fn plan_edit<'a>(
                 .canonical(primary_key_def(ty)?)
                 .map_err(|e| value_error(ty.primary_key.as_str(), &e))?;
             let op = plan_object_op(ty, op)?;
-            Ok(Planned {
+            Ok(Planned::new(
                 ordinal,
-                key: RowKey {
-                    kind: 0,
-                    name: name.as_str().to_owned(),
-                    pk: pk.to_json().to_string(),
-                },
-                target: Target::Object { ty, table, pk, op },
-            })
+                name.as_str(),
+                Target::Object { ty, table, pk, op },
+            ))
         }
         Edit::Link { link, a, b, op } => {
             let (name, link_type) = def
@@ -281,22 +309,25 @@ fn plan_edit<'a>(
             };
             let a = end(&link_type.from.object_type, a, "a")?;
             let b = end(&link_type.to.object_type, b, "b")?;
-            Ok(Planned {
+            Ok(Planned::new(
                 ordinal,
-                key: RowKey {
-                    kind: 1,
-                    name: name.as_str().to_owned(),
-                    pk: json!([a.to_json(), b.to_json()]).to_string(),
-                },
-                target: Target::Link {
+                name.as_str(),
+                Target::Link {
                     table,
+                    backing: link_backing(link_type.backing),
                     a,
                     b,
                     op: *op,
                 },
-            })
+            ))
         }
     }
+}
+
+/// A many-to-many link always declares its backing; `None` cannot reach a link table and reads
+/// as the stricter editOnly rules.
+pub(crate) fn link_backing(declared: Option<Backing>) -> Backing {
+    declared.unwrap_or(Backing::EditOnly)
 }
 
 pub(crate) fn primary_key_def(ty: &ObjectType) -> Result<&PropertyDef, EditError> {
@@ -338,12 +369,11 @@ fn plan_object_op(ty: &ObjectType, op: &ObjectOp) -> Result<ObjectOp, EditError>
                 .map(ObjectOp::Set)
         }
         ObjectOp::Unset(names) => {
+            if names.is_empty() {
+                return Err(value_error("unset", "an unset needs at least one property"));
+            }
             for name in names {
-                if property(name)?.required {
-                    return Err(EditError::MissingRequired {
-                        property: name.as_str().to_owned(),
-                    });
-                }
+                property(name)?;
             }
             Ok(op.clone())
         }
@@ -386,31 +416,120 @@ impl RowState {
     }
 }
 
-async fn write(
-    tx: &mut WriteTx<'_>,
-    commit: &Commit,
-    mut plan: Vec<Planned<'_>>,
-) -> Result<Receipt, EditError> {
-    plan.sort_by(|x, y| x.key.cmp(&y.key));
-    let schema = tx.schema_edit().map(str::to_owned);
-    let schema = schema.as_deref();
+/// The rows of a plan after their edits.
+pub(crate) struct Advanced {
+    /// The state after each planned edit, in plan order.
+    pub(crate) after: Vec<RowState>,
+    /// Each row as it was when locked and as the commit leaves it.
+    rows: BTreeMap<RowKey, (RowState, RowState)>,
+}
 
-    // Lock or create every row and compute its new state. A second edit of the same row in this
-    // commit sees the state the first one left.
-    let mut rows: BTreeMap<RowKey, RowState> = BTreeMap::new();
+/// Locks or creates every row of `plan` and computes its new state, in plan order. A second edit
+/// of the same row sees the state the first one left. Nothing but the empty version 0 rows is
+/// written.
+pub(crate) async fn lock_and_advance(
+    tx: &mut WriteTx<'_>,
+    schema: Option<&str>,
+    plan: &[Planned<'_>],
+) -> Result<Advanced, EditError> {
+    let mut rows: BTreeMap<RowKey, (RowState, RowState)> = BTreeMap::new();
     let mut after: Vec<RowState> = Vec::with_capacity(plan.len());
-    for planned in &plan {
+    for planned in plan {
         if !rows.contains_key(&planned.key) {
             let loaded = load_row(tx, schema, &planned.target).await?;
-            rows.insert(planned.key.clone(), loaded);
+            rows.insert(planned.key.clone(), (loaded.clone(), loaded));
         }
-        let current = rows.get_mut(&planned.key).ok_or_else(|| {
+        let (_, current) = rows.get_mut(&planned.key).ok_or_else(|| {
             StoreError::Corrupt("a locked row is missing from the commit".to_owned())
         })?;
         let next = advance(current, &planned.target)?;
         current.clone_from(&next);
         after.push(next);
     }
+    Ok(Advanced { after, rows })
+}
+
+/// Writes each row of `plan` once, in lock order, in the state the plan leaves it. A unique
+/// violation of a one-to-one foreign key is a [`EditError::CardinalityViolation`]. The check is
+/// per written row, so a plan that moves a key from one object to another must list the object
+/// that gives it up first in lock order.
+pub(crate) async fn write_rows(
+    tx: &mut WriteTx<'_>,
+    schema: Option<&str>,
+    def: &ActiveDefinition,
+    def_version: i64,
+    seq: i64,
+    plan: &[Planned<'_>],
+    advanced: &Advanced,
+) -> Result<(), EditError> {
+    let mut written: Option<&RowKey> = None;
+    for planned in plan {
+        if written == Some(&planned.key) {
+            continue;
+        }
+        written = Some(&planned.key);
+        let (before, after) = advanced.rows.get(&planned.key).ok_or_else(|| {
+            StoreError::Corrupt("a locked row is missing from the commit".to_owned())
+        })?;
+        update_row(tx, schema, def_version, seq, &planned.target, before, after)
+            .await
+            .map_err(|error| cardinality_error(def, &planned.target, error))?;
+    }
+    Ok(())
+}
+
+/// A unique violation of an object row is the one-to-one link whose foreign key it is.
+fn cardinality_error(def: &ActiveDefinition, target: &Target<'_>, error: EditError) -> EditError {
+    let (Target::Object { table, .. }, EditError::Store(StoreError::Query { sqlstate, message })) =
+        (target, &error)
+    else {
+        return error;
+    };
+    let violation = matches!(sqlstate.as_deref(), Some("23505" | "2067"))
+        || message.contains("UNIQUE constraint failed");
+    if !violation {
+        return error;
+    }
+    let unique: Vec<_> = table
+        .indexes
+        .iter()
+        .filter(|index| index.kind == IndexKind::UniqueWhenSet)
+        .collect();
+    let named = unique.iter().find(|index| {
+        message.contains(index.name.as_str())
+            || message.contains(&format!("{}.{}", table.table, index.column))
+    });
+    let index = match (named, unique.as_slice()) {
+        (Some(index), _) | (None, [index]) => *index,
+        _ => return error,
+    };
+    def.ontology
+        .link_types
+        .iter()
+        .find(|(_, link)| {
+            link.cardinality == Cardinality::OneToOne
+                && link.to.foreign_key.as_ref().is_some_and(|fk| {
+                    naming::property_column(fk) == index.column
+                        && naming::object_table(&link.to.object_type) == table.table
+                })
+        })
+        .map_or(error, |(name, _)| EditError::CardinalityViolation {
+            link: name.as_str().to_owned(),
+        })
+}
+
+async fn write(
+    tx: &mut WriteTx<'_>,
+    def: &ActiveDefinition,
+    commit: &Commit,
+    mut plan: Vec<Planned<'_>>,
+) -> Result<Receipt, EditError> {
+    sort_plan(&mut plan);
+    let schema = tx.schema_edit().map(str::to_owned);
+    let schema = schema.as_deref();
+
+    let advanced = lock_and_advance(tx, schema, &plan).await?;
+    let after = &advanced.after;
 
     let event_id = ulid::Ulid::generate();
     let event_text = event_id.to_string();
@@ -428,13 +547,11 @@ async fn write(
     )
     .await?;
 
-    for (planned, state) in plan.iter().zip(&after) {
-        update_row(tx, schema, commit.def_version, seq, &planned.target, state).await?;
-    }
+    write_rows(tx, schema, def, commit.def_version, seq, &plan, &advanced).await?;
 
     let mut entries: Vec<(LogEntry, Value)> = plan
         .iter()
-        .zip(&after)
+        .zip(after)
         .map(|(planned, state)| (log_entry(planned, state), state.snapshot()))
         .collect();
     entries.sort_by_key(|(entry, _)| entry.ordinal);
@@ -497,8 +614,8 @@ pub(crate) fn advance(current: &RowState, target: &Target<'_>) -> Result<RowStat
         (RowState::Object(row), Target::Object { ty, op, .. }) => {
             next_state(Some(row), op, ty).map(RowState::Object)
         }
-        (RowState::Link(row), Target::Link { op, .. }) => {
-            next_link_state(Some(row), *op).map(RowState::Link)
+        (RowState::Link(row), Target::Link { op, backing, .. }) => {
+            next_link_state(Some(row), *op, *backing).map(RowState::Link)
         }
         _ => Err(StoreError::Corrupt("a row changed its kind".to_owned()).into()),
     }
@@ -544,7 +661,7 @@ fn log_entry(planned: &Planned<'_>, state: &RowState) -> LogEntry {
     LogEntry {
         ordinal: i32::try_from(planned.ordinal).unwrap_or(i32::MAX),
         kind,
-        type_name: planned.key.name.clone(),
+        type_name: planned.type_name().to_owned(),
         pk,
         op,
         payload,
@@ -706,39 +823,44 @@ async fn load_link(
     }
 }
 
-/// Writes the state a row has after its edit, with the system columns of the commit.
+/// Writes the state a row has after its edits, with the system columns of the commit. Only the
+/// property columns whose value differs from `before` are written: a property that is no longer
+/// set gets its value cleared and its `__set` flag lowered.
 pub(crate) async fn update_row(
     tx: &mut WriteTx<'_>,
     schema: Option<&str>,
     def_version: i64,
     seq: i64,
     target: &Target<'_>,
+    before: &RowState,
     state: &RowState,
 ) -> Result<(), EditError> {
     let backend = tx.backend();
     let mut update = Query::update();
-    match (target, state) {
-        (Target::Object { table, pk, op, .. }, RowState::Object(row)) => {
+    match (target, before, state) {
+        (Target::Object { table, pk, .. }, RowState::Object(old), RowState::Object(row)) => {
             update.table(sql_exit::edit_table(schema, &table.table));
-            if let ObjectOp::Set(values) = op {
-                for (name, value) in values {
-                    let column = table.properties.get(name).ok_or_else(|| {
-                        StoreError::Corrupt(format!("property `{name}` has no column"))
-                    })?;
-                    update
-                        .value(col(&column.column), bind(value, &column.ty, backend))
-                        .value(col(&column.set_column), true);
+            for (name, column) in &table.properties {
+                let (was, now) = (old.set.get(name), row.set.get(name));
+                if was == now {
+                    continue;
                 }
+                match now {
+                    Some(value) => update
+                        .value(col(&column.column), bind(value, &column.ty, backend))
+                        .value(col(&column.set_column), true),
+                    None => update
+                        .value(col(&column.column), Expr::null())
+                        .value(col(&column.set_column), false),
+                };
             }
-            // Unset, tombstone and release rewrite columns too; plan 03-13 adds them together
-            // with their transitions in `next_state`.
             update
                 .value(col("of_version"), row.version)
                 .value(col("of_deleted"), row.deleted)
                 .value(col("of_released"), row.released)
                 .and_where(Expr::col(col(&table.pk.column)).eq(bind(pk, &table.pk.ty, backend)));
         }
-        (Target::Link { table, a, b, .. }, RowState::Link(row)) => {
+        (Target::Link { table, a, b, .. }, _, RowState::Link(row)) => {
             update
                 .table(sql_exit::edit_table(schema, &table.table))
                 .value(col("of_version"), row.version)

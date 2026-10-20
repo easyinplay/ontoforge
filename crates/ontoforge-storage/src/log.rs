@@ -5,11 +5,11 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use ontoforge_schema::ir::{LinkTypeName, ObjectTypeName, PropertyName};
+use ontoforge_schema::ir::{LinkTypeName, ObjectType, ObjectTypeName, PropertyName};
 use sea_query::{Alias, Expr, ExprTrait, Order, Query};
 use serde_json::Value;
 
-use crate::commit::{self, EditError, LinkOp, ObjectOp, Target};
+use crate::commit::{self, EditError, LinkOp, ObjectOp, Planned, Target};
 use crate::error::StoreError;
 use crate::sql_exit::{self, Built};
 use crate::store::{ActiveDefinition, Backend, EditStore, WriteTx};
@@ -203,22 +203,78 @@ async fn apply_records(
             }
             .into());
         }
+        // A record is replayed the way it was committed: rows locked and advanced in lock order,
+        // then each row written once in the state the record leaves it.
         let mut entries: Vec<&LogEntry> = record.entries.iter().collect();
         entries.sort_by_key(|entry| entry.ordinal);
-        for entry in entries {
-            let planned = replay_target(def, record.seq, entry)?;
-            let current = commit::load_row(tx, schema, &planned).await?;
-            let next = commit::advance(&current, &planned)?;
-            if next.version() != entry.version_after {
+        let mut plan = Vec::with_capacity(entries.len());
+        for entry in &entries {
+            plan.push(replay_target(def, record.seq, entry)?);
+        }
+        commit::sort_plan(&mut plan);
+        let advanced = commit::lock_and_advance(tx, schema, &plan).await?;
+        for (planned, state) in plan.iter().zip(&advanced.after) {
+            let logged = entries
+                .iter()
+                .find(|entry| usize::try_from(entry.ordinal).is_ok_and(|o| o == planned.ordinal));
+            if logged.is_none_or(|entry| entry.version_after != state.version()) {
                 return Err(ReplayError::Diverged {
                     seq: record.seq,
-                    ordinal: entry.ordinal,
+                    ordinal: i32::try_from(planned.ordinal).unwrap_or(i32::MAX),
                 });
             }
-            commit::update_row(tx, schema, record.def_version, record.seq, &planned, &next).await?;
         }
+        commit::write_rows(
+            tx,
+            schema,
+            def,
+            record.def_version,
+            record.seq,
+            &plan,
+            &advanced,
+        )
+        .await?;
     }
     Ok(())
+}
+
+/// The operation of an object entry. A malformed entry is `StoreError::Corrupt` with the reason.
+fn replay_object_op(ty: &ObjectType, entry: &LogEntry) -> Result<ObjectOp, ReplayError> {
+    let corrupt = |what: &str| ReplayError::Store(StoreError::Corrupt(what.to_owned()));
+    Ok(match (entry.op, &entry.payload) {
+        (EditOp::Set, Some(Value::Object(values))) => {
+            let mut set = BTreeMap::new();
+            for (property, json) in values {
+                let name = PropertyName::try_from(property.clone())
+                    .map_err(|_| corrupt("bad property name"))?;
+                let property_def =
+                    ty.properties
+                        .get(&name)
+                        .ok_or_else(|| EditError::UnknownProperty {
+                            type_name: entry.type_name.clone(),
+                            property: property.clone(),
+                        })?;
+                let value = PropertyValue::from_json(property_def, json)
+                    .map_err(|e| corrupt(&format!("bad value of `{property}`: {e}")))?;
+                set.insert(name, value);
+            }
+            ObjectOp::Set(set)
+        }
+        (EditOp::Unset, Some(Value::Array(names))) => {
+            let mut unset = BTreeSet::new();
+            for name in names {
+                let name = name
+                    .as_str()
+                    .and_then(|text| PropertyName::try_from(text.to_owned()).ok())
+                    .ok_or_else(|| corrupt("bad property name"))?;
+                unset.insert(name);
+            }
+            ObjectOp::Unset(unset)
+        }
+        (EditOp::Tombstone, None) => ObjectOp::Tombstone,
+        (EditOp::Release, None) => ObjectOp::Release,
+        _ => return Err(corrupt("the operation does not fit an object entry")),
+    })
 }
 
 /// The edit an entry stands for, resolved against the definition.
@@ -226,7 +282,13 @@ fn replay_target<'a>(
     def: &'a ActiveDefinition,
     seq: i64,
     entry: &LogEntry,
-) -> Result<Target<'a>, ReplayError> {
+) -> Result<Planned<'a>, ReplayError> {
+    let ordinal = usize::try_from(entry.ordinal).map_err(|_| {
+        ReplayError::Store(StoreError::Corrupt(format!(
+            "edit log entry {seq}/{}: negative ordinal",
+            entry.ordinal
+        )))
+    })?;
     let corrupt = |what: &str| {
         ReplayError::Store(StoreError::Corrupt(format!(
             "edit log entry {seq}/{}: {what}",
@@ -246,41 +308,15 @@ fn replay_target<'a>(
             let table = def.physical.object_table(name).ok_or_else(unknown)?;
             let pk = PropertyValue::from_json(commit::primary_key_def(ty)?, &entry.pk)
                 .map_err(|e| corrupt(&format!("bad primary key: {e}")))?;
-            let op = match (entry.op, &entry.payload) {
-                (EditOp::Set, Some(Value::Object(values))) => {
-                    let mut set = BTreeMap::new();
-                    for (property, json) in values {
-                        let name = PropertyName::try_from(property.clone())
-                            .map_err(|_| corrupt("bad property name"))?;
-                        let property_def =
-                            ty.properties
-                                .get(&name)
-                                .ok_or_else(|| EditError::UnknownProperty {
-                                    type_name: entry.type_name.clone(),
-                                    property: property.clone(),
-                                })?;
-                        let value = PropertyValue::from_json(property_def, json)
-                            .map_err(|e| corrupt(&format!("bad value of `{property}`: {e}")))?;
-                        set.insert(name, value);
-                    }
-                    ObjectOp::Set(set)
-                }
-                (EditOp::Unset, Some(Value::Array(names))) => {
-                    let mut unset = BTreeSet::new();
-                    for name in names {
-                        let name = name
-                            .as_str()
-                            .and_then(|text| PropertyName::try_from(text.to_owned()).ok())
-                            .ok_or_else(|| corrupt("bad property name"))?;
-                        unset.insert(name);
-                    }
-                    ObjectOp::Unset(unset)
-                }
-                (EditOp::Tombstone, None) => ObjectOp::Tombstone,
-                (EditOp::Release, None) => ObjectOp::Release,
-                _ => return Err(corrupt("the operation does not fit an object entry")),
-            };
-            Ok(Target::Object { ty, table, pk, op })
+            let op = replay_object_op(ty, entry).map_err(|e| match e {
+                ReplayError::Store(StoreError::Corrupt(what)) => corrupt(&what),
+                other => other,
+            })?;
+            Ok(Planned::new(
+                ordinal,
+                name.as_str(),
+                Target::Object { ty, table, pk, op },
+            ))
         }
         EntryKind::Link => {
             let link_name =
@@ -306,12 +342,17 @@ fn replay_target<'a>(
                 EditOp::LinkRemove => LinkOp::Remove,
                 _ => return Err(corrupt("the operation does not fit a link entry")),
             };
-            Ok(Target::Link {
-                table,
-                a: end(&link_type.from.object_type, a)?,
-                b: end(&link_type.to.object_type, b)?,
-                op,
-            })
+            Ok(Planned::new(
+                ordinal,
+                name.as_str(),
+                Target::Link {
+                    table,
+                    backing: commit::link_backing(link_type.backing),
+                    a: end(&link_type.from.object_type, a)?,
+                    b: end(&link_type.to.object_type, b)?,
+                    op,
+                },
+            ))
         }
     }
 }
