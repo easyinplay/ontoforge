@@ -155,3 +155,138 @@ async fn additive_reload_on_pg_adds_columns() {
     assert_eq!(t.active_version().await, 2);
     assert_eq!(t.version_rows().await, 2);
 }
+
+fn aviation() -> Ontology {
+    let root = camino::Utf8Path::new(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../examples/ontologies/aviation"
+    ));
+    ontoforge_schema::load_dir(root)
+        .ontology
+        .expect("aviation loads")
+}
+
+/// `(indexname, indexdef)` of every index on `table` in `schema`.
+async fn index_defs(t: &support::PgTestStore, table: &str) -> Vec<(String, String)> {
+    sqlx::query_as::<_, (String, String)>(
+        "SELECT CAST(indexname AS text), CAST(indexdef AS text) FROM pg_indexes \
+         WHERE CAST(schemaname AS text) = $1 AND CAST(tablename AS text) = $2 ORDER BY 1",
+    )
+    .bind(&t.schema_edit)
+    .bind(table)
+    .fetch_all(t.side())
+    .await
+    .expect("pg_indexes")
+}
+
+#[tokio::test(flavor = "multi_thread")]
+#[ignore = "needs ONTOFORGE_PG_URL or --features embedded-pg"]
+async fn indexes_on_pg() {
+    let t = pg_store().await;
+    let ontology = aviation();
+    reload(&t.store, &ontology, &ReloadOptions::default())
+        .await
+        .expect("reload");
+
+    let flight = index_defs(&t, "of_obj_flight").await;
+    assert!(
+        flight
+            .iter()
+            .any(|(name, _)| name == "of_ix_of_obj_flight_status"),
+        "{flight:?}"
+    );
+    let unique = "of_ux_of_obj_maintenance_record_aircraft_tail_number";
+    let maintenance = index_defs(&t, "of_obj_maintenance_record").await;
+    let (_, definition) = maintenance
+        .iter()
+        .find(|(name, _)| name == unique)
+        .unwrap_or_else(|| panic!("{maintenance:?}"));
+    assert!(
+        definition.contains("UNIQUE") && definition.contains("WHERE"),
+        "{definition}"
+    );
+
+    // The database refuses a second live row with the same key, and allows a deleted one.
+    let table = format!("\"{}\".of_obj_maintenance_record", t.schema_edit);
+    let pool = t.side();
+    let insert = |id: &'static str, set: bool, deleted: bool| {
+        let sql = format!(
+            "INSERT INTO {table} (record_id, aircraft_tail_number, aircraft_tail_number__set, of_deleted)              VALUES ($1, 'N1', $2, $3)"
+        );
+        async move {
+            sqlx::query(sqlx::AssertSqlSafe(sql))
+                .bind(id)
+                .bind(set)
+                .bind(deleted)
+                .execute(pool)
+                .await
+        }
+    };
+    insert("r1", true, false).await.expect("first row");
+    let second = insert("r2", true, false).await;
+    let Err(sqlx::Error::Database(error)) = second else {
+        panic!("a second live row must be refused, got {second:?}");
+    };
+    assert_eq!(error.code().as_deref(), Some("23505"));
+    insert("r3", true, true).await.expect("deleted row");
+    insert("r4", false, false).await.expect("unset row");
+
+    // Relaxing the link drops the unique index only.
+    let mut relaxed = ontology.clone();
+    relaxed
+        .link_types
+        .values_mut()
+        .find(|link| link.cardinality == ontoforge_schema::ir::Cardinality::OneToOne)
+        .expect("a oneToOne link")
+        .cardinality = ontoforge_schema::ir::Cardinality::OneToMany;
+    let out = reload(&t.store, &relaxed, &ReloadOptions::default())
+        .await
+        .expect("relax");
+    assert_eq!(out.ddl.len(), 1, "{:#?}", out.ddl);
+    assert!(
+        out.ddl[0].contains("DROP INDEX IF EXISTS")
+            && out.ddl[0].contains(&format!("\"{}\".\"{unique}\"", t.schema_edit)),
+        "{}",
+        out.ddl[0]
+    );
+    let after = index_defs(&t, "of_obj_maintenance_record").await;
+    assert!(after.iter().all(|(name, _)| name != unique), "{after:?}");
+    assert_eq!(index_defs(&t, "of_obj_flight").await, flight);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+#[ignore = "needs ONTOFORGE_PG_URL or --features embedded-pg"]
+async fn long_names_on_pg() {
+    let t = pg_store().await;
+    let property = format!("p{}", "x".repeat(99));
+    let type_name = format!("T{}", "x".repeat(99));
+    let text = format!(
+        "kind: ObjectType\napiName: {type_name}\nbacking: editOnly\nprimaryKey: id\nproperties:\n  id: {{ type: integer, required: true }}\n  {property}: {{ type: string, indexed: true }}\n"
+    );
+    let ontology = ontology_from(&[("defs.yaml", &text)]);
+    reload(&t.store, &ontology, &ReloadOptions::default())
+        .await
+        .expect("long names reload on PostgreSQL");
+
+    let active = t.store.active_definition().await.expect("active");
+    let table = active.physical.objects.values().next().expect("table");
+    assert!(table.table.len() <= 63, "{}", table.table);
+    let column = table.properties.values().next().expect("column");
+    let columns = t.columns(&t.schema_edit, &table.table).await;
+    assert!(
+        columns.contains(&column.column) && columns.contains(&column.set_column),
+        "{columns:?}"
+    );
+    let index = table.indexes.first().expect("index");
+    assert!(index.name.len() <= 63, "{}", index.name);
+    let defs = index_defs(&t, &table.table).await;
+    assert!(
+        defs.iter().any(|(name, _)| *name == index.name),
+        "PostgreSQL kept the index under its bounded name: {defs:?}"
+    );
+
+    let again = reload(&t.store, &ontology, &ReloadOptions::default())
+        .await
+        .expect("again");
+    assert!(!again.changed);
+}

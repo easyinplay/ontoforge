@@ -218,4 +218,63 @@ mod tests {
             d.help
         );
     }
+
+    fn table_with_archive() -> (ObjectTable, ObjectTable) {
+        use crate::physical::{ArchivedColumn, ColumnType, KeyColumn};
+        use ontoforge_schema::ir::PropertyName;
+        let name = |s: &str| PropertyName::try_from(s.to_owned()).expect("property name");
+        let old = ObjectTable {
+            table: "of_obj_gate".to_owned(),
+            pk: KeyColumn {
+                property: name("code"),
+                column: "code".to_owned(),
+                ty: ColumnType::String,
+            },
+            properties: std::collections::BTreeMap::new(),
+            archived_columns: vec![ArchivedColumn {
+                property: name("legacy"),
+                column: "legacy__arch_v2".to_owned(),
+                set_column: "legacy__set__arch_v2".to_owned(),
+                ty: ColumnType::String,
+                def_version: 2,
+            }],
+            indexes: Vec::new(),
+        };
+        (old.clone(), old)
+    }
+
+    #[test]
+    fn archived_columns_are_not_removals() {
+        let (old, new) = table_with_archive();
+        let mut plan = Plan::default();
+        diff_object("Gate", &old, &new, &mut plan);
+        assert_eq!(plan, Plan::default());
+    }
+
+    #[test]
+    fn unique_index_leaves_with_its_link_but_a_plain_one_stays() {
+        use crate::physical::IndexDef;
+        let (mut old, new) = table_with_archive();
+        old.indexes = vec![
+            IndexDef {
+                name: "of_ix_of_obj_gate_name".to_owned(),
+                column: "name".to_owned(),
+                kind: IndexKind::Plain,
+            },
+            IndexDef {
+                name: "of_ux_of_obj_gate_zone".to_owned(),
+                column: "zone".to_owned(),
+                kind: IndexKind::UniqueWhenSet,
+            },
+        ];
+        let mut plan = Plan::default();
+        diff_object("Gate", &old, &new, &mut plan);
+        assert_eq!(
+            plan.steps,
+            vec![DdlStep::DropIndex {
+                table: "of_obj_gate".to_owned(),
+                name: "of_ux_of_obj_gate_zone".to_owned(),
+            }]
+        );
+    }
 }

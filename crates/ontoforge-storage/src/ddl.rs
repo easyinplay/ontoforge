@@ -484,6 +484,18 @@ mod tests {
         }
     }
 
+    #[test]
+    fn system_columns_match_the_names_physical_checks_against() {
+        let names = |released| -> Vec<String> {
+            system_columns(released, Backend::Sqlite)
+                .into_iter()
+                .map(|c| c.name)
+                .collect()
+        };
+        assert_eq!(names(true), naming::OBJECT_SYSTEM_COLUMNS);
+        assert_eq!(names(false), naming::LINK_SYSTEM_COLUMNS);
+    }
+
     /// Every create statement of the aviation example, one per line group.
     fn aviation_ddl(backend: Backend, schema_edit: Option<&str>) -> String {
         let root = Utf8Path::new(concat!(

@@ -15,6 +15,17 @@ pub const OBJECT_TABLE_PREFIX: &str = "of_obj_";
 pub const LINK_TABLE_PREFIX: &str = "of_lnk_";
 /// Suffix of the boolean column that records "this property was set by an edit".
 pub const SET_SUFFIX: &str = "__set";
+/// System columns of an object table (ADR-0024 point 4).
+pub const OBJECT_SYSTEM_COLUMNS: [&str; 5] = [
+    "of_version",
+    "of_deleted",
+    "of_released",
+    "of_def_version",
+    "of_log_seq",
+];
+/// System columns of a link table, which has no `of_released`.
+pub const LINK_SYSTEM_COLUMNS: [&str; 4] =
+    ["of_version", "of_deleted", "of_def_version", "of_log_seq"];
 /// Prefix of a plain index.
 pub const INDEX_PREFIX: &str = "of_ix_";
 /// Prefix of the partial unique index behind a `oneToOne` link.
@@ -134,7 +145,7 @@ mod tests {
         );
 
         // The published FNV-1a test vector for "a".
-        assert_eq!(fnv1a32(b"a"), 0xe40c292c);
+        assert_eq!(fnv1a32(b"a"), 0xe40c_292c);
     }
 
     #[test]

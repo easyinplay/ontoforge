@@ -172,12 +172,68 @@ impl PhysicalSchema {
         for table in schema.objects.values_mut() {
             table.indexes.sort_by(|a, b| a.name.cmp(&b.name));
         }
+        errors.extend(schema.name_collisions());
 
         if errors.is_empty() {
             Ok(schema)
         } else {
             Err(errors)
         }
+    }
+
+    /// ONT-V24 for every physical name two definitions share, or that a property shares with a
+    /// system column. Truncation (`naming::bounded`) can fold two long names into one, and snake
+    /// casing maps `ABTest` and `AbTest` to the same name, so apiNames that differ can still
+    /// collide. Names only need to be unique within their namespace: tables and indexes of the
+    /// edit schema, columns of one table.
+    fn name_collisions(&self) -> Vec<Diagnostic> {
+        let mut tables: Vec<(String, String)> = Vec::new();
+        let mut indexes: Vec<(String, String)> = Vec::new();
+        let mut diagnostics = Vec::new();
+
+        for (type_name, table) in &self.objects {
+            tables.push((table.table.clone(), format!("object type `{type_name}`")));
+            let mut columns = vec![(
+                table.pk.column.clone(),
+                format!("primary key `{type_name}.{}`", table.pk.property),
+            )];
+            for (property, column) in &table.properties {
+                columns.push((
+                    column.column.clone(),
+                    format!("property `{type_name}.{property}`"),
+                ));
+                columns.push((
+                    column.set_column.clone(),
+                    format!("flag column of `{type_name}.{property}`"),
+                ));
+            }
+            columns.extend(system_column_entries(&naming::OBJECT_SYSTEM_COLUMNS));
+            diagnostics.extend(duplicates(
+                columns,
+                &format!("column of table `{}`", table.table),
+            ));
+            indexes.extend(table.indexes.iter().map(|ix| {
+                (
+                    ix.name.clone(),
+                    format!("index on `{type_name}.{}`", ix.column),
+                )
+            }));
+        }
+        for (link_name, table) in &self.links {
+            tables.push((table.table.clone(), format!("link type `{link_name}`")));
+            let mut columns = vec![
+                (table.a.column.clone(), "link end column `a_pk`".to_owned()),
+                (table.b.column.clone(), "link end column `b_pk`".to_owned()),
+            ];
+            columns.extend(system_column_entries(&naming::LINK_SYSTEM_COLUMNS));
+            diagnostics.extend(duplicates(
+                columns,
+                &format!("column of table `{}`", table.table),
+            ));
+        }
+        diagnostics.extend(duplicates(tables, "table"));
+        diagnostics.extend(duplicates(indexes, "index"));
+        diagnostics
     }
 
     /// Keeps the plain indexes of `old` that this schema no longer declares.
@@ -213,6 +269,36 @@ impl PhysicalSchema {
     pub fn link_table(&self, name: &LinkTypeName) -> Option<&LinkTable> {
         self.links.get(name)
     }
+}
+
+fn system_column_entries(names: &[&str]) -> impl Iterator<Item = (String, String)> {
+    names
+        .iter()
+        .map(|name| ((*name).to_owned(), format!("system column `{name}`")))
+}
+
+/// One ONT-V24 per physical name that more than one definition maps to.
+fn duplicates(entries: Vec<(String, String)>, what: &str) -> Vec<Diagnostic> {
+    let mut by_name: BTreeMap<String, Vec<String>> = BTreeMap::new();
+    for (physical, logical) in entries {
+        by_name.entry(physical).or_default().push(logical);
+    }
+    by_name
+        .into_iter()
+        .filter(|(_, logical)| logical.len() > 1)
+        .map(|(physical, logical)| {
+            Diagnostic::without_location(
+                codes::V24,
+                Severity::Error,
+                format!(
+                    "{what} name `{physical}` is shared by {}",
+                    logical.join(" and ")
+                ),
+                "ontology",
+            )
+            .with_help("rename one of them; physical names come from the apiName in snake case, cut to fit PostgreSQL's 63 byte limit")
+        })
+        .collect()
 }
 
 fn derive_error(message: &str) -> Diagnostic {
