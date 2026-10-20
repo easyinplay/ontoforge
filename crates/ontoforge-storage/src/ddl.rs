@@ -17,6 +17,7 @@ use sea_query::{
     Alias, ColumnDef, ConditionalStatement, Expr, ExprTrait, Index, IntoTableRef,
     PostgresQueryBuilder, SqliteQueryBuilder, Table, TableRef,
 };
+use serde::{Deserialize, Serialize};
 
 use crate::naming;
 use crate::physical::{
@@ -25,7 +26,7 @@ use crate::physical::{
 use crate::store::Backend;
 
 /// One schema change `reload` can apply without losing data.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum DdlStep {
     CreateObjectTable(ObjectTable),
     AddPropertyColumn {

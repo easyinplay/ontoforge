@@ -9,6 +9,7 @@ pub mod diff;
 pub mod error;
 mod history;
 pub mod log;
+pub mod migrate;
 pub mod naming;
 pub mod physical;
 pub mod reload;
