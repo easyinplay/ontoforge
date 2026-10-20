@@ -61,6 +61,41 @@ fn fnv1a32(bytes: &[u8]) -> u32 {
     })
 }
 
+/// The published 64 bit FNV-1a constants.
+#[allow(clippy::unreadable_literal, reason = "the published FNV-1a constants")]
+const FNV64_OFFSET_BASIS: u64 = 0xcbf29ce484222325;
+#[allow(clippy::unreadable_literal, reason = "the published FNV-1a constants")]
+const FNV64_PRIME: u64 = 0x100000001b3;
+
+/// The 64 bit FNV-1a hash of `bytes` as 16 lower case hex digits. It tells two texts apart, for
+/// example the plan that was reviewed from the plan that is about to run; it is not a defence
+/// against an adversary.
+pub(crate) fn fnv1a64_hex(bytes: &[u8]) -> String {
+    let hash = bytes.iter().fold(FNV64_OFFSET_BASIS, |hash, byte| {
+        (hash ^ u64::from(*byte)).wrapping_mul(FNV64_PRIME)
+    });
+    format!("{hash:016x}")
+}
+
+/// Infix of the name a column or table gets when migration archives it: `<name>__arch_v<N>`.
+pub const ARCHIVE_INFIX: &str = "__arch_v";
+
+/// Name of the archived value column: `capacity` archived at definition version 2 becomes
+/// `capacity__arch_v2` (ADR-0024 point 3).
+pub fn archived_column(column: &str, def_version: i64) -> String {
+    bounded(&format!("{column}{ARCHIVE_INFIX}{def_version}"), IDENT_MAX)
+}
+
+/// Name of the archived `__set` column: `capacity__set__arch_v2`.
+pub fn archived_set_column(column: &str, def_version: i64) -> String {
+    archived_column(&set_column(column), def_version)
+}
+
+/// Name of an archived table: `of_obj_gate__arch_v2`.
+pub fn archived_table(table: &str, def_version: i64) -> String {
+    archived_column(table, def_version)
+}
+
 /// Name of the plain index on `column` of `table`.
 pub fn index_name(table: &str, column: &str) -> String {
     bounded(&format!("{INDEX_PREFIX}{table}_{column}"), IDENT_MAX)
@@ -146,6 +181,28 @@ mod tests {
 
         // The published FNV-1a test vector for "a".
         assert_eq!(fnv1a32(b"a"), 0xe40c_292c);
+    }
+
+    #[test]
+    fn archive_names_carry_the_definition_version() {
+        assert_eq!(archived_column("capacity", 2), "capacity__arch_v2");
+        assert_eq!(archived_set_column("capacity", 2), "capacity__set__arch_v2");
+        assert_eq!(archived_table("of_obj_gate", 12), "of_obj_gate__arch_v12");
+        let long = archived_column(&"c".repeat(30), 10);
+        assert!(long.len() <= IDENT_MAX, "{long}");
+        let long_set = archived_set_column(&"c".repeat(60), 10);
+        assert!(long_set.len() <= IDENT_MAX, "{long_set}");
+        assert_ne!(
+            archived_column(&"c".repeat(70), 2),
+            archived_column(&"c".repeat(70), 3)
+        );
+    }
+
+    #[test]
+    fn fnv1a64_matches_the_published_vectors() {
+        assert_eq!(fnv1a64_hex(b""), "cbf29ce484222325");
+        assert_eq!(fnv1a64_hex(b"a"), "af63dc4c8601ec8c");
+        assert_eq!(fnv1a64_hex(b"foobar"), "85944171f73967e8");
     }
 
     #[test]

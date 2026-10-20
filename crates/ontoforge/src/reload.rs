@@ -22,7 +22,7 @@ use crate::render::{self, Format};
 use crate::{lint_cmd, online, print_rendered};
 
 /// Exit code when the edit store could not be used.
-const EXIT_STORE: u8 = 3;
+pub(crate) const EXIT_STORE: u8 = 3;
 
 /// Runs `ontoforge reload` and returns the process exit code.
 pub fn run(args: &ReloadArgs) -> u8 {
@@ -100,7 +100,7 @@ async fn open_and_reload(
 }
 
 /// The `[store]` settings of the server configuration at `path`.
-fn store_settings(path: &Utf8Path) -> Result<StoreSettings, Vec<Diagnostic>> {
+pub(crate) fn store_settings(path: &Utf8Path) -> Result<StoreSettings, Vec<Diagnostic>> {
     let file = path.as_str();
     let (config, _text): (ServerConfig, String) =
         load_server_config(path).map_err(|(errors, text)| {
@@ -134,13 +134,13 @@ fn store_error_diagnostic(e: &StoreError, file: &str) -> Diagnostic {
     Diagnostic::without_location(code, Severity::Error, e.to_string(), file)
 }
 
-fn store_diagnostic(message: &str, file: &Utf8Path) -> Diagnostic {
+pub(crate) fn store_diagnostic(message: &str, file: &Utf8Path) -> Diagnostic {
     Diagnostic::without_location(codes::V26, Severity::Error, message, file.as_str())
 }
 
 /// The diagnostic code and exit code of a store failure: a configuration the build cannot serve
 /// is a configuration error, everything else is an unusable store.
-fn store_failure(e: &StoreError) -> (&'static str, u8) {
+pub(crate) fn store_failure(e: &StoreError) -> (&'static str, u8) {
     match e {
         StoreError::Config(_) => (codes::V20, 1),
         _ => (codes::V26, EXIT_STORE),

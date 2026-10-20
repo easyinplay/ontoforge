@@ -262,6 +262,22 @@ impl PhysicalSchema {
         }
     }
 
+    /// Keeps the archived columns and tables of `old`.
+    ///
+    /// `derive` knows only the live definition. Migration (D-16) leaves archived columns and
+    /// tables in the database, and they are part of the schema that describes it; without this a
+    /// `reload` after a migration would see a difference on every run.
+    pub fn keep_archived_of(&mut self, old: &PhysicalSchema) {
+        for (name, table) in &mut self.objects {
+            if let Some(previous) = old.objects.get(name) {
+                table
+                    .archived_columns
+                    .clone_from(&previous.archived_columns);
+            }
+        }
+        self.archived_tables.clone_from(&old.archived_tables);
+    }
+
     pub fn object_table(&self, name: &ObjectTypeName) -> Option<&ObjectTable> {
         self.objects.get(name)
     }

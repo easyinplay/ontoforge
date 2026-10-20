@@ -2,6 +2,7 @@
 
 use camino::Utf8PathBuf;
 use clap::{Args, Parser, Subcommand};
+use ontoforge_storage::migrate::RenameDecl;
 
 use crate::render::{ColorChoice, Format};
 
@@ -26,6 +27,8 @@ pub enum Command {
     Schema(SchemaArgs),
     /// Bring the edit store's tables in line with the definitions.
     Reload(ReloadArgs),
+    /// Review (`--plan`) and run (`--apply`) a destructive definition change that `reload` refuses.
+    Migrate(MigrateArgs),
     /// Issue a development token signed with a local key (accepted only by a server started
     /// with `--dev`).
     DevToken(DevTokenArgs),
@@ -98,6 +101,43 @@ pub struct ReloadArgs {
     /// Print the DDL that would run and change nothing.
     #[arg(long)]
     pub dry_run: bool,
+    #[command(flatten)]
+    pub profile: ProfileArgs,
+    #[command(flatten)]
+    pub output: OutputArgs,
+}
+
+#[derive(Debug, Args)]
+#[command(group(clap::ArgGroup::new("mode").required(true).args(["plan", "apply"])))]
+pub struct MigrateArgs {
+    /// Ontology directory containing `ontology.yaml`.
+    pub dir: Utf8PathBuf,
+    /// Server configuration with the `[store]` section.
+    #[arg(long, value_name = "FILE")]
+    pub server_config: Utf8PathBuf,
+    /// Print the steps of the migration and their hash; change nothing.
+    #[arg(long)]
+    pub plan: bool,
+    /// Run the migration whose hash is `--plan-hash`. The plan is made again first and the run
+    /// is refused if its hash differs.
+    #[arg(long, requires = "plan_hash")]
+    pub apply: bool,
+    /// The `plan hash` that `--plan` printed.
+    #[arg(long, value_name = "HASH", requires = "apply")]
+    pub plan_hash: Option<String>,
+    /// Declare a rename, repeatable: `Type.old=new` for a property, `OldType=NewType` for an
+    /// object type. The data moves to the new name; without a declaration the old column is
+    /// archived and the new one starts empty.
+    #[arg(
+        long,
+        value_name = "DECL",
+        value_parser = |text: &str| text.parse::<RenameDecl>()
+    )]
+    pub rename: Vec<RenameDecl>,
+    /// Plan or run the removal of every archived column and table instead of a definition change.
+    /// This deletes data.
+    #[arg(long, conflicts_with = "rename")]
+    pub drop_archived: bool,
     #[command(flatten)]
     pub profile: ProfileArgs,
     #[command(flatten)]

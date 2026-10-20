@@ -15,6 +15,7 @@ use ontoforge_schema::ir::{Cardinality, Ontology};
 use crate::ddl::{self, DdlStep};
 use crate::diff::{DestructiveChange, diff};
 use crate::error::StoreError;
+use crate::migrate::{self, MigrationStep};
 use crate::naming;
 use crate::physical::{IndexKind, PhysicalSchema};
 use crate::sql_exit;
@@ -62,6 +63,7 @@ pub async fn reload(
     let active = store.active_definition().await;
     if let Some(active) = &active {
         physical.keep_plain_indexes_of(&active.physical);
+        physical.keep_archived_of(&active.physical);
     }
     let previous_def_version = active.as_ref().map(|a| a.def_version);
 
@@ -101,18 +103,15 @@ pub async fn reload(
         });
     }
 
-    let ontology_json = to_json(ontology)?;
-    let physical_json = to_json(&physical)?;
-    let now = Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);
-
+    let steps: Vec<MigrationStep> = plan.steps.into_iter().map(MigrationStep::Ddl).collect();
     let mut tx = store.begin_write().await?;
-    for step in &plan.steps {
-        apply_step(&mut tx, step, ontology).await?;
-    }
-    let def_version = sql_exit::next_def_version(&mut tx).await?;
-    sql_exit::supersede_active(&mut tx).await?;
-    sql_exit::activate_definition(&mut tx, def_version, &ontology_json, &physical_json, &now)
-        .await?;
+    let def_version = match run(&mut tx, &steps, ontology, &physical).await {
+        Ok(def_version) => def_version,
+        Err(error) => {
+            sql_exit::rollback(tx).await;
+            return Err(error.into());
+        }
+    };
     sql_exit::commit(tx).await?;
 
     *store.active.write().await = Some(Arc::new(ActiveDefinition {
@@ -126,6 +125,64 @@ pub async fn reload(
         changed: true,
         ddl,
     })
+}
+
+/// The steps and the switch of one reload, in the transaction `tx`.
+async fn run(
+    tx: &mut WriteTx<'_>,
+    steps: &[MigrationStep],
+    ontology: &Ontology,
+    physical: &PhysicalSchema,
+) -> Result<i64, StoreError> {
+    execute_steps(tx, steps, ontology).await?;
+    switch_definition(tx, ontology, physical, None).await
+}
+
+/// Runs `steps` in order in the transaction `tx`. `reload` and `migrate` share this path, so
+/// whatever guards the DDL of a reload (plan 03-18: lock timeout, advisory lock, fence) guards a
+/// migration as well.
+pub(crate) async fn execute_steps(
+    tx: &mut WriteTx<'_>,
+    steps: &[MigrationStep],
+    ontology: &Ontology,
+) -> Result<(), StoreError> {
+    for step in steps {
+        match step {
+            MigrationStep::Ddl(step) => apply_step(tx, step, ontology).await?,
+            other => {
+                let schema = tx.schema_edit().map(str::to_owned);
+                for sql in migrate::statements(other, tx.backend(), schema.as_deref()) {
+                    sql_exit::execute_ddl(tx, &sql).await?;
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Records `ontology` and `physical` as the next definition version and makes it the active one,
+/// in the transaction `tx`. `migration_json` holds the steps a migration ran (ADR-0026: replay of
+/// an edit log across versions reads them); a reload passes `None`.
+pub(crate) async fn switch_definition(
+    tx: &mut WriteTx<'_>,
+    ontology: &Ontology,
+    physical: &PhysicalSchema,
+    migration_json: Option<&serde_json::Value>,
+) -> Result<i64, StoreError> {
+    let ontology_json = to_json(ontology)?;
+    let physical_json = to_json(physical)?;
+    let migration_json = migration_json.map(to_json).transpose()?;
+    let now = Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);
+    let def_version = sql_exit::next_def_version(tx).await?;
+    sql_exit::supersede_active(tx).await?;
+    let record = sql_exit::DefinitionRecord {
+        ontology_json: &ontology_json,
+        physical_json: &physical_json,
+        migration_json: migration_json.as_deref(),
+        now: &now,
+    };
+    sql_exit::activate_definition(tx, def_version, &record).await?;
+    Ok(def_version)
 }
 
 /// Runs one step so that it can be repeated: a table is created only if missing, and columns are
@@ -196,7 +253,7 @@ fn explain_unique_violation(error: StoreError, step: &DdlStep, ontology: &Ontolo
 }
 
 /// Whether two ontologies serialize to the same document, ignoring the order of mapping keys.
-fn same_ontology(a: &Ontology, b: &Ontology) -> Result<bool, StoreError> {
+pub(crate) fn same_ontology(a: &Ontology, b: &Ontology) -> Result<bool, StoreError> {
     let value = |o: &Ontology| {
         serde_json::to_value(o)
             .map_err(|e| StoreError::Corrupt(format!("cannot serialize the ontology: {e}")))

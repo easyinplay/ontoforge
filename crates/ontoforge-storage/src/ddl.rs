@@ -181,6 +181,71 @@ pub(crate) fn add_column_sql(
     }
 }
 
+/// `ALTER TABLE .. RENAME COLUMN .. TO ..`. Both databases update the indexes that use the column.
+pub(crate) fn rename_column_sql(
+    table: &str,
+    from: &str,
+    to: &str,
+    backend: Backend,
+    schema_edit: Option<&str>,
+) -> String {
+    let mut alter = Table::alter();
+    alter
+        .table(table_ref(table, backend, schema_edit))
+        .rename_column(Alias::new(from), Alias::new(to));
+    match backend {
+        Backend::Sqlite => alter.to_string(SqliteQueryBuilder),
+        Backend::Postgres => alter.to_string(PostgresQueryBuilder),
+    }
+}
+
+/// `ALTER TABLE .. DROP COLUMN ..`.
+pub(crate) fn drop_column_sql(
+    table: &str,
+    column: &str,
+    backend: Backend,
+    schema_edit: Option<&str>,
+) -> String {
+    let mut alter = Table::alter();
+    alter
+        .table(table_ref(table, backend, schema_edit))
+        .drop_column(Alias::new(column));
+    match backend {
+        Backend::Sqlite => alter.to_string(SqliteQueryBuilder),
+        Backend::Postgres => alter.to_string(PostgresQueryBuilder),
+    }
+}
+
+/// `ALTER TABLE .. RENAME TO ..`. The new name stays in the schema of the table, so it is
+/// written unqualified (PostgreSQL does not accept a qualified new name).
+pub(crate) fn rename_table_sql(
+    from: &str,
+    to: &str,
+    backend: Backend,
+    schema_edit: Option<&str>,
+) -> String {
+    let mut rename = Table::rename();
+    rename.table(
+        table_ref(from, backend, schema_edit),
+        Alias::new(to).into_table_ref(),
+    );
+    match backend {
+        Backend::Sqlite => rename.to_string(SqliteQueryBuilder),
+        Backend::Postgres => rename.to_string(PostgresQueryBuilder),
+    }
+}
+
+/// `DROP TABLE IF EXISTS ..`.
+pub(crate) fn drop_table_sql(table: &str, backend: Backend, schema_edit: Option<&str>) -> String {
+    let mut drop = Table::drop();
+    drop.table(table_ref(table, backend, schema_edit))
+        .if_exists();
+    match backend {
+        Backend::Sqlite => drop.to_string(SqliteQueryBuilder),
+        Backend::Postgres => drop.to_string(PostgresQueryBuilder),
+    }
+}
+
 /// The table, qualified with the edit schema on PostgreSQL.
 fn table_ref(table: &str, backend: Backend, schema_edit: Option<&str>) -> TableRef {
     match (backend, schema_edit) {
@@ -483,6 +548,42 @@ mod tests {
                 "{statement}"
             );
         }
+    }
+
+    #[test]
+    fn migration_statements_quote_names_and_qualify_the_old_table_only() {
+        let rename = rename_column_sql("of_obj_gate", "capacity", "seats", Backend::Sqlite, None);
+        assert!(rename.contains("\"of_obj_gate\" RENAME COLUMN"), "{rename}");
+        assert!(rename.ends_with("\"capacity\" TO \"seats\""), "{rename}");
+
+        let drop_column =
+            drop_column_sql("of_obj_gate", "capacity__arch_v2", Backend::Sqlite, None);
+        assert!(drop_column.contains(" DROP COLUMN "), "{drop_column}");
+        assert!(
+            drop_column.ends_with("\"capacity__arch_v2\""),
+            "{drop_column}"
+        );
+
+        let rename_table = rename_table_sql(
+            "of_obj_gate",
+            "of_obj_portal",
+            Backend::Postgres,
+            Some("ontoforge_edit"),
+        );
+        assert!(
+            rename_table.contains("\"ontoforge_edit\".\"of_obj_gate\" RENAME TO \"of_obj_portal\""),
+            "{rename_table}"
+        );
+
+        let drop_table = drop_table_sql(
+            "of_obj_gate__arch_v2",
+            Backend::Postgres,
+            Some("ontoforge_edit"),
+        );
+        assert!(
+            drop_table.ends_with("EXISTS \"ontoforge_edit\".\"of_obj_gate__arch_v2\""),
+            "{drop_table}"
+        );
     }
 
     #[test]

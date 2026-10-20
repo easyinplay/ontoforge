@@ -404,13 +404,20 @@ pub(crate) async fn supersede_active(tx: &mut WriteTx<'_>) -> Result<(), StoreEr
     execute_built(tx, built).await.map(|_| ())
 }
 
+/// The JSON documents and the time of a definition version that `activate_definition` stores.
+pub(crate) struct DefinitionRecord<'a> {
+    pub(crate) ontology_json: &'a str,
+    pub(crate) physical_json: &'a str,
+    /// The steps `migrate` ran to get here, `None` for a `reload`.
+    pub(crate) migration_json: Option<&'a str>,
+    pub(crate) now: &'a str,
+}
+
 /// Stores `version` as the active definition and points `of_def_state` at it.
 pub(crate) async fn activate_definition(
     tx: &mut WriteTx<'_>,
     version: i64,
-    ontology_json: &str,
-    physical_json: &str,
-    now: &str,
+    record: &DefinitionRecord<'_>,
 ) -> Result<(), StoreError> {
     // PostgreSQL types these columns `jsonb` and `timestamptz`; the values travel as text and
     // are cast there. SQLite stores the text as it is.
@@ -423,24 +430,30 @@ pub(crate) async fn activate_definition(
             expr
         }
     };
+    let mut columns = vec![
+        Alias::new("def_version"),
+        Alias::new("status"),
+        Alias::new("ontology_json"),
+        Alias::new("physical_json"),
+        Alias::new("created_at"),
+        Alias::new("activated_at"),
+    ];
+    let mut values: Vec<Expr> = vec![
+        version.into(),
+        "active".into(),
+        typed(record.ontology_json, "jsonb"),
+        typed(record.physical_json, "jsonb"),
+        typed(record.now, "timestamptz"),
+        typed(record.now, "timestamptz"),
+    ];
+    if let Some(migration_json) = record.migration_json {
+        columns.push(Alias::new("migration_json"));
+        values.push(typed(migration_json, "jsonb"));
+    }
     let insert = Query::insert()
         .into_table(Alias::new(VERSION_TABLE))
-        .columns([
-            Alias::new("def_version"),
-            Alias::new("status"),
-            Alias::new("ontology_json"),
-            Alias::new("physical_json"),
-            Alias::new("created_at"),
-            Alias::new("activated_at"),
-        ])
-        .values_panic([
-            version.into(),
-            "active".into(),
-            typed(ontology_json, "jsonb"),
-            typed(physical_json, "jsonb"),
-            typed(now, "timestamptz"),
-            typed(now, "timestamptz"),
-        ])
+        .columns(columns)
+        .values_panic(values)
         .to_owned();
     let built = build(&insert, tx);
     execute_built(tx, built).await?;
@@ -516,19 +529,62 @@ pub(crate) async fn read_active_definition(
         }
     }
     .map_err(|e| StoreError::from_sqlx(&e))?;
-    let (ontology_json, physical_json) = row.ok_or_else(|| {
-        StoreError::Corrupt(format!(
-            "of_def_state points at definition version {version}, which does not exist"
-        ))
-    })?;
+    let (ontology_json, physical_json) = row.ok_or_else(|| missing_version(version))?;
+    parse_definition(version, &ontology_json, &physical_json).map(Some)
+}
+
+fn missing_version(version: i64) -> StoreError {
+    StoreError::Corrupt(format!(
+        "of_def_state points at definition version {version}, which does not exist"
+    ))
+}
+
+fn parse_definition(
+    version: i64,
+    ontology_json: &str,
+    physical_json: &str,
+) -> Result<ActiveDefinition, StoreError> {
     let corrupt = |what: &str, e: serde_json::Error| {
         StoreError::Corrupt(format!(
             "definition version {version}: cannot read {what}: {e}"
         ))
     };
-    Ok(Some(ActiveDefinition {
+    Ok(ActiveDefinition {
         def_version: version,
-        ontology: serde_json::from_str(&ontology_json).map_err(|e| corrupt("ontology_json", e))?,
-        physical: serde_json::from_str(&physical_json).map_err(|e| corrupt("physical_json", e))?,
-    }))
+        ontology: serde_json::from_str(ontology_json).map_err(|e| corrupt("ontology_json", e))?,
+        physical: serde_json::from_str(physical_json).map_err(|e| corrupt("physical_json", e))?,
+    })
+}
+
+/// Reads the active definition inside the write transaction `tx`, `None` before the first
+/// reload. `migrate` plans against what it reads here, so the plan it compares with the reviewed
+/// one is the plan of the definition it is about to change.
+pub(crate) async fn read_active_definition_in(
+    tx: &mut WriteTx<'_>,
+) -> Result<Option<ActiveDefinition>, StoreError> {
+    let select = Query::select()
+        .column(Alias::new("active_def_version"))
+        .from(Alias::new(STATE_TABLE))
+        .to_owned();
+    let built = build(&select, tx);
+    let version = fetch_scalar_i64(tx, built).await?.unwrap_or(0);
+    if version == 0 {
+        return Ok(None);
+    }
+    // `jsonb` columns are read as text.
+    let backend = tx.backend();
+    let select = Query::select()
+        .expr(column_text(backend, "ontology_json"))
+        .expr(column_text(backend, "physical_json"))
+        .from(Alias::new(VERSION_TABLE))
+        .and_where(Expr::col(Alias::new("def_version")).eq(version))
+        .to_owned();
+    let built = build(&select, tx);
+    let cells = fetch_cells(tx, built, &[CellKind::Text, CellKind::Text])
+        .await?
+        .ok_or_else(|| missing_version(version))?;
+    let [Cell::Text(ontology_json), Cell::Text(physical_json)] = cells.as_slice() else {
+        return Err(missing_version(version));
+    };
+    parse_definition(version, ontology_json, physical_json).map(Some)
 }
