@@ -103,6 +103,54 @@ mod tests {
     }
 
     #[test]
+    fn bounded_names() {
+        assert_eq!(bounded("short", TABLE_BASE_MAX), "short");
+        let exact = "a".repeat(TABLE_BASE_MAX);
+        assert_eq!(bounded(&exact, TABLE_BASE_MAX), exact);
+
+        let long = format!("p{}", "x".repeat(99));
+        let table = object_table(&object(&format!("T{}", "x".repeat(99))));
+        assert_eq!(
+            table.len(),
+            OBJECT_TABLE_PREFIX.len() + TABLE_BASE_MAX,
+            "{table}"
+        );
+        let column = property_column(&property(&long));
+        assert_eq!(column.len(), COLUMN_BASE_MAX);
+        let (head, hash) = column.split_at(COLUMN_BASE_MAX - 8);
+        assert!(head.ends_with('_'), "{column}");
+        assert!(
+            hash.bytes()
+                .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)),
+            "{column}"
+        );
+
+        assert_eq!(bounded(&long, COLUMN_BASE_MAX), column, "deterministic");
+        let other = format!("p{}y", "x".repeat(98));
+        assert_ne!(
+            bounded(&other, COLUMN_BASE_MAX),
+            column,
+            "only the tail differs"
+        );
+
+        // The published FNV-1a test vector for "a".
+        assert_eq!(fnv1a32(b"a"), 0xe40c292c);
+    }
+
+    #[test]
+    fn index_names_stay_within_the_postgres_limit() {
+        assert_eq!(
+            index_name("of_obj_flight", "status"),
+            "of_ix_of_obj_flight_status"
+        );
+        let table = format!("of_obj_{}", "t".repeat(29));
+        let column = "c".repeat(35);
+        assert!(index_name(&table, &column).len() <= IDENT_MAX);
+        assert!(unique_index_name(&table, &column).len() <= IDENT_MAX);
+        assert!(unique_index_name(&table, &column).starts_with("of_ux_"));
+    }
+
+    #[test]
     fn names_are_snake_cased_with_prefixes() {
         assert_eq!(object_table(&object("Gate")), "of_obj_gate");
         assert_eq!(object_table(&object("GateStand")), "of_obj_gate_stand");

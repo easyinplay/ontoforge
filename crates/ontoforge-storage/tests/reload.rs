@@ -463,3 +463,286 @@ async fn removing_indexed_keeps_index() {
         "the kept index must not make every reload a change"
     );
 }
+
+// ---------------------------------------------------------------------------------------------
+// Physical names, link and precision changes, cardinality changes (plan 03-10 task 2)
+// ---------------------------------------------------------------------------------------------
+
+fn object_yaml(name: &str, properties: &str) -> String {
+    format!(
+        "kind: ObjectType\napiName: {name}\nbacking: editOnly\nprimaryKey: id\nproperties:\n  id: {{ type: integer, required: true }}\n{properties}---\n"
+    )
+}
+
+/// Names of the tables in the database file.
+async fn table_names(t: &support::TestStore) -> Vec<String> {
+    let pool = t.side_pool().await;
+    sqlx::query_scalar::<_, String>("SELECT name FROM sqlite_master WHERE type = 'table'")
+        .fetch_all(&pool)
+        .await
+        .expect("tables")
+}
+
+async fn assert_v24(ontology: Ontology) {
+    let t = sqlite_store().await;
+    let result = reload(&t.store, &ontology, &ReloadOptions::default()).await;
+    let Err(ReloadError::Definition(diagnostics)) = result else {
+        panic!("expected ONT-V24, got {result:?}");
+    };
+    assert!(!diagnostics.is_empty());
+    assert!(
+        diagnostics.iter().all(|d| d.code == "ONT-V24"),
+        "{diagnostics:#?}"
+    );
+    assert_eq!(t.version_rows().await, 0, "no definition version");
+    assert!(
+        table_names(&t)
+            .await
+            .iter()
+            .all(|n| !n.starts_with("of_obj_")),
+        "no DDL ran"
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn snake_collision_is_v24() {
+    let text = format!("{}{}", object_yaml("ABTest", ""), object_yaml("AbTest", ""));
+    assert_v24(ontology_from(&[("defs.yaml", &text)])).await;
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn system_column_collision_is_v24() {
+    let text = object_yaml("Item", "  ofVersion: { type: integer }\n");
+    assert_v24(ontology_from(&[("defs.yaml", &text)])).await;
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn long_names_round_trip() {
+    let t = sqlite_store().await;
+    let property = format!("p{}", "x".repeat(99));
+    let type_name = format!("T{}", "x".repeat(99));
+    let text = object_yaml(
+        &type_name,
+        &format!("  {property}: {{ type: string, indexed: true }}\n"),
+    );
+    let ontology = ontology_from(&[("defs.yaml", &text)]);
+    reload(&t.store, &ontology, &ReloadOptions::default())
+        .await
+        .expect("long names reload");
+
+    let active = t.store.active_definition().await.expect("active");
+    let table = active
+        .physical
+        .objects
+        .values()
+        .next()
+        .expect("one object table");
+    assert!(table.table.len() <= 36, "{}", table.table);
+    let columns = t.columns(&table.table).await;
+    assert!(
+        !columns.is_empty(),
+        "the table exists under its bounded name"
+    );
+    let column = table.properties.values().next().expect("property column");
+    assert!(columns.contains(&column.column) && columns.contains(&column.set_column));
+    assert!(
+        table.indexes.iter().all(|ix| ix.name.len() <= 63),
+        "{:?}",
+        table.indexes
+    );
+
+    let again = reload(&t.store, &ontology, &ReloadOptions::default())
+        .await
+        .expect("again");
+    assert!(!again.changed);
+}
+
+fn link_yaml(to: &str) -> String {
+    format!(
+        "kind: LinkType\napiName: gateStands\ncardinality: manyToMany\nfrom: {{ objectType: Gate, apiName: stands }}\nto: {{ objectType: {to}, apiName: gates }}\nbacking: editOnly\n"
+    )
+}
+
+fn three_types() -> String {
+    ["Gate", "Stand", "Bay"]
+        .iter()
+        .map(|n| object_yaml(n, "  label: { type: string }\n"))
+        .collect()
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn link_changes_are_destructive() {
+    let t = sqlite_store().await;
+    let types = three_types();
+    reload(
+        &t.store,
+        &ontology_from(&[("defs.yaml", &format!("{types}{}", link_yaml("Stand")))]),
+        &ReloadOptions::default(),
+    )
+    .await
+    .expect("first");
+
+    for (label, text) in [
+        ("link removed", types.clone()),
+        ("link end changed", format!("{types}{}", link_yaml("Bay"))),
+    ] {
+        let result = reload(
+            &t.store,
+            &ontology_from(&[("defs.yaml", &text)]),
+            &ReloadOptions::default(),
+        )
+        .await;
+        let Err(ReloadError::Definition(diagnostics)) = result else {
+            panic!("{label}: expected a definition error, got {result:?}");
+        };
+        assert_eq!(diagnostics.len(), 1, "{label}: {diagnostics:#?}");
+        assert_eq!(diagnostics[0].code, "ONT-V25", "{label}");
+    }
+    assert_eq!(t.active_version().await, 1);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn new_many_to_many_link_creates_a_table() {
+    let t = sqlite_store().await;
+    let types = three_types();
+    reload(
+        &t.store,
+        &ontology_from(&[("defs.yaml", &types)]),
+        &ReloadOptions::default(),
+    )
+    .await
+    .expect("first");
+    let out = reload(
+        &t.store,
+        &ontology_from(&[("defs.yaml", &format!("{types}{}", link_yaml("Stand")))]),
+        &ReloadOptions::default(),
+    )
+    .await
+    .expect("with link");
+    assert!(
+        out.ddl.iter().any(|sql| sql.contains("of_lnk_gate_stands")),
+        "{:#?}",
+        out.ddl
+    );
+    assert!(!t.columns("of_lnk_gate_stands").await.is_empty());
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn precision_and_items_changes_are_destructive() {
+    let t = sqlite_store().await;
+    let definition = |scale: &str, items: &str| {
+        let text = object_yaml(
+            "Item",
+            &format!(
+                "  price: {{ type: decimal, precision: 12, scale: {scale} }}\n  tags: {{ type: array, items: {items} }}\n"
+            ),
+        );
+        ontology_from(&[("defs.yaml", &text)])
+    };
+    reload(
+        &t.store,
+        &definition("2", "string"),
+        &ReloadOptions::default(),
+    )
+    .await
+    .expect("first");
+    for (label, ontology) in [
+        ("scale", definition("3", "string")),
+        ("items", definition("2", "integer")),
+    ] {
+        let result = reload(&t.store, &ontology, &ReloadOptions::default()).await;
+        let Err(ReloadError::Definition(diagnostics)) = result else {
+            panic!("{label}: expected a definition error, got {result:?}");
+        };
+        assert_eq!(diagnostics.len(), 1, "{label}: {diagnostics:#?}");
+        assert_eq!(diagnostics[0].code, "ONT-V25", "{label}");
+    }
+}
+
+fn flights(cardinality: &str) -> Ontology {
+    let text = format!(
+        "{}{}kind: LinkType\napiName: airportFlights\ncardinality: {cardinality}\nfrom: {{ objectType: Airport, apiName: flights }}\nto: {{ objectType: Flight, apiName: airport, foreignKey: airportId }}\n",
+        object_yaml("Airport", ""),
+        object_yaml("Flight", "  airportId: { type: integer }\n"),
+    );
+    ontology_from(&[("defs.yaml", &text)])
+}
+
+const INSERT_FLIGHT: &str =
+    "INSERT INTO of_obj_flight (id, airport_id, airport_id__set) VALUES (?, 7, 1)";
+
+#[tokio::test(flavor = "multi_thread")]
+async fn tightening_to_one_to_one_with_conflicts_keeps_old_definition() {
+    let t = sqlite_store().await;
+    reload(&t.store, &flights("oneToMany"), &ReloadOptions::default())
+        .await
+        .expect("first");
+    let pool = t.side_pool().await;
+    for id in [1_i64, 2] {
+        sqlx::query(INSERT_FLIGHT)
+            .bind(id)
+            .execute(&pool)
+            .await
+            .expect("insert");
+    }
+
+    let result = reload(&t.store, &flights("oneToOne"), &ReloadOptions::default()).await;
+    let Err(ReloadError::Store(error)) = result else {
+        panic!("expected a store error, got {result:?}");
+    };
+    let message = error.to_string();
+    assert!(message.contains("airportFlights"), "{message}");
+    assert!(message.contains("oneToOne"), "{message}");
+    assert_eq!(t.active_version().await, 1);
+    assert_eq!(t.version_rows().await, 1);
+    assert!(
+        index_list(&t, "of_obj_flight")
+            .await
+            .iter()
+            .all(|(name, _)| !name.starts_with("of_ux_")),
+        "the unique index was rolled back"
+    );
+    assert_eq!(
+        t.store.active_definition().await.map(|a| a.def_version),
+        Some(1)
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn relaxing_one_to_one_drops_unique_index() {
+    let t = sqlite_store().await;
+    reload(&t.store, &flights("oneToOne"), &ReloadOptions::default())
+        .await
+        .expect("first");
+    let unique = "of_ux_of_obj_flight_airport_id";
+    assert!(
+        index_list(&t, "of_obj_flight")
+            .await
+            .contains(&(unique.to_owned(), true))
+    );
+
+    let out = reload(&t.store, &flights("oneToMany"), &ReloadOptions::default())
+        .await
+        .expect("relax");
+    assert_eq!(out.ddl.len(), 1, "{:#?}", out.ddl);
+    assert!(
+        out.ddl[0].contains("DROP INDEX IF EXISTS"),
+        "{}",
+        out.ddl[0]
+    );
+    assert!(
+        index_list(&t, "of_obj_flight")
+            .await
+            .iter()
+            .all(|(n, _)| n != unique)
+    );
+
+    let pool = t.side_pool().await;
+    for id in [1_i64, 2] {
+        sqlx::query(INSERT_FLIGHT)
+            .bind(id)
+            .execute(&pool)
+            .await
+            .expect("duplicates are fine now");
+    }
+}
