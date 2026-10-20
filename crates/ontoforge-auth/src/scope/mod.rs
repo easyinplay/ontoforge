@@ -15,6 +15,7 @@
 //! [`CompiledScope`], from which [`CompiledScope::for_principal`] resolves one caller.
 
 pub mod compile;
+mod coverage;
 pub mod lower;
 pub mod merge;
 
