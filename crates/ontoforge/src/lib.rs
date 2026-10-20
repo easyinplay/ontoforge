@@ -10,6 +10,7 @@ pub mod online;
 pub mod pipeline;
 pub mod reload;
 pub mod render;
+pub mod scope;
 
 use camino::Utf8Path;
 use cli::{Cli, Command, LintArgs, OutputArgs, SchemaCommand, ValidateArgs};
@@ -24,6 +25,7 @@ pub fn run(cli: Cli) -> u8 {
         Command::Lint(args) => lint(&args),
         Command::Reload(args) => reload::run(&args),
         Command::Migrate(args) => migrate::run(&args),
+        Command::Scope(args) => scope::run(&args),
         Command::DevToken(args) => dev_token::run(&args),
         Command::Schema(args) => match args.command {
             SchemaCommand::Export { out_dir } => export_schemas(&out_dir),

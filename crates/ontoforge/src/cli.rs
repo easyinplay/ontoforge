@@ -29,6 +29,8 @@ pub enum Command {
     Reload(ReloadArgs),
     /// Review (`--plan`) and run (`--apply`) a destructive definition change that `reload` refuses.
     Migrate(MigrateArgs),
+    /// Review (`plan`) and write (`apply`) the roles and role bindings of a scope directory.
+    Scope(ScopeArgs),
     /// Issue a development token signed with a local key (accepted only by a server started
     /// with `--dev`).
     DevToken(DevTokenArgs),
@@ -142,6 +144,53 @@ pub struct MigrateArgs {
     pub profile: ProfileArgs,
     #[command(flatten)]
     pub output: OutputArgs,
+}
+
+#[derive(Debug, Args)]
+pub struct ScopeArgs {
+    #[command(subcommand)]
+    pub command: ScopeCommand,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum ScopeCommand {
+    /// Print what `apply` would change in the edit store, and the hash of that plan.
+    Plan(ScopePlanArgs),
+    /// Write the scope directory into the edit store if its plan still has `--plan-hash`.
+    Apply(ScopeApplyArgs),
+}
+
+/// What `scope plan` and `scope apply` have in common.
+#[derive(Debug, Args)]
+pub struct ScopeSourceArgs {
+    /// Scope directory with the `Role` and `RoleBinding` documents.
+    pub dir: Utf8PathBuf,
+    /// Ontology directory the scope is checked against (and the edit store has loaded).
+    #[arg(long, value_name = "DIR")]
+    pub ontology: Utf8PathBuf,
+    /// Server configuration with the `[store]` section and `[auth.principal_attrs]`.
+    #[arg(long, value_name = "FILE")]
+    pub server_config: Utf8PathBuf,
+    #[command(flatten)]
+    pub profile: ProfileArgs,
+    #[command(flatten)]
+    pub output: OutputArgs,
+}
+
+#[derive(Debug, Args)]
+pub struct ScopePlanArgs {
+    #[command(flatten)]
+    pub source: ScopeSourceArgs,
+}
+
+#[derive(Debug, Args)]
+pub struct ScopeApplyArgs {
+    #[command(flatten)]
+    pub source: ScopeSourceArgs,
+    /// The `plan hash` that `scope plan` printed. The plan is made again first and the run is
+    /// refused if its hash differs.
+    #[arg(long, value_name = "HASH")]
+    pub plan_hash: String,
 }
 
 #[derive(Debug, Args)]
