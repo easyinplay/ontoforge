@@ -9,7 +9,9 @@ use ontoforge_auth::scope::{CompiledScope, ScopeInputs, attr_types, compile_scop
 use ontoforge_engine::config::AuthConfig;
 use ontoforge_expr::{AttrValue, Attrs, Scalar};
 use ontoforge_schema::diag::{Diagnostic, codes};
-use ontoforge_schema::ir::{AttrType, Ontology, ProfileName, PropertyName, SqlLevel, Toolset};
+use ontoforge_schema::ir::{
+    ActionTypeName, AttrType, Ontology, ProfileName, PropertyName, RoleName, SqlLevel, Toolset,
+};
 use ontoforge_schema::{load_dir, load_scope_dir, load_scope_from_memory};
 
 const AVIATION: &str = concat!(
@@ -87,7 +89,7 @@ fn row(pairs: &[(&str, &str)]) -> BTreeMap<PropertyName, Scalar> {
 #[test]
 fn aviation_scope_compiles() {
     let compiled = compile_example();
-    let names: Vec<&str> = compiled.roles.keys().map(|r| r.as_str()).collect();
+    let names: Vec<&str> = compiled.roles.keys().map(RoleName::as_str).collect();
     assert_eq!(names, ["crewScheduler", "dispatcher", "maintenanceLead"]);
     let flight = &compiled.roles["dispatcher"].types["Flight"];
     assert!(flight.row.is_some());
@@ -104,7 +106,7 @@ fn principal_with_two_roles_gets_merged_flight_scope() {
     );
     let scope = compiled.for_principal(&who);
 
-    let roles: Vec<&str> = scope.roles.iter().map(|r| r.as_str()).collect();
+    let roles: Vec<&str> = scope.roles.iter().map(RoleName::as_str).collect();
     assert_eq!(roles, ["crewScheduler", "dispatcher"]);
 
     let seen = scope.types["Flight"].evaluate(
@@ -123,7 +125,7 @@ fn principal_with_two_roles_gets_merged_flight_scope() {
         "the crew scheduler's column must not show through the dispatcher's row: {columns:?}"
     );
 
-    let actions: Vec<&str> = scope.actions.iter().map(|a| a.as_str()).collect();
+    let actions: Vec<&str> = scope.actions.iter().map(ActionTypeName::as_str).collect();
     assert_eq!(actions, ["assignPilot", "delayFlight"]);
 }
 
@@ -140,7 +142,7 @@ fn principal_without_roles_sees_nothing() {
 fn user_subject_binding() {
     let compiled = compile_example();
     let scope = compiled.for_principal(&principal(("ontoforge-dev", "mia"), &[], &[]));
-    let roles: Vec<&str> = scope.roles.iter().map(|r| r.as_str()).collect();
+    let roles: Vec<&str> = scope.roles.iter().map(RoleName::as_str).collect();
     assert_eq!(roles, ["maintenanceLead"]);
     assert!(scope.sql_levels.contains(&SqlLevel::Raw));
     assert!(scope.toolsets.contains(&Toolset::SqlRaw));
