@@ -26,6 +26,9 @@ pub enum Command {
     Schema(SchemaArgs),
     /// Bring the edit store's tables in line with the definitions.
     Reload(ReloadArgs),
+    /// Issue a development token signed with a local key (accepted only by a server started
+    /// with `--dev`).
+    DevToken(DevTokenArgs),
 }
 
 #[derive(Debug, Args)]
@@ -99,6 +102,29 @@ pub struct ReloadArgs {
     pub profile: ProfileArgs,
     #[command(flatten)]
     pub output: OutputArgs,
+}
+
+#[derive(Debug, Args)]
+pub struct DevTokenArgs {
+    /// Server configuration with `[auth.principal_attrs]` and, optionally, `[auth.dev]`.
+    #[arg(long, value_name = "FILE")]
+    pub server_config: Utf8PathBuf,
+    /// Subject of the token; the principal id becomes `ontoforge-dev|<SUB>`.
+    #[arg(long)]
+    pub sub: String,
+    /// Comma separated group names.
+    #[arg(long, value_name = "A,B")]
+    pub groups: Option<String>,
+    /// A principal attribute as `name=value`, repeatable. A list attribute takes comma
+    /// separated elements. The name must be declared in `[auth.principal_attrs]`.
+    #[arg(long, value_name = "NAME=VALUE")]
+    pub attr: Vec<String>,
+    /// Lifetime as a number and a unit: `m`, `h` or `d` (at most 30d).
+    #[arg(long, value_name = "TTL", default_value = "8h")]
+    pub ttl: String,
+    /// Signing key file, created on first use. Defaults to `[auth.dev] key_file`.
+    #[arg(long, value_name = "FILE")]
+    pub key_file: Option<Utf8PathBuf>,
 }
 
 /// Which deployment profile to check the source bindings of.

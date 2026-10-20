@@ -12,10 +12,12 @@ use jsonwebtoken::decode_header;
 use ontoforge_engine::config::{AuthConfig, PrincipalAttrConfig};
 use serde_json::Value;
 
+pub mod dev;
 pub mod jwks;
 mod oidc;
 pub mod principal;
 
+use dev::DevVerifier;
 use oidc::OidcVerifier;
 pub use principal::{Principal, PrincipalId};
 
@@ -47,6 +49,7 @@ pub enum AuthnError {
 pub struct Authenticator {
     oidc: Vec<OidcVerifier>,
     attrs: BTreeMap<String, PrincipalAttrConfig>,
+    dev: Option<DevVerifier>,
 }
 
 impl Authenticator {
@@ -60,7 +63,15 @@ impl Authenticator {
         Ok(Self {
             oidc,
             attrs: cfg.principal_attrs.clone(),
+            dev: None,
         })
+    }
+
+    /// Also accepts development tokens verified by `dev`.
+    #[must_use]
+    pub fn with_dev(mut self, dev: DevVerifier) -> Self {
+        self.dev = Some(dev);
+        self
     }
 
     /// Authenticates `bearer` (the token without the `Bearer ` prefix).

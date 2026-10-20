@@ -3,6 +3,7 @@
 use std::io::Write;
 
 pub mod cli;
+pub mod dev_token;
 pub mod lint_cmd;
 pub mod online;
 pub mod pipeline;
@@ -21,6 +22,7 @@ pub fn run(cli: Cli) -> u8 {
         Command::Validate(args) => validate(&args),
         Command::Lint(args) => lint(&args),
         Command::Reload(args) => reload::run(&args),
+        Command::DevToken(args) => dev_token::run(&args),
         Command::Schema(args) => match args.command {
             SchemaCommand::Export { out_dir } => export_schemas(&out_dir),
         },
