@@ -14,11 +14,14 @@
 
 use ontoforge_engine::sqlite::{DECIMAL_COLLATION, TIMESTAMP_COLLATION};
 use sea_query::{
-    Alias, ColumnDef, Index, IntoTableRef, PostgresQueryBuilder, SqliteQueryBuilder, Table,
-    TableRef,
+    Alias, ColumnDef, ConditionalStatement, Expr, ExprTrait, Index, IntoTableRef,
+    PostgresQueryBuilder, SqliteQueryBuilder, Table, TableRef,
 };
 
-use crate::physical::{ColumnType, KeyColumn, LinkTable, ObjectTable, PropertyColumn};
+use crate::naming;
+use crate::physical::{
+    ColumnType, IndexDef, IndexKind, KeyColumn, LinkTable, ObjectTable, PropertyColumn,
+};
 use crate::store::Backend;
 
 /// One schema change `reload` can apply without losing data.
@@ -30,6 +33,16 @@ pub enum DdlStep {
         column: PropertyColumn,
     },
     CreateLinkTable(LinkTable),
+    /// `CREATE [UNIQUE] INDEX IF NOT EXISTS`; the unique kind is partial (see [`IndexKind`]).
+    CreateIndex {
+        table: String,
+        index: IndexDef,
+    },
+    /// `DROP INDEX IF EXISTS`. Only a unique index is ever dropped, when its link relaxes.
+    DropIndex {
+        table: String,
+        name: String,
+    },
 }
 
 /// A column a step needs. `key` columns cannot be added to an existing table.
@@ -52,6 +65,9 @@ pub fn render(step: &DdlStep, backend: Backend, schema_edit: Option<&str>) -> Ve
         DdlStep::CreateObjectTable(_) | DdlStep::CreateLinkTable(_) => {
             create_sql(step, backend, schema_edit).into_iter().collect()
         }
+        DdlStep::CreateIndex { .. } | DdlStep::DropIndex { .. } => {
+            index_sql(step, backend, schema_edit).into_iter().collect()
+        }
     }
 }
 
@@ -61,6 +77,59 @@ pub(crate) fn step_columns(step: &DdlStep, backend: Backend) -> (&str, Vec<Col>)
         DdlStep::CreateObjectTable(table) => (&table.table, object_columns(table, backend)),
         DdlStep::CreateLinkTable(table) => (&table.table, link_columns(table, backend)),
         DdlStep::AddPropertyColumn { table, column } => (table, property_columns(column, backend)),
+        DdlStep::CreateIndex { table, .. } | DdlStep::DropIndex { table, .. } => {
+            (table, Vec::new())
+        }
+    }
+}
+
+/// The statement of an index step, `None` for other steps.
+///
+/// A unique index is partial: it covers the live rows whose column was set, so a deleted row or
+/// a row that never set the column cannot collide (STORE-05). sea-query writes the index name
+/// unqualified, which on PostgreSQL lands the index in the schema of its table.
+pub(crate) fn index_sql(
+    step: &DdlStep,
+    backend: Backend,
+    schema_edit: Option<&str>,
+) -> Option<String> {
+    match step {
+        DdlStep::CreateIndex { table, index } => {
+            let mut create = Index::create();
+            create
+                .if_not_exists()
+                .name(index.name.as_str())
+                .table(table_ref(table, backend, schema_edit))
+                .col(Alias::new(index.column.as_str()));
+            if index.kind == IndexKind::UniqueWhenSet {
+                let set = Alias::new(naming::set_column(&index.column));
+                let deleted = Alias::new("of_deleted");
+                create.unique();
+                match backend {
+                    Backend::Sqlite => {
+                        create.and_where(Expr::col(set).eq(1).and(Expr::col(deleted).eq(0)))
+                    }
+                    Backend::Postgres => {
+                        create.and_where(Expr::col(set).and(Expr::col(deleted).not()))
+                    }
+                };
+            }
+            Some(match backend {
+                Backend::Sqlite => create.to_string(SqliteQueryBuilder),
+                Backend::Postgres => create.to_string(PostgresQueryBuilder),
+            })
+        }
+        DdlStep::DropIndex { table, name } => {
+            let mut drop = Index::drop();
+            drop.if_exists()
+                .name(name.as_str())
+                .table(table_ref(table, backend, schema_edit));
+            Some(match backend {
+                Backend::Sqlite => drop.to_string(SqliteQueryBuilder),
+                Backend::Postgres => drop.to_string(PostgresQueryBuilder),
+            })
+        }
+        _ => None,
     }
 }
 
@@ -85,7 +154,9 @@ pub(crate) fn create_sql(
             backend,
             schema_edit,
         )),
-        DdlStep::AddPropertyColumn { .. } => None,
+        DdlStep::AddPropertyColumn { .. }
+        | DdlStep::CreateIndex { .. }
+        | DdlStep::DropIndex { .. } => None,
     }
 }
 
@@ -336,6 +407,7 @@ mod tests {
             },
             properties,
             archived_columns: Vec::new(),
+            indexes: Vec::new(),
         }
     }
 

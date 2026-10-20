@@ -9,7 +9,7 @@
 use ontoforge_schema::diag::{Diagnostic, Severity, codes};
 
 use crate::ddl::DdlStep;
-use crate::physical::{LinkTable, ObjectTable, PhysicalSchema};
+use crate::physical::{IndexKind, LinkTable, ObjectTable, PhysicalSchema};
 
 /// What `reload` would do, and what it refuses to do.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -74,11 +74,9 @@ impl DestructiveChange {
 pub fn diff(old: Option<&PhysicalSchema>, new: &PhysicalSchema) -> Plan {
     let mut plan = Plan::default();
     let Some(old) = old else {
-        plan.steps.extend(
-            new.objects
-                .values()
-                .map(|table| DdlStep::CreateObjectTable(table.clone())),
-        );
+        for table in new.objects.values() {
+            create_object(table, &mut plan);
+        }
         plan.steps.extend(
             new.links
                 .values()
@@ -89,7 +87,7 @@ pub fn diff(old: Option<&PhysicalSchema>, new: &PhysicalSchema) -> Plan {
 
     for (name, table) in &new.objects {
         match old.objects.get(name) {
-            None => plan.steps.push(DdlStep::CreateObjectTable(table.clone())),
+            None => create_object(table, &mut plan),
             Some(previous) => diff_object(name.as_str(), previous, table, &mut plan),
         }
     }
@@ -117,6 +115,40 @@ pub fn diff(old: Option<&PhysicalSchema>, new: &PhysicalSchema) -> Plan {
         });
     }
     plan
+}
+
+/// A new table, then its indexes: an index needs the table to exist.
+fn create_object(table: &ObjectTable, plan: &mut Plan) {
+    plan.steps.push(DdlStep::CreateObjectTable(table.clone()));
+    plan.steps
+        .extend(table.indexes.iter().map(|index| DdlStep::CreateIndex {
+            table: table.table.clone(),
+            index: index.clone(),
+        }));
+}
+
+/// Index changes of an existing table. A new index is created. A unique index that is gone (its
+/// link relaxed to `oneToMany`) is dropped: it only constrains, so no data is lost. A plain index
+/// that is gone is kept (`PhysicalSchema::keep_plain_indexes_of`), because a role's row predicate
+/// may use it.
+fn diff_indexes(old: &ObjectTable, new: &ObjectTable, plan: &mut Plan) {
+    for index in &new.indexes {
+        if !old.indexes.iter().any(|known| known.name == index.name) {
+            plan.steps.push(DdlStep::CreateIndex {
+                table: new.table.clone(),
+                index: index.clone(),
+            });
+        }
+    }
+    for index in &old.indexes {
+        let gone = !new.indexes.iter().any(|kept| kept.name == index.name);
+        if gone && index.kind == IndexKind::UniqueWhenSet {
+            plan.steps.push(DdlStep::DropIndex {
+                table: new.table.clone(),
+                name: index.name.clone(),
+            });
+        }
+    }
 }
 
 fn diff_object(type_name: &str, old: &ObjectTable, new: &ObjectTable, plan: &mut Plan) {
@@ -158,6 +190,7 @@ fn diff_object(type_name: &str, old: &ObjectTable, new: &ObjectTable, plan: &mut
             property: name.to_string(),
         });
     }
+    diff_indexes(old, new, plan);
 }
 
 fn link_ends_changed(old: &LinkTable, new: &LinkTable) -> bool {

@@ -8,8 +8,8 @@ use std::collections::BTreeMap;
 
 use ontoforge_schema::diag::{Diagnostic, Severity, codes};
 use ontoforge_schema::ir::{
-    BaseType, Cardinality, LinkTypeName, ObjectType, ObjectTypeName, Ontology, PropertyDef,
-    PropertyName,
+    BaseType, Cardinality, LinkType, LinkTypeName, ObjectType, ObjectTypeName, Ontology,
+    PropertyDef, PropertyName,
 };
 use serde::{Deserialize, Serialize};
 
@@ -72,6 +72,25 @@ pub struct ArchivedTable {
     pub def_version: i64,
 }
 
+/// What an index enforces.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum IndexKind {
+    /// A lookup index, from `indexed: true`.
+    Plain,
+    /// Unique among live rows whose column was set: `WHERE <col>__set AND NOT of_deleted`. It
+    /// is how a `oneToOne` link is enforced by the database (STORE-05).
+    UniqueWhenSet,
+}
+
+/// An index on the value column of one property.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct IndexDef {
+    pub name: String,
+    /// The value column; the `__set` column of the partial index is derived from it.
+    pub column: String,
+    pub kind: IndexKind,
+}
+
 /// The table of one object type.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ObjectTable {
@@ -80,6 +99,10 @@ pub struct ObjectTable {
     pub properties: BTreeMap<PropertyName, PropertyColumn>,
     #[serde(default)]
     pub archived_columns: Vec<ArchivedColumn>,
+    /// Indexes other than the primary key, sorted by name. Absent in a schema stored before
+    /// indexes existed.
+    #[serde(default)]
+    pub indexes: Vec<IndexDef>,
 }
 
 /// The join table of one many-to-many link type. `a` holds the key of the `from` object type,
@@ -121,6 +144,9 @@ impl PhysicalSchema {
         }
 
         for (name, link) in &ontology.link_types {
+            if link.cardinality == Cardinality::OneToOne {
+                add_one_to_one_index(&mut schema, name, link, &mut errors);
+            }
             if link.cardinality != Cardinality::ManyToMany {
                 continue;
             }
@@ -143,10 +169,40 @@ impl PhysicalSchema {
             schema.links.insert(name.clone(), table);
         }
 
+        for table in schema.objects.values_mut() {
+            table.indexes.sort_by(|a, b| a.name.cmp(&b.name));
+        }
+
         if errors.is_empty() {
             Ok(schema)
         } else {
             Err(errors)
+        }
+    }
+
+    /// Keeps the plain indexes of `old` that this schema no longer declares.
+    ///
+    /// Dropping `indexed: true` never drops the index: a role's row predicate may rely on it. The
+    /// index stays in the database, so it stays in the schema that describes the database;
+    /// otherwise every reload would see a difference. A unique index is not kept: it belongs to
+    /// a link and leaves with it.
+    pub fn keep_plain_indexes_of(&mut self, old: &PhysicalSchema) {
+        for (name, table) in &mut self.objects {
+            let Some(previous) = old.objects.get(name) else {
+                continue;
+            };
+            let live = |column: &str| {
+                table.pk.column == column || table.properties.values().any(|p| p.column == column)
+            };
+            let kept: Vec<IndexDef> = previous
+                .indexes
+                .iter()
+                .filter(|ix| ix.kind == IndexKind::Plain && live(&ix.column))
+                .filter(|ix| !table.indexes.iter().any(|new| new.name == ix.name))
+                .cloned()
+                .collect();
+            table.indexes.extend(kept);
+            table.indexes.sort_by(|a, b| a.name.cmp(&b.name));
         }
     }
 
@@ -166,6 +222,45 @@ fn derive_error(message: &str) -> Diagnostic {
         format!("cannot derive the edit store schema: {message}"),
         "ontology",
     )
+}
+
+/// The partial unique index on the foreign key of a `oneToOne` link, on the `to` end's table.
+/// A foreign key that is the primary key needs none: the key is unique already.
+fn add_one_to_one_index(
+    schema: &mut PhysicalSchema,
+    name: &LinkTypeName,
+    link: &LinkType,
+    errors: &mut Vec<Diagnostic>,
+) {
+    let Some(foreign_key) = &link.to.foreign_key else {
+        errors.push(derive_error(&format!(
+            "oneToOne link type `{name}` has no foreignKey"
+        )));
+        return;
+    };
+    let Some(table) = schema.objects.get_mut(&link.to.object_type) else {
+        errors.push(derive_error(&format!(
+            "link type `{name}` refers to an object type that has no table"
+        )));
+        return;
+    };
+    let Some(column) = table.properties.get(foreign_key) else {
+        if table.pk.property != *foreign_key {
+            errors.push(derive_error(&format!(
+                "foreignKey `{foreign_key}` of link type `{name}` is not a property of `{}`",
+                link.to.object_type
+            )));
+        }
+        return;
+    };
+    let index = IndexDef {
+        name: naming::unique_index_name(&table.table, &column.column),
+        column: column.column.clone(),
+        kind: IndexKind::UniqueWhenSet,
+    };
+    if !table.indexes.contains(&index) {
+        table.indexes.push(index);
+    }
 }
 
 fn end_column(pk: &KeyColumn, column: &str) -> KeyColumn {
@@ -188,12 +283,21 @@ fn object_table(object: &ObjectType) -> Result<ObjectTable, String> {
         column: naming::property_column(&object.primary_key),
         ty: column_type(pk_def)?,
     };
+    let table_name = naming::object_table(&object.api_name);
     let mut properties = BTreeMap::new();
+    let mut indexes = Vec::new();
     for (name, def) in &object.properties {
         if *name == object.primary_key {
             continue;
         }
         let column = naming::property_column(name);
+        if def.indexed {
+            indexes.push(IndexDef {
+                name: naming::index_name(&table_name, &column),
+                column: column.clone(),
+                kind: IndexKind::Plain,
+            });
+        }
         properties.insert(
             name.clone(),
             PropertyColumn {
@@ -205,10 +309,11 @@ fn object_table(object: &ObjectType) -> Result<ObjectTable, String> {
         );
     }
     Ok(ObjectTable {
-        table: naming::object_table(&object.api_name),
+        table: table_name,
         pk,
         properties,
         archived_columns: Vec::new(),
+        indexes,
     })
 }
 

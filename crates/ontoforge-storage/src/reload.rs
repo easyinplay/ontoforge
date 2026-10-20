@@ -10,12 +10,13 @@ use std::sync::Arc;
 
 use chrono::{SecondsFormat, Utc};
 use ontoforge_schema::diag::Diagnostic;
-use ontoforge_schema::ir::Ontology;
+use ontoforge_schema::ir::{Cardinality, Ontology};
 
 use crate::ddl::{self, DdlStep};
 use crate::diff::{DestructiveChange, diff};
 use crate::error::StoreError;
-use crate::physical::PhysicalSchema;
+use crate::naming;
+use crate::physical::{IndexKind, PhysicalSchema};
 use crate::sql_exit;
 use crate::store::{ActiveDefinition, EditStore, WriteTx};
 
@@ -57,8 +58,11 @@ pub async fn reload(
     ontology: &Ontology,
     opts: &ReloadOptions,
 ) -> Result<ReloadOutcome, ReloadError> {
-    let physical = PhysicalSchema::derive(ontology).map_err(ReloadError::Definition)?;
+    let mut physical = PhysicalSchema::derive(ontology).map_err(ReloadError::Definition)?;
     let active = store.active_definition().await;
+    if let Some(active) = &active {
+        physical.keep_plain_indexes_of(&active.physical);
+    }
     let previous_def_version = active.as_ref().map(|a| a.def_version);
 
     if let Some(active) = &active
@@ -103,7 +107,7 @@ pub async fn reload(
 
     let mut tx = store.begin_write().await?;
     for step in &plan.steps {
-        apply_step(&mut tx, step).await?;
+        apply_step(&mut tx, step, ontology).await?;
     }
     let def_version = sql_exit::next_def_version(&mut tx).await?;
     sql_exit::supersede_active(&mut tx).await?;
@@ -126,10 +130,19 @@ pub async fn reload(
 
 /// Runs one step so that it can be repeated: a table is created only if missing, and columns are
 /// added only if the table lacks them. A table left behind by an interrupted run is completed.
-async fn apply_step(tx: &mut WriteTx<'_>, step: &DdlStep) -> Result<(), StoreError> {
+async fn apply_step(
+    tx: &mut WriteTx<'_>,
+    step: &DdlStep,
+    ontology: &Ontology,
+) -> Result<(), StoreError> {
     let backend = tx.backend();
     let schema = tx.schema_edit().map(str::to_owned);
     let schema = schema.as_deref();
+    if let Some(sql) = ddl::index_sql(step, backend, schema) {
+        return sql_exit::execute_ddl(tx, &sql)
+            .await
+            .map_err(|e| explain_unique_violation(e, step, ontology));
+    }
     if let Some(create) = ddl::create_sql(step, backend, schema) {
         sql_exit::execute_ddl(tx, &create).await?;
     }
@@ -145,6 +158,41 @@ async fn apply_step(tx: &mut WriteTx<'_>, step: &DdlStep) -> Result<(), StoreErr
         sql_exit::execute_ddl(tx, &ddl::add_column_sql(table, col, backend, schema)).await?;
     }
     Ok(())
+}
+
+/// Tightening a link to `oneToOne` fails when existing edits already put two live objects on one
+/// key. The database says "unique constraint"; this says which link and why.
+fn explain_unique_violation(error: StoreError, step: &DdlStep, ontology: &Ontology) -> StoreError {
+    let (DdlStep::CreateIndex { table, index }, StoreError::Query { sqlstate, message }) =
+        (step, &error)
+    else {
+        return error;
+    };
+    let violation = sqlstate
+        .as_deref()
+        .is_some_and(|code| matches!(code, "23505" | "2067"))
+        || message.contains("UNIQUE constraint failed");
+    if index.kind != IndexKind::UniqueWhenSet || !violation {
+        return error;
+    }
+    let link = ontology
+        .link_types
+        .iter()
+        .find(|(_, link)| {
+            link.cardinality == Cardinality::OneToOne
+                && link.to.foreign_key.as_ref().is_some_and(|fk| {
+                    naming::property_column(fk) == index.column
+                        && naming::object_table(&link.to.object_type) == *table
+                })
+        })
+        .map_or_else(|| index.name.clone(), |(name, _)| name.to_string());
+    StoreError::Query {
+        sqlstate: sqlstate.clone(),
+        message: format!(
+            "link type `{link}`: existing edits violate the oneToOne cardinality, so the unique index `{}` cannot be created: {message}",
+            index.name
+        ),
+    }
 }
 
 /// Whether two ontologies serialize to the same document, ignoring the order of mapping keys.
