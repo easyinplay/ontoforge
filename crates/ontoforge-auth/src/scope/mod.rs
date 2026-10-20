@@ -9,9 +9,17 @@
 //!
 //! [`merge`] combines the roles of one principal on one object type into a [`TypeScope`]
 //! that can be evaluated in Rust or lowered to SQL.
+//!
+//! [`compile_scope`] is the single offline check of a scope directory against an ontology
+//! (D-01): it validates every reference, compiles the row predicates and produces a
+//! [`CompiledScope`], from which [`CompiledScope::for_principal`] resolves one caller.
 
+pub mod compile;
 pub mod lower;
 pub mod merge;
 
+pub use compile::{
+    CompiledRole, CompiledScope, PrincipalScope, ScopeInputs, attr_types, compile_scope,
+};
 pub use lower::lower;
 pub use merge::{LoweredScope, RoleTypeGrant, RowVisibility, TypeScope, merge};
