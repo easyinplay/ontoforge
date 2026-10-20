@@ -5,7 +5,7 @@ mod support;
 
 use std::collections::BTreeSet;
 
-use ontoforge_schema::ir::Ontology;
+use ontoforge_schema::ir::{ObjectTypeName, Ontology, PropertyName};
 use ontoforge_storage::reload::{ReloadError, ReloadOptions, reload};
 use support::{ontology_from, sqlite_store};
 
@@ -293,4 +293,173 @@ async fn reload_resumes_after_partial_ddl() {
     let gate = t.columns("of_obj_gate").await;
     assert_eq!(gate.len(), GATE_COLUMNS.len(), "no column twice: {gate:?}");
     assert_eq!(names(&gate), BTreeSet::from(GATE_COLUMNS));
+}
+
+// ---------------------------------------------------------------------------------------------
+// Indexes (STORE-02, STORE-05, plan 03-10)
+// ---------------------------------------------------------------------------------------------
+
+fn aviation() -> Ontology {
+    let root = camino::Utf8Path::new(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../examples/ontologies/aviation"
+    ));
+    ontoforge_schema::load_dir(root)
+        .ontology
+        .expect("aviation loads")
+}
+
+/// Sets `indexed` of `type_name.property` in a copy of `ontology`.
+fn with_indexed(ontology: &Ontology, type_name: &str, property: &str, indexed: bool) -> Ontology {
+    let mut changed = ontology.clone();
+    let object = changed
+        .object_types
+        .get_mut(&ObjectTypeName::try_from(type_name.to_owned()).expect("type name"))
+        .expect("object type");
+    object
+        .properties
+        .get_mut(&PropertyName::try_from(property.to_owned()).expect("property name"))
+        .expect("property")
+        .indexed = indexed;
+    changed
+}
+
+/// `(name, is_unique)` of every index of `table`.
+async fn index_list(t: &support::TestStore, table: &str) -> Vec<(String, bool)> {
+    use sqlx::Row;
+    let pool = t.side_pool().await;
+    let sql = format!("PRAGMA index_list(\"{table}\")");
+    sqlx::query(sqlx::AssertSqlSafe(sql))
+        .fetch_all(&pool)
+        .await
+        .expect("index_list")
+        .iter()
+        .map(|row| {
+            (
+                row.get::<String, _>("name"),
+                row.get::<i64, _>("unique") == 1,
+            )
+        })
+        .collect()
+}
+
+async fn index_sql(t: &support::TestStore, name: &str) -> String {
+    let pool = t.side_pool().await;
+    sqlx::query_scalar::<_, String>(
+        "SELECT sql FROM sqlite_master WHERE type = 'index' AND name = ?",
+    )
+    .bind(name)
+    .fetch_one(&pool)
+    .await
+    .expect("index sql")
+}
+
+const INSERT_MAINTENANCE: &str = "INSERT INTO of_obj_maintenance_record      (record_id, aircraft_tail_number, aircraft_tail_number__set, of_deleted) VALUES (?, 'N1', ?, ?)";
+
+#[tokio::test(flavor = "multi_thread")]
+async fn aviation_reload_creates_indexes() {
+    let t = sqlite_store().await;
+    reload(&t.store, &aviation(), &ReloadOptions::default())
+        .await
+        .expect("reload");
+
+    let flight = index_list(&t, "of_obj_flight").await;
+    assert!(
+        flight.contains(&("of_ix_of_obj_flight_status".to_owned(), false)),
+        "{flight:?}"
+    );
+
+    let unique = "of_ux_of_obj_maintenance_record_aircraft_tail_number";
+    let maintenance = index_list(&t, "of_obj_maintenance_record").await;
+    assert!(
+        maintenance.contains(&(unique.to_owned(), true)),
+        "{maintenance:?}"
+    );
+    assert!(index_sql(&t, unique).await.contains("WHERE"));
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn one_to_one_unique_index_rejects_second_row() {
+    let t = sqlite_store().await;
+    reload(&t.store, &aviation(), &ReloadOptions::default())
+        .await
+        .expect("reload");
+    let pool = t.side_pool().await;
+    let insert = |id: &'static str, set: i64, deleted: i64| {
+        sqlx::query(INSERT_MAINTENANCE)
+            .bind(id)
+            .bind(set)
+            .bind(deleted)
+            .execute(&pool)
+    };
+
+    insert("r1", 1, 0).await.expect("first row");
+    let second = insert("r2", 1, 0).await;
+    assert!(
+        second.is_err(),
+        "a second live row with the same key must be refused"
+    );
+    insert("r3", 1, 1)
+        .await
+        .expect("a deleted row may repeat the key");
+    insert("r4", 0, 0)
+        .await
+        .expect("a row without the key set may repeat it");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn index_added_on_second_reload() {
+    let t = sqlite_store().await;
+    let first = aviation();
+    reload(&t.store, &first, &ReloadOptions::default())
+        .await
+        .expect("first");
+    let out = reload(
+        &t.store,
+        &with_indexed(&first, "Pilot", "fullName", true),
+        &ReloadOptions::default(),
+    )
+    .await
+    .expect("second");
+    assert_eq!(out.def_version, Some(2));
+    assert_eq!(out.ddl.len(), 1, "{:#?}", out.ddl);
+    assert!(
+        out.ddl[0].contains("CREATE INDEX IF NOT EXISTS"),
+        "{}",
+        out.ddl[0]
+    );
+    let pilot = index_list(&t, "of_obj_pilot").await;
+    assert!(
+        pilot.contains(&("of_ix_of_obj_pilot_full_name".to_owned(), false)),
+        "{pilot:?}"
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn removing_indexed_keeps_index() {
+    let t = sqlite_store().await;
+    let first = aviation();
+    reload(&t.store, &first, &ReloadOptions::default())
+        .await
+        .expect("first");
+    let relaxed = with_indexed(&first, "Flight", "status", false);
+    let out = reload(&t.store, &relaxed, &ReloadOptions::default())
+        .await
+        .expect("second");
+    assert!(out.changed);
+    assert!(out.ddl.is_empty(), "{:#?}", out.ddl);
+    let flight = index_list(&t, "of_obj_flight").await;
+    assert!(
+        flight
+            .iter()
+            .any(|(name, _)| name == "of_ix_of_obj_flight_status"),
+        "{flight:?}"
+    );
+    let again = reload(&t.store, &relaxed, &ReloadOptions::default())
+        .await
+        .expect("third");
+    assert!(
+        !again.changed,
+        "the kept index must not make every reload a change"
+    );
 }
