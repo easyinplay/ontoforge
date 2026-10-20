@@ -208,3 +208,183 @@ fn invalid_scope_writes_nothing() {
     assert_eq!(env.count("of_role_binding"), 0);
     assert_eq!(env.count("of_admin_audit"), 0);
 }
+
+/// A copy of `from` below `to`.
+fn copy_dir(from: &Path, to: &Path) {
+    std::fs::create_dir_all(to).expect("create dir");
+    for entry in std::fs::read_dir(from).expect("read dir") {
+        let entry = entry.expect("entry");
+        let target = to.join(entry.file_name());
+        if entry.file_type().expect("file type").is_dir() {
+            copy_dir(&entry.path(), &target);
+        } else {
+            std::fs::copy(entry.path(), target).expect("copy");
+        }
+    }
+}
+
+const VIEWER_SCOPE: &str = "kind: Role
+apiName: viewer
+objectTypes:
+  Airport:
+    properties: [code, name]
+---
+kind: RoleBinding
+role: viewer
+subjects:
+  - group: everyone
+";
+
+#[test]
+fn plan_lists_removals_and_a_stale_hash_is_refused() {
+    let env = Env::new();
+    assert_eq!(env.reload(AVIATION).status.code(), Some(0));
+    let full = env.plan(AVIATION_SCOPE, &[]);
+    let full_hash = plan_hash(&full);
+    assert_eq!(
+        env.apply(AVIATION_SCOPE, &full_hash, &[]).status.code(),
+        Some(0)
+    );
+
+    let viewer = tempfile::tempdir().expect("tempdir");
+    std::fs::write(viewer.path().join("viewer.yaml"), VIEWER_SCOPE).expect("scope file");
+    let viewer = viewer.path().to_str().expect("utf-8 path");
+
+    let plan = env.plan(viewer, &[]);
+    assert_eq!(plan.status.code(), Some(0), "stderr: {}", stderr(&plan));
+    let text = stdout(&plan);
+    for line in [
+        "add role viewer",
+        "add binding viewer group everyone",
+        "remove role crewScheduler",
+        "remove role dispatcher",
+        "remove role maintenanceLead",
+        "remove binding crewScheduler group crew-schedulers",
+        "remove binding dispatcher group dispatchers",
+        "remove binding maintenanceLead user ontoforge-dev|mia",
+    ] {
+        assert!(
+            text.lines().any(|l| l == line),
+            "missing `{line}` in:\n{text}"
+        );
+    }
+    let hash = plan_hash(&plan);
+
+    // The hash of another plan is refused and nothing changes.
+    let stale = env.apply(viewer, &full_hash, &[]);
+    assert_eq!(stale.status.code(), Some(1), "stderr: {}", stderr(&stale));
+    assert!(
+        stdout(&stale).contains("plan changed"),
+        "{}",
+        stdout(&stale)
+    );
+    assert!(
+        stderr(&stale).contains("scope apply failed"),
+        "{}",
+        stderr(&stale)
+    );
+    assert_eq!(env.count("of_role"), 3);
+    assert_eq!(env.count("of_admin_audit"), 1);
+
+    let applied = env.apply(viewer, &hash, &[]);
+    assert_eq!(
+        applied.status.code(),
+        Some(0),
+        "stderr: {}",
+        stderr(&applied)
+    );
+    assert_eq!(env.count("of_role"), 1);
+    assert_eq!(env.count("of_role_binding"), 1);
+    assert_eq!(env.count("of_admin_audit"), 2);
+}
+
+#[test]
+fn ontology_differing_from_the_active_definition_is_refused() {
+    let env = Env::new();
+    assert_eq!(env.reload(AVIATION).status.code(), Some(0));
+
+    let changed = tempfile::tempdir().expect("tempdir");
+    copy_dir(Path::new(AVIATION), changed.path());
+    let objects = changed.path().join("objects.yaml");
+    let text = std::fs::read_to_string(&objects).expect("objects.yaml");
+    let edited = text.replacen(
+        "  country: { type: string, displayName: Country }\n",
+        "  country: { type: string, displayName: Country }\n  timezone: { type: string }\n",
+        1,
+    );
+    assert_ne!(text, edited, "the example changed: adjust the test");
+    std::fs::write(&objects, edited).expect("write objects.yaml");
+
+    let config = env.config();
+    let ontology = changed.path().to_str().expect("utf-8 path");
+    let out = ontoforge(&[
+        "scope",
+        "plan",
+        AVIATION_SCOPE,
+        "--ontology",
+        ontology,
+        "--server-config",
+        &config,
+    ]);
+    assert_eq!(out.status.code(), Some(1), "stderr: {}", stderr(&out));
+    assert!(
+        stdout(&out).contains("ontology differs from the active definition (def_version 1)"),
+        "{}",
+        stdout(&out)
+    );
+    assert!(
+        stdout(&out).contains("ontoforge reload"),
+        "{}",
+        stdout(&out)
+    );
+    assert_eq!(env.count("of_role"), 0);
+}
+
+#[test]
+fn scope_before_reload_asks_for_reload() {
+    let env = Env::new();
+    let out = env.plan(AVIATION_SCOPE, &[]);
+    assert_eq!(out.status.code(), Some(1), "stderr: {}", stderr(&out));
+    assert!(
+        stdout(&out).contains("ontoforge reload"),
+        "{}",
+        stdout(&out)
+    );
+}
+
+#[test]
+fn json_plan_is_camel_case() {
+    let env = Env::new();
+    assert_eq!(env.reload(AVIATION).status.code(), Some(0));
+    let out = env.plan(AVIATION_SCOPE, &["--format", "json"]);
+    assert_eq!(out.status.code(), Some(0), "stderr: {}", stderr(&out));
+    let document: serde_json::Value = serde_json::from_str(&stdout(&out)).expect("json");
+    assert_eq!(document["diagnostics"], serde_json::json!([]));
+    let plan = &document["result"]["plan"];
+    assert_eq!(plan["rolesAdded"].as_array().map(Vec::len), Some(3));
+    assert_eq!(plan["bindingsAdded"][0]["kind"], "group");
+    assert_eq!(plan["hash"].as_str().map(str::len), Some(16));
+}
+
+#[test]
+fn missing_store_section_is_a_configuration_error() {
+    let env = Env::new();
+    std::fs::write(env.dir.path().join("ontoforge-server.toml"), "").expect("config");
+    let out = env.plan(AVIATION_SCOPE, &[]);
+    assert_eq!(out.status.code(), Some(1), "stderr: {}", stderr(&out));
+    assert!(stdout(&out).contains("ONT-V20"), "{}", stdout(&out));
+}
+
+#[test]
+fn unusable_store_exits_3() {
+    let env = Env::new();
+    let text = std::fs::read_to_string(env.dir.path().join("ontoforge-server.toml")).expect("cfg");
+    std::fs::write(
+        env.dir.path().join("ontoforge-server.toml"),
+        text.replace("edit.db", "no-such-dir/sub/edit.db"),
+    )
+    .expect("config");
+    let out = env.plan(AVIATION_SCOPE, &[]);
+    assert_eq!(out.status.code(), Some(3), "stderr: {}", stderr(&out));
+    assert!(stdout(&out).contains("ONT-V26"), "{}", stdout(&out));
+}
