@@ -21,6 +21,9 @@ use crate::cli::DevTokenArgs;
 use crate::online;
 use crate::render::{self, Format};
 
+/// Longest token lifetime: 30 days.
+const MAX_TTL_SECS: u64 = 30 * 86_400;
+
 /// Why no token was issued.
 enum Failure {
     /// Problems in the server configuration, reported as ONT-V20.
@@ -152,10 +155,11 @@ fn parse_ttl(text: &str) -> Result<Duration, String> {
         return Err(invalid());
     };
     let count: u64 = digits.parse().map_err(|_| invalid())?;
-    count
-        .checked_mul(unit_secs)
-        .map(Duration::from_secs)
-        .ok_or_else(ttl_range)
+    let secs = count.checked_mul(unit_secs).ok_or_else(ttl_range)?;
+    if secs == 0 || secs > MAX_TTL_SECS {
+        return Err("`--ttl` must be between 1m and 30d".to_owned());
+    }
+    Ok(Duration::from_secs(secs))
 }
 
 /// The `--attr name=value` arguments as token claims, keyed by the declared claim name. A later

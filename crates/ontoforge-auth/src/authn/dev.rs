@@ -43,6 +43,9 @@ const LEEWAY_SECS: u64 = 30;
 /// The claim that carries the group names.
 const GROUPS_CLAIM: &str = "groups";
 
+/// Claims a dev token sets itself (`nbf` is never set, but a value would delay the token).
+const RESERVED_CLAIMS: [&str; 7] = ["iss", "aud", "sub", "exp", "iat", "nbf", GROUPS_CLAIM];
+
 /// Proof that the caller knowingly enables insecure development tokens.
 ///
 /// Only `serve --dev` (Phase 7) and tests are meant to call [`DevMode::enable_insecure`].
@@ -163,7 +166,23 @@ pub struct DevClaims {
 }
 
 /// Signs a development token: HS256, `iss` and `aud` are [`DEV_ISSUER`], with `iat` and `exp`.
+///
+/// `claims.attrs` may not use a claim name this function sets itself: an attribute claim
+/// named `sub` or `exp` would otherwise decide who the token is for or how long it lives.
 pub fn issue_dev_token(key: &DevKey, claims: &DevClaims) -> Result<String, AuthnError> {
+    if claims.sub.is_empty() {
+        return Err(AuthnError::InvalidClaims(
+            "claim `sub` is missing".to_owned(),
+        ));
+    }
+    if let Some(name) = RESERVED_CLAIMS
+        .iter()
+        .find(|name| claims.attrs.contains_key(**name))
+    {
+        return Err(AuthnError::InvalidClaims(format!(
+            "claim `{name}` is reserved and cannot carry an attribute"
+        )));
+    }
     let now = get_current_timestamp();
     let mut payload = claims.attrs.clone();
     payload.insert("iss".to_owned(), Value::from(DEV_ISSUER));
