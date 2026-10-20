@@ -3,10 +3,12 @@
 
 mod support;
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 use ontoforge_schema::ir::{ObjectTypeName, Ontology, PropertyName};
+use ontoforge_storage::commit::{Actor, Commit, Edit, EditError, ObjectOp};
 use ontoforge_storage::reload::{ReloadError, ReloadOptions, reload};
+use ontoforge_storage::value::PropertyValue;
 use support::{ontology_from, sqlite_store};
 
 const GATE_PROPERTIES: &str = "  code: { type: string, required: true }
@@ -745,4 +747,122 @@ async fn relaxing_one_to_one_drops_unique_index() {
             .await
             .expect("duplicates are fine now");
     }
+}
+
+// ---------------------------------------------------------------------------------------------
+// The definition version fence (ADR-0016 / D20, plan 03-18 task 1)
+// ---------------------------------------------------------------------------------------------
+
+/// A commit that sets the string properties `pairs` on the gate `code`, validated against
+/// `def_version`.
+fn gate_commit(def_version: i64, code: &str, pairs: &[(&str, &str)]) -> Commit {
+    let values: BTreeMap<PropertyName, PropertyValue> = pairs
+        .iter()
+        .map(|(name, value)| {
+            (
+                PropertyName::try_from((*name).to_owned()).expect("property name"),
+                PropertyValue::String((*value).to_owned()),
+            )
+        })
+        .collect();
+    Commit {
+        actor: Actor::Principal("test|alice".to_owned()),
+        action: "setGate".to_owned(),
+        def_version,
+        params: serde_json::json!({ "code": code }),
+        edits: vec![Edit::Object {
+            type_name: ObjectTypeName::try_from("Gate".to_owned()).expect("type name"),
+            pk: PropertyValue::String(code.to_owned()),
+            op: ObjectOp::Set(values),
+        }],
+    }
+}
+
+fn with_zone() -> Ontology {
+    let properties = format!(
+        "{GATE_PROPERTIES}  zone: {{ type: string }}
+"
+    );
+    definition("code", &properties, true)
+}
+
+async fn count(t: &support::TestStore, table: &str) -> i64 {
+    let pool = t.side_pool().await;
+    sqlx::query_scalar(sqlx::AssertSqlSafe(format!(
+        "SELECT count(*) FROM \"{table}\""
+    )))
+    .fetch_one(&pool)
+    .await
+    .expect("count")
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn stale_writer_rejected_after_switch() {
+    let t = sqlite_store().await;
+    reload(&t.store, &base(), &ReloadOptions::default())
+        .await
+        .expect("v1");
+    // A second process: it opened the store while definition 1 was active.
+    let writer = t.reopen().await;
+    writer
+        .commit(gate_commit(1, "A1", &[("name", "North")]))
+        .await
+        .expect("a commit for the active definition");
+
+    let out = reload(&t.store, &with_zone(), &ReloadOptions::default())
+        .await
+        .expect("v2");
+    assert_eq!(out.def_version, Some(2));
+
+    // The writer still holds definition 1 in memory; the database says 2.
+    let err = writer
+        .commit(gate_commit(1, "A2", &[("name", "South")]))
+        .await
+        .expect_err("a commit for a definition that is no longer active");
+    assert!(
+        matches!(
+            err,
+            EditError::DefinitionStale {
+                expected: 1,
+                active: 2
+            }
+        ),
+        "{err:?}"
+    );
+    assert_eq!(count(&t, "of_obj_gate").await, 1, "no gate row was written");
+    assert_eq!(
+        count(&t, "of_edit_log").await,
+        1,
+        "no log record was written"
+    );
+
+    // The refusal refreshed the writer's definition from the database.
+    assert_eq!(
+        writer.active_definition().await.map(|a| a.def_version),
+        Some(2)
+    );
+    writer
+        .commit(gate_commit(2, "A2", &[("zone", "Z1")]))
+        .await
+        .expect("a commit for definition 2 may use the property it added");
+    assert_eq!(count(&t, "of_obj_gate").await, 2);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn writer_without_a_loaded_definition_follows_the_database() {
+    let t = sqlite_store().await;
+    // Opened before any reload: nothing is cached.
+    let writer = t.reopen().await;
+    assert!(writer.active_definition().await.is_none());
+    reload(&t.store, &base(), &ReloadOptions::default())
+        .await
+        .expect("v1");
+    writer
+        .commit(gate_commit(1, "A1", &[("name", "North")]))
+        .await
+        .expect("the fence loads the definition the database makes active");
+    assert_eq!(
+        writer.active_definition().await.map(|a| a.def_version),
+        Some(1)
+    );
 }

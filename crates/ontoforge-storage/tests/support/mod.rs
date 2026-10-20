@@ -115,6 +115,7 @@ pub struct PgTestStore {
     pub store: std::sync::Arc<EditStore>,
     pub schema_edit: String,
     pub schema_sys: String,
+    url: String,
     side: sqlx::PgPool,
     _server: ServerGuard,
 }
@@ -123,6 +124,28 @@ impl PgTestStore {
     /// A connection outside the store, for inspecting the database.
     pub fn side(&self) -> &sqlx::PgPool {
         &self.side
+    }
+
+    /// Opens a second `EditStore` on the same schemas, as another process would, with the given
+    /// lock timeout. It loads the definition that is active in the database now and does not
+    /// follow later reloads of `store`.
+    pub async fn open_another(&self, lock_timeout: std::time::Duration) -> EditStore {
+        EditStore::open(self.settings(lock_timeout))
+            .await
+            .expect("open a second PostgreSQL store")
+    }
+
+    fn settings(&self, lock_timeout: std::time::Duration) -> StoreSettings {
+        StoreSettings {
+            backend: BackendSettings::Postgres {
+                url: secrecy::SecretString::from(self.url.clone()),
+                schema_edit: self.schema_edit.clone(),
+                schema_sys: self.schema_sys.clone(),
+            },
+            lock_timeout,
+            probe_timeout: std::time::Duration::from_secs(5),
+            trino_catalog: None,
+        }
     }
 
     /// Table names of `schema`, sorted.
@@ -234,6 +257,7 @@ pub async fn pg_store() -> PgTestStore {
         store: std::sync::Arc::new(store),
         schema_edit,
         schema_sys,
+        url,
         side,
         _server: server,
     }

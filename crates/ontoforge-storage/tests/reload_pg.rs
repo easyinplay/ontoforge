@@ -9,10 +9,13 @@
 
 mod support;
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
+use std::time::Duration;
 
-use ontoforge_schema::ir::Ontology;
+use ontoforge_schema::ir::{ObjectTypeName, Ontology, PropertyName};
+use ontoforge_storage::commit::{Actor, Commit, Edit, EditError, ObjectOp};
 use ontoforge_storage::reload::{ReloadOptions, reload};
+use ontoforge_storage::value::PropertyValue;
 use support::{ontology_from, pg_store};
 
 const GATE: &str = "kind: ObjectType
@@ -293,4 +296,85 @@ async fn long_names_on_pg() {
         .await
         .expect("again");
     assert!(!again.changed);
+}
+
+// ---------------------------------------------------------------------------------------------
+// The definition version fence (ADR-0016 / D20, plan 03-18 task 1)
+// ---------------------------------------------------------------------------------------------
+
+fn gate_commit(def_version: i64, code: &str, name: &str) -> Commit {
+    let values: BTreeMap<PropertyName, PropertyValue> = BTreeMap::from([(
+        PropertyName::try_from("name".to_owned()).expect("property name"),
+        PropertyValue::String(name.to_owned()),
+    )]);
+    Commit {
+        actor: Actor::Principal("test|alice".to_owned()),
+        action: "setGate".to_owned(),
+        def_version,
+        params: serde_json::json!({ "code": code }),
+        edits: vec![Edit::Object {
+            type_name: ObjectTypeName::try_from("Gate".to_owned()).expect("type name"),
+            pk: PropertyValue::String(code.to_owned()),
+            op: ObjectOp::Set(values),
+        }],
+    }
+}
+
+#[tokio::test(flavor = "multi_thread")]
+#[ignore = "needs ONTOFORGE_PG_URL or --features embedded-pg"]
+async fn in_flight_commit_blocks_switch_on_pg() {
+    let t = pg_store().await;
+    reload(&t.store, &base(), &ReloadOptions::default())
+        .await
+        .expect("v1");
+    // Another process that opened the store while definition 1 was active.
+    let writer = t.open_another(Duration::from_secs(5)).await;
+
+    // What a commit holds between its fence read and its commit: a share lock on the state row.
+    let mut in_flight = t.side().begin().await.expect("begin");
+    let lock = format!(
+        "SELECT active_def_version FROM \"{}\".of_def_state FOR SHARE",
+        t.schema_sys
+    );
+    let held: i64 = sqlx::query_scalar(sqlx::AssertSqlSafe(lock))
+        .fetch_one(&mut *in_flight)
+        .await
+        .expect("share lock");
+    assert_eq!(held, 1);
+
+    let store = std::sync::Arc::clone(&t.store);
+    let switching =
+        tokio::spawn(async move { reload(&store, &with_zone(), &ReloadOptions::default()).await });
+    tokio::time::sleep(Duration::from_millis(700)).await;
+    assert!(
+        !switching.is_finished(),
+        "the switch must wait for the commit in flight"
+    );
+    assert_eq!(t.active_version().await, 1);
+
+    in_flight.commit().await.expect("the commit in flight ends");
+    let out = switching
+        .await
+        .expect("join")
+        .expect("the switch goes through once the commit ended");
+    assert_eq!(out.def_version, Some(2));
+
+    let err = writer
+        .commit(gate_commit(1, "A1", "North"))
+        .await
+        .expect_err("a write for the old definition is refused after the switch");
+    assert!(
+        matches!(
+            err,
+            EditError::DefinitionStale {
+                expected: 1,
+                active: 2
+            }
+        ),
+        "{err:?}"
+    );
+    writer
+        .commit(gate_commit(2, "A1", "North"))
+        .await
+        .expect("a write for the new definition goes through");
 }
