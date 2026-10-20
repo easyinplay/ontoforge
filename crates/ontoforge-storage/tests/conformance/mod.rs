@@ -17,7 +17,7 @@ use ontoforge_storage::commit::{
 };
 use ontoforge_storage::log::{EditOp, EntryKind};
 use ontoforge_storage::reload::{ReloadOptions, reload};
-use ontoforge_storage::store::EditStore;
+use ontoforge_storage::store::{Backend, EditStore};
 use ontoforge_storage::value::PropertyValue;
 use serde_json::{Value, json};
 use sqlx::Row;
@@ -115,6 +115,36 @@ impl Harness {
         }
     }
 
+    /// `table` as a statement names it: `"table"` on SQLite, `"schema_sys"."table"` on PostgreSQL.
+    /// Only the system tables (log, entry, history) are addressed this way.
+    pub fn sys_table(&self, table: &str) -> String {
+        match self {
+            Self::Sqlite(_) => format!("\"{table}\""),
+            Self::Pg(t) => format!("\"{}\".\"{table}\"", t.schema_sys),
+        }
+    }
+
+    /// Runs `sql` from outside the store, on a connection that has the store's connection
+    /// options (SQLite: `recursive_triggers` on). `Ok` is the number of affected rows, `Err` the
+    /// refusal of the database.
+    pub async fn try_exec(&self, sql: &str) -> Result<u64, Refusal> {
+        match self {
+            Self::Sqlite(t) => {
+                let pool = t.side_pool().await;
+                sqlx::query(sqlx::AssertSqlSafe(sql.to_owned()))
+                    .execute(&pool)
+                    .await
+                    .map(|done| done.rows_affected())
+                    .map_err(Refusal::from)
+            }
+            Self::Pg(t) => sqlx::query(sqlx::AssertSqlSafe(sql.to_owned()))
+                .execute(t.side())
+                .await
+                .map(|done| done.rows_affected())
+                .map_err(Refusal::from),
+        }
+    }
+
     /// The one row of `table` whose `key_column` is `key`, `columns` as text.
     pub async fn row(
         &self,
@@ -129,6 +159,27 @@ impl Harness {
             .await;
         assert_eq!(rows.len(), 1, "{table} where {key_column} = {key}");
         rows.remove(0)
+    }
+}
+
+/// A statement the database refused.
+#[derive(Debug)]
+pub struct Refusal {
+    /// The SQLSTATE of PostgreSQL, when the database reported one.
+    pub code: Option<String>,
+    pub message: String,
+}
+
+impl From<sqlx::Error> for Refusal {
+    fn from(error: sqlx::Error) -> Self {
+        let code = error
+            .as_database_error()
+            .and_then(|e| e.code())
+            .map(|c| c.into_owned());
+        Self {
+            code,
+            message: error.to_string(),
+        }
     }
 }
 
@@ -831,6 +882,203 @@ pub async fn link_add_creates_link_row(h: &Harness) {
 }
 
 // ---------------------------------------------------------------------------------------------
+// Append only (STORE-03, D-12)
+// ---------------------------------------------------------------------------------------------
+
+/// The three append only tables with the columns the cases compare and one statement each that
+/// rewrites a column.
+const LOG_TABLES: [(&str, &[&str], &str); 3] = [
+    (
+        "of_edit_log",
+        &[
+            "seq",
+            "event_id",
+            "actor",
+            "action",
+            "committed_at",
+            "def_version",
+            "params",
+        ],
+        "SET actor = 'mallory'",
+    ),
+    (
+        "of_edit_log_entry",
+        &[
+            "log_seq",
+            "ordinal",
+            "kind",
+            "type_name",
+            "pk",
+            "op",
+            "payload",
+            "version_after",
+        ],
+        "SET version_after = 99",
+    ),
+    (
+        "of_edit_history",
+        &[
+            "log_seq",
+            "ordinal",
+            "kind",
+            "type_name",
+            "pk",
+            "version",
+            "snapshot",
+        ],
+        "SET version = 99",
+    ),
+];
+
+type LogRows = Vec<Vec<Option<String>>>;
+
+/// Every row of the three tables, to compare before and after a refused statement.
+async fn log_rows(h: &Harness) -> Vec<LogRows> {
+    let mut all = Vec::new();
+    for (table, columns, _) in LOG_TABLES {
+        all.push(h.rows(Tables::Sys, table, columns, None).await);
+    }
+    all
+}
+
+/// The statement was refused by the append only trigger, not by something else.
+fn assert_refused_as_append_only(refusal: &Refusal, what: &str) {
+    assert!(
+        refusal.message.contains("append-only"),
+        "{what}: refused for another reason: {refusal:?}"
+    );
+}
+
+pub async fn append_only_rejects_update_and_delete(h: &Harness) {
+    let v = h.load().await;
+    commit_ok(h, create_gate(v, "A1")).await;
+    let before = log_rows(h).await;
+    assert!(
+        before.iter().all(|rows| rows.len() == 1),
+        "one commit, one row per table: {before:#?}"
+    );
+
+    for (table, _, assignment) in LOG_TABLES {
+        let target = h.sys_table(table);
+        let update = h
+            .try_exec(&format!("UPDATE {target} {assignment}"))
+            .await
+            .expect_err(&format!("UPDATE of {table} must be refused"));
+        assert_refused_as_append_only(&update, &format!("UPDATE {table}"));
+        let delete = h
+            .try_exec(&format!("DELETE FROM {target}"))
+            .await
+            .expect_err(&format!("DELETE from {table} must be refused"));
+        assert_refused_as_append_only(&delete, &format!("DELETE {table}"));
+        if matches!(h, Harness::Pg(_)) {
+            assert_eq!(
+                update.code.as_deref(),
+                Some("23000"),
+                "of_reject_mutation raises SQLSTATE 23000"
+            );
+        }
+    }
+    assert_eq!(
+        log_rows(h).await,
+        before,
+        "a refused statement changes nothing"
+    );
+}
+
+pub async fn append_only_rejects_truncate_on_pg(h: &Harness) {
+    if matches!(h, Harness::Sqlite(_)) {
+        // SQLite has no TRUNCATE; its `DELETE FROM` without a WHERE is the case above.
+        assert_eq!(h.store().backend(), Backend::Sqlite);
+        return;
+    }
+    let v = h.load().await;
+    commit_ok(h, create_gate(v, "A1")).await;
+    let before = log_rows(h).await;
+
+    // `of_edit_log` is referenced by the entry table, so PostgreSQL checks the foreign key before
+    // it fires the trigger when it is truncated alone. The entry and history tables are
+    // truncated alone, and all three together, so the statement reaches the trigger.
+    for table in ["of_edit_log_entry", "of_edit_history"] {
+        let refusal = h
+            .try_exec(&format!("TRUNCATE {}", h.sys_table(table)))
+            .await
+            .expect_err(&format!("TRUNCATE of {table} must be refused"));
+        assert_refused_as_append_only(&refusal, &format!("TRUNCATE {table}"));
+        assert_eq!(refusal.code.as_deref(), Some("23000"));
+    }
+    let all = LOG_TABLES
+        .iter()
+        .map(|(table, _, _)| h.sys_table(table))
+        .collect::<Vec<_>>()
+        .join(", ");
+    let refusal = h
+        .try_exec(&format!("TRUNCATE {all}"))
+        .await
+        .expect_err("TRUNCATE of the three tables must be refused");
+    assert_refused_as_append_only(&refusal, "TRUNCATE of all three");
+    assert_eq!(refusal.code.as_deref(), Some("23000"));
+    assert_eq!(
+        log_rows(h).await,
+        before,
+        "a refused statement changes nothing"
+    );
+}
+
+pub async fn append_only_rejects_sqlite_replace_writes(h: &Harness) {
+    if matches!(h, Harness::Pg(_)) {
+        // `INSERT OR REPLACE` is SQLite syntax.
+        assert_eq!(h.store().backend(), Backend::Postgres);
+        return;
+    }
+    let v = h.load().await;
+    commit_ok(h, create_gate(v, "A1")).await;
+    let before = log_rows(h).await;
+
+    // Each statement re-inserts the key of the existing row. SQLite resolves the conflict by
+    // deleting the old row first; that DELETE only reaches the trigger with recursive_triggers.
+    let rows = [
+        (
+            "of_edit_log",
+            "(seq, event_id, actor, action, committed_at, def_version, params) \
+             VALUES (1, 'forged', 'mallory', 'x', '2026-01-01T00:00:00.000Z', 1, '{}')",
+        ),
+        (
+            "of_edit_log_entry",
+            "(log_seq, ordinal, kind, type_name, pk, op, payload, version_after) \
+             VALUES (1, 0, 'object', 'Gate', '\"A1\"', 'set', NULL, 99)",
+        ),
+        (
+            "of_edit_history",
+            "(log_seq, ordinal, kind, type_name, pk, version, snapshot) \
+             VALUES (1, 0, 'object', 'Gate', '\"A1\"', 99, '{}')",
+        ),
+    ];
+    for (table, values) in rows {
+        for verb in ["INSERT OR REPLACE INTO", "REPLACE INTO"] {
+            let refusal = h
+                .try_exec(&format!("{verb} {} {values}", h.sys_table(table)))
+                .await
+                .expect_err(&format!("{verb} {table} must be refused"));
+            assert_refused_as_append_only(&refusal, &format!("{verb} {table}"));
+        }
+    }
+    let upsert = h
+        .try_exec(
+            "INSERT INTO \"of_edit_log\" (seq, event_id, actor, action, committed_at, def_version, params) \
+             VALUES (1, 'forged', 'mallory', 'x', '2026-01-01T00:00:00.000Z', 1, '{}') \
+             ON CONFLICT (seq) DO UPDATE SET actor = excluded.actor",
+        )
+        .await
+        .expect_err("an upsert is an UPDATE and must be refused");
+    assert_refused_as_append_only(&upsert, "upsert of_edit_log");
+    assert_eq!(
+        log_rows(h).await,
+        before,
+        "a refused statement changes nothing"
+    );
+}
+
+// ---------------------------------------------------------------------------------------------
 // Expansion
 // ---------------------------------------------------------------------------------------------
 
@@ -860,6 +1108,9 @@ macro_rules! all_cases {
         $crate::conformance::conformance_case!($factory, import_actor_is_stored_as_system_import $(, $attr)?);
         $crate::conformance::conformance_case!($factory, read_log_pages_by_seq $(, $attr)?);
         $crate::conformance::conformance_case!($factory, link_add_creates_link_row $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, append_only_rejects_update_and_delete $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, append_only_rejects_truncate_on_pg $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, append_only_rejects_sqlite_replace_writes $(, $attr)?);
     };
 }
 
