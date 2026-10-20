@@ -3,12 +3,17 @@
 //! A record holds who did what and when plus one entry per edit. An entry stores only the new
 //! values and the kind of operation, never an old value and never a copy of a source value.
 
-use sea_query::{Alias, Expr, ExprTrait, Order, Query};
+use std::collections::{BTreeMap, BTreeSet};
 
-use crate::commit::EditError;
+use ontoforge_schema::ir::{LinkTypeName, ObjectTypeName, PropertyName};
+use sea_query::{Alias, Expr, ExprTrait, Order, Query};
+use serde_json::Value;
+
+use crate::commit::{self, EditError, LinkOp, ObjectOp, Target};
 use crate::error::StoreError;
 use crate::sql_exit::{self, Built};
-use crate::store::{Backend, EditStore, WriteTx};
+use crate::store::{ActiveDefinition, Backend, EditStore, WriteTx};
+use crate::value::PropertyValue;
 
 /// What an entry did.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -155,13 +160,160 @@ pub enum ReplayError {
 }
 
 /// Rebuilds the edit tables of `target` from `records` (D-10).
-#[allow(
-    clippy::unused_async,
-    reason = "stub of the RED commit; the real body awaits"
-)]
+///
+/// The target must hold the definition the records were written under, loaded and empty. Records
+/// are applied in `seq` order and entries in `ordinal` order, with the same `next_state` and
+/// `next_link_state` a commit uses. After each entry the version the transition gave must equal
+/// the logged `version_after`, otherwise the replay stops with [`ReplayError::Diverged`]. Each row
+/// keeps the original `seq` in `of_log_seq` and the logged definition version in
+/// `of_def_version`. The log and the history of the target are not written.
+///
+/// All records are applied in one transaction: a failed replay leaves the target as it was.
 pub async fn replay(records: &[LogRecord], target: &EditStore) -> Result<(), ReplayError> {
-    let _ = (records, target);
-    Err(StoreError::Config("replay is not implemented".to_owned()).into())
+    let active = target.active_definition().await.ok_or_else(|| {
+        StoreError::Config("no definition is loaded; run reload first".to_owned())
+    })?;
+    let mut ordered: Vec<&LogRecord> = records.iter().collect();
+    ordered.sort_by_key(|record| record.seq);
+    let mut tx = target.begin_write().await?;
+    match apply_records(&mut tx, &active, &ordered).await {
+        Ok(()) => {
+            sql_exit::commit(tx).await?;
+            Ok(())
+        }
+        Err(error) => {
+            sql_exit::rollback(tx).await;
+            Err(error)
+        }
+    }
+}
+
+async fn apply_records(
+    tx: &mut WriteTx<'_>,
+    def: &ActiveDefinition,
+    records: &[&LogRecord],
+) -> Result<(), ReplayError> {
+    let schema = tx.schema_edit().map(str::to_owned);
+    let schema = schema.as_deref();
+    for record in records {
+        if record.def_version != def.def_version {
+            return Err(EditError::DefinitionStale {
+                expected: record.def_version,
+                active: def.def_version,
+            }
+            .into());
+        }
+        let mut entries: Vec<&LogEntry> = record.entries.iter().collect();
+        entries.sort_by_key(|entry| entry.ordinal);
+        for entry in entries {
+            let planned = replay_target(def, record.seq, entry)?;
+            let current = commit::load_row(tx, schema, &planned).await?;
+            let next = commit::advance(&current, &planned)?;
+            if next.version() != entry.version_after {
+                return Err(ReplayError::Diverged {
+                    seq: record.seq,
+                    ordinal: entry.ordinal,
+                });
+            }
+            commit::update_row(tx, schema, record.def_version, record.seq, &planned, &next).await?;
+        }
+    }
+    Ok(())
+}
+
+/// The edit an entry stands for, resolved against the definition.
+fn replay_target<'a>(
+    def: &'a ActiveDefinition,
+    seq: i64,
+    entry: &LogEntry,
+) -> Result<Target<'a>, ReplayError> {
+    let corrupt = |what: &str| {
+        ReplayError::Store(StoreError::Corrupt(format!(
+            "edit log entry {seq}/{}: {what}",
+            entry.ordinal
+        )))
+    };
+    let unknown = || ReplayError::Edit(EditError::UnknownType(entry.type_name.clone()));
+    match entry.kind {
+        EntryKind::Object => {
+            let type_name =
+                ObjectTypeName::try_from(entry.type_name.clone()).map_err(|_| unknown())?;
+            let (name, ty) = def
+                .ontology
+                .object_types
+                .get_key_value(&type_name)
+                .ok_or_else(unknown)?;
+            let table = def.physical.object_table(name).ok_or_else(unknown)?;
+            let pk = PropertyValue::from_json(commit::primary_key_def(ty)?, &entry.pk)
+                .map_err(|e| corrupt(&format!("bad primary key: {e}")))?;
+            let op = match (entry.op, &entry.payload) {
+                (EditOp::Set, Some(Value::Object(values))) => {
+                    let mut set = BTreeMap::new();
+                    for (property, json) in values {
+                        let name = PropertyName::try_from(property.clone())
+                            .map_err(|_| corrupt("bad property name"))?;
+                        let property_def =
+                            ty.properties
+                                .get(&name)
+                                .ok_or_else(|| EditError::UnknownProperty {
+                                    type_name: entry.type_name.clone(),
+                                    property: property.clone(),
+                                })?;
+                        let value = PropertyValue::from_json(property_def, json)
+                            .map_err(|e| corrupt(&format!("bad value of `{property}`: {e}")))?;
+                        set.insert(name, value);
+                    }
+                    ObjectOp::Set(set)
+                }
+                (EditOp::Unset, Some(Value::Array(names))) => {
+                    let mut unset = BTreeSet::new();
+                    for name in names {
+                        let name = name
+                            .as_str()
+                            .and_then(|text| PropertyName::try_from(text.to_owned()).ok())
+                            .ok_or_else(|| corrupt("bad property name"))?;
+                        unset.insert(name);
+                    }
+                    ObjectOp::Unset(unset)
+                }
+                (EditOp::Tombstone, None) => ObjectOp::Tombstone,
+                (EditOp::Release, None) => ObjectOp::Release,
+                _ => return Err(corrupt("the operation does not fit an object entry")),
+            };
+            Ok(Target::Object { ty, table, pk, op })
+        }
+        EntryKind::Link => {
+            let link_name =
+                LinkTypeName::try_from(entry.type_name.clone()).map_err(|_| unknown())?;
+            let (name, link_type) = def
+                .ontology
+                .link_types
+                .get_key_value(&link_name)
+                .ok_or_else(unknown)?;
+            let table = def.physical.link_table(name).ok_or_else(unknown)?;
+            let [a, b] = entry.pk.as_array().map_or(&[][..], Vec::as_slice) else {
+                return Err(corrupt("a link key is `[a, b]`"));
+            };
+            let end = |object: &ObjectTypeName, json: &Value| {
+                let ty = def.ontology.object_types.get(object).ok_or_else(|| {
+                    corrupt(&format!("the link refers to unknown type `{object}`"))
+                })?;
+                PropertyValue::from_json(commit::primary_key_def(ty)?, json)
+                    .map_err(|e| corrupt(&format!("bad link key: {e}")))
+            };
+            let op = match entry.op {
+                EditOp::LinkAdd => LinkOp::Add,
+                EditOp::LinkRemove => LinkOp::Remove,
+                _ => return Err(corrupt("the operation does not fit a link entry")),
+            };
+            Ok(Target::Link {
+                table,
+                a: end(&link_type.from.object_type, a)?,
+                b: end(&link_type.to.object_type, b)?,
+                op,
+            })
+        }
+    }
 }
 
 type HeaderRow = (i64, String, String, String, String, i64, String);

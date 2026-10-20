@@ -182,7 +182,7 @@ struct Planned<'a> {
     target: Target<'a>,
 }
 
-enum Target<'a> {
+pub(crate) enum Target<'a> {
     Object {
         ty: &'a ObjectType,
         table: &'a ObjectTable,
@@ -299,7 +299,7 @@ fn plan_edit<'a>(
     }
 }
 
-fn primary_key_def(ty: &ObjectType) -> Result<&PropertyDef, EditError> {
+pub(crate) fn primary_key_def(ty: &ObjectType) -> Result<&PropertyDef, EditError> {
     ty.properties.get(&ty.primary_key).ok_or_else(|| {
         StoreError::Corrupt(format!(
             "type `{}` has no primary key property `{}`",
@@ -357,13 +357,13 @@ fn plan_object_op(ty: &ObjectType, op: &ObjectOp) -> Result<ObjectOp, EditError>
 
 /// The state of a row as the commit sees it.
 #[derive(Debug, Clone)]
-enum RowState {
+pub(crate) enum RowState {
     Object(EditRow),
     Link(LinkRow),
 }
 
 impl RowState {
-    fn version(&self) -> i64 {
+    pub(crate) fn version(&self) -> i64 {
         match self {
             Self::Object(row) => row.version,
             Self::Link(row) => row.version,
@@ -492,7 +492,7 @@ async fn append_header(tx: &mut WriteTx<'_>, record: &NewRecord<'_>) -> Result<i
         .ok_or_else(|| StoreError::Corrupt("the edit log insert returned no seq".to_owned()))
 }
 
-fn advance(current: &RowState, target: &Target<'_>) -> Result<RowState, EditError> {
+pub(crate) fn advance(current: &RowState, target: &Target<'_>) -> Result<RowState, EditError> {
     match (current, target) {
         (RowState::Object(row), Target::Object { ty, op, .. }) => {
             next_state(Some(row), op, ty).map(RowState::Object)
@@ -557,7 +557,7 @@ fn col(name: &str) -> Alias {
 }
 
 /// Creates the version 0 row of the target when it is missing, then reads it under a row lock.
-async fn load_row(
+pub(crate) async fn load_row(
     tx: &mut WriteTx<'_>,
     schema: Option<&str>,
     target: &Target<'_>,
@@ -707,7 +707,7 @@ async fn load_link(
 }
 
 /// Writes the state a row has after its edit, with the system columns of the commit.
-async fn update_row(
+pub(crate) async fn update_row(
     tx: &mut WriteTx<'_>,
     schema: Option<&str>,
     def_version: i64,
