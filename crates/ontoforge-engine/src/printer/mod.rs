@@ -5,6 +5,7 @@
 //! here (ENGINE-03).
 
 pub mod ast;
+mod call;
 mod dialect;
 mod escape;
 pub(crate) mod sqlite_ddl;
@@ -46,6 +47,13 @@ pub enum Dialect {
 /// Prints `select` for `dialect`.
 pub fn print_select(select: &ast::Select, dialect: Dialect) -> Result<PrintedSql, PrintError> {
     dialect::print_select(select, dialect)
+}
+
+/// Prints the Trino call that makes a catalog forget the table metadata it cached:
+/// `CALL "<catalog>".system.flush_metadata_cache()`. The catalog name is the only variable part
+/// and goes through the identifier quoting.
+pub fn print_flush_metadata_cache(catalog: &str) -> Result<PrintedSql, PrintError> {
+    call::flush_metadata_cache(catalog)
 }
 
 #[cfg(test)]

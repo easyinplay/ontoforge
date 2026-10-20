@@ -1,7 +1,7 @@
 use super::ast::{
     AggregateFunc, CompareOp, Expr, Literal, MatchKind, OrderItem, Select, SelectItem,
 };
-use super::{Dialect, print_select};
+use super::{Dialect, print_flush_metadata_cache, print_select};
 use crate::TableRef;
 
 fn col(name: &str) -> Expr {
@@ -185,5 +185,35 @@ fn string_match_is_parenthesized_inside_connectives() {
     assert_eq!(
         where_text(e, Dialect::Sqlite).unwrap(),
         r#"NOT (("s" GLOB 'a*') AND ("t" IS NULL))"#
+    );
+}
+
+#[test]
+fn flush_metadata_cache_is_a_call_of_the_catalog_procedure() {
+    let sql = print_flush_metadata_cache("editstore").expect("printable");
+    assert_eq!(
+        sql.as_str(),
+        r#"CALL "editstore".system.flush_metadata_cache()"#
+    );
+}
+
+#[test]
+fn flush_metadata_cache_quotes_the_catalog() {
+    let sql = print_flush_metadata_cache("we\"ird; DROP").expect("printable");
+    assert_eq!(
+        sql.as_str(),
+        r#"CALL "we""ird; DROP".system.flush_metadata_cache()"#
+    );
+}
+
+#[test]
+fn flush_metadata_cache_rejects_an_empty_catalog() {
+    assert_eq!(
+        print_flush_metadata_cache("").unwrap_err(),
+        crate::error::PrintError::EmptyIdentifier
+    );
+    assert_eq!(
+        print_flush_metadata_cache("a\0b").unwrap_err(),
+        crate::error::PrintError::NulInIdentifier
     );
 }

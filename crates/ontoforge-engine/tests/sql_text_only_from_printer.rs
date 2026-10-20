@@ -10,7 +10,7 @@ use std::path::Path;
 use regex::Regex;
 use walkdir::WalkDir;
 
-const KEYWORDS: &str = "SELECT|WITH|INSERT|UPDATE|DELETE|CREATE|DROP|ATTACH|PRAGMA";
+const KEYWORDS: &str = "SELECT|WITH|INSERT|UPDATE|DELETE|CREATE|DROP|ATTACH|PRAGMA|CALL";
 
 /// Returns `file:line: text` for every offending line of `source`.
 fn violations(file: &str, source: &str, sql_literal: &Regex, constructor: &Regex) -> Vec<String> {
