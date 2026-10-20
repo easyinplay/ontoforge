@@ -116,6 +116,11 @@ pub struct PgTestStore {
 }
 
 impl PgTestStore {
+    /// A connection outside the store, for inspecting the database.
+    pub fn side(&self) -> &sqlx::PgPool {
+        &self.side
+    }
+
     /// Table names of `schema`, sorted.
     pub async fn tables(&self, schema: &str) -> Vec<String> {
         sqlx::query_scalar::<_, String>(
