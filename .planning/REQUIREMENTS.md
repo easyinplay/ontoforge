@@ -55,7 +55,7 @@
 - [ ] **SCOPE-06**: 定义 reload 与角色变更时，被授予某 action 的角色列集必须覆盖其 criteria 引用的列，否则报错不生效
 - [ ] **SCOPE-07**: 角色 / scope 只能经管理通道或 L3 修改并审计；ontology 定义只经部署方 reload；agent MCP 无变更工具；每个请求固定使用开始时的定义版本
 - [x] **AUTH-01**: 客户端可以用 OIDC 签发的 JWT 认证（JWKS 自动拉取与缓存）
-- [ ] **AUTH-02**: dev 模式下开发者可以用 CLI 生成本地 token，无需外部 IdP
+- [x] **AUTH-02**: dev 模式下开发者可以用 CLI 生成本地 token，无需外部 IdP
 
 ### Object set 查询（L0）
 
@@ -213,7 +213,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SCOPE-06 | Phase 3 | Pending |
 | SCOPE-07 | Phase 3 | Pending |
 | AUTH-01 | Phase 3 | Complete |
-| AUTH-02 | Phase 3 | Pending |
+| AUTH-02 | Phase 3 | Complete |
 | QUERY-01 | Phase 4 | Pending |
 | QUERY-02 | Phase 4 | Pending |
 | QUERY-03 | Phase 4 | Pending |
