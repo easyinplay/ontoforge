@@ -15,7 +15,7 @@ use ontoforge_schema::ir::{LinkTypeName, ObjectTypeName, PropertyName};
 use ontoforge_storage::commit::{
     Actor, Commit, Edit, EditError, LinkOp, ObjectOp, Receipt, SystemActor,
 };
-use ontoforge_storage::log::{EditOp, EntryKind};
+use ontoforge_storage::log::{EditOp, EntryKind, ReplayError, replay};
 use ontoforge_storage::reload::{ReloadOptions, reload};
 use ontoforge_storage::store::{Backend, EditStore};
 use ontoforge_storage::value::PropertyValue;
@@ -113,6 +113,17 @@ impl Harness {
                 pg_cells(&rows, columns.len())
             }
         }
+    }
+
+    /// A second, empty store of the same kind, with the definition of the cases loaded. Replay
+    /// rebuilds one store from the log of another.
+    pub async fn sibling(&self) -> Harness {
+        let other = match self {
+            Self::Sqlite(_) => sqlite().await,
+            Self::Pg(_) => pg().await,
+        };
+        other.load().await;
+        other
     }
 
     /// `table` as a statement names it: `"table"` on SQLite, `"schema_sys"."table"` on PostgreSQL.
@@ -247,6 +258,7 @@ backing: editOnly
 primaryKey: id
 properties:
   id: { type: integer, required: true }
+  label: { type: string }
 ---
 kind: LinkType
 apiName: gateStands
@@ -308,6 +320,38 @@ fn create_gate(def_version: i64, code: &str) -> Commit {
             set(&[("name", s("North")), ("capacity", PropertyValue::Int(120))]),
         )],
     )
+}
+
+/// A `Set` that gives every property of `Gate` but its key a value.
+fn all_values() -> ObjectOp {
+    set(&[
+        ("name", s("North")),
+        ("capacity", PropertyValue::Int(120)),
+        ("level", PropertyValue::Int(100)),
+        ("fee", PropertyValue::Decimal("12.5".to_owned())),
+        (
+            "openedAt",
+            PropertyValue::Timestamp("2026-03-29T02:30:00+02:00".to_owned()),
+        ),
+        ("closedOn", PropertyValue::Date("2026-03-29".to_owned())),
+        ("isOpen", PropertyValue::Bool(true)),
+        ("weight", PropertyValue::Double(1.5)),
+        ("tags", PropertyValue::Array(vec![s("a"), s("b, \"c\"")])),
+        (
+            "fees",
+            PropertyValue::Array(vec![
+                PropertyValue::Decimal("1".to_owned()),
+                PropertyValue::Decimal("2.5".to_owned()),
+            ]),
+        ),
+        (
+            "location",
+            PropertyValue::Geopoint {
+                lat: 52.5,
+                lon: 13.4,
+            },
+        ),
+    ])
 }
 
 async fn commit_ok(h: &Harness, commit: Commit) -> Receipt {
@@ -708,34 +752,7 @@ pub async fn two_edits_of_one_object_bump_each_version(h: &Harness) {
 
 pub async fn every_value_type_round_trips(h: &Harness) {
     let v = h.load().await;
-    let all = set(&[
-        ("name", s("North")),
-        ("capacity", PropertyValue::Int(120)),
-        ("level", PropertyValue::Int(100)),
-        ("fee", PropertyValue::Decimal("12.5".to_owned())),
-        (
-            "openedAt",
-            PropertyValue::Timestamp("2026-03-29T02:30:00+02:00".to_owned()),
-        ),
-        ("closedOn", PropertyValue::Date("2026-03-29".to_owned())),
-        ("isOpen", PropertyValue::Bool(true)),
-        ("weight", PropertyValue::Double(1.5)),
-        ("tags", PropertyValue::Array(vec![s("a"), s("b, \"c\"")])),
-        (
-            "fees",
-            PropertyValue::Array(vec![
-                PropertyValue::Decimal("1".to_owned()),
-                PropertyValue::Decimal("2.5".to_owned()),
-            ]),
-        ),
-        (
-            "location",
-            PropertyValue::Geopoint {
-                lat: 52.5,
-                lon: 13.4,
-            },
-        ),
-    ]);
+    let all = all_values();
     commit_ok(
         h,
         commit_of(v, "createGate", json!({}), vec![gate_edit("A1", all)]),
@@ -1079,6 +1096,222 @@ pub async fn append_only_rejects_sqlite_replace_writes(h: &Harness) {
 }
 
 // ---------------------------------------------------------------------------------------------
+// Replay (D-10) and repeated commits (STORE-01 idempotency)
+// ---------------------------------------------------------------------------------------------
+
+/// Every column of the edit tables the replay cases write, by table.
+const GATE_COLUMNS: &[&str] = &[
+    "code",
+    "name",
+    "name__set",
+    "capacity",
+    "capacity__set",
+    "level",
+    "level__set",
+    "fee",
+    "fee__set",
+    "opened_at",
+    "opened_at__set",
+    "closed_on",
+    "closed_on__set",
+    "is_open",
+    "is_open__set",
+    "weight",
+    "weight__set",
+    "tags",
+    "tags__set",
+    "fees",
+    "fees__set",
+    "location",
+    "location__set",
+    "of_version",
+    "of_deleted",
+    "of_released",
+    "of_def_version",
+    "of_log_seq",
+];
+const STAND_COLUMNS: &[&str] = &[
+    "id",
+    "label",
+    "label__set",
+    "of_version",
+    "of_deleted",
+    "of_released",
+    "of_def_version",
+    "of_log_seq",
+];
+const LINK_COLUMNS: &[&str] = &[
+    "a_pk",
+    "b_pk",
+    "of_version",
+    "of_deleted",
+    "of_def_version",
+    "of_log_seq",
+];
+
+fn stand_edit(id: i64, op: ObjectOp) -> Edit {
+    Edit::Object {
+        type_name: ObjectTypeName::try_from("Stand".to_owned()).expect("type name"),
+        pk: PropertyValue::Int(id),
+        op,
+    }
+}
+
+/// Five commits over two types and a link: creates, a patch of an old object, a commit with two
+/// edits of different kinds, and a commit that edits two objects.
+async fn commit_history(h: &Harness, v: i64) {
+    commit_ok(h, create_gate(v, "A1")).await;
+    commit_ok(
+        h,
+        commit_of(
+            v,
+            "createGate",
+            json!({ "code": "A2" }),
+            vec![gate_edit("A2", all_values())],
+        ),
+    )
+    .await;
+    commit_ok(
+        h,
+        commit_of(
+            v,
+            "resizeGate",
+            json!({ "code": "A1", "capacity": 90 }),
+            vec![gate_edit(
+                "A1",
+                set(&[("capacity", PropertyValue::Int(90))]),
+            )],
+        ),
+    )
+    .await;
+    commit_ok(
+        h,
+        commit_of(
+            v,
+            "assignStand",
+            json!({ "gate": "A1", "stand": 7 }),
+            vec![
+                stand_edit(7, set(&[("label", s("seven"))])),
+                Edit::Link {
+                    link: LinkTypeName::try_from("gateStands".to_owned()).expect("link name"),
+                    a: s("A1"),
+                    b: PropertyValue::Int(7),
+                    op: LinkOp::Add,
+                },
+            ],
+        ),
+    )
+    .await;
+    commit_ok(
+        h,
+        commit_of(
+            v,
+            "touchGates",
+            json!(null),
+            vec![
+                gate_edit("A1", set(&[("name", s("South"))])),
+                gate_edit("A2", set(&[("isOpen", PropertyValue::Bool(false))])),
+            ],
+        ),
+    )
+    .await;
+}
+
+pub async fn replay_rebuilds_edit_store(h: &Harness) {
+    let v = h.load().await;
+    commit_history(h, v).await;
+    let records = h.store().read_log(0, 100).await.expect("read_log");
+    assert_eq!(records.len(), 5);
+
+    let target = h.sibling().await;
+    replay(&records, target.store()).await.expect("replay");
+
+    for (table, columns) in [
+        ("of_obj_gate", GATE_COLUMNS),
+        ("of_obj_stand", STAND_COLUMNS),
+        ("of_lnk_gate_stands", LINK_COLUMNS),
+    ] {
+        let original = h.rows(Tables::Edit, table, columns, None).await;
+        let rebuilt = target.rows(Tables::Edit, table, columns, None).await;
+        assert!(!original.is_empty(), "{table} has rows to compare");
+        assert_eq!(rebuilt, original, "{table} rebuilt from the log");
+    }
+    // Replay rebuilds the edit tables only: the log and the history stay as they are.
+    let log = target.store().read_log(0, 100).await.expect("read_log");
+    assert!(log.is_empty(), "replay appended log records: {log:#?}");
+    let history = target
+        .rows(Tables::Sys, "of_edit_history", &["log_seq"], None)
+        .await;
+    assert!(history.is_empty(), "replay wrote history: {history:#?}");
+}
+
+pub async fn replay_detects_version_divergence(h: &Harness) {
+    let v = h.load().await;
+    commit_ok(h, create_gate(v, "A1")).await;
+    commit_ok(
+        h,
+        commit_of(
+            v,
+            "resizeGate",
+            json!({}),
+            vec![gate_edit(
+                "A1",
+                set(&[("capacity", PropertyValue::Int(90))]),
+            )],
+        ),
+    )
+    .await;
+    let mut records = h.store().read_log(0, 100).await.expect("read_log");
+    records[1].entries[0].version_after += 1;
+
+    let target = h.sibling().await;
+    let err = replay(&records, target.store())
+        .await
+        .expect_err("the second record claims a version the rebuilt row does not have");
+    assert!(
+        matches!(err, ReplayError::Diverged { seq: 2, ordinal: 0 }),
+        "{err:?}"
+    );
+    // A failed replay leaves the target as it was.
+    let gates = target
+        .rows(Tables::Edit, "of_obj_gate", &["code"], None)
+        .await;
+    assert!(
+        gates.is_empty(),
+        "gate rows after a failed replay: {gates:#?}"
+    );
+}
+
+pub async fn same_commit_twice_creates_two_records(h: &Harness) {
+    let v = h.load().await;
+    let commit = create_gate(v, "A1");
+    let first = commit_ok(h, commit.clone()).await;
+    let second = commit_ok(h, commit).await;
+    assert_eq!((first.seq, second.seq), (1, 2));
+    assert_ne!(first.event_id, second.event_id);
+    assert_eq!((first.versions, second.versions), (vec![1], vec![2]));
+
+    let log = h.store().read_log(0, 10).await.expect("read_log");
+    assert_eq!(
+        log.len(),
+        2,
+        "the store does not deduplicate (Phase 5 does)"
+    );
+    assert_ne!(log[0].event_id, log[1].event_id);
+    let row = h
+        .row(
+            Tables::Edit,
+            "of_obj_gate",
+            &["code", "of_version", "of_log_seq"],
+            "code",
+            "A1",
+        )
+        .await;
+    assert_eq!(row[1], text("2"));
+    assert_eq!(row[2], text("2"));
+}
+
+// ---------------------------------------------------------------------------------------------
 // Expansion
 // ---------------------------------------------------------------------------------------------
 
@@ -1111,6 +1344,9 @@ macro_rules! all_cases {
         $crate::conformance::conformance_case!($factory, append_only_rejects_update_and_delete $(, $attr)?);
         $crate::conformance::conformance_case!($factory, append_only_rejects_truncate_on_pg $(, $attr)?);
         $crate::conformance::conformance_case!($factory, append_only_rejects_sqlite_replace_writes $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, replay_rebuilds_edit_store $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, replay_detects_version_divergence $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, same_commit_twice_creates_two_records $(, $attr)?);
     };
 }
 

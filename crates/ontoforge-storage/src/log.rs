@@ -5,6 +5,7 @@
 
 use sea_query::{Alias, Expr, ExprTrait, Order, Query};
 
+use crate::commit::EditError;
 use crate::error::StoreError;
 use crate::sql_exit::{self, Built};
 use crate::store::{Backend, EditStore, WriteTx};
@@ -137,6 +138,30 @@ pub(crate) async fn append_entry(
         .to_owned();
     let built = sql_exit::build(&insert, tx);
     sql_exit::execute_built(tx, built).await.map(|_| ())
+}
+
+/// Why a replay stopped. Nothing is written to the target in any of these cases.
+#[derive(Debug, thiserror::Error)]
+pub enum ReplayError {
+    /// Applying the entry to the rebuilt row gave another version than the log recorded.
+    #[error(
+        "replaying log record {seq}, entry {ordinal}, gave a version other than the logged one"
+    )]
+    Diverged { seq: i64, ordinal: i32 },
+    #[error(transparent)]
+    Edit(#[from] EditError),
+    #[error(transparent)]
+    Store(#[from] StoreError),
+}
+
+/// Rebuilds the edit tables of `target` from `records` (D-10).
+#[allow(
+    clippy::unused_async,
+    reason = "stub of the RED commit; the real body awaits"
+)]
+pub async fn replay(records: &[LogRecord], target: &EditStore) -> Result<(), ReplayError> {
+    let _ = (records, target);
+    Err(StoreError::Config("replay is not implemented".to_owned()).into())
 }
 
 type HeaderRow = (i64, String, String, String, String, i64, String);
