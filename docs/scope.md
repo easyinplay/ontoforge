@@ -1,19 +1,18 @@
 # 授权范围（scope）规范
 
-本文档面向 ontology 作者与管理员，说明 role 里的行谓词（`rowFilter`）怎么写、怎么求值。Role / RoleBinding 与 apply 的说明在后续章节补充。
+本文档面向 ontology 作者与管理员，说明 role 里的行谓词（`rowFilter`）怎么写、怎么求值。Role / RoleBinding 与 `scope plan` / `scope apply` 见本文「Role 与 RoleBinding（roles-as-code）」一节。
 
 规则的决定记录见 `.planning/adr/0025-row-predicate-semantics.md`；实现在 `crates/ontoforge-expr/src/rowpred/`，文档与实现不一致时以测试 `crates/ontoforge-expr/tests/rowpred_subset.rs` 与 `rowpred_eval.rs` 为准。
 
 ## 行谓词（rowFilter）
 
-行谓词决定一个主体能看到某个 object type 的哪些行。它是一个 CEL 布尔表达式，写在 role 的 `grants.objectTypes.<Type>.rowFilter`：
+行谓词决定一个主体能看到某个 object type 的哪些行。它是一个 CEL 布尔表达式，写在 role 的 `objectTypes.<Type>.rowFilter`：
 
 ```yaml
-grants:
-  objectTypes:
-    Document:
-      properties: [id, title, tenantId]
-      rowFilter: "object.tenantId == principal.attrs.tenantId"
+objectTypes:
+  Document:
+    properties: [id, title, tenantId]
+    rowFilter: "object.tenantId == principal.attrs.tenantId"
 ```
 
 同一份谓词有两处执行：编译成 SQL 交给 Trino 或 SQLite，以及在 Rust 里对单行求值。两处的结果必须一致，所以行谓词只支持一个固定的 CEL 子集，并且 **null 的含义与标准 CEL 不同**（见下文「三值语义」）。
@@ -128,3 +127,96 @@ double 与 float 属性的比较只对有限值保证 Rust 与 SQL 一致。NaN 
 ### `principal.attrs` 的来源
 
 主体属性由 JWT claim 按 `ontoforge-server.toml` 的 `[auth.principal_attrs.<name>]` 映射得到，每个属性声明名字、claim 与类型（string、integer、boolean、string_list、integer_list）。行谓词在加载时按这些声明做静态类型检查，所以在请求时读到的值一定是声明的类型；不存在的值就是 null。
+
+## Role 与 RoleBinding（roles-as-code）
+
+Role 说明持有者能读什么、能做什么，RoleBinding 把 role 绑定到用户和组。两者都写成 YAML（或 JSON）文档，放在一个**与 ontology 目录分开的 scope 目录**里，用 `ontoforge scope plan` / `scope apply` 同步进系统库。可运行的例子见 `examples/scopes/aviation/`（配套的 ontology 是 `examples/ontologies/aviation/`，示例服务配置是 `examples/server/ontoforge-server.dev.toml`）。
+
+### Role
+
+```yaml
+kind: Role
+apiName: crewScheduler
+displayName: Crew scheduler
+objectTypes:
+  Flight:
+    properties: [flightId, aircraftTailNumber, scheduledDeparture, departureAirportCode]
+    rowFilter: "object.departureAirportCode in principal.attrs.homeAirports"
+actions: [assignPilot]
+toolsets: [core, full]
+```
+
+| 字段 | 含义 |
+|---|---|
+| `apiName` | role 名，camelCase，RoleBinding 用它引用 role |
+| `objectTypes.<Type>.properties` | 可读属性的白名单，必须含主键；不在表里的属性对持有者不可见 |
+| `objectTypes.<Type>.rowFilter` | 行谓词，写法见上文「行谓词」；省略表示所有行可见 |
+| `actions` | 可提交的 action type |
+| `sqlLevels` | 在隐含的 L0 之外可用的 SQL 层级（`raw`、`admin`） |
+| `l2.catalogs`、`l2.schemas` | 可直接查询的 Trino catalog 与 `catalog.schema` |
+| `toolsets` | 可用的 MCP 工具集（`core`、`full`、`sql:raw`） |
+
+role 里没有列出的类型、属性、action 一律不可见、不可用（fail-closed）。
+
+### RoleBinding
+
+```yaml
+kind: RoleBinding
+role: crewScheduler
+subjects:
+  - group: crew-schedulers
+  - user: "ontoforge-dev|mia"
+```
+
+- `group` 是 JWT 里 `groups` claim 的组名。**组成员关系不落库**，每次请求取 token 里的组；配置了多个 OIDC issuer 时组名带 issuer 前缀，写成 `<iss>|<group>`。
+- `user` 是主体 id，`<iss>|<sub>`。绑定引用的 user 不必已经登录过。
+- dev token 的组：本地开发用 `ontoforge dev-token --sub mia --groups dispatchers,crew-schedulers` 签发 token。dev token 的 issuer 固定是 `ontoforge-dev`，所以 `--sub mia` 对应 `user: "ontoforge-dev|mia"`；`--groups` 里的名字原样对应 `group:`，dev token 的组从不加 issuer 前缀。
+- 一个 role 至多一个 RoleBinding 文档。
+
+### 先预览，再写入：plan 与 apply
+
+```text
+ontoforge reload examples/ontologies/aviation --server-config examples/server/ontoforge-server.dev.toml
+ontoforge scope plan  examples/scopes/aviation --ontology examples/ontologies/aviation --server-config examples/server/ontoforge-server.dev.toml
+ontoforge scope apply examples/scopes/aviation --ontology examples/ontologies/aviation --server-config examples/server/ontoforge-server.dev.toml --plan-hash <HASH>
+```
+
+`scope plan` 只读，输出每一项变化，最后一行是 plan hash：
+
+```text
+add role dispatcher
+add binding dispatcher group dispatchers
+remove binding crewScheduler group crew-schedulers
+create index of_ix_of_obj_flight_departure_airport_code
+plan hash: 5a0c3e91d27b84f6
+```
+
+`scope apply --plan-hash <HASH>` 在系统库的一个事务里重新计算 plan，hash 与审阅过的不同就拒绝（退出码 1，什么也不写），所以审阅之后目录或系统库再变都不会被悄悄写入。没有变化的 plan 也能 apply，它仍然留一条审计。
+
+**全量同步。** apply 之后系统库里的 role 与绑定等于 scope 目录：目录里没有的 role 与绑定会被删除，plan 里逐条列出（`remove role ...`、`remove binding ...`）。空目录会删除全部 role 与绑定，plan 同样列出。plan 的输出与 hash 与 YAML 里的书写顺序无关：role 按 apiName、绑定按 (role, 种类, 主体) 排序，`properties`、`actions`、`sqlLevels`、`toolsets`、`l2` 里的列表在存储与计算 hash 前排序去重。
+
+**apply 前的离线校验。** `plan` 与 `apply` 在打开系统库之前，先对 ontology、所选 profile 的绑定和 `[auth.principal_attrs]` 做完整检查：引用的类型、属性、action 是否存在（ONT-V21），行谓词是否合法（ONT-V22，包括不能作用在 profile 声明为大小写不敏感的列上），role 持有的 action 的提交条件读到的属性是否都在白名单里（ONT-V23）。任何一条诊断都使命令以退出码 1 结束，系统库不发生任何写入，role 不会部分生效。`--ontology` 指向的定义还必须与系统库当前生效的定义一致，否则提示先运行 `ontoforge reload`。
+
+退出码：0 成功，1 诊断（scope、ontology、配置，或 plan 已变化），3 系统库不可用（ONT-V26）。
+
+**行谓词的索引。** apply 会为行谓词读到的属性建 `of_ix_<table>_<column>` 索引（已有的跳过）。索引只增不删：撤掉一个 role 不会删除索引。
+
+### 审计
+
+每次 apply 在 `of_admin_audit` 里追加一条记录：操作者、完整的 plan（JSON）、apply 前后 scope 的 hash。操作者是运行命令的 OS 用户加主机名（`<user>@<host>`）。这张表与 edit log 一样只能追加，UPDATE、DELETE（PostgreSQL 上还有 TRUNCATE）都被触发器拒绝；触发器不是针对表所有者的边界，部署时还要收回应用账号对它的改写权限。管理通道目前是部署方本机的命令行，操作者身份不经过认证。
+
+### 谁能改 role
+
+role 与绑定只能经 `scope apply` 修改：storage 里只有 `scope_store` 模块写这几张表，源码守卫测试（`scope_tables_written_only_by_scope_store`）强制这一点。后续 REST 管理端（Phase 7）对 role 只读，MCP 没有任何改动 role 的工具。
+
+### 用户记录
+
+主体首次通过认证时自动建一条 user 记录（`of_user`），只存主体 id、issuer、subject、创建时间和最近登录时间，**不存**组、claim 和任何权限。同一主体的最近登录时间在一个进程内至多每 60 秒写一次。
+
+### 多个 role 合并后的可见性
+
+主体可以同时持有多个 role（直接绑定的和经组得到的，同一个 role 经两条路径到达只算一次）。同一类型上：
+
+- **行**：任一 role 的行谓词为真，这一行就可见（OR）。没有行谓词的 role 让所有行可见。
+- **列**：一列只有在授予该列的 role 的行谓词对这一行为真时才显示值，否则该列对这一行遮蔽。所以「A 的列配 B 的行」不会发生。
+- action、SQL 层级、L2 范围和工具集取各 role 的并集。
