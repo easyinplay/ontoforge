@@ -174,8 +174,8 @@ impl From<sqlx::Error> for Refusal {
     fn from(error: sqlx::Error) -> Self {
         let code = error
             .as_database_error()
-            .and_then(|e| e.code())
-            .map(|c| c.into_owned());
+            .and_then(sqlx::error::DatabaseError::code)
+            .map(std::borrow::Cow::into_owned);
         Self {
             code,
             message: error.to_string(),

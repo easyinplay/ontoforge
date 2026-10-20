@@ -1,6 +1,6 @@
 -- The edit log and the object history of the PostgreSQL edit store (D-10, D-11; format fixed in
--- the plan 03-08 checkpoint, recorded in ADR-0026 by plan 03-09). Append-only triggers follow in
--- 03-09. Runs with `search_path` set to the system schema, like 0001.
+-- the plan 03-08 checkpoint, recorded in ADR-0026 by plan 03-09). The three tables are append only
+-- (D-12). Runs with `search_path` set to the system schema, like 0001.
 --
 -- One log record per successful commit; one entry per edit; one history snapshot per entry.
 -- JSON values are `jsonb` in the encoding of `PropertyValue::to_json`; `committed_at` is
@@ -40,3 +40,30 @@ CREATE TABLE of_edit_history (
 );
 
 CREATE INDEX of_ix_edit_history_object ON of_edit_history (type_name, pk, version);
+
+-- Append only (D-12). One trigger function refuses a rewrite with SQLSTATE 23000
+-- (integrity_constraint_violation); other append only tables (the admin audit, plan 03-16) reuse
+-- it. A statement-level trigger covers TRUNCATE, which row triggers never see. The triggers are
+-- no boundary against the table owner (`ALTER TABLE .. DISABLE TRIGGER`); deployments also REVOKE
+-- UPDATE, DELETE and TRUNCATE from the application role (ADR-0026).
+CREATE FUNCTION of_reject_mutation() RETURNS trigger
+LANGUAGE plpgsql AS $$
+BEGIN
+    RAISE EXCEPTION 'table % is append-only', TG_TABLE_NAME USING ERRCODE = '23000';
+END;
+$$;
+
+CREATE TRIGGER of_edit_log_no_update_delete BEFORE UPDATE OR DELETE ON of_edit_log
+    FOR EACH ROW EXECUTE FUNCTION of_reject_mutation();
+CREATE TRIGGER of_edit_log_no_truncate BEFORE TRUNCATE ON of_edit_log
+    FOR EACH STATEMENT EXECUTE FUNCTION of_reject_mutation();
+
+CREATE TRIGGER of_edit_log_entry_no_update_delete BEFORE UPDATE OR DELETE ON of_edit_log_entry
+    FOR EACH ROW EXECUTE FUNCTION of_reject_mutation();
+CREATE TRIGGER of_edit_log_entry_no_truncate BEFORE TRUNCATE ON of_edit_log_entry
+    FOR EACH STATEMENT EXECUTE FUNCTION of_reject_mutation();
+
+CREATE TRIGGER of_edit_history_no_update_delete BEFORE UPDATE OR DELETE ON of_edit_history
+    FOR EACH ROW EXECUTE FUNCTION of_reject_mutation();
+CREATE TRIGGER of_edit_history_no_truncate BEFORE TRUNCATE ON of_edit_history
+    FOR EACH STATEMENT EXECUTE FUNCTION of_reject_mutation();
