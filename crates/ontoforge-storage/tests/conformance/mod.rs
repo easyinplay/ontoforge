@@ -10,6 +10,7 @@
 )]
 
 use std::collections::BTreeMap;
+use std::sync::Arc;
 
 use ontoforge_schema::ir::{LinkTypeName, ObjectTypeName, PropertyName};
 use ontoforge_storage::commit::{
@@ -52,6 +53,14 @@ impl Harness {
         match self {
             Self::Sqlite(t) => &t.store,
             Self::Pg(t) => &t.store,
+        }
+    }
+
+    /// The store, shared with tasks that commit at the same time.
+    pub fn shared(&self) -> Arc<EditStore> {
+        match self {
+            Self::Sqlite(t) => Arc::clone(&t.store),
+            Self::Pg(t) => Arc::clone(&t.store),
         }
     }
 
@@ -1684,6 +1693,205 @@ pub async fn replay_rebuilds_overlay_operations(h: &Harness) {
 }
 
 // ---------------------------------------------------------------------------------------------
+// Cardinality and concurrency (STORE-05, STORE-01)
+// ---------------------------------------------------------------------------------------------
+
+/// Stand `id` takes `gate` as its foreign key to the gate.
+fn claim(def_version: i64, id: i64, gate: &str) -> Commit {
+    single(
+        def_version,
+        "claimGate",
+        stand_edit(id, set(&[("gate", s(gate))])),
+    )
+}
+
+/// The edit rows of `of_obj_stand` whose key is `id`.
+async fn stand_rows(h: &Harness, id: i64) -> usize {
+    h.rows(
+        Tables::Edit,
+        "of_obj_stand",
+        &["id"],
+        Some(("id", &id.to_string())),
+    )
+    .await
+    .len()
+}
+
+fn assert_one_to_one(err: &EditError) {
+    assert!(
+        matches!(err, EditError::CardinalityViolation { link } if link == "gateStand"),
+        "{err:?}"
+    );
+}
+
+pub async fn one_to_one_violation_is_reported(h: &Harness) {
+    let v = h.load().await;
+    commit_ok(h, claim(v, 7, "A1")).await;
+
+    let err = commit_err(h, claim(v, 8, "A1")).await;
+    assert_one_to_one(&err);
+    assert_eq!(log_len(h).await, 1, "the refused commit left no record");
+    assert_eq!(stand_rows(h, 8).await, 0, "and no edit row");
+    let history = h
+        .rows(Tables::Sys, "of_edit_history", &["log_seq"], None)
+        .await;
+    assert_eq!(history.len(), 1, "and no history");
+
+    // A deleted holder gives the key up.
+    commit_ok(h, single(v, "remove", stand_edit(7, ObjectOp::Tombstone))).await;
+    let receipt = commit_ok(h, claim(v, 8, "A1")).await;
+    assert_eq!(receipt.versions, vec![1]);
+
+    // A tombstoned object comes back only through a release, and then it claims the key like any
+    // other object: the check sees the final state of the commit.
+    let err = commit_err(
+        h,
+        commit_of(
+            v,
+            "reclaim",
+            Value::Null,
+            vec![
+                stand_edit(7, ObjectOp::Release),
+                stand_edit(7, set(&[("gate", s("A1"))])),
+            ],
+        ),
+    )
+    .await;
+    assert_one_to_one(&err);
+    assert_eq!(log_len(h).await, 3, "the refused commit left no record");
+
+    // A holder that unsets the key gives it up.
+    commit_ok(h, single(v, "release", stand_edit(7, ObjectOp::Release))).await;
+    commit_ok(h, single(v, "free", stand_edit(8, unset(&["gate"])))).await;
+    let receipt = commit_ok(h, claim(v, 7, "A1")).await;
+    assert_eq!(receipt.versions, vec![4]);
+    // So does a release: it clears the flag.
+    commit_ok(h, single(v, "release", stand_edit(7, ObjectOp::Release))).await;
+    let receipt = commit_ok(h, claim(v, 8, "A1")).await;
+    assert_eq!(receipt.versions, vec![3]);
+}
+
+pub async fn duplicate_link_add_keeps_one_live_row(h: &Harness) {
+    let v = h.load().await;
+    let add = || {
+        single(
+            v,
+            "assignStand",
+            link_edit("gateStands", s("A1"), PropertyValue::Int(7), LinkOp::Add),
+        )
+    };
+    commit_ok(h, add()).await;
+    let second = commit_ok(h, add()).await;
+    assert_eq!(second.versions, vec![2]);
+
+    let rows = h
+        .rows(
+            Tables::Edit,
+            "of_lnk_gate_stands",
+            &["a_pk", "b_pk", "of_version", "of_deleted"],
+            None,
+        )
+        .await;
+    assert_eq!(rows.len(), 1, "{rows:#?}");
+    assert_eq!(rows[0][2], text("2"));
+    assert!(!flag(&rows[0][3]));
+    assert_eq!(log_len(h).await, 2);
+}
+
+/// Two commits started at the same time on separate tasks. Both tasks wait at a barrier, so
+/// neither has begun its transaction before the other task exists.
+async fn commit_together(
+    h: &Harness,
+    first: Commit,
+    second: Commit,
+) -> (Result<Receipt, EditError>, Result<Receipt, EditError>) {
+    let barrier = Arc::new(tokio::sync::Barrier::new(2));
+    let spawn = |commit: Commit| {
+        let (store, barrier) = (h.shared(), Arc::clone(&barrier));
+        tokio::spawn(async move {
+            barrier.wait().await;
+            store.commit(commit).await
+        })
+    };
+    let (first, second) = (spawn(first), spawn(second));
+    (
+        first.await.expect("first task"),
+        second.await.expect("second task"),
+    )
+}
+
+pub async fn concurrent_commits_on_same_pk_serialize(h: &Harness) {
+    let v = h.load().await;
+    let create = |capacity: i64| {
+        single(
+            v,
+            "createGate",
+            gate_edit(
+                "A1",
+                set(&[
+                    ("name", s("North")),
+                    ("capacity", PropertyValue::Int(capacity)),
+                ]),
+            ),
+        )
+    };
+    let (first, second) = commit_together(h, create(1), create(2)).await;
+    let (first, second) = (first.expect("first"), second.expect("second"));
+
+    let mut versions = [first.versions[0], second.versions[0]];
+    versions.sort_unstable();
+    assert_eq!(
+        versions,
+        [1, 2],
+        "one creates the row, the other patches it"
+    );
+    let row = h
+        .row(
+            Tables::Edit,
+            "of_obj_gate",
+            &["code", "of_version", "of_log_seq", "capacity"],
+            "code",
+            "A1",
+        )
+        .await;
+    assert_eq!(row[1], text("2"));
+
+    let log = h.store().read_log(0, 10).await.expect("read_log");
+    let after: Vec<i64> = log.iter().map(|r| r.entries[0].version_after).collect();
+    assert_eq!(
+        after,
+        vec![1, 2],
+        "the order of seq is the order of versions"
+    );
+    let last_seq = log.last().map(|r| r.seq.to_string());
+    assert_eq!(
+        row[2], last_seq,
+        "the row carries the seq of the later commit"
+    );
+    // The later commit wrote the capacity the row holds.
+    let later = if second.versions[0] == 2 { 2 } else { 1 };
+    assert_eq!(row[3], text(&later.to_string()));
+}
+
+pub async fn concurrent_fk_claims_one_wins(h: &Harness) {
+    let v = h.load().await;
+    let (a, b) = commit_together(h, claim(v, 7, "A1"), claim(v, 8, "A1")).await;
+    let (winner, loser, err) = match (a, b) {
+        (Ok(_), Err(err)) => (7, 8, err),
+        (Err(err), Ok(_)) => (8, 7, err),
+        (a, b) => panic!("exactly one claim wins: {a:?} / {b:?}"),
+    };
+    assert_one_to_one(&err);
+    assert_eq!(stand_rows(h, winner).await, 1);
+    assert_eq!(stand_rows(h, loser).await, 0, "the loser left no edit row");
+    assert_eq!(log_len(h).await, 1, "and no log record");
+    let history = h
+        .rows(Tables::Sys, "of_edit_history", &["log_seq"], None)
+        .await;
+    assert_eq!(history.len(), 1, "and no history");
+}
+
+// ---------------------------------------------------------------------------------------------
 // Expansion
 // ---------------------------------------------------------------------------------------------
 
@@ -1725,6 +1933,10 @@ macro_rules! all_cases {
         $crate::conformance::conformance_case!($factory, link_remove_rules $(, $attr)?);
         $crate::conformance::conformance_case!($factory, log_records_every_op $(, $attr)?);
         $crate::conformance::conformance_case!($factory, replay_rebuilds_overlay_operations $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, one_to_one_violation_is_reported $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, duplicate_link_add_keeps_one_live_row $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, concurrent_commits_on_same_pk_serialize $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, concurrent_fk_claims_one_wins $(, $attr)?);
     };
 }
 

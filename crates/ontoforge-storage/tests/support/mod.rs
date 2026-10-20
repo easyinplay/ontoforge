@@ -13,7 +13,7 @@ use tempfile::TempDir;
 pub struct TestStore {
     pub dir: TempDir,
     pub path: Utf8PathBuf,
-    pub store: EditStore,
+    pub store: std::sync::Arc<EditStore>,
 }
 
 impl TestStore {
@@ -78,7 +78,11 @@ pub async fn sqlite_store() -> TestStore {
     let dir = tempfile::tempdir().expect("tempdir");
     let path = Utf8PathBuf::from_path_buf(dir.path().join("edit.db")).expect("utf8 path");
     let store = EditStore::open(settings(&path)).await.expect("open store");
-    TestStore { dir, path, store }
+    TestStore {
+        dir,
+        path,
+        store: std::sync::Arc::new(store),
+    }
 }
 
 /// Loads and checks an ontology held in memory. A manifest is added when `files` has none.
@@ -108,7 +112,7 @@ type ServerGuard = Option<std::sync::Arc<dyn std::any::Any + Send + Sync>>;
 
 /// A PostgreSQL edit store on a schema pair of its own, so tests never see each other's tables.
 pub struct PgTestStore {
-    pub store: EditStore,
+    pub store: std::sync::Arc<EditStore>,
     pub schema_edit: String,
     pub schema_sys: String,
     side: sqlx::PgPool,
@@ -227,7 +231,7 @@ pub async fn pg_store() -> PgTestStore {
         .expect("open PostgreSQL store");
     let side = sqlx::PgPool::connect(&url).await.expect("side pool");
     PgTestStore {
-        store,
+        store: std::sync::Arc::new(store),
         schema_edit,
         schema_sys,
         side,
