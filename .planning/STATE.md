@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Edit Store & Scope Model
 status: executing
-stopped_at: Completed 03-08-PLAN.md
-last_updated: "2026-10-20T03:34:07.982Z"
+stopped_at: Completed 03-10-PLAN.md
+last_updated: "2026-10-20T03:57:24.369Z"
 last_activity: 2026-10-20
 last_activity_desc: Phase 03 execution started
-state_head: 98ae1e2527c8bee46486faa216944681a14897eb
+state_head: 71f39449a871c0aee3d71aa7aba69336eb1fcb05
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 44
-  completed_plans: 33
+  completed_plans: 34
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-19)
 ## Current Position
 
 Phase: 03 (Edit Store & Scope Model) — EXECUTING
-Plan: 10 of 20
+Plan: 11 of 20
 Status: Ready to execute
 Last activity: 2026-10-20 — Phase 03 execution started
 
@@ -49,6 +49,7 @@ Progress: [██████████░░░░░░░░░░] 24/44 p
 | Phase 03 P04 | 80 min | 2 tasks | 16 files |
 | Phase 03 P11 | n/a | 3 tasks | 15 files |
 | Phase 03 P08 | ~1h | 2 tasks | 14 files |
+| Phase 03 P10 | ~1h | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -68,6 +69,7 @@ Progress: [██████████░░░░░░░░░░] 24/44 p
 - [Phase 03]: 03-07: key of another type or declared alg is UnknownKey; null attr claim reads as absent; list claim with null/foreign element rejects the token — Cross-issuer forgery with shared kid fails closed; absent attribute is invisible under D-06; ADR-0025 rule 2
 - [Phase 03]: PostgreSQL system columns share SQLite defaults (of_version/of_def_version bigint DEFAULT 0, of_deleted/of_released boolean DEFAULT false); ADR-0024 amended — One repair path (ADD COLUMN after interrupted reload) and one physical_json for both backends; no cost on PG 11+
 - [Phase 03]: 03-08: edit log format = plan layout + S1-S4 (UTC ms timestamps, SQLite edit column with space separator, JSON compared as values, committed_at from Rust); float rounded to f32 once; PG arrays bound as text[] — One canonical PropertyValue encoding for log, history and both backends; seq allocated after row locks keeps per-pk replay order
+- [Phase 03]: 03-10: removed plain indexes stay in the stored PhysicalSchema (keep_plain_indexes_of) so reload stays idempotent; index names checked schema-wide for ONT-V24
 
 ### Pending Todos
 
@@ -86,6 +88,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-20T03:34:07.852Z
-Stopped at: Completed 03-08-PLAN.md
+Last session: 2026-10-20T03:57:24.243Z
+Stopped at: Completed 03-10-PLAN.md
 Resume file: None
