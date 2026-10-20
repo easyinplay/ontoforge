@@ -272,6 +272,9 @@ pub enum MigrateError {
     PlanChanged { expected: String, actual: String },
     #[error(transparent)]
     Store(#[from] StoreError),
+    /// A lock was not free within `[store] lock_timeout_ms`; nothing was changed.
+    #[error("gave up waiting for a database lock (lock_timeout); nothing was changed")]
+    LockTimeout,
 }
 
 /// A plan together with the physical schema that results from it.

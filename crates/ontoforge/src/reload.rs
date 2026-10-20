@@ -64,6 +64,7 @@ pub fn run(args: &ReloadArgs) -> u8 {
 
     let opts = ReloadOptions {
         dry_run: args.dry_run,
+        roles: None,
     };
     match runtime.block_on(open_and_reload(settings, ontology, &opts)) {
         Ok(outcome) => {
@@ -87,7 +88,21 @@ pub fn run(args: &ReloadArgs) -> u8 {
             ));
             fail(&diagnostics, &out.sources, exit, args)
         }
+        Err(e @ ReloadError::LockTimeout) => {
+            diagnostics.push(lock_timeout_diagnostic(&e, &args.server_config));
+            fail(&diagnostics, &out.sources, EXIT_STORE, args)
+        }
     }
+}
+
+/// ONT-V26 for a lock that was not free in time. The previous definition is still active.
+pub(crate) fn lock_timeout_diagnostic(
+    error: &dyn std::fmt::Display,
+    config: &Utf8Path,
+) -> Diagnostic {
+    store_diagnostic(&error.to_string(), config).with_help(
+        "another reload, migration or scope apply, or a long write, holds a lock; retry, or raise `lock_timeout_ms` in `[store]`",
+    )
 }
 
 async fn open_and_reload(

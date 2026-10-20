@@ -20,7 +20,9 @@ use ontoforge_storage::migrate::{
 use ontoforge_storage::store::{EditStore, StoreSettings};
 
 use crate::cli::MigrateArgs;
-use crate::reload::{EXIT_STORE, store_diagnostic, store_failure, store_settings};
+use crate::reload::{
+    EXIT_STORE, lock_timeout_diagnostic, store_diagnostic, store_failure, store_settings,
+};
 use crate::render::{self, Format};
 use crate::{lint_cmd, print_rendered};
 
@@ -106,6 +108,10 @@ pub fn run(args: &MigrateArgs) -> u8 {
                 args.server_config.as_str(),
             ));
             fail(&diagnostics, &out.sources, exit, args)
+        }
+        Err(e @ MigrateError::LockTimeout) => {
+            diagnostics.push(lock_timeout_diagnostic(&e, &args.server_config));
+            fail(&diagnostics, &out.sources, EXIT_STORE, args)
         }
     }
 }

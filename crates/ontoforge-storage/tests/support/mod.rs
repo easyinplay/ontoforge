@@ -327,3 +327,96 @@ async fn embedded_url() -> (String, ServerGuard) {
         )
     )
 }
+
+// ---------------------------------------------------------------------------------------------
+// Writers that race a definition switch (plan 03-18)
+// ---------------------------------------------------------------------------------------------
+
+/// A commit that sets the string `name` of the gate `code`, validated against `def_version`.
+pub fn gate_name_commit(
+    def_version: i64,
+    code: &str,
+    name: &str,
+) -> ontoforge_storage::commit::Commit {
+    use ontoforge_storage::commit::{Actor, Commit, Edit, ObjectOp};
+    use ontoforge_storage::value::PropertyValue;
+    let values = std::collections::BTreeMap::from([(
+        ontoforge_schema::ir::PropertyName::try_from("name".to_owned()).expect("property name"),
+        PropertyValue::String(name.to_owned()),
+    )]);
+    Commit {
+        actor: Actor::Principal("test|alice".to_owned()),
+        action: "setGate".to_owned(),
+        def_version,
+        params: serde_json::json!({ "code": code }),
+        edits: vec![Edit::Object {
+            type_name: ontoforge_schema::ir::ObjectTypeName::try_from("Gate".to_owned())
+                .expect("type name"),
+            pk: PropertyValue::String(code.to_owned()),
+            op: ObjectOp::Set(values),
+        }],
+    }
+}
+
+/// What a writer saw while a definition switch ran.
+#[derive(Debug, Default)]
+pub struct WriterStats {
+    pub committed: usize,
+    /// Commits refused as `DefinitionStale`.
+    pub stale: usize,
+}
+
+/// Commits gate rows through `store`, each time against the definition version the store holds,
+/// until `switched` is set and ten more commits have gone through. A commit may only succeed or
+/// be refused as stale; anything else fails the test.
+pub async fn write_gates_across_a_switch(
+    store: std::sync::Arc<EditStore>,
+    switched: std::sync::Arc<std::sync::atomic::AtomicBool>,
+    tag: &str,
+) -> WriterStats {
+    use std::sync::atomic::Ordering;
+    let mut stats = WriterStats::default();
+    let mut after_switch = 0;
+    let mut i = 0_usize;
+    loop {
+        let version = store
+            .active_definition()
+            .await
+            .expect("a definition is loaded")
+            .def_version;
+        match store
+            .commit(gate_name_commit(version, &format!("{tag}{i}"), "North"))
+            .await
+        {
+            Ok(_) => stats.committed += 1,
+            Err(ontoforge_storage::commit::EditError::DefinitionStale { .. }) => stats.stale += 1,
+            Err(other) => panic!("a commit may only succeed or be stale, got {other:?}"),
+        }
+        i += 1;
+        if switched.load(Ordering::SeqCst) {
+            after_switch += 1;
+            if after_switch >= 10 {
+                return stats;
+            }
+        }
+        tokio::task::yield_now().await;
+    }
+}
+
+/// The definition version of every log record in `seq` order never goes back: no write under the
+/// old definition is ordered after a write under the new one.
+pub async fn assert_log_versions_never_go_back(store: &EditStore) -> Vec<i64> {
+    let mut versions = Vec::new();
+    let mut after = 0;
+    loop {
+        let page = store.read_log(after, 500).await.expect("read_log");
+        let Some(last) = page.last() else { break };
+        after = last.seq;
+        versions.extend(page.iter().map(|record| record.def_version));
+    }
+    assert!(
+        versions.windows(2).all(|pair| pair[0] <= pair[1]),
+        "log records under an old definition after one under the new: {versions:?}"
+    );
+    versions
+}

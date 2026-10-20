@@ -709,3 +709,45 @@ async fn pg_audit_is_append_only_and_login_is_recorded() {
     t.store.record_login(&alice).await.expect("second login");
     assert_eq!(pg_count(&t, "of_user").await, 1);
 }
+
+/// Two processes apply the same reviewed plan at the same moment (carried over from plan 03-16:
+/// the advisory lock was never raced). Exactly one writes and is audited; the other re-plans under
+/// the lock, finds the store already changed and is refused.
+#[tokio::test(flavor = "multi_thread")]
+#[ignore = "needs ONTOFORGE_PG_URL or --features embedded-pg"]
+async fn pg_concurrent_scope_apply_serializes() {
+    for round in 0..3 {
+        let t = pg_store().await;
+        let ontology = aviation();
+        reload(&t.store, &ontology, &ReloadOptions::default())
+            .await
+            .expect("reload aviation");
+        let scope = aviation_scope();
+        let props = row_filter_properties(&ontology, &scope);
+        let plan = t.store.scope_plan(&scope, &props).await.expect("plan");
+
+        let other = std::sync::Arc::new(t.open_another(Duration::from_secs(5)).await);
+        let results = tokio::join!(
+            {
+                let store = std::sync::Arc::clone(&t.store);
+                let (scope, props, hash) = (scope.clone(), props.clone(), plan.hash.clone());
+                tokio::spawn(async move { store.scope_apply(&scope, &props, &hash, ACTOR).await })
+            },
+            {
+                let store = std::sync::Arc::clone(&other);
+                let (scope, props, hash) = (scope.clone(), props.clone(), plan.hash.clone());
+                tokio::spawn(async move { store.scope_apply(&scope, &props, &hash, ACTOR).await })
+            },
+        );
+        let results = [results.0.expect("join"), results.1.expect("join")];
+        let applied = results.iter().filter(|r| r.is_ok()).count();
+        let refused = results
+            .iter()
+            .filter(|r| matches!(r, Err(ScopeApplyError::PlanChanged { .. })))
+            .count();
+        assert_eq!((applied, refused), (1, 1), "round {round}: {results:?}");
+        assert_eq!(pg_count(&t, "of_role").await, 3, "round {round}");
+        assert_eq!(pg_count(&t, "of_role_binding").await, 3, "round {round}");
+        assert_eq!(pg_count(&t, "of_admin_audit").await, 1, "round {round}");
+    }
+}

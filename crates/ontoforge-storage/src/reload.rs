@@ -6,11 +6,12 @@
 //! refuses with `ONT-V25` when the change is destructive. The two-step switch (pending, Trino
 //! visibility probe, active) and the reload lock come with plan 03-18.
 
+use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use chrono::{SecondsFormat, Utc};
 use ontoforge_schema::diag::Diagnostic;
-use ontoforge_schema::ir::{Cardinality, Ontology};
+use ontoforge_schema::ir::{AttrType, Cardinality, Ontology, ProfileName};
 
 use crate::ddl::{self, DdlStep};
 use crate::diff::{DestructiveChange, diff};
@@ -21,10 +22,22 @@ use crate::physical::{IndexKind, PhysicalSchema};
 use crate::sql_exit;
 use crate::store::{ActiveDefinition, EditStore, WriteTx};
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct ReloadOptions {
     /// Return the DDL that would run and change nothing.
     pub dry_run: bool,
+    /// Check the roles in the store against the new definition first (D-18, SCOPE-06).
+    pub roles: Option<RolesCheck>,
+}
+
+/// What the role check of a reload needs besides the new definition: the declared principal
+/// attributes (`[auth.principal_attrs]`) and the selected profile, the inputs `compile_scope`
+/// takes.
+#[derive(Debug, Clone, Default)]
+pub struct RolesCheck {
+    pub attrs: BTreeMap<String, AttrType>,
+    /// `None` falls back to the manifest's default profile.
+    pub profile: Option<ProfileName>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -47,6 +60,9 @@ pub enum ReloadError {
     Definition(Vec<Diagnostic>),
     #[error(transparent)]
     Store(#[from] StoreError),
+    /// A lock was not free within `[store] lock_timeout_ms`; the previous definition stays.
+    #[error("gave up waiting for a database lock (lock_timeout); the previous definition stays")]
+    LockTimeout,
 }
 
 /// Brings the edit tables in line with `ontology`.

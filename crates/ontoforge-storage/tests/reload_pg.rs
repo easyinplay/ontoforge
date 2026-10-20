@@ -14,7 +14,10 @@ use std::time::Duration;
 
 use ontoforge_schema::ir::{ObjectTypeName, Ontology, PropertyName};
 use ontoforge_storage::commit::{Actor, Commit, Edit, EditError, ObjectOp};
-use ontoforge_storage::reload::{ReloadOptions, reload};
+use ontoforge_storage::error::StoreError;
+use ontoforge_storage::migrate::{MigrateError, apply_migration, plan_migration};
+use ontoforge_storage::reload::{ReloadError, ReloadOptions, reload};
+use ontoforge_storage::scope_store::ScopeApplyError;
 use ontoforge_storage::value::PropertyValue;
 use support::{ontology_from, pg_store};
 
@@ -377,4 +380,225 @@ async fn in_flight_commit_blocks_switch_on_pg() {
         .commit(gate_commit(2, "A1", "North"))
         .await
         .expect("a write for the new definition goes through");
+}
+
+// ---------------------------------------------------------------------------------------------
+// Lock timeout, single flight and writers racing a switch (plan 03-18 task 2)
+// ---------------------------------------------------------------------------------------------
+
+/// The advisory lock key `reload`, `migrate` and `scope apply` share (`sql_exit::DEFINITION_LOCK_KEY`;
+/// the bytes spell `ontoforg`). A test holds it to stand in for "another definition change is
+/// running".
+const DEFINITION_LOCK_KEY: i64 = 0x6f6e_746f_666f_7267;
+
+#[tokio::test(flavor = "multi_thread")]
+#[ignore = "needs ONTOFORGE_PG_URL or --features embedded-pg"]
+async fn lock_timeout_keeps_old_definition() {
+    let t = pg_store().await;
+    reload(&t.store, &base(), &ReloadOptions::default())
+        .await
+        .expect("v1");
+    let impatient = t.open_another(Duration::from_millis(200)).await;
+
+    // Another connection holds the table: adding a column has to wait for it.
+    let mut blocker = t.side().begin().await.expect("begin");
+    let lock = format!(
+        "LOCK TABLE \"{}\".of_obj_gate IN ACCESS EXCLUSIVE MODE",
+        t.schema_edit
+    );
+    sqlx::query(sqlx::AssertSqlSafe(lock))
+        .execute(&mut *blocker)
+        .await
+        .expect("lock the table");
+
+    let started = std::time::Instant::now();
+    let result = tokio::time::timeout(
+        Duration::from_secs(5),
+        reload(&impatient, &with_zone(), &ReloadOptions::default()),
+    )
+    .await
+    .expect("reload gives up within lock_timeout");
+    assert!(
+        matches!(result, Err(ReloadError::LockTimeout)),
+        "{result:?}"
+    );
+    assert!(
+        started.elapsed() < Duration::from_secs(3),
+        "gave up after lock_timeout, not after {:?}",
+        started.elapsed()
+    );
+    assert_eq!(t.active_version().await, 1, "the old definition stays");
+    assert_eq!(t.version_rows().await, 1);
+    assert!(
+        !t.columns(&t.schema_edit, "of_obj_gate")
+            .await
+            .contains(&"zone".to_owned()),
+        "the DDL was rolled back"
+    );
+    assert_eq!(
+        impatient.active_definition().await.map(|a| a.def_version),
+        Some(1)
+    );
+
+    // migrate takes the same path: the same lock, the same timeout.
+    let active = impatient.active_definition().await.expect("active");
+    let plan = plan_migration(&active, &with_zone(), &[]).expect("plan");
+    let migrated = tokio::time::timeout(
+        Duration::from_secs(5),
+        apply_migration(&impatient, &with_zone(), &[], &plan.hash),
+    )
+    .await
+    .expect("migrate gives up within lock_timeout");
+    assert!(
+        matches!(migrated, Err(MigrateError::LockTimeout)),
+        "{migrated:?}"
+    );
+    assert_eq!(t.active_version().await, 1);
+
+    // Once the table is free the same reload goes through.
+    blocker.rollback().await.expect("release");
+    let out = reload(&impatient, &with_zone(), &ReloadOptions::default())
+        .await
+        .expect("reload after the lock was released");
+    assert_eq!(out.def_version, Some(2));
+}
+
+#[tokio::test(flavor = "multi_thread")]
+#[ignore = "needs ONTOFORGE_PG_URL or --features embedded-pg"]
+async fn definition_lock_is_shared_and_bounded_by_lock_timeout() {
+    let t = pg_store().await;
+    reload(&t.store, &base(), &ReloadOptions::default())
+        .await
+        .expect("v1");
+    let impatient = t.open_another(Duration::from_millis(200)).await;
+    let active = impatient.active_definition().await.expect("active");
+    let plan = plan_migration(&active, &with_zone(), &[]).expect("migration plan");
+    let scope = ontoforge_schema::ir::ScopeSet::default();
+    let props = BTreeMap::new();
+    let scope_plan = impatient
+        .scope_plan(&scope, &props)
+        .await
+        .expect("scope plan");
+
+    // Something else is changing the definition.
+    let mut holder = t.side().begin().await.expect("begin");
+    sqlx::query("SELECT pg_advisory_xact_lock($1)")
+        .bind(DEFINITION_LOCK_KEY)
+        .execute(&mut *holder)
+        .await
+        .expect("hold the definition lock");
+
+    let within = Duration::from_secs(5);
+    let reloaded = tokio::time::timeout(
+        within,
+        reload(&impatient, &with_zone(), &ReloadOptions::default()),
+    )
+    .await
+    .expect("reload gives up within lock_timeout");
+    assert!(
+        matches!(reloaded, Err(ReloadError::LockTimeout)),
+        "{reloaded:?}"
+    );
+    let migrated = tokio::time::timeout(
+        within,
+        apply_migration(&impatient, &with_zone(), &[], &plan.hash),
+    )
+    .await
+    .expect("migrate gives up within lock_timeout");
+    assert!(
+        matches!(migrated, Err(MigrateError::LockTimeout)),
+        "{migrated:?}"
+    );
+    let applied = tokio::time::timeout(
+        within,
+        impatient.scope_apply(&scope, &props, &scope_plan.hash, "tester@testhost"),
+    )
+    .await
+    .expect("scope apply gives up within lock_timeout");
+    assert!(
+        matches!(
+            &applied,
+            Err(ScopeApplyError::Store(StoreError::Query { sqlstate: Some(code), .. })) if code == "55P03"
+        ),
+        "{applied:?}"
+    );
+    assert_eq!(t.active_version().await, 1);
+
+    holder.rollback().await.expect("release");
+    reload(&impatient, &with_zone(), &ReloadOptions::default())
+        .await
+        .expect("reload once the lock is free");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+#[ignore = "needs ONTOFORGE_PG_URL or --features embedded-pg"]
+async fn concurrent_reloads_single_flight_on_pg() {
+    for round in 0..3 {
+        let t = pg_store().await;
+        reload(&t.store, &base(), &ReloadOptions::default())
+            .await
+            .expect("v1");
+        let other = std::sync::Arc::new(t.open_another(Duration::from_secs(5)).await);
+        let a = std::sync::Arc::clone(&t.store);
+        let b = std::sync::Arc::clone(&other);
+        let (first, second) = tokio::join!(
+            tokio::spawn(async move { reload(&a, &with_zone(), &ReloadOptions::default()).await }),
+            tokio::spawn(async move { reload(&b, &with_zone(), &ReloadOptions::default()).await }),
+        );
+        let first = first.expect("join").expect("first reload");
+        let second = second.expect("join").expect("second reload");
+        assert_eq!(
+            [first.changed, second.changed]
+                .iter()
+                .filter(|changed| **changed)
+                .count(),
+            1,
+            "round {round}: exactly one reload changes the definition: {first:?} {second:?}"
+        );
+        assert_eq!(first.def_version, Some(2), "round {round}");
+        assert_eq!(second.def_version, Some(2), "round {round}");
+        assert_eq!(t.version_rows().await, 2, "round {round}: one new version");
+        assert_eq!(t.active_version().await, 2, "round {round}");
+        for store in [&t.store, &other] {
+            assert_eq!(
+                store.active_definition().await.map(|a| a.def_version),
+                Some(2),
+                "round {round}"
+            );
+        }
+    }
+}
+
+#[tokio::test(flavor = "multi_thread")]
+#[ignore = "needs ONTOFORGE_PG_URL or --features embedded-pg"]
+async fn reload_racing_commits_never_lets_an_old_write_through_on_pg() {
+    for round in 0..3 {
+        let t = pg_store().await;
+        reload(&t.store, &base(), &ReloadOptions::default())
+            .await
+            .expect("v1");
+        let writer = std::sync::Arc::new(t.open_another(Duration::from_secs(5)).await);
+        let switched = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+        let task = tokio::spawn(support::write_gates_across_a_switch(
+            std::sync::Arc::clone(&writer),
+            std::sync::Arc::clone(&switched),
+            "G",
+        ));
+        tokio::time::sleep(Duration::from_millis(300)).await;
+        let out = reload(&t.store, &with_zone(), &ReloadOptions::default())
+            .await
+            .expect("v2");
+        assert_eq!(out.def_version, Some(2), "round {round}");
+        switched.store(true, std::sync::atomic::Ordering::SeqCst);
+        let stats = task.await.expect("the writer finishes");
+
+        assert!(stats.committed >= 10, "round {round}: {stats:?}");
+        assert!(stats.stale >= 1, "round {round}: {stats:?}");
+        let versions = support::assert_log_versions_never_go_back(&t.store).await;
+        assert_eq!(versions.len(), stats.committed, "round {round}");
+        assert!(
+            versions.contains(&1) && versions.contains(&2),
+            "round {round}: {versions:?}"
+        );
+    }
 }

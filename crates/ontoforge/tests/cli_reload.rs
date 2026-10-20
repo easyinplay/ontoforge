@@ -143,3 +143,153 @@ fn json_output() {
         "{result}"
     );
 }
+
+// ---------------------------------------------------------------------------------------------
+// Roles that a new definition would break (plan 03-18, D-18, SCOPE-06)
+// ---------------------------------------------------------------------------------------------
+
+const AVIATION_SCOPE: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../examples/scopes/aviation"
+);
+const DEV_CONFIG: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../examples/server/ontoforge-server.dev.toml"
+);
+const DEV_STORE_PATH: &str = "../../target/ontoforge-dev/editstore.db";
+
+/// A copy of `from` below `to`.
+fn copy_dir(from: &Path, to: &Path) {
+    std::fs::create_dir_all(to).expect("create dir");
+    for entry in std::fs::read_dir(from).expect("read dir") {
+        let entry = entry.expect("entry");
+        let target = to.join(entry.file_name());
+        if entry.file_type().expect("file type").is_dir() {
+            copy_dir(&entry.path(), &target);
+        } else {
+            std::fs::copy(entry.path(), target).expect("copy");
+        }
+    }
+}
+
+/// The number the one-column query `sql` returns from the SQLite file `db`.
+fn scalar(db: &Path, sql: &str) -> i64 {
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .expect("runtime");
+    runtime.block_on(async {
+        let options = sqlx::sqlite::SqliteConnectOptions::new().filename(db);
+        let pool = sqlx::SqlitePool::connect_with(options).await.expect("pool");
+        sqlx::query_scalar::<_, i64>(sqlx::AssertSqlSafe(sql.to_owned()))
+            .fetch_one(&pool)
+            .await
+            .expect("scalar")
+    })
+}
+
+#[test]
+fn reload_reports_role_breakage() {
+    // The example server configuration declares `homeAirports`, which crewScheduler reads.
+    let dir = tempfile::tempdir().expect("tempdir");
+    let text = std::fs::read_to_string(DEV_CONFIG).expect("example server config");
+    assert!(
+        text.contains(DEV_STORE_PATH),
+        "the example store path moved"
+    );
+    std::fs::write(
+        dir.path().join("ontoforge-server.toml"),
+        text.replace(DEV_STORE_PATH, "edit.db"),
+    )
+    .expect("write config");
+    let config_path = config_of(&dir);
+    let config = config_path.to_str().expect("utf-8 path");
+    let db = dir.path().join("edit.db");
+
+    let first = reload(AVIATION, &config_path, &[]);
+    assert_eq!(first.status.code(), Some(0), "stderr: {}", stderr(&first));
+    let plan = ontoforge(&[
+        "scope",
+        "plan",
+        AVIATION_SCOPE,
+        "--ontology",
+        AVIATION,
+        "--server-config",
+        config,
+    ]);
+    assert_eq!(plan.status.code(), Some(0), "stderr: {}", stderr(&plan));
+    let hash = stdout(&plan)
+        .lines()
+        .find_map(|line| line.strip_prefix("plan hash: "))
+        .expect("a plan hash")
+        .trim()
+        .to_owned();
+    let apply = ontoforge(&[
+        "scope",
+        "apply",
+        AVIATION_SCOPE,
+        "--ontology",
+        AVIATION,
+        "--server-config",
+        config,
+        "--plan-hash",
+        &hash,
+    ]);
+    assert_eq!(apply.status.code(), Some(0), "stderr: {}", stderr(&apply));
+
+    // A definition under which `delayFlight` reads `Flight.gate`, a column the dispatcher role
+    // does not grant.
+    let changed = tempfile::tempdir().expect("tempdir");
+    copy_dir(Path::new(AVIATION), changed.path());
+    for (file, from, to) in [
+        (
+            "objects.yaml",
+            "  delayMinutes: { type: integer, displayName: Delay in minutes }",
+            "  delayMinutes: { type: integer, displayName: Delay in minutes }\n  gate: { type: string, displayName: Gate }",
+        ),
+        (
+            "actions.yaml",
+            "objects.flight.status != 'CANCELLED'",
+            "objects.flight.gate != 'X'",
+        ),
+    ] {
+        let path = changed.path().join(file);
+        let text = std::fs::read_to_string(&path).expect("read");
+        assert!(text.contains(from), "{file} lost `{from}`");
+        std::fs::write(&path, text.replace(from, to)).expect("write");
+    }
+    let broken = reload(
+        changed.path().to_str().expect("utf-8 path"),
+        &config_path,
+        &[],
+    );
+    assert_eq!(broken.status.code(), Some(1), "stderr: {}", stderr(&broken));
+    assert!(stdout(&broken).contains("ONT-V23"), "{}", stdout(&broken));
+    assert!(
+        stdout(&broken).contains("dispatcher"),
+        "the role is named: {}",
+        stdout(&broken)
+    );
+    assert_eq!(
+        scalar(&db, "SELECT count(*) FROM of_def_version"),
+        1,
+        "no definition version was recorded"
+    );
+    assert_eq!(
+        scalar(
+            &db,
+            "SELECT count(*) FROM pragma_table_info('of_obj_flight') WHERE name = 'gate'"
+        ),
+        0,
+        "no DDL ran"
+    );
+
+    // The unchanged example definition still reloads against the stored roles.
+    let again = reload(AVIATION, &config_path, &[]);
+    assert_eq!(again.status.code(), Some(0), "stderr: {}", stderr(&again));
+    assert!(
+        stderr(&again).contains("definitions unchanged"),
+        "{}",
+        stderr(&again)
+    );
+}

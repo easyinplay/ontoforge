@@ -5,9 +5,9 @@ mod support;
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use ontoforge_schema::ir::{ObjectTypeName, Ontology, PropertyName};
+use ontoforge_schema::ir::{AttrType, ObjectTypeName, Ontology, PropertyName};
 use ontoforge_storage::commit::{Actor, Commit, Edit, EditError, ObjectOp};
-use ontoforge_storage::reload::{ReloadError, ReloadOptions, reload};
+use ontoforge_storage::reload::{ReloadError, ReloadOptions, RolesCheck, reload};
 use ontoforge_storage::value::PropertyValue;
 use support::{ontology_from, sqlite_store};
 
@@ -265,9 +265,16 @@ async fn destructive_changes_are_rejected() {
 #[tokio::test(flavor = "multi_thread")]
 async fn dry_run_changes_nothing() {
     let t = sqlite_store().await;
-    let out = reload(&t.store, &base(), &ReloadOptions { dry_run: true })
-        .await
-        .expect("dry run");
+    let out = reload(
+        &t.store,
+        &base(),
+        &ReloadOptions {
+            dry_run: true,
+            ..ReloadOptions::default()
+        },
+    )
+    .await
+    .expect("dry run");
     assert!(out.changed);
     assert!(!out.ddl.is_empty());
     assert!(out.ddl.iter().any(|sql| sql.contains("of_obj_gate")));
@@ -865,4 +872,265 @@ async fn writer_without_a_loaded_definition_follows_the_database() {
         writer.active_definition().await.map(|a| a.def_version),
         Some(1)
     );
+}
+
+// ---------------------------------------------------------------------------------------------
+// Single flight, roles and row predicate indexes (plan 03-18 task 2)
+// ---------------------------------------------------------------------------------------------
+
+const AVIATION_DIR: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../examples/ontologies/aviation"
+);
+const AVIATION_SCOPE: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../examples/scopes/aviation"
+);
+
+fn roles_check() -> RolesCheck {
+    RolesCheck {
+        attrs: BTreeMap::from([("homeAirports".to_owned(), AttrType::StringList)]),
+        profile: None,
+    }
+}
+
+fn with_roles() -> ReloadOptions {
+    ReloadOptions {
+        roles: Some(roles_check()),
+        ..ReloadOptions::default()
+    }
+}
+
+/// Applies the aviation scope to a store that follows the aviation definition.
+async fn apply_aviation_scope(t: &support::TestStore, ontology: &Ontology) {
+    let out = ontoforge_schema::load_scope_dir(camino::Utf8Path::new(AVIATION_SCOPE));
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+    let scope = out.scope.expect("aviation scope");
+    let check = roles_check();
+    let compiled = ontoforge_auth::scope::compile_scope(&ontoforge_auth::scope::ScopeInputs {
+        ontology,
+        profile: None,
+        attrs: &check.attrs,
+        scope: &scope,
+        sources: None,
+    })
+    .unwrap_or_else(|d| panic!("{d:#?}"));
+    let props = compiled.row_filter_properties();
+    let plan = t.store.scope_plan(&scope, &props).await.expect("plan");
+    t.store
+        .scope_apply(&scope, &props, &plan.hash, "tester@testhost")
+        .await
+        .expect("apply");
+}
+
+/// The aviation definition with a nullable `Flight.gate`, and `delayFlight` checking it in its
+/// submission criteria. The `dispatcher` role grants `delayFlight` but not the column.
+fn aviation_checking_gate() -> Ontology {
+    fn copy(from: &std::path::Path, to: &std::path::Path) {
+        std::fs::create_dir_all(to).expect("create dir");
+        for entry in std::fs::read_dir(from).expect("read dir") {
+            let entry = entry.expect("entry");
+            let target = to.join(entry.file_name());
+            if entry.file_type().expect("file type").is_dir() {
+                copy(&entry.path(), &target);
+            } else {
+                std::fs::copy(entry.path(), target).expect("copy");
+            }
+        }
+    }
+    let dir = tempfile::tempdir().expect("tempdir");
+    copy(std::path::Path::new(AVIATION_DIR), dir.path());
+    let patch = |file: &str, from: &str, to: &str| {
+        let path = dir.path().join(file);
+        let text = std::fs::read_to_string(&path).expect("read");
+        assert!(text.contains(from), "{file} lost `{from}`");
+        std::fs::write(&path, text.replace(from, to)).expect("write");
+    };
+    patch(
+        "objects.yaml",
+        "  delayMinutes: { type: integer, displayName: Delay in minutes }",
+        "  delayMinutes: { type: integer, displayName: Delay in minutes }\n  gate: { type: string, displayName: Gate }",
+    );
+    patch(
+        "actions.yaml",
+        "objects.flight.status != 'CANCELLED'",
+        "objects.flight.gate != 'X'",
+    );
+    let root = camino::Utf8Path::from_path(dir.path()).expect("utf-8 path");
+    let out = ontoforge_schema::load_dir(root);
+    out.ontology
+        .unwrap_or_else(|| panic!("{:#?}", out.diagnostics))
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn concurrent_reloads_single_flight() {
+    for round in 0..5 {
+        let t = sqlite_store().await;
+        reload(&t.store, &base(), &ReloadOptions::default())
+            .await
+            .expect("v1");
+        // Two processes: separate stores, separate in-memory definitions, one database file.
+        let other = std::sync::Arc::new(t.reopen().await);
+        let a = std::sync::Arc::clone(&t.store);
+        let b = std::sync::Arc::clone(&other);
+        let (first, second) = tokio::join!(
+            tokio::spawn(async move { reload(&a, &with_zone(), &ReloadOptions::default()).await }),
+            tokio::spawn(async move { reload(&b, &with_zone(), &ReloadOptions::default()).await }),
+        );
+        let first = first.expect("join").expect("first reload");
+        let second = second.expect("join").expect("second reload");
+        assert_eq!(
+            [first.changed, second.changed]
+                .iter()
+                .filter(|changed| **changed)
+                .count(),
+            1,
+            "round {round}: exactly one reload changes the definition: {first:?} {second:?}"
+        );
+        assert_eq!(first.def_version, Some(2), "round {round}");
+        assert_eq!(second.def_version, Some(2), "round {round}");
+        assert_eq!(t.version_rows().await, 2, "round {round}: one new version");
+        assert_eq!(t.active_version().await, 2, "round {round}");
+        let gate = t.columns("of_obj_gate").await;
+        assert_eq!(
+            gate.iter().filter(|c| *c == "zone").count(),
+            1,
+            "round {round}: the column was added once"
+        );
+        for store in [&t.store, &other] {
+            assert_eq!(
+                store.active_definition().await.map(|a| a.def_version),
+                Some(2),
+                "round {round}: both processes follow the new definition"
+            );
+        }
+    }
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn reload_rechecks_applied_roles() {
+    let t = sqlite_store().await;
+    let aviation = aviation();
+    reload(&t.store, &aviation, &with_roles())
+        .await
+        .expect("v1 with roles");
+    apply_aviation_scope(&t, &aviation).await;
+    let flight_before = t.columns("of_obj_flight").await;
+
+    let result = reload(&t.store, &aviation_checking_gate(), &with_roles()).await;
+    let Err(ReloadError::Definition(diagnostics)) = result else {
+        panic!("expected a definition error, got {result:?}");
+    };
+    assert!(!diagnostics.is_empty());
+    assert!(
+        diagnostics.iter().all(|d| d.code == "ONT-V23"),
+        "{diagnostics:#?}"
+    );
+    assert!(
+        diagnostics
+            .iter()
+            .any(|d| d.message.contains("dispatcher") && d.message.contains("Flight")),
+        "the diagnostic names the role and the type: {diagnostics:#?}"
+    );
+    assert_eq!(
+        t.columns("of_obj_flight").await,
+        flight_before,
+        "no DDL ran"
+    );
+    assert_eq!(t.active_version().await, 1);
+    assert_eq!(t.version_rows().await, 1);
+    assert_eq!(
+        t.store.active_definition().await.map(|a| a.def_version),
+        Some(1)
+    );
+
+    // Without the role check the very same definition goes through: the roles stopped it.
+    let out = reload(
+        &t.store,
+        &aviation_checking_gate(),
+        &ReloadOptions::default(),
+    )
+    .await
+    .expect("without the role check");
+    assert_eq!(out.def_version, Some(2));
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn reload_creates_row_filter_indexes() {
+    const INDEX: &str = "of_ix_of_obj_flight_departure_airport_code";
+    let t = sqlite_store().await;
+    let aviation = aviation();
+    reload(&t.store, &aviation, &with_roles())
+        .await
+        .expect("v1 with roles");
+    apply_aviation_scope(&t, &aviation).await;
+    let names = |flight: Vec<(String, bool)>| -> Vec<String> {
+        flight.into_iter().map(|(name, _)| name).collect()
+    };
+    assert!(names(index_list(&t, "of_obj_flight").await).contains(&INDEX.to_owned()));
+
+    let pool = t.side_pool().await;
+    sqlx::query(sqlx::AssertSqlSafe(format!("DROP INDEX {INDEX}")))
+        .execute(&pool)
+        .await
+        .expect("drop the index");
+    assert!(!names(index_list(&t, "of_obj_flight").await).contains(&INDEX.to_owned()));
+
+    let out = reload(&t.store, &aviation, &with_roles())
+        .await
+        .expect("reload with unchanged definition");
+    assert!(!out.changed, "an index is not a new definition version");
+    assert_eq!(out.def_version, Some(1));
+    assert_eq!(out.ddl.len(), 1, "{:#?}", out.ddl);
+    assert!(out.ddl[0].contains(INDEX), "{}", out.ddl[0]);
+    assert!(names(index_list(&t, "of_obj_flight").await).contains(&INDEX.to_owned()));
+    assert_eq!(t.version_rows().await, 1);
+
+    let again = reload(&t.store, &aviation, &with_roles())
+        .await
+        .expect("again");
+    assert!(!again.changed);
+    assert!(again.ddl.is_empty(), "{:#?}", again.ddl);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn reload_racing_commits_never_lets_an_old_write_through() {
+    for round in 0..3 {
+        let t = sqlite_store().await;
+        reload(&t.store, &base(), &ReloadOptions::default())
+            .await
+            .expect("v1");
+        // Another process that writes while this one reloads.
+        let writer = std::sync::Arc::new(t.reopen().await);
+        let switched = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+        let task = tokio::spawn(support::write_gates_across_a_switch(
+            std::sync::Arc::clone(&writer),
+            std::sync::Arc::clone(&switched),
+            "G",
+        ));
+        tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+        let out = reload(&t.store, &with_zone(), &ReloadOptions::default())
+            .await
+            .expect("v2");
+        assert_eq!(out.def_version, Some(2), "round {round}");
+        switched.store(true, std::sync::atomic::Ordering::SeqCst);
+        let stats = task.await.expect("the writer finishes");
+
+        assert!(stats.committed >= 10, "round {round}: {stats:?}");
+        assert!(
+            stats.stale >= 1,
+            "round {round}: the writer's first commit after the switch is refused: {stats:?}"
+        );
+        let versions = support::assert_log_versions_never_go_back(&t.store).await;
+        assert_eq!(versions.len(), stats.committed, "round {round}");
+        assert!(
+            versions.contains(&1) && versions.contains(&2),
+            "round {round}: writes happened on both sides of the switch: {versions:?}"
+        );
+        assert_eq!(
+            count(&t, "of_obj_gate").await,
+            i64::try_from(stats.committed).expect("fits"),
+            "round {round}"
+        );
+    }
 }
