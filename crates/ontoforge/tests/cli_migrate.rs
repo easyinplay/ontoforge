@@ -168,3 +168,168 @@ fn plan_and_apply_are_exclusive_and_one_is_required() {
     let both = ws.run("migrate", &["--plan", "--apply", "--plan-hash", "x"]);
     assert_eq!(both.status.code(), Some(2), "{}", stderr(&both));
 }
+
+const GATE_WITH_SEATS: &str = "kind: ObjectType\napiName: Gate\nbacking: editOnly\nprimaryKey: code\nproperties:\n  code: { type: string, required: true }\n  name: { type: string }\n  seats: { type: integer }\n";
+
+#[test]
+fn rename_declaration_moves_the_column() {
+    let ws = Workspace::new(GATE_WITH_CAPACITY);
+    assert_eq!(ws.run("reload", &[]).status.code(), Some(0));
+    ws.set_gate(GATE_WITH_SEATS);
+
+    let plan = ws.run("migrate", &["--plan", "--rename", "Gate.capacity=seats"]);
+    assert_eq!(plan.status.code(), Some(0), "stderr: {}", stderr(&plan));
+    assert!(
+        stdout(&plan).contains("rename column Gate.capacity -> seats"),
+        "{}",
+        stdout(&plan)
+    );
+    assert!(
+        !stdout(&plan).contains("archive column"),
+        "{}",
+        stdout(&plan)
+    );
+    let hash = plan_hash(&plan);
+
+    // Without the declaration the plan is another one, and has another hash.
+    let undeclared = ws.run("migrate", &["--plan"]);
+    assert!(
+        stdout(&undeclared).contains("archive column"),
+        "{}",
+        stdout(&undeclared)
+    );
+    assert_ne!(plan_hash(&undeclared), hash);
+
+    let apply = ws.run(
+        "migrate",
+        &[
+            "--apply",
+            "--plan-hash",
+            &hash,
+            "--rename",
+            "Gate.capacity=seats",
+        ],
+    );
+    assert_eq!(apply.status.code(), Some(0), "stderr: {}", stderr(&apply));
+    let reload = ws.run("reload", &[]);
+    assert!(
+        stderr(&reload).contains("definitions unchanged"),
+        "{}",
+        stderr(&reload)
+    );
+}
+
+#[test]
+fn bad_rename_declarations() {
+    let ws = Workspace::new(GATE_WITH_CAPACITY);
+    assert_eq!(ws.run("reload", &[]).status.code(), Some(0));
+
+    let malformed = ws.run("migrate", &["--plan", "--rename", "bad"]);
+    assert_eq!(malformed.status.code(), Some(2), "{}", stderr(&malformed));
+    assert!(
+        stderr(&malformed).contains("rename declaration"),
+        "{}",
+        stderr(&malformed)
+    );
+
+    ws.set_gate(GATE_WITHOUT_CAPACITY);
+    let unknown = ws.run("migrate", &["--plan", "--rename", "Gate.nope=x"]);
+    assert_eq!(unknown.status.code(), Some(1), "{}", stderr(&unknown));
+    assert!(stdout(&unknown).contains("ONT-V25"), "{}", stdout(&unknown));
+
+    let exclusive = ws.run(
+        "migrate",
+        &[
+            "--plan",
+            "--drop-archived",
+            "--rename",
+            "Gate.capacity=seats",
+        ],
+    );
+    assert_eq!(exclusive.status.code(), Some(2), "{}", stderr(&exclusive));
+}
+
+#[test]
+fn drop_archived_plan_and_apply() {
+    let ws = Workspace::new(GATE_WITH_CAPACITY);
+    assert_eq!(ws.run("reload", &[]).status.code(), Some(0));
+    ws.set_gate(GATE_WITHOUT_CAPACITY);
+    let plan = ws.run("migrate", &["--plan"]);
+    let hash = plan_hash(&plan);
+    let applied = ws.run("migrate", &["--apply", "--plan-hash", &hash]);
+    assert_eq!(
+        applied.status.code(),
+        Some(0),
+        "stderr: {}",
+        stderr(&applied)
+    );
+
+    let drop_plan = ws.run("migrate", &["--drop-archived", "--plan"]);
+    assert_eq!(
+        drop_plan.status.code(),
+        Some(0),
+        "stderr: {}",
+        stderr(&drop_plan)
+    );
+    assert!(
+        stdout(&drop_plan).contains("drop archived column of_obj_gate.capacity__arch_v2"),
+        "{}",
+        stdout(&drop_plan)
+    );
+    let drop_hash = plan_hash(&drop_plan);
+
+    let dropped = ws.run(
+        "migrate",
+        &["--drop-archived", "--apply", "--plan-hash", &drop_hash],
+    );
+    assert_eq!(
+        dropped.status.code(),
+        Some(0),
+        "stderr: {}",
+        stderr(&dropped)
+    );
+    assert!(
+        stderr(&dropped).contains("def_version 3"),
+        "{}",
+        stderr(&dropped)
+    );
+
+    let nothing = ws.run("migrate", &["--drop-archived", "--plan"]);
+    assert!(
+        stdout(&nothing).contains("no migration steps needed"),
+        "{}",
+        stdout(&nothing)
+    );
+}
+
+#[test]
+fn plan_json_output() {
+    let ws = Workspace::new(GATE_WITH_CAPACITY);
+    assert_eq!(ws.run("reload", &[]).status.code(), Some(0));
+    ws.set_gate(GATE_WITHOUT_CAPACITY);
+    let out = ws.run("migrate", &["--plan", "--format", "json"]);
+    assert_eq!(out.status.code(), Some(0), "stderr: {}", stderr(&out));
+    let value: serde_json::Value = serde_json::from_slice(&out.stdout).expect("stdout is JSON");
+    assert!(
+        value["diagnostics"]
+            .as_array()
+            .expect("diagnostics")
+            .is_empty()
+    );
+    let plan = &value["result"]["plan"];
+    assert_eq!(plan["fromDefVersion"], 1);
+    assert_eq!(plan["hash"].as_str().expect("hash").len(), 16);
+    assert_eq!(plan["steps"].as_array().expect("steps").len(), 1);
+}
+
+#[test]
+fn migrate_before_any_reload_is_refused() {
+    let ws = Workspace::new(GATE_WITHOUT_CAPACITY);
+    let out = ws.run("migrate", &["--plan"]);
+    assert_eq!(out.status.code(), Some(1), "stderr: {}", stderr(&out));
+    assert!(
+        stdout(&out).contains("ontoforge reload"),
+        "{}",
+        stdout(&out)
+    );
+}
