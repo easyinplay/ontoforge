@@ -15,12 +15,13 @@ use ontoforge_engine::config::AuthConfig;
 use ontoforge_expr::{PredContext, PredIssue, compile_row_filter};
 use ontoforge_schema::diag::{Diagnostic, SourceLocation, codes, did_you_mean, sort_diagnostics};
 use ontoforge_schema::ir::{
-    ActionTypeName, AttrType, ObjectType, ObjectTypeName, Ontology, ProfileName, PropertyName,
-    Role, RoleName, ScopeSet, SqlLevel, Subject, Toolset, TypeGrant,
+    ActionTypeName, AttrType, Collation, ObjectType, ObjectTypeName, Ontology, ProfileName,
+    PropertyName, Role, RoleName, ScopeSet, SqlLevel, Subject, Toolset, TypeGrant,
 };
 use ontoforge_schema::loader::SourceMap;
 use ontoforge_schema::loader::sourcemap::{DefKey, DefKind, Part, Seg};
 
+use super::coverage::criteria_coverage;
 use super::merge::{RoleTypeGrant, TypeScope, merge};
 use crate::authn::Principal;
 
@@ -89,6 +90,22 @@ pub fn compile_scope(inputs: &ScopeInputs<'_>) -> Result<CompiledScope, Vec<Diag
                 types,
             },
         );
+    }
+    for name in inputs.scope.bindings.keys() {
+        if !inputs.scope.roles.contains_key(name) {
+            let at = Locator {
+                sources: inputs.sources,
+                def: DefKey {
+                    kind: DefKind::RoleBinding,
+                    api_name: name.as_str().to_owned(),
+                },
+            };
+            diagnostics.push(Diagnostic::error(
+                codes::V21,
+                format!("RoleBinding refers to role `{name}`, which is not defined"),
+                &at.at(&[key("role")], Part::Value),
+            ));
+        }
     }
     if diagnostics.is_empty() {
         let bindings = inputs
@@ -166,7 +183,86 @@ fn check_role(
             .and_then(|src| compile_filter(inputs, role, type_name, object, src, at, out));
         grants.insert(type_name.clone(), RoleTypeGrant { properties, row });
     }
+    check_actions(inputs, role, at, out);
+    check_sql_grants(role, at, out);
     grants
+}
+
+/// Every granted action exists, and the role can read what its criteria read (ONT-V23).
+fn check_actions(
+    inputs: &ScopeInputs<'_>,
+    role: &Role,
+    at: &Locator<'_>,
+    out: &mut Vec<Diagnostic>,
+) {
+    let position = |name: &ActionTypeName| {
+        let index = role.actions.iter().position(|a| a == name).unwrap_or(0);
+        at.at(&[key("actions"), Seg::Index(index)], Part::Value)
+    };
+    for name in &role.actions {
+        if inputs.ontology.action_types.contains_key(name.as_str()) {
+            continue;
+        }
+        let candidates = inputs
+            .ontology
+            .action_types
+            .keys()
+            .map(ActionTypeName::as_str);
+        let mut d = Diagnostic::error(
+            codes::V21,
+            format!("role `{}` grants unknown action `{name}`", role.api_name),
+            &position(name),
+        );
+        if let Some(near) = did_you_mean(name.as_str(), candidates) {
+            d = d.with_help(format!("did you mean `{near}`?"));
+        }
+        out.push(d);
+    }
+    out.extend(criteria_coverage(role, inputs.ontology, &position));
+}
+
+/// `sql:raw` and L2 access need the `raw` SQL level; L2 schemas are `catalog.schema`.
+fn check_sql_grants(role: &Role, at: &Locator<'_>, out: &mut Vec<Diagnostic>) {
+    let raw = role.sql_levels.contains(&SqlLevel::Raw);
+    if !raw {
+        for (i, toolset) in role.toolsets.iter().enumerate() {
+            if *toolset == Toolset::SqlRaw {
+                out.push(Diagnostic::error(
+                    codes::V21,
+                    format!(
+                        "role `{}` has toolset `sql:raw` but `sqlLevels` does not include `raw`",
+                        role.api_name
+                    ),
+                    &at.at(&[key("toolsets"), Seg::Index(i)], Part::Value),
+                ));
+            }
+        }
+        if !role.l2.catalogs.is_empty() || !role.l2.schemas.is_empty() {
+            out.push(Diagnostic::error(
+                codes::V21,
+                format!(
+                    "role `{}` grants L2 catalogs or schemas but `sqlLevels` does not include `raw`",
+                    role.api_name
+                ),
+                &at.at(&[key("l2")], Part::Key),
+            ));
+        }
+    }
+    for (i, schema) in role.l2.schemas.iter().enumerate() {
+        let well_formed = schema.split_once('.').is_some_and(|(catalog, name)| {
+            !catalog.is_empty() && !name.is_empty() && !name.contains('.')
+        });
+        if !well_formed {
+            out.push(Diagnostic::error(
+                codes::V21,
+                format!(
+                    "role `{}` lists L2 schema `{schema}`, which is not of the form `catalog.schema`",
+                    role.api_name
+                ),
+                &at.at(&[key("l2"), key("schemas"), Seg::Index(i)], Part::Value),
+            ));
+        }
+    }
 }
 
 /// The property allow-list of one grant: every name exists, none repeats, the primary key
@@ -261,7 +357,10 @@ fn compile_filter(
         attrs: inputs.attrs,
     };
     match compile_row_filter(src, &cx) {
-        Ok(pred) => Some(pred),
+        Ok(pred) => {
+            let clean = check_collation(inputs, role, type_name, &pred, &location, out);
+            clean.then_some(pred)
+        }
         Err(issues) => {
             out.extend(
                 issues
@@ -271,6 +370,56 @@ fn compile_filter(
             None
         }
     }
+}
+
+/// D-08: a predicate that reads a column the selected profile declares `caseInsensitive`
+/// is refused, because the list path pushes the predicate down to Trino, where its string
+/// comparison would widen the match. Returns `false` when it found such a column. Without
+/// a selected profile (and no `defaultProfile`) there is nothing to check against.
+fn check_collation(
+    inputs: &ScopeInputs<'_>,
+    role: &Role,
+    type_name: &ObjectTypeName,
+    pred: &ontoforge_expr::Pred,
+    location: &SourceLocation,
+    out: &mut Vec<Diagnostic>,
+) -> bool {
+    let Some(profile) = inputs.profile.or(inputs.ontology.default_profile.as_ref()) else {
+        return true;
+    };
+    let Some(binding) = inputs
+        .ontology
+        .profile_bindings(profile)
+        .and_then(|bindings| bindings.objects.get(type_name.as_str()))
+    else {
+        return true;
+    };
+    let mut clean = true;
+    for property in pred.referenced_properties() {
+        let collation = binding
+            .columns
+            .get(property.as_str())
+            .and_then(|column| column.collation);
+        if collation == Some(Collation::CaseInsensitive) {
+            clean = false;
+            out.push(
+                Diagnostic::error(
+                    codes::V22,
+                    format!(
+                        "rowFilter of role `{}` on `{type_name}` reads `{property}`, which profile \
+                         `{profile}` declares `collation: caseInsensitive` (D-08)",
+                        role.api_name
+                    ),
+                    location,
+                )
+                .with_help(
+                    "case-insensitive columns cannot be compared in pushed-down predicates (D-08); \
+                     remove the reference or declare the column caseSensitive",
+                ),
+            );
+        }
+    }
+    clean
 }
 
 fn filter_diagnostic(
