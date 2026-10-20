@@ -42,12 +42,12 @@ D-10、D-11 由用户锁定并标为 one-way：log 每条 edit 只存新值和�
 
 ### 7. 重放语义
 `ontoforge_storage::log::replay(records, target)`（D-10）：
-- 目标 store 须已加载写入这些记录时的同一定义（`def_version` 相同，否则返回 `EditError::DefinitionStale`）且为空。记录按 `seq`、entry 按 `ordinal` 应用，用与提交相同的 `next_state` / `next_link_state` 计算新行，payload 经 `PropertyValue::from_json` 按当前定义解析。
+- 目标 store 须已加载写入这些记录时的同一定义（`def_version` 相同，否则返回 `EditError::DefinitionStale`）且为空。记录按 `seq` 应用；一条记录内的 entry 与提交时一样先按锁顺序（`RowKey`：kind、name、pk JSON，同一行的 entry 保持 `ordinal` 顺序）锁定并依次推进状态，再把每一行以记录留下的最终状态各写一次。状态用与提交相同的 `next_state` / `next_link_state` 计算，payload 经 `PropertyValue::from_json` 按当前定义解析。这样 oneToOne 外键的部分唯一索引在重放时与提交时按同一顺序检查（03-13 的 proptest 发现按 `ordinal` 顺序写入会让「先释放、后占用」的合法提交在重放时误报 `CardinalityViolation`）。
 - 每条 entry 之后，算出的版本必须等于记录的 `version_after`，否则返回 `ReplayError::Diverged { seq, ordinal }`。这使日志与 edit 表可以互相印证。
 - 行上的 `of_log_seq` 写原 `seq`，`of_def_version` 写记录的 `def_version`；目标 store 的日志与历史表不写。
 - 全部记录在一个事务中应用：失败的重放不改动目标。代价是大日志占用一个长事务，重放是离线重建，可以接受。
 - 本版只在单一定义版本内重放，逐列重建。跨定义版本的重放依赖 `of_def_version.migration_json` 中由 migrate 记录的改名与归档步骤（03-15 写入）。
-- `unset`、`tombstone`、`release` 与 link `remove` 的转换由 03-13 在 `next_state` 与 `update_row` 中实现，重放自动共用。
+- `unset`、`tombstone`、`release` 与 link `remove` 的转换由 03-13 在 `next_state` 与 `update_row` 中实现（`update_row` 只写与加锁时相比有变化的属性列，不再按操作写列），重放自动共用，`replay_rebuilds_overlay_operations` 与 `model_prop` 覆盖六种 entry。
 
 ### 8. append-only 的两道防线（D-12）
 1. **触发器。** 三张表都拒绝 UPDATE 与 DELETE：
