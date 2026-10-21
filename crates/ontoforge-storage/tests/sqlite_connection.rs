@@ -1,7 +1,7 @@
 //! The SQLite edit store connection: `recursive_triggers`, the engine collations and foreign keys.
 
 use camino::Utf8PathBuf;
-use ontoforge_storage::store::sqlite_connect_options;
+use ontoforge_storage::store::{BackendSettings, EditStore, StoreSettings, sqlite_connect_options};
 use sqlx::SqlitePool;
 use sqlx::sqlite::SqlitePoolOptions;
 use tempfile::TempDir;
@@ -67,4 +67,19 @@ async fn foreign_keys_on() {
         .await
         .expect("pragma");
     assert_eq!(on, 1);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn open_creates_the_parent_directories_of_the_sqlite_file() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let path =
+        Utf8PathBuf::from_path_buf(dir.path().join("a").join("b").join("store.db")).expect("utf8");
+    let settings = StoreSettings {
+        backend: BackendSettings::Sqlite { path: path.clone() },
+        lock_timeout: std::time::Duration::from_secs(5),
+        probe_timeout: std::time::Duration::from_secs(5),
+        trino_catalog: None,
+    };
+    EditStore::open(settings).await.expect("open creates `a/b`");
+    assert!(path.is_file(), "{path} was created");
 }

@@ -293,3 +293,45 @@ fn reload_reports_role_breakage() {
         stderr(&again)
     );
 }
+
+// ---------------------------------------------------------------------------------------------
+// The documented quickstart on a fresh checkout (plan 03-23, CR-D01)
+// ---------------------------------------------------------------------------------------------
+
+#[test]
+fn example_config_reload_works_from_a_fresh_tree() {
+    // A checkout has no `target/ontoforge-dev/`: the store must create its own directory.
+    let tree = tempfile::tempdir().expect("tempdir");
+    let server_dir = tree.path().join("examples").join("server");
+    std::fs::create_dir_all(&server_dir).expect("create examples/server");
+    let config_path = server_dir.join("ontoforge-server.dev.toml");
+    std::fs::copy(DEV_CONFIG, &config_path).expect("copy the example config");
+    assert!(!tree.path().join("target").exists(), "a fresh tree");
+
+    let first = reload(AVIATION, &config_path, &[]);
+    assert_eq!(first.status.code(), Some(0), "stderr: {}", stderr(&first));
+    assert!(
+        stderr(&first).contains("def_version 1"),
+        "{}",
+        stderr(&first)
+    );
+    assert!(
+        tree.path()
+            .join("target")
+            .join("ontoforge-dev")
+            .join("editstore.db")
+            .is_file()
+    );
+
+    let plan = ontoforge(&[
+        "scope",
+        "plan",
+        AVIATION_SCOPE,
+        "--ontology",
+        AVIATION,
+        "--server-config",
+        config_path.to_str().expect("utf-8 path"),
+    ]);
+    assert_eq!(plan.status.code(), Some(0), "stderr: {}", stderr(&plan));
+    assert!(stdout(&plan).contains("plan hash: "), "{}", stdout(&plan));
+}
