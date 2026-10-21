@@ -5,7 +5,8 @@
 //! inference:
 //!
 //! - boolean, integers and finite doubles as JSON booleans and numbers,
-//! - `decimal` as canonical decimal text with exactly the scale of the property (`"12.50"`),
+//! - `decimal` as canonical decimal text with exactly the scale of the property (`"12.50"`);
+//!   input is a decimal string, a JSON number is accepted only as an integer,
 //! - `date` as `YYYY-MM-DD`,
 //! - `timestamp` as UTC with milliseconds, `YYYY-MM-DDTHH:MM:SS.fffZ`; input needs a UTC offset
 //!   (`Z` or `+HH:MM`), is converted to UTC, and more than three fractional digits are refused
@@ -323,7 +324,12 @@ fn from_json_as(def: &PropertyDef, base: BaseType, v: &Value) -> Result<Property
             .map_or_else(|| wrong("a string"), Ok),
         BaseType::Decimal => match v {
             Value::String(s) => Ok(V::Decimal(s.clone())),
-            Value::Number(n) => Ok(V::Decimal(n.to_string())),
+            // A JSON number with a fraction has already been through an f64 when it gets here
+            // and 17 or more significant digits are gone; only an integer is exact.
+            Value::Number(n) if n.is_i64() || n.is_u64() => Ok(V::Decimal(n.to_string())),
+            Value::Number(_) => fail(
+                "send a decimal as a string such as \"12.50\"; a JSON number with a fraction                  passes through a binary float and can be rounded",
+            ),
             _ => wrong("a decimal string or number"),
         },
         BaseType::Date => v

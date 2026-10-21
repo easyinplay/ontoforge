@@ -164,6 +164,7 @@ roles-as-code：`plan` 打印将写入的 role 与 role binding 和计划 hash�
 - `--batch-size`（1 到 10000，默认 1000）：每个 commit 的行数。`--max-rows`（默认 1000000）：行数上限。
 - 每个批次是一次 commit，actor 与 action 记为 `system:import`。
 - 空字符串单元格表示「不设置」，import 不会取消设置某个属性。
+- JSON 文件里的 decimal 写成字符串，如 `"12.50"`。JSON 数字只接受整数，带小数的数字会先变成二进制浮点数，可能被舍入，所以按 ONT-V27 拒绝。CSV 单元格本来就是文本，不受影响；CSV 数组单元格里的 decimal 元素同样要写成字符串。
 
 ### `ontoforge dev-token --server-config <FILE> --sub <SUB>`
 
