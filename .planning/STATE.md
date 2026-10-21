@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 3
 current_phase_name: Edit Store & Scope Model
 status: executing
-stopped_at: Completed 03-20-PLAN.md (CI run pending)
-last_updated: "2026-10-21T05:50:47.471Z"
-last_activity: 2026-10-20
-last_activity_desc: Phase 03 execution started
-state_head: 5d08715c08d9391fc68ce774caa3621ad5c4632b
+stopped_at: Completed 03-21-PLAN.md
+last_updated: "2026-10-21T07:55:19.953Z"
+last_activity: 2026-10-21
+last_activity_desc: Phase 3 execution started
+state_head: c5a774550015ae9c17c1fb5817e01dad2ae6f7be
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 47
-  completed_plans: 44
+  completed_plans: 45
   percent: 0
 ---
 
@@ -23,14 +23,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-19)
 
 **Core value:** 定义一次 ontology，应用和 agent 就能通过 REST 与 MCP 对同一份对象图做受控读写：写入一律经 Action 校验与授权，每次写入都可审计。
-**Current focus:** Phase 03 — Edit Store & Scope Model
+**Current focus:** Phase 3 — Edit Store & Scope Model
 
 ## Current Position
 
-Phase: 3 (Edit Store & Scope Model) — READY TO EXECUTE
-Plan: 20 of 20
+Phase: 3 (Edit Store & Scope Model) — EXECUTING
+Plan: 2 of 23
 Status: Ready to execute
-Last activity: 2026-10-20 — Phase 03 execution started
+Last activity: 2026-10-21 — Phase 3 execution started
 
 Progress: [██████████░░░░░░░░░░] 24/44 plans ([░░░░░░░░░░] 0%); phases 2/7 complete
 
@@ -60,6 +60,7 @@ Progress: [██████████░░░░░░░░░░] 24/44 p
 | Phase 03 P18 | 4h | 3 tasks | 20 files |
 | Phase 03 P19 | 1h 20m | 2 tasks | 12 files |
 | Phase 03 P20 | n/a | 2 tasks | 4 files |
+| Phase 03 P21 | 45 min | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -88,6 +89,7 @@ Progress: [██████████░░░░░░░░░░] 24/44 p
 - [Phase 03]: 03-16: only scope_store.rs names of_role / of_role_binding / of_admin_audit (source guard); scope apply is a full sync bound to a reviewed plan hash, re-planned in the write transaction under the definition advisory lock — SCOPE-07 / D-01..D-03; indexes created for row predicates are only ever added and are not recorded in the physical schema
 - [Phase 03]: 03-18: reload/migrate lock the state row before DDL, advisory lock key per edit schema, lock_timeout set before the advisory lock; migrate probes Trino after its single-transaction switch — Avoids fence/DDL deadlock (40P01), unbounded lock waits and cross-deployment serialization; archive/rename steps cannot be committed ahead of the switch
 - [Phase 03]: 03-19: import checks the whole file before writing and treats a deleted object or removed edge as existing in every mode — An import is not a general write door: create-only by default, skip and update are explicit, nothing brings back a deleted object, a failed batch is reported so a skip rerun finishes the file; existence is read before the batches (a concurrent creator between read and commit is not refused, see SUMMARY)
+- [Phase 03]: 03-21: decimal 的 JSON 数字只收整数，带小数要求写成字符串；NUL 与 0 年 date / timestamp 按两后端交集在校验阶段拒绝；WR-A03 实测为 disproved，会话设置固定仅作纵深防御
 
 ### Pending Todos
 
@@ -106,6 +108,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-21T03:38:07.461Z
-Stopped at: Completed 03-20-PLAN.md (CI run pending)
+Last session: 2026-10-21T07:55:19.816Z
+Stopped at: Completed 03-21-PLAN.md
 Resume file: None
