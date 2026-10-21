@@ -11,12 +11,13 @@ mod support;
 
 use std::collections::BTreeMap;
 
-use ontoforge_schema::ir::{ObjectTypeName, Ontology, PropertyName};
+use ontoforge_schema::ir::{AttrType, ObjectTypeName, Ontology, PropertyName};
 use ontoforge_storage::commit::{Actor, Commit, Edit, ObjectOp};
 use ontoforge_storage::migrate::{
-    RenameDecl, apply_drop_archived, apply_migration, plan_drop_archived, plan_migration,
+    MigrateError, RenameDecl, apply_drop_archived, apply_migration, apply_migration_probed,
+    plan_drop_archived, plan_migration,
 };
-use ontoforge_storage::reload::{ReloadOptions, reload};
+use ontoforge_storage::reload::{ReloadOptions, RolesCheck, reload};
 use ontoforge_storage::value::PropertyValue;
 use support::{PgTestStore, ontology_from, pg_store};
 
@@ -219,4 +220,134 @@ async fn primary_key_change_then_drop_archived_on_pg() {
             .is_empty()
     );
     assert_reload_is_noop(&t, &new).await;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Roles that a migration would break (plan 03-22, D-18, SCOPE-06)
+// ---------------------------------------------------------------------------------------------
+
+const AVIATION_DIR: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../examples/ontologies/aviation"
+);
+const AVIATION_SCOPE: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../examples/scopes/aviation"
+);
+
+fn roles_check() -> RolesCheck {
+    RolesCheck {
+        attrs: BTreeMap::from([("homeAirports".to_owned(), AttrType::StringList)]),
+        profile: None,
+    }
+}
+
+fn load_aviation(root: &camino::Utf8Path) -> Ontology {
+    let out = ontoforge_schema::load_dir(root);
+    out.ontology
+        .unwrap_or_else(|| panic!("{:#?}", out.diagnostics))
+}
+
+/// The aviation definition without `Airport.city`, a property the `dispatcher` role lists.
+fn aviation_without_city() -> Ontology {
+    fn copy(from: &std::path::Path, to: &std::path::Path) {
+        std::fs::create_dir_all(to).expect("create dir");
+        for entry in std::fs::read_dir(from).expect("read dir") {
+            let entry = entry.expect("entry");
+            let target = to.join(entry.file_name());
+            if entry.file_type().expect("file type").is_dir() {
+                copy(&entry.path(), &target);
+            } else {
+                std::fs::copy(entry.path(), target).expect("copy");
+            }
+        }
+    }
+    let dir = tempfile::tempdir().expect("tempdir");
+    copy(std::path::Path::new(AVIATION_DIR), dir.path());
+    let path = dir.path().join("objects.yaml");
+    let text = std::fs::read_to_string(&path).expect("read");
+    let line = "  city: { type: string, displayName: City }
+";
+    assert!(text.contains(line), "objects.yaml lost the city line");
+    std::fs::write(&path, text.replace(line, "")).expect("write");
+    load_aviation(camino::Utf8Path::from_path(dir.path()).expect("utf-8 path"))
+}
+
+#[tokio::test(flavor = "multi_thread")]
+#[ignore = "needs ONTOFORGE_PG_URL or --features embedded-pg"]
+async fn pg_migrate_rechecks_applied_roles() {
+    let t = pg_store().await;
+    let aviation = load_aviation(camino::Utf8Path::new(AVIATION_DIR));
+    reload(
+        &t.store,
+        &aviation,
+        &ReloadOptions {
+            roles: Some(roles_check()),
+            ..ReloadOptions::default()
+        },
+    )
+    .await
+    .expect("v1");
+    let out = ontoforge_schema::load_scope_dir(camino::Utf8Path::new(AVIATION_SCOPE));
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+    let scope = out.scope.expect("aviation scope");
+    let check = roles_check();
+    let compiled = ontoforge_auth::scope::compile_scope(&ontoforge_auth::scope::ScopeInputs {
+        ontology: &aviation,
+        profile: None,
+        attrs: &check.attrs,
+        scope: &scope,
+        sources: None,
+    })
+    .unwrap_or_else(|d| panic!("{d:#?}"));
+    let props = compiled.row_filter_properties();
+    let scope_plan = t
+        .store
+        .scope_plan(&scope, &props)
+        .await
+        .expect("scope plan");
+    t.store
+        .scope_apply(&scope, &props, &scope_plan.hash, "tester@testhost")
+        .await
+        .expect("scope apply");
+
+    let new = aviation_without_city();
+    let active = t.store.active_definition().await.expect("active");
+    let hash = plan_migration(&active, &new, &[]).expect("plan").hash;
+    let airport_before = t.columns(&t.schema_edit, "of_obj_airport").await;
+    assert!(
+        airport_before.contains(&"city".to_owned()),
+        "{airport_before:?}"
+    );
+
+    let result =
+        apply_migration_probed(&t.store, &new, &[], &hash, None, Some(&roles_check())).await;
+    let Err(MigrateError::Definition(diagnostics)) = result else {
+        panic!("expected a definition error, got {result:?}");
+    };
+    assert!(!diagnostics.is_empty());
+    assert!(
+        diagnostics.iter().all(|d| d.code == "ONT-V21"),
+        "{diagnostics:#?}"
+    );
+    assert!(
+        diagnostics
+            .iter()
+            .any(|d| d.message.contains("dispatcher") && d.message.contains("city")),
+        "the diagnostic names the role and the property: {diagnostics:#?}"
+    );
+    let airport_after = t.columns(&t.schema_edit, "of_obj_airport").await;
+    assert_eq!(airport_after, airport_before, "no step ran");
+    assert!(
+        !airport_after.iter().any(|c| c == "city__arch_v2"),
+        "{airport_after:?}"
+    );
+    assert_eq!(t.active_version().await, 1);
+    assert_eq!(t.version_rows().await, 1);
+
+    // Without the role check the very same migration goes through: the roles stopped it.
+    let version = apply_migration(&t.store, &new, &[], &hash)
+        .await
+        .expect("without the role check");
+    assert_eq!(version, 2);
 }
