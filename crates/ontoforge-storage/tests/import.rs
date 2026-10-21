@@ -861,3 +861,141 @@ async fn import_goes_through_the_definition_fence() {
     assert_eq!(log.len(), 1);
     assert_eq!(log[0].def_version, 2);
 }
+
+// ---------------------------------------------------------------------------------------------
+// PostgreSQL
+// ---------------------------------------------------------------------------------------------
+
+/// A type whose key is a timestamp and whose other properties cover the cell conversions that
+/// differ between the two databases.
+fn readings() -> Ontology {
+    ontology_from(&[(
+        "defs.yaml",
+        "kind: ObjectType
+apiName: Reading
+backing: editOnly
+primaryKey: at
+properties:
+  at: { type: timestamp, required: true }
+  amount: { type: decimal, precision: 8, scale: 2 }
+  day: { type: date }
+  tags: { type: array, items: integer }
+  spot: { type: geopoint }
+  ratio: { type: double }
+",
+    )])
+}
+
+/// The import modes, the existing-row lookup (string, integer and timestamp keys, edges) and the
+/// cell conversions on PostgreSQL. Run with `--ignored` against `ONTOFORGE_PG_URL` or with
+/// `--features embedded-pg`.
+#[tokio::test(flavor = "multi_thread")]
+#[ignore = "needs a PostgreSQL server"]
+async fn pg_import_modes_and_links() {
+    let pg = support::pg_store().await;
+    let store = &pg.store;
+    reload(store, &gates_and_stands(), &ReloadOptions::default())
+        .await
+        .expect("reload");
+    let plain = ImportOptions::default();
+    let (_g, gates) = file_with("gates.csv", "code,name\nA1,Alpha\nA2,Beta\n");
+    let (_s, stands) = file_with("stands.csv", "id,label\n1,one\n2,two\n3,three\n");
+    import(store, object("Gate"), &gates, &plain)
+        .await
+        .expect("gates");
+    import(store, object("Stand"), &stands, &plain)
+        .await
+        .expect("stands");
+    let (_e, edges) = file_with("edges.csv", "from,to\nA1,1\nA1,2\nA2,3\n");
+    let report = import(store, link("gateStands"), &edges, &plain)
+        .await
+        .expect("edges");
+    assert_eq!(report.created, 3);
+
+    // The same files again.
+    let found = problems(import(store, object("Gate"), &gates, &plain).await);
+    assert_eq!(found.len(), 2, "{found:#?}");
+    let found = problems(import(store, object("Stand"), &stands, &plain).await);
+    assert_eq!(found.len(), 3, "{found:#?}");
+    let found = problems(import(store, link("gateStands"), &edges, &plain).await);
+    assert_eq!(found.len(), 3, "{found:#?}");
+    let skip = on_existing(OnExisting::Skip);
+    for (target, file) in [
+        (object("Gate"), &gates),
+        (object("Stand"), &stands),
+        (link("gateStands"), &edges),
+    ] {
+        let report = import(store, target, file, &skip).await.expect("skip");
+        assert_eq!((report.created, report.commits.len()), (0, 0));
+    }
+    let update = on_existing(OnExisting::Update);
+    let report = import(store, object("Gate"), &gates, &update)
+        .await
+        .expect("update");
+    assert_eq!((report.created, report.updated), (0, 2));
+    let version: i64 = sqlx::query_scalar(sqlx::AssertSqlSafe(format!(
+        "SELECT of_version FROM \"{}\".of_obj_gate WHERE code = 'A1'",
+        pg.schema_edit
+    )))
+    .fetch_one(pg.side())
+    .await
+    .expect("version");
+    assert_eq!(version, 2);
+    assert!(
+        whole_log(store)
+            .await
+            .iter()
+            .all(|record| record.actor == "system:import")
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+#[ignore = "needs a PostgreSQL server"]
+async fn pg_cells_and_keys_of_every_kind() {
+    let pg = support::pg_store().await;
+    let store = &pg.store;
+    reload(store, &readings(), &ReloadOptions::default())
+        .await
+        .expect("reload");
+    let csv = "at,amount,day,tags,spot,ratio\n\
+               2026-03-29T02:30:00+02:00,12.5,2026-03-29,\"[1, 2, 3]\",\"50.03,8.57\",0.25\n\
+               2026-03-30T00:00:00Z,0.5,,,,\n";
+    let (_dir, path) = file_with("readings.csv", csv);
+    let target =
+        ImportTarget::Object(ObjectTypeName::try_from("Reading".to_owned()).expect("type"));
+    let report = import(store, target.clone(), &path, &ImportOptions::default())
+        .await
+        .expect("import");
+    assert_eq!(report.created, 2);
+
+    let log = whole_log(store).await;
+    let first = log[0].entries[0].payload.as_ref().expect("payload");
+    assert_eq!(first["amount"], "12.50");
+    assert_eq!(first["tags"], serde_json::json!([1, 2, 3]));
+    assert_eq!(
+        log[0].entries[0].pk,
+        serde_json::json!("2026-03-29T00:30:00.000Z"),
+        "the timestamp key is stored in UTC"
+    );
+
+    // The lookup of existing rows finds a timestamp key written in another form.
+    let again = "at,amount\n2026-03-29T00:30:00Z,1\n";
+    let (_d2, again_path) = file_with("again.csv", again);
+    let found = problems(
+        import(
+            store,
+            target.clone(),
+            &again_path,
+            &ImportOptions::default(),
+        )
+        .await,
+    );
+    assert!(
+        found.iter().any(|d| d.message.contains("already exists")),
+        "{found:#?}"
+    );
+    let report = import(store, target, &again_path, &on_existing(OnExisting::Update))
+        .await
+        .expect("update");
+    assert_eq!(report.updated, 1);
+}
