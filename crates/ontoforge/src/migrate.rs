@@ -26,7 +26,7 @@ use ontoforge_storage::store::{EditStore, StoreSettings};
 
 use crate::cli::MigrateArgs;
 use crate::reload::{
-    EXIT_STORE, ProbeEngine, load_server, lock_timeout_diagnostic, not_visible_diagnostic,
+    EXIT_STORE, ProbeEngine, Server, load_server, lock_timeout_diagnostic, not_visible_diagnostic,
     probe_engine, store_diagnostic, store_failure,
 };
 use crate::render::{self, Format};
@@ -83,16 +83,7 @@ pub fn run(args: &MigrateArgs) -> u8 {
         }
     };
 
-    // A name that is not valid was rejected when the ontology was loaded (ONT-V16).
-    let profile = args
-        .profile
-        .profile
-        .clone()
-        .and_then(|name| ProfileName::try_from(name).ok());
-    let roles = RolesCheck {
-        attrs: attr_types(server.config.auth.as_ref()),
-        profile,
-    };
+    let roles = roles_check(&server, args);
     let context = probe.as_ref().map(ProbeEngine::context);
     match runtime.block_on(execute(
         server.settings,
@@ -152,6 +143,20 @@ pub fn run(args: &MigrateArgs) -> u8 {
             }
             EXIT_STORE
         }
+    }
+}
+
+/// What `--apply` checks the stored roles with: the declared principal attributes and the profile.
+fn roles_check(server: &Server, args: &MigrateArgs) -> RolesCheck {
+    // A name that is not valid was rejected when the ontology was loaded (ONT-V16).
+    let profile = args
+        .profile
+        .profile
+        .clone()
+        .and_then(|name| ProfileName::try_from(name).ok());
+    RolesCheck {
+        attrs: attr_types(server.config.auth.as_ref()),
+        profile,
     }
 }
 
