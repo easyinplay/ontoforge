@@ -260,6 +260,7 @@ properties:
   weight: { type: double }
   tags: { type: array, items: string }
   fees: { type: array, items: decimal, precision: 8, scale: 2 }
+  amount: { type: decimal, precision: 38, scale: 10 }
   location: { type: geopoint }
 ---
 kind: ObjectType
@@ -353,6 +354,10 @@ fn all_values() -> ObjectOp {
         ("capacity", PropertyValue::Int(120)),
         ("level", PropertyValue::Int(100)),
         ("fee", PropertyValue::Decimal("12.5".to_owned())),
+        (
+            "amount",
+            PropertyValue::Decimal("12345678.1234567891".to_owned()),
+        ),
         (
             "openedAt",
             PropertyValue::Timestamp("2026-03-29T02:30:00+02:00".to_owned()),
@@ -788,6 +793,7 @@ pub async fn every_value_type_round_trips(h: &Harness) {
         "capacity": 120,
         "level": 100,
         "fee": "12.50",
+        "amount": "12345678.1234567891",
         "openedAt": "2026-03-29T00:30:00.000Z",
         "closedOn": "2026-03-29",
         "isOpen": true,
@@ -803,12 +809,13 @@ pub async fn every_value_type_round_trips(h: &Harness) {
         .row(
             Tables::Edit,
             "of_obj_gate",
-            &["code", "fee", "closed_on", "is_open", "level"],
+            &["code", "fee", "closed_on", "is_open", "level", "amount"],
             "code",
             "A1",
         )
         .await;
     assert_eq!(row[1], text("12.50"));
+    assert_eq!(row[5], text("12345678.1234567891"));
     assert_eq!(row[2], text("2026-03-29"));
     assert!(flag(&row[3]));
     assert_eq!(row[4], text("100"));

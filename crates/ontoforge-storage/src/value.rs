@@ -585,13 +585,51 @@ mod tests {
             assert_eq!(value, expected);
             assert_eq!(value.to_json(), json);
         }
-        // A client may send a decimal as a JSON number.
+        // A decimal may be a JSON integer, never a JSON number with a fraction.
         assert_eq!(
-            PropertyValue::from_json(&def(BaseType::Decimal), &json!(12.5)),
-            Ok(PropertyValue::Decimal("12.50".into()))
+            PropertyValue::from_json(&def(BaseType::Decimal), &json!(12)),
+            Ok(PropertyValue::Decimal("12.00".into()))
         );
+        assert!(PropertyValue::from_json(&def(BaseType::Decimal), &json!(12.5)).is_err());
         assert!(PropertyValue::from_json(&def(BaseType::Integer), &json!("5")).is_err());
         assert!(PropertyValue::from_json(&def(BaseType::Integer), &json!(5.5)).is_err());
+    }
+
+    #[test]
+    fn decimal_json_numbers_must_be_exact_integers() {
+        let wide = PropertyDef {
+            precision: Some(38),
+            scale: Some(10),
+            ..def(BaseType::Decimal)
+        };
+        // serde_json parses a number with a fraction into an f64, which cannot hold 17 or more
+        // significant digits.
+        let fraction: Value = serde_json::from_str("12345678.1234567891").expect("json");
+        let err = PropertyValue::from_json(&wide, &fraction).expect_err("a fractional number");
+        assert!(err.0.contains("as a string"), "{err}");
+        assert_eq!(
+            PropertyValue::from_json(&wide, &json!("12345678.1234567891")),
+            Ok(PropertyValue::Decimal("12345678.1234567891".into()))
+        );
+        assert_eq!(
+            PropertyValue::from_json(&wide, &json!(12_345_678_901_234_567_890_u64)),
+            Ok(PropertyValue::Decimal("12345678901234567890.0000000000".into()))
+        );
+        assert_eq!(
+            PropertyValue::from_json(&wide, &json!(-7)),
+            Ok(PropertyValue::Decimal("-7.0000000000".into()))
+        );
+        assert!(PropertyValue::from_json(&wide, &json!(1e2)).is_err());
+        let array = PropertyDef {
+            items: Some(BaseType::Decimal),
+            ..wide
+        };
+        let array = PropertyDef {
+            base_type: BaseType::Array,
+            ..array
+        };
+        assert!(PropertyValue::from_json(&array, &json!([1, 2.5])).is_err());
+        assert!(PropertyValue::from_json(&array, &json!([1, 2])).is_ok());
     }
 
     fn text(base_type: BaseType, cell: &str) -> Result<PropertyValue, ValueError> {

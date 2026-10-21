@@ -292,6 +292,61 @@ async fn geopoint_and_decimal_cells() {
     );
 }
 
+/// A lot with a wide decimal, to see that a decimal is never rounded on its way in.
+fn lots() -> Ontology {
+    ontology_from(&[(
+        "defs.yaml",
+        "kind: ObjectType\napiName: Lot\nbacking: editOnly\nprimaryKey: code\nproperties:\n  \
+         code: { type: string, required: true }\n  \
+         amount: { type: decimal, precision: 38, scale: 10 }\n",
+    )])
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn json_decimals_are_never_rounded() {
+    let t = store_with(&lots()).await;
+    // A JSON number with a fraction passes through an f64 and would lose digits.
+    let (_dir, path) = file_with(
+        "lots.json",
+        r#"[{"code": "L1", "amount": 12345678.1234567891}]"#,
+    );
+    let found = problems(import(&t.store, object("Lot"), &path, &ImportOptions::default()).await);
+    assert!(found.iter().all(|d| d.code == codes::V27), "{found:#?}");
+    assert!(
+        found
+            .iter()
+            .any(|d| d.message.contains("amount") && d.message.contains("as a string")),
+        "{found:#?}"
+    );
+    assert!(whole_log(&t.store).await.is_empty(), "nothing was written");
+
+    let (_dir, path) = file_with(
+        "lots2.json",
+        r#"[{"code": "L2", "amount": "12345678.1234567891"}, {"code": "L3", "amount": 12345678901234567890}]"#,
+    );
+    let report = import(&t.store, object("Lot"), &path, &ImportOptions::default())
+        .await
+        .expect("import");
+    assert_eq!(report.created, 2);
+    let log = whole_log(&t.store).await;
+    let amounts: Vec<(&str, &str)> = log[0]
+        .entries
+        .iter()
+        .map(|e| {
+            let pk = e.pk.as_str().expect("pk");
+            let payload = e.payload.as_ref().expect("payload");
+            (pk, payload["amount"].as_str().expect("amount"))
+        })
+        .collect();
+    assert_eq!(
+        amounts,
+        [
+            ("L2", "12345678.1234567891"),
+            ("L3", "12345678901234567890.0000000000")
+        ]
+    );
+}
+
 // ---------------------------------------------------------------------------------------------
 // JSON and links
 // ---------------------------------------------------------------------------------------------
