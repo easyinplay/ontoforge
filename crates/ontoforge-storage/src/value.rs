@@ -95,6 +95,13 @@ impl PropertyValue {
         from_json_as(def, def.base_type, v)?.canonical(def)
     }
 
+    /// Reads one CSV cell of a property of type `def` and returns the value in canonical form.
+    /// An array is a JSON array text, a geopoint is `lat,lon`, a boolean is `true` or `false`.
+    pub fn from_text(def: &PropertyDef, cell: &str) -> Result<Self, ValueError> {
+        let _ = (def, cell);
+        fail("not implemented")
+    }
+
     /// The value as a row predicate scalar; types a predicate cannot use become `Scalar::Null`.
     pub fn to_scalar(&self) -> Scalar {
         match self {
@@ -582,6 +589,87 @@ mod tests {
         );
         assert!(PropertyValue::from_json(&def(BaseType::Integer), &json!("5")).is_err());
         assert!(PropertyValue::from_json(&def(BaseType::Integer), &json!(5.5)).is_err());
+    }
+
+    fn text(base_type: BaseType, cell: &str) -> Result<PropertyValue, ValueError> {
+        PropertyValue::from_text(&def(base_type), cell)
+    }
+
+    #[test]
+    fn text_cells_convert_to_canonical_values() {
+        assert_eq!(text(BaseType::Integer, "42"), Ok(PropertyValue::Int(42)));
+        assert_eq!(text(BaseType::Long, "-7"), Ok(PropertyValue::Int(-7)));
+        assert_eq!(
+            text(BaseType::Double, "2.5"),
+            Ok(PropertyValue::Double(2.5))
+        );
+        assert_eq!(
+            text(BaseType::Float, "1.1"),
+            Ok(PropertyValue::Double(f64::from(1.1_f32)))
+        );
+        assert_eq!(
+            text(BaseType::Boolean, "true"),
+            Ok(PropertyValue::Bool(true))
+        );
+        assert_eq!(
+            text(BaseType::String, " a b "),
+            Ok(PropertyValue::String(" a b ".into())),
+            "a string is taken as it is"
+        );
+        assert_eq!(
+            text(BaseType::Decimal, "1.5"),
+            Ok(PropertyValue::Decimal("1.50".into()))
+        );
+        assert_eq!(
+            text(BaseType::Date, "2024-02-29"),
+            Ok(PropertyValue::Date("2024-02-29".into()))
+        );
+        assert_eq!(
+            text(BaseType::Timestamp, "2026-03-29T02:30:00+02:00"),
+            Ok(PropertyValue::Timestamp("2026-03-29T00:30:00.000Z".into()))
+        );
+        assert_eq!(
+            text(BaseType::Geopoint, "50.03,8.57"),
+            Ok(PropertyValue::Geopoint {
+                lat: 50.03,
+                lon: 8.57
+            })
+        );
+        assert_eq!(
+            PropertyValue::from_text(&array_of(BaseType::Decimal), "[\"1\", \"2.5\"]"),
+            Ok(PropertyValue::Array(vec![
+                PropertyValue::Decimal("1.00".into()),
+                PropertyValue::Decimal("2.50".into()),
+            ]))
+        );
+    }
+
+    #[test]
+    fn text_cells_that_do_not_fit_are_refused() {
+        let bad = [
+            (BaseType::Integer, "4.5"),
+            (BaseType::Integer, "2147483648"),
+            (BaseType::Integer, ""),
+            (BaseType::Double, "NaN"),
+            (BaseType::Double, "inf"),
+            (BaseType::Boolean, "yes"),
+            (BaseType::Boolean, "True"),
+            (BaseType::Decimal, "1.555"),
+            (BaseType::Decimal, "1e3"),
+            (BaseType::Date, "29.02.2024"),
+            (BaseType::Timestamp, "2026-03-29T00:30:00"),
+            (BaseType::Geopoint, "91,0"),
+            (BaseType::Geopoint, "0,181"),
+            (BaseType::Geopoint, "1,2,3"),
+            (BaseType::Geopoint, "12"),
+            (BaseType::Geopoint, "a,b"),
+        ];
+        for (base, cell) in bad {
+            assert!(text(base, cell).is_err(), "{base:?} {cell:?}");
+        }
+        assert!(PropertyValue::from_text(&array_of(BaseType::Integer), "[1, \"x\"]").is_err());
+        assert!(PropertyValue::from_text(&array_of(BaseType::Integer), "1,2").is_err());
+        assert!(PropertyValue::from_text(&array_of(BaseType::Integer), "[null]").is_err());
     }
 
     #[test]

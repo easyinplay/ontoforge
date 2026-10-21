@@ -31,6 +31,8 @@ pub enum Command {
     Migrate(MigrateArgs),
     /// Review (`plan`) and write (`apply`) the roles and role bindings of a scope directory.
     Scope(ScopeArgs),
+    /// Import a CSV or JSON file into an editOnly object type or an editOnly many-to-many link.
+    Import(ImportArgs),
     /// Issue a development token signed with a local key (accepted only by a server started
     /// with `--dev`).
     DevToken(DevTokenArgs),
@@ -191,6 +193,59 @@ pub struct ScopeApplyArgs {
     /// refused if its hash differs.
     #[arg(long, value_name = "HASH")]
     pub plan_hash: String,
+}
+
+/// What to do with a row whose object already has an edit row.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, clap::ValueEnum)]
+pub enum OnExistingArg {
+    /// Refuse the whole file and name the existing keys (the default: import only creates).
+    Error,
+    /// Leave existing objects alone; lets an interrupted import be run again.
+    Skip,
+    /// Set the cells of the file on an existing object.
+    Update,
+}
+
+#[derive(Debug, Args)]
+#[command(group(clap::ArgGroup::new("target").required(true).args(["object_type", "link"])))]
+pub struct ImportArgs {
+    /// Ontology directory containing `ontology.yaml`.
+    pub dir: Utf8PathBuf,
+    /// Server configuration with the `[store]` section.
+    #[arg(long, value_name = "FILE")]
+    pub server_config: Utf8PathBuf,
+    /// The editOnly object type the rows belong to; the columns are its properties.
+    #[arg(long = "type", value_name = "OBJECT_TYPE")]
+    pub object_type: Option<String>,
+    /// The editOnly many-to-many link the rows belong to; the columns are `from` and `to`.
+    #[arg(long, value_name = "LINK_TYPE")]
+    pub link: Option<String>,
+    /// The `.csv` or `.json` file to import.
+    #[arg(long, value_name = "FILE")]
+    pub file: Utf8PathBuf,
+    /// What to do with objects that already exist.
+    #[arg(long, value_enum, default_value_t = OnExistingArg::Error)]
+    pub on_existing: OnExistingArg,
+    /// Rows per commit (1 to 10000).
+    #[arg(
+        long,
+        value_name = "N",
+        default_value_t = 1000,
+        value_parser = clap::value_parser!(u64).range(1..=10000)
+    )]
+    pub batch_size: u64,
+    /// Refuse a file with more rows than this.
+    #[arg(
+        long,
+        value_name = "N",
+        default_value_t = 1_000_000,
+        value_parser = clap::value_parser!(u64).range(1..)
+    )]
+    pub max_rows: u64,
+    #[command(flatten)]
+    pub profile: ProfileArgs,
+    #[command(flatten)]
+    pub output: OutputArgs,
 }
 
 #[derive(Debug, Args)]

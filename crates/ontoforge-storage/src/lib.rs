@@ -8,6 +8,7 @@ pub mod ddl;
 pub mod diff;
 pub mod error;
 pub mod history;
+pub mod import;
 mod index;
 pub mod log;
 pub mod migrate;

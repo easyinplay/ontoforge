@@ -4,6 +4,7 @@ use std::io::Write;
 
 pub mod cli;
 pub mod dev_token;
+pub mod import;
 pub mod lint_cmd;
 pub mod migrate;
 pub mod online;
@@ -26,6 +27,7 @@ pub fn run(cli: Cli) -> u8 {
         Command::Reload(args) => reload::run(&args),
         Command::Migrate(args) => migrate::run(&args),
         Command::Scope(args) => scope::run(&args),
+        Command::Import(args) => import::run(&args),
         Command::DevToken(args) => dev_token::run(&args),
         Command::Schema(args) => match args.command {
             SchemaCommand::Export { out_dir } => export_schemas(&out_dir),
