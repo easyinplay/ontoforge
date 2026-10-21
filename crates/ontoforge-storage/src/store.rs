@@ -92,7 +92,8 @@ pub enum BackendSettings {
 impl StoreSettings {
     /// Builds the settings of a `[store]` section.
     ///
-    /// A relative SQLite `path` is resolved against `config_dir`. The PostgreSQL connection
+    /// A relative SQLite `path` is resolved against `config_dir`; the directory of the file need
+    /// not exist yet, `EditStore::open` creates it. The PostgreSQL connection
     /// string is read through `url_env` or `url_file` and never appears in an error.
     pub fn from_config(
         cfg: &StoreConfig,
@@ -180,9 +181,19 @@ pub struct EditStore {
 
 impl EditStore {
     /// Opens the store: connects, runs the system migrations and loads the active definition.
+    ///
+    /// For SQLite, a missing directory of the database file is created first.
     pub async fn open(settings: StoreSettings) -> Result<Self, StoreError> {
         let db = match &settings.backend {
             BackendSettings::Sqlite { path } => {
+                if let Some(parent) = path.parent().filter(|p| !p.as_str().is_empty()) {
+                    // std::fs: the workspace tokio has no `fs` feature, and this runs once.
+                    std::fs::create_dir_all(parent).map_err(|e| {
+                        StoreError::Connect(format!(
+                            "cannot create the directory `{parent}` of the SQLite edit store: {e}"
+                        ))
+                    })?;
+                }
                 let pool = SqlitePoolOptions::new()
                     .max_connections(5)
                     .connect_with(sqlite_connect_options(path))

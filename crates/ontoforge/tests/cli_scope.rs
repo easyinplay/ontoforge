@@ -381,9 +381,11 @@ fn unusable_store_exits_3() {
     let text = std::fs::read_to_string(env.dir.path().join("ontoforge-server.toml")).expect("cfg");
     std::fs::write(
         env.dir.path().join("ontoforge-server.toml"),
-        text.replace("edit.db", "no-such-dir/sub/edit.db"),
+        text.replace("edit.db", "not-a-dir/sub/edit.db"),
     )
     .expect("config");
+    // A regular file where the store's directory should be: the directory cannot be created.
+    std::fs::write(env.dir.path().join("not-a-dir"), "").expect("blocker file");
     let out = env.plan(AVIATION_SCOPE, &[]);
     assert_eq!(out.status.code(), Some(3), "stderr: {}", stderr(&out));
     assert!(stdout(&out).contains("ONT-V26"), "{}", stdout(&out));

@@ -90,7 +90,9 @@ fn missing_store_section() {
 
 #[test]
 fn store_unavailable() {
-    let dir = server_dir("[store]\nkind = \"sqlite\"\npath = \"no-such-dir/sub/edit.db\"\n");
+    // A regular file where the store's directory should be: the directory cannot be created.
+    let dir = server_dir("[store]\nkind = \"sqlite\"\npath = \"not-a-dir/sub/edit.db\"\n");
+    std::fs::write(dir.path().join("not-a-dir"), "").expect("blocker file");
     let out = reload(AVIATION, &config_of(&dir), &[]);
     assert_eq!(out.status.code(), Some(3), "stderr: {}", stderr(&out));
     assert!(stdout(&out).contains("ONT-V26"), "{}", stdout(&out));
