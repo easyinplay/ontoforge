@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Edit Store & Scope Model
 status: executing
-stopped_at: Completed 03-18-PLAN.md
-last_updated: "2026-10-21T01:45:26.509Z"
+stopped_at: Completed 03-19-PLAN.md
+last_updated: "2026-10-21T02:42:07.781Z"
 last_activity: 2026-10-20
 last_activity_desc: Phase 03 execution started
-state_head: c62cc15cbe346f7d3e60e75b7c4b9ec3a5f12f8b
+state_head: 4a01cea3484fffc33e406e7fe16a7063526fdfb9
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 44
-  completed_plans: 42
+  completed_plans: 43
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-19)
 ## Current Position
 
 Phase: 03 (Edit Store & Scope Model) — EXECUTING
-Plan: 19 of 20
+Plan: 20 of 20
 Status: Ready to execute
 Last activity: 2026-10-20 — Phase 03 execution started
 
@@ -58,6 +58,7 @@ Progress: [██████████░░░░░░░░░░] 24/44 p
 | Phase 03 P16 | 1h 50m | 2 tasks | 16 files |
 | Phase 03 P17 | 35 min | 2 tasks | 3 files |
 | Phase 03 P18 | 4h | 3 tasks | 20 files |
+| Phase 03 P19 | 1h 20m | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -85,6 +86,7 @@ Progress: [██████████░░░░░░░░░░] 24/44 p
 - [Phase 03]: 03-13: a commit writes each row once in its final state in lock order; replay shares that path (ADR-0026 section 7 amended); swapping two oneToOne keys in one commit is a CardinalityViolation
 - [Phase 03]: 03-16: only scope_store.rs names of_role / of_role_binding / of_admin_audit (source guard); scope apply is a full sync bound to a reviewed plan hash, re-planned in the write transaction under the definition advisory lock — SCOPE-07 / D-01..D-03; indexes created for row predicates are only ever added and are not recorded in the physical schema
 - [Phase 03]: 03-18: reload/migrate lock the state row before DDL, advisory lock key per edit schema, lock_timeout set before the advisory lock; migrate probes Trino after its single-transaction switch — Avoids fence/DDL deadlock (40P01), unbounded lock waits and cross-deployment serialization; archive/rename steps cannot be committed ahead of the switch
+- [Phase 03]: 03-19: import checks the whole file before writing and treats a deleted object or removed edge as existing in every mode — An import is not a general write door: create-only by default, skip and update are explicit, nothing brings back a deleted object, a failed batch is reported so a skip rerun finishes the file; existence is read before the batches (a concurrent creator between read and commit is not refused, see SUMMARY)
 
 ### Pending Todos
 
@@ -103,6 +105,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-21T01:45:26.347Z
-Stopped at: Completed 03-18-PLAN.md
+Last session: 2026-10-21T02:42:07.629Z
+Stopped at: Completed 03-19-PLAN.md
 Resume file: None

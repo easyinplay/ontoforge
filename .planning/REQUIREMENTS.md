@@ -42,7 +42,7 @@
 - [ ] **STORE-03**: 每次成功提交的写入都追加到不可变 edit log，记录 actor、action、时间、参数与 edits
 - [ ] **STORE-04**: 客户端可以查询某个对象的变更历史
 - [ ] **STORE-05**: link 基数（1:1、1:N）在 edit store 写入时强制；source 数据的基数由 lint / 校验查询报告，不阻塞读取
-- [ ] **STORE-06**: 开发者可以用 `ontoforge import` 导入 edit-only 对象与替身引擎数据，导入作为系统 edit 记入 edit log；业务数据摄取由 Trino ETL（L3）负责
+- [x] **STORE-06**: 开发者可以用 `ontoforge import` 导入 edit-only 对象与替身引擎数据，导入作为系统 edit 记入 edit log；业务数据摄取由 Trino ETL（L3）负责
 - [x] **STORE-07**: 叠加按属性 patch：edit 只存设置过的属性，未设置的属性跟随 source；tombstone 不复活，release 显式且版本单调递增
 
 ### Scope 与认证
@@ -203,7 +203,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | STORE-03 | Phase 3 | Pending |
 | STORE-04 | Phase 3 | Pending |
 | STORE-05 | Phase 3 | Pending |
-| STORE-06 | Phase 3 | Pending |
+| STORE-06 | Phase 3 | Complete |
 | STORE-07 | Phase 3 | Complete |
 | SCOPE-01 | Phase 3 | Pending |
 | SCOPE-02 | Phase 3 | Pending |
