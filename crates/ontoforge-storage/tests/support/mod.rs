@@ -121,6 +121,11 @@ pub struct PgTestStore {
 }
 
 impl PgTestStore {
+    /// The connection string of the test server (a secret; never print it).
+    pub fn url(&self) -> &str {
+        &self.url
+    }
+
     /// A connection outside the store, for inspecting the database.
     pub fn side(&self) -> &sqlx::PgPool {
         &self.side

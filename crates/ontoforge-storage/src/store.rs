@@ -246,6 +246,19 @@ impl EditStore {
     }
 }
 
+/// Connection options of the PostgreSQL edit store: the connection string `url` with
+/// `schema_sys` as the `search_path` of every connection.
+///
+/// The connection string is a secret: it is parsed here and never appears in an error.
+pub fn pg_connect_options(
+    url: &SecretString,
+    schema_sys: &str,
+) -> Result<PgConnectOptions, StoreError> {
+    Ok(PgConnectOptions::from_str(url.expose_secret())
+        .map_err(|_| StoreError::Config("the PostgreSQL connection string is invalid".to_owned()))?
+        .options([("search_path", schema_sys)]))
+}
+
 /// Connects to PostgreSQL, creates the two schemas and runs the system migrations.
 ///
 /// The connection string is a secret: it is parsed here and never appears in an error.
@@ -254,9 +267,7 @@ async fn open_postgres(
     schema_edit: &str,
     schema_sys: &str,
 ) -> Result<Db, StoreError> {
-    let options = PgConnectOptions::from_str(url.expose_secret())
-        .map_err(|_| StoreError::Config("the PostgreSQL connection string is invalid".to_owned()))?
-        .options([("search_path", schema_sys)]);
+    let options = pg_connect_options(url, schema_sys)?;
     let pool = PgPoolOptions::new()
         .max_connections(5)
         .connect_with(options)
