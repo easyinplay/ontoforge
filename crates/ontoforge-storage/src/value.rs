@@ -13,7 +13,7 @@
 //!   instead of truncated,
 //! - `array` as a JSON array of its elements, `geopoint` as `{"lat": .., "lon": ..}`.
 
-use chrono::{DateTime, SecondsFormat, Timelike, Utc};
+use chrono::{DateTime, Datelike, SecondsFormat, Timelike, Utc};
 use ontoforge_engine::sqlite::fixture::{normalize_decimal, parse_date};
 use ontoforge_expr::rowpred::Scalar;
 use ontoforge_schema::ir::{BaseType, PropertyDef};
@@ -175,6 +175,9 @@ fn canonical_as(
         (BaseType::Double, V::Double(d)) if d.is_finite() => Ok(V::Double(*d)),
         (BaseType::Double, V::Double(_)) => fail("a double must be finite"),
         (BaseType::Boolean, V::Bool(b)) => Ok(V::Bool(*b)),
+        (BaseType::String, V::String(s)) if s.contains('\0') => {
+            fail("a string cannot contain U+0000; PostgreSQL text cannot store it")
+        }
         (BaseType::String, V::String(s)) => Ok(V::String(s.clone())),
         (BaseType::Decimal, V::Decimal(s)) => {
             let (precision, scale) = def.effective_decimal();
@@ -262,10 +265,13 @@ fn decimal(text: &str, precision: u32, scale: u32) -> Result<String, ValueError>
 }
 
 /// A date written exactly as `YYYY-MM-DD`; the rule is the engine's.
+/// PostgreSQL has no year 0, so the earliest date is 0001-01-01 on every backend.
 fn date(text: &str) -> Result<String, ValueError> {
-    parse_date(text)
-        .map(|_| text.to_owned())
-        .map_err(ValueError)
+    let day = parse_date(text).map_err(ValueError)?;
+    if day.year() < 1 {
+        return fail("PostgreSQL has no year 0; the earliest date is 0001-01-01");
+    }
+    Ok(text.to_owned())
 }
 
 /// The instant of an RFC 3339 `text` with a UTC offset, as UTC text with exactly three
@@ -294,9 +300,13 @@ fn timestamp(text: &str) -> Result<String, ValueError> {
     if parsed.nanosecond() >= 1_000_000_000 {
         return fail("a leap second is not a valid timestamp here");
     }
-    Ok(parsed
-        .with_timezone(&Utc)
-        .to_rfc3339_opts(SecondsFormat::Millis, true))
+    // The lower bound is PostgreSQL's (no year 0); the upper one keeps the canonical text at a
+    // four digit year (ADR-0026). An offset can push a valid looking input out of the range.
+    let utc = parsed.with_timezone(&Utc);
+    if !(1..=9999).contains(&utc.year()) {
+        return fail("a timestamp in UTC must lie between the years 0001 and 9999");
+    }
+    Ok(utc.to_rfc3339_opts(SecondsFormat::Millis, true))
 }
 
 fn from_json_as(def: &PropertyDef, base: BaseType, v: &Value) -> Result<PropertyValue, ValueError> {
@@ -619,7 +629,9 @@ mod tests {
         );
         assert_eq!(
             PropertyValue::from_json(&wide, &json!(12_345_678_901_234_567_890_u64)),
-            Ok(PropertyValue::Decimal("12345678901234567890.0000000000".into()))
+            Ok(PropertyValue::Decimal(
+                "12345678901234567890.0000000000".into()
+            ))
         );
         assert_eq!(
             PropertyValue::from_json(&wide, &json!(-7)),

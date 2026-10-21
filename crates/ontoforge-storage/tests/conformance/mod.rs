@@ -701,12 +701,7 @@ pub async fn invalid_values_are_rejected_without_writes(h: &Harness) {
 fn gate_with(v: i64, code: &str, pairs: &[(&str, PropertyValue)]) -> Commit {
     let mut all = vec![("name", s("N"))];
     all.extend(pairs.iter().cloned());
-    commit_of(
-        v,
-        "createGate",
-        json!({}),
-        vec![gate_edit(code, set(&all))],
-    )
+    commit_of(v, "createGate", json!({}), vec![gate_edit(code, set(&all))])
 }
 
 /// Values PostgreSQL cannot store (U+0000, year 0) are refused while the commit is validated,

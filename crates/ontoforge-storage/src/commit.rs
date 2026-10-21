@@ -298,7 +298,47 @@ fn check_shape(commit: &Commit) -> Result<(), EditError> {
             "a principal id is `{issuer}|{subject}`; other actors are the reserved system actors",
         ));
     }
+    // PostgreSQL text and jsonb cannot hold U+0000; refuse it here so both backends agree.
+    if commit.action.contains('\0') {
+        return Err(value_error(
+            "action",
+            "the action name cannot contain U+0000",
+        ));
+    }
+    if let Actor::Principal(id) = &commit.actor
+        && id.contains('\0')
+    {
+        return Err(value_error("actor", "a principal id cannot contain U+0000"));
+    }
+    if json_contains_nul(&commit.params) {
+        return Err(value_error(
+            "params",
+            "an action parameter string or key cannot contain U+0000; PostgreSQL jsonb cannot store it",
+        ));
+    }
     Ok(())
+}
+
+/// Whether a string or an object key anywhere in `value` contains U+0000. Iterative, so a deeply
+/// nested parameter document cannot exhaust the stack.
+fn json_contains_nul(value: &serde_json::Value) -> bool {
+    let mut stack = vec![value];
+    while let Some(next) = stack.pop() {
+        match next {
+            serde_json::Value::String(s) if s.contains('\0') => return true,
+            serde_json::Value::Array(items) => stack.extend(items),
+            serde_json::Value::Object(map) => {
+                for (key, item) in map {
+                    if key.contains('\0') {
+                        return true;
+                    }
+                    stack.push(item);
+                }
+            }
+            _ => {}
+        }
+    }
+    false
 }
 
 /// The checks against the definition `def`, which the fence has shown to be the active one.
