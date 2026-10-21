@@ -33,6 +33,11 @@ jobs:
           ! cargo tree --workspace --locked --features ontoforge-storage/embedded-pg -e normal,build,dev -i openssl
           ! cargo tree --workspace --locked --features ontoforge-storage/embedded-pg -e normal,build,dev -i native-tls
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      # The local PostgreSQL test path (`--features embedded-pg`) is off by default, so nothing
+      # else compiles it. Check it here (compile and lint only: no run, no PostgreSQL download)
+      # so that it cannot rot unnoticed (plan 03-20).
+      - name: Clippy with the embedded-pg feature
+        run: cargo clippy -p ontoforge-storage --features embedded-pg --all-targets --locked -- -D warnings
       - run: cargo test --workspace --locked
 
   # Real PostgreSQL + Trino 483 on Linux (ENGINE-05, ADR-0017). The tests are #[ignore]d so
@@ -70,6 +75,8 @@ jobs:
         run: |
           psql -v ON_ERROR_STOP=1 -d postgres -c 'CREATE DATABASE demo' -c 'CREATE DATABASE editstore'
           psql -v ON_ERROR_STOP=1 -v fixtures="$PWD/examples/ontologies/aviation/bindings/dev/fixtures" -d demo -f ci/pg/seed.sql
+          # The fixed row predicate corpus of the Trino differential test (D-09).
+          psql -v ON_ERROR_STOP=1 -d demo -f ci/pg/rowpred_corpus.sql
       # The same conformance cases that run on SQLite in the `test` job, on a real PostgreSQL 17
       # (STORE-01, ROADMAP SC2). Every test creates its own pair of schemas in `editstore`, so
       # the tests do not disturb each other. The database is the one the Trino catalog
@@ -106,6 +113,19 @@ jobs:
         env:
           ONTOFORGE_TRINO_URL: http://localhost:8080
         run: cargo test -p ontoforge --test cli_trino_it --locked -- --ignored
+      # D-09: the fixed row predicate corpus, evaluated by Trino and by the Rust evaluator.
+      - name: Row predicate corpus (Trino)
+        env:
+          ONTOFORGE_TRINO_URL: http://localhost:8080
+        run: cargo test -p ontoforge-auth --locked --test rowpred_trino_it -- --ignored
+      # STORE-02: `reload` makes Trino see the new tables and columns of the edit store (the
+      # `editstore` catalog) before the new definition becomes active, which includes
+      # `CALL system.flush_metadata_cache()` through the client (RESEARCH A5).
+      - name: Reload visibility probe (Trino + PostgreSQL)
+        env:
+          ONTOFORGE_TRINO_URL: http://localhost:8080
+          ONTOFORGE_PG_URL: postgres://postgres:ontoforge-ci-only@localhost:5432/editstore
+        run: cargo test -p ontoforge-storage --locked --test reload_trino_it -- --ignored
       # A green run must not mean "nothing ran" (RESEARCH Pitfall 8).
       - name: Ignored tests are actually there
         run: |
@@ -118,6 +138,8 @@ jobs:
             "ontoforge-storage migrate_pg"
             "ontoforge-storage history_masking"
             "ontoforge-storage import"
+            "ontoforge-storage reload_trino_it"
+            "ontoforge-auth rowpred_trino_it"
           )
           for target in "${targets[@]}"; do
             set -- $target
