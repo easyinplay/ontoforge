@@ -423,3 +423,51 @@ async fn json_output_reports_the_result() {
             .is_empty()
     );
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_directory_that_was_not_reloaded_is_flagged() {
+    let ontology = gates_ontology();
+    let ontology_dir = text(ontology.path()).to_owned();
+    let dir = server_dir();
+    let config = config_of(&dir);
+    reload(&ontology_dir, &config);
+
+    // The directory gains a property that the edit store does not know yet.
+    let defs = ontology.path().join("defs.yaml");
+    let changed = std::fs::read_to_string(&defs)
+        .expect("definitions")
+        .replacen(
+            "  name: { type: string, required: true }\n",
+            "  name: { type: string, required: true }\n  note: { type: string }\n",
+            1,
+        );
+    std::fs::write(&defs, changed).expect("change definitions");
+
+    let data = tempfile::tempdir().expect("tempdir");
+    let gates = write(&data, "gates.csv", "code,name\nA1,Alpha\n");
+    let out = import(
+        &ontology_dir,
+        &config,
+        &["--type", "Gate"],
+        text(&gates),
+        &[],
+    );
+    assert_eq!(out.status.code(), Some(0), "stderr: {}", stderr(&out));
+    assert!(
+        stdout(&out).contains("differ from the ones the edit store follows"),
+        "{}",
+        stdout(&out)
+    );
+
+    // The edit store's definition decides what a file may hold: `note` is not a column yet.
+    let with_note = write(&data, "gates2.csv", "code,name,note\nA2,Beta,x\n");
+    let out = import(
+        &ontology_dir,
+        &config,
+        &["--type", "Gate"],
+        text(&with_note),
+        &[],
+    );
+    assert_eq!(out.status.code(), Some(1), "stderr: {}", stderr(&out));
+    assert!(stdout(&out).contains("unknown column"), "{}", stdout(&out));
+}
