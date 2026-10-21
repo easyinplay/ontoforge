@@ -16,12 +16,18 @@
 //!    becomes an archive step, plus the new empty column or table where the change replaces one.
 //! 3. The hash covers the version, the declarations, the steps and the new definition.
 //!
+//! `apply` with a `RolesCheck` also compiles the roles stored by `scope apply` against the new
+//! definition, inside the definition lock and before any step runs. A role that no longer holds
+//! (a listed property that is gone, a criteria column that is not granted) refuses the migration,
+//! as `reload` does (D-18, SCOPE-06).
+//!
 //! Archived columns and tables are recorded in the physical schema (`archived_columns`,
 //! `archived_tables`), so `reload` keeps seeing the database as the schema describes it.
 
 use std::collections::BTreeSet;
 use std::sync::Arc;
 
+use ontoforge_auth::scope::{ScopeInputs, compile_scope};
 use ontoforge_schema::diag::{Diagnostic, Severity, codes};
 use ontoforge_schema::ir::{ObjectTypeName, Ontology, PropertyName};
 use serde::{Deserialize, Serialize};
@@ -38,6 +44,7 @@ use crate::reload::{
     ProbeContext, ReloadError, RolesCheck, Visible, begin_definition_tx, execute_steps,
     expected_visible, is_lock_timeout, same_ontology, switch_definition, wait_until_visible,
 };
+use crate::scope_store;
 use crate::sql_exit;
 use crate::store::{ActiveDefinition, Backend, EditStore, WriteTx};
 
@@ -323,7 +330,8 @@ pub fn plan_migration(
     compute(active, new, renames).map(|computed| computed.plan)
 }
 
-/// Runs the migration to `new` if its plan still has the hash `expected_hash`.
+/// Runs the migration to `new` if its plan still has the hash `expected_hash`. This variant does
+/// not check the stored roles; the CLI goes through [`apply_migration_probed`].
 ///
 /// The plan is made again inside the write transaction, from the definition that is active in
 /// the database at that moment. A different hash (the definition files or the database changed
@@ -345,16 +353,19 @@ pub async fn apply_migration(
 /// switches in the same transaction as the DDL, and the wait for Trino comes after. A Trino that
 /// does not show the new names in time is [`MigrateError::NotVisible`]: the migration is applied
 /// and active, only the reads through Trino lag behind.
+///
+/// With `roles`, the roles in the store must still compile against `new` (D-18, SCOPE-06); if not,
+/// the call is [`MigrateError::Definition`] and nothing changes.
 pub async fn apply_migration_probed(
     store: &EditStore,
     new: &Ontology,
     renames: &[RenameDecl],
     expected_hash: &str,
     probe: Option<&ProbeContext<'_>>,
-    _roles: Option<&RolesCheck>,
+    roles: Option<&RolesCheck>,
 ) -> Result<i64, MigrateError> {
     let mut tx = begin_definition_tx(store).await?;
-    match apply_in(&mut tx, new, renames, expected_hash).await {
+    match apply_in(&mut tx, new, renames, expected_hash, roles).await {
         Ok((active, expected)) => {
             sql_exit::commit(tx).await?;
             let version = active.def_version;
@@ -376,6 +387,7 @@ async fn apply_in(
     new: &Ontology,
     renames: &[RenameDecl],
     expected_hash: &str,
+    roles: Option<&RolesCheck>,
 ) -> Result<(ActiveDefinition, Vec<Visible>), MigrateError> {
     // Before any DDL: see `sql_exit::lock_def_state`.
     sql_exit::lock_def_state(tx).await?;
@@ -387,6 +399,18 @@ async fn apply_in(
         && same_ontology(&active.ontology, new)?
     {
         return Ok((active, Vec::new()));
+    }
+    // D-18: the roles must still compile against the definition that is about to become active.
+    if let Some(check) = roles {
+        let scope = scope_store::load_scope_in(tx).await?;
+        compile_scope(&ScopeInputs {
+            ontology: new,
+            profile: check.profile.as_ref(),
+            attrs: &check.attrs,
+            scope: &scope,
+            sources: None,
+        })
+        .map_err(MigrateError::Definition)?;
     }
     run(tx, new, computed).await
 }

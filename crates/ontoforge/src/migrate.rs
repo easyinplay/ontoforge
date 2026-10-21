@@ -5,19 +5,23 @@
 //! steps of the migration and their hash. `--apply --plan-hash <HASH>` makes the plan again
 //! inside the store's write transaction and runs it only if the hash is the one that was
 //! reviewed. Nothing is deleted by a definition change: old columns and tables are archived.
+//! `--apply` also compiles the roles stored by `scope apply` against the new definition; a role
+//! that no longer holds ends the run with exit code 1 and changes nothing, so change the scope
+//! first and migrate afterwards (D-18, SCOPE-06).
 //! `--drop-archived` plans and runs the explicit removal of the archived data.
 //!
 //! Exit codes as for `reload`: 0 success, 1 diagnostics about the definitions or the
 //! configuration or a plan that changed, 3 the edit store could not be used (ONT-V26).
 
+use ontoforge_auth::scope::attr_types;
 use ontoforge_schema::diag::{Diagnostic, Severity, codes};
-use ontoforge_schema::ir::Ontology;
+use ontoforge_schema::ir::{Ontology, ProfileName};
 use ontoforge_schema::loader::SourceMap;
 use ontoforge_storage::migrate::{
     MigrateError, MigrationPlan, apply_drop_archived, apply_migration_probed, plan_drop_archived,
     plan_migration,
 };
-use ontoforge_storage::reload::ProbeContext;
+use ontoforge_storage::reload::{ProbeContext, RolesCheck};
 use ontoforge_storage::store::{EditStore, StoreSettings};
 
 use crate::cli::MigrateArgs;
@@ -79,8 +83,24 @@ pub fn run(args: &MigrateArgs) -> u8 {
         }
     };
 
+    // A name that is not valid was rejected when the ontology was loaded (ONT-V16).
+    let profile = args
+        .profile
+        .profile
+        .clone()
+        .and_then(|name| ProfileName::try_from(name).ok());
+    let roles = RolesCheck {
+        attrs: attr_types(server.config.auth.as_ref()),
+        profile,
+    };
     let context = probe.as_ref().map(ProbeEngine::context);
-    match runtime.block_on(execute(server.settings, ontology, args, context.as_ref())) {
+    match runtime.block_on(execute(
+        server.settings,
+        ontology,
+        args,
+        context.as_ref(),
+        &roles,
+    )) {
         Ok(outcome) => {
             finish(&diagnostics, &out.sources, Some(&outcome), args);
             if args.output.format == Format::Human {
@@ -140,6 +160,7 @@ async fn execute(
     ontology: &Ontology,
     args: &MigrateArgs,
     probe: Option<&ProbeContext<'_>>,
+    roles: &RolesCheck,
 ) -> Result<Outcome, MigrateError> {
     let store = EditStore::open(settings).await?;
     if args.apply {
@@ -147,7 +168,7 @@ async fn execute(
         let def_version = if args.drop_archived {
             apply_drop_archived(&store, hash).await?
         } else {
-            apply_migration_probed(&store, ontology, &args.rename, hash, probe, None).await?
+            apply_migration_probed(&store, ontology, &args.rename, hash, probe, Some(roles)).await?
         };
         return Ok(Outcome::Applied { def_version });
     }
