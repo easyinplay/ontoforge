@@ -1,18 +1,14 @@
 ---
-status: testing
+status: partial
 phase: 03-edit-store-scope-model
 source: [03-VERIFICATION.md]
 started: 2026-10-21T18:40:00Z
-updated: 2026-10-21T19:20:00Z
+updated: 2026-10-21T19:45:00Z
 ---
 
 ## Current Test
 
-number: 2
-name: Push the gap-closure commits (03-21..03-23 and the review) and let the ci workflow run on Linux
-expected: |
-  All three jobs green; in particular the cfg(unix) assertion in crates/ontoforge-auth/tests/dev_token.rs#missing_key_directory_is_created (new key directory has mode 0700) runs and passes, and the Linux-only PostgreSQL/Trino jobs pass at the new HEAD
-awaiting: user response
+[testing paused — 1 items outstanding]
 
 ## Tests
 
@@ -24,14 +20,15 @@ reason: "Run 2026-10-21 against the shared Trino 483 (https://192.168.11.91:8443
 
 ### 2. Push the gap-closure commits (03-21..03-23 and the review) and let the ci workflow run on Linux
 expected: All three jobs green; in particular the cfg(unix) assertion in crates/ontoforge-auth/tests/dev_token.rs#missing_key_directory_is_created (new key directory has mode 0700) runs and passes, and the Linux-only PostgreSQL/Trino jobs pass at the new HEAD
-result: [pending]
+result: pass
+note: "CI run 39582728729 at 342247b. Attempt 2: test (windows-latest), test (ubuntu-latest) and integration all success; missing_key_directory_is_created ran and passed on ubuntu-latest. Attempt 1 failed only on windows-latest in crates/ontoforge-storage/tests/reload.rs:1119 reload_racing_commits_never_lets_an_old_write_through with 'v2: Store(Query { sqlstate: Some(\"5\"), message: \"database is locked\" })'; the failed job passed on rerun. SQLite locking code (busy_timeout 5s) is unchanged since 4684ae7, so this is recorded as a flaky race test to watch, not a gap."
 
 ## Summary
 
 total: 2
-passed: 0
+passed: 1
 issues: 0
-pending: 1
+pending: 0
 skipped: 0
 blocked: 1
 
