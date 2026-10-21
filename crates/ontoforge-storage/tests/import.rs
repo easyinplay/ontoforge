@@ -698,6 +698,18 @@ async fn file_level_validation() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
+async fn nul_in_a_cell_is_refused_before_anything_is_written() {
+    let t = store_with(&places()).await;
+    let (_dir, path) = file_with("nul.csv", "code,price\nP1,1.5\nP\u{0}2,2.5\n");
+    let found = problems(import(&t.store, object("Place"), &path, &ImportOptions::default()).await);
+    assert!(
+        found.iter().any(|d| d.code == codes::V27 && d.line == 3),
+        "{found:#?}"
+    );
+    assert!(whole_log(&t.store).await.is_empty(), "nothing was written");
+}
+
+#[tokio::test(flavor = "multi_thread")]
 async fn limits_are_enforced() {
     let t = store_with(&aviation()).await;
     let rows: Vec<String> = (0..5).map(|i| format!("A{i},Name {i}")).collect();

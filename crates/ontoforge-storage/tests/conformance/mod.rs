@@ -697,6 +697,112 @@ pub async fn invalid_values_are_rejected_without_writes(h: &Harness) {
     assert_nothing_written(h).await;
 }
 
+/// A commit that only differs from `create_gate` in the one place under test.
+fn gate_with(v: i64, code: &str, pairs: &[(&str, PropertyValue)]) -> Commit {
+    let mut all = vec![("name", s("N"))];
+    all.extend(pairs.iter().cloned());
+    commit_of(
+        v,
+        "createGate",
+        json!({}),
+        vec![gate_edit(code, set(&all))],
+    )
+}
+
+/// Values PostgreSQL cannot store (U+0000, year 0) are refused while the commit is validated,
+/// with the same answer on every backend, instead of failing inside the write.
+pub async fn values_postgres_cannot_store_are_refused_on_every_backend(h: &Harness) {
+    let v = h.load().await;
+    let date = |t: &str| PropertyValue::Date(t.to_owned());
+    let stamp = |t: &str| PropertyValue::Timestamp(t.to_owned());
+    let mut nul_note = gate_with(v, "A1", &[]);
+    nul_note.params = json!({ "note": "a\u{0}" });
+    let mut nul_key = gate_with(v, "A1", &[]);
+    nul_key.params = json!({ "k\u{0}": 1 });
+    let mut nul_action = gate_with(v, "A1", &[]);
+    "create\u{0}Gate".clone_into(&mut nul_action.action);
+    let mut nul_actor = gate_with(v, "A1", &[]);
+    nul_actor.actor = Actor::Principal("https://idp.example.com|al\u{0}ice".to_owned());
+
+    let refused: Vec<(&str, Commit)> = vec![
+        (
+            "name",
+            commit_of(
+                v,
+                "createGate",
+                json!({}),
+                vec![gate_edit("A1", set(&[("name", s("N\u{0}"))]))],
+            ),
+        ),
+        (
+            "code",
+            commit_of(
+                v,
+                "createGate",
+                json!({}),
+                vec![gate_edit("A\u{0}1", set(&[("name", s("N"))]))],
+            ),
+        ),
+        (
+            "tags",
+            gate_with(
+                v,
+                "A1",
+                &[("tags", PropertyValue::Array(vec![s("ok"), s("x\u{0}")]))],
+            ),
+        ),
+        (
+            "closedOn",
+            gate_with(v, "A1", &[("closedOn", date("0000-01-01"))]),
+        ),
+        (
+            "openedAt",
+            gate_with(v, "A1", &[("openedAt", stamp("0001-01-01T00:30:00+05:00"))]),
+        ),
+        (
+            "openedAt",
+            gate_with(v, "A1", &[("openedAt", stamp("9999-12-31T23:30:00-05:00"))]),
+        ),
+        ("params", nul_note),
+        ("params", nul_key),
+        ("action", nul_action),
+        ("actor", nul_actor),
+    ];
+    for (property, commit) in refused {
+        let err = h.store().commit(commit).await.expect_err(property);
+        assert!(
+            matches!(&err, EditError::Value { property: p, .. } if p == property),
+            "{property}: {err:?}"
+        );
+    }
+    assert_nothing_written(h).await;
+
+    // The edges of the range are fine.
+    commit_ok(
+        h,
+        gate_with(
+            v,
+            "B1",
+            &[
+                ("closedOn", date("0001-01-01")),
+                ("openedAt", stamp("0001-01-01T05:30:00+05:00")),
+            ],
+        ),
+    )
+    .await;
+    commit_ok(
+        h,
+        gate_with(v, "B2", &[("openedAt", stamp("9999-12-31T23:59:59.999Z"))]),
+    )
+    .await;
+    let log = h.store().read_log(0, 10).await.expect("read_log");
+    assert_eq!(log.len(), 2);
+    let payload = log[0].entries[0].payload.as_ref().expect("payload");
+    assert_eq!(payload["openedAt"], "0001-01-01T00:30:00.000Z");
+    let payload = log[1].entries[0].payload.as_ref().expect("payload");
+    assert_eq!(payload["openedAt"], "9999-12-31T23:59:59.999Z");
+}
+
 pub async fn stale_def_version_rejected(h: &Harness) {
     let v = h.load().await;
     assert_eq!(v, 1);
@@ -1922,6 +2028,7 @@ macro_rules! all_cases {
         $crate::conformance::conformance_case!($factory, commit_writes_history_snapshot $(, $attr)?);
         $crate::conformance::conformance_case!($factory, second_set_patches_only_given_properties $(, $attr)?);
         $crate::conformance::conformance_case!($factory, invalid_values_are_rejected_without_writes $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, values_postgres_cannot_store_are_refused_on_every_backend $(, $attr)?);
         $crate::conformance::conformance_case!($factory, stale_def_version_rejected $(, $attr)?);
         $crate::conformance::conformance_case!($factory, two_edits_of_one_object_bump_each_version $(, $attr)?);
         $crate::conformance::conformance_case!($factory, every_value_type_round_trips $(, $attr)?);

@@ -638,6 +638,31 @@ mod tests {
         assert!(PropertyValue::from_json(&array, &json!([1, 2])).is_ok());
     }
 
+    #[test]
+    fn postgres_limits_are_validated() {
+        assert!(canonical(BaseType::String, PropertyValue::String("a\u{0}".into())).is_err());
+        let strings = array_of(BaseType::String);
+        let nul = PropertyValue::Array(vec![PropertyValue::String("x\u{0}".into())]);
+        assert!(nul.canonical(&strings).is_err());
+
+        assert!(canonical(BaseType::Date, PropertyValue::Date("0000-01-01".into())).is_err());
+        assert!(canonical(BaseType::Date, PropertyValue::Date("0001-01-01".into())).is_ok());
+
+        for bad in ["0001-01-01T00:30:00+05:00", "9999-12-31T23:30:00-05:00"] {
+            assert!(
+                canonical(BaseType::Timestamp, PropertyValue::Timestamp(bad.into())).is_err(),
+                "{bad}"
+            );
+        }
+        assert!(
+            canonical(
+                BaseType::Timestamp,
+                PropertyValue::Timestamp("0001-01-01T00:00:00Z".into())
+            )
+            .is_ok()
+        );
+    }
+
     fn text(base_type: BaseType, cell: &str) -> Result<PropertyValue, ValueError> {
         PropertyValue::from_text(&def(base_type), cell)
     }
