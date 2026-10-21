@@ -150,3 +150,69 @@ actions: [touchFlight]
     assert!(d.message.contains("statically"), "{}", d.message);
     assert!(d.message.contains("touchFlight"), "{}", d.message);
 }
+
+/// `Flight` (editOnly, with `status` and `gate`) and `checkFlight`, whose only submission
+/// criterion is `condition`.
+fn flight_checked_by(condition: &str) -> Ontology {
+    let actions = format!(
+        "\
+kind: ActionType
+apiName: checkFlight
+parameters:
+  flight: {{ type: {{ objectReference: Flight }}, required: true }}
+  x: {{ type: string, required: true }}
+rules:
+  - kind: modifyObject
+    object: flight
+    properties:
+      status: {{ static: CHECKED }}
+submissionCriteria:
+  - condition: \"{condition}\"
+    failureMessage: \"no\"
+"
+    );
+    let out = load_from_memory(&[
+        ("ontology.yaml", "apiName: demo\n"),
+        (
+            "objects.yaml",
+            "\
+kind: ObjectType
+apiName: Flight
+backing: editOnly
+primaryKey: flightId
+properties:
+  flightId: { type: string, required: true }
+  status: { type: string }
+  gate: { type: string }
+",
+        ),
+        ("actions.yaml", &actions),
+    ]);
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+    out.ontology.expect("ontology")
+}
+
+#[test]
+fn whole_object_read_needs_every_property() {
+    // Comparing or null-testing the object reveals whether its properties exist and what they
+    // hold, so the allow-list must cover all of them.
+    for condition in ["objects.flight == params.x", "objects.flight != null"] {
+        let ontology = flight_checked_by(condition);
+        let narrow = "\
+kind: Role
+apiName: checker
+objectTypes:
+  Flight:
+    properties: [flightId, status]
+actions: [checkFlight]
+";
+        let d = only(compile(&ontology, narrow));
+        assert_eq!(d.code, codes::V23, "{condition}");
+        assert!(d.message.contains("objects.flight"), "{}", d.message);
+        assert!(d.message.contains("gate"), "{}", d.message);
+        assert!(d.message.contains("checkFlight"), "{}", d.message);
+
+        let wide = narrow.replace("[flightId, status]", "[flightId, status, gate]");
+        compile(&ontology, &wide).unwrap_or_else(|d| panic!("{condition}: {d:#?}"));
+    }
+}
