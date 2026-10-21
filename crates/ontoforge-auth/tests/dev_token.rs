@@ -107,6 +107,32 @@ async fn key_file_is_created_once_and_reused() {
 }
 
 #[test]
+fn missing_key_directory_is_created() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let nested = dir.path().join("nested");
+    let deeper = nested.join("deeper");
+    let path = Utf8PathBuf::from_path_buf(deeper.join("dev.key")).expect("utf-8 path");
+
+    DevKey::load_or_create(&path).expect("created below missing directories");
+
+    let bytes = std::fs::read(&path).expect("key file");
+    assert_eq!(bytes.len(), 32);
+    DevKey::load_or_create(&path).expect("reused");
+    assert_eq!(std::fs::read(&path).expect("key file"), bytes, "same key");
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        for created in [&nested, &deeper] {
+            let mode = std::fs::metadata(created)
+                .expect("dir")
+                .permissions()
+                .mode();
+            assert_eq!(mode & 0o777, 0o700, "{}", created.display());
+        }
+    }
+}
+
+#[test]
 fn key_file_of_wrong_length_is_a_config_error() {
     let dir = tempfile::tempdir().expect("tempdir");
     let path = key_path(&dir);

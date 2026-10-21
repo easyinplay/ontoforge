@@ -216,6 +216,33 @@ fn ttl_bounds() {
     }
 }
 
+const DEV_CONFIG: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../examples/server/ontoforge-server.dev.toml"
+);
+
+#[test]
+fn example_config_dev_token_works_from_a_fresh_tree() {
+    // A checkout has no `target/ontoforge-dev/`: the key file must bring its own directory.
+    let tree = tempfile::tempdir().expect("tempdir");
+    let server_dir = tree.path().join("examples").join("server");
+    std::fs::create_dir_all(&server_dir).expect("create examples/server");
+    let config_path = server_dir.join("ontoforge-server.dev.toml");
+    std::fs::copy(DEV_CONFIG, &config_path).expect("copy the example config");
+    assert!(!tree.path().join("target").exists(), "a fresh tree");
+
+    let out = dev_token(config_path.to_str().expect("utf-8 path"), &["--sub", "mia"]);
+
+    assert_eq!(out.status.code(), Some(0), "stderr: {}", stderr(&out));
+    assert_eq!(stdout(&out).lines().count(), 1, "{}", stdout(&out));
+    let key = tree
+        .path()
+        .join("target")
+        .join("ontoforge-dev")
+        .join("dev-token.key");
+    assert_eq!(std::fs::metadata(key).expect("key file").len(), 32);
+}
+
 #[test]
 fn rejected_arguments_leave_no_key_file_behind() {
     let dir = server_dir(CONFIG);
