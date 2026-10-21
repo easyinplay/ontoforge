@@ -962,7 +962,7 @@ fn pg_type(ty: &ColumnType) -> String {
 /// PostgreSQL: text-borne types are cast (`numeric(p, s)`, `date`, `timestamptz`, `jsonb`); an
 /// array is bound as `text[]` and cast to its element type, because the driver here has no native
 /// decimal, date or timestamp types.
-fn bind(value: &PropertyValue, ty: &ColumnType, backend: Backend) -> Expr {
+pub(crate) fn bind(value: &PropertyValue, ty: &ColumnType, backend: Backend) -> Expr {
     let postgres = backend == Backend::Postgres;
     match value {
         PropertyValue::Null => Expr::null(),
@@ -1000,7 +1000,7 @@ fn element_text(value: &PropertyValue) -> String {
 }
 
 /// The select expression and cell kind that read a value column back.
-fn read_expr(column: &str, ty: &ColumnType, backend: Backend) -> (Expr, CellKind) {
+pub(crate) fn read_expr(column: &str, ty: &ColumnType, backend: Backend) -> (Expr, CellKind) {
     if backend == Backend::Sqlite {
         let kind = match ty {
             ColumnType::Byte | ColumnType::Short | ColumnType::Integer | ColumnType::Long => {
@@ -1032,7 +1032,7 @@ fn read_expr(column: &str, ty: &ColumnType, backend: Backend) -> (Expr, CellKind
 }
 
 /// The JSON form of a stored cell, ready for `PropertyValue::from_json`.
-fn cell_json(cell: Cell, ty: &ColumnType) -> Result<Value, StoreError> {
+pub(crate) fn cell_json(cell: Cell, ty: &ColumnType) -> Result<Value, StoreError> {
     let corrupt = |what: &str| StoreError::Corrupt(format!("a stored value is not {what}"));
     Ok(match cell {
         Cell::Null => Value::Null,

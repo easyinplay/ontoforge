@@ -106,13 +106,8 @@ async fn airports_csv_is_imported_as_system_edits() {
 #[tokio::test(flavor = "multi_thread")]
 async fn batches_follow_batch_size() {
     let t = store_with(&places()).await;
-    let mut content = String::from("code\n");
-    // A type with only a key cannot be created by a set; the fixture adds a cell below.
-    content.clear();
-    content.push_str("code,price\n");
-    for i in 0..7 {
-        content.push_str(&format!("P{i},{i}.5\n"));
-    }
+    let rows: Vec<String> = (0..7).map(|i| format!("P{i},{i}.5")).collect();
+    let content = format!("code,price\n{}\n", rows.join("\n"));
     let (_dir, path) = file_with("places.csv", &content);
     let opts = ImportOptions {
         batch_size: 3,

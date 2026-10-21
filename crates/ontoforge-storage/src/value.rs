@@ -12,8 +12,8 @@
 //!   instead of truncated,
 //! - `array` as a JSON array of its elements, `geopoint` as `{"lat": .., "lon": ..}`.
 
-use chrono::{DateTime, NaiveDate, SecondsFormat, Timelike, Utc};
-use ontoforge_engine::value::split_decimal;
+use chrono::{DateTime, SecondsFormat, Timelike, Utc};
+use ontoforge_engine::sqlite::fixture::{normalize_decimal, parse_date};
 use ontoforge_expr::rowpred::Scalar;
 use ontoforge_schema::ir::{BaseType, PropertyDef};
 use serde_json::{Map, Number, Value};
@@ -97,9 +97,54 @@ impl PropertyValue {
 
     /// Reads one CSV cell of a property of type `def` and returns the value in canonical form.
     /// An array is a JSON array text, a geopoint is `lat,lon`, a boolean is `true` or `false`.
+    /// The cell is taken as it is: nothing is trimmed, and an empty cell is the caller's to treat
+    /// as "not set".
     pub fn from_text(def: &PropertyDef, cell: &str) -> Result<Self, ValueError> {
-        let _ = (def, cell);
-        fail("not implemented")
+        use PropertyValue as V;
+        let value = match def.base_type {
+            BaseType::Byte | BaseType::Short | BaseType::Integer | BaseType::Long => V::Int(
+                cell.parse::<i64>()
+                    .map_err(|_| ValueError("expected an integer".to_owned()))?,
+            ),
+            BaseType::Float | BaseType::Double => V::Double(
+                cell.parse::<f64>()
+                    .map_err(|_| ValueError("expected a number".to_owned()))?,
+            ),
+            BaseType::Boolean => match cell {
+                "true" => V::Bool(true),
+                "false" => V::Bool(false),
+                _ => return fail("expected true or false"),
+            },
+            BaseType::String => V::String(cell.to_owned()),
+            BaseType::Decimal => V::Decimal(cell.to_owned()),
+            BaseType::Date => V::Date(cell.to_owned()),
+            BaseType::Timestamp => V::Timestamp(cell.to_owned()),
+            BaseType::Geopoint => {
+                const SHAPE: &str = "expected `lat,lon`, two numbers separated by a comma";
+                let (lat, lon) = cell
+                    .split_once(',')
+                    .ok_or_else(|| ValueError(SHAPE.to_owned()))?;
+                let number = |part: &str| {
+                    part.trim()
+                        .parse::<f64>()
+                        .map_err(|_| ValueError(SHAPE.to_owned()))
+                };
+                V::Geopoint {
+                    lat: number(lat)?,
+                    lon: number(lon)?,
+                }
+            }
+            BaseType::Array => {
+                let json: Value = serde_json::from_str(cell).map_err(|_| {
+                    ValueError("expected a JSON array such as [\"a\", \"b\"]".to_owned())
+                })?;
+                if json.is_null() {
+                    return fail("expected a JSON array, found null");
+                }
+                return Self::from_json(def, &json);
+            }
+        };
+        value.canonical(def)
     }
 
     /// The value as a row predicate scalar; types a predicate cannot use become `Scalar::Null`.
@@ -210,58 +255,16 @@ fn geopoint(lat: f64, lon: f64) -> Result<PropertyValue, ValueError> {
 
 /// The decimal `text` with exactly `scale` fractional digits. Nothing is rounded: more
 /// fractional digits than `scale`, or more integer digits than `precision - scale`, is an error.
+/// The rule is the engine's, so the fixtures of the stand-in and the edit store agree.
 fn decimal(text: &str, precision: u32, scale: u32) -> Result<String, ValueError> {
-    let Some(parts) = split_decimal(text) else {
-        return fail("expected a decimal number such as -12.50");
-    };
-    let scale_len = usize::try_from(scale).unwrap_or(usize::MAX);
-    if parts.fraction.len() > scale_len {
-        return fail(format!(
-            "more than {scale} fractional digits; a value is never rounded"
-        ));
-    }
-    let integer = parts.integer.trim_start_matches('0');
-    let integer_limit = usize::try_from(precision.saturating_sub(scale)).unwrap_or(0);
-    if integer.len() > integer_limit {
-        return fail(format!(
-            "more than {integer_limit} integer digits (precision {precision}, scale {scale})"
-        ));
-    }
-    let integer = if integer.is_empty() { "0" } else { integer };
-    let is_zero = integer == "0" && parts.fraction.bytes().all(|b| b == b'0');
-    let mut out = String::new();
-    if parts.negative && !is_zero {
-        out.push('-');
-    }
-    out.push_str(integer);
-    if scale_len > 0 {
-        out.push('.');
-        out.push_str(parts.fraction);
-        out.extend(std::iter::repeat_n('0', scale_len - parts.fraction.len()));
-    }
-    Ok(out)
+    normalize_decimal(text, precision, scale).map_err(ValueError)
 }
 
-/// A date written exactly as `YYYY-MM-DD`.
+/// A date written exactly as `YYYY-MM-DD`; the rule is the engine's.
 fn date(text: &str) -> Result<String, ValueError> {
-    let b = text.as_bytes();
-    let shaped = b.len() == 10
-        && b[4] == b'-'
-        && b[7] == b'-'
-        && b.iter()
-            .enumerate()
-            .all(|(i, c)| i == 4 || i == 7 || c.is_ascii_digit());
-    if !shaped {
-        return fail("expected a date written as YYYY-MM-DD");
-    }
-    let number = |range: std::ops::Range<usize>| text[range].parse::<u32>().ok();
-    let year = number(0..4).and_then(|y| i32::try_from(y).ok());
-    match (year, number(5..7), number(8..10)) {
-        (Some(y), Some(m), Some(d)) if NaiveDate::from_ymd_opt(y, m, d).is_some() => {
-            Ok(text.to_owned())
-        }
-        _ => fail("not a calendar date"),
-    }
+    parse_date(text)
+        .map(|_| text.to_owned())
+        .map_err(ValueError)
 }
 
 /// The instant of an RFC 3339 `text` with a UTC offset, as UTC text with exactly three

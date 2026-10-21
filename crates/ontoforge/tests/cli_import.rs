@@ -88,6 +88,11 @@ async fn imports_airports_csv() {
         "{}",
         stderr(&out)
     );
+    assert!(
+        stdout(&out).trim().is_empty(),
+        "no diagnostics, in particular no warning that the directory differs from the active definition: {}",
+        stdout(&out)
+    );
 
     let url = format!("sqlite://{}", dir.path().join("edit.db").display());
     let pool = sqlx::SqlitePool::connect(&url).await.expect("side pool");
