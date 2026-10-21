@@ -25,6 +25,9 @@
 | 7 | 03-18 | reload 加固：栅栏、lock_timeout、D-18、Trino 可见探测 | STORE-02, SCOPE-06, SCOPE-07 | 03-13, 03-15, 03-16 | — |
 | 7 | 03-19 | `ontoforge import`（editOnly） | STORE-06 | 03-13, 03-16 | — |
 | 8 | 03-20 | Linux CI（PG conformance、Trino 语料与探测）、`docs/edit-store.md` | STORE-01, SCOPE-04, STORE-02 | 03-11, 03-16, 03-18 | human-check（CI 首跑） |
+| G1 | 03-21 | gap 1：decimal 不舍入（CR-A01），并入 WR-A01、WR-A03 | STORE-03, STORE-06, STORE-01 | — | — |
+| G1 | 03-22 | gap 3：migrate 复核 role（WR-B07）、整对象 criteria 读取（WR-C05） | SCOPE-06 | — | — |
+| G2 | 03-23 | gap 2：示例配置全新检出可用（CR-D01），记录 Windows 密钥 ACL 缺口 | AUTH-02 | 03-21（同改 store.rs、docs/edit-store.md） | — |
 
 ## 验收
 

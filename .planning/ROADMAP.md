@@ -138,7 +138,7 @@ Plans:
   4. 角色可授予 object type、属性 allow-list、CEL 行谓词、action、SQL 级别与 toolset；行谓词只能引用同行属性与 `principal.attrs`，缺失属性按 false；多 role 合并不产生「A 的列 × B 的行」泄露
   5. 同一 CEL 行谓词的 SQL 编译结果与 Rust 单行求值经差分测试一致；criteria 列覆盖 lint 在 reload 与 role 变更时生效；OIDC JWT 与 dev token 均可认证
 
-**Plans**: 20/20 plans executed（8 waves）
+**Plans**: 20/23 plans executed（8 waves + gap closure 2 waves）
 
 Plans:
 
@@ -185,6 +185,12 @@ Plans:
 **Wave 8** *(blocked on Wave 7 completion)*
 
 - [x] 03-20-PLAN.md — Linux CI（PG conformance、Trino 语料与探测）与 `docs/edit-store.md`
+
+**Gap closure**（03-VERIFICATION gaps 1-3）
+
+- [ ] 03-21-PLAN.md — decimal 不再经 f64 舍入；PG 存不下的值在校验阶段拒绝；PG 会话设置固定（wave 1）
+- [ ] 03-22-PLAN.md — migrate 复核已 apply 的 role；整对象 criteria 读取按全部属性检查（wave 1）
+- [ ] 03-23-PLAN.md — 示例配置在全新检出上可用（store 与 dev 密钥目录自动创建）（wave 2）
 
 **Details**: `.planning/phases/03-edit-store-scope-model/`
 
@@ -269,7 +275,7 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7（纵切片
 |-------|----------------|--------|-----------|
 | 1. Workspace, Schema & Lint | 14/14 | Complete    | 2026-10-16 |
 | 2. Source Binding & Engine | 10/10 | Complete    | 2026-10-19 |
-| 3. Edit Store & Scope Model | 20/20 | In Progress|  |
+| 3. Edit Store & Scope Model | 20/23 | In Progress|  |
 | 4. Scoped L0 Read | 0/TBD | Not started | - |
 | 5. Online Action | 0/TBD | Not started | - |
 | 6. L2 Raw DQL, Toolsets & Audit | 0/TBD | Not started | - |
