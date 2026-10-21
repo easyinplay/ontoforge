@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Edit Store & Scope Model
 status: executing
-stopped_at: Completed 03-17-PLAN.md
-last_updated: "2026-10-20T08:26:39.430Z"
+stopped_at: Completed 03-18-PLAN.md
+last_updated: "2026-10-21T01:45:26.509Z"
 last_activity: 2026-10-20
 last_activity_desc: Phase 03 execution started
-state_head: 015f5e4c70ae40c6e1cd6f865ae2c4079f08a0e6
+state_head: c62cc15cbe346f7d3e60e75b7c4b9ec3a5f12f8b
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 44
-  completed_plans: 41
+  completed_plans: 42
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-19)
 ## Current Position
 
 Phase: 03 (Edit Store & Scope Model) — EXECUTING
-Plan: 18 of 20
+Plan: 19 of 20
 Status: Ready to execute
 Last activity: 2026-10-20 — Phase 03 execution started
 
@@ -57,6 +57,7 @@ Progress: [██████████░░░░░░░░░░] 24/44 p
 | Phase 03 P13 | 55 min | 3 tasks | 9 files |
 | Phase 03 P16 | 1h 50m | 2 tasks | 16 files |
 | Phase 03 P17 | 35 min | 2 tasks | 3 files |
+| Phase 03 P18 | 4h | 3 tasks | 20 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,7 @@ Progress: [██████████░░░░░░░░░░] 24/44 p
 - [Phase 03]: 03-15: indexes on a column or table are dropped when it is archived, not at clean-up, because index names are schema-global — A kept index would make CREATE INDEX IF NOT EXISTS on a re-added column of the same name a silent no-op
 - [Phase 03]: 03-13: a commit writes each row once in its final state in lock order; replay shares that path (ADR-0026 section 7 amended); swapping two oneToOne keys in one commit is a CardinalityViolation
 - [Phase 03]: 03-16: only scope_store.rs names of_role / of_role_binding / of_admin_audit (source guard); scope apply is a full sync bound to a reviewed plan hash, re-planned in the write transaction under the definition advisory lock — SCOPE-07 / D-01..D-03; indexes created for row predicates are only ever added and are not recorded in the physical schema
+- [Phase 03]: 03-18: reload/migrate lock the state row before DDL, advisory lock key per edit schema, lock_timeout set before the advisory lock; migrate probes Trino after its single-transaction switch — Avoids fence/DDL deadlock (40P01), unbounded lock waits and cross-deployment serialization; archive/rename steps cannot be committed ahead of the switch
 
 ### Pending Todos
 
@@ -101,6 +103,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-20T08:26:39.292Z
-Stopped at: Completed 03-17-PLAN.md
+Last session: 2026-10-21T01:45:26.347Z
+Stopped at: Completed 03-18-PLAN.md
 Resume file: None
