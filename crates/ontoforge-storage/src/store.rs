@@ -247,7 +247,20 @@ impl EditStore {
 }
 
 /// Connection options of the PostgreSQL edit store: the connection string `url` with
-/// `schema_sys` as the `search_path` of every connection.
+/// `schema_sys` as the `search_path` of every connection, and the session settings that the text
+/// read-back depends on pinned:
+///
+/// - `DateStyle = ISO, MDY`: `date` and `date[]` come back as `YYYY-MM-DD`,
+/// - `extra_float_digits = 3`: `double precision` and `real` arrays come back with the shortest
+///   text that round-trips (3 does that on PostgreSQL 12 and later, and is exact for `float4`
+///   on older servers),
+/// - `TimeZone = UTC`: a fallback, timestamp reads already say `AT TIME ZONE 'UTC'`.
+///
+/// They are sent in the startup packet, which wins over `ALTER ROLE` and `ALTER DATABASE`
+/// defaults. sqlx 0.9.0 already sends `DateStyle`, `TimeZone` and `extra_float_digits = 2`; they
+/// are set here so the store does not depend on sqlx's defaults. They go both through `options`
+/// (`-c`) and through the dedicated startup parameter, so whichever PostgreSQL applies last
+/// carries the same value.
 ///
 /// The connection string is a secret: it is parsed here and never appears in an error.
 pub fn pg_connect_options(
@@ -256,7 +269,13 @@ pub fn pg_connect_options(
 ) -> Result<PgConnectOptions, StoreError> {
     Ok(PgConnectOptions::from_str(url.expose_secret())
         .map_err(|_| StoreError::Config("the PostgreSQL connection string is invalid".to_owned()))?
-        .options([("search_path", schema_sys)]))
+        .options([
+            ("search_path", schema_sys),
+            ("DateStyle", "ISO, MDY"),
+            ("TimeZone", "UTC"),
+            ("extra_float_digits", "3"),
+        ])
+        .extra_float_digits(3))
 }
 
 /// Connects to PostgreSQL, creates the two schemas and runs the system migrations.

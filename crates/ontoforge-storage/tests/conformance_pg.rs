@@ -25,12 +25,11 @@ async fn pg_sessions_use_the_pinned_settings() {
     use sqlx::{Connection, PgConnection};
     use std::str::FromStr;
 
-    async fn show(options: &PgConnectOptions, setting: &str) -> String {
+    async fn show(options: &PgConnectOptions, sql: &'static str) -> String {
         let mut conn = PgConnection::connect_with(options)
             .await
             .expect("connect to the guard database");
-        let sql = format!("SHOW {setting}");
-        let value: String = sqlx::query_scalar(sqlx::AssertSqlSafe(sql))
+        let value: String = sqlx::query_scalar(sql)
             .fetch_one(&mut conn)
             .await
             .expect("SHOW");
@@ -61,7 +60,7 @@ async fn pg_sessions_use_the_pinned_settings() {
         .expect("test url")
         .database(&db)
         .extra_float_digits(None);
-    assert_eq!(show(&plain, "extra_float_digits").await, "0");
+    assert_eq!(show(&plain, "SHOW extra_float_digits").await, "0");
 
     let pinned = ontoforge_storage::store::pg_connect_options(
         &SecretString::from(pg.url().to_owned()),
@@ -69,10 +68,10 @@ async fn pg_sessions_use_the_pinned_settings() {
     )
     .expect("pg_connect_options")
     .database(&db);
-    let date_style = show(&pinned, "DateStyle").await;
-    let float_digits = show(&pinned, "extra_float_digits").await;
-    let time_zone = show(&pinned, "TimeZone").await;
-    let search_path = show(&pinned, "search_path").await;
+    let date_style = show(&pinned, "SHOW DateStyle").await;
+    let float_digits = show(&pinned, "SHOW extra_float_digits").await;
+    let time_zone = show(&pinned, "SHOW TimeZone").await;
+    let search_path = show(&pinned, "SHOW search_path").await;
     let seen = format!(
         "DateStyle={date_style}, extra_float_digits={float_digits}, TimeZone={time_zone}, \
          search_path={search_path}"
