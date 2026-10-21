@@ -52,7 +52,7 @@
 - [ ] **SCOPE-03**: 多角色合并为 scoped 基关系（行 = 各角色谓词之 OR，列按授予它的角色谓词遮蔽），所有表达式只能绑定到该关系，不产生跨角色列 × 行泄露
 - [ ] **SCOPE-04**: 同一 CEL 行谓词编译成 SQL 与在 Rust 中对单行求值的结果一致（差分测试覆盖）
 - [ ] **SCOPE-05**: 无授权 = 不可见（fail-closed）；缺失的主体属性使相关谓词为 false；无法编译的谓词在 validate 时报错
-- [ ] **SCOPE-06**: 定义 reload 与角色变更时，被授予某 action 的角色列集必须覆盖其 criteria 引用的列，否则报错不生效
+- [x] **SCOPE-06**: 定义 reload 与角色变更时，被授予某 action 的角色列集必须覆盖其 criteria 引用的列，否则报错不生效
 - [ ] **SCOPE-07**: 角色 / scope 只能经管理通道或 L3 修改并审计；ontology 定义只经部署方 reload；agent MCP 无变更工具；每个请求固定使用开始时的定义版本
 - [ ] **AUTH-01**: 客户端可以用 OIDC 签发的 JWT 认证（JWKS 自动拉取与缓存）
 - [ ] **AUTH-02**: dev 模式下开发者可以用 CLI 生成本地 token，无需外部 IdP
@@ -210,7 +210,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SCOPE-03 | Phase 3 | Pending |
 | SCOPE-04 | Phase 3 | Gaps Found |
 | SCOPE-05 | Phase 3 | Pending |
-| SCOPE-06 | Phase 3 | Gaps Found |
+| SCOPE-06 | Phase 3 | Complete |
 | SCOPE-07 | Phase 3 | Pending |
 | AUTH-01 | Phase 3 | Gaps Found |
 | AUTH-02 | Phase 3 | Gaps Found |

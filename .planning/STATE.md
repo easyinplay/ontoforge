@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 3
 current_phase_name: Edit Store & Scope Model
 status: executing
-stopped_at: Completed 03-21-PLAN.md
-last_updated: "2026-10-21T07:55:19.953Z"
+stopped_at: Completed 03-22-PLAN.md
+last_updated: "2026-10-21T08:19:23.527Z"
 last_activity: 2026-10-21
 last_activity_desc: Phase 3 execution started
-state_head: c5a774550015ae9c17c1fb5817e01dad2ae6f7be
+state_head: 93b5d8ef1a644fed048a4b9378e3a01ce7dbafca
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 47
-  completed_plans: 45
+  completed_plans: 46
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-19)
 ## Current Position
 
 Phase: 3 (Edit Store & Scope Model) — EXECUTING
-Plan: 2 of 23
+Plan: 3 of 23
 Status: Ready to execute
 Last activity: 2026-10-21 — Phase 3 execution started
 
@@ -61,6 +61,7 @@ Progress: [██████████░░░░░░░░░░] 24/44 p
 | Phase 03 P19 | 1h 20m | 2 tasks | 12 files |
 | Phase 03 P20 | n/a | 2 tasks | 4 files |
 | Phase 03 P21 | 45 min | 3 tasks | 8 files |
+| Phase 03 P22 | 40 min | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -90,6 +91,7 @@ Progress: [██████████░░░░░░░░░░] 24/44 p
 - [Phase 03]: 03-18: reload/migrate lock the state row before DDL, advisory lock key per edit schema, lock_timeout set before the advisory lock; migrate probes Trino after its single-transaction switch — Avoids fence/DDL deadlock (40P01), unbounded lock waits and cross-deployment serialization; archive/rename steps cannot be committed ahead of the switch
 - [Phase 03]: 03-19: import checks the whole file before writing and treats a deleted object or removed edge as existing in every mode — An import is not a general write door: create-only by default, skip and update are explicit, nothing brings back a deleted object, a failed batch is reported so a skip rerun finishes the file; existence is read before the batches (a concurrent creator between read and commit is not refused, see SUMMARY)
 - [Phase 03]: 03-21: decimal 的 JSON 数字只收整数，带小数要求写成字符串；NUL 与 0 年 date / timestamp 按两后端交集在校验阶段拒绝；WR-A03 实测为 disproved，会话设置固定仅作纵深防御
+- [Phase 03]: 03-22: migrate --apply 在定义锁内复核已 apply 的 role(roles: Option<&RolesCheck>);objects.<param> 整体读取按读取该类型全部属性检查 allow-list — SCOPE-06 / D-18 延伸到 migrate;关闭 WR-B07 与 WR-C05
 
 ### Pending Todos
 
@@ -108,6 +110,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-21T07:55:19.816Z
-Stopped at: Completed 03-21-PLAN.md
+Last session: 2026-10-21T08:19:23.388Z
+Stopped at: Completed 03-22-PLAN.md
 Resume file: None
