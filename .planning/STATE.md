@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 3
 current_phase_name: Edit Store & Scope Model
 status: executing
-stopped_at: Completed 03-22-PLAN.md
-last_updated: "2026-10-21T08:19:23.527Z"
+stopped_at: Completed 03-23-PLAN.md
+last_updated: "2026-10-21T08:48:07.597Z"
 last_activity: 2026-10-21
 last_activity_desc: Phase 3 execution started
-state_head: 93b5d8ef1a644fed048a4b9378e3a01ce7dbafca
+state_head: 2defc592a8658297e7896908cb5e0fc76f5b204b
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 47
-  completed_plans: 46
+  completed_plans: 47
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-19)
 ## Current Position
 
 Phase: 3 (Edit Store & Scope Model) — EXECUTING
-Plan: 3 of 23
+Plan: 4 of 23
 Status: Ready to execute
 Last activity: 2026-10-21 — Phase 3 execution started
 
@@ -62,6 +62,7 @@ Progress: [██████████░░░░░░░░░░] 24/44 p
 | Phase 03 P20 | n/a | 2 tasks | 4 files |
 | Phase 03 P21 | 45 min | 3 tasks | 8 files |
 | Phase 03 P22 | 40 min | 3 tasks | 9 files |
+| Phase 03 P23 | 27 min | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -92,6 +93,7 @@ Progress: [██████████░░░░░░░░░░] 24/44 p
 - [Phase 03]: 03-19: import checks the whole file before writing and treats a deleted object or removed edge as existing in every mode — An import is not a general write door: create-only by default, skip and update are explicit, nothing brings back a deleted object, a failed batch is reported so a skip rerun finishes the file; existence is read before the batches (a concurrent creator between read and commit is not refused, see SUMMARY)
 - [Phase 03]: 03-21: decimal 的 JSON 数字只收整数，带小数要求写成字符串；NUL 与 0 年 date / timestamp 按两后端交集在校验阶段拒绝；WR-A03 实测为 disproved，会话设置固定仅作纵深防御
 - [Phase 03]: 03-22: migrate --apply 在定义锁内复核已 apply 的 role(roles: Option<&RolesCheck>);objects.<param> 整体读取按读取该类型全部属性检查 allow-list — SCOPE-06 / D-18 延伸到 migrate;关闭 WR-B07 与 WR-C05
+- [Phase 03]: 03-23: 目录创建放在库里（EditStore::open、DevKey::load_or_create），CLI 与 serve --dev 共用；Windows 密钥 ACL 不改，记为已知缺口 7
 
 ### Pending Todos
 
@@ -110,6 +112,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-21T08:19:23.388Z
-Stopped at: Completed 03-22-PLAN.md
+Last session: 2026-10-21T08:48:07.463Z
+Stopped at: Completed 03-23-PLAN.md
 Resume file: None
