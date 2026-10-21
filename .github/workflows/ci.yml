@@ -70,6 +70,18 @@ jobs:
         run: |
           psql -v ON_ERROR_STOP=1 -d postgres -c 'CREATE DATABASE demo' -c 'CREATE DATABASE editstore'
           psql -v ON_ERROR_STOP=1 -v fixtures="$PWD/examples/ontologies/aviation/bindings/dev/fixtures" -d demo -f ci/pg/seed.sql
+      # The same conformance cases that run on SQLite in the `test` job, on a real PostgreSQL 17
+      # (STORE-01, ROADMAP SC2). Every test creates its own pair of schemas in `editstore`, so
+      # the tests do not disturb each other. The database is the one the Trino catalog
+      # `editstore` maps (ci/trino/catalog/editstore.properties).
+      - name: Edit store conformance (PostgreSQL)
+        env:
+          ONTOFORGE_PG_URL: postgres://postgres:ontoforge-ci-only@localhost:5432/editstore
+        run: >-
+          cargo test -p ontoforge-storage --locked
+          --test conformance_pg --test reload_pg --test scope_store
+          --test migrate_pg --test history_masking --test import
+          -- --ignored
       # A service container starts before checkout and cannot mount repository files, so Trino
       # is started here (RESEARCH Pitfall 7).
       - name: Start Trino 483
@@ -97,7 +109,17 @@ jobs:
       # A green run must not mean "nothing ran" (RESEARCH Pitfall 8).
       - name: Ignored tests are actually there
         run: |
-          for target in "ontoforge-engine trino_it" "ontoforge cli_trino_it"; do
+          targets=(
+            "ontoforge-engine trino_it"
+            "ontoforge cli_trino_it"
+            "ontoforge-storage conformance_pg"
+            "ontoforge-storage reload_pg"
+            "ontoforge-storage scope_store"
+            "ontoforge-storage migrate_pg"
+            "ontoforge-storage history_masking"
+            "ontoforge-storage import"
+          )
+          for target in "${targets[@]}"; do
             set -- $target
             count=$(cargo test -p "$1" --test "$2" --locked -- --ignored --list | grep -c ': test$' || true)
             echo "$2: $count ignored tests"
