@@ -2,9 +2,21 @@
 //!
 //! `reload` is a library function: the `ontoforge reload` command and the server process both call
 //! it. It derives the physical schema of the new definition, compares it with the active one and
-//! either applies the additive DDL and records a new definition version in one transaction, or
-//! refuses with `ONT-V25` when the change is destructive. The two-step switch (pending, Trino
-//! visibility probe, active) and the reload lock come with plan 03-18.
+//! either applies the additive DDL and records a new definition version, or refuses with
+//! `ONT-V25` when the change is destructive.
+//!
+//! How a definition becomes active:
+//!
+//! 1. Under the definition lock (advisory lock on PostgreSQL, `BEGIN IMMEDIATE` on SQLite; the same
+//!    lock `migrate` and `scope apply` take) and with `lock_timeout` set, everything is decided
+//!    again from the database: the active definition, the difference, the stored roles (D-18).
+//! 2. Without a probe, or when the change adds nothing Trino has to show, the DDL, the new
+//!    version and its activation are one transaction.
+//! 3. With a probe, the DDL and the version, `pending`, commit first. The old definition is still
+//!    active and serves; the reload flushes Trino's metadata cache and looks until the new tables
+//!    and columns are visible (`wait_until_visible`). Only then a second short transaction makes
+//!    the pending version active. Writes validated against the old version are refused from that
+//!    commit on (the fence in [`crate::commit`]).
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Arc;
@@ -13,7 +25,8 @@ use std::time::Duration;
 use chrono::{SecondsFormat, Utc};
 use futures_util::future::BoxFuture;
 use ontoforge_auth::scope::{ScopeInputs, compile_scope};
-use ontoforge_engine::{EngineError, PhysicalColumn, TableRef};
+use ontoforge_engine::printer::print_flush_metadata_cache;
+use ontoforge_engine::{AnyEngine, Engine, EngineError, PhysicalColumn, QueryContext, TableRef};
 use ontoforge_schema::diag::Diagnostic;
 use ontoforge_schema::ir::{
     AttrType, Cardinality, ObjectTypeName, Ontology, ProfileName, PropertyName,
@@ -25,7 +38,7 @@ use crate::error::StoreError;
 use crate::index;
 use crate::migrate::{self, MigrationStep};
 use crate::naming;
-use crate::physical::{IndexKind, PhysicalSchema};
+use crate::physical::{ColumnType, IndexKind, PhysicalSchema};
 use crate::scope_store;
 use crate::sql_exit;
 use crate::store::{ActiveDefinition, Backend, EditStore, WriteTx};
@@ -146,7 +159,18 @@ pub async fn reload(
             if let Some(active) = done.active {
                 store.install_if_newer(&Arc::new(active)).await;
             }
-            Ok(done.outcome)
+            let (Some(pending), Some(probe)) = (done.pending, &opts.probe) else {
+                return Ok(done.outcome);
+            };
+            // The DDL is committed and only adds; the old definition keeps serving until
+            // Trino shows what the new one needs.
+            let active = publish(store, probe, pending).await?;
+            let def_version = active.def_version;
+            store.install_if_newer(&Arc::new(active)).await;
+            Ok(ReloadOutcome {
+                def_version: Some(def_version),
+                ..done.outcome
+            })
         }
         Err(error) => {
             sql_exit::rollback(tx).await;
@@ -198,6 +222,8 @@ struct Done {
     write: bool,
     /// The definition the in-memory copy of the store should follow after the commit.
     active: Option<ActiveDefinition>,
+    /// A definition that is committed as `pending` and waits for Trino.
+    pending: Option<Pending>,
 }
 
 /// The decisions of one reload, made in a transaction.
@@ -356,6 +382,7 @@ async fn locked_reload(
             },
             write: false,
             active: prepared.active,
+            pending: None,
         });
     }
 
@@ -384,6 +411,34 @@ async fn locked_reload(
             },
             write: true,
             active,
+            pending: None,
+        });
+    }
+    let expected = if opts.probe.is_some() {
+        expected_visible(&steps)
+    } else {
+        Vec::new()
+    };
+    if !expected.is_empty() {
+        // Two steps: the DDL and the pending version commit now, the version becomes active when
+        // Trino shows the new tables and columns (`publish`).
+        let def_version = insert_pending(tx, ontology, &physical, None).await?;
+        return Ok(Done {
+            outcome: ReloadOutcome {
+                previous_def_version: previous,
+                def_version: None,
+                changed: true,
+                ddl,
+            },
+            write: true,
+            active: None,
+            pending: Some(Pending {
+                def_version,
+                from_version: previous.unwrap_or(0),
+                ontology: ontology.clone(),
+                physical,
+                expected,
+            }),
         });
     }
     let def_version = switch_definition(tx, ontology, &physical, None).await?;
@@ -400,6 +455,7 @@ async fn locked_reload(
             ontology: ontology.clone(),
             physical,
         }),
+        pending: None,
     })
 }
 
@@ -429,12 +485,29 @@ pub(crate) async fn execute_steps(
 /// transaction `tx`. `of_def_state` still points at the previous version. `migration_json` holds
 /// the steps a migration ran (ADR-0026: replay of an edit log across versions reads them); a
 /// reload passes `None`.
+///
+/// A pending version left behind by an earlier reload of the very same definition (its probe ran
+/// out) is reused instead of numbering a new one; every other pending version is superseded, so
+/// there is at most one.
 pub(crate) async fn insert_pending(
     tx: &mut WriteTx<'_>,
     ontology: &Ontology,
     physical: &PhysicalSchema,
     migration_json: Option<&serde_json::Value>,
 ) -> Result<i64, StoreError> {
+    let mut reusable = None;
+    if migration_json.is_none() {
+        for found in sql_exit::pending_definitions(tx).await? {
+            if found.physical == *physical && same_ontology(&found.ontology, ontology)? {
+                reusable = Some(found.def_version);
+                break;
+            }
+        }
+    }
+    sql_exit::supersede_pending_except(tx, reusable).await?;
+    if let Some(def_version) = reusable {
+        return Ok(def_version);
+    }
     let ontology_json = to_json(ontology)?;
     let physical_json = to_json(physical)?;
     let migration_json = migration_json.map(to_json).transpose()?;
@@ -467,6 +540,246 @@ pub(crate) async fn switch_definition(
     let def_version = insert_pending(tx, ontology, physical, migration_json).await?;
     activate(tx, def_version).await?;
     Ok(def_version)
+}
+
+// ---------------------------------------------------------------------------------------------
+// The Trino visibility probe (STORE-02: "Trino metadata visible before the switch")
+// ---------------------------------------------------------------------------------------------
+
+impl ProbeTarget for AnyEngine {
+    fn flush_metadata<'a>(&'a self, catalog: &'a str) -> BoxFuture<'a, Result<(), EngineError>> {
+        Box::pin(async move {
+            let sql = print_flush_metadata_cache(catalog)?;
+            self.execute(&sql, &probe_query_context()).await.map(|_| ())
+        })
+    }
+
+    fn describe<'a>(
+        &'a self,
+        tables: &'a [TableRef],
+    ) -> BoxFuture<'a, Result<BTreeMap<TableRef, Vec<PhysicalColumn>>, EngineError>> {
+        Box::pin(async move { self.describe_tables(tables, &probe_query_context()).await })
+    }
+}
+
+/// The service's own queries of a probe carry no user: a trace token and the `ontoforge` tag.
+fn probe_query_context() -> QueryContext {
+    QueryContext::new(
+        "ontoforge-reload-probe".to_owned(),
+        vec!["ontoforge".to_owned()],
+    )
+}
+
+/// What Trino has to show before a definition may become active: a table, and the value columns
+/// a step added to it. Array columns are left out: Trino's PostgreSQL connector skips them unless
+/// `postgresql.array-mapping` says otherwise (RESEARCH Pitfall 7), so waiting for one could wait
+/// forever. A column's `__set` flag is added in the same statement as the column and not asked
+/// for separately.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct Visible {
+    table: String,
+    /// The table itself has to be visible, not only some columns of it.
+    new_table: bool,
+    columns: BTreeSet<String>,
+}
+
+/// The tables and columns that `steps` create or move to a new name.
+pub(crate) fn expected_visible(steps: &[MigrationStep]) -> Vec<Visible> {
+    let mut by_table: BTreeMap<String, Visible> = BTreeMap::new();
+    let mut want = |table: &str, new_table: bool, columns: Vec<String>| {
+        let entry = by_table.entry(table.to_owned()).or_insert_with(|| Visible {
+            table: table.to_owned(),
+            new_table: false,
+            columns: BTreeSet::new(),
+        });
+        entry.new_table |= new_table;
+        entry.columns.extend(columns);
+    };
+    let is_array = |ty: &ColumnType| matches!(ty, ColumnType::Array(_));
+    for step in steps {
+        match step {
+            MigrationStep::Ddl(DdlStep::CreateObjectTable(table)) => want(
+                &table.table,
+                true,
+                std::iter::once(table.pk.column.clone())
+                    .chain(
+                        table
+                            .properties
+                            .values()
+                            .filter(|column| !is_array(&column.ty))
+                            .map(|column| column.column.clone()),
+                    )
+                    .collect(),
+            ),
+            MigrationStep::Ddl(DdlStep::AddPropertyColumn { table, column }) => want(
+                table,
+                false,
+                if is_array(&column.ty) {
+                    Vec::new()
+                } else {
+                    vec![column.column.clone()]
+                },
+            ),
+            MigrationStep::Ddl(DdlStep::CreateLinkTable(table)) => want(
+                &table.table,
+                true,
+                vec![table.a.column.clone(), table.b.column.clone()],
+            ),
+            MigrationStep::ArchiveColumn {
+                table, archived, ..
+            } => want(table, false, vec![archived.clone()]),
+            MigrationStep::RenameColumn {
+                table, to_column, ..
+            } => want(table, false, vec![to_column.clone()]),
+            MigrationStep::RenameTable { to, .. } => want(to, true, Vec::new()),
+            MigrationStep::ArchiveTable { archived, .. } => want(archived, true, Vec::new()),
+            MigrationStep::Ddl(DdlStep::CreateIndex { .. } | DdlStep::DropIndex { .. })
+            | MigrationStep::DropArchivedColumn { .. }
+            | MigrationStep::DropArchivedTable { .. } => {}
+        }
+    }
+    by_table
+        .into_values()
+        .filter(|visible| visible.new_table || !visible.columns.is_empty())
+        .collect()
+}
+
+/// What is missing from `shown` of `expected`, as `table` or `table.column`.
+fn missing_from(
+    expected: &[Visible],
+    tables: &[TableRef],
+    shown: &BTreeMap<TableRef, Vec<PhysicalColumn>>,
+) -> Vec<String> {
+    let mut missing = Vec::new();
+    for (visible, table) in expected.iter().zip(tables) {
+        let Some(columns) = shown.get(table) else {
+            missing.push(visible.table.clone());
+            continue;
+        };
+        for column in &visible.columns {
+            if !columns
+                .iter()
+                .any(|shown| shown.name.eq_ignore_ascii_case(column))
+            {
+                missing.push(format!("{}.{column}", visible.table));
+            }
+        }
+    }
+    missing
+}
+
+/// Flushes the metadata cache of the catalog, then looks for the `expected` tables and columns
+/// until they are all there or `probe.timeout` has passed: the first look at once, then after 200
+/// ms, doubling up to 2 s. A flush that fails does not stop the wait (the cache expires by
+/// itself); a Trino that cannot be asked counts as "nothing visible yet".
+pub(crate) async fn wait_until_visible(
+    store: &EditStore,
+    probe: &ProbeContext<'_>,
+    expected: &[Visible],
+) -> Result<(), ReloadError> {
+    if expected.is_empty() {
+        return Ok(());
+    }
+    let schema = store.schema_edit().unwrap_or("main");
+    let tables: Vec<TableRef> = expected
+        .iter()
+        .map(|visible| TableRef {
+            catalog: probe.catalog.clone(),
+            schema: schema.to_owned(),
+            table: visible.table.clone(),
+        })
+        .collect();
+    let flush_error = probe.target.flush_metadata(&probe.catalog).await.err();
+    let started = tokio::time::Instant::now();
+    let mut delay = Duration::from_millis(200);
+    loop {
+        let mut missing = match probe.target.describe(&tables).await {
+            Ok(shown) => {
+                let missing = missing_from(expected, &tables, &shown);
+                if missing.is_empty() {
+                    return Ok(());
+                }
+                missing
+            }
+            Err(error) => {
+                let mut all: Vec<String> = expected
+                    .iter()
+                    .flat_map(|visible| {
+                        if visible.columns.is_empty() {
+                            vec![visible.table.clone()]
+                        } else {
+                            visible
+                                .columns
+                                .iter()
+                                .map(|column| format!("{}.{column}", visible.table))
+                                .collect()
+                        }
+                    })
+                    .collect();
+                all.push(format!("(Trino could not be asked: {error})"));
+                all
+            }
+        };
+        let Some(left) = probe.timeout.checked_sub(started.elapsed()) else {
+            if let Some(error) = &flush_error {
+                missing.push(format!("(flush_metadata_cache failed: {error})"));
+            }
+            return Err(ReloadError::NotVisible { missing });
+        };
+        tokio::time::sleep(delay.min(left)).await;
+        delay = (delay * 2).min(Duration::from_secs(2));
+    }
+}
+
+/// A definition whose DDL is committed and whose version waits, `pending`, for Trino.
+struct Pending {
+    def_version: i64,
+    /// The version that was active when the DDL ran, 0 before the first definition.
+    from_version: i64,
+    ontology: Ontology,
+    physical: PhysicalSchema,
+    expected: Vec<Visible>,
+}
+
+/// Second half of a reload with a probe: waits for Trino, then makes the pending version active
+/// in a transaction of its own, under the definition lock again. If the active version is no
+/// longer the one the DDL ran against, or the pending version was replaced, someone else changed
+/// the definition meanwhile and the reload is to be run again.
+async fn publish(
+    store: &EditStore,
+    probe: &ProbeContext<'_>,
+    pending: Pending,
+) -> Result<ActiveDefinition, ReloadError> {
+    wait_until_visible(store, probe, &pending.expected).await?;
+    let mut tx = begin_definition_tx(store).await?;
+    match activate_pending(&mut tx, &pending).await {
+        Ok(()) => sql_exit::commit(tx).await?,
+        Err(error) => {
+            sql_exit::rollback(tx).await;
+            return Err(error);
+        }
+    }
+    Ok(ActiveDefinition {
+        def_version: pending.def_version,
+        ontology: pending.ontology,
+        physical: pending.physical,
+    })
+}
+
+async fn activate_pending(tx: &mut WriteTx<'_>, pending: &Pending) -> Result<(), ReloadError> {
+    let active = sql_exit::lock_def_state(tx).await?;
+    let still_pending = sql_exit::pending_definitions(tx)
+        .await?
+        .iter()
+        .any(|found| found.def_version == pending.def_version);
+    if active != pending.from_version || !still_pending {
+        return Err(ReloadError::Store(StoreError::Conflict(format!(
+            "definition version {} was prepared on top of version {}, but version {active} is active now; run the reload again",
+            pending.def_version, pending.from_version
+        ))));
+    }
+    activate(tx, pending.def_version).await?;
+    Ok(())
 }
 
 /// Runs one step so that it can be repeated: a table is created only if missing, and columns are

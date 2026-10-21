@@ -1466,3 +1466,54 @@ async fn migrate_waits_for_trino_after_the_switch() {
     assert_eq!(seeing.describes(), 2);
     assert_eq!(seeing.flushes(), ["editstore"]);
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn the_old_definition_keeps_serving_while_the_probe_waits() {
+    let t = sqlite_store().await;
+    reload(&t.store, &base(), &ReloadOptions::default())
+        .await
+        .expect("v1");
+    let writer = std::sync::Arc::new(t.reopen().await);
+    let trino = std::sync::Arc::new(ScriptedTrino::gate(4, &["zone"]));
+
+    let store = std::sync::Arc::clone(&t.store);
+    let looking = std::sync::Arc::clone(&trino);
+    let switching =
+        tokio::spawn(async move { reload(&store, &with_zone(), &probing(&looking, 5_000)).await });
+    // Wait until the DDL is committed and the probe is looking.
+    while trino.describes() == 0 {
+        tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+    }
+    assert!(!switching.is_finished(), "the probe is still waiting");
+    assert_eq!(t.active_version().await, 1, "the old definition is active");
+
+    // Writes against definition 1 go through while the reload waits: no lock is held.
+    for i in 0..3 {
+        writer
+            .commit(gate_commit(1, &format!("W{i}"), &[("name", "North")]))
+            .await
+            .expect("a write under the old definition during the wait");
+    }
+    assert!(!switching.is_finished());
+
+    let out = switching
+        .await
+        .expect("join")
+        .expect("the reload ends once Trino shows the column");
+    assert_eq!(out.def_version, Some(2));
+    let err = writer
+        .commit(gate_commit(1, "W9", &[("name", "South")]))
+        .await
+        .expect_err("a write under the old definition after the switch");
+    assert!(
+        matches!(
+            err,
+            EditError::DefinitionStale {
+                expected: 1,
+                active: 2
+            }
+        ),
+        "{err:?}"
+    );
+    support::assert_log_versions_never_go_back(&t.store).await;
+}

@@ -517,6 +517,51 @@ async fn set_status(
     execute_built(tx, built).await
 }
 
+/// Marks every pending definition version but `keep` as superseded: a pending version that a
+/// later reload replaces (or that the reload itself reuses, `keep`) must not pile up.
+pub(crate) async fn supersede_pending_except(
+    tx: &mut WriteTx<'_>,
+    keep: Option<i64>,
+) -> Result<(), StoreError> {
+    set_status(tx, "pending", "superseded", keep)
+        .await
+        .map(|_| ())
+}
+
+/// The definition versions with status `pending`, newest first.
+pub(crate) async fn pending_definitions(
+    tx: &mut WriteTx<'_>,
+) -> Result<Vec<ActiveDefinition>, StoreError> {
+    let backend = tx.backend();
+    let select = Query::select()
+        .column(Alias::new("def_version"))
+        .expr(column_text(backend, "ontology_json"))
+        .expr(column_text(backend, "physical_json"))
+        .from(Alias::new(VERSION_TABLE))
+        .and_where(Expr::col(Alias::new("status")).eq("pending"))
+        .order_by(Alias::new("def_version"), sea_query::Order::Desc)
+        .to_owned();
+    let built = build(&select, tx);
+    let rows = fetch_all_cells(
+        tx,
+        built,
+        &[CellKind::Int64, CellKind::Text, CellKind::Text],
+    )
+    .await?;
+    rows.iter()
+        .map(|row| match row.as_slice() {
+            [
+                Cell::Int(version),
+                Cell::Text(ontology_json),
+                Cell::Text(physical_json),
+            ] => parse_definition(*version, ontology_json, physical_json),
+            _ => Err(StoreError::Corrupt(
+                "a definition version row has the wrong shape".to_owned(),
+            )),
+        })
+        .collect()
+}
+
 /// The JSON documents and the time of a definition version that `insert_pending_definition`
 /// stores.
 pub(crate) struct DefinitionRecord<'a> {

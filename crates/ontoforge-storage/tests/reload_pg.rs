@@ -12,11 +12,13 @@ mod support;
 use std::collections::{BTreeMap, BTreeSet};
 use std::time::Duration;
 
+use futures_util::future::BoxFuture;
+use ontoforge_engine::{EngineError, PhysicalColumn, PhysicalType, TableRef};
 use ontoforge_schema::ir::{ObjectTypeName, Ontology, PropertyName};
 use ontoforge_storage::commit::{Actor, Commit, Edit, EditError, ObjectOp};
 use ontoforge_storage::error::StoreError;
 use ontoforge_storage::migrate::{MigrateError, apply_migration, plan_migration};
-use ontoforge_storage::reload::{ReloadError, ReloadOptions, reload};
+use ontoforge_storage::reload::{ProbeContext, ProbeTarget, ReloadError, ReloadOptions, reload};
 use ontoforge_storage::scope_store::ScopeApplyError;
 use ontoforge_storage::store::definition_lock_key;
 use ontoforge_storage::value::PropertyValue;
@@ -597,4 +599,120 @@ async fn reload_racing_commits_never_lets_an_old_write_through_on_pg() {
             "round {round}: {versions:?}"
         );
     }
+}
+
+// ---------------------------------------------------------------------------------------------
+// The two step switch on PostgreSQL (plan 03-18 task 3)
+// ---------------------------------------------------------------------------------------------
+
+/// A Trino that shows `of_obj_gate.zone` from the `visible_from`-th look on.
+struct ZoneAppears {
+    visible_from: usize,
+    looks: std::sync::atomic::AtomicUsize,
+}
+
+impl ProbeTarget for ZoneAppears {
+    fn flush_metadata<'a>(&'a self, _catalog: &'a str) -> BoxFuture<'a, Result<(), EngineError>> {
+        Box::pin(async { Ok(()) })
+    }
+
+    fn describe<'a>(
+        &'a self,
+        tables: &'a [TableRef],
+    ) -> BoxFuture<'a, Result<BTreeMap<TableRef, Vec<PhysicalColumn>>, EngineError>> {
+        let look = self.looks.fetch_add(1, std::sync::atomic::Ordering::SeqCst) + 1;
+        let mut shown = BTreeMap::new();
+        for table in tables {
+            let mut names = vec!["code".to_owned(), "name".to_owned()];
+            if look >= self.visible_from {
+                names.push("zone".to_owned());
+            }
+            shown.insert(
+                table.clone(),
+                names
+                    .into_iter()
+                    .map(|name| PhysicalColumn {
+                        name,
+                        physical: PhysicalType::parse("varchar"),
+                        nullable: true,
+                    })
+                    .collect(),
+            );
+        }
+        Box::pin(async move { Ok(shown) })
+    }
+}
+
+#[tokio::test(flavor = "multi_thread")]
+#[ignore = "needs ONTOFORGE_PG_URL or --features embedded-pg"]
+async fn pending_switch_on_pg_serves_the_old_definition_until_visible() {
+    let t = pg_store().await;
+    reload(&t.store, &base(), &ReloadOptions::default())
+        .await
+        .expect("v1");
+    let writer = std::sync::Arc::new(t.open_another(Duration::from_secs(5)).await);
+    let trino = std::sync::Arc::new(ZoneAppears {
+        visible_from: 4,
+        looks: std::sync::atomic::AtomicUsize::new(0),
+    });
+
+    let store = std::sync::Arc::clone(&t.store);
+    let looking = std::sync::Arc::clone(&trino);
+    let switching = tokio::spawn(async move {
+        let options = ReloadOptions {
+            probe: Some(ProbeContext {
+                target: &*looking,
+                catalog: "editstore".to_owned(),
+                timeout: Duration::from_secs(10),
+            }),
+            ..ReloadOptions::default()
+        };
+        reload(&store, &with_zone(), &options).await
+    });
+    while trino.looks.load(std::sync::atomic::Ordering::SeqCst) == 0 {
+        tokio::time::sleep(Duration::from_millis(10)).await;
+    }
+    assert!(!switching.is_finished());
+    assert_eq!(t.active_version().await, 1);
+    let statuses: Vec<(i64, String)> = sqlx::query_as(sqlx::AssertSqlSafe(format!(
+        "SELECT def_version, CAST(status AS text) FROM \"{}\".of_def_version ORDER BY 1",
+        t.schema_sys
+    )))
+    .fetch_all(t.side())
+    .await
+    .expect("versions");
+    assert_eq!(
+        statuses,
+        [(1, "active".to_owned()), (2, "pending".to_owned())]
+    );
+
+    // The DDL is committed and no lock is held: writes under definition 1 go through.
+    for i in 0..3 {
+        writer
+            .commit(gate_commit(1, &format!("W{i}"), "North"))
+            .await
+            .expect("a write under the old definition during the wait");
+    }
+    let out = switching
+        .await
+        .expect("join")
+        .expect("the reload ends once Trino shows the column");
+    assert_eq!(out.def_version, Some(2));
+    assert_eq!(t.active_version().await, 2);
+
+    let err = writer
+        .commit(gate_commit(1, "W9", "South"))
+        .await
+        .expect_err("a write under the old definition after the switch");
+    assert!(
+        matches!(
+            err,
+            EditError::DefinitionStale {
+                expected: 1,
+                active: 2
+            }
+        ),
+        "{err:?}"
+    );
+    support::assert_log_versions_never_go_back(&t.store).await;
 }

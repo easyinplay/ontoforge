@@ -14,15 +14,16 @@ use ontoforge_schema::diag::{Diagnostic, Severity, codes};
 use ontoforge_schema::ir::Ontology;
 use ontoforge_schema::loader::SourceMap;
 use ontoforge_storage::migrate::{
-    MigrateError, MigrationPlan, apply_drop_archived, apply_migration, plan_drop_archived,
+    MigrateError, MigrationPlan, apply_drop_archived, apply_migration_probed, plan_drop_archived,
     plan_migration,
 };
+use ontoforge_storage::reload::ProbeContext;
 use ontoforge_storage::store::{EditStore, StoreSettings};
 
 use crate::cli::MigrateArgs;
 use crate::reload::{
-    EXIT_STORE, lock_timeout_diagnostic, not_visible_diagnostic, store_diagnostic, store_failure,
-    store_settings,
+    EXIT_STORE, ProbeEngine, load_server, lock_timeout_diagnostic, not_visible_diagnostic,
+    probe_engine, store_diagnostic, store_failure,
 };
 use crate::render::{self, Format};
 use crate::{lint_cmd, print_rendered};
@@ -49,8 +50,15 @@ pub fn run(args: &MigrateArgs) -> u8 {
     };
 
     let mut diagnostics = out.diagnostics.clone();
-    let settings = match store_settings(&args.server_config) {
-        Ok(settings) => settings,
+    let server = match load_server(&args.server_config) {
+        Ok(server) => server,
+        Err(found) => {
+            diagnostics.extend(found);
+            return fail(&diagnostics, &out.sources, 1, args);
+        }
+    };
+    let probe = match probe_engine(&server, ontology, args.profile.profile.as_deref()) {
+        Ok(probe) => probe,
         Err(found) => {
             diagnostics.extend(found);
             return fail(&diagnostics, &out.sources, 1, args);
@@ -71,7 +79,8 @@ pub fn run(args: &MigrateArgs) -> u8 {
         }
     };
 
-    match runtime.block_on(execute(settings, ontology, args)) {
+    let context = probe.as_ref().map(ProbeEngine::context);
+    match runtime.block_on(execute(server.settings, ontology, args, context.as_ref())) {
         Ok(outcome) => {
             finish(&diagnostics, &out.sources, Some(&outcome), args);
             if args.output.format == Format::Human {
@@ -130,6 +139,7 @@ async fn execute(
     settings: StoreSettings,
     ontology: &Ontology,
     args: &MigrateArgs,
+    probe: Option<&ProbeContext<'_>>,
 ) -> Result<Outcome, MigrateError> {
     let store = EditStore::open(settings).await?;
     if args.apply {
@@ -137,7 +147,7 @@ async fn execute(
         let def_version = if args.drop_archived {
             apply_drop_archived(&store, hash).await?
         } else {
-            apply_migration(&store, ontology, &args.rename, hash).await?
+            apply_migration_probed(&store, ontology, &args.rename, hash, probe).await?
         };
         return Ok(Outcome::Applied { def_version });
     }

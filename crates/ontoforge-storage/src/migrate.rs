@@ -35,8 +35,8 @@ use crate::physical::{
     ArchivedColumn, ArchivedTable, IndexDef, IndexKind, ObjectTable, PhysicalSchema, PropertyColumn,
 };
 use crate::reload::{
-    ProbeContext, begin_definition_tx, execute_steps, is_lock_timeout, same_ontology,
-    switch_definition,
+    ProbeContext, ReloadError, Visible, begin_definition_tx, execute_steps, expected_visible,
+    is_lock_timeout, same_ontology, switch_definition, wait_until_visible,
 };
 use crate::sql_exit;
 use crate::store::{ActiveDefinition, Backend, EditStore, WriteTx};
@@ -284,6 +284,17 @@ pub enum MigrateError {
     NotVisible { missing: Vec<String> },
 }
 
+impl From<ReloadError> for MigrateError {
+    fn from(error: ReloadError) -> Self {
+        match error {
+            ReloadError::Definition(found) => Self::Definition(found),
+            ReloadError::Store(error) => Self::Store(error),
+            ReloadError::LockTimeout => Self::LockTimeout,
+            ReloadError::NotVisible { missing } => Self::NotVisible { missing },
+        }
+    }
+}
+
 impl From<StoreError> for MigrateError {
     fn from(error: StoreError) -> Self {
         if is_lock_timeout(&error) {
@@ -328,19 +339,28 @@ pub async fn apply_migration(
 }
 
 /// [`apply_migration`], then waits until Trino shows the names the migration created.
+///
+/// Unlike a reload, a migration cannot commit its DDL first and switch later: renaming or
+/// archiving a column breaks the definition that is still active. The definition therefore
+/// switches in the same transaction as the DDL, and the wait for Trino comes after. A Trino that
+/// does not show the new names in time is [`MigrateError::NotVisible`]: the migration is applied
+/// and active, only the reads through Trino lag behind.
 pub async fn apply_migration_probed(
     store: &EditStore,
     new: &Ontology,
     renames: &[RenameDecl],
     expected_hash: &str,
-    _probe: Option<&ProbeContext<'_>>,
+    probe: Option<&ProbeContext<'_>>,
 ) -> Result<i64, MigrateError> {
     let mut tx = begin_definition_tx(store).await?;
     match apply_in(&mut tx, new, renames, expected_hash).await {
-        Ok(active) => {
+        Ok((active, expected)) => {
             sql_exit::commit(tx).await?;
             let version = active.def_version;
-            *store.active.write().await = Some(Arc::new(active));
+            store.install_if_newer(&Arc::new(active)).await;
+            if let Some(probe) = probe {
+                wait_until_visible(store, probe, &expected).await?;
+            }
             Ok(version)
         }
         Err(error) => {
@@ -355,7 +375,7 @@ async fn apply_in(
     new: &Ontology,
     renames: &[RenameDecl],
     expected_hash: &str,
-) -> Result<ActiveDefinition, MigrateError> {
+) -> Result<(ActiveDefinition, Vec<Visible>), MigrateError> {
     // Before any DDL: see `sql_exit::lock_def_state`.
     sql_exit::lock_def_state(tx).await?;
     let active = active_in(tx).await?;
@@ -365,27 +385,32 @@ async fn apply_in(
         && computed.physical == active.physical
         && same_ontology(&active.ontology, new)?
     {
-        return Ok(active);
+        return Ok((active, Vec::new()));
     }
     run(tx, new, computed).await
 }
 
-/// Runs the steps of `computed` and switches to `ontology`, in the transaction `tx`.
+/// Runs the steps of `computed` and switches to `ontology`, in the transaction `tx`. Returns the
+/// new definition and what Trino has to show for it.
 async fn run(
     tx: &mut WriteTx<'_>,
     ontology: &Ontology,
     computed: Computed,
-) -> Result<ActiveDefinition, MigrateError> {
+) -> Result<(ActiveDefinition, Vec<Visible>), MigrateError> {
     execute_steps(tx, &computed.plan.steps, ontology).await?;
     let migration_json = serde_json::to_value(&computed.plan)
         .map_err(|e| StoreError::Corrupt(format!("cannot serialize the migration plan: {e}")))?;
     let def_version =
         switch_definition(tx, ontology, &computed.physical, Some(&migration_json)).await?;
-    Ok(ActiveDefinition {
-        def_version,
-        ontology: ontology.clone(),
-        physical: computed.physical,
-    })
+    let expected = expected_visible(&computed.plan.steps);
+    Ok((
+        ActiveDefinition {
+            def_version,
+            ontology: ontology.clone(),
+            physical: computed.physical,
+        },
+        expected,
+    ))
 }
 
 async fn active_in(tx: &mut WriteTx<'_>) -> Result<ActiveDefinition, MigrateError> {
@@ -446,7 +471,7 @@ pub async fn apply_drop_archived(
 ) -> Result<i64, MigrateError> {
     let mut tx = begin_definition_tx(store).await?;
     match drop_archived_in(&mut tx, expected_hash).await {
-        Ok(active) => {
+        Ok((active, _)) => {
             sql_exit::commit(tx).await?;
             let version = active.def_version;
             *store.active.write().await = Some(Arc::new(active));
@@ -462,13 +487,13 @@ pub async fn apply_drop_archived(
 async fn drop_archived_in(
     tx: &mut WriteTx<'_>,
     expected_hash: &str,
-) -> Result<ActiveDefinition, MigrateError> {
+) -> Result<(ActiveDefinition, Vec<Visible>), MigrateError> {
     sql_exit::lock_def_state(tx).await?;
     let active = active_in(tx).await?;
     let plan = plan_drop_archived(&active);
     check_hash(expected_hash, &plan.hash)?;
     if plan.steps.is_empty() {
-        return Ok(active);
+        return Ok((active, Vec::new()));
     }
     let mut physical = active.physical.clone();
     for table in physical.objects.values_mut() {
