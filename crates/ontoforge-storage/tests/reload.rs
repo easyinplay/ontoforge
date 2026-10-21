@@ -1437,7 +1437,8 @@ async fn migrate_waits_for_trino_after_the_switch() {
         catalog: "editstore".to_owned(),
         timeout: std::time::Duration::from_millis(300),
     };
-    let result = apply_migration_probed(&t.store, &removed, &[], &plan.hash, Some(&probe)).await;
+    let result =
+        apply_migration_probed(&t.store, &removed, &[], &plan.hash, Some(&probe), None).await;
     let Err(MigrateError::NotVisible { missing }) = result else {
         panic!("expected NotVisible, got {result:?}");
     };
@@ -1459,7 +1460,7 @@ async fn migrate_waits_for_trino_after_the_switch() {
         catalog: "editstore".to_owned(),
         timeout: std::time::Duration::from_secs(5),
     };
-    let version = apply_migration_probed(&t.store, &removed, &[], &plan.hash, Some(&probe))
+    let version = apply_migration_probed(&t.store, &removed, &[], &plan.hash, Some(&probe), None)
         .await
         .expect("migrate");
     assert_eq!(version, 2);

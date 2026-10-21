@@ -147,7 +147,7 @@ async fn execute(
         let def_version = if args.drop_archived {
             apply_drop_archived(&store, hash).await?
         } else {
-            apply_migration_probed(&store, ontology, &args.rename, hash, probe).await?
+            apply_migration_probed(&store, ontology, &args.rename, hash, probe, None).await?
         };
         return Ok(Outcome::Applied { def_version });
     }

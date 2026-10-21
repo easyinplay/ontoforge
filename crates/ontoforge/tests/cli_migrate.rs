@@ -333,3 +333,138 @@ fn migrate_before_any_reload_is_refused() {
         stdout(&out)
     );
 }
+
+// ---------------------------------------------------------------------------------------------
+// Roles that a migration would break (plan 03-22, D-18, SCOPE-06)
+// ---------------------------------------------------------------------------------------------
+
+const AVIATION: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../examples/ontologies/aviation"
+);
+const AVIATION_SCOPE: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../examples/scopes/aviation"
+);
+const DEV_CONFIG: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../examples/server/ontoforge-server.dev.toml"
+);
+const DEV_STORE_PATH: &str = "../../target/ontoforge-dev/editstore.db";
+
+/// A copy of `from` below `to`.
+fn copy_dir(from: &Path, to: &Path) {
+    std::fs::create_dir_all(to).expect("create dir");
+    for entry in std::fs::read_dir(from).expect("read dir") {
+        let entry = entry.expect("entry");
+        let target = to.join(entry.file_name());
+        if entry.file_type().expect("file type").is_dir() {
+            copy_dir(&entry.path(), &target);
+        } else {
+            std::fs::copy(entry.path(), target).expect("copy");
+        }
+    }
+}
+
+#[test]
+fn migrate_refuses_a_change_that_breaks_an_applied_role() {
+    // The example server configuration declares `homeAirports`, which crewScheduler reads.
+    let dir = tempfile::tempdir().expect("tempdir");
+    let text = std::fs::read_to_string(DEV_CONFIG).expect("example server config");
+    assert!(
+        text.contains(DEV_STORE_PATH),
+        "the example store path moved"
+    );
+    let config_path = dir.path().join("ontoforge-server.toml");
+    std::fs::write(&config_path, text.replace(DEV_STORE_PATH, "edit.db")).expect("write config");
+    let config = config_path.to_str().expect("utf-8 path");
+
+    let first = ontoforge(&["reload", AVIATION, "--server-config", config]);
+    assert_eq!(first.status.code(), Some(0), "stderr: {}", stderr(&first));
+    let scope_plan = ontoforge(&[
+        "scope",
+        "plan",
+        AVIATION_SCOPE,
+        "--ontology",
+        AVIATION,
+        "--server-config",
+        config,
+    ]);
+    assert_eq!(
+        scope_plan.status.code(),
+        Some(0),
+        "stderr: {}",
+        stderr(&scope_plan)
+    );
+    let scope_hash = plan_hash_line(&scope_plan);
+    let apply = ontoforge(&[
+        "scope",
+        "apply",
+        AVIATION_SCOPE,
+        "--ontology",
+        AVIATION,
+        "--server-config",
+        config,
+        "--plan-hash",
+        &scope_hash,
+    ]);
+    assert_eq!(apply.status.code(), Some(0), "stderr: {}", stderr(&apply));
+
+    // A definition without `Airport.city`, a property the dispatcher role lists.
+    let changed = tempfile::tempdir().expect("tempdir");
+    copy_dir(Path::new(AVIATION), changed.path());
+    let objects = changed.path().join("objects.yaml");
+    let from = "  city: { type: string, displayName: City }\n";
+    let objects_text = std::fs::read_to_string(&objects).expect("read");
+    assert!(objects_text.contains(from), "objects.yaml lost `city`");
+    std::fs::write(&objects, objects_text.replace(from, "")).expect("write");
+    let changed_dir = changed.path().to_str().expect("utf-8 path");
+
+    let plan = ontoforge(&["migrate", changed_dir, "--server-config", config, "--plan"]);
+    assert_eq!(plan.status.code(), Some(0), "stderr: {}", stderr(&plan));
+    let hash = plan_hash_line(&plan);
+
+    let refused = ontoforge(&[
+        "migrate",
+        changed_dir,
+        "--server-config",
+        config,
+        "--apply",
+        "--plan-hash",
+        &hash,
+    ]);
+    assert_eq!(
+        refused.status.code(),
+        Some(1),
+        "stderr: {}",
+        stderr(&refused)
+    );
+    let out = stdout(&refused);
+    assert!(out.contains("ONT-V21"), "{out}");
+    assert!(out.contains("dispatcher"), "the role is named: {out}");
+    assert!(out.contains("city"), "the property is named: {out}");
+    assert!(
+        stderr(&refused).contains("migrate failed, the edit store was not changed"),
+        "{}",
+        stderr(&refused)
+    );
+
+    // The definition did not move: the same plan is still offered from def_version 1.
+    let again = ontoforge(&["migrate", changed_dir, "--server-config", config, "--plan"]);
+    assert_eq!(again.status.code(), Some(0), "stderr: {}", stderr(&again));
+    assert!(
+        stdout(&again).contains("from def_version 1"),
+        "{}",
+        stdout(&again)
+    );
+}
+
+/// The hash after `plan hash: ` in the output of a `plan` command.
+fn plan_hash_line(out: &Output) -> String {
+    stdout(out)
+        .lines()
+        .find_map(|line| line.strip_prefix("plan hash: "))
+        .expect("a plan hash")
+        .trim()
+        .to_owned()
+}

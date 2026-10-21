@@ -6,13 +6,13 @@ mod support;
 
 use std::collections::BTreeMap;
 
-use ontoforge_schema::ir::{ObjectTypeName, Ontology, PropertyName};
+use ontoforge_schema::ir::{AttrType, ObjectTypeName, Ontology, PropertyName};
 use ontoforge_storage::commit::{Actor, Commit, Edit, ObjectOp};
 use ontoforge_storage::migrate::{
     MigrateError, MigrationStep, RenameDecl, apply_drop_archived, apply_migration,
-    plan_drop_archived, plan_migration,
+    apply_migration_probed, plan_drop_archived, plan_migration,
 };
-use ontoforge_storage::reload::{ReloadError, ReloadOptions, reload};
+use ontoforge_storage::reload::{ReloadError, ReloadOptions, RolesCheck, reload};
 use ontoforge_storage::value::PropertyValue;
 use support::{TestStore, ontology_from, sqlite_store};
 
@@ -743,4 +743,161 @@ async fn drop_archived_cleans_up() {
     assert!(migration_json(&t, 3).await.contains("DropArchivedColumn"));
     assert_eq!(log_rows(&t).await, log_before, "the edit log is untouched");
     assert_reload_is_noop(&t, &new).await;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Roles that a migration would break (plan 03-22, D-18, SCOPE-06)
+// ---------------------------------------------------------------------------------------------
+
+const AVIATION_DIR: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../examples/ontologies/aviation"
+);
+const AVIATION_SCOPE: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../examples/scopes/aviation"
+);
+
+fn roles_check() -> RolesCheck {
+    RolesCheck {
+        attrs: BTreeMap::from([("homeAirports".to_owned(), AttrType::StringList)]),
+        profile: None,
+    }
+}
+
+fn aviation() -> Ontology {
+    let out = ontoforge_schema::load_dir(camino::Utf8Path::new(AVIATION_DIR));
+    out.ontology
+        .unwrap_or_else(|| panic!("{:#?}", out.diagnostics))
+}
+
+/// The aviation definition without the line `line` of `objects.yaml` (a property of `Airport`).
+fn aviation_without(line: &str) -> Ontology {
+    fn copy(from: &std::path::Path, to: &std::path::Path) {
+        std::fs::create_dir_all(to).expect("create dir");
+        for entry in std::fs::read_dir(from).expect("read dir") {
+            let entry = entry.expect("entry");
+            let target = to.join(entry.file_name());
+            if entry.file_type().expect("file type").is_dir() {
+                copy(&entry.path(), &target);
+            } else {
+                std::fs::copy(entry.path(), target).expect("copy");
+            }
+        }
+    }
+    let dir = tempfile::tempdir().expect("tempdir");
+    copy(std::path::Path::new(AVIATION_DIR), dir.path());
+    let path = dir.path().join("objects.yaml");
+    let text = std::fs::read_to_string(&path).expect("read");
+    let with_newline = format!("{line}\n");
+    assert!(text.contains(&with_newline), "objects.yaml lost `{line}`");
+    std::fs::write(&path, text.replace(&with_newline, "")).expect("write");
+    let root = camino::Utf8Path::from_path(dir.path()).expect("utf-8 path");
+    let out = ontoforge_schema::load_dir(root);
+    out.ontology
+        .unwrap_or_else(|| panic!("{:#?}", out.diagnostics))
+}
+
+/// A store that follows the aviation definition with the aviation scope applied.
+async fn aviation_store_with_scope() -> TestStore {
+    let t = sqlite_store().await;
+    let aviation = aviation();
+    reload(
+        &t.store,
+        &aviation,
+        &ReloadOptions {
+            roles: Some(roles_check()),
+            ..ReloadOptions::default()
+        },
+    )
+    .await
+    .expect("v1");
+    let out = ontoforge_schema::load_scope_dir(camino::Utf8Path::new(AVIATION_SCOPE));
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+    let scope = out.scope.expect("aviation scope");
+    let check = roles_check();
+    let compiled = ontoforge_auth::scope::compile_scope(&ontoforge_auth::scope::ScopeInputs {
+        ontology: &aviation,
+        profile: None,
+        attrs: &check.attrs,
+        scope: &scope,
+        sources: None,
+    })
+    .unwrap_or_else(|d| panic!("{d:#?}"));
+    let props = compiled.row_filter_properties();
+    let plan = t.store.scope_plan(&scope, &props).await.expect("plan");
+    t.store
+        .scope_apply(&scope, &props, &plan.hash, "tester@testhost")
+        .await
+        .expect("apply");
+    t
+}
+
+async fn plan_hash_to(t: &TestStore, new: &Ontology) -> String {
+    let active = t.store.active_definition().await.expect("active");
+    plan_migration(&active, new, &[]).expect("plan").hash
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn migrate_rechecks_applied_roles() {
+    let t = aviation_store_with_scope().await;
+    let new = aviation_without("  city: { type: string, displayName: City }");
+    let hash = plan_hash_to(&t, &new).await;
+    let airport_before = t.columns("of_obj_airport").await;
+    assert!(
+        airport_before.contains(&"city".to_owned()),
+        "{airport_before:?}"
+    );
+
+    let result =
+        apply_migration_probed(&t.store, &new, &[], &hash, None, Some(&roles_check())).await;
+    let Err(MigrateError::Definition(diagnostics)) = result else {
+        panic!("expected a definition error, got {result:?}");
+    };
+    assert!(!diagnostics.is_empty());
+    assert!(
+        diagnostics.iter().all(|d| d.code == "ONT-V21"),
+        "{diagnostics:#?}"
+    );
+    assert!(
+        diagnostics
+            .iter()
+            .any(|d| d.message.contains("dispatcher") && d.message.contains("city")),
+        "the diagnostic names the role and the property: {diagnostics:#?}"
+    );
+    assert_eq!(
+        t.columns("of_obj_airport").await,
+        airport_before,
+        "no step ran"
+    );
+    assert_eq!(t.active_version().await, 1);
+    assert_eq!(t.version_rows().await, 1);
+    assert_eq!(
+        t.store.active_definition().await.map(|a| a.def_version),
+        Some(1)
+    );
+
+    // Without the role check the very same migration goes through: the roles stopped it.
+    let version = apply_migration(&t.store, &new, &[], &hash)
+        .await
+        .expect("without the role check");
+    assert_eq!(version, 2);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn migrate_with_roles_applies_when_the_roles_still_compile() {
+    let t = aviation_store_with_scope().await;
+    // No role lists `location`, so archiving it leaves every role valid.
+    let new = aviation_without("  location: { type: geopoint, displayName: Location }");
+    let hash = plan_hash_to(&t, &new).await;
+
+    let version = apply_migration_probed(&t.store, &new, &[], &hash, None, Some(&roles_check()))
+        .await
+        .expect("roles still compile");
+    assert_eq!(version, 2);
+    let columns = t.columns("of_obj_airport").await;
+    assert!(
+        columns.contains(&"location__arch_v2".to_owned()),
+        "{columns:?}"
+    );
 }

@@ -35,8 +35,8 @@ use crate::physical::{
     ArchivedColumn, ArchivedTable, IndexDef, IndexKind, ObjectTable, PhysicalSchema, PropertyColumn,
 };
 use crate::reload::{
-    ProbeContext, ReloadError, Visible, begin_definition_tx, execute_steps, expected_visible,
-    is_lock_timeout, same_ontology, switch_definition, wait_until_visible,
+    ProbeContext, ReloadError, RolesCheck, Visible, begin_definition_tx, execute_steps,
+    expected_visible, is_lock_timeout, same_ontology, switch_definition, wait_until_visible,
 };
 use crate::sql_exit;
 use crate::store::{ActiveDefinition, Backend, EditStore, WriteTx};
@@ -335,7 +335,7 @@ pub async fn apply_migration(
     renames: &[RenameDecl],
     expected_hash: &str,
 ) -> Result<i64, MigrateError> {
-    apply_migration_probed(store, new, renames, expected_hash, None).await
+    apply_migration_probed(store, new, renames, expected_hash, None, None).await
 }
 
 /// [`apply_migration`], then waits until Trino shows the names the migration created.
@@ -351,6 +351,7 @@ pub async fn apply_migration_probed(
     renames: &[RenameDecl],
     expected_hash: &str,
     probe: Option<&ProbeContext<'_>>,
+    _roles: Option<&RolesCheck>,
 ) -> Result<i64, MigrateError> {
     let mut tx = begin_definition_tx(store).await?;
     match apply_in(&mut tx, new, renames, expected_hash).await {
