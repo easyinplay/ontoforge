@@ -25,7 +25,7 @@ edit store 写在服务配置（`ontoforge-server.toml`，命令行的 `--server
 [store]
 kind = "postgres"          # 或 "sqlite"
 url_env = "EDIT_STORE_URL" # PostgreSQL 连接串所在的环境变量；也可用 url_file
-# path = "edit.db"         # kind = "sqlite" 时的文件，相对配置文件
+# path = "edit.db"         # kind = "sqlite" 时的文件，相对配置文件；所在目录不存在时自动创建
 schema_edit = "ontoforge_edit"  # 默认值
 schema_sys = "ontoforge_sys"    # 默认值
 lock_timeout_ms = 5000          # 默认值
@@ -171,7 +171,7 @@ roles-as-code：`plan` 打印将写入的 role 与 role binding 和计划 hash�
 签发开发用 token，只被以 `--dev` 启动的服务接受，不可用于生产。
 
 - 主体 id 为 `ontoforge-dev|<SUB>`；`--groups A,B`、`--attr name=value`（名称须在 `[auth.principal_attrs]` 中声明）、`--ttl`（`m`、`h`、`d`，最长 30d，默认 8h）。
-- 签名密钥在 `--key-file`（默认 `[auth.dev] key_file`）首次使用时创建。
+- 签名密钥在 `--key-file`（默认 `[auth.dev] key_file`）首次使用时创建，缺少的上级目录一并创建；Unix 上新目录权限为 0700，密钥文件为 0600。Windows 上的限制见下面「已知缺口」第 7 条。
 
 ## 已知缺口
 
@@ -183,3 +183,4 @@ roles-as-code：`plan` 打印将写入的 role 与 role binding 和计划 hash�
 4. **同一个 commit 内交换两个 oneToOne 的 key 会被拒绝（03-13）。** 立即检查的部分唯一索引在 PostgreSQL 上不能推迟，所以两个对象在一次提交里互换 key 报 `CardinalityViolation`。把 key 从一个对象移到另一个对象，只有在放弃 key 的对象排在前面（按锁顺序）时才成功。
 5. **dev-token 密钥文件的并发首次创建（03-12）。** 密钥以独占方式创建，已存在的文件不会被覆盖；两个进程同时首次使用同一个路径时，失败的一方读取胜者写的文件，此时文件可能尚未写完。先单独运行一次 `dev-token` 创建密钥，再并发使用。
 6. **flush_metadata_cache 的效果没有被单独证明（RESEARCH A5）。** CI 的 `Reload visibility probe` 通过，说明 Trino 在 `probe_timeout_ms` 内看到了新表与新列；但探测对 `flush_metadata_cache()` 的失败只在超时时才报告，CI 的 Trino catalog 也没有开启 metadata 缓存，所以这次通过不能区分「刷新调用生效」与「本来就没有缓存」。开启了 metadata 缓存的 catalog 需要部署方自行确认。
+7. **dev 签名密钥在 Windows 上不私有（WR-C01 / WR-D01）。** 密钥文件继承所在目录的 ACL。数据盘上的项目目录通常让 `NT AUTHORITY\Authenticated Users` 有修改权限，同一台机器上的其他账号能读到这把对称密钥，并为任意主体签发 dev token。dev token 只被以 `--dev` 启动的服务接受，配置不能单独启用它，所以这不是生产凭据；但仍应把密钥放在用户目录下（`--key-file %USERPROFILE%\.ontoforge\dev-token.key`），或手工去掉继承并只授权本人（例如 `icacls <file> /inheritance:r /grant:r "%USERNAME%:F"`）。代码目前不修改 ACL。Unix 上读取已有密钥文件时也不检查权限位，不拒绝符号链接。

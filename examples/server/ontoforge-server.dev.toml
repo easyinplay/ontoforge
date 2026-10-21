@@ -1,8 +1,11 @@
 # Example server configuration for local development with the aviation example.
 #
-# It contains no secrets: the SQLite edit store is a file below `target/` (ignored by git) and the
-# development signing key is created on first use by `ontoforge dev-token`. Paths are relative to
-# this file. Use it with:
+# It contains no secrets. The SQLite edit store and the development signing key are files below
+# `target/ontoforge-dev/`, which git ignores. Nothing needs to exist beforehand: the first
+# `ontoforge reload` (or any command that opens the store) creates the store file, the first
+# `ontoforge dev-token` creates the key, and the missing directories are created with them.
+# Paths are relative to this file. On Windows the key file inherits the ACL of its directory, so
+# other local accounts may be able to read it; see "Known gaps" in docs/edit-store.md. Use it with:
 #
 #   ontoforge reload examples/ontologies/aviation --server-config examples/server/ontoforge-server.dev.toml
 #   ontoforge scope plan examples/scopes/aviation --ontology examples/ontologies/aviation \
