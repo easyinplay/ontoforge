@@ -117,3 +117,309 @@ async fn imports_airports_csv() {
         assert_eq!(record.params["file"], "airports.csv");
     }
 }
+
+// ---------------------------------------------------------------------------------------------
+// JSON, links, refusals and a failed batch
+// ---------------------------------------------------------------------------------------------
+
+const AIRPORTS_JSON: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../examples/data/aviation/airports.json"
+);
+
+/// An ontology directory with two editOnly types and an editOnly many-to-many link, and a
+/// one-to-one link whose foreign key is `Stand.gate`.
+fn gates_ontology() -> tempfile::TempDir {
+    let dir = tempfile::tempdir().expect("tempdir");
+    std::fs::write(dir.path().join("ontology.yaml"), "apiName: demo\n").expect("manifest");
+    std::fs::write(
+        dir.path().join("defs.yaml"),
+        "kind: ObjectType
+apiName: Gate
+backing: editOnly
+primaryKey: code
+properties:
+  code: { type: string, required: true }
+  name: { type: string, required: true }
+---
+kind: ObjectType
+apiName: Stand
+backing: editOnly
+primaryKey: id
+properties:
+  id: { type: integer, required: true }
+  label: { type: string }
+  gate: { type: string }
+---
+kind: LinkType
+apiName: gateStands
+cardinality: manyToMany
+from: { objectType: Gate, apiName: stands }
+to: { objectType: Stand, apiName: gates }
+backing: editOnly
+---
+kind: LinkType
+apiName: gateStand
+cardinality: oneToOne
+from: { objectType: Gate, apiName: stand }
+to: { objectType: Stand, apiName: assignedGate, foreignKey: gate }
+",
+    )
+    .expect("definitions");
+    dir
+}
+
+fn write(dir: &tempfile::TempDir, name: &str, content: &str) -> PathBuf {
+    let path = dir.path().join(name);
+    std::fs::write(&path, content).expect("write file");
+    path
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn imports_airports_json() {
+    let dir = server_dir();
+    let config = config_of(&dir);
+    reload(AVIATION, &config);
+    let out = import(
+        AVIATION,
+        &config,
+        &["--type", "Airport"],
+        AIRPORTS_JSON,
+        &[],
+    );
+    assert_eq!(out.status.code(), Some(0), "stderr: {}", stderr(&out));
+    assert!(
+        stderr(&out).contains("imported 5 object(s)"),
+        "{}",
+        stderr(&out)
+    );
+    let store = open_store(&dir).await;
+    let log = store.read_log(0, 100).await.expect("read_log");
+    assert_eq!(log.len(), 1);
+    assert_eq!(log[0].params["file"], "airports.json");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn source_backed_type_is_rejected() {
+    let dir = server_dir();
+    let config = config_of(&dir);
+    reload(AVIATION, &config);
+    let data = tempfile::tempdir().expect("tempdir");
+    let flights = write(&data, "flights.csv", "flightId,flightNumber\nF1,LH1\n");
+
+    let out = import(
+        AVIATION,
+        &config,
+        &["--type", "Flight"],
+        text(&flights),
+        &[],
+    );
+    assert_eq!(out.status.code(), Some(1), "stderr: {}", stderr(&out));
+    assert!(stdout(&out).contains("ONT-V27"), "{}", stdout(&out));
+    assert!(stdout(&out).contains("source backed"), "{}", stdout(&out));
+
+    let crew = write(&data, "crew.csv", "from,to\nF1,P1\n");
+    let out = import(
+        AVIATION,
+        &config,
+        &["--link", "flightCrew"],
+        text(&crew),
+        &[],
+    );
+    assert_eq!(out.status.code(), Some(1), "stderr: {}", stderr(&out));
+    assert!(stdout(&out).contains("ONT-V27"), "{}", stdout(&out));
+
+    let store = open_store(&dir).await;
+    assert!(store.read_log(0, 10).await.expect("read_log").is_empty());
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn existing_objects_block_create_only() {
+    let dir = server_dir();
+    let config = config_of(&dir);
+    reload(AVIATION, &config);
+    let first = import(AVIATION, &config, &["--type", "Airport"], AIRPORTS_CSV, &[]);
+    assert_eq!(first.status.code(), Some(0), "stderr: {}", stderr(&first));
+
+    let again = import(AVIATION, &config, &["--type", "Airport"], AIRPORTS_CSV, &[]);
+    assert_eq!(again.status.code(), Some(1), "stderr: {}", stderr(&again));
+    assert!(stdout(&again).contains("ONT-V27"), "{}", stdout(&again));
+    assert!(
+        stdout(&again).contains("already exists"),
+        "{}",
+        stdout(&again)
+    );
+
+    let skip = import(
+        AVIATION,
+        &config,
+        &["--type", "Airport"],
+        AIRPORTS_CSV,
+        &["--on-existing", "skip"],
+    );
+    assert_eq!(skip.status.code(), Some(0), "stderr: {}", stderr(&skip));
+    assert!(
+        stderr(&skip)
+            .contains("imported 0 object(s) (created 0, updated 0, skipped 5) in 0 commit(s)"),
+        "{}",
+        stderr(&skip)
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn link_import_and_partial_failure() {
+    let ontology = gates_ontology();
+    let ontology_dir = text(ontology.path()).to_owned();
+    let dir = server_dir();
+    let config = config_of(&dir);
+    reload(&ontology_dir, &config);
+    let data = tempfile::tempdir().expect("tempdir");
+
+    let gates = write(&data, "gates.csv", "code,name\nA1,Alpha\nA2,Beta\n");
+    let out = import(
+        &ontology_dir,
+        &config,
+        &["--type", "Gate"],
+        text(&gates),
+        &[],
+    );
+    assert_eq!(out.status.code(), Some(0), "stderr: {}", stderr(&out));
+
+    // Stand 4 claims gate A1 a second time, in the second batch of two.
+    let stands = write(
+        &data,
+        "stands.csv",
+        "id,label,gate\n1,S1,A1\n2,S2,A2\n3,S3,A3\n4,S4,A1\n",
+    );
+    let failed = import(
+        &ontology_dir,
+        &config,
+        &["--type", "Stand"],
+        text(&stands),
+        &["--batch-size", "2"],
+    );
+    assert_eq!(failed.status.code(), Some(1), "stdout: {}", stdout(&failed));
+    let message = stderr(&failed);
+    assert!(message.contains("committed 1 batch(es)"), "{message}");
+    assert!(message.contains("batch 2 failed"), "{message}");
+    assert!(message.contains("--on-existing skip"), "{message}");
+
+    // Corrected, the file finishes with skip.
+    let fixed = write(
+        &data,
+        "stands_fixed.csv",
+        "id,label,gate\n1,S1,A1\n2,S2,A2\n3,S3,A3\n4,S4,A4\n",
+    );
+    let resumed = import(
+        &ontology_dir,
+        &config,
+        &["--type", "Stand"],
+        text(&fixed),
+        &["--batch-size", "2", "--on-existing", "skip"],
+    );
+    assert_eq!(
+        resumed.status.code(),
+        Some(0),
+        "stderr: {}",
+        stderr(&resumed)
+    );
+    assert!(
+        stderr(&resumed).contains("created 2, updated 0, skipped 2"),
+        "{}",
+        stderr(&resumed)
+    );
+
+    let edges = write(&data, "edges.csv", "from,to\nA1,1\nA2,2\n");
+    let linked = import(
+        &ontology_dir,
+        &config,
+        &["--link", "gateStands"],
+        text(&edges),
+        &[],
+    );
+    assert_eq!(linked.status.code(), Some(0), "stderr: {}", stderr(&linked));
+    assert!(
+        stderr(&linked).contains("imported 2 link(s)"),
+        "{}",
+        stderr(&linked)
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn command_line_mistakes_are_reported() {
+    let dir = server_dir();
+    let config = config_of(&dir);
+
+    // Nothing is loaded in the store yet.
+    let out = import(AVIATION, &config, &["--type", "Airport"], AIRPORTS_CSV, &[]);
+    assert_eq!(out.status.code(), Some(1), "stderr: {}", stderr(&out));
+    assert!(
+        stdout(&out).contains("ontoforge reload"),
+        "the output tells to reload first: {}",
+        stdout(&out)
+    );
+
+    reload(AVIATION, &config);
+    let out = import(AVIATION, &config, &["--type", "Nope"], AIRPORTS_CSV, &[]);
+    assert_eq!(out.status.code(), Some(1), "stderr: {}", stderr(&out));
+    assert!(stdout(&out).contains("ONT-V09"), "{}", stdout(&out));
+
+    let out = import(
+        AVIATION,
+        &config,
+        &["--type", "Airport"],
+        AIRPORTS_CSV,
+        &["--batch-size", "0"],
+    );
+    assert_eq!(out.status.code(), Some(2), "clap refuses a batch size of 0");
+    let out = import(
+        AVIATION,
+        &config,
+        &["--type", "Airport", "--link", "flightCrew"],
+        AIRPORTS_CSV,
+        &[],
+    );
+    assert_eq!(
+        out.status.code(),
+        Some(2),
+        "--type and --link exclude each other"
+    );
+    let out = ontoforge(&[
+        "import",
+        AVIATION,
+        "--server-config",
+        text(&config),
+        "--file",
+        AIRPORTS_CSV,
+    ]);
+    assert_eq!(
+        out.status.code(),
+        Some(2),
+        "one of --type and --link is needed"
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn json_output_reports_the_result() {
+    let dir = server_dir();
+    let config = config_of(&dir);
+    reload(AVIATION, &config);
+    let out = import(
+        AVIATION,
+        &config,
+        &["--type", "Airport"],
+        AIRPORTS_CSV,
+        &["--format", "json"],
+    );
+    assert_eq!(out.status.code(), Some(0), "stderr: {}", stderr(&out));
+    let value: serde_json::Value = serde_json::from_slice(&out.stdout).expect("stdout is JSON");
+    assert_eq!(value["result"]["rows"], 5);
+    assert_eq!(value["result"]["created"], 5);
+    assert_eq!(value["result"]["commits"].as_array().map(Vec::len), Some(1));
+    assert!(
+        value["diagnostics"]
+            .as_array()
+            .expect("diagnostics")
+            .is_empty()
+    );
+}
