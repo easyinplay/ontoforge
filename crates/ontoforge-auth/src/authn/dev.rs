@@ -76,11 +76,20 @@ impl DevKey {
     /// Reads the key at `path`, or creates it there when the file does not exist.
     ///
     /// A new key comes from the operating system's random source and is written with
-    /// exclusive creation, so an existing file is never overwritten. On Unix the file mode is
-    /// 0600. On Windows the file inherits the ACL of its directory, which for a user's home
-    /// or project directory restricts it to that user; keep the file there. An existing file
-    /// that does not hold exactly 32 bytes is an error and is left untouched: replacing it
-    /// would silently invalidate every token issued so far.
+    /// exclusive creation, so an existing file is never overwritten. Missing parent directories
+    /// are created first. On Unix the new directories have mode 0700 and the file 0600; an
+    /// existing directory is left as it is.
+    ///
+    /// On Windows nothing restricts the file: it inherits the ACL of its directory, and a
+    /// project directory on a data drive usually carries an inherited
+    /// `NT AUTHORITY\Authenticated Users` modify entry, so other local accounts can read this
+    /// symmetric key and mint tokens for any subject. To keep it private, give an absolute
+    /// path below the user's profile (`--key-file`, or `key_file` in `[auth.dev]`), or tighten
+    /// the ACL by hand. This code does not change ACLs; see the known-gaps list in
+    /// `docs/edit-store.md`.
+    ///
+    /// An existing file that does not hold exactly 32 bytes is an error and is left untouched:
+    /// replacing it would silently invalidate every token issued so far.
     ///
     /// Two processes creating the key at the same moment race on the exclusive creation; the
     /// loser reads the winner's file. Start the first one alone.
@@ -96,6 +105,10 @@ impl DevKey {
                 .ok_or_else(|| key_error(path, "disappeared while it was being created")),
             Err(CreateError::Random) => Err(AuthnError::Config(
                 "the operating system random source failed".to_owned(),
+            )),
+            Err(CreateError::Dir) => Err(key_error(
+                path,
+                "cannot be created because its directory cannot be created",
             )),
             Err(CreateError::Io) => Err(key_error(path, "cannot be created")),
         }
@@ -128,12 +141,16 @@ fn read_existing(path: &Utf8Path) -> Result<Option<[u8; KEY_LEN]>, AuthnError> {
 enum CreateError {
     Exists,
     Random,
+    Dir,
     Io,
 }
 
 fn create(path: &Utf8Path) -> Result<[u8; KEY_LEN], CreateError> {
     let mut key = [0_u8; KEY_LEN];
     getrandom::fill(&mut key).map_err(|_| CreateError::Random)?;
+    if let Some(parent) = path.parent().filter(|p| !p.as_str().is_empty()) {
+        create_key_dir(parent).map_err(|_| CreateError::Dir)?;
+    }
     let mut options = OpenOptions::new();
     options.write(true).create_new(true);
     #[cfg(unix)]
@@ -152,6 +169,22 @@ fn create(path: &Utf8Path) -> Result<[u8; KEY_LEN], CreateError> {
         return Err(CreateError::Io);
     }
     Ok(key)
+}
+
+/// Creates `dir` and its missing ancestors; on Unix the new ones get mode 0700.
+fn create_key_dir(dir: &Utf8Path) -> std::io::Result<()> {
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::DirBuilderExt;
+        std::fs::DirBuilder::new()
+            .recursive(true)
+            .mode(0o700)
+            .create(dir)
+    }
+    #[cfg(not(unix))]
+    {
+        std::fs::create_dir_all(dir)
+    }
 }
 
 /// What a development token says about its subject.
