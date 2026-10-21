@@ -4,7 +4,8 @@
 //! object before the action runs, so a caller can learn the value of `<prop>` from the
 //! outcome of a dry run (bisecting with different parameters). A role granted the action
 //! must therefore be allowed to read every property its criteria read, and to see the
-//! object type at all. What the criteria read has to be known statically: a computed index
+//! object type at all. Reading the object as a whole (`objects.<param> != null`, a comparison,
+//! an argument of a macro) counts as reading every property of its type. What the criteria read has to be known statically: a computed index
 //! such as `objects.flight[params.field]` is refused (fail-closed).
 //!
 //! The check is a plain function over one [`Role`], so that both the offline scope check
@@ -38,7 +39,7 @@ pub(crate) fn criteria_coverage(
                 continue;
             };
             for path in paths.iter().filter(|p| is_object_read(p)) {
-                let Some((message, help)) = problem(role, action, path) else {
+                let Some((message, help)) = problem(role, action, ontology, path) else {
                     continue;
                 };
                 if seen.insert(message.clone()) {
@@ -55,20 +56,28 @@ fn is_object_read(path: &MemberPath) -> bool {
 }
 
 /// What is wrong with one read of `objects.…`, as `(message, help)`.
-fn problem(role: &Role, action: &ActionType, path: &MemberPath) -> Option<(String, String)> {
+fn problem(
+    role: &Role,
+    action: &ActionType,
+    ontology: &Ontology,
+    path: &MemberPath,
+) -> Option<(String, String)> {
     let who = format!(
         "role `{}` is granted action `{}`, whose submission criteria read",
         role.api_name, action.api_name
     );
     let text = path.segments.join(".");
-    if path.dynamic || path.segments.len() < 2 {
-        return Some((
+    let undetermined = || {
+        Some((
             format!(
                 "{who} `{text}` through an index or without naming an object parameter; \
                  which property is read cannot be determined statically"
             ),
             "write the property name literally, for example `objects.flight.status`".to_owned(),
-        ));
+        ))
+    };
+    if path.dynamic || path.segments.len() < 2 {
+        return undetermined();
     }
     // A name that is not an object reference parameter is ONT-V13's business.
     let def = action.parameters.get(path.segments[1].as_str())?;
@@ -85,7 +94,31 @@ fn problem(role: &Role, action: &ActionType, path: &MemberPath) -> Option<(Strin
             ),
         ));
     };
-    let property = path.segments.get(2)?;
+    let Some(property) = path.segments.get(2) else {
+        // The whole object is read: every property of its type must be in the allow-list.
+        let Some(def) = ontology.object_types.get(object_type.as_str()) else {
+            return undetermined();
+        };
+        let missing: Vec<String> = def
+            .properties
+            .keys()
+            .filter(|p| !grant.properties.contains(p))
+            .map(|p| format!("`{p}`"))
+            .collect();
+        if missing.is_empty() {
+            return None;
+        }
+        return Some((
+            format!(
+                "{who} `{text}`, the whole object, so the allow-list of `{object_type}` in this role \
+                 must include every property; missing: {}",
+                missing.join(", ")
+            ),
+            format!(
+                "compare a property such as `objects.<param>.<prop>`, add the missing properties to `properties` of `{object_type}`, or do not grant the action"
+            ),
+        ));
+    };
     if grant.properties.iter().any(|p| p.as_str() == property) {
         return None;
     }

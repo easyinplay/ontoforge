@@ -195,7 +195,7 @@ plan hash: 5a0c3e91d27b84f6
 
 **全量同步。** apply 之后系统库里的 role 与绑定等于 scope 目录：目录里没有的 role 与绑定会被删除，plan 里逐条列出（`remove role ...`、`remove binding ...`）。空目录会删除全部 role 与绑定，plan 同样列出。plan 的输出与 hash 与 YAML 里的书写顺序无关：role 按 apiName、绑定按 (role, 种类, 主体) 排序，`properties`、`actions`、`sqlLevels`、`toolsets`、`l2` 里的列表在存储与计算 hash 前排序去重。
 
-**apply 前的离线校验。** `plan` 与 `apply` 在打开系统库之前，先对 ontology、所选 profile 的绑定和 `[auth.principal_attrs]` 做完整检查：引用的类型、属性、action 是否存在（ONT-V21），行谓词是否合法（ONT-V22，包括不能作用在 profile 声明为大小写不敏感的列上），role 持有的 action 的提交条件读到的属性是否都在白名单里（ONT-V23）。任何一条诊断都使命令以退出码 1 结束，系统库不发生任何写入，role 不会部分生效。`--ontology` 指向的定义还必须与系统库当前生效的定义一致，否则提示先运行 `ontoforge reload`。
+**apply 前的离线校验。** `plan` 与 `apply` 在打开系统库之前，先对 ontology、所选 profile 的绑定和 `[auth.principal_attrs]` 做完整检查：引用的类型、属性、action 是否存在（ONT-V21），行谓词是否合法（ONT-V22，包括不能作用在 profile 声明为大小写不敏感的列上），role 持有的 action 的提交条件读到的属性是否都在白名单里（ONT-V23）。提交条件整体读取一个对象参数（如 `objects.flight != null`、`objects.flight == params.x`）时，按读取该类型的全部属性处理，role 的白名单必须包含该类型的每个属性，否则报 ONT-V23；要只依赖某一列，就直接比较那一列。任何一条诊断都使命令以退出码 1 结束，系统库不发生任何写入，role 不会部分生效。`--ontology` 指向的定义还必须与系统库当前生效的定义一致，否则提示先运行 `ontoforge reload`。
 
 **定义变更时的复核。** `reload` 与 `migrate --apply` 在切换定义之前，于定义锁内按新定义重新编译系统库里已 apply 的 role，检查引用、行谓词与 criteria 列覆盖（D-18）。任一 role 不成立时命令以退出码 1 结束，定义不切换，edit store 不变。如果破坏性变更删掉或改掉了某个 role 引用的属性，先从 scope 目录里去掉该引用并 `scope apply`（此时仍按旧定义校验，去掉引用总能通过），再运行 `migrate`。`migrate --plan` 不做这项复核，拒绝发生在 `--apply`。
 
