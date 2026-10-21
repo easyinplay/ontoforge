@@ -181,4 +181,4 @@ roles-as-code：`plan` 打印将写入的 role 与 role binding 和计划 hash�
 3. **Trino 探测失败后会留下 pending 版本（03-18）。** 探测超时时，DDL 与 `pending` 版本已经提交，没有成为 active。旧定义继续服务，再次 `reload` 可以重试，但在此之前库里有一个未激活的版本记录，没有清理命令。
 4. **同一个 commit 内交换两个 oneToOne 的 key 会被拒绝（03-13）。** 立即检查的部分唯一索引在 PostgreSQL 上不能推迟，所以两个对象在一次提交里互换 key 报 `CardinalityViolation`。把 key 从一个对象移到另一个对象，只有在放弃 key 的对象排在前面（按锁顺序）时才成功。
 5. **dev-token 密钥文件的并发首次创建（03-12）。** 密钥以独占方式创建，已存在的文件不会被覆盖；两个进程同时首次使用同一个路径时，失败的一方读取胜者写的文件，此时文件可能尚未写完。先单独运行一次 `dev-token` 创建密钥，再并发使用。
-6. **CI 里 Trino 相关步骤尚未在 GitHub 上运行过。** 行谓词语料和 reload 可见探测（含 `flush_metadata_cache()` 经客户端是否可用，RESEARCH A5）在写本文档时只在本机编译与列出，没有对真实 Trino 执行过。
+6. **flush_metadata_cache 的效果没有被单独证明（RESEARCH A5）。** CI 的 `Reload visibility probe` 通过，说明 Trino 在 `probe_timeout_ms` 内看到了新表与新列；但探测对 `flush_metadata_cache()` 的失败只在超时时才报告，CI 的 Trino catalog 也没有开启 metadata 缓存，所以这次通过不能区分「刷新调用生效」与「本来就没有缓存」。开启了 metadata 缓存的 catalog 需要部署方自行确认。

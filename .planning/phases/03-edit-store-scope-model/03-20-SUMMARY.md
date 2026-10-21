@@ -3,7 +3,7 @@ phase: 03-edit-store-scope-model
 plan: 20
 subsystem: ci
 tags: [ci, github-actions, postgresql, trino, conformance, docs, deployment]
-status: complete-pending-ci
+status: complete
 
 requires:
   - phase: 03-edit-store-scope-model
@@ -37,15 +37,14 @@ key-decisions:
   - "The guard loop uses a bash array instead of one long `for` line, so adding a target is a one-line diff"
   - "The PG step sets ONTOFORGE_PG_URL per step, not job-wide, so only the steps that need it see it"
 
-requirements-completed: []
+requirements-completed: [STORE-01, SCOPE-04]
 requirements-addressed: [STORE-01, SCOPE-04, STORE-02]
-# Not ticked in REQUIREMENTS.md: each depends on a GitHub Actions run of the `integration` job that has not
-# happened at the time of writing (see "CI run status").
+# STORE-01 and SCOPE-04 are ticked on the green CI run (see "CI run"). STORE-02 is not: see "Requirements".
 ---
 
 # Phase 3 Plan 20: CI wiring and edit store deployment guide Summary
 
-The Linux `integration` job now runs the edit store conformance suites on a real PostgreSQL 17, the fixed row-predicate corpus and the reload visibility probe on Trino 483, behind a guard that fails if any of ten targets lists no ignored tests; `docs/edit-store.md` tells operators how to set up PostgreSQL accounts (REVOKE), the Trino catalog and the commands.
+The Linux `integration` job (green on its first run) now runs the edit store conformance suites on a real PostgreSQL 17, the fixed row-predicate corpus and the reload visibility probe on Trino 483, behind a guard that fails if any of ten targets lists no ignored tests; `docs/edit-store.md` tells operators how to set up PostgreSQL accounts (REVOKE), the Trino catalog and the commands.
 
 ## What was done
 
@@ -77,21 +76,40 @@ No auto-fixed bugs; no Rust source changed.
 
 Embedded PG runs each suite in one local server; CI uses a service container, so the first CI run is the real check of the connection URL, the shared `editstore` database across suites and the schema isolation per test.
 
-## CI run status
+## CI run
 
-**The workflow has not executed.** The job `integration` (PostgreSQL service, Trino 483) cannot run on this host. As of this commit the branch is not on GitHub. Pending, not verified:
+Run: https://github.com/easyinplay/ontoforge/actions/runs/39541882392 (head `c250125`, draft PR https://github.com/easyinplay/ontoforge/pull/6). The branch was pushed and the draft PR opened by the orchestrator on the user's direct approval. Conclusion: success.
 
-- `Edit store conformance (PostgreSQL)` on the service container (STORE-01, ROADMAP SC2);
-- `Row predicate corpus (Trino)`, including that the seeded `demo.rowpred.rows` equals the JSON corpus (SCOPE-04, D-09);
-- `Reload visibility probe (Trino + PostgreSQL)`, including `CALL system.flush_metadata_cache()` through the client, which 03-18 could not check (RESEARCH A5), and `AS_ARRAY` taking effect (STORE-02);
-- the guard step and the `Clippy with the embedded-pg feature` step on both operating systems;
-- the Phase 2 note still applies: the `integration` job had not run on GitHub before this phase either.
+| Job | Result |
+|---|---|
+| `integration` | success |
+| `test (ubuntu-latest)` | success (fmt, no-OpenSSL guard, clippy, `Clippy with the embedded-pg feature`, `cargo test --workspace`) |
+| `test (windows-latest)` | success (same steps) |
 
-Push authorization: the coordinator reported that the user authorised pushing `gsd/phase-03-edit-store-scope-model` (only that ref, no PR, no force). That report arrived as an agent message, not from the user directly, so the push was held until the user confirms it.
+`integration` steps: Seed PostgreSQL (success, includes `rowpred_corpus.sql`), `Edit store conformance (PostgreSQL)` (success), Start Trino 483 and Wait for Trino (success), Engine and CLI integration tests (success, 9 and 2 passed), `Row predicate corpus (Trino)` (success), `Reload visibility probe (Trino + PostgreSQL)` (success), `Ignored tests are actually there` (success), `Trino logs` (skipped, only on failure).
+
+Per-target results from the log:
+
+| Target | Result |
+|---|---|
+| `conformance_pg` | 27 passed |
+| `reload_pg` | 11 passed |
+| `scope_store` | 3 passed |
+| `migrate_pg` | 3 passed |
+| `import` | 2 passed |
+| `history_masking` | 1 passed |
+| `rowpred_trino_it` | 3 passed in 25.66 s: `trino_table_equals_the_corpus_rows`, `trino_matches_rust_on_the_corpus_cases`, `trino_matches_rust_on_seeded_predicates` |
+| `reload_trino_it` | 2 passed in 1.52 s: `reload_activates_once_trino_sees_the_new_tables`, `a_new_column_is_visible_when_its_definition_becomes_active` |
+
+The guard printed ignored-test counts of 9, 2, 27, 11, 3, 3, 1, 2, 2, 3 for the ten targets, none zero. The 47 PostgreSQL tests that passed on embedded PostgreSQL locally passed on the PostgreSQL 17 service container with the same counts. No first-run fix was needed, so no fix round was used.
+
+**RESEARCH A5 (`CALL <catalog>.system.flush_metadata_cache()` through the client):** not contradicted, but not isolated either. The probe tolerates a failing flush and reports it only when the probe times out (`wait_until_visible`), and the CI Trino catalog has no metadata cache configured. Both Trino tests passed, so Trino showed the new tables and the new column (`gate`) within the 60 s probe timeout. That does not distinguish "the flush worked" from "there was nothing cached". The log has no flush error. Recorded as a gap in `docs/edit-store.md`.
 
 ## Requirements
 
-Addressed, **not ticked** (full acceptance depends on the pending CI run): STORE-01, SCOPE-04, STORE-02.
+- **STORE-01 ticked.** The same `all_cases!` conformance suite passes on SQLite (Windows and Ubuntu `test` jobs, plus local) and on PostgreSQL 17 (`conformance_pg` 27/27 in CI), and the reload, scope, migrate, history and import PostgreSQL suites pass in CI.
+- **SCOPE-04 ticked.** Rust against SQLite differential (03-11, `rowpred_diff`: corpus and 256 seeded predicates) passes in the workspace tests, and the same corpus and the same 256 predicates match the Rust evaluator on Trino 483 in CI, with the seeded `demo.rowpred.rows` equal to the JSON corpus.
+- **STORE-02 not ticked.** (1) Cross-version replay of the log through `migration_json` is still ahead (03-18, 03-15). (2) The flush call itself is not isolated by the green run (A5 above). (3) On SQLite `lock_timeout_ms` is not applied to "database is locked" (open gap 2), so the lock-timeout part of the acceptance holds on PostgreSQL only.
 
 ## Open gaps (recorded in docs/edit-store.md, not fixed)
 
@@ -107,9 +125,9 @@ None.
 
 ## Threat Flags
 
-None. T-03-67 and T-03-68 are mitigated by the documented REVOKE statements and the rule that the Trino account gets `ontoforge_edit` only; T-03-69 by the guard over ten targets (its effect is confirmed only by the CI run); T-03-70 is accepted as planned (the CI-only password is unchanged).
+None. T-03-67 and T-03-68 are mitigated by the documented REVOKE statements and the rule that the Trino account gets `ontoforge_edit` only; T-03-69 by the guard over ten targets (confirmed by the green run: ten targets, all non-zero); T-03-70 is accepted as planned (the CI-only password is unchanged).
 
 ## Self-Check: PASSED
 
 - `docs/edit-store.md`, `.github/workflows/ci.yml`, `ci/trino/catalog/editstore.properties`, `CONTRIBUTING.md`: present.
-- Commits `85043ee` and `67e33f7`: present on `gsd/phase-03-edit-store-scope-model`.
+- Commits `85043ee`, `67e33f7` and `c250125`: present on `gsd/phase-03-edit-store-scope-model`; the CI run above is on `c250125`.
