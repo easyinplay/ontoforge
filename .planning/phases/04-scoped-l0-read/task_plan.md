@@ -33,7 +33,7 @@
 - [x] Wave 3 `04-04`：Rust overlay、refill、cursor 与预算；SUMMARY、独立复审和聚焦测试通过。
 - [x] Wave 4 `04-05`：searchAround 与集合运算；SUMMARY、独立复审及聚焦测试通过。
 - [x] Wave 5 `04-06`：exact scoped 聚合；SUMMARY、主 session 聚焦复跑通过。
-- [ ] Wave 6 `04-07`：真实 Trino/PG、distributed EXPLAIN 与 isolated p95；Task 1 本机真实后端通过，Task 2 CI wiring 已提交待远端运行，Task 3 执行中。
+- [ ] Wave 6 `04-07`：真实 Trino/PG、distributed EXPLAIN 与 isolated p95；三个Task本地实现和预检完成，Linux CI与隔离artifact仍待匹配commit实跑。
 
 ## Acceptance
 
@@ -43,4 +43,4 @@
 
 ## Next Step
 
-执行 Wave 6 `04-07-PLAN.md` Task 3：建立 smoke/isolated benchmark、raw artifact 与 workflow dispatch。Task 1 本机真实 backend 已通过；Task 2 CI wiring 待远端运行。remote ref 与 isolated dispatch 尚未就绪，须在实现与本地预检后按 PLAN 做 read-only remote preflight；QUERY-10 保持 pending。
+按`04-07-PLAN.md`建立与本地最终commit匹配的remote ref并执行read-only preflight，再实际运行Linux integration与isolated benchmark，核对run SHA、jobs、raw artifact和四项p95；完成前QUERY-10与本PLAN保持pending。
