@@ -10,6 +10,18 @@ use ontoforge_expr::Pred;
 use ontoforge_schema::ir::ObjectTypeName;
 use ontoforge_schema::load_dir;
 use camino::Utf8Path;
+use camino::Utf8PathBuf;
+use ontoforge_auth::Principal;
+use ontoforge_auth::authn::PrincipalId;
+use ontoforge_auth::scope::PrincipalScope;
+use ontoforge_engine::sqlite::SqliteEngine;
+use ontoforge_engine::sqlite::fixture::plan_fixture_tables;
+use ontoforge_schema::ir::{ProfileName, PropertyName};
+use ontoforge_storage::reload::{ReloadOptions, reload};
+use ontoforge_storage::store::{BackendSettings, EditStore, StoreSettings};
+use ontoforge_query::{ExecutionLimits, QueryService, TokenCodec};
+use std::sync::Arc;
+use std::time::Duration;
 use proptest::prelude::*;
 use serde_json::json;
 
@@ -67,6 +79,100 @@ fn valid_same_type_set_and_cross_type_rejection() {
         validate(serde_json::from_value(cross_type).unwrap()),
         Err(QueryError::InvalidQuery)
     ));
+}
+
+#[tokio::test]
+async fn set_result_reuses_normal_hydration_order_and_cursor() {
+    let root = Utf8Path::new(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../examples/ontologies/aviation"
+    ));
+    let loaded = load_dir(root);
+    let ontology = loaded.ontology.unwrap();
+    let profile = ProfileName::try_from("dev".to_owned()).unwrap();
+    let fixtures = plan_fixture_tables(&ontology, &loaded.sources, &profile).unwrap();
+    let engine = SqliteEngine::from_fixtures(root, &fixtures.tables)
+        .await
+        .unwrap();
+    let dir = tempfile::tempdir().unwrap();
+    let store = EditStore::open(StoreSettings {
+        backend: BackendSettings::Sqlite {
+            path: Utf8PathBuf::from_path_buf(dir.path().join("edits.db")).unwrap(),
+        },
+        lock_timeout: Duration::from_secs(5),
+        probe_timeout: Duration::from_secs(5),
+        trino_catalog: None,
+    })
+    .await
+    .unwrap();
+    reload(&store, &ontology, &ReloadOptions::default())
+        .await
+        .unwrap();
+    let active = store.active_definition().await.unwrap();
+    let flight = ObjectTypeName::try_from("Flight".to_owned()).unwrap();
+    let property = |raw: &str| PropertyName::try_from(raw.to_owned()).unwrap();
+    let scope = PrincipalScope {
+        types: std::iter::once((
+            flight.clone(),
+            TypeScope {
+                row: Pred::Const(true),
+                columns: ontology.object_types[&flight]
+                    .properties
+                    .keys()
+                    .cloned()
+                    .map(|name| (name, Pred::Const(true)))
+                    .collect(),
+            },
+        ))
+        .collect(),
+        ..PrincipalScope::default()
+    };
+    let principal = Principal {
+        id: PrincipalId::new("test", "set-reader"),
+        issuer: "test".into(),
+        subject: "set-reader".into(),
+        groups: BTreeSet::new(),
+        attrs: Default::default(),
+    };
+    let tokens = TokenCodec::new(b"set-test".to_vec()).unwrap();
+    let service = QueryService {
+        principal: &principal,
+        scope: &scope,
+        active: Arc::clone(&active),
+        engine: &engine,
+        store: &store,
+        limits: ExecutionLimits::phase4_default(),
+        tokens: &tokens,
+    };
+    let request = QueryRequest {
+        set: serde_json::from_value(json!({
+            "kind": "union", "object_type": "Flight", "sets": [
+                {"kind": "pk", "object_type": "Flight", "pk": "F-1001"},
+                {"kind": "pk", "object_type": "Flight", "pk": "F-1002"}
+            ]
+        }))
+        .unwrap(),
+        select: vec![property("status")],
+    };
+    let query = |after| {
+        ValidatedQuery::new(
+            request.clone(),
+            vec![],
+            PageSpec { first: 1, after },
+            &ontology,
+            &scope.types[&flight],
+            CompileLimits::default(),
+        )
+        .unwrap()
+    };
+    let first = service.execute_list(&query(None)).await.unwrap();
+    assert_eq!(first.rows.len(), 1);
+    assert_eq!(first.rows[0].pk, json!("F-1001"));
+    assert!(first.has_more);
+    let second = service.execute_list(&query(first.cursor)).await.unwrap();
+    assert_eq!(second.rows.len(), 1);
+    assert_eq!(second.rows[0].pk, json!("F-1002"));
+    assert!(!second.has_more);
 }
 
 fn reference(operator: SetOperator, operands: &[Vec<u8>]) -> BTreeSet<String> {
