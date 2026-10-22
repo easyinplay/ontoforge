@@ -16,7 +16,7 @@
     {
       "number": "3",
       "name": "Edit Store & Scope Model",
-      "status": "in_progress"
+      "status": "complete"
     },
     {
       "number": "4",
@@ -40,9 +40,9 @@
     }
   ],
   "next": {
-    "command": "/gsd:progress --next",
-    "label": "Advance to the next step",
-    "reason": "Phase 3 of 7 · 0% · executing"
+    "command": "$gsd-progress --next",
+    "label": "Advance to the next step (plan phase 4)",
+    "reason": "Phase 4 of 7 — needs a plan"
   },
-  "updated_at": "2026-10-21T05:50:47.538Z"
+  "updated_at": "2026-10-22T02:35:27.051Z"
 }

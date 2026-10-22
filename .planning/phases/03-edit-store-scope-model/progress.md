@@ -1,6 +1,6 @@
 # Phase 3 progress
 
-当前节点：03-01..03-23 已执行；V1 本地 UAT 已通过。GSD 增量验证为 8/8、`gaps_remaining: []`；`03-VERIFICATION.md` 保持 `human_needed`，仅待当前改动的 PR CI。
+当前节点：Phase 3 已完成，23/23 PLAN 执行，`03-UAT.md` 2/2 通过，`03-VERIFICATION.md` 为 `passed`（8/8、`gaps_remaining: []`）。项目指针已转向 Phase 4。
 
 - 2026-10-19 discuss 完成（`03-CONTEXT.md`，D-01..D-18）
 - 2026-10-19 research、validation 策略、pattern map
@@ -11,6 +11,8 @@
 - 2026-10-22 V1 启动：Docker Desktop daemon 可用；现有 `reload_trino_it` 已预热表，CI catalog 尚未启用 metadata cache。验证需将无 flush 和真实 flush 串行放在同一用例，避免 catalog 级 flush 的并发干扰。
 - 2026-10-22 V1 本地通过：无缓存配置下新测试按预期失败；启用 10m metadata cache 后新测试通过，`reload_trino_it` 串行 3/3 通过，fmt、Clippy、diff 检查通过。证据见 `03-UAT.md`。
 - 2026-10-22 GSD 增量验证：8/8 must-haves verified、behavior_unverified 0、无代码 gap；当前改动尚未跑 PR CI，故为 `human_needed`。
+- 2026-10-22 PR CI run 39710470956（commit 1df4a7f）最终三 job 通过；Trino 缓存隔离用例在 integration 中 3/3 通过。Windows 首跑的既有 SQLite 锁竞争测试失败、重跑通过；风险见 `03-VERIFICATION.md`。
+- 2026-10-22 GSD `phase.complete 3`：`03-VERIFICATION.md` 为 `passed`，ROADMAP Phase 3 完成；`SCOPE-07` 读侧请求版本固定与 MCP 工具限制仍待 Phase 6/7。
 
 ## 执行前需要用户参与的门禁
 
@@ -22,4 +24,4 @@
 
 ## 待办
 
-- 将 V1 改动纳入提交并在该提交上运行 PR CI，确认 Ubuntu、Windows、integration 三个 job；随后更新最终验证状态。
+- Phase 3 无未完成项；后续按 `03-VERIFICATION.md` 的 warning 处理 Windows CI 锁竞争测试。
