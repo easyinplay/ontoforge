@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::collections::{BTreeMap, BTreeSet};
 
 use ontoforge_engine::Engine;
@@ -10,7 +11,7 @@ use ontoforge_storage::value::PropertyValue;
 use serde::Serialize;
 use serde_json::Value;
 
-use crate::ast::{AggregateMeasure, AggregateRequest, PageSpec};
+use crate::ast::{AggregateMeasure, AggregateRequest, Direction, Nulls, OrderBy, PageSpec};
 use crate::compile::{CompileLimits, ValidatedQuery, compile_aggregate_partial};
 use crate::execute::{WorkBudget, charge_edit_page, raw_backfill_select};
 use crate::overlay::{eligible_row, overlay_object};
@@ -258,6 +259,37 @@ enum MeasureState {
     Distinct(BTreeSet<String>),
 }
 
+fn compare_values(
+    left: &Value,
+    right: &Value,
+    def: &PropertyDef,
+) -> Result<Ordering, AggregateError> {
+    let left = PropertyValue::from_json(def, left).map_err(|_| AggregateError::Source)?;
+    let right = PropertyValue::from_json(def, right).map_err(|_| AggregateError::Source)?;
+    match (left, right) {
+        (PropertyValue::Bool(a), PropertyValue::Bool(b)) => Ok(a.cmp(&b)),
+        (PropertyValue::Int(a), PropertyValue::Int(b)) => Ok(a.cmp(&b)),
+        (PropertyValue::Double(a), PropertyValue::Double(b)) if a.is_finite() && b.is_finite() => {
+            Ok(a.total_cmp(&b))
+        }
+        (PropertyValue::Decimal(a), PropertyValue::Decimal(b)) => {
+            let a = a
+                .replace('.', "")
+                .parse::<i128>()
+                .map_err(|_| AggregateError::Source)?;
+            let b = b
+                .replace('.', "")
+                .parse::<i128>()
+                .map_err(|_| AggregateError::Source)?;
+            Ok(a.cmp(&b))
+        }
+        (PropertyValue::String(a), PropertyValue::String(b))
+        | (PropertyValue::Date(a), PropertyValue::Date(b))
+        | (PropertyValue::Timestamp(a), PropertyValue::Timestamp(b)) => Ok(a.cmp(&b)),
+        _ => Err(AggregateError::UnsupportedNumericValue),
+    }
+}
+
 impl MeasureState {
     fn new(measure: &AggregateMeasure, ty: &ObjectType) -> Result<Self, AggregateError> {
         let def = measure.property().and_then(|p| ty.properties.get(p));
@@ -343,6 +375,10 @@ impl<'a> AggregateBuilder<'a> {
         }
     }
 
+    #[allow(
+        clippy::too_many_lines,
+        reason = "one visible row updates each aggregate measure exactly once"
+    )]
     fn push(&mut self, row: &BTreeMap<PropertyName, Value>) -> Result<(), AggregateError> {
         let group = self
             .request
@@ -438,7 +474,26 @@ impl<'a> AggregateBuilder<'a> {
                         }
                     }
                 }
-                _ => {}
+                MeasureState::Min(current) | MeasureState::Max(current) => {
+                    if let Some(value) = value {
+                        let def = def.ok_or(AggregateError::InvalidQuery)?;
+                        let replace = match current.as_ref() {
+                            None => true,
+                            Some(old) => {
+                                let order = compare_values(value, old, def)?;
+                                if matches!(measure, AggregateMeasure::Min { .. }) {
+                                    order == Ordering::Less
+                                } else {
+                                    order == Ordering::Greater
+                                }
+                            }
+                        };
+                        if replace {
+                            *current = Some(value.clone());
+                        }
+                    }
+                }
+                MeasureState::Count(_) => {}
             }
         }
         Ok(())
@@ -637,6 +692,57 @@ fn validate_request(
 }
 
 impl<E: Engine> QueryService<'_, E> {
+    async fn execute_minmax_topn(
+        &self,
+        request: &AggregateRequest,
+        scope: &ontoforge_auth::scope::TypeScope,
+        budget: &mut WorkBudget,
+    ) -> Result<AggregateResult, AggregateError> {
+        let mut values = Vec::with_capacity(request.measures.len());
+        for measure in &request.measures {
+            let (property, direction) = match measure {
+                AggregateMeasure::Min { property } => (property, Direction::Asc),
+                AggregateMeasure::Max { property } => (property, Direction::Desc),
+                _ => return Err(AggregateError::InvalidQuery),
+            };
+            let query = ValidatedQuery::new(
+                QueryRequest {
+                    set: request.set.clone(),
+                    select: vec![property.clone()],
+                },
+                vec![OrderBy {
+                    property: property.clone(),
+                    direction,
+                    nulls: Nulls::Last,
+                }],
+                PageSpec {
+                    first: 1,
+                    after: None,
+                },
+                &self.active.ontology,
+                scope,
+                CompileLimits::default(),
+            )?;
+            let page = self.execute_list_internal(&query, budget, None).await?;
+            if page.truncated {
+                return Err(AggregateError::AggregateCostExceeded);
+            }
+            values.push(
+                page.rows
+                    .first()
+                    .and_then(|row| row.properties.get(property))
+                    .cloned()
+                    .unwrap_or(Value::Null),
+            );
+        }
+        Ok(AggregateResult {
+            buckets: vec![AggregateBucket {
+                group: Vec::new(),
+                values,
+            }],
+        })
+    }
+
     #[allow(clippy::too_many_arguments)]
     async fn execute_aggregate_partial(
         &self,
@@ -737,6 +843,10 @@ impl<E: Engine> QueryService<'_, E> {
         builder.finish()
     }
 
+    #[allow(
+        clippy::too_many_lines,
+        reason = "execution keeps one request budget across all strategies"
+    )]
     pub async fn execute_aggregate(
         &self,
         request: AggregateRequest,
@@ -775,6 +885,17 @@ impl<E: Engine> QueryService<'_, E> {
             .into_iter()
             .collect();
         let mut budget = WorkBudget::new(self.limits);
+        if request.group_by.is_empty()
+            && capabilities.min_max
+            && request.measures.iter().all(|measure| {
+                matches!(
+                    measure,
+                    AggregateMeasure::Min { .. } | AggregateMeasure::Max { .. }
+                )
+            })
+        {
+            return self.execute_minmax_topn(&request, scope, &mut budget).await;
+        }
         if ty.backing == Backing::Source {
             let profile = self
                 .active

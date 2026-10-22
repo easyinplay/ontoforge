@@ -290,3 +290,77 @@ fn all_source_variants_have_one_table_and_logical_aliases() {
         assert!(!sql.as_str().contains(" UNION "));
     }
 }
+
+#[test]
+fn aggregate_topn_uses_one_typed_bounded_source_table() {
+    let ontology = load_dir(Utf8Path::new(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../examples/ontologies/aviation"
+    )))
+    .ontology
+    .unwrap();
+    let flight = name("Flight");
+    let binding = &ontology
+        .profile_bindings(&ProfileName::try_from("dev".to_owned()).unwrap())
+        .unwrap()
+        .objects[&flight];
+    let scope = TypeScope {
+        row: Pred::Const(true),
+        columns: ontology.object_types[&flight]
+            .properties
+            .keys()
+            .cloned()
+            .map(|property| (property, Pred::Const(true)))
+            .collect(),
+    };
+    for direction in [Direction::Asc, Direction::Desc] {
+        let query = ValidatedQuery::new(
+            QueryRequest {
+                set: ObjectSet::Type {
+                    object_type: flight.clone(),
+                },
+                select: vec![prop("delayMinutes")],
+            },
+            vec![OrderBy {
+                property: prop("delayMinutes"),
+                direction,
+                nulls: Nulls::Last,
+            }],
+            PageSpec {
+                first: 256,
+                after: None,
+            },
+            &ontology,
+            &scope,
+            CompileLimits::default(),
+        )
+        .unwrap();
+        let mut select =
+            compile_source_select(&query, &ontology, binding, &scope, &Attrs::default())
+                .unwrap()
+                .select;
+        select
+            .order_by
+            .push(ontoforge_engine::printer::ast::OrderItem {
+                expr: ontoforge_engine::printer::ast::Expr::Column(
+                    binding.column_for("flightId").to_owned(),
+                ),
+                descending: false,
+                nulls_first: false,
+            });
+        assert!(select.from.is_some());
+        assert_eq!(select.limit, Some(256));
+        assert_eq!(select.order_by.len(), 2);
+        let sql = ontoforge_engine::printer::print_select(
+            &select,
+            ontoforge_engine::printer::Dialect::Trino,
+        )
+        .unwrap();
+        assert_eq!(sql.as_str().matches(" FROM ").count(), 1);
+        assert!(sql.as_str().contains("CASE WHEN"));
+        assert!(sql.as_str().contains("ORDER BY"));
+        assert!(sql.as_str().contains("LIMIT 256"));
+        assert!(!sql.as_str().contains(" JOIN "));
+        assert!(!sql.as_str().contains(" OFFSET "));
+    }
+}
