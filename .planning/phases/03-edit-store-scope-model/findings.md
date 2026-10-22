@@ -7,4 +7,7 @@
 - 本次仅同步规划状态，未修改业务代码；TDD 不适用。
 - V1 独立补证：`reload_trino_it.rs` 已在加列前查询表；CI catalog 默认无缓存，现有绿测不能证明 flush 生效。独立 Docker daemon 已启动。
 - `flush_metadata_cache` 清空整个 catalog；负向与正向测试必须串行。V1 涉及高可靠性验证，按 `superpowers:test-driven-development` 先见证无缓存时的红测，再开启缓存取得绿测。
-- V1 红绿验证完成：原 CI catalog 无缓存时 `cached_column_requires_flush_before_definition_switch` 按预期失败（NoFlush 已使 v2 active）；启用 `metadata.cache-ttl=10m` 与 `metadata.cache-missing=true` 后通过，完整 `reload_trino_it` 串行 3/3 通过。新改动尚未运行 PR CI。
+- V1 红绿验证完成：原 CI catalog 无缓存时 `cached_column_requires_flush_before_definition_switch` 按预期失败（NoFlush 已使 v2 active）；启用 `metadata.cache-ttl=10m` 与 `metadata.cache-missing=true` 后通过，完整 `reload_trino_it` 串行 3/3 通过；PR CI run 39712341919 三 job 通过。
+- V2 诊断起点：Windows CI runs 39582728729、39710470956 首跑均在 `reload.rs:1119` 的 v2 `reload` 返回 SQLite code `5` / `database is locked`，重跑通过。测试用两个 `EditStore` pool 指向同一临时 SQLite 文件；写入任务紧循环提交，`reload` 使用 `BEGIN IMMEDIATE`，连接设置 WAL 和 5 秒 `busy_timeout`。是否达到等待上限仍需执行单元复核，不能归因于终端异常关闭。
+- V2 涉及并发回归，执行 `superpowers:test-driven-development`：现有 CI 首跑失败作为 RED 证据；修复后重复运行与当前 HEAD CI 作为 GREEN 证据。修复应保留原测试对旧写拒绝和 edit log 版本顺序的断言。
+- V2 执行证据：旧代码本地连续 20 次通过，确认本机不易复现；既有 Windows CI RED 日志明确落在 v2 `reload` 的 code `5`。测试局部增加 30 秒截止时间与 10ms 间隔，仅重试 `ReloadError::Store(StoreError::Query { sqlstate: Some("5") })`，其他错误立即失败；修改后目标测试 20/20、`reload` 测试集 32/32、fmt、Clippy、diff 检查通过。当前改动仍待新 HEAD CI。

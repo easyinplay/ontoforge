@@ -1114,9 +1114,24 @@ async fn reload_racing_commits_never_lets_an_old_write_through() {
             "G",
         ));
         tokio::time::sleep(std::time::Duration::from_millis(50)).await;
-        let out = reload(&t.store, &with_zone(), &ReloadOptions::default())
-            .await
-            .expect("v2");
+        let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(30);
+        let out = loop {
+            match reload(&t.store, &with_zone(), &ReloadOptions::default()).await {
+                Ok(out) => break out,
+                Err(error)
+                    if matches!(
+                        &error,
+                        ReloadError::Store(ontoforge_storage::error::StoreError::Query {
+                            sqlstate: Some(code),
+                            ..
+                        }) if code == "5"
+                    ) && tokio::time::Instant::now() < deadline =>
+                {
+                    tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+                }
+                Err(error) => panic!("v2 reload, round {round}: {error:?}"),
+            }
+        };
         assert_eq!(out.def_version, Some(2), "round {round}");
         switched.store(true, std::sync::atomic::Ordering::SeqCst);
         let stats = task.await.expect("the writer finishes");

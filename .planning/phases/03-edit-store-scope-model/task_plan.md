@@ -35,7 +35,11 @@ Phase 完成 = 23 个 PLAN 的 SUMMARY 落盘 + `03-VERIFICATION.md` passed + Wi
 
 ## 当前 UAT 补证任务
 
-- [x] V1（STORE-02）：隔离验证 Trino 元数据缓存 flush。修改 `ci/trino/catalog/editstore.properties`、`crates/ontoforge-storage/tests/reload_trino_it.rs`、`.github/workflows/ci.yml`；独立 Trino/PostgreSQL 中缓存开启且预热后，无 flush 时新列不可见、旧定义仍 active，真实 flush 后新列可见且新定义 active；串行集成测试 3/3 通过。证据见 `03-UAT.md`。新改动的 PR CI 尚待运行；此项不是新的 `gap_closure` PLAN。
+- [x] V1（STORE-02）：隔离验证 Trino 元数据缓存 flush。修改 `ci/trino/catalog/editstore.properties`、`crates/ontoforge-storage/tests/reload_trino_it.rs`、`.github/workflows/ci.yml`；独立 Trino/PostgreSQL 中缓存开启且预热后，无 flush 时新列不可见、旧定义仍 active，真实 flush 后新列可见且新定义 active；串行集成测试 3/3 通过，PR CI run 39712341919 三 job 通过。证据见 `03-UAT.md`；此项不是新的 `gap_closure` PLAN。
+
+## Phase 3 完成后的 CI 稳定性跟进
+
+- [ ] V2：诊断并稳定 `reload_racing_commits_never_lets_an_old_write_through` 在 Windows CI 上的 `SQLITE_BUSY`。所有权：`crates/ontoforge-storage/tests/reload.rs`。已确认竞争路径并完成仅对 SQLite code `5` 的有界重试；其他错误立即失败，并发写入、旧版本拒绝和日志单调断言保留。本地目标测试 20/20、`reload` 测试集 32/32 通过；待 PR 的 Windows、Ubuntu、integration CI。此项是已完成 Phase 3 的测试稳定性跟进，不重新打开阶段验收。
 
 ## 规划中的自决项（orchestrator / planner，用户可否决）
 

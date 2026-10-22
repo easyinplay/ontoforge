@@ -1,6 +1,6 @@
 # Phase 3 progress
 
-当前节点：Phase 3 已完成，23/23 PLAN 执行，`03-UAT.md` 2/2 通过，`03-VERIFICATION.md` 为 `passed`（8/8、`gaps_remaining: []`）。项目指针已转向 Phase 4。
+当前节点：Phase 3 已完成，23/23 PLAN 执行，`03-UAT.md` 2/2 通过，`03-VERIFICATION.md` 为 `passed`（8/8、`gaps_remaining: []`）。项目指针已转向 Phase 4；正在处理 `task_plan.md` 的 V2 Windows CI 稳定性跟进。
 
 - 2026-10-19 discuss 完成（`03-CONTEXT.md`，D-01..D-18）
 - 2026-10-19 research、validation 策略、pattern map
@@ -13,6 +13,8 @@
 - 2026-10-22 GSD 增量验证：8/8 must-haves verified、behavior_unverified 0、无代码 gap；当前改动尚未跑 PR CI，故为 `human_needed`。
 - 2026-10-22 PR CI run 39710470956（commit 1df4a7f）最终三 job 通过；Trino 缓存隔离用例在 integration 中 3/3 通过。Windows 首跑的既有 SQLite 锁竞争测试失败、重跑通过；风险见 `03-VERIFICATION.md`。
 - 2026-10-22 GSD `phase.complete 3`：`03-VERIFICATION.md` 为 `passed`，ROADMAP Phase 3 完成；`SCOPE-07` 读侧请求版本固定与 MCP 工具限制仍待 Phase 6/7。
+- 2026-10-22 V2 启动：两次 Windows CI 首跑的同一 SQLite 锁竞争失败已定位到并发 reload 测试，开始复核 `BEGIN IMMEDIATE` 与 5 秒 `busy_timeout` 的边界。
+- 2026-10-22 V2 本地验证：对 SQLite code `5` 的测试局部有界重试已完成；旧版本地 20/20、新版 20/20、`reload` 测试集 32/32 通过。旧版 RED 证据来自两次 Windows CI 首跑；待新提交的 PR CI。
 
 ## 执行前需要用户参与的门禁
 
@@ -24,4 +26,4 @@
 
 ## 待办
 
-- Phase 3 无未完成项；后续按 `03-VERIFICATION.md` 的 warning 处理 Windows CI 锁竞争测试。
+- V2 诊断与修复后重复运行并发测试，在 PR 当前 HEAD 跑 Windows、Ubuntu、integration CI；保留 Phase 3 的 `passed` 状态。
