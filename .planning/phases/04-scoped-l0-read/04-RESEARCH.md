@@ -268,9 +268,9 @@ Windows 本地 SQLite 覆盖纯 Rust 合并语义与单表替身语义，不能�
 
 **PLAN 中的可执行合同。** 04-04 将列表预算错误写成 `QueryError::WorkBudgetExceeded`：backend call、raw candidate、backfill key、decoded byte 计入同一个 `WorkBudget`；耗尽时无 partial rows，且不置 `truncated`。`has_more` 只由第 `page_size + 1` 条经合并、scope 与复核后合格的行确定。04-06 将 aggregate 成本错误写成 `AggregateCostExceeded`：完整 exact buckets 或无 data typed error；group/bucket/value 数量、decoded bytes 与 distinct set memory 均计入预算，成功聚合没有 `truncated`。[VERIFIED: .planning/phases/04-scoped-l0-read/04-04-PLAN.md:133-153] [VERIFIED: .planning/phases/04-scoped-l0-read/04-06-PLAN.md:169-197]
 
-**必须在 04-04 Task 2 与 04-06 Task 3 开始前锁定的参数。** `ExecutionLimits` 至少含正整数 `max_backend_calls`、`max_raw_candidates`、`max_backfill_keys`、`max_decoded_bytes`；`AggregateLimits` 至少含正整数 `max_groups`、`max_buckets`、`max_distinct_values`、`max_distinct_memory_bytes`，并消耗同一个请求级 `WorkBudget`。这些值由可信构造参数在请求开始时固定，不由 ObjectSet wire 调高；逐维在 B、B+1 和两个维度同时临界时测边界。测试 fixture 可用小值 `B=2`，它只验证边界机制，不是生产默认值。[ASSUMED: 参数名、测试 fixture 与生产默认值尚未获 ADR 锁定]
+**PLAN 已固定的 Phase 4 初始上限。** `ExecutionLimits::phase4_default()` 为 `max_backend_calls=32`、`max_raw_candidates=10_000`、`max_backfill_keys=2_048`（全请求累计，单批仍 ≤256）、`max_decoded_bytes=64 * 1024 * 1024`。`AggregateLimits::phase4_default()` 为 `max_groups=1_024`、`max_buckets=4_096`、`max_distinct_values=10_000`（跨 group/measure 的请求总量）、`max_distinct_memory_bytes=16 * 1024 * 1024`。两组限额由可信 host 构造并在请求开始冻结，共享一个 request-owned `WorkBudget`，ObjectSet wire 不得调高或重置。逐维 B 可完成，B+1 返回无 partial data 的 typed error；零值、溢出或 wire 注入在 backend 工作前拒绝。以上数值是 Phase 4 计划的初始 DoS guardrails，**不是 ADR 承诺或性能 SLA**，以后只能根据真实 workload 证据由可信 host 调整。[VERIFIED: .planning/phases/04-scoped-l0-read/04-01-PLAN.md:106-127] [VERIFIED: .planning/phases/04-scoped-l0-read/04-04-PLAN.md:138-159] [VERIFIED: .planning/phases/04-scoped-l0-read/04-06-PLAN.md:82-121]
 
-现有 `Engine::QueryContext` 的 `DEFAULT_MAX_ROWS = 10_000`、`DEFAULT_MAX_BYTES = 16 * 1024 * 1024`、`DEFAULT_QUERY_TIMEOUT_MS = 30_000` 是**单条 engine 查询**限额，不是整个列表/aggregate 请求的总预算；不能据此推断 production `ExecutionLimits`。原文：`pub const DEFAULT_MAX_ROWS: usize = 10_000;`、`pub const DEFAULT_MAX_BYTES: usize = 16 * 1024 * 1024;`、`pub const DEFAULT_QUERY_TIMEOUT_MS: u64 = 30_000;`。[VERIFIED: crates/ontoforge-engine/src/lib.rs:23-30] 生产默认值需在执行前由 planner 写入 `04-04-PLAN.md` 和 `04-06-PLAN.md`，并在第一批 RED tests 中固定；缺值、零值或溢出必须拒绝构造，不能等运行时无限扫描。[ASSUMED: 默认值决策属于 planner 的执行准备]
+现有 `Engine::QueryContext` 的 `DEFAULT_MAX_ROWS = 10_000`、`DEFAULT_MAX_BYTES = 16 * 1024 * 1024`、`DEFAULT_QUERY_TIMEOUT_MS = 30_000` 仍是**单条 engine 查询**限额，不替代上述整个 L0 请求的预算。原文：`pub const DEFAULT_MAX_ROWS: usize = 10_000;`、`pub const DEFAULT_MAX_BYTES: usize = 16 * 1024 * 1024;`、`pub const DEFAULT_QUERY_TIMEOUT_MS: u64 = 30_000;`。[VERIFIED: crates/ontoforge-engine/src/lib.rs:23-30]
 
 ### Q2: 部分授权列
 
@@ -294,14 +294,13 @@ Windows 本地 SQLite 覆盖纯 Rust 合并语义与单表替身语义，不能�
 
 | # | Claim | Risk if wrong |
 |---|---|---|
-| A1 | `ExecutionLimits` 与 `AggregateLimits` 的字段名和生产默认数值由 planner 在执行前锁定；本文件的 `B=2` 仅为边界测试 fixture | 若不锁定，成本超限无法形成稳定的可测合同 |
-| A2 | Phase 4 由 query 宿主向 `TokenCodec` 注入 key，正式 server 的密钥部署与分发留待集成 | 若宿主不能安全注入，需调整构造 API |
-| A3 | 可复用现有 `jsonwebtoken` crypto 后端，无新增 package | 如现有 API 不适用，新增 package 须先做官方来源与 legitimacy 审计 |
+| A1 | 后续 server 的具体密钥部署与分发接口尚未实现 | 若宿主不能安全注入，需调整 `TokenCodec` 构造接口 |
+| A2 | 现有 `jsonwebtoken` crypto API 可满足 HMAC 需求，尚未由 Phase 4 代码验证 | 如不适用，新增 package 须先做官方来源与 legitimacy 审计 |
 
 ## Sources
 
 - HIGH：`.planning/phases/04-scoped-l0-read/04-CONTEXT.md`；`.planning/adr/0015`、`0018`、`0020`、`0023`、`0024`、`0025`；本研究所引述的 crate 源文件与 CI 配置（本会话逐份打开）。
 - MEDIUM：`.planning/research/spike-03-trino-overlay-latency.md`、`spike-03b-scoped-overlay.md`（真实 Trino 测试，但负载、connector 和 n=7 限制外推）。
-- LOW：Assumptions Log A1-A3，等待 planner 在执行前核定。
+- LOW：Assumptions Log A1-A2，留给后续 server 集成与 Phase 4 实现验证；预算数值已由 PLAN 固定。
 
 **Valid until:** 2026-11-21；任何上游 ADR、crate API 或 Trino/connector 版本变化后重新检查。
