@@ -260,26 +260,48 @@ Windows 本地 SQLite 覆盖纯 Rust 合并语义与单表替身语义，不能�
 | PostgreSQL + Trino | CI configured；本机未探测服务 | Linux integration job 启动服务；私有延迟 fixture 另行配置 [VERIFIED: .github/workflows/ci.yml:45-103] |
 | GSD graphify / CodeGraph | 不可用 | `graphify status` 显示 disabled；仓库无 `.codegraph/` [VERIFIED: local CLI/filesystem probe 2026-10-22] |
 
-## Open Questions
+## Decision Closure and Execution Gates
 
-1. **查询成本合同。** `distinct` “成本过高”与补取工作预算的阈值、错误码和 `truncated` 交互未在 CONTEXT/ADR 定量。planner 可先锁定可测试上界；对外错误语义若有多种合理方案，需确认。[ASSUMED]
-2. **部分授权列的排序与聚合。** ADR 锁定不可泄露，但未把所有 `isNull`、复合 filter、groupBy、null sort 的外部行为穷尽成真值表。计划应先写越权/差分语料，再实现下推与最终结果。[VERIFIED: .planning/research/spike-03b-scoped-overlay.md:116-123]
-3. **HMAC key 与游标保护。** `_version` 的 HMAC 输入已定，key 的生命周期、存储与轮换接口以及 cursor 的完整性合同仍需落到 query/server 边界；不应由 Phase 4 直接实现 REST 集成。[VERIFIED: .planning/adr/0018-authz-scope-and-sql-tiers.md:19-20] [ASSUMED: 接口位置]
-4. **fragment 上限的证明。** 单表 AST 是静态可证明条件；`≤2 fragment` 需要真实 Trino EXPLAIN 证据。计划必须包含固定形态 corpus 与 CI/fixture 记录，不能仅以 AST 守卫宣称完成 QUERY-10。[VERIFIED: crates/ontoforge-engine/src/printer/ast.rs:14-24] [VERIFIED: .planning/research/spike-03b-scoped-overlay.md:105-108]
+### Q1: distinct 与 work budget
+
+**已锁定语义。** ADR-0020 要求高成本 `distinct` 明确报错，列表补取须到页满或 source 耗尽；ADR-0019 的 `truncated=true` 指最终行数/字节输出上限与继续方式，不能把未完成的计算伪装成完整结果。[VERIFIED: .planning/adr/0020-query-execution-rust-orchestrated-overlay.md:15-16] [VERIFIED: .planning/adr/0019-mcp-toolsets-and-l2-tools.md:11-11]
+
+**PLAN 中的可执行合同。** 04-04 将列表预算错误写成 `QueryError::WorkBudgetExceeded`：backend call、raw candidate、backfill key、decoded byte 计入同一个 `WorkBudget`；耗尽时无 partial rows，且不置 `truncated`。`has_more` 只由第 `page_size + 1` 条经合并、scope 与复核后合格的行确定。04-06 将 aggregate 成本错误写成 `AggregateCostExceeded`：完整 exact buckets 或无 data typed error；group/bucket/value 数量、decoded bytes 与 distinct set memory 均计入预算，成功聚合没有 `truncated`。[VERIFIED: .planning/phases/04-scoped-l0-read/04-04-PLAN.md:133-153] [VERIFIED: .planning/phases/04-scoped-l0-read/04-06-PLAN.md:169-197]
+
+**必须在 04-04 Task 2 与 04-06 Task 3 开始前锁定的参数。** `ExecutionLimits` 至少含正整数 `max_backend_calls`、`max_raw_candidates`、`max_backfill_keys`、`max_decoded_bytes`；`AggregateLimits` 至少含正整数 `max_groups`、`max_buckets`、`max_distinct_values`、`max_distinct_memory_bytes`，并消耗同一个请求级 `WorkBudget`。这些值由可信构造参数在请求开始时固定，不由 ObjectSet wire 调高；逐维在 B、B+1 和两个维度同时临界时测边界。测试 fixture 可用小值 `B=2`，它只验证边界机制，不是生产默认值。[ASSUMED: 参数名、测试 fixture 与生产默认值尚未获 ADR 锁定]
+
+现有 `Engine::QueryContext` 的 `DEFAULT_MAX_ROWS = 10_000`、`DEFAULT_MAX_BYTES = 16 * 1024 * 1024`、`DEFAULT_QUERY_TIMEOUT_MS = 30_000` 是**单条 engine 查询**限额，不是整个列表/aggregate 请求的总预算；不能据此推断 production `ExecutionLimits`。原文：`pub const DEFAULT_MAX_ROWS: usize = 10_000;`、`pub const DEFAULT_MAX_BYTES: usize = 16 * 1024 * 1024;`、`pub const DEFAULT_QUERY_TIMEOUT_MS: u64 = 30_000;`。[VERIFIED: crates/ontoforge-engine/src/lib.rs:23-30] 生产默认值需在执行前由 planner 写入 `04-04-PLAN.md` 和 `04-06-PLAN.md`，并在第一批 RED tests 中固定；缺值、零值或溢出必须拒绝构造，不能等运行时无限扫描。[ASSUMED: 默认值决策属于 planner 的执行准备]
+
+### Q2: 部分授权列
+
+**已锁定语义。** `TypeScope.row` 是各 role 行谓词的 OR；`TypeScope.columns[x]` 是授予属性 x 的 role 谓词的 OR。合并后的行决定可见性，最终 filter/search/sort/group/measure 只消费该行 scope 后的值；source 下推使用原列时，必须附授予该列的 role guard，并在 Rust 重新求值。`isNull`、`not` 与多列复合式不能套用只对 null-rejecting 比较成立的简单改写。[VERIFIED: crates/ontoforge-auth/src/scope/merge.rs:1-19] [VERIFIED: .planning/research/spike-03b-scoped-overlay.md:116-123] [VERIFIED: .planning/phases/04-scoped-l0-read/04-04-PLAN.md:95-118]
+
+**PLAN 中的外部结果合同。** 部分授权的排序键用合并后已遮蔽值排序，显式 null policy，最后按 canonical pk 打破平局；groupBy 的隐藏值与逻辑 NULL 在 outward response 中是同一个 masked-null key，measure/distinct 只读取可见值。改变任何未授权原值不得改变 membership、顺序、group、measure 或错误外形。04-04 与 04-06 已安排独立 reference model、多 role mutation pairs 和属性测试；无需另开用户决策。[VERIFIED: .planning/phases/04-scoped-l0-read/04-04-PLAN.md:95-118] [VERIFIED: .planning/phases/04-scoped-l0-read/04-06-PLAN.md:169-197]
+
+### Q3: HMAC key 与 cursor 边界
+
+**已锁定语义。** `_version` 采用 `HMAC(server_key, principal_id ‖ type ‖ pk ‖ 规范化(edit 行 + source 行))`；轮换 key 后旧 token 冲突。keyset 是非快照游标，`has_more` 决定结束，游标预留 `snapshot_id`。[VERIFIED: .planning/adr/0018-authz-scope-and-sql-tiers.md:16-16] [VERIFIED: .planning/adr/0019-mcp-toolsets-and-l2-tools.md:11-11] [VERIFIED: .planning/adr/0020-query-execution-rust-orchestrated-overlay.md:19-19]
+
+**PLAN 中的 Phase 4 合同。** 04-01 从可信 `TokenCodec` 构造参数注入 key，使用现有 `jsonwebtoken::crypto::{sign,verify}` 与 HS256；`_version` 只输出 base64url MAC，签名输入用长度前缀规范编码，并绑定 def_version、完整 source/edit 状态。04-04 的 cursor 使用同一 key 原语，versioned payload 绑定 canonical principal id、effective scope fingerprint、def_version、logical type、完整排序描述符与最后的 typed sort values + pk；任何篡改、跨上下文重放或 key 轮换都返回同形 `InvalidCursor`。payload 不含物理名，executor 只接收通过验证的 `CursorPosition`。本 phase 的 key 生命周期边界是“宿主注入、query 进程内使用、轮换使旧 token/cursor 失效”；key 的部署存储/分发属于后续 server 集成，不在 L0 wire 中新增字段。[VERIFIED: .planning/phases/04-scoped-l0-read/04-01-PLAN.md:108-113] [VERIFIED: .planning/phases/04-scoped-l0-read/04-04-PLAN.md:168-193]
+
+### Q4: Trino fragment 与 p95 证据
+
+**已锁定语义。** 编译器限制 source 查询为单表 typed `Select`，每条真实 Trino 查询须 `≤2 fragment`；安静或隔离集群四条 p95 阈值按 ADR-0020/QUERY-10 验收。AST 单表条件只能证明没有 JOIN/CTE/UNION，不能静态证明 Trino optimizer 的实际 fragment 数。[VERIFIED: crates/ontoforge-engine/src/printer/ast.rs:14-23] [VERIFIED: .planning/adr/0020-query-execution-rust-orchestrated-overlay.md:13-22]
+
+**PLAN 中的验收门禁。** 04-02 增加只接受 typed `Select` 的 distributed EXPLAIN printer；04-07 对每种 source-producing shape 在真实 Trino 执行 `EXPLAIN (TYPE DISTRIBUTED)`，严格解析完整 fragment header 并按 id 去重，0、重复、格式不符或 >2 即失败。Linux CI 必须实际运行 `trino_query_it` 与 PG edit fixture，不能只编译/列出 ignored tests。隔离 benchmark 四条路径各先 5 次 warmup，再至少 40 次计入失败/超时的 measured samples，nearest-rank p95 与 raw timings/plan artifact/commit/run URL 写入 `04-PERFORMANCE.md`；shared CI timing 仅 smoke。只有这些证据齐全才能关闭 QUERY-10，不需用户再裁决。[VERIFIED: .planning/phases/04-scoped-l0-read/04-02-PLAN.md:125-150] [VERIFIED: .planning/phases/04-scoped-l0-read/04-07-PLAN.md:95-127] [VERIFIED: .planning/phases/04-scoped-l0-read/04-07-PLAN.md:149-179]
 
 ## Assumptions Log
 
 | # | Claim | Risk if wrong |
 |---|---|---|
-| A1 | HMAC 可复用现有 crypto 栈而无需新增 package | 新增依赖须再做官方来源与 legitimacy 审计 |
-| A2 | 补取预算耗尽可用显式成本错误/截断表示 | 对外语义需定案，否则无限或不完整查询 |
-| A3 | query/server 之间可用可注入上下文承载 key、principal、definition | 若现有 server 接口不同，任务边界需调整 |
-| A4 | 游标需要完整性保护 | 不保护可能允许跨 scope/排序状态重放 |
+| A1 | `ExecutionLimits` 与 `AggregateLimits` 的字段名和生产默认数值由 planner 在执行前锁定；本文件的 `B=2` 仅为边界测试 fixture | 若不锁定，成本超限无法形成稳定的可测合同 |
+| A2 | Phase 4 由 query 宿主向 `TokenCodec` 注入 key，正式 server 的密钥部署与分发留待集成 | 若宿主不能安全注入，需调整构造 API |
+| A3 | 可复用现有 `jsonwebtoken` crypto 后端，无新增 package | 如现有 API 不适用，新增 package 须先做官方来源与 legitimacy 审计 |
 
 ## Sources
 
 - HIGH：`.planning/phases/04-scoped-l0-read/04-CONTEXT.md`；`.planning/adr/0015`、`0018`、`0020`、`0023`、`0024`、`0025`；本研究所引述的 crate 源文件与 CI 配置（本会话逐份打开）。
 - MEDIUM：`.planning/research/spike-03-trino-overlay-latency.md`、`spike-03b-scoped-overlay.md`（真实 Trino 测试，但负载、connector 和 n=7 限制外推）。
-- LOW：Assumptions Log A1-A4，等待 planner 核定。
+- LOW：Assumptions Log A1-A3，等待 planner 在执行前核定。
 
 **Valid until:** 2026-11-21；任何上游 ADR、crate API 或 Trino/connector 版本变化后重新检查。
