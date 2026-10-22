@@ -125,7 +125,8 @@ jobs:
         env:
           ONTOFORGE_TRINO_URL: http://localhost:8080
           ONTOFORGE_PG_URL: postgres://postgres:ontoforge-ci-only@localhost:5432/editstore
-        run: cargo test -p ontoforge-storage --locked --test reload_trino_it -- --ignored
+        # A catalog-wide flush from one case would invalidate another case's stale metadata.
+        run: cargo test -p ontoforge-storage --locked --test reload_trino_it -- --ignored --test-threads=1
       # A green run must not mean "nothing ran" (RESEARCH Pitfall 8).
       - name: Ignored tests are actually there
         run: |

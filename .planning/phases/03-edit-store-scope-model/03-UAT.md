@@ -1,22 +1,21 @@
 ---
-status: partial
+status: complete
 phase: 03-edit-store-scope-model
 source: [03-VERIFICATION.md]
 started: 2026-10-21T18:40:00Z
-updated: 2026-10-21T19:45:00Z
+updated: 2026-10-22T02:09:00Z
 ---
 
 ## Current Test
 
-[testing paused — 1 items outstanding]
+All 2 UAT tests passed locally. The new cache-isolation changes have not run in PR CI yet.
 
 ## Tests
 
 ### 1. Cache-flush isolation on Trino (see behavior_unverified_items in 03-VERIFICATION.md)
 expected: reload_trino_it fails when system.flush_metadata_cache() is skipped and passes when it runs, on a catalog with metadata caching enabled
-result: blocked
-blocked_by: third-party
-reason: "Run 2026-10-21 against the shared Trino 483 (https://192.168.11.91:8443, user root) with a temporary catalog editstore (postgresql, metadata.cache-ttl=10m, metadata.cache-missing=true) over a temporary PG database. reload_activates_once_trino_sees_the_new_tables passed. a_new_column_is_visible_when_its_definition_becomes_active failed with NotVisible { missing: [\"of_obj_flight.gate\", \"(flush_metadata_cache failed: query failed (PERMISSION_DENIED): Access Denied: Cannot execute procedure editstore.system.flush_metadata_cache)\"] }. This proves the no-flush half (with caching on and no effective flush, the new column stays invisible and reload refuses to activate). The with-flush half could not run because root lacks permission to execute the procedure on this cluster. Catalog, database and the local test-helper patch were removed afterwards."
+result: pass
+note: "2026-10-22 on isolated Trino 483/PostgreSQL (localhost:58080/55432): the new cached_column_requires_flush_before_definition_switch test failed as expected without catalog caching because NoFlush incorrectly allowed ReloadOutcome def_version Some(2). With metadata.cache-ttl=10m and metadata.cache-missing=true, the same test passed: after prewarming the v1 table, NoFlush left of_obj_flight.gate invisible and v1 active; the real flush made the column visible and activated v2. cargo test -p ontoforge-storage --test reload_trino_it --locked -- --ignored --test-threads=1 passed 3/3. cargo fmt --all --check, cargo clippy -p ontoforge-storage --test reload_trino_it --locked -- -D warnings, and git diff --check passed. The new changes have not run in PR CI. The prior shared-cluster PERMISSION_DENIED remains documented in the previous revision."
 
 ### 2. Push the gap-closure commits (03-21..03-23 and the review) and let the ci workflow run on Linux
 expected: All three jobs green; in particular the cfg(unix) assertion in crates/ontoforge-auth/tests/dev_token.rs#missing_key_directory_is_created (new key directory has mode 0700) runs and passes, and the Linux-only PostgreSQL/Trino jobs pass at the new HEAD
@@ -26,10 +25,10 @@ note: "CI run 39582728729 at 342247b. Attempt 2: test (windows-latest), test (ub
 ## Summary
 
 total: 2
-passed: 1
+passed: 2
 issues: 0
 pending: 0
 skipped: 0
-blocked: 1
+blocked: 0
 
 ## Gaps

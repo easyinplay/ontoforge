@@ -9,15 +9,19 @@
 //! catalog maps. Without either variable an ignored test panics instead of passing silently
 //! (RESEARCH Pitfall 8).
 
+use std::collections::BTreeMap;
 use std::time::Duration;
 
 use camino::Utf8Path;
+use futures_util::future::BoxFuture;
 use ontoforge_engine::config::{build_trino_engines, parse_server_config};
 use ontoforge_engine::printer::ast::{Expr, Select, SelectItem};
 use ontoforge_engine::printer::print_select;
-use ontoforge_engine::{AnyEngine, Dialect, Engine, QueryContext, QueryOutput, TableRef};
+use ontoforge_engine::{
+    AnyEngine, Dialect, Engine, EngineError, PhysicalColumn, QueryContext, QueryOutput, TableRef,
+};
 use ontoforge_schema::ir::Ontology;
-use ontoforge_storage::reload::{ProbeContext, ReloadOptions, reload};
+use ontoforge_storage::reload::{ProbeContext, ProbeTarget, ReloadError, ReloadOptions, reload};
 use ontoforge_storage::store::{BackendSettings, EditStore, StoreSettings};
 
 const TRINO_URL_VAR: &str = "ONTOFORGE_TRINO_URL";
@@ -158,14 +162,29 @@ async fn select(engine: &AnyEngine, schema: &str, table: &str, columns: &[&str])
         .unwrap_or_else(|e| panic!("Trino cannot read {schema}.{table}: {e}"))
 }
 
-fn probing(engine: &AnyEngine) -> ReloadOptions<'_> {
+fn probing(target: &dyn ProbeTarget) -> ReloadOptions<'_> {
     ReloadOptions {
         probe: Some(ProbeContext {
-            target: engine,
+            target,
             catalog: CATALOG.to_owned(),
             timeout: Duration::from_secs(60),
         }),
         ..ReloadOptions::default()
+    }
+}
+
+struct NoFlush<'a>(&'a AnyEngine);
+
+impl ProbeTarget for NoFlush<'_> {
+    fn flush_metadata<'a>(&'a self, _: &'a str) -> BoxFuture<'a, Result<(), EngineError>> {
+        Box::pin(async { Ok(()) })
+    }
+
+    fn describe<'a>(
+        &'a self,
+        tables: &'a [TableRef],
+    ) -> BoxFuture<'a, Result<BTreeMap<TableRef, Vec<PhysicalColumn>>, EngineError>> {
+        self.0.describe(tables)
     }
 }
 
@@ -204,4 +223,43 @@ async fn a_new_column_is_visible_when_its_definition_becomes_active() {
     assert_eq!(out.def_version, Some(2));
     let flights = select(&engine, &schema, "of_obj_flight", &["flight_id", "gate"]).await;
     assert!(flights.rows.is_empty());
+}
+
+#[tokio::test(flavor = "multi_thread")]
+#[ignore = "needs ONTOFORGE_TRINO_URL and ONTOFORGE_PG_URL"]
+async fn cached_column_requires_flush_before_definition_switch() {
+    let engine = trino();
+    let (store, schema) = pg_store().await;
+    reload(&store, &aviation(), &probing(&engine))
+        .await
+        .expect("v1");
+    select(&engine, &schema, "of_obj_flight", &["flight_id"]).await;
+
+    let no_flush = NoFlush(&engine);
+    let error = reload(
+        &store,
+        &aviation_with_gate(),
+        &ReloadOptions {
+            probe: Some(ProbeContext {
+                target: &no_flush,
+                catalog: CATALOG.to_owned(),
+                timeout: Duration::from_secs(2),
+            }),
+            ..ReloadOptions::default()
+        },
+    )
+    .await
+    .expect_err("cached columns should remain stale without a flush");
+    assert!(
+        matches!(&error, ReloadError::NotVisible { missing } if missing.iter().any(|item| item == "of_obj_flight.gate")),
+        "expected a stale gate column: {error:?}"
+    );
+    assert_eq!(store.active_definition().await.unwrap().def_version, 1);
+
+    let out = reload(&store, &aviation_with_gate(), &probing(&engine))
+        .await
+        .expect("real flush reveals the pending column");
+    assert_eq!(out.def_version, Some(2));
+    assert_eq!(store.active_definition().await.unwrap().def_version, 2);
+    select(&engine, &schema, "of_obj_flight", &["flight_id", "gate"]).await;
 }

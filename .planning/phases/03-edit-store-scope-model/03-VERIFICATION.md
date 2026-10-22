@@ -1,15 +1,10 @@
 ---
 phase: 03-edit-store-scope-model
-verified: 2026-10-21T18:30:00Z
+verified: 2026-10-22T02:11:26Z
 status: human_needed
-score: 7/8 must-haves verified
+score: 8/8 must-haves verified
 covered_files:
   - ".github/workflows/ci.yml"
-  - ".planning/REQUIREMENTS.md"
-  - ".planning/adr/0023-phase3-crate-dependency-direction.md"
-  - ".planning/adr/0024-edit-store-physical-format.md"
-  - ".planning/adr/0025-row-predicate-semantics.md"
-  - ".planning/adr/0026-edit-log-format.md"
   - ".planning/phases/03-edit-store-scope-model/03-01-PLAN.md"
   - ".planning/phases/03-edit-store-scope-model/03-01-SUMMARY.md"
   - ".planning/phases/03-edit-store-scope-model/03-02-PLAN.md"
@@ -56,345 +51,179 @@ covered_files:
   - ".planning/phases/03-edit-store-scope-model/03-22-SUMMARY.md"
   - ".planning/phases/03-edit-store-scope-model/03-23-PLAN.md"
   - ".planning/phases/03-edit-store-scope-model/03-23-SUMMARY.md"
-  - "CONTRIBUTING.md"
-  - "Cargo.lock"
-  - "Cargo.toml"
-  - "ci/pg/rowpred_corpus.sql"
+  - ".planning/phases/03-edit-store-scope-model/03-UAT.md"
   - "ci/trino/catalog/editstore.properties"
-  - "crates/ontoforge-auth/Cargo.toml"
-  - "crates/ontoforge-auth/src/authn/dev.rs"
-  - "crates/ontoforge-auth/src/authn/jwks.rs"
-  - "crates/ontoforge-auth/src/authn/mod.rs"
-  - "crates/ontoforge-auth/src/authn/oidc.rs"
-  - "crates/ontoforge-auth/src/authn/principal.rs"
-  - "crates/ontoforge-auth/src/lib.rs"
-  - "crates/ontoforge-auth/src/scope/compile.rs"
-  - "crates/ontoforge-auth/src/scope/coverage.rs"
-  - "crates/ontoforge-auth/src/scope/lower.rs"
-  - "crates/ontoforge-auth/src/scope/merge.rs"
-  - "crates/ontoforge-auth/src/scope/mod.rs"
-  - "crates/ontoforge-auth/tests/criteria_coverage.rs"
-  - "crates/ontoforge-auth/tests/crypto_backend.rs"
-  - "crates/ontoforge-auth/tests/data/README.md"
-  - "crates/ontoforge-auth/tests/data/oidc_es256.pem"
-  - "crates/ontoforge-auth/tests/data/oidc_rs256.pem"
-  - "crates/ontoforge-auth/tests/data/rowpred_corpus.json"
-  - "crates/ontoforge-auth/tests/dev_token.rs"
-  - "crates/ontoforge-auth/tests/oidc.rs"
-  - "crates/ontoforge-auth/tests/rowpred_common/mod.rs"
-  - "crates/ontoforge-auth/tests/rowpred_diff.rs"
-  - "crates/ontoforge-auth/tests/rowpred_trino_it.rs"
-  - "crates/ontoforge-auth/tests/scope_compile.rs"
-  - "crates/ontoforge-auth/tests/scope_merge.rs"
-  - "crates/ontoforge-auth/tests/snapshots/scope_compile__scope_compile_diagnostics_json.snap"
-  - "crates/ontoforge-engine/src/config.rs"
-  - "crates/ontoforge-engine/src/printer/ast.rs"
-  - "crates/ontoforge-engine/src/printer/call.rs"
-  - "crates/ontoforge-engine/src/printer/dialect.rs"
-  - "crates/ontoforge-engine/src/printer/escape.rs"
-  - "crates/ontoforge-engine/src/printer/mod.rs"
-  - "crates/ontoforge-engine/src/printer/sqlite_ddl.rs"
-  - "crates/ontoforge-engine/src/printer/tests.rs"
-  - "crates/ontoforge-engine/src/sqlite/fixture.rs"
-  - "crates/ontoforge-engine/src/sqlite/mod.rs"
-  - "crates/ontoforge-engine/tests/printer_prop.rs"
-  - "crates/ontoforge-engine/tests/server_config.rs"
-  - "crates/ontoforge-engine/tests/sql_text_only_from_printer.rs"
-  - "crates/ontoforge-engine/tests/trino_client.rs"
-  - "crates/ontoforge-expr/Cargo.toml"
-  - "crates/ontoforge-expr/src/lib.rs"
-  - "crates/ontoforge-expr/src/rowpred/eval.rs"
-  - "crates/ontoforge-expr/src/rowpred/ir.rs"
-  - "crates/ontoforge-expr/src/rowpred/mod.rs"
-  - "crates/ontoforge-expr/src/rowpred/parse.rs"
-  - "crates/ontoforge-expr/src/rowpred/value.rs"
-  - "crates/ontoforge-expr/tests/common/mod.rs"
-  - "crates/ontoforge-expr/tests/rowpred_eval.proptest-regressions"
-  - "crates/ontoforge-expr/tests/rowpred_eval.rs"
-  - "crates/ontoforge-expr/tests/rowpred_subset.rs"
-  - "crates/ontoforge-schema/src/diag.rs"
-  - "crates/ontoforge-schema/src/ir/attrs.rs"
-  - "crates/ontoforge-schema/src/ir/mod.rs"
-  - "crates/ontoforge-schema/src/ir/names.rs"
-  - "crates/ontoforge-schema/src/ir/object.rs"
-  - "crates/ontoforge-schema/src/ir/scope.rs"
-  - "crates/ontoforge-schema/src/lib.rs"
-  - "crates/ontoforge-schema/src/loader/discover.rs"
-  - "crates/ontoforge-schema/src/loader/dispatch.rs"
-  - "crates/ontoforge-schema/src/loader/mod.rs"
-  - "crates/ontoforge-schema/src/loader/scope.rs"
-  - "crates/ontoforge-schema/src/loader/sourcemap.rs"
-  - "crates/ontoforge-schema/src/schema_export.rs"
-  - "crates/ontoforge-schema/tests/object_types.rs"
-  - "crates/ontoforge-schema/tests/schema_export.rs"
-  - "crates/ontoforge-schema/tests/scope_documents.rs"
-  - "crates/ontoforge-schema/tests/snapshots/scope_documents__scope_diagnostics.snap"
-  - "crates/ontoforge-storage/Cargo.toml"
-  - "crates/ontoforge-storage/migrations/postgres/0001_definitions.sql"
-  - "crates/ontoforge-storage/migrations/postgres/0002_edit_log.sql"
-  - "crates/ontoforge-storage/migrations/postgres/0003_scope.sql"
-  - "crates/ontoforge-storage/migrations/sqlite/0001_definitions.sql"
-  - "crates/ontoforge-storage/migrations/sqlite/0002_edit_log.sql"
-  - "crates/ontoforge-storage/migrations/sqlite/0003_scope.sql"
-  - "crates/ontoforge-storage/src/commit.rs"
-  - "crates/ontoforge-storage/src/ddl.rs"
-  - "crates/ontoforge-storage/src/diff.rs"
-  - "crates/ontoforge-storage/src/error.rs"
-  - "crates/ontoforge-storage/src/history.rs"
-  - "crates/ontoforge-storage/src/import.rs"
-  - "crates/ontoforge-storage/src/index.rs"
-  - "crates/ontoforge-storage/src/lib.rs"
-  - "crates/ontoforge-storage/src/log.rs"
-  - "crates/ontoforge-storage/src/migrate.rs"
-  - "crates/ontoforge-storage/src/naming.rs"
-  - "crates/ontoforge-storage/src/physical.rs"
-  - "crates/ontoforge-storage/src/reload.rs"
-  - "crates/ontoforge-storage/src/scope_store.rs"
-  - "crates/ontoforge-storage/src/snapshots/ontoforge_storage__ddl__tests__ddl_postgres.snap"
-  - "crates/ontoforge-storage/src/snapshots/ontoforge_storage__ddl__tests__ddl_sqlite.snap"
-  - "crates/ontoforge-storage/src/sql_exit.rs"
-  - "crates/ontoforge-storage/src/state.rs"
-  - "crates/ontoforge-storage/src/store.rs"
-  - "crates/ontoforge-storage/src/value.rs"
-  - "crates/ontoforge-storage/tests/conformance/mod.rs"
-  - "crates/ontoforge-storage/tests/conformance_pg.rs"
-  - "crates/ontoforge-storage/tests/conformance_sqlite.rs"
-  - "crates/ontoforge-storage/tests/history_masking.rs"
-  - "crates/ontoforge-storage/tests/import.rs"
-  - "crates/ontoforge-storage/tests/migrate.rs"
-  - "crates/ontoforge-storage/tests/migrate_pg.rs"
-  - "crates/ontoforge-storage/tests/model/mod.rs"
-  - "crates/ontoforge-storage/tests/model_prop.proptest-regressions"
-  - "crates/ontoforge-storage/tests/model_prop.rs"
-  - "crates/ontoforge-storage/tests/reload.rs"
-  - "crates/ontoforge-storage/tests/reload_pg.rs"
   - "crates/ontoforge-storage/tests/reload_trino_it.rs"
-  - "crates/ontoforge-storage/tests/scope_store.rs"
-  - "crates/ontoforge-storage/tests/sql_exit_guard.rs"
-  - "crates/ontoforge-storage/tests/sqlite_connection.rs"
-  - "crates/ontoforge-storage/tests/support/mod.rs"
-  - "crates/ontoforge/Cargo.toml"
-  - "crates/ontoforge/src/cli.rs"
-  - "crates/ontoforge/src/dev_token.rs"
-  - "crates/ontoforge/src/import.rs"
-  - "crates/ontoforge/src/lib.rs"
-  - "crates/ontoforge/src/migrate.rs"
-  - "crates/ontoforge/src/online.rs"
-  - "crates/ontoforge/src/reload.rs"
-  - "crates/ontoforge/src/scope.rs"
-  - "crates/ontoforge/tests/cli_dev_token.rs"
-  - "crates/ontoforge/tests/cli_import.rs"
-  - "crates/ontoforge/tests/cli_migrate.rs"
-  - "crates/ontoforge/tests/cli_reload.rs"
-  - "crates/ontoforge/tests/cli_schema.rs"
-  - "crates/ontoforge/tests/cli_scope.rs"
-  - "docs/designs/trino-engine-sql-tiers.md"
-  - "docs/edit-store.md"
-  - "docs/scope.md"
-  - "examples/data/aviation/airports.csv"
-  - "examples/data/aviation/airports.json"
-  - "examples/ontologies/aviation-json/bindings/dev/bindings.json"
-  - "examples/ontologies/aviation-json/objects.json"
-  - "examples/ontologies/aviation/bindings/dev/flight.yaml"
-  - "examples/ontologies/aviation/objects.yaml"
-  - "examples/scopes/aviation/bindings.yaml"
-  - "examples/scopes/aviation/roles.yaml"
-  - "examples/server/ontoforge-server.dev.toml"
-  - "schemas/ontoforge-definition.schema.json"
-  - "schemas/ontoforge-scope.schema.json"
-covered_digest: "v1:sha256:33a2fede65ce18b629e0d62407da40f7dd8a2506687433bdb883745f394b5eb4"
-behavior_unverified: 1
+covered_digest: "v3:sha256:5e18518fc7d4c97e6be70eef32ee6605bb4168875968d5db95a060e6d6e5cd41"
+behavior_unverified: 0
 overrides_applied: 0
 re_verification:
-  previous_status: gaps_found
-  previous_score: 4/8
+  previous_status: human_needed
+  previous_score: 7/8
   gaps_closed:
-    - "gap 1: decimal rounded through f64 (CR-A01), closed by 03-21"
-    - "gap 2: dev quickstart fails on a fresh checkout (CR-D01), closed by 03-23"
-    - "gap 3: criteria coverage holes, migrate path (WR-B07) and bare objects.<param> read (WR-C05), closed by 03-22"
+    - "Trino metadata cache flush effect is isolated by a red/green integration test"
   gaps_remaining: []
   regressions: []
-behavior_unverified_items:
-  - truth: "Reload makes new tables/columns visible in Trino before the new definition becomes active, including when Trino's JDBC metadata cache is on (STORE-02, Trino flush step)"
-    test: "Run reload_trino_it against a Trino catalog with metadata.cache-ttl=10m and metadata.cache-missing=true (ci/trino/catalog/editstore.properties still has neither), looking at a table first, then adding a column, then reloading; once as is, once with the flush_metadata_cache call removed from the probe"
-    expected: "Passes with the flush, fails without it"
-    why_human: "The green CI run cannot tell 'the flush worked' from 'nothing was cached': the CI catalog has the default metadata.cache-ttl=0s and a failing flush is tolerated by the probe. Unchanged since the first verification (ci/ and reload_trino_it.rs have no diff between 47364cf and HEAD). Needs a Trino with a non-default catalog setting."
 human_verification:
-  - test: "Cache-flush isolation on Trino (see behavior_unverified_items)"
-    expected: "reload_trino_it fails when system.flush_metadata_cache() is skipped and passes when it runs, on a catalog with metadata caching enabled"
-    why_human: "Needs a Trino with a cache-enabled catalog; one-line CI catalog change plus a look-first-then-add-column step"
-  - test: "Push the 29 local commits (gap closure 03-21..03-23 and the review) and let the ci workflow run on Linux"
-    expected: "All three jobs green; in particular the cfg(unix) assertion in crates/ontoforge-auth/tests/dev_token.rs#missing_key_directory_is_created (new key directory has mode 0700) runs and passes, and the Linux-only PostgreSQL/Trino jobs pass at the new HEAD"
-    why_human: "The last CI run (39543562659) is on 4684ae7, before the gap commits. The Unix 0700 branch is not compiled on Windows. I ran the PostgreSQL suites locally on embedded PostgreSQL (see Spot-Checks), so the PostgreSQL side is covered; the Unix branch and the Trino jobs are not. The 0700 mode is hardening, not part of any Success Criterion."
+  - test: "Run PR CI on the commit containing the cache-isolation test, cache-enabled catalog, and serial integration command"
+    expected: "test (ubuntu-latest), test (windows-latest), and integration succeed; integration runs all three reload_trino_it cases with metadata caching enabled"
+    why_human: "The new changes are still uncommitted locally and have not run in PR CI. CI run 39582728729 at 342247b predates these changes and is not evidence for them."
 deferred:
-  - truth: "SCOPE-07 remainder: every request uses the definition version it started with (read side); agent MCP exposes no mutation tool; role/scope changes reach only the administration channel over REST/MCP"
+  - truth: "SCOPE-07 read-side request version pinning and MCP mutation-tool exclusion"
     addressed_in: "Phase 6 and Phase 7"
-    evidence: "ROADMAP Phase 6 success criterion 5: '定义 reload 先 validate / lint，失败不切换；每个请求固定使用开始时的定义版本'; Phase 7 criterion 2: 'L3 与任何变更工具不出现'. Phase 3 delivered the write-side fence, scope_store as the only writer of of_role / of_role_binding (source guard test) and the append-only of_admin_audit."
+    evidence: "ROADMAP Phase 6 success criterion 5 covers request version pinning; Phase 7 criterion 2 excludes mutation tools."
 ---
 
 # Phase 3: Edit Store & Scope Model Verification Report
 
 **Phase Goal:** edit store 按 object type 生成强类型表并安全演进，所有写入有不可变 edit log；用户 / 组 / 角色与 scope 规则可配置，同一份 CEL 行谓词既能编译成 SQL 也能在 Rust 中对单行求值且结果一致
-**Verified:** 2026-10-21T18:30:00Z
+**Verified:** 2026-10-22T02:11:26Z
 **Status:** human_needed
-**Re-verification:** Yes, after gap closure plans 03-21, 03-22, 03-23 (previous report: `git show 47364cf:.planning/phases/03-edit-store-scope-model/03-VERIFICATION.md`, status gaps_found, 4/8)
-**Mode:** ROADMAP marks the phase `mvp`, but the goal line is not a user story; the standard goal-backward method was used (MVP user-story guard not applied), same as the first verification.
-
-## Verdict
-
-三个 gap 全部关闭，没有回归，没有新的 blocker。五条 Success Criterion 都有通过的测试或我自己的运行作证。状态是 `human_needed` 而不是 `passed`，因为仍有两项人工确认：
-
-1. Trino 元数据缓存 flush 的效果仍没有被任何测试隔离（第一次验证就记下的 present-but-behavior-unverified 项，三个 gap 计划都没有碰 `ci/` 与 `reload_trino_it.rs`）。
-2. 三个 gap 计划的 29 个提交还没有推送，最近一次 CI（39543562659）在它们之前。`cfg(unix)` 下的 0700 目录权限断言本机 Windows 不编译，只能由 Linux CI 确认。这一项是纵深防御，不属于任何 Success Criterion。
-
-## Re-check of every previous gap
-
-| # | Previous gap (gaps[] entry in 47364cf) | Closed? | Evidence I collected myself |
-|---|---|---|---|
-| 1 | decimal 经 f64 舍入，写进 edit 行 / 不可变 log / 历史 (CR-A01, STORE-03, STORE-06) | **Closed** | `crates/ontoforge-storage/src/value.rs:339` 现在是 `Value::Number(n) if n.is_i64() \|\| n.is_u64()`，其余数字走 `fail(...)`（"send a decimal as a string such as \"12.50\""）。`cargo test -p ontoforge-storage --lib value::` 14 通过，含 `decimal_json_numbers_must_be_exact_integers`。`--test import` 16 通过，含 `json_decimals_are_never_rounded`。`--test conformance_sqlite` 28 通过，含带 `12345678.1234567891`（decimal(38,10)）的 `every_value_type_round_trips`。**PostgreSQL 侧**：我用 `--features embedded-pg -- --ignored` 本机跑了 `conformance_pg` 29 通过（同一用例）。附带的 WR-A01 也关闭：`value.rs:179` 拒绝 U+0000，`:271` 拒绝 0 年 date，`:306` 限定 UTC 年份 1..9999，`commit.rs:301-316` 的 `check_shape` 拒绝 action / actor / params 里的 NUL；`values_postgres_cannot_store_are_refused_on_every_backend` 在两个后端都通过。 |
-| 2 | 示例 dev 配置在全新检出上失败 (CR-D01, AUTH-02) | **Closed** | `EditStore::open` 的 SQLite 分支在连接前 `create_dir_all(parent)`（`store.rs:191`）；`DevKey::create` 调 `create_key_dir`（`dev.rs`，Unix `DirBuilder.mode(0o700)`，其他平台 `create_dir_all`）。CLI 测试 `example_config_reload_works_from_a_fresh_tree`（`cli_reload.rs:304`）与 `example_config_dev_token_works_from_a_fresh_tree`（`cli_dev_token.rs:225`）把真实 `examples/server/ontoforge-server.dev.toml` 复制进一个空临时树，断言 `target/` 不存在，然后 `reload` 退出码 0、写出 `editstore.db`、紧接着 `scope plan` 成功、`dev-token` 退出码 0 且创建 32 字节的 `dev-token.key`。两个测试以及 `sqlite_connection::open_creates_the_parent_directories_of_the_sqlite_file`、`dev_token::missing_key_directory_is_created` 我本机都跑过，通过。 |
-| 3a | `ontoforge migrate` 不复核已存 role (WR-B07, SCOPE-06) | **Closed** | `apply_migration_probed` 新增 `roles: Option<&RolesCheck>`（`storage/src/migrate.rs:365`）；`apply_in` 在 `lock_def_state`、`check_hash`、空计划提前返回之后、`run` 之前 `load_scope_in` + `compile_scope(new)`，失败映射为 `MigrateError::Definition`（`:403-414`）。CLI 的 `roles_check()` 构造 `RolesCheck`，`execute()` 对 `--apply` 传 `Some(roles)`（`cli/migrate.rs:150-176`）。测试 `migrate_rechecks_applied_roles`、`migrate_with_roles_applies_when_the_roles_still_compile`、CLI `migrate_refuses_a_change_that_breaks_an_applied_role` 在 SQLite 通过，`pg_migrate_rechecks_applied_roles` 在 embedded PostgreSQL 通过。 |
-| 3b | 整对象读取 `objects.<param>` 绕过 ONT-V23 (WR-C05, SCOPE-06) | **Closed** | `coverage.rs` 的 `problem()` 在 `path.segments.get(2)` 为 `None` 时不再短路返回，而是要求 allow-list 覆盖该对象类型的全部属性，缺哪个就报 ONT-V23 并列出缺失属性；类型缺失按 fail-closed 走 `undetermined()`。`criteria_coverage` 6 通过，含 `whole_object_read_needs_every_property`。`docs/scope.md` 的「apply 前的离线校验」与「定义变更时的复核」已同步。 |
-| - | Human item: Trino 缓存 flush 未隔离 | **Still open** | `git diff --stat 47364cf HEAD -- ci/ .github/ .../reload_trino_it.rs` 无输出。仍在 `human_verification`。 |
 
 ## Goal Achievement
 
-### Observable Truths
+本次为增量复核。上一版报告的三个代码 gap 已关闭且没有本轮反证；下文保留它们的测试和接线证据。本轮重点检查先前唯一未验证的 Trino 缓存行为，以及 UAT、CI 的接线。ROADMAP 将 Phase 3 标为 `mvp`，但 Goal 不是 User Story 格式；这是既有规划格式问题，本次沿用既有 8 条 truth 复核。
 
-ROADMAP Success Criteria 为合同；第 6 至 8 条沿用第一次验证的补充 truth。
+### Previous Gap Closure
+
+下表保留上一轮已完成的代码级验证证据。这些测试在上轮验证时运行通过，本轮没有重复运行未改动的模块。
+
+| Gap | Closure evidence | Test evidence |
+|-----|------------------|---------------|
+| decimal 经 f64 舍入（CR-A01、STORE-03、STORE-06） | `value.rs` 仅接受整数 JSON number，其余 decimal 要求字符串，`canonical_as` 保持精度；U+0000、非法日期和年份越界也被拒绝 | `value::` 14、`import` 16、`conformance_sqlite` 28、`conformance_pg` 29 通过，含 `12345678.1234567891` 往返和两后端非法值检查 |
+| 全新 checkout 的 dev 配置失败（CR-D01、AUTH-02） | `EditStore::open` 创建 SQLite 文件父目录；`DevKey::create` 创建密钥目录，Unix 新目录 mode 0700 | `example_config_reload_works_from_a_fresh_tree`、`example_config_dev_token_works_from_a_fresh_tree`、`open_creates_the_parent_directories_of_the_sqlite_file`、`missing_key_directory_is_created` 通过 |
+| migrate 不复核已存 role（WR-B07、SCOPE-06） | `roles_check()` 经 `apply_migration_probed(.., Some(roles))` 到事务内 `load_scope_in` + `compile_scope(new)`，不合法时拒绝迁移 | SQLite `migrate_rechecks_applied_roles`、`migrate_with_roles_applies_when_the_roles_still_compile`、CLI `migrate_refuses_a_change_that_breaks_an_applied_role` 和 PostgreSQL `pg_migrate_rechecks_applied_roles` 通过 |
+| 整对象读取绕过 ONT-V23（WR-C05、SCOPE-06） | `coverage::problem()` 对 `objects.<param>` 要求所有属性均在 allow-list；缺少类型信息时 fail closed | `criteria_coverage` 6 通过，含 `whole_object_read_needs_every_property`；`docs/scope.md` 已同步 |
+| Trino metadata cache flush 效果未隔离 | `NoFlush` 与真实 `describe` 的对照用例，加上 10m metadata cache 和串行 CI 接线 | 无缓存时红测 exit 1；缓存开启时目标用例 1/1、整文件 3/3 通过，见 `03-UAT.md` |
+
+### Observable Truths
 
 | # | Truth | Status | Evidence |
 |---|-------|--------|----------|
-| 1 | SC1: 加载示例 ontology 生成每个 object type 与 M:N link 的 edit 表；新增类变更在 reload 自动执行；破坏性变更被拦（ONT-V25），`migrate --plan/--apply` 完成并归档旧列；reload 失败保留旧定义 | VERIFIED | 第一次验证已用构建出的二进制端到端跑过 reload / ONT-V25 / migrate plan+apply+hash 守卫。本轮回归：`reload` 32、`migrate` 15、`cli_reload` 8、`cli_migrate` 10 全部通过。第一次验证里"只有预先建好 `target/ontoforge-dev/` 才能跑"的限制已由 gap 2 的关闭解除。 |
-| 2 | SC2: 同一 conformance 套件在 SQLite 与 PostgreSQL 上通过；edit log 与历史表只能追加 | VERIFIED | `conformance_sqlite` 28 通过；`conformance_pg` 29 通过（我本机 embedded PostgreSQL 实跑，含 `append_only_rejects_update_and_delete`、`append_only_rejects_truncate_on_pg`、`pg_sessions_use_the_pinned_settings`）。上一轮 CI 在 PG 17 上 27/27，本轮多出 2 个由 03-21 新增的共享 / PG 用例。 |
-| 3 | SC3: 叠加语义（set_mask、tombstone、release、版本单调）由内存参考模型的 proptest 覆盖 | VERIFIED | `model_prop` `model_matches_store` 通过（12.6s），参考模型在 `tests/model/mod.rs`，回归文件已提交。 |
-| 4 | SC4: 角色授予 object type、属性 allow-list、CEL 行谓词（同行属性与 `principal.attrs`）、action、SQL 级别、toolset；缺失属性为 false；多 role 合并无"A 的列 x B 的行"泄露 | VERIFIED | `scope_compile` 21、`scope_merge` 9（含 `a_columns_times_b_rows_do_not_leak` 与 oracle 属性测试）、`rowpred_eval` 14、`rowpred_subset` 13、`history_masking` 12 全部通过。 |
-| 5 | SC5: 同一 CEL 行谓词的 SQL 编译与 Rust 单行求值经差分测试一致；criteria 列覆盖 lint 在 reload 与 role 变更时生效；OIDC JWT 与 dev token 均可认证 | VERIFIED | 差分：`rowpred_diff` 6 通过（本机 Rust 对 SQLite）；Trino 483 的 `rowpred_trino_it` 3 通过见上一轮 CI 39541882392 / 39543562659，其代码在三个 gap 计划中未改。覆盖 lint：现在在 `scope plan/apply`、`reload`、`migrate --apply` 三处都生效，整对象读取也被拦（gap 3 关闭）。认证：`oidc` 31、`dev_token` 16、`cli_dev_token` 12 通过。 |
-| 6 | Dev quickstart: 文档里的示例配置在全新检出上可用 (SC1 第一步、SC5 dev token、AUTH-02) | VERIFIED | gap 2 关闭，见上表。 |
-| 7 | decimal 在进入类型化行、不可变 log、历史快照的途中从不被舍入 (SC1 "强类型"、SC2 "不可变 log") | VERIFIED | gap 1 关闭，见上表。边界是"字符串或整数 JSON 数字"，超过 u64 的整数也会被 serde_json 解析成 f64 而被拒绝，不会静默舍入。 |
-| 8 | reload 在切换前让新表 / 新列在 Trino 可见，包括 Trino 元数据缓存开启时 (STORE-02) | PRESENT_BEHAVIOR_UNVERIFIED | 探测、顺序、pending/active 切换、超时保留旧定义由 `reload.rs` 的 `probe_*`（脚本化 Trino）和真实 Trino 483 的 `reload_trino_it` 2 个测试覆盖。flush 调用本身的效果没有被隔离（CI catalog 默认 `metadata.cache-ttl=0s`，flush 失败被探测容忍）。见 Human Verification。 |
+| 1 | SC1: 强类型 edit 表、DDL 演进、破坏性变更迁移、失败保留旧定义 | VERIFIED | 前次实测 `reload`、`migrate`、CLI 测试；本轮检查 `reload.rs` 的 pending、probe、publish 顺序和新集成用例。 |
+| 2 | SC2: SQLite/PostgreSQL conformance，log/history append-only | VERIFIED | 前次 SQLite 28、embedded PostgreSQL 29 个用例通过；相关代码本轮未改。 |
+| 3 | SC3: patch 叠加语义经参考模型 proptest 覆盖 | VERIFIED | 前次 `model_prop` 通过；相关代码本轮未改。 |
+| 4 | SC4: role、allow-list、CEL、action/toolset、多 role 合并不泄露 | VERIFIED | 前次 `scope_compile` 21、`scope_merge` 9、`rowpred_eval` 14、`rowpred_subset` 13 通过；相关代码本轮未改。 |
+| 5 | SC5: CEL SQL/Rust 差分、criteria lint、OIDC/dev token | VERIFIED | 前次差分、lint、OIDC/dev token 用例通过；相关代码本轮未改。 |
+| 6 | 全新 checkout 的 dev 配置可运行 | VERIFIED | 前次 CLI 全新目录集成用例通过；相关代码本轮未改。 |
+| 7 | decimal 不经 f64 舍入写入行、log、history | VERIFIED | 前次单元、import、SQLite/PostgreSQL conformance 通过；相关代码本轮未改。 |
+| 8 | STORE-02: 开启 Trino metadata cache 时，新列须在 flush 后可见才能切换定义 | VERIFIED | `cached_column_requires_flush_before_definition_switch` 预热 v1 表，再用 `NoFlush` 保持真实 `describe`、只跳过 flush；断言 `NotVisible(of_obj_flight.gate)` 与 active v1，真实 flush 后断言 v2 active 且 Trino 能读 `gate`。独立 Trino 483/PostgreSQL 本地红测在无缓存时失败（`NoFlush` 意外允许 v2），启用 `metadata.cache-ttl=10m`、`metadata.cache-missing=true` 后绿测 1/1，全文件串行 3/3。 |
 
-**Score:** 7/8 truths verified (1 present, behavior-unverified)
+**Score:** 8/8 truths verified; 0 behavior-unverified。第 8 条的本地运行结果由执行单元记录在 `03-UAT.md`，原始终端日志未持久化；本次 verifier 没有并发重跑共享 catalog 的 flush 测试。
 
-### Decisions on the code-review findings (03-REVIEW.md, commit caa3935)
+### Review Findings And Residual Risks
 
-审查文档逐条读过。上一轮的 6 条定向发现（CR-A01、WR-A01、WR-A03、WR-B07、WR-C05、CR-D01）我已用代码和测试独立确认为关闭。其余逐项判定：
+上一轮代码审查中 6 条定向问题（CR-A01、WR-A01、WR-A03、WR-B07、WR-C05、CR-D01）已有代码和测试证据支持关闭。仍适用的风险如下，不把它们误写成已解决。
 
-| Finding | Decision | Reason |
-|---|---|---|
-| **WR-01** migrate 的 role 复核与 `scope apply` 口径互斥（重命名被 role 引用的属性无法一步完成） | Advisory，建议后续处理 | 我读了 `docs/scope.md` 与 `apply_in`：`scope apply` 要求 `--ontology` 等于当前生效定义，migrate 复核按新定义编译，所以对被引用属性的重命名需要先撤引用、迁移、再加回，中间 role 暂时失去该列。方向是 fail-closed（拒绝而不是放行），文档已写明撤引用的出路，只是没提重命名。它不违反任何 Success Criterion 或需求文本，SC5 要的是"lint 在 reload 与 role 变更时生效"，现在生效。不阻塞，但值得在 Phase 3 收尾前补一句文档（重命名需两次 `scope apply`）或在后续 phase 里支持 `--for-migration`。 |
-| **WR-02** dev 签名密钥缺少文件级保护（Windows ACL 继承、Unix 不校验既有文件权限与符号链接） | Advisory | dev token 只被 `--dev` 启动的服务接受，配置不能单独启用；限制已写进 `docs/edit-store.md` 已知缺口 7，`dev.rs` 注释已不再声称 owner-only。AUTH-02 的文本是"无需外部 IdP 即可生成本地 token"，成立。 |
-| **CR-B01**（遗留）CI 的 openssl 守卫第一行不会失败 | Advisory | 我重读了 `.github/workflows/ci.yml:32-34`，两行 `! cargo tree ... -i` 原样未变，`set -e` 下第一行的取反失败不会终止步骤，缺陷属实。但它约束的结果当前成立：我跑 `cargo tree --workspace --locked --features ontoforge-storage/embedded-pg -e normal,build,dev -i openssl` 与 `-i native-tls`，两者都是 "did not match any packages"。下一次改依赖之前修。 |
-| **CR-D02**（遗留）server 配置解析错误回显被拒绝的值 | Advisory | `config.rs` 自 47364cf 起无 diff。T-03-04 的结论（连接串里的 `url` / `password` / `token` / `secret` 被改写为不含值的消息，只接受 `url_env` / `url_file`）仍成立；泄漏需要把密钥误贴进一个不相关的类型化字段。建议下一个触碰 `config.rs` 的计划里修，并更正头注释里"never secret values"的措辞。 |
-| IN-01 到 IN-06 | Advisory | IN-01（decimal 拒绝文案里 18 个连续空格，`value.rs:341`）我读到了，纯文案，会出现在 ONT-V27 诊断里，建议一并修。IN-04（公共 `apply_migration` 默认不做 role 复核；migrate 不为新列补 role 索引）是 Phase 5 / 7 入口复制的隐患，记入后续。其余是测试清理与预览命令的副作用，不影响需求。 |
-| 其余遗留 warning（WR-A02/A04/A05、B01 到 B06、B08 到 B10、C02 到 C04、C06、C07、D02 到 D06） | Advisory | 文件在 47364cf 之后未变；第一次验证已逐条判为加固项。再次核对：没有任何一条让某个 Success Criterion 或需求文本失败。WR-B03、WR-B10（`plan_drop_archived` 把哈希失败变成空串）、WR-C04（缺失行属性按 Null 求值）是最值得先修的三条，都应在 Phase 4 或 Phase 5 开始前处理。 |
+| Finding | Decision | Evidence / follow-up |
+|---------|----------|----------------------|
+| WR-01：migrate 的 role 复核与 `scope apply` 口径互斥 | Advisory | 对被 role 引用的属性重命名需先撤引用、迁移、再加回；当前路径 fail closed，文档仍应明确这一步。 |
+| WR-02：dev 签名密钥的文件级保护不足 | Advisory | `--dev` 才接受 dev token；`docs/edit-store.md` 已列为已知缺口 7。Unix 目录 mode 0700 不能替代既有文件权限或符号链接检查。 |
+| CR-B01：CI OpenSSL 守卫首行在 `errexit` 下不会失败 | Advisory | `.github/workflows/ci.yml:32-34` 的 `! cargo tree` 仍有该缺陷；上轮 `cargo tree -i openssl` / `-i native-tls` 都返回 "did not match any packages"。下次改依赖前应修守卫。 |
+| CR-D02：server 配置解析错误可能回显被拒绝的值 | Advisory | `config.rs` 的值回显路径未改；连接串敏感字段已有遮蔽，但误贴到其他字段仍可暴露。下次触碰配置解析时应修。 |
+| IN-01、IN-04 | Advisory | `value.rs` 的 decimal 拒绝文案存在 18 个连续空格；公共 `apply_migration` 默认不复核 role，migrate 也不为新列补 role 索引。 |
+| 其余遗留 warning（WR-A02/A04/A05、B01..B06、B08..B10、C02..C04、C06/C07、D02..D06） | Advisory | 前次逐条判为加固项；其中 WR-B03、WR-B10 的 hash 失败降为空串与 WR-C04 的缺失行属性按 Null 求值应在 Phase 4/5 前优先处理。 |
 
-### Required Artifacts
+### Required Artifacts And Wiring
 
-| Artifact | Expected | Status | Details |
-|----------|----------|--------|---------|
-| `crates/ontoforge-storage/src/{value,commit,store,migrate,reload,...}.rs` | edit store | VERIFIED | 03-21 / 03-22 / 03-23 触及 `value.rs`、`commit.rs`、`store.rs`、`migrate.rs`；全部被对应测试覆盖并通过；无 stub |
-| `crates/ontoforge-auth/src/scope/coverage.rs` | 覆盖 lint | VERIFIED | 整对象读取分支实现，非占位 |
-| `crates/ontoforge-auth/src/authn/dev.rs` | dev 密钥 | VERIFIED | `create_key_dir` 创建上级目录 |
-| `crates/ontoforge/src/migrate.rs` | migrate CLI | VERIFIED | `roles_check` 实装并传入 |
-| `examples/server/ontoforge-server.dev.toml` | 示例配置 | VERIFIED | 在空树上可用（两个 CLI 测试） |
-| `docs/edit-store.md`、`docs/scope.md` | 运维文档 | VERIFIED | 与代码同步（整对象读取、migrate 复核、已知缺口 7） |
+| Artifact / link | Status | Evidence |
+|-----------------|--------|----------|
+| `ci/trino/catalog/editstore.properties` | VERIFIED | 第 12-13 行开启 10m TTL 和 missing metadata 缓存；CI Trino 483 挂载该目录。 |
+| `reload_trino_it.rs` | VERIFIED | `NoFlush` 只覆写 `flush_metadata`，`describe` 委托给真实 `AnyEngine`；新用例预热、失败保持旧定义、真实 flush 切换并读取新列。三个用例均 `#[ignore]`，CI 用 `--ignored` 执行。 |
+| `.github/workflows/ci.yml` -> `reload_trino_it` | WIRED | `Reload visibility probe` 设置 Trino/PG URL，运行 `--ignored --test-threads=1`；串行避免一个测试的 catalog-wide flush 清掉另一个测试的缓存。 |
+| `reload.rs` -> Trino -> PostgreSQL edit 表 | WIRED / FLOWING | `wait_until_visible` 先 `flush_metadata`，再 `describe`、比对真实表列；不足时返回 `NotVisible`。`publish` 成功后才使 pending 版本 active。测试使用独立 PG schema 和真实 Trino 查询。 |
+| `03-UAT.md` | VERIFIED | 两项 UAT 均记录通过；第 1 项准确区分本地红绿与新改动尚未跑 PR CI。 |
 
-### Key Link Verification
+其余 Phase 3 交付物与接线沿用上一轮验证的逐项结果：
 
-| From | To | Via | Status | Details |
-|------|----|-----|--------|---------|
-| `ontoforge migrate --apply` | 已存 role | `roles_check()` -> `apply_migration_probed(.., Some(roles))` -> `apply_in` 的 `load_scope_in` + `compile_scope` | WIRED | 03-22；SQLite、CLI、PostgreSQL 三层测试 |
-| `reload` | 已存 role | `ReloadOptions::roles` | WIRED | 回归：`reload_rechecks_applied_roles` 通过 |
-| `coverage::problem` | 整对象读取 | `segments.get(2)` 为 None 时检查全部属性 | WIRED | `whole_object_read_needs_every_property` |
-| JSON 数字 | decimal 列 | `from_json_as` 的 `is_i64 \|\| is_u64` | WIRED | 单元、import、conformance 三层 |
-| `open_postgres` | 会话设置 | `pg_connect_options` 固定 `DateStyle`、`TimeZone`、`extra_float_digits` | WIRED | `pg_sessions_use_the_pinned_settings` 在 embedded PG 通过 |
-| `EditStore::open` / `DevKey::create` | 上级目录 | `create_dir_all` / `create_key_dir` | WIRED | 全新树 CLI 测试 |
-| `commit()` | `of_def_state` 栅栏、`import`、`history` 掩码、`scope apply` 审计 | 见 47364cf 报告 | WIRED | 回归测试均通过（`history_masking` 12、`scope_store` 11、`import` 16） |
+| Artifact / link | Status | Evidence |
+|-----------------|--------|----------|
+| `crates/ontoforge-storage/src/{value,commit,store,migrate,reload,...}.rs` | VERIFIED | edit store、DDL、迁移、reload、decimal 的实现均被对应测试覆盖；无占位实现。 |
+| `crates/ontoforge-auth/src/scope/coverage.rs` | VERIFIED | 整对象读取分支检查全部属性，`whole_object_read_needs_every_property` 通过。 |
+| `crates/ontoforge-auth/src/authn/dev.rs` | VERIFIED | `create_key_dir` 创建目录，CLI 全新目录测试通过。 |
+| `crates/ontoforge/src/migrate.rs` | WIRED | CLI `roles_check()` 传入 `apply_migration_probed(.., Some(roles))`，后者在事务内 `load_scope_in` + `compile_scope`；SQLite、CLI、PostgreSQL 测试通过。 |
+| `reload` -> 已存 role | WIRED | `ReloadOptions::roles`，`reload_rechecks_applied_roles` 通过。 |
+| JSON number -> decimal 列 / log / history | WIRED / FLOWING | `from_json_as` 仅允许精确整数 number；`PropertyValue::Decimal` 经 `canonical_as` 写入真实行、log、历史，两个后端 conformance 逐字比较。 |
+| `open_postgres` -> 会话设置 | WIRED | `pg_connect_options` 固定 `DateStyle`、`TimeZone`、`extra_float_digits`，`pg_sessions_use_the_pinned_settings` 通过。 |
+| `commit()` -> def_version 栅栏、import、history 掩码、scope 审计 | WIRED | 前轮 `history_masking` 12、`scope_store` 11、`import` 16 通过。 |
+| `examples/server/ontoforge-server.dev.toml`、`docs/edit-store.md`、`docs/scope.md` | VERIFIED | 示例配置在全新树可用；文档覆盖整对象读取、migrate 复核和 dev token 已知缺口。 |
 
-### Data-Flow Trace (Level 4)
+### Behavioral Spot-Checks And Test Quality
 
-| Artifact | Data Variable | Source | Produces Real Data | Status |
-|----------|---------------|--------|--------------------|--------|
-| edit 行 / log / 历史中的 decimal | `PropertyValue::Decimal` | 字符串或整数 JSON 数字，经 `canonical_as` 补齐 scale | 是，逐字一致（conformance 三处比较，两个后端） | FLOWING |
-| `migrate --apply` 的 role 复核 | 已存 role | `scope_store::load_scope_in(tx)` 读事务内的系统表 | 是 | FLOWING |
+| Check | Result | Status |
+|-------|--------|--------|
+| 无缓存 catalog 的新单测 | `NoFlush` 返回 v2，测试 exit 1；证明测试可识别未缓存环境 | RED（预期） |
+| 缓存开启后的单测 | 1/1 通过，v1 保持 active 后真实 flush 激活 v2 | PASS（执行单元本地） |
+| `cargo test -p ontoforge-storage --test reload_trino_it --locked -- --ignored --test-threads=1` | 3/3 通过 | PASS（执行单元本地） |
+| `cargo fmt --all --check`、目标 Clippy、`git diff --check` | 均通过 | PASS（执行单元本地） |
+| PR CI 对当前未提交变更 | 尚未运行；旧 run 39582728729 只证明 342247b | PENDING |
 
-### Behavioral Spot-Checks
+`#[ignore]` 用于要求外部 Trino/PG 的测试，CI 显式运行并检查用例数量；它不是失效的 requirement 测试。新测试的 expected 不由被测 `reload` 生成：v1/v2 和 `gate` 可见性是明确断言。修改文件没有未引用的 `TBD`、`FIXME`、`XXX` 标记。没有 Phase 3 声明的 probe shell 脚本。
 
-| Behavior | Command | Result | Status |
-|----------|---------|--------|--------|
-| 工作区全量测试（orchestrator 在 HEAD 跑） | `cargo test --workspace --locked --no-fail-fast` | exit 0；84 suites；984 passed；0 failed；67 ignored（需 Docker / Trino / 外部 PG） | PASS（引用，未重跑） |
-| decimal 单元测试 | `cargo test -p ontoforge-storage --lib value::` | 14 passed | PASS |
-| SQLite 往返、import、migrate、reload、连接 | `--test conformance_sqlite --test import --test migrate --test reload --test sqlite_connection` | 28 + 16 + 15 + 32 + 4 passed | PASS |
-| 覆盖 lint 与 dev token | `-p ontoforge-auth --test criteria_coverage --test dev_token` | 6 + 16 passed | PASS |
-| CLI 全新树与 migrate 复核 | `-p ontoforge --test cli_reload --test cli_dev_token --test cli_migrate --test cli_scope` | 8 + 12 + 10 + 8 passed | PASS |
-| PostgreSQL（embedded） | `-p ontoforge-storage --features embedded-pg --test conformance_pg --test migrate_pg -- --ignored` | 29 + 4 passed | PASS |
-| 回归：差分 / 合并 / 编译 / OIDC / 叠加 proptest / 掩码 / 表达式 | `rowpred_diff` 6, `scope_merge` 9, `scope_compile` 21, `oidc` 31, `model_prop` 1, `history_masking` 12, `scope_store` 11, ontoforge-expr 全部 | 全部 passed，0 failed | PASS |
-| 无 OpenSSL / native-tls | `cargo tree --workspace --locked --features ontoforge-storage/embedded-pg -e normal,build,dev -i openssl` / `-i native-tls` | 两者 "did not match any packages" | PASS |
+前轮验证的测试矩阵如下。这些结果证明此前代码版本；本轮 Trino 缓存改动的证据单独列在上表，旧 CI 不用于证明新改动。
 
-### Probe Execution
+| Behavior | Command / target | Prior result | Status |
+|----------|------------------|--------------|--------|
+| 工作区全量回归 | `cargo test --workspace --locked --no-fail-fast` | 84 suites，984 passed，0 failed，67 ignored；当时由 orchestrator 在 HEAD 执行 | PASS（前轮引用） |
+| decimal 单元 | `cargo test -p ontoforge-storage --lib value::` | 14 passed | PASS（前轮） |
+| SQLite 往返、import、migrate、reload、连接 | `conformance_sqlite`、`import`、`migrate`、`reload`、`sqlite_connection` | 28 + 16 + 15 + 32 + 4 passed | PASS（前轮） |
+| 覆盖 lint 与 dev token | `criteria_coverage`、`dev_token` | 6 + 16 passed | PASS（前轮） |
+| CLI 全新树与 migrate 复核 | `cli_reload`、`cli_dev_token`、`cli_migrate`、`cli_scope` | 8 + 12 + 10 + 8 passed | PASS（前轮） |
+| embedded PostgreSQL | `conformance_pg`、`migrate_pg`（`--features embedded-pg -- --ignored`） | 29 + 4 passed | PASS（前轮） |
+| 差分、合并、编译、OIDC、叠加 proptest、掩码、scope 审计 | `rowpred_diff` 6、`scope_merge` 9、`scope_compile` 21、`oidc` 31、`model_prop` 1、`history_masking` 12、`scope_store` 11，另有 `ontoforge-expr` | 全部通过，0 failed | PASS（前轮） |
+| 禁止 OpenSSL / native-tls | `cargo tree --workspace --locked --features ontoforge-storage/embedded-pg -e normal,build,dev -i openssl`，另跑 `-i native-tls` | 两者 "did not match any packages" | PASS（前轮） |
 
-Step 7c: SKIPPED。阶段未声明 probe（没有 `scripts/*/tests/probe-*.sh`，PLAN / SUMMARY 也未提到）。
+Probe Execution：Phase 3 PLAN / SUMMARY 未声明 `scripts/*/tests/probe-*.sh`，本 gate 不适用。
 
 ### Requirements Coverage
 
-16 个 ID（STORE-01..07、SCOPE-01..07、AUTH-01..02）都出现在某个 PLAN 的 `requirements` frontmatter 里，没有 orphan。按证据判定，不按 checkbox 判定。
+ROADMAP Phase 3 的 16 个 requirement ID 均由 03-01..03-23 PLAN 声明，没有 orphan。STORE-02 的 Trino 缓存分支本轮已得到本地行为证据。STORE-01、03..07、SCOPE-01..06、AUTH-01..02 维持上一版代码和测试证据；SCOPE-07 的读侧和 MCP 剩余范围由 Phase 6/7 明确承接。`REQUIREMENTS.md` 的若干 checkbox / traceability 状态仍滞后于验证结果，应由 orchestrator 对账。
 
 | Requirement | Source Plans | REQUIREMENTS.md now | Verdict | Evidence |
 |-------------|--------------|---------------------|---------|----------|
-| STORE-01 | 03-01, 03-03, 03-04, 03-08, 03-09, 03-13, 03-20, 03-21 | ticked | SATISFIED | 两个后端同一 conformance；PG 值域校验已并入共享用例（WR-A01 关闭） |
-| STORE-02 | 03-02, 03-03, 03-04, 03-10, 03-15, 03-18, 03-20 | unticked | SATISFIED, one human item open | 自动 DDL、ONT-V25、migrate 归档、栅栏、`lock_timeout`、pending/probe/active 切换都有测试；唯一缺口是 Trino flush 效果未隔离（truth 8）。人工项通过后再勾选 |
-| STORE-03 | 03-08, 03-09, 03-21 | ticked | SATISFIED | 每次提交一条不可变 log 记录；追加专用触发器；decimal 保真已修 |
-| STORE-04 | 03-17 | unticked | SATISFIED | `EditStore::history` 带 D-13 掩码，`history_masking` 12 通过。库 API 层交付，REST / MCP 外壳属于 Phase 7。建议勾选 |
-| STORE-05 | 03-10, 03-13 | unticked | SATISFIED | 一对一部分唯一索引、`CardinalityViolation`、`concurrent_fk_claims_one_wins`（PG 实跑通过）。建议勾选 |
-| STORE-06 | 03-19, 03-21 | ticked | SATISFIED | `ontoforge import` 作为 `system:import` 提交；JSON 与 CSV 路径的 decimal 都逐字保存 |
-| STORE-07 | 03-08, 03-13 | unticked（traceability 表写 "Gaps Found"，已过时） | SATISFIED | `model_prop` 与 conformance 转换用例。建议勾选并改表 |
-| SCOPE-01 | 03-06, 03-07, 03-14, 03-16 | unticked | SATISFIED | `of_user` / `of_role` / `of_role_binding`、`scope plan/apply`、JWT `groups`。`cli_scope` 8、`scope_store` 11 |
-| SCOPE-02 | 03-02, 03-05, 03-06, 03-11, 03-14, 03-16 | unticked | SATISFIED | role schema 与编译快照测试。建议勾选 |
-| SCOPE-03 | 03-11 | unticked | SATISFIED | `merge.rs` 与 `scope_merge` 9。建议勾选 |
-| SCOPE-04 | 03-05, 03-11, 03-20 | unticked（traceability 写 "Gaps Found"，已过时） | SATISFIED | Rust 对 SQLite 本机 6 通过；Rust 对 Trino 483 的 CI 3 通过，代码未变。建议勾选并改表 |
-| SCOPE-05 | 03-05, 03-11, 03-14 | unticked | SATISFIED | 无授权不可见、缺失属性为 Unknown、不可编译谓词在 plan / apply / reload 为 ONT-V22。建议勾选 |
-| SCOPE-06 | 03-14, 03-16, 03-18, 03-22 | ticked | SATISFIED | reload、scope apply、migrate --apply 三处都复核；整对象读取已拦。第一次验证建议撤回的勾选现在可以保留 |
-| SCOPE-07 | 03-16, 03-18 | unticked | PARTIAL, remainder deferred | Phase 3 部分交付；请求固定定义版本（读侧）与 MCP 无变更工具属于 Phase 6 / 7（见 `deferred`）。保持不勾选 |
-| AUTH-01 | 03-01, 03-02, 03-07 | unticked（traceability 写 "Gaps Found"，已过时） | SATISFIED | `oidc` 31 通过。建议勾选并改表 |
-| AUTH-02 | 03-12, 03-23 | ticked | SATISFIED | 全新树上的 `dev-token` 与 `reload` 测试通过 |
+| STORE-01 | 03-01, 03-03, 03-04, 03-08, 03-09, 03-13, 03-20, 03-21 | ticked | SATISFIED | SQLite/PostgreSQL 同一 conformance；PG 值域校验也进入共享用例。 |
+| STORE-02 | 03-02, 03-03, 03-04, 03-10, 03-15, 03-18, 03-20 | unticked | SATISFIED locally; CI pending | 自动 DDL、ONT-V25、migrate 归档、栅栏、`lock_timeout`、pending/probe/active 均有测试；本轮缓存隔离红绿与 3/3 实测关闭第 8 条 truth，当前改动的 PR CI 尚待运行。 |
+| STORE-03 | 03-08, 03-09, 03-21 | ticked | SATISFIED | 每次提交一条不可变 log；追加专用触发器；decimal 保真。 |
+| STORE-04 | 03-17 | unticked | SATISFIED | `EditStore::history` 带 D-13 掩码，`history_masking` 12 通过；REST/MCP 外壳属 Phase 7。 |
+| STORE-05 | 03-10, 03-13 | unticked | SATISFIED | 一对一部分唯一索引、`CardinalityViolation`、PG `concurrent_fk_claims_one_wins`。 |
+| STORE-06 | 03-19, 03-21 | ticked | SATISFIED | `ontoforge import` 作为 `system:import` 提交；JSON/CSV decimal 逐字保存。 |
+| STORE-07 | 03-08, 03-13 | unticked，traceability 仍为 Gaps Found | SATISFIED | `model_prop` 与 conformance 转换用例通过。 |
+| SCOPE-01 | 03-06, 03-07, 03-14, 03-16 | unticked | SATISFIED | `of_user`、`of_role`、`of_role_binding`、`scope plan/apply`、JWT `groups`；`cli_scope` 8、`scope_store` 11。 |
+| SCOPE-02 | 03-02, 03-05, 03-06, 03-11, 03-14, 03-16 | unticked | SATISFIED | role schema 与编译快照测试。 |
+| SCOPE-03 | 03-11 | unticked | SATISFIED | `merge.rs` 与 `scope_merge` 9。 |
+| SCOPE-04 | 03-05, 03-11, 03-20 | unticked，traceability 仍为 Gaps Found | SATISFIED | Rust 对 SQLite 本地 6 通过；Rust 对 Trino 483 的旧 CI 3 通过，相关代码本轮未改。 |
+| SCOPE-05 | 03-05, 03-11, 03-14 | unticked | SATISFIED | 无授权不可见、缺失属性为 Unknown、不可编译谓词在 plan/apply/reload 为 ONT-V22。 |
+| SCOPE-06 | 03-14, 03-16, 03-18, 03-22 | ticked | SATISFIED | reload、scope apply、migrate --apply 三处复核；整对象读取已拦。 |
+| SCOPE-07 | 03-16, 03-18 | unticked | PARTIAL; remainder deferred | 请求固定定义版本（读侧）与 MCP 无变更工具属 Phase 6/7；Phase 3 完成写侧栅栏与 scope 审计。 |
+| AUTH-01 | 03-01, 03-02, 03-07 | unticked，traceability 仍为 Gaps Found | SATISFIED | `oidc` 31 通过。 |
+| AUTH-02 | 03-12, 03-23 | ticked | SATISFIED | 全新树上的 `dev-token` 与 `reload` 测试通过；旧 CI run 39582728729 在 342247b 上另验证 Unix 0700 断言。 |
 
-我不修改 REQUIREMENTS.md；上表"建议勾选"由 orchestrator 在本报告落定后决定。
+上表 checkbox 与 traceability 是当前文件内容，不等同于验收结论。REQUIREMENTS.md 的对账由 orchestrator 处理；本 verifier 没有修改该文件。
 
-### Anti-Patterns Found
+### Anti-Patterns And Regression Check
 
-| File | Line | Pattern | Severity | Impact |
-|------|------|---------|----------|--------|
-| `crates/ontoforge-storage/src/value.rs` | 341 | 错误文案中间夹 18 个连续空格（续行写成了行内空格） | Info | 只影响 ONT-V27 诊断的可读性（IN-01） |
-| `.github/workflows/ci.yml` | 32-34 | `! cmd` 在 `errexit` 下不能让第一行失败 | Warning | 守卫对 `openssl` 失效；当前结果仍成立（CR-B01，已核实） |
-| `crates/ontoforge-engine/src/config.rs` | ~397-439 | 解析错误回显被拒绝的值 | Warning | 误贴密钥会被打印（CR-D02） |
-| `crates/ontoforge-auth/src/authn/dev.rs` | 106-130 | 不校验既有密钥文件的权限、符号链接 | Warning | dev-only（WR-02） |
+| File | Location | Finding | Severity | Impact |
+|------|----------|---------|----------|--------|
+| `crates/ontoforge-storage/src/value.rs` | 341 | 错误文案中有 18 个连续空格 | Info | 只影响 ONT-V27 诊断可读性（IN-01）。 |
+| `.github/workflows/ci.yml` | 32-34 | `! cmd` 在 `errexit` 下不能让首行失败 | Warning | OpenSSL 供应链守卫可能失效；当前依赖树检查结果仍为无匹配（CR-B01）。 |
+| `crates/ontoforge-engine/src/config.rs` | 397-439 附近 | 解析错误回显被拒绝的值 | Warning | 密钥误贴进类型化字段可能被打印（CR-D02）。 |
+| `crates/ontoforge-auth/src/authn/dev.rs` | 106-130 附近 | 不校验既有密钥文件权限或符号链接 | Warning | dev-only 密钥仍需加固（WR-02）。 |
 
-阶段触及的代码、配置、文档、CI 文件中没有 `TBD`、`FIXME`、`XXX` 标记（对 `git diff --name-only 47364cf HEAD` 的 crates / examples / docs / ci / .github 文件 grep，无命中）。
+前轮对阶段触及文件扫描没有未引用的 `TBD`、`FIXME`、`XXX`；本轮修改的测试、catalog、CI 文件也没有。第一次验证已通过的 SC2 conformance、SC3 proptest、SC4 scope 合并、SC5 差分/OIDC、历史掩码、import 和 scope 审计未被本轮修改；新 Trino 测试的 3/3 本地结果提供本轮唯一新增行为回归证据。工作区全量测试和旧 CI 均早于本轮未提交变更，不作本轮全量绿测声明。
 
-### Regression Check
+### Decision Coverage
 
-第一次验证通过的全部类别（SC2 conformance、SC3 proptest、SC4 scope 与合并、SC5 差分与 OIDC、历史掩码、import、scope 审计）在本轮重新跑过，没有失败。Phase 1 与 Phase 2 的测试包含在 orchestrator 的 984 通过里，0 失败。
+`check.decision-coverage-verify` 检查了 `03-CONTEXT.md` 的 18 条可跟踪决策：18/18 honored，`not_honored` 为空。该 gate 非阻塞。
 
-## Human Verification Required
+### Human Verification Required
 
-### 1. Trino 元数据缓存 flush 的效果
+当前代码、catalog、CI 命令改动尚未跑 PR CI。需要把这些改动纳入同一个提交并确认 `test (ubuntu-latest)`、`test (windows-latest)`、`integration` 在该提交上通过，尤其要确认缓存开启的 `reload_trino_it` 三个用例。旧 CI run 39582728729 的通过不能替代这一步。
 
-**Test:** 在 `ci/trino/catalog/editstore.properties` 加 `metadata.cache-ttl=10m` 与 `metadata.cache-missing=true`；让 `reload_trino_it` 先查询表，再加列，再 reload。跑两次：原样一次，去掉探测里的 `flush_metadata_cache` 调用一次。
-**Expected:** 有 flush 时通过，没有时失败。
-**Why human:** 需要缓存开启的 Trino catalog；当前绿色的 CI 分不清"flush 起效"和"本来就没缓存"（03-20 SUMMARY 假设 A5，审查 IN-B04）。
+### Gaps Summary
 
-### 2. 推送并在 Linux CI 上确认 gap closure 的 29 个提交
-
-**Test:** 推送分支，等 `ci` workflow 的 `test (ubuntu-latest)`、`test (windows-latest)`、`integration` 三个 job 完成。
-**Expected:** 全绿，特别是 `dev_token.rs#missing_key_directory_is_created` 里 `#[cfg(unix)]` 的 0700 断言真正运行并通过。
-**Why human:** 最近一次 CI 在这些提交之前；Unix 分支在 Windows 不编译。PostgreSQL 侧我已用 embedded PostgreSQL 本机跑过，不依赖这一步；这一步确认 Unix 分支与 Trino 作业。0700 只是纵深防御，不影响任何 Success Criterion。
-
-## Gaps Summary
-
-没有 gap。三个上一轮 gap 均关闭并有独立证据（单元、集成、CLI 全新树、PostgreSQL 实跑）。剩下的是两项人工确认和一批 advisory：建议在关闭 Phase 3 之前补 WR-01 的文档一句话、修 CI openssl 守卫（CR-B01）和 IN-01 文案；其余遗留 warning 在 Phase 4 / 5 开始前择要处理。
+没有代码层面的剩余 gap，也没有新回归证据。状态保留为 `human_needed`，仅因当前改动的跨平台 PR CI 尚未验证；CI 通过后可再将阶段状态转为 `passed`。
 
 ---
 
-_Verified: 2026-10-21T18:30:00Z_
-_Verifier: Claude (gsd-verifier)_
+_Verified: 2026-10-22T02:11:26Z_
+_Verifier: gsd-verifier_

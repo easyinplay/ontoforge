@@ -31,7 +31,11 @@
 
 ## 验收
 
-Phase 完成 = 20 个 PLAN 的 SUMMARY 落盘 + `03-VERIFICATION.md` passed + Windows / Ubuntu `cargo test --workspace --locked` 绿 + PR `integration` 作业中 PG conformance、Trino 行谓词语料与 reload 可见探测全部实跑通过（ignored 守卫计数 > 0）。ROADMAP Phase 3 的 5 条 Success Criteria 与 must_haves 的映射见各 PLAN。
+Phase 完成 = 23 个 PLAN 的 SUMMARY 落盘 + `03-VERIFICATION.md` passed + Windows / Ubuntu `cargo test --workspace --locked` 绿 + PR `integration` 作业中 PG conformance、Trino 行谓词语料与 reload 可见探测全部实跑通过（ignored 守卫计数 > 0）。ROADMAP Phase 3 的 5 条 Success Criteria 与 must_haves 的映射见各 PLAN。
+
+## 当前 UAT 补证任务
+
+- [x] V1（STORE-02）：隔离验证 Trino 元数据缓存 flush。修改 `ci/trino/catalog/editstore.properties`、`crates/ontoforge-storage/tests/reload_trino_it.rs`、`.github/workflows/ci.yml`；独立 Trino/PostgreSQL 中缓存开启且预热后，无 flush 时新列不可见、旧定义仍 active，真实 flush 后新列可见且新定义 active；串行集成测试 3/3 通过。证据见 `03-UAT.md`。新改动的 PR CI 尚待运行；此项不是新的 `gap_closure` PLAN。
 
 ## 规划中的自决项（orchestrator / planner，用户可否决）
 
