@@ -289,6 +289,38 @@ impl Engine for RecordingSqlEngine {
     }
 }
 
+struct SourceThenEmptyEngine {
+    calls: AtomicUsize,
+    row: Vec<Value>,
+}
+impl Engine for SourceThenEmptyEngine {
+    fn dialect(&self) -> Dialect {
+        Dialect::Sqlite
+    }
+    async fn execute(&self, _: &PrintedSql, _: &QueryContext) -> Result<QueryOutput, EngineError> {
+        let first = self.calls.fetch_add(1, Ordering::SeqCst) == 0;
+        Ok(QueryOutput {
+            columns: Vec::new(),
+            truncated: false,
+            rows: if first {
+                vec![self.row.clone()]
+            } else {
+                Vec::new()
+            },
+        })
+    }
+    async fn describe_tables(
+        &self,
+        _: &[TableRef],
+        _: &QueryContext,
+    ) -> Result<BTreeMap<TableRef, Vec<ontoforge_engine::PhysicalColumn>>, EngineError> {
+        panic!("list read must not describe source tables")
+    }
+    async fn status(&self) -> EngineStatus {
+        EngineStatus::Available
+    }
+}
+
 struct DuplicateBackfillEngine(AtomicUsize);
 impl Engine for DuplicateBackfillEngine {
     fn dialect(&self) -> Dialect {
@@ -1361,6 +1393,127 @@ async fn pagination_backfill_rejects_conflicting_duplicate_pk() {
         Err(QueryError::AmbiguousObject)
     ));
     assert_eq!(engine.0.load(Ordering::SeqCst), 2);
+}
+
+#[tokio::test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "one two-lane fixture checks each request budget boundary"
+)]
+async fn pagination_source_and_edit_share_all_work_budgets() {
+    let f = fixture().await;
+    commit_object_edit(
+        &f,
+        "F-9999",
+        ObjectOp::Set(BTreeMap::from([(
+            prop("status"),
+            PropertyValue::String("scheduled".to_owned()),
+        )])),
+    )
+    .await;
+    let active = f.store.active_definition().await.unwrap();
+    let ty = &active.ontology.object_types[&name("Flight")];
+    let mut scope = f.scope.clone();
+    scope.types.insert(
+        name("Flight"),
+        TypeScope {
+            row: Pred::Const(true),
+            columns: ty
+                .properties
+                .keys()
+                .cloned()
+                .map(|property| (property, Pred::Const(true)))
+                .collect(),
+        },
+    );
+    let values = BTreeMap::from([
+        (prop("aircraftTailNumber"), json!("D-AAAA")),
+        (prop("arrivalAirportCode"), json!("JFK")),
+        (prop("delayMinutes"), json!(0)),
+        (prop("departureAirportCode"), json!("FRA")),
+        (prop("flightId"), json!("F-1001")),
+        (prop("flightNumber"), json!("LH100")),
+        (prop("scheduledDeparture"), json!("2026-03-28T09:15:00")),
+        (prop("status"), json!("scheduled")),
+        (prop("tags"), json!([])),
+    ]);
+    let row = ty
+        .properties
+        .keys()
+        .map(|property| match property.as_str() {
+            "delayMinutes" => Value::Long(0),
+            "scheduledDeparture" => Value::Timestamp("2026-03-28T09:15:00".to_owned()),
+            "tags" => Value::Array(Vec::new()),
+            _ => Value::String(values[property].as_str().unwrap().to_owned()),
+        })
+        .collect::<Vec<_>>();
+    let source_bytes = serde_json::to_vec(&values).unwrap().len();
+    let edit_bytes = serde_json::to_vec(&BTreeMap::from([("status", json!("scheduled"))]))
+        .unwrap()
+        .len()
+        + json!("F-9999").to_string().len();
+    let exact_bytes = source_bytes + edit_bytes;
+    let tokens = TokenCodec::new(b"list-key".to_vec()).unwrap();
+    let query = ValidatedQuery::new(
+        QueryRequest {
+            set: ObjectSet::Type {
+                object_type: name("Flight"),
+            },
+            select: vec![prop("status")],
+        },
+        vec![OrderBy {
+            property: prop("flightId"),
+            direction: Direction::Asc,
+            nulls: Nulls::Last,
+        }],
+        PageSpec {
+            first: 2,
+            after: None,
+        },
+        &active.ontology,
+        &scope.types[&name("Flight")],
+        CompileLimits::default(),
+    )
+    .unwrap();
+    for (calls, raw, bytes, succeeds) in [
+        (3, 2, exact_bytes, true),
+        (2, 2, exact_bytes, false),
+        (3, 1, exact_bytes, false),
+        (3, 2, exact_bytes - 1, false),
+        (3, 1, exact_bytes - 1, false),
+    ] {
+        let engine = SourceThenEmptyEngine {
+            calls: AtomicUsize::new(0),
+            row: row.clone(),
+        };
+        let service = QueryService {
+            principal: &f.principal,
+            scope: &scope,
+            active: Arc::clone(&active),
+            engine: &engine,
+            store: &f.store,
+            limits: ExecutionLimits::try_new(calls, raw, 1, bytes).unwrap(),
+            tokens: &tokens,
+        };
+        let result = service.execute_list(&query).await;
+        if succeeds {
+            let page = result.unwrap();
+            assert_eq!(
+                page.rows
+                    .iter()
+                    .map(|row| row.pk.clone())
+                    .collect::<Vec<_>>(),
+                vec![json!("F-1001"), json!("F-9999")]
+            );
+            assert!(!page.has_more);
+            assert!(!page.truncated);
+        } else {
+            assert!(
+                matches!(result, Err(QueryError::WorkBudgetExceeded)),
+                "calls={calls} raw={raw} bytes={bytes}"
+            );
+        }
+    }
 }
 
 #[tokio::test]
