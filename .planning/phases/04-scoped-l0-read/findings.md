@@ -15,3 +15,4 @@
 - `04-04` 分页归并采用 C 方案：在请求预算内读完整个相关 edit 集并回查 partial patch 的 source 行；未编辑的 source 行按自身多键 keyset 前进；Rust 以与 SQL 一致的 NULL/collation 规则归并，找到第 N+1 条合格行才置 `has_more`。cursor 的规范化排序描述符包含 `SourceBinding` collation。此方案遵守 accepted ADR-0020；其完整性和成本边界仍须由 `04-04` RED/GREEN 与预算测试证明。
 - Wave 6 远端前置核对：`origin` 为 `easyinplay/ontoforge`，`gh` 当前账户可读 `ci`/`nightly` workflow；现有 `ci` integration job 已配置 PostgreSQL 17 与 Trino 483。`04-07` 的新测试、distributed `EXPLAIN` 和 isolated p95 仍须实际运行；当前没有 Phase 4 远端验收结果。
 - `compile_source_select` 在排序列含 `caseInsensitive` 时清空source `ORDER BY`（`sql_shape.rs::collation_forces_recheck_and_disables_source_order`）；这种查询必须在预算内以稳定PK keyset扫尽source并由Rust排序，或返回成本错误。未排序 `LIMIT` 不能作为分页完整性证据。
+- `04-04` 独立只读审查发现的 Decimal 数值排序、cursor `principal.attrs` 绑定、重复 source PK 冲突均由 RED `ceba54b`/GREEN `04e1992` 修复；`ee46d5b` 补真实双 lane 共享预算与无 partial response。四维默认 B/B+1 用 `WorkBudget` 精确测试，请求级用 calls/raw/bytes/双维临界及 257-key backfill 证明路径；独立复跑 overlay 11/11、security 21/21。
