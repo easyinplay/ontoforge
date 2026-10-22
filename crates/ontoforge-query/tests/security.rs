@@ -12,10 +12,14 @@ use ontoforge_auth::Principal;
 use ontoforge_auth::authn::PrincipalId;
 use ontoforge_auth::scope::{ScopeInputs, attr_types, compile_scope};
 use ontoforge_engine::printer::{Dialect, PrintedSql};
+use ontoforge_engine::sqlite::SqliteEngine;
+use ontoforge_engine::sqlite::fixture::plan_fixture_tables;
 use ontoforge_engine::{
     Engine, EngineError, EngineStatus, QueryContext, QueryOutput, TableRef, Value,
 };
 use ontoforge_query::ast::{Direction, Nulls, OrderBy};
+use ontoforge_query::ast::PageSpec;
+use ontoforge_query::compile::{CompileLimits, ValidatedQuery};
 use ontoforge_query::cursor::{CursorCodec, CursorContext, CursorPosition};
 use ontoforge_query::overlay::NormalizedOrder;
 use ontoforge_query::{
@@ -24,6 +28,8 @@ use ontoforge_query::{
 };
 use ontoforge_schema::ir::{Collation, ObjectTypeName, ProfileName, PropertyName};
 use ontoforge_schema::{load_dir, load_scope_dir};
+use ontoforge_auth::scope::TypeScope;
+use ontoforge_expr::Pred;
 use ontoforge_storage::commit::{Actor, Commit, Edit, ObjectOp};
 use ontoforge_storage::reload::{ReloadOptions, reload};
 use ontoforge_storage::store::{BackendSettings, EditStore, StoreSettings};
@@ -189,6 +195,36 @@ fn request(object_type: &str, pk: &str, select: &[&str]) -> QueryRequest {
         },
         select: select.iter().map(|p| prop(p)).collect(),
     }
+}
+
+#[tokio::test]
+async fn pagination_list_source_keyset_and_has_more() {
+    let f = fixture().await;
+    let active = f.store.active_definition().await.unwrap();
+    let ty = &active.ontology.object_types[&name("Flight")];
+    let mut scope = f.scope.clone();
+    scope.types.insert(name("Flight"), TypeScope {
+        row: Pred::Const(true),
+        columns: ty.properties.keys().cloned().map(|property| (property, Pred::Const(true))).collect(),
+    });
+    let profile = ProfileName::try_from("dev".to_owned()).unwrap();
+    let fixtures = plan_fixture_tables(&active.ontology, &load_dir(Utf8Path::new(AVIATION)).sources, &profile).unwrap();
+    let engine = SqliteEngine::from_fixtures(Utf8Path::new(AVIATION), &fixtures.tables).await.unwrap();
+    let tokens = TokenCodec::new(b"list-key".to_vec()).unwrap();
+    let service = QueryService {
+        principal: &f.principal, scope: &scope, active: Arc::clone(&active), engine: &engine, store: &f.store,
+        limits: ExecutionLimits::phase4_default(), tokens: &tokens,
+    };
+    let order = vec![OrderBy { property: prop("flightId"), direction: Direction::Asc, nulls: Nulls::Last }];
+    let request = QueryRequest { set: ObjectSet::Type { object_type: name("Flight") }, select: vec![prop("status")] };
+    let query = ValidatedQuery::new(request.clone(), order.clone(), PageSpec { first: 2, after: None }, &active.ontology, &scope.types[&name("Flight")], CompileLimits::default()).unwrap();
+    let first = service.execute_list(&query).await.unwrap();
+    assert_eq!(first.rows.iter().map(|row| row.pk.clone()).collect::<Vec<_>>(), vec![json!("F-1001"), json!("F-1002")]);
+    assert!(first.has_more);
+    assert!(!first.truncated);
+    let query = ValidatedQuery::new(request, order, PageSpec { first: 2, after: first.cursor }, &active.ontology, &scope.types[&name("Flight")], CompileLimits::default()).unwrap();
+    let second = service.execute_list(&query).await.unwrap();
+    assert_eq!(second.rows.iter().map(|row| row.pk.clone()).collect::<Vec<_>>(), vec![json!("F-1003"), json!("F-2001")]);
 }
 
 #[tokio::test]

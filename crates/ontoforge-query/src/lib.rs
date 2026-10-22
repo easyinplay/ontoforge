@@ -48,6 +48,15 @@ pub struct QueryPage {
     pub truncated: bool,
 }
 
+#[derive(Debug, Clone, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ListPage {
+    pub rows: Vec<ObjectRow>,
+    pub has_more: bool,
+    pub truncated: bool,
+    pub cursor: Option<String>,
+}
+
 #[derive(Debug, thiserror::Error, Serialize)]
 pub enum QueryError {
     #[error("object not found")]

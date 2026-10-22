@@ -1,4 +1,6 @@
-use crate::{ExecutionLimits, QueryError};
+use crate::{ExecutionLimits, ListPage, QueryError, QueryService};
+use crate::compile::ValidatedQuery;
+use ontoforge_engine::Engine;
 
 pub struct WorkBudget {
     limits: ExecutionLimits,
@@ -58,4 +60,10 @@ fn charge(current: &mut usize, count: usize, limit: usize) -> Result<(), QueryEr
     }
     *current = next;
     Ok(())
+}
+
+impl<E: Engine> QueryService<'_, E> {
+    pub async fn execute_list(&self, _query: &ValidatedQuery) -> Result<ListPage, QueryError> {
+        Err(QueryError::InvalidQuery)
+    }
 }

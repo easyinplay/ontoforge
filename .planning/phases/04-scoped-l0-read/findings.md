@@ -13,3 +13,5 @@
 - 计划阶段没有业务代码修改，TDD 不适用；Wave 1 起的核心叠加、授权、游标与聚合均按 PLAN 先 RED 再 GREEN。Wave 6 的 remote GitHub Actions、真实 Trino/PG 和 isolated p95 是执行验收，当前尚无 Phase 4 性能结论。
 - Wave 1 的 `superpowers:brainstorming` 判据由现有 accepted ADR-0018/0020 和 checker 通过的 `04-01-PLAN.md` 覆盖，未出现待裁决的新 API 合同，因此本次跳过；`superpowers:test-driven-development` 用于 pk/授权/HMAC。`ralph-loop` skill/命令在本机未找到，executor 按同等 COMPLETE 验收循环执行并给出测试证据。
 - `04-04` 分页归并采用 C 方案：在请求预算内读完整个相关 edit 集并回查 partial patch 的 source 行；未编辑的 source 行按自身多键 keyset 前进；Rust 以与 SQL 一致的 NULL/collation 规则归并，找到第 N+1 条合格行才置 `has_more`。cursor 的规范化排序描述符包含 `SourceBinding` collation。此方案遵守 accepted ADR-0020；其完整性和成本边界仍须由 `04-04` RED/GREEN 与预算测试证明。
+- Wave 6 远端前置核对：`origin` 为 `easyinplay/ontoforge`，`gh` 当前账户可读 `ci`/`nightly` workflow；现有 `ci` integration job 已配置 PostgreSQL 17 与 Trino 483。`04-07` 的新测试、distributed `EXPLAIN` 和 isolated p95 仍须实际运行；当前没有 Phase 4 远端验收结果。
+- `compile_source_select` 在排序列含 `caseInsensitive` 时清空source `ORDER BY`（`sql_shape.rs::collation_forces_recheck_and_disables_source_order`）；这种查询必须在预算内以稳定PK keyset扫尽source并由Rust排序，或返回成本错误。未排序 `LIMIT` 不能作为分页完整性证据。
