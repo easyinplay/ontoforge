@@ -218,19 +218,20 @@ async fn outbound_fk_uses_scoped_merged_object_value() {
         vec![json!("E-001"), json!("E-002")]
     );
 
+    let combined_request = QueryRequest {
+        set: serde_json::from_value(json!({
+            "kind": "searchAround", "object_type": "Pilot",
+            "base": {"kind": "union", "object_type": "Flight", "sets": [
+                {"kind": "pk", "object_type": "Flight", "pk": "F-1001"},
+                {"kind": "pk", "object_type": "Flight", "pk": "F-1002"}
+            ]},
+            "link": "flightCrew", "direction": "fromTo"
+        }))
+        .unwrap(),
+        select: vec![prop("employeeId")],
+    };
     let combined_base = ValidatedQuery::new(
-        QueryRequest {
-            set: serde_json::from_value(json!({
-                "kind": "searchAround", "object_type": "Pilot",
-                "base": {"kind": "union", "object_type": "Flight", "sets": [
-                    {"kind": "pk", "object_type": "Flight", "pk": "F-1001"},
-                    {"kind": "pk", "object_type": "Flight", "pk": "F-1002"}
-                ]},
-                "link": "flightCrew", "direction": "fromTo"
-            }))
-            .unwrap(),
-            select: vec![prop("employeeId")],
-        },
+        combined_request.clone(),
         vec![],
         PageSpec {
             first: 10,
@@ -254,14 +255,16 @@ async fn outbound_fk_uses_scoped_merged_object_value() {
     );
     let mut after = None;
     for (index, expected) in ["E-001", "E-002", "E-003"].into_iter().enumerate() {
-        let page = service
-            .execute_list(&ValidatedQuery {
-                request: combined_base.request.clone(),
-                order_by: combined_base.order_by.clone(),
-                page: PageSpec { first: 1, after },
-            })
-            .await
-            .unwrap();
+        let paged_query = ValidatedQuery::new(
+            combined_request.clone(),
+            vec![],
+            PageSpec { first: 1, after },
+            &ontology,
+            &scope.types[&name("Pilot")],
+            CompileLimits::default(),
+        )
+        .unwrap();
+        let page = service.execute_list(&paged_query).await.unwrap();
         assert_eq!(page.rows.len(), 1);
         assert_eq!(page.rows[0].pk, json!(expected));
         assert_eq!(page.has_more, index < 2);

@@ -42,11 +42,34 @@ impl Default for CompileLimits {
     }
 }
 
+/// A query that has passed ontology, scope, and complexity validation.
+///
+/// Callers outside this crate cannot bypass validation by constructing or
+/// mutating the query directly.
+///
+/// ```compile_fail
+/// use ontoforge_query::ast::{OrderBy, PageSpec};
+/// use ontoforge_query::compile::ValidatedQuery;
+/// use ontoforge_query::QueryRequest;
+///
+/// fn bypass(request: QueryRequest, order_by: Vec<OrderBy>, page: PageSpec) -> ValidatedQuery {
+///     ValidatedQuery { request, order_by, page }
+/// }
+/// ```
+///
+/// ```compile_fail
+/// use ontoforge_query::compile::ValidatedQuery;
+/// use ontoforge_query::QueryRequest;
+///
+/// fn replace_request(mut query: ValidatedQuery, request: QueryRequest) {
+///     query.request = request;
+/// }
+/// ```
 #[derive(Debug)]
 pub struct ValidatedQuery {
-    pub request: QueryRequest,
-    pub order_by: Vec<OrderBy>,
-    pub page: PageSpec,
+    pub(crate) request: QueryRequest,
+    pub(crate) order_by: Vec<OrderBy>,
+    pub(crate) page: PageSpec,
 }
 
 impl ValidatedQuery {
