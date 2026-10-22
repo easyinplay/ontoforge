@@ -26,6 +26,18 @@ fn sample() -> Select {
                 },
                 alias: None,
             },
+            SelectItem {
+                expr: Expr::CaseWhen {
+                    when: Box::new(Expr::Compare {
+                        left: Box::new(col("owner")),
+                        op: CompareOp::Eq,
+                        right: Box::new(Expr::Literal(Literal::String("alice".into()))),
+                    }),
+                    then: Box::new(col("x")),
+                    otherwise: Box::new(Expr::Literal(Literal::Null)),
+                },
+                alias: Some("masked".into()),
+            },
         ],
         from: Some(TableRef {
             catalog: "demo".to_owned(),
@@ -112,11 +124,50 @@ fn distributed_explain_wraps_typed_select() {
     let select = sample();
     let plain = print_select(&select, Dialect::Trino).unwrap();
     let explain = print_explain_distributed(&select, Dialect::Trino).unwrap();
-    assert_eq!(explain.as_str(), format!("EXPLAIN (TYPE DISTRIBUTED) {}", plain.as_str()));
+    assert_eq!(
+        explain.as_str(),
+        format!("EXPLAIN (TYPE DISTRIBUTED) {}", plain.as_str())
+    );
     assert_eq!(
         print_explain_distributed(&select, Dialect::Sqlite).unwrap_err(),
         crate::error::PrintError::UnsupportedDialect
     );
+}
+
+#[test]
+fn case_arms_are_typed_and_escape_each_literal() {
+    let mut select = sample();
+    select.projection = vec![SelectItem {
+        expr: Expr::CaseWhen {
+            when: Box::new(Expr::Compare {
+                left: Box::new(col("a\"b")),
+                op: CompareOp::Eq,
+                right: Box::new(Expr::Literal(Literal::String("x'%;".into()))),
+            }),
+            then: Box::new(Expr::Literal(Literal::String("then'--".into()))),
+            otherwise: Box::new(Expr::Literal(Literal::String("else%".into()))),
+        },
+        alias: Some("safe".into()),
+    }];
+    for dialect in [Dialect::Trino, Dialect::Sqlite] {
+        let printed = print_select(&select, dialect).unwrap();
+        assert!(printed.as_str().contains("\"a\"\"b\" = 'x''%;'"));
+        assert!(
+            printed
+                .as_str()
+                .contains("THEN ('then''--') ELSE ('else%')")
+        );
+        if let Expr::CaseWhen { then, .. } = &mut select.projection[0].expr {
+            **then = Expr::Literal(Literal::String("bad\0value".into()));
+        }
+        assert_eq!(
+            print_select(&select, dialect).unwrap_err(),
+            crate::error::PrintError::NulInString
+        );
+        if let Expr::CaseWhen { then, .. } = &mut select.projection[0].expr {
+            **then = Expr::Literal(Literal::String("then'--".into()));
+        }
+    }
 }
 
 /// The text after `WHERE` of `SELECT 1 FROM .. WHERE <e>`.

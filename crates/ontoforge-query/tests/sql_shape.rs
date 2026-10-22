@@ -5,7 +5,7 @@ use ontoforge_auth::scope::TypeScope;
 use ontoforge_expr::{Attrs, CmpOp, Operand, Pred, Scalar};
 use ontoforge_query::QueryRequest;
 use ontoforge_query::ast::{
-    Direction, Nulls, ObjectSet, OrderBy, PageSpec, QueryLiteral, WhereClause,
+    Direction, Nulls, ObjectSet, OrderBy, PageSpec, QueryLiteral, TermMode, WhereClause,
 };
 use ontoforge_query::compile::{CompileLimits, ValidatedQuery, compile_source_select};
 use ontoforge_schema::ir::{ObjectTypeName, ProfileName, PropertyName};
@@ -208,4 +208,85 @@ fn unbounded_page_is_rejected() {
         ),
         Err(ontoforge_query::QueryError::QueryTooComplex)
     ));
+}
+
+#[test]
+fn all_source_variants_have_one_table_and_logical_aliases() {
+    let ontology = load_dir(Utf8Path::new(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../examples/ontologies/aviation"
+    )))
+    .ontology
+    .unwrap();
+    let binding = &ontology
+        .profile_bindings(&ProfileName::try_from("dev".to_owned()).unwrap())
+        .unwrap()
+        .objects[&name("Flight")];
+    let scope = TypeScope {
+        row: Pred::Const(true),
+        columns: BTreeMap::from([
+            (prop("flightId"), Pred::Const(true)),
+            (prop("status"), Pred::Const(true)),
+        ]),
+    };
+    let sets = [
+        ObjectSet::Pk {
+            object_type: name("Flight"),
+            pk: json!("F-1001"),
+        },
+        ObjectSet::Type {
+            object_type: name("Flight"),
+        },
+        ObjectSet::Where {
+            object_type: name("Flight"),
+            predicate: WhereClause::Eq {
+                property: prop("status"),
+                value: QueryLiteral(json!("delayed")),
+            },
+        },
+        ObjectSet::Search {
+            object_type: name("Flight"),
+            property: prop("status"),
+            query: "late flight".into(),
+            mode: TermMode::Any,
+        },
+    ];
+    for set in sets {
+        let is_pk = matches!(set, ObjectSet::Pk { .. });
+        let query = ValidatedQuery::new(
+            QueryRequest {
+                set,
+                select: vec![prop("status")],
+            },
+            vec![],
+            PageSpec {
+                first: 10,
+                after: None,
+            },
+            &ontology,
+            &scope,
+            CompileLimits::default(),
+        )
+        .unwrap();
+        let source =
+            compile_source_select(&query, &ontology, binding, &scope, &Attrs::default()).unwrap();
+        assert_eq!(source.select.from.as_ref().unwrap().table, "flights");
+        assert_eq!(source.select.limit, Some(if is_pk { 2 } else { 10 }));
+        assert!(
+            source
+                .select
+                .projection
+                .iter()
+                .all(|item| matches!(item.alias.as_deref(), Some("flightId" | "status")))
+        );
+        assert!(source.required_columns.contains(&prop("flightId")));
+        let sql = ontoforge_engine::printer::print_select(
+            &source.select,
+            ontoforge_engine::printer::Dialect::Trino,
+        )
+        .unwrap();
+        assert_eq!(sql.as_str().matches(" FROM ").count(), 1);
+        assert!(!sql.as_str().contains(" JOIN "));
+        assert!(!sql.as_str().contains(" UNION "));
+    }
 }
