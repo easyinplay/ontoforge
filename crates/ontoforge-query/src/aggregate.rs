@@ -15,10 +15,10 @@ impl AggregateLimits {
     #[must_use]
     pub fn phase4_default() -> Self {
         Self {
-            max_groups: 0,
-            max_buckets: 0,
-            max_distinct_values: 0,
-            max_distinct_memory_bytes: 0,
+            max_groups: 1_024,
+            max_buckets: 4_096,
+            max_distinct_values: 10_000,
+            max_distinct_memory_bytes: 16 * 1024 * 1024,
         }
     }
 
