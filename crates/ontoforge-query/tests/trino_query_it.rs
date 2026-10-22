@@ -155,10 +155,9 @@ impl Fixture {
                 (1..=2).contains(&fragments),
                 "{case}[{index}]: {fragments} fragments, expected 1..=2\n{plan}"
             );
-            let directory = std::env::var("ONTOFORGE_QUERY_PLAN_DIR")
-                .unwrap_or_else(|_| {
-                    concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/query-plans").to_owned()
-                });
+            let directory = std::env::var("ONTOFORGE_QUERY_PLAN_DIR").unwrap_or_else(|_| {
+                concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/query-plans").to_owned()
+            });
             std::fs::create_dir_all(&directory).expect("create plan artifact directory");
             let safe_case = case.replace(|c: char| !c.is_ascii_alphanumeric(), "_");
             std::fs::write(format!("{directory}/{safe_case}_{index}.txt"), &plan)
@@ -588,6 +587,48 @@ async fn where_search_set_and_relationship_corpus() {
             },
             vec!["Q-0002", "Q-0004"],
         ),
+        (
+            "and",
+            WhereClause::And {
+                clauses: vec![
+                    WhereClause::Eq {
+                        property: prop("status"),
+                        value: QueryLiteral(json!("delayed")),
+                    },
+                    WhereClause::Gte {
+                        property: prop("delayMinutes"),
+                        value: QueryLiteral(json!(10)),
+                    },
+                ],
+            },
+            vec!["Q-0002"],
+        ),
+        (
+            "or",
+            WhereClause::Or {
+                clauses: vec![
+                    WhereClause::Eq {
+                        property: prop("status"),
+                        value: QueryLiteral(json!("Boarding")),
+                    },
+                    WhereClause::Eq {
+                        property: prop("delayMinutes"),
+                        value: QueryLiteral(json!(30)),
+                    },
+                ],
+            },
+            vec!["Q-0001", "Q-0006"],
+        ),
+        (
+            "not",
+            WhereClause::Not {
+                clause: Box::new(WhereClause::Eq {
+                    property: prop("status"),
+                    value: QueryLiteral(json!("delayed")),
+                }),
+            },
+            vec!["Q-0001", "Q-0006"],
+        ),
     ];
     for (label, predicate, expected) in cases {
         let restricted = ObjectSet::Intersect {
@@ -629,6 +670,27 @@ async fn where_search_set_and_relationship_corpus() {
     let page = service.execute_list(&query).await.expect("search any");
     assert_eq!(keys(&page.rows), ["Q-0001", "Q-0002", "Q-0004"]);
     f.explain_captured("search_any").await;
+    let search_all = ObjectSet::Search {
+        object_type: name("Flight"),
+        property: prop("status"),
+        query: "delayed delay".into(),
+        mode: TermMode::All,
+    };
+    let query = validated(
+        &f,
+        request(
+            ObjectSet::Intersect {
+                object_type: name("Flight"),
+                sets: vec![corpus_set(), search_all],
+            },
+            &["status"],
+        ),
+        100,
+        None,
+    );
+    let page = service.execute_list(&query).await.expect("search all");
+    assert_eq!(keys(&page.rows), ["Q-0002", "Q-0004"]);
+    f.explain_captured("search_all").await;
 
     let delayed = ObjectSet::Where {
         object_type: name("Flight"),
@@ -686,6 +748,24 @@ async fn where_search_set_and_relationship_corpus() {
         .expect("FK to PG edit-only target");
     assert_eq!(keys(&page.rows), ["FRA"]);
     f.explain_captured("outbound_fk").await;
+
+    let arriving: ObjectSet = serde_json::from_value(json!({
+        "kind": "searchAround", "object_type": "Flight",
+        "base": { "kind": "pk", "object_type": "Airport", "pk": "FRA" },
+        "link": "flightDepartureAirport", "direction": "fromTo"
+    }))
+    .unwrap();
+    let query = validated(&f, request(arriving, &["status"]), 100, None);
+    let page = service
+        .execute_list(&query)
+        .await
+        .expect("FK from PG edit-only base");
+    let q_keys = keys(&page.rows)
+        .into_iter()
+        .filter(|key| key.starts_with("Q-"))
+        .collect::<Vec<_>>();
+    assert_eq!(q_keys, ["Q-0001", "Q-0002", "Q-0006"]);
+    f.explain_captured("inbound_fk").await;
 
     let crew: ObjectSet = serde_json::from_value(json!({
         "kind": "searchAround", "object_type": "Pilot",
