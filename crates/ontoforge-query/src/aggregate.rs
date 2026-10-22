@@ -449,11 +449,17 @@ impl<'a> AggregateBuilder<'a> {
                 }
                 MeasureState::Distinct(values) => {
                     if let Some(value) = value {
-                        let canonical = PropertyValue::from_json(
+                        let typed = PropertyValue::from_json(
                             def.ok_or(AggregateError::InvalidQuery)?,
                             value,
                         )
-                        .map_err(|_| AggregateError::InvalidQuery)?
+                        .map_err(|_| AggregateError::UnsupportedNumericValue)?;
+                        let canonical = match typed {
+                            PropertyValue::Double(number) if number == 0.0 => {
+                                PropertyValue::Double(0.0)
+                            }
+                            other => other,
+                        }
                         .to_json()
                         .to_string();
                         if !values.contains(&canonical) {
