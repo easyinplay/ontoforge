@@ -154,8 +154,8 @@ impl Engine for NeverEngine {
     }
 }
 
-struct RowsEngine(&'static str);
-impl Engine for RowsEngine {
+struct RowsEngine<'a>(&'a str);
+impl Engine for RowsEngine<'_> {
     fn dialect(&self) -> Dialect {
         Dialect::Sqlite
     }
@@ -237,6 +237,30 @@ impl Engine for CaptureSqlEngine {
     async fn execute(&self, sql: &PrintedSql, _: &QueryContext) -> Result<QueryOutput, EngineError> {
         *self.0.lock().unwrap() = sql.as_str().to_owned();
         Ok(QueryOutput { columns: Vec::new(), rows: Vec::new(), truncated: false })
+    }
+    async fn describe_tables(&self, _: &[TableRef], _: &QueryContext) -> Result<BTreeMap<TableRef, Vec<ontoforge_engine::PhysicalColumn>>, EngineError> {
+        panic!("list read must not describe source tables")
+    }
+    async fn status(&self) -> EngineStatus { EngineStatus::Available }
+}
+
+struct FalsePositiveEngine(AtomicUsize);
+impl Engine for FalsePositiveEngine {
+    fn dialect(&self) -> Dialect { Dialect::Sqlite }
+    async fn execute(&self, _: &PrintedSql, _: &QueryContext) -> Result<QueryOutput, EngineError> {
+        let call = self.0.fetch_add(1, Ordering::SeqCst);
+        Ok(QueryOutput {
+            columns: Vec::new(), truncated: false,
+            rows: if call == 0 {
+                (0..256).map(|index| vec![
+                    Value::String(format!("F-{index:04}")), Value::String("LH100".to_owned()),
+                    Value::String("FRA".to_owned()), Value::String("JFK".to_owned()),
+                    Value::String("D-AAAA".to_owned()),
+                    Value::Timestamp("2026-03-28T09:15:00".to_owned()),
+                    Value::String("scheduled".to_owned()), Value::Long(0), Value::Array(Vec::new()),
+                ]).collect()
+            } else { Vec::new() },
+        })
     }
     async fn describe_tables(&self, _: &[TableRef], _: &QueryContext) -> Result<BTreeMap<TableRef, Vec<ontoforge_engine::PhysicalColumn>>, EngineError> {
         panic!("list read must not describe source tables")
@@ -570,6 +594,157 @@ async fn pagination_cursor_seeks_source_on_first_window() {
     assert!(page.rows.is_empty());
     let sql = engine.0.lock().unwrap();
     assert!(sql.contains("F-1002"), "missing cursor seek: {sql}");
+}
+
+#[tokio::test]
+async fn pagination_budget_exhaustion_returns_no_partial_page() {
+    let f = fixture().await;
+    let active = f.store.active_definition().await.unwrap();
+    let ty = &active.ontology.object_types[&name("Flight")];
+    let mut scope = f.scope.clone();
+    scope.types.insert(name("Flight"), TypeScope {
+        row: Pred::Const(true),
+        columns: ty.properties.keys().cloned().map(|property| (property, Pred::Const(true))).collect(),
+    });
+    let engine = OneWindowEngine(AtomicUsize::new(0));
+    let tokens = TokenCodec::new(b"list-key".to_vec()).unwrap();
+    let service = QueryService {
+        principal: &f.principal, scope: &scope, active: Arc::clone(&active), engine: &engine, store: &f.store,
+        limits: ExecutionLimits::try_new(2, 10_000, 2_048, 64 * 1024 * 1024).unwrap(), tokens: &tokens,
+    };
+    let query = ValidatedQuery::new(
+        QueryRequest {
+            set: ObjectSet::Where {
+                object_type: name("Flight"),
+                predicate: ontoforge_query::ast::WhereClause::Eq {
+                    property: prop("status"),
+                    value: ontoforge_query::ast::QueryLiteral(json!("delayed")),
+                },
+            },
+            select: vec![prop("status")],
+        },
+        vec![OrderBy { property: prop("flightId"), direction: Direction::Asc, nulls: Nulls::Last }],
+        PageSpec { first: 2, after: None }, &active.ontology, &scope.types[&name("Flight")], CompileLimits::default(),
+    ).unwrap();
+    assert!(matches!(service.execute_list(&query).await, Err(QueryError::WorkBudgetExceeded)));
+    assert_eq!(engine.0.load(Ordering::SeqCst), 1);
+}
+
+#[tokio::test]
+async fn pagination_refills_after_source_scope_false_positives() {
+    let f = fixture().await;
+    let active = f.store.active_definition().await.unwrap();
+    let ty = &active.ontology.object_types[&name("Flight")];
+    let mut scope = f.scope.clone();
+    scope.types.insert(name("Flight"), TypeScope {
+        row: Pred::Cmp {
+            left: ontoforge_expr::Operand::Column(prop("status")),
+            op: ontoforge_expr::CmpOp::Eq,
+            right: ontoforge_expr::Operand::Lit(ontoforge_expr::Scalar::String("delayed".to_owned())),
+        },
+        columns: ty.properties.keys().cloned().map(|property| (property, Pred::Const(true))).collect(),
+    });
+    let engine = FalsePositiveEngine(AtomicUsize::new(0));
+    let tokens = TokenCodec::new(b"list-key".to_vec()).unwrap();
+    let service = QueryService {
+        principal: &f.principal, scope: &scope, active: Arc::clone(&active), engine: &engine, store: &f.store,
+        limits: ExecutionLimits::phase4_default(), tokens: &tokens,
+    };
+    let query = ValidatedQuery::new(
+        QueryRequest { set: ObjectSet::Type { object_type: name("Flight") }, select: vec![prop("status")] },
+        vec![OrderBy { property: prop("flightId"), direction: Direction::Asc, nulls: Nulls::Last }],
+        PageSpec { first: 2, after: None }, &active.ontology, &scope.types[&name("Flight")], CompileLimits::default(),
+    ).unwrap();
+    let page = service.execute_list(&query).await.unwrap();
+    assert!(page.rows.is_empty());
+    assert!(!page.has_more);
+    assert_eq!(engine.0.load(Ordering::SeqCst), 2);
+}
+
+#[tokio::test]
+async fn cursor_multikey_null_pages_have_no_duplicates_or_omissions() {
+    let f = fixture().await;
+    commit_object_edit(&f, "F-1001", ObjectOp::Set(BTreeMap::from([
+        (prop("delayMinutes"), PropertyValue::Null),
+    ]))).await;
+    let active = f.store.active_definition().await.unwrap();
+    let ty = &active.ontology.object_types[&name("Flight")];
+    let mut scope = f.scope.clone();
+    scope.types.insert(name("Flight"), TypeScope {
+        row: Pred::Const(true),
+        columns: ty.properties.keys().cloned().map(|property| (property, Pred::Const(true))).collect(),
+    });
+    let profile = ProfileName::try_from("dev".to_owned()).unwrap();
+    let fixtures = plan_fixture_tables(&active.ontology, &load_dir(Utf8Path::new(AVIATION)).sources, &profile).unwrap();
+    let engine = SqliteEngine::from_fixtures(Utf8Path::new(AVIATION), &fixtures.tables).await.unwrap();
+    let tokens = TokenCodec::new(b"list-key".to_vec()).unwrap();
+    let service = QueryService {
+        principal: &f.principal, scope: &scope, active: Arc::clone(&active), engine: &engine, store: &f.store,
+        limits: ExecutionLimits::phase4_default(), tokens: &tokens,
+    };
+    let request = QueryRequest { set: ObjectSet::Type { object_type: name("Flight") }, select: vec![prop("status")] };
+    let order = vec![
+        OrderBy { property: prop("delayMinutes"), direction: Direction::Asc, nulls: Nulls::First },
+        OrderBy { property: prop("status"), direction: Direction::Desc, nulls: Nulls::Last },
+    ];
+    let full_query = ValidatedQuery::new(request.clone(), order.clone(), PageSpec { first: 100, after: None }, &active.ontology, &scope.types[&name("Flight")], CompileLimits::default()).unwrap();
+    let full = service.execute_list(&full_query).await.unwrap();
+    assert!(!full.has_more);
+    let expected = full.rows.iter().map(|row| row.pk.clone()).collect::<Vec<_>>();
+    let mut actual = Vec::new();
+    let mut after = None;
+    let mut pages = 0;
+    loop {
+        let query = ValidatedQuery::new(request.clone(), order.clone(), PageSpec { first: 2, after }, &active.ontology, &scope.types[&name("Flight")], CompileLimits::default()).unwrap();
+        let page = service.execute_list(&query).await.unwrap();
+        pages += 1;
+        actual.extend(page.rows.iter().map(|row| row.pk.clone()));
+        assert!(!page.truncated);
+        if !page.has_more { break; }
+        after = page.cursor;
+        assert!(after.is_some());
+    }
+    assert!(pages >= 3);
+    assert_eq!(actual, expected);
+    assert_eq!(actual.iter().map(ToString::to_string).collect::<BTreeSet<_>>().len(), actual.len());
+}
+
+#[tokio::test]
+async fn cap_counts_final_masked_row_and_version() {
+    let f = fixture().await;
+    let active = f.store.active_definition().await.unwrap();
+    let ty = &active.ontology.object_types[&name("Flight")];
+    let mut scope = f.scope.clone();
+    scope.types.insert(name("Flight"), TypeScope {
+        row: Pred::Const(true),
+        columns: ty.properties.keys().cloned().map(|property| (property, Pred::Const(true))).collect(),
+    });
+    let large = "x".repeat(16 * 1024 * 1024);
+    let engine = RowsEngine(&large);
+    let tokens = TokenCodec::new(b"list-key".to_vec()).unwrap();
+    let request = QueryRequest { set: ObjectSet::Type { object_type: name("Flight") }, select: vec![prop("status")] };
+    let order = vec![OrderBy { property: prop("flightId"), direction: Direction::Asc, nulls: Nulls::Last }];
+    let query = ValidatedQuery::new(request, order.clone(), PageSpec { first: 1, after: None }, &active.ontology, &scope.types[&name("Flight")], CompileLimits::default()).unwrap();
+    let visible = QueryService {
+        principal: &f.principal, scope: &scope, active: Arc::clone(&active), engine: &engine, store: &f.store,
+        limits: ExecutionLimits::phase4_default(), tokens: &tokens,
+    }.execute_list(&query).await.unwrap();
+    assert!(visible.rows.is_empty());
+    assert!(visible.truncated);
+    assert!(visible.has_more);
+    assert!(visible.cursor.is_none());
+
+    scope.types.get_mut(&name("Flight")).unwrap().columns.insert(prop("status"), Pred::Const(false));
+    let request = QueryRequest { set: ObjectSet::Type { object_type: name("Flight") }, select: vec![prop("flightNumber")] };
+    let query = ValidatedQuery::new(request, order, PageSpec { first: 1, after: None }, &active.ontology, &scope.types[&name("Flight")], CompileLimits::default()).unwrap();
+    let masked = QueryService {
+        principal: &f.principal, scope: &scope, active, engine: &engine, store: &f.store,
+        limits: ExecutionLimits::phase4_default(), tokens: &tokens,
+    }.execute_list(&query).await.unwrap();
+    assert_eq!(masked.rows.len(), 1);
+    assert!(!masked.truncated);
+    assert!(!masked.has_more);
+    assert!(!masked.rows[0].version.is_empty());
 }
 
 #[tokio::test]
