@@ -20,6 +20,7 @@ use ontoforge_query::{ExecutionLimits, QueryRequest, QueryService, TokenCodec};
 use ontoforge_schema::ir::{ObjectTypeName, ProfileName, PropertyName};
 use ontoforge_schema::load_dir;
 use ontoforge_storage::reload::{ReloadOptions, reload};
+use ontoforge_storage::commit::{Actor, Commit, Edit, ObjectOp};
 use ontoforge_storage::store::{BackendSettings, EditStore, StoreSettings};
 use std::sync::Arc;
 use std::time::Duration;
@@ -52,6 +53,15 @@ async fn outbound_fk_uses_scoped_merged_object_value() {
     let active = store.active_definition().await.unwrap();
     let name = |raw: &str| ObjectTypeName::try_from(raw.to_owned()).unwrap();
     let prop = |raw: &str| PropertyName::try_from(raw.to_owned()).unwrap();
+    store.commit(Commit {
+        actor: Actor::Principal("test|reader".to_owned()),
+        action: "airportFixture".to_owned(), def_version: active.def_version,
+        params: json!({}),
+        edits: vec![Edit::Object {
+            type_name: name("Airport"), pk: PropertyValue::String("FRA".to_owned()),
+            op: ObjectOp::Set([(prop("name"), PropertyValue::String("Frankfurt".to_owned()))].into()),
+        }],
+    }).await.unwrap();
     let scope = PrincipalScope {
         types: ["Flight", "Airport"].into_iter().map(|raw| {
             let ty = name(raw);

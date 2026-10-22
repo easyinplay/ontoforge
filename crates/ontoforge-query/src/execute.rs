@@ -402,6 +402,9 @@ impl<E: Engine> QueryService<'_, E> {
         ) {
             return self.execute_set_list(query, &mut budget).await;
         }
+        if matches!(query.request.set, crate::ast::ObjectSet::SearchAround { .. }) {
+            return self.execute_search_around(query, &mut budget).await;
+        }
         self.execute_list_internal(query, &mut budget, None).await
     }
 
