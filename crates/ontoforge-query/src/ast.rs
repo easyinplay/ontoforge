@@ -22,6 +22,19 @@ pub enum ObjectSet {
         query: String,
         mode: TermMode,
     },
+    Union {
+        object_type: ObjectTypeName,
+        sets: Vec<ObjectSet>,
+    },
+    Intersect {
+        object_type: ObjectTypeName,
+        sets: Vec<ObjectSet>,
+    },
+    Subtract {
+        object_type: ObjectTypeName,
+        left: Box<ObjectSet>,
+        right: Box<ObjectSet>,
+    },
 }
 
 impl ObjectSet {
@@ -30,7 +43,10 @@ impl ObjectSet {
             Self::Pk { object_type, .. }
             | Self::Type { object_type }
             | Self::Where { object_type, .. }
-            | Self::Search { object_type, .. } => object_type,
+            | Self::Search { object_type, .. }
+            | Self::Union { object_type, .. }
+            | Self::Intersect { object_type, .. }
+            | Self::Subtract { object_type, .. } => object_type,
         }
     }
 }

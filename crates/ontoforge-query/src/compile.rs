@@ -150,6 +150,11 @@ impl ValidatedQuery {
                     }
                 }
             }
+            ObjectSet::Union { .. }
+            | ObjectSet::Intersect { .. }
+            | ObjectSet::Subtract { .. } => {
+                validate_nested_set(&request, &order_by, &page, ontology, scope, limits)?;
+            }
         }
         Ok(Self {
             request,
@@ -157,6 +162,54 @@ impl ValidatedQuery {
             page,
         })
     }
+}
+
+fn validate_nested_set(
+    request: &QueryRequest,
+    order_by: &[OrderBy],
+    page: &PageSpec,
+    ontology: &Ontology,
+    scope: &TypeScope,
+    limits: CompileLimits,
+) -> Result<(), QueryError> {
+    let root_type = request.set.object_type();
+    let mut stack = vec![(&request.set, 1usize)];
+    let mut nodes = 0usize;
+    while let Some((set, depth)) = stack.pop() {
+        nodes = nodes.checked_add(1).ok_or(QueryError::QueryTooComplex)?;
+        if nodes > limits.max_nodes || depth > limits.max_depth {
+            return Err(QueryError::QueryTooComplex);
+        }
+        if set.object_type() != root_type {
+            return Err(QueryError::InvalidQuery);
+        }
+        match set {
+            ObjectSet::Union { sets, .. } | ObjectSet::Intersect { sets, .. } => {
+                if sets.len() > limits.max_in_values {
+                    return Err(QueryError::QueryTooComplex);
+                }
+                stack.extend(sets.iter().map(|child| (child, depth + 1)));
+            }
+            ObjectSet::Subtract { left, right, .. } => {
+                stack.push((left, depth + 1));
+                stack.push((right, depth + 1));
+            }
+            leaf => {
+                ValidatedQuery::new(
+                    QueryRequest {
+                        set: leaf.clone(),
+                        select: request.select.clone(),
+                    },
+                    order_by.to_vec(),
+                    page.clone(),
+                    ontology,
+                    scope,
+                    limits,
+                )?;
+            }
+        }
+    }
+    Ok(())
 }
 
 fn check_property<'a>(
@@ -288,7 +341,12 @@ pub fn compile_source_select(
         ObjectSet::Where { predicate, .. } if can_push(predicate, binding) => {
             Some(lower_where(predicate, ty, binding, &lower.columns)?)
         }
-        ObjectSet::Where { .. } | ObjectSet::Search { .. } | ObjectSet::Type { .. } => None,
+        ObjectSet::Where { .. }
+        | ObjectSet::Search { .. }
+        | ObjectSet::Type { .. }
+        | ObjectSet::Union { .. }
+        | ObjectSet::Intersect { .. }
+        | ObjectSet::Subtract { .. } => None,
     };
     let filter = Some(match candidate {
         Some(candidate) => Expr::And(vec![lower.row, candidate]),
