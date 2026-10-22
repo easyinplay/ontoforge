@@ -568,6 +568,35 @@ async fn aggregate_invalid_names_and_limits_fail_before_backend_access() {
     });
     assert!(serde_json::from_value::<AggregateRequest>(injected).is_err());
     assert_eq!(engine.0.load(Ordering::SeqCst), 0);
+    let failing_engine = FailingEngine;
+    let failing_service = QueryService {
+        principal: &f.principal,
+        scope: &scope,
+        active: Arc::clone(&service.active),
+        engine: &failing_engine,
+        store: &f.store,
+        limits: ExecutionLimits::phase4_default(),
+        tokens: &tokens,
+    };
+    let error = failing_service
+        .execute_aggregate(
+            AggregateRequest {
+                set: ObjectSet::Type {
+                    object_type: name("Flight"),
+                },
+                group_by: vec![],
+                measures: vec![AggregateMeasure::Count { property: None }],
+            },
+            AggregateCapabilities::all_supported(),
+            AggregateLimits::phase4_default(),
+        )
+        .await
+        .unwrap_err();
+    assert!(matches!(error, AggregateError::Source));
+    let outward = format!("{} {}", error, serde_json::to_string(&error).unwrap());
+    for physical in ["ontoforge_edit", "of_obj_secret", "hidden_column", "20261022_very_secret"] {
+        assert!(!outward.contains(physical), "{outward}");
+    }
 }
 
 async fn commit_object_edit(f: &Fixture, pk: &str, op: ObjectOp) {

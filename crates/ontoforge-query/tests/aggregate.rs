@@ -347,8 +347,21 @@ async fn count_sum_avg_match_full_materialization_reference() {
     assert_eq!(
         service
             .execute_aggregate(
-                request,
+                request.clone(),
                 AggregateCapabilities::all_supported(),
+                AggregateLimits::phase4_default(),
+            )
+            .await
+            .unwrap(),
+        full_materialization_reference(),
+    );
+    let mut fallback_capabilities = AggregateCapabilities::all_supported();
+    fallback_capabilities.sum_integer = false;
+    assert_eq!(
+        service
+            .execute_aggregate(
+                request,
+                fallback_capabilities,
                 AggregateLimits::phase4_default(),
             )
             .await
@@ -527,18 +540,19 @@ async fn min_max_edited_values_can_win_or_remove_winner() {
         .await
         .unwrap();
     assert_eq!(fallback, result);
-    let statements = engine.sql.lock().unwrap();
-    assert!(
-        statements
-            .iter()
-            .any(|sql| sql.contains("ORDER BY") && sql.contains("LIMIT"))
-    );
-    assert!(
-        statements
-            .iter()
-            .all(|sql| !sql.contains("min(") && !sql.contains("max("))
-    );
-    drop(statements);
+    {
+        let statements = engine.sql.lock().unwrap();
+        assert!(
+            statements
+                .iter()
+                .any(|sql| sql.contains("ORDER BY") && sql.contains("LIMIT"))
+        );
+        assert!(
+            statements
+                .iter()
+                .all(|sql| !sql.contains("min(") && !sql.contains("max("))
+        );
+    }
     let mut masked_scope = scope.clone();
     masked_scope.types.get_mut(&flight).unwrap().columns.insert(
         prop("delayMinutes"),
@@ -607,6 +621,10 @@ async fn min_max_edited_values_can_win_or_remove_winner() {
 }
 
 #[tokio::test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "scripted windows and budget cases share one store fixture"
+)]
 async fn min_max_refill_past_invalid_top_rows() {
     let root = Utf8Path::new(concat!(
         env!("CARGO_MANIFEST_DIR"),
@@ -732,12 +750,23 @@ async fn min_max_refill_past_invalid_top_rows() {
         .await
         .unwrap_err();
     assert!(
-        matches!(nonfinite_error, ontoforge_query::aggregate::AggregateError::UnsupportedNumericValue),
+        matches!(
+            nonfinite_error,
+            ontoforge_query::aggregate::AggregateError::UnsupportedNumericValue
+        ),
         "{nonfinite_error:?}"
     );
 }
 
 #[tokio::test]
+#[allow(
+    clippy::cast_precision_loss,
+    reason = "the CSV fixture has 23 small integer rows"
+)]
+#[allow(
+    clippy::too_many_lines,
+    reason = "independent CSV oracle, edits and authorization share one fixture"
+)]
 async fn group_distinct_matches_visible_merged_reference() {
     let root = Utf8Path::new(concat!(
         env!("CARGO_MANIFEST_DIR"),
@@ -851,11 +880,11 @@ async fn group_distinct_matches_visible_merged_reference() {
             .entry(group_key)
             .or_insert_with(|| (group, 0, BTreeSet::new(), 0));
         entry.1 += 1;
-        if key != "F-1004" {
-            if let Some(value) = delay {
-                entry.2.insert(value);
-                entry.3 += 1;
-            }
+        if key != "F-1004"
+            && let Some(value) = delay
+        {
+            entry.2.insert(value);
+            entry.3 += 1;
         }
     }
     let expected = AggregateResult {
@@ -912,11 +941,11 @@ async fn group_distinct_matches_visible_merged_reference() {
             .entry(serde_json::to_string(&group).unwrap())
             .or_insert_with(|| (group, 0, 0, 0));
         entry.1 += 1;
-        if key != "F-1004" {
-            if let Some(value) = delay {
-                entry.2 += value;
-                entry.3 += 1;
-            }
+        if key != "F-1004"
+            && let Some(value) = delay
+        {
+            entry.2 += value;
+            entry.3 += 1;
         }
     }
     let partial_expected = AggregateResult {
@@ -972,6 +1001,34 @@ async fn group_distinct_matches_visible_merged_reference() {
             .iter()
             .any(|sql| sql.contains("sum(") && sql.contains("GROUP BY"))
     );
+    let union_result = service
+        .execute_aggregate(
+            AggregateRequest {
+                set: ObjectSet::Union {
+                    object_type: flight.clone(),
+                    sets: vec![
+                        ObjectSet::Pk {
+                            object_type: flight.clone(),
+                            pk: json!("F-1001"),
+                        },
+                        ObjectSet::Pk {
+                            object_type: flight.clone(),
+                            pk: json!("F-1003"),
+                        },
+                    ],
+                },
+                group_by: vec![],
+                measures: vec![
+                    AggregateMeasure::Count { property: None },
+                    AggregateMeasure::Distinct { property: prop("delayMinutes") },
+                ],
+            },
+            AggregateCapabilities::all_supported(),
+            AggregateLimits::phase4_default(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(union_result.buckets[0].values, vec![json!(2), json!(2)]);
     let limited = service
         .execute_aggregate(
             request.clone(),
