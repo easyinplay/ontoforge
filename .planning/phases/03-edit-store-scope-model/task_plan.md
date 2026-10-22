@@ -39,7 +39,7 @@ Phase 完成 = 23 个 PLAN 的 SUMMARY 落盘 + `03-VERIFICATION.md` passed + Wi
 
 ## Phase 3 完成后的 CI 稳定性跟进
 
-- [ ] V2：诊断并稳定 `reload_racing_commits_never_lets_an_old_write_through` 在 Windows CI 上的 `SQLITE_BUSY`。所有权：`crates/ontoforge-storage/tests/reload.rs`。已确认竞争路径并完成仅对 SQLite code `5` 的有界重试；其他错误立即失败，并发写入、旧版本拒绝和日志单调断言保留。本地目标测试 20/20、`reload` 测试集 32/32 通过；待 PR 的 Windows、Ubuntu、integration CI。此项是已完成 Phase 3 的测试稳定性跟进，不重新打开阶段验收。
+- [x] V2：诊断并稳定 `reload_racing_commits_never_lets_an_old_write_through` 在 Windows CI 上的 `SQLITE_BUSY`。所有权：`crates/ontoforge-storage/tests/reload.rs`。仅对 SQLite code `5` 有界重试；其他错误立即失败，并发写入、旧版本拒绝和日志单调断言保留。本地目标测试 20/20、`reload` 测试集 32/32 通过；PR CI run 39715149664 attempt 1 的 Windows、Ubuntu、integration 三 job 均通过，Windows 日志显示目标测试 `... ok`。此项是已完成 Phase 3 的测试稳定性跟进，不重新打开阶段验收。
 
 ## 规划中的自决项（orchestrator / planner，用户可否决）
 
