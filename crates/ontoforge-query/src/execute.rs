@@ -29,7 +29,7 @@ pub(crate) async fn join_initial_candidates<S: Future, E: Future>(
 ) -> (S::Output, E::Output) {
     tokio::join!(source, edits)
 }
-type SourceRow = (PropertyValue, BTreeMap<PropertyName, Value>);
+pub(crate) type SourceRow = (PropertyValue, BTreeMap<PropertyName, Value>);
 
 struct EligibleCandidate<'a> {
     candidate: &'a Candidate,
@@ -135,7 +135,10 @@ fn decode_source(
         .collect()
 }
 
-fn charge_edit_page(page: &EditScanPage, budget: &mut WorkBudget) -> Result<(), QueryError> {
+pub(crate) fn charge_edit_page(
+    page: &EditScanPage,
+    budget: &mut WorkBudget,
+) -> Result<(), QueryError> {
     budget.charge_raw_candidates(page.edits.len())?;
     for edit in &page.edits {
         let encoded = edit
@@ -283,7 +286,7 @@ fn source_position(
     values
 }
 
-fn raw_backfill_select(
+pub(crate) fn raw_backfill_select(
     ty: &ObjectType,
     binding: &SourceBinding,
     keys: &[PropertyValue],
@@ -726,7 +729,7 @@ impl<E: Engine> QueryService<'_, E> {
         )
     }
 
-    async fn read_source_select(
+    pub(crate) async fn read_source_select(
         &self,
         select: &Select,
         columns: &[PropertyName],
