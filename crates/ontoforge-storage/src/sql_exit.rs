@@ -184,27 +184,27 @@ pub(crate) async fn fetch_cells(
     }
 }
 
-/// The first row of a built read-only query through the pool, without a write transaction.
-pub(crate) async fn fetch_cells_read(
+/// Every row of a bounded read-only query through the pool.
+pub(crate) async fn fetch_all_cells_read(
     db: &Db,
     (sql, values): Built,
     kinds: &[CellKind],
-) -> Result<Option<Vec<Cell>>, StoreError> {
+) -> Result<Vec<Vec<Cell>>, StoreError> {
     match db {
-        Db::Sqlite(pool) => {
-            let row = sqlx::query_with(AssertSqlSafe(sql), values)
-                .fetch_optional(pool)
-                .await
-                .map_err(|e| StoreError::from_sqlx(&e))?;
-            row.map(|row| sqlite_cells(&row, kinds)).transpose()
-        }
-        Db::Postgres { pool, .. } => {
-            let row = sqlx::query_with(AssertSqlSafe(sql), values)
-                .fetch_optional(pool)
-                .await
-                .map_err(|e| StoreError::from_sqlx(&e))?;
-            row.map(|row| pg_cells(&row, kinds)).transpose()
-        }
+        Db::Sqlite(pool) => sqlx::query_with(AssertSqlSafe(sql), values)
+            .fetch_all(pool)
+            .await
+            .map_err(|e| StoreError::from_sqlx(&e))?
+            .iter()
+            .map(|row| sqlite_cells(row, kinds))
+            .collect(),
+        Db::Postgres { pool, .. } => sqlx::query_with(AssertSqlSafe(sql), values)
+            .fetch_all(pool)
+            .await
+            .map_err(|e| StoreError::from_sqlx(&e))?
+            .iter()
+            .map(|row| pg_cells(row, kinds))
+            .collect(),
     }
 }
 

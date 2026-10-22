@@ -849,10 +849,7 @@ pub(crate) fn decode_object(
         })?;
         let json = cell_json(value, &column.ty)?;
         let value = PropertyValue::from_json(def, &json).map_err(|e| {
-            StoreError::Corrupt(format!(
-                "the stored value of `{}` is invalid: {e}",
-                column.column
-            ))
+            StoreError::Corrupt(format!("the stored value of `{name}` is invalid: {e}"))
         })?;
         set.insert(name.clone(), value);
     }
