@@ -177,6 +177,7 @@ fn validate_nested_set(
     let root_type = request.set.object_type();
     let mut stack = vec![(&request.set, 1usize)];
     let mut nodes = 0usize;
+    let mut operands = 0usize;
     while let Some((set, depth)) = stack.pop() {
         nodes = nodes.checked_add(1).ok_or(QueryError::QueryTooComplex)?;
         if nodes > limits.max_nodes || depth > limits.max_depth {
@@ -200,6 +201,10 @@ fn validate_nested_set(
                 stack.push((right, depth + 1));
             }
             leaf => {
+                operands = operands.checked_add(1).ok_or(QueryError::QueryTooComplex)?;
+                if operands > limits.max_in_values {
+                    return Err(QueryError::QueryTooComplex);
+                }
                 ValidatedQuery::new(
                     QueryRequest {
                         set: leaf.clone(),
