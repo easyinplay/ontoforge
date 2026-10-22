@@ -121,7 +121,7 @@ async fn outbound_fk_uses_scoped_merged_object_value() {
         .await
         .unwrap();
     let scope = PrincipalScope {
-        types: ["Flight", "Airport", "Pilot"]
+        types: ["Flight", "Airport", "Pilot", "Aircraft"]
             .into_iter()
             .map(|raw| {
                 let ty = name(raw);
@@ -590,6 +590,69 @@ async fn outbound_fk_uses_scoped_merged_object_value() {
     assert_eq!(
         service.execute_list(&query).await.unwrap().rows[0].pk,
         json!("FRA")
+    );
+
+    let aircraft_query = ValidatedQuery::new(
+        QueryRequest {
+            set: serde_json::from_value(json!({
+                "kind": "searchAround", "object_type": "Aircraft",
+                "base": {"kind": "pk", "object_type": "Flight", "pk": "F-1001"},
+                "link": "aircraftFlights", "direction": "toFrom"
+            }))
+            .unwrap(),
+            select: vec![prop("tailNumber")],
+        },
+        vec![],
+        PageSpec {
+            first: 10,
+            after: None,
+        },
+        &ontology,
+        &scope.types[&name("Aircraft")],
+        CompileLimits::default(),
+    )
+    .unwrap();
+    let source_aircraft = service.execute_list(&aircraft_query).await.unwrap();
+    assert_eq!(source_aircraft.rows[0].pk, json!("D-AAAA"));
+    store
+        .commit(Commit {
+            actor: Actor::Principal(principal.id.to_string()),
+            action: "nullAircraft".to_owned(),
+            def_version: active.def_version,
+            params: json!({}),
+            edits: vec![Edit::Object {
+                type_name: name("Flight"),
+                pk: PropertyValue::String("F-1001".to_owned()),
+                op: ObjectOp::Set([(prop("aircraftTailNumber"), PropertyValue::Null)].into()),
+            }],
+        })
+        .await
+        .unwrap();
+    assert!(
+        service
+            .execute_list(&aircraft_query)
+            .await
+            .unwrap()
+            .rows
+            .is_empty()
+    );
+    store
+        .commit(Commit {
+            actor: Actor::Principal(principal.id.to_string()),
+            action: "releaseAircraft".to_owned(),
+            def_version: active.def_version,
+            params: json!({}),
+            edits: vec![Edit::Object {
+                type_name: name("Flight"),
+                pk: PropertyValue::String("F-1001".to_owned()),
+                op: ObjectOp::Release,
+            }],
+        })
+        .await
+        .unwrap();
+    assert_eq!(
+        service.execute_list(&aircraft_query).await.unwrap(),
+        source_aircraft
     );
 
     let mut hidden_fk_scope = scope.clone();
