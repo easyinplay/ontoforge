@@ -2,11 +2,11 @@
 gsd_state_version: "1.0"
 current_phase: 4
 current_phase_name: Scoped L0 Read
-status: planning
-stopped_at: Phase 4 plans verified, ready to execute 04-01
+status: executing
+stopped_at: Phase 4 wave 1, executing 04-01
 last_updated: "2026-10-22T12:19:49+08:00"
 last_activity: 2026-10-22
-last_activity_desc: Phase 4 seven plans passed independent checker
+last_activity_desc: Phase 4 wave 1 started from verified 04-01 plan
 state_head: a712ab27421a9d235f6a5931c5e00b06267a3aab
 progress:
   total_phases: 7
@@ -28,9 +28,9 @@ See: .planning/PROJECT.md (updated 2026-10-19)
 ## Current Position
 
 Phase: 4 — Scoped L0 Read
-Plan: 04-01 of 04-07, queued
-Status: Planning
-Last activity: 2026-10-22 — Phase 4 plans passed checker; see `phases/04-scoped-l0-read/task_plan.md`
+Plan: 04-01 of 04-07, in progress
+Status: Executing
+Last activity: 2026-10-22 — Phase 4 wave 1 started; see `phases/04-scoped-l0-read/progress.md`
 
 Progress: [████░░░░░░] 43%
 
@@ -87,5 +87,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-10-21T08:48:07.463Z
-Stopped at: Phase 4 plans verified, ready to execute 04-01
+Stopped at: Phase 4 wave 1, executing 04-01
 Resume file: None

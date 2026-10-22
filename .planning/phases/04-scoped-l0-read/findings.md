@@ -11,3 +11,4 @@
 - `04-01/04/06` 已锁定初始请求级 `ExecutionLimits` 32/10,000/2,048/64 MiB 与 `AggregateLimits` 1,024/4,096/10,000/16 MiB；host 注入并冻结，逐维 B/B+1 测试，超限无 partial data。Grok CLI 的两次建议在 backend calls 与 groups/buckets 上不一致，因此只采纳其“DoS 上限而非 SLA”的原则，并采用内部一致的保守初值。
 - 独立 GSD plan-checker 初检 2 blocker、1 warning：研究开放问题、远端 CI 前置门禁、PowerShell shell。研究与 PLAN 修订后复检 `VERIFICATION PASSED`；路径探针在 Windows 为 `not_applicable`，不等同路径已通过。
 - 计划阶段没有业务代码修改，TDD 不适用；Wave 1 起的核心叠加、授权、游标与聚合均按 PLAN 先 RED 再 GREEN。Wave 6 的 remote GitHub Actions、真实 Trino/PG 和 isolated p95 是执行验收，当前尚无 Phase 4 性能结论。
+- Wave 1 的 `superpowers:brainstorming` 判据由现有 accepted ADR-0018/0020 和 checker 通过的 `04-01-PLAN.md` 覆盖，未出现待裁决的新 API 合同，因此本次跳过；`superpowers:test-driven-development` 用于 pk/授权/HMAC。`ralph-loop` skill/命令在本机未找到，executor 按同等 COMPLETE 验收循环执行并给出测试证据。
