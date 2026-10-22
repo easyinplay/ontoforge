@@ -74,6 +74,8 @@ pub enum QueryError {
     QueryTooComplex,
     #[error("source unavailable")]
     Source,
+    #[error("unsupported numeric value")]
+    UnsupportedNumericValue,
     #[error("edit store unavailable")]
     Store,
     #[error("invalid version token")]
@@ -94,6 +96,7 @@ impl QueryError {
             Self::CostExceeded => "COST_EXCEEDED",
             Self::QueryTooComplex => "QUERY_TOO_COMPLEX",
             Self::Source => "SOURCE_UNAVAILABLE",
+            Self::UnsupportedNumericValue => "UNSUPPORTED_NUMERIC_VALUE",
             Self::Store => "STORE_UNAVAILABLE",
             Self::InvalidToken => "INVALID_TOKEN",
             Self::WorkBudgetExceeded => "WORK_BUDGET_EXCEEDED",
@@ -460,7 +463,7 @@ fn engine_json(value: ontoforge_engine::Value) -> Result<Value, QueryError> {
         V::Long(v) => Ok(Value::from(v)),
         V::Double(v) => serde_json::Number::from_f64(v)
             .map(Value::Number)
-            .ok_or(QueryError::Source),
+            .ok_or(QueryError::UnsupportedNumericValue),
         V::Decimal(v) | V::String(v) | V::Date(v) | V::Timestamp(v) | V::TimestampTz(v) => {
             Ok(Value::String(v))
         }

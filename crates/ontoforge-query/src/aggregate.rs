@@ -127,6 +127,7 @@ impl From<crate::QueryError> for AggregateError {
     fn from(value: crate::QueryError) -> Self {
         match value {
             crate::QueryError::Source => Self::Source,
+            crate::QueryError::UnsupportedNumericValue => Self::UnsupportedNumericValue,
             crate::QueryError::Store => Self::Store,
             crate::QueryError::CostExceeded | crate::QueryError::WorkBudgetExceeded => {
                 Self::AggregateCostExceeded
