@@ -135,6 +135,20 @@ fn distributed_explain_wraps_typed_select() {
 }
 
 #[test]
+fn distributed_explain_wraps_executed_printed_sql() {
+    let plain = print_select(&sample(), Dialect::Trino).unwrap();
+    let explain = super::print_explain_distributed_sql(&plain, Dialect::Trino).unwrap();
+    assert_eq!(
+        explain.as_str(),
+        format!("EXPLAIN (TYPE DISTRIBUTED) {}", plain.as_str())
+    );
+    assert_eq!(
+        super::print_explain_distributed_sql(&plain, Dialect::Sqlite).unwrap_err(),
+        crate::error::PrintError::UnsupportedDialect
+    );
+}
+
+#[test]
 fn case_arms_are_typed_and_escape_each_literal() {
     let mut select = sample();
     select.projection = vec![SelectItem {

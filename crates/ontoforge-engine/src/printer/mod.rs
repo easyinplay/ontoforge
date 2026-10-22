@@ -56,10 +56,20 @@ pub fn print_explain_distributed(
     if dialect != Dialect::Trino {
         return Err(PrintError::UnsupportedDialect);
     }
-    let printed = print_select(select, dialect)?;
+    print_explain_distributed_sql(&print_select(select, dialect)?, dialect)
+}
+
+/// Wraps the exact printer output passed to an Engine, for plan evidence of that execution.
+pub fn print_explain_distributed_sql(
+    sql: &PrintedSql,
+    dialect: Dialect,
+) -> Result<PrintedSql, PrintError> {
+    if dialect != Dialect::Trino {
+        return Err(PrintError::UnsupportedDialect);
+    }
     Ok(PrintedSql::new(format!(
         "EXPLAIN (TYPE DISTRIBUTED) {}",
-        printed.as_str()
+        sql.as_str()
     )))
 }
 
