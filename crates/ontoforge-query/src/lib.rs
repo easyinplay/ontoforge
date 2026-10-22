@@ -18,6 +18,7 @@ use serde_json::Value;
 
 pub mod ast;
 pub mod compile;
+pub mod overlay;
 pub use ast::ObjectSet;
 
 pub const CRATE_NAME: &str = env!("CARGO_PKG_NAME");

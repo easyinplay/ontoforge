@@ -2106,6 +2106,7 @@ dependencies = [
  "ontoforge-expr",
  "ontoforge-schema",
  "ontoforge-storage",
+ "proptest",
  "serde",
  "serde_json",
  "sqlx",
