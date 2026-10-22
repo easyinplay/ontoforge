@@ -16,16 +16,11 @@ use ontoforge_storage::value::PropertyValue;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-pub const CRATE_NAME: &str = env!("CARGO_PKG_NAME");
+pub mod ast;
+pub mod compile;
+pub use ast::ObjectSet;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "kind", rename_all = "camelCase", deny_unknown_fields)]
-pub enum ObjectSet {
-    Pk {
-        object_type: ObjectTypeName,
-        pk: Value,
-    },
-}
+pub const CRATE_NAME: &str = env!("CARGO_PKG_NAME");
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "camelCase")]
@@ -60,6 +55,8 @@ pub enum QueryError {
     InvalidQuery,
     #[error("query cost limit exceeded")]
     CostExceeded,
+    #[error("query is too complex")]
+    QueryTooComplex,
     #[error("source unavailable")]
     Source,
     #[error("edit store unavailable")]
@@ -76,6 +73,7 @@ impl QueryError {
             Self::AmbiguousObject => "AMBIGUOUS_OBJECT",
             Self::InvalidQuery => "INVALID_QUERY",
             Self::CostExceeded => "COST_EXCEEDED",
+            Self::QueryTooComplex => "QUERY_TOO_COMPLEX",
             Self::Source => "SOURCE_UNAVAILABLE",
             Self::Store => "STORE_UNAVAILABLE",
             Self::InvalidToken => "INVALID_TOKEN",
@@ -212,7 +210,9 @@ pub struct QueryService<'a, E: Engine> {
 
 impl<E: Engine> QueryService<'_, E> {
     pub async fn execute(&self, request: QueryRequest) -> Result<QueryPage, QueryError> {
-        let ObjectSet::Pk { object_type, pk } = request.set;
+        let ObjectSet::Pk { object_type, pk } = request.set else {
+            return Err(QueryError::InvalidQuery);
+        };
         let ty = self
             .active
             .ontology
