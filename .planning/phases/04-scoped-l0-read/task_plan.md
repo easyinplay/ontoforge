@@ -33,7 +33,7 @@
 - [x] Wave 3 `04-04`：Rust overlay、refill、cursor 与预算；SUMMARY、独立复审和聚焦测试通过。
 - [x] Wave 4 `04-05`：searchAround 与集合运算；SUMMARY、独立复审及聚焦测试通过。
 - [x] Wave 5 `04-06`：exact scoped 聚合；SUMMARY、主 session 聚焦复跑通过。
-- [ ] Wave 6 `04-07`：真实 Trino/PG、distributed EXPLAIN 与 isolated p95。
+- [ ] Wave 6 `04-07`：真实 Trino/PG、distributed EXPLAIN 与 isolated p95；Task 1 本机真实后端通过，Task 2 CI wiring 中，Task 3 待执行。
 
 ## Acceptance
 

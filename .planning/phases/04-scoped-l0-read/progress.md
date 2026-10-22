@@ -1,6 +1,6 @@
 # Phase 4 progress
 
-当前节点：Phase 4 Wave 6 `04-07` Task 1 审查修复与 Task 2 CI wiring 并行，6/7 PLAN 完成。
+当前节点：Phase 4 Wave 6 `04-07` Task 1 本机验收通过、Task 2 CI artifact wiring 中，6/7 PLAN 完成。
 
 - 2026-10-22：从已通过 CI 的 `c57165d` 建立 `gsd/phase-04-scoped-l0-read` 分支；保留原有未跟踪文件。
 - 2026-10-22：核对 Phase 3 UAT 2/2、VERIFICATION 8/8 和 V2 后的 CI run 39715917662 三 job 通过。
@@ -21,7 +21,8 @@
 - 2026-10-22：`04-06` 完成，执行提交止于 `9c3aae0`，SUMMARY `347dd62`。source partial old/new correction、TopN、distinct/groupBy、nested set、四项 B/B+1 与 typed error 已用 RED/GREEN 验证。executor 的 query 全量、Clippy、fmt 通过；主 session 复跑 lib 5/5、aggregate 6/6、security 22/22、sql_shape 6/6。真实 PG/Trino parity、distributed EXPLAIN 和 isolated p95 留给 `04-07`。
 - 2026-10-22：进入 Wave 6 `04-07` Task 1。只读预检确认现有 CI/Trino/PG fixture 可复用、远端 Phase 4 ref 与 isolated dispatch 尚缺。Grok 第二意见经现有 `PrintedSql` API 核对后定为测试侧捕获执行 SQL、逐字节对账 typed `Select` 再 EXPLAIN；TDD 跳过理由见 `findings.md`。
 - 2026-10-22：Task 1 首轮本机真实 PostgreSQL/Trino 5/5、fragment 1-2；只读审查发现 multi-role、physical error、groupBy、union 四项断言缺口，executor 继续修复。Task 2 的 `.github/workflows/ci.yml` 文件独立，可并行接入真实 ignored runs 与 fail-closed discovery，不提前宣称 Task 1 最终完成。
+- 2026-10-23：Task 1 四项断言缺口修于 `ebd9464`，本机真实 PostgreSQL/Trino 再跑 ignored tests 5/5、fragment 1-2，主 session 的 compile/list 5项、security 22/22、sql_shape 6/6 通过。Task 2 非artifact wiring `42038b0` 已接入真实ignored run与fail-closed discovery；artifact需唯一full-SHA pinned upload Action例外，见修订PLAN与findings。
 
 ## 待办
 
-- 完成 Task 1 四项审查修复和真实复跑；并行完成 Task 2 Linux CI ignored-test wiring。remote ref 当前尚不存在。
+- 完成 Task 2 upload artifact 的SHA pin与本地检查，再执行Task 3 smoke/isolated benchmark；remote ref 当前尚不存在。
