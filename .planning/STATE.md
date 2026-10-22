@@ -3,10 +3,10 @@ gsd_state_version: "1.0"
 current_phase: 4
 current_phase_name: Scoped L0 Read
 status: executing
-stopped_at: Phase 4 wave 4, 04-05 link authorization decision pending
-last_updated: "2026-10-22T19:03:45+08:00"
+stopped_at: Phase 4 wave 4, executing 04-05 searchAround
+last_updated: "2026-10-22T21:36:28+08:00"
 last_activity: 2026-10-22
-last_activity_desc: Phase 4 04-05 set and M:N edge core passed; link authorization decision pending
+last_activity_desc: Phase 4 04-05 set and M:N core passed; searchAround follows D19 endpoint scope
 state_head: 89cf79160d4865ec7395e2c3da000a1417244daf
 progress:
   total_phases: 7
@@ -87,5 +87,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-10-21T08:48:07.463Z
-Stopped at: Phase 4 wave 4, 04-05 link authorization decision pending
+Stopped at: Phase 4 wave 4, executing 04-05 searchAround
 Resume file: None

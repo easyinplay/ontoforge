@@ -43,4 +43,4 @@
 
 ## Next Step
 
-等待用户决定 `04-05-PLAN.md` 的 SearchAround 授权合同 A/B；set 和 M:N 纯 edge overlay 已提交至 `aa6a112`，但 FK/M:N 对外遍历、target hydration 和集成验收尚未完成。决定后继续 Wave 4；真实 PG parity、Trino `EXPLAIN` 和 isolated p95 仍由 Wave 6 验收。
+按 `04-05-PLAN.md` 已对齐D19的两端scope + FK属性可见合同继续 Wave 4；set 和 M:N 纯 edge overlay 已提交至 `aa6a112`，FK/M:N 对外遍历、target hydration 和集成验收仍待完成。真实 PG parity、Trino `EXPLAIN` 和 isolated p95 仍由 Wave 6 验收。
