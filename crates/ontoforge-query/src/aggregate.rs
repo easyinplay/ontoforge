@@ -963,3 +963,38 @@ impl<E: Engine> QueryService<'_, E> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use camino::Utf8Path;
+    use ontoforge_schema::ir::ObjectTypeName;
+    use ontoforge_schema::load_dir;
+    use serde_json::json;
+
+    #[test]
+    fn group_distinct_treats_negative_and_positive_zero_as_one_value() {
+        let root = Utf8Path::new(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../examples/ontologies/aviation"
+        ));
+        let ontology = load_dir(root).ontology.unwrap();
+        let flight = ObjectTypeName::try_from("Flight".to_owned()).unwrap();
+        let mut ty = ontology.object_types[&flight].clone();
+        let delay = PropertyName::try_from("delayMinutes".to_owned()).unwrap();
+        ty.properties.get_mut(&delay).unwrap().base_type = BaseType::Double;
+        let request = AggregateRequest {
+            set: crate::ast::ObjectSet::Type {
+                object_type: flight,
+            },
+            group_by: vec![],
+            measures: vec![AggregateMeasure::Distinct {
+                property: delay.clone(),
+            }],
+        };
+        let mut builder = AggregateBuilder::new(&request, &ty, AggregateLimits::phase4_default());
+        builder.push(&BTreeMap::from([(delay.clone(), json!(-0.0))])).unwrap();
+        builder.push(&BTreeMap::from([(delay, json!(0.0))])).unwrap();
+        assert_eq!(builder.finish().unwrap().buckets[0].values, vec![json!(1)]);
+    }
+}
