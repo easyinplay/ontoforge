@@ -209,7 +209,7 @@ Plans:
   4. 越权 conformance（换 ID、伪造主体属性、多 role 列 × 行交叉、谓词 / 聚合反推、令牌反推）全部被拒绝；L0 输入输出与错误不含物理名；结果超限带 `truncated`
   5. 编译器保证每条 Trino 查询单表、≤ 2 fragment；安静或隔离集群下 pk 读 p95 < 500ms、列表 p95 < 1s、聚合 p95 < 1.5s（私有 fixture 实测记录）
 
-**Plans**: 5/7 executed, 6 waves; 详: `.planning/phases/04-scoped-l0-read/`
+**Plans**: 6/7 executed, 6 waves; 详: `.planning/phases/04-scoped-l0-read/`
 **Details**: `.planning/phases/04-scoped-l0-read/`
 
 ### Phase 5: Online Action

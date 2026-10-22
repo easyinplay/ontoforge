@@ -1,6 +1,6 @@
 # Phase 4 progress
 
-当前节点：Phase 4 Wave 5 `04-06` 执行中，5/7 PLAN 完成。
+当前节点：Phase 4 Wave 6 `04-07` 执行准备，6/7 PLAN 完成。
 
 - 2026-10-22：从已通过 CI 的 `c57165d` 建立 `gsd/phase-04-scoped-l0-read` 分支；保留原有未跟踪文件。
 - 2026-10-22：核对 Phase 3 UAT 2/2、VERIFICATION 8/8 和 V2 后的 CI run 39715917662 三 job 通过。
@@ -18,7 +18,8 @@
 - 2026-10-22：`04-05` 独立部分提交至 `aa6a112`：set wire/递归校验/已授权 operand 运算/共享预算与 M:N source+Add/Remove 纯 edge overlay。query 全量测试、Clippy `-D warnings`、fmt 均通过。用户续作指示按上一轮推荐项 A 执行 SearchAround 授权；FK/M:N 遍历和 target hydration 尚未完成，PLAN 保持执行中。
 - 2026-10-22：`04-05` 完成，主实现 `8df02f8`、FK 无grant同形 RED/GREEN `686b2dc`/`4d489c4`、SUMMARY `ace4421`。set与M:N edge核心及SearchAround执行通过 query 69/69、Clippy、fmt；主session复跑 `search_around` 6/6、`set_ops` 5/5。独立复审的唯一高置信度授权缺口已修复。
 - 2026-10-22：Wave 5 `04-06` 进入执行准备；主 session 已按 `superpowers:brainstorming` 核对 accepted ADR-0020 与 PLAN 的 exact source partial、TopN、distinct/groupBy、共享预算和 no-partial 合同，无新待裁决事项。下一步 TDD 执行。
+- 2026-10-22：`04-06` 完成，执行提交止于 `9c3aae0`，SUMMARY `347dd62`。source partial old/new correction、TopN、distinct/groupBy、nested set、四项 B/B+1 与 typed error 已用 RED/GREEN 验证。executor 的 query 全量、Clippy、fmt 通过；主 session 复跑 lib 5/5、aggregate 6/6、security 22/22、sql_shape 6/6。真实 PG/Trino parity、distributed EXPLAIN 和 isolated p95 留给 `04-07`。
 
 ## 待办
 
-- 执行 Wave 5 `04-06`，完成 exact scoped 聚合与无partial结果的成本边界。
+- 执行 Wave 6 `04-07`，完成真实 backend、CI ignored-test 与隔离性能验收；remote ref 当前尚不存在。

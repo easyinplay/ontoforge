@@ -87,6 +87,8 @@ status: complete
 
 Scoped aggregate requests now return exact visible buckets through source partial correction, bounded TopN or bounded Rust evaluation, with explicit errors when exact completion cannot be proved.
 
+This summary closes plan `04-06` only. Phase-level QUERY-08 Trino/PostgreSQL parity and QUERY-10 distributed `EXPLAIN`/isolated p95 remain pending `04-07`; `.planning/REQUIREMENTS.md` is unchanged until final verification.
+
 ## Accomplishments
 
 - Count/sum/avg source partials subtract source-old rows and add merged-new rows. Avg uses corrected sum and count; null and empty inputs retain typed null semantics.

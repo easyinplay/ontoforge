@@ -32,7 +32,7 @@
 - [x] Wave 2 `04-02`、`04-03`：typed compiler/printer 与 storage 只读批量 API。
 - [x] Wave 3 `04-04`：Rust overlay、refill、cursor 与预算；SUMMARY、独立复审和聚焦测试通过。
 - [x] Wave 4 `04-05`：searchAround 与集合运算；SUMMARY、独立复审及聚焦测试通过。
-- [ ] Wave 5 `04-06`：exact scoped 聚合。
+- [x] Wave 5 `04-06`：exact scoped 聚合；SUMMARY、主 session 聚焦复跑通过。
 - [ ] Wave 6 `04-07`：真实 Trino/PG、distributed EXPLAIN 与 isolated p95。
 
 ## Acceptance
@@ -43,4 +43,4 @@
 
 ## Next Step
 
-执行 Wave 5 `04-06-PLAN.md`：在统一 scoped overlay 与共享 WorkBudget 上实现 exact count/sum/avg/min/max/distinct/groupBy，按 connector 能力选择 source partial、TopN 或有界 Rust path，无法证明 exact 时返回明确错误。真实 PG parity、Trino `EXPLAIN` 和 isolated p95 仍由 Wave 6 验收。
+执行 Wave 6 `04-07-PLAN.md`：建立真实 PostgreSQL/Trino fixed corpus、distributed `EXPLAIN`、CI ignored-test 门禁和 isolated p95 证据。remote ref 与 workflow dispatch 未就绪，须在实现与本地预检后按 PLAN 做 read-only remote preflight；QUERY-10 保持 pending。
