@@ -21,6 +21,7 @@ pub mod compile;
 pub mod cursor;
 pub mod execute;
 pub mod overlay;
+pub mod set;
 pub use ast::ObjectSet;
 
 pub const CRATE_NAME: &str = env!("CARGO_PKG_NAME");
