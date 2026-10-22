@@ -3,10 +3,10 @@ gsd_state_version: "1.0"
 current_phase: 4
 current_phase_name: Scoped L0 Read
 status: executing
-stopped_at: Phase 4 wave 2 complete, preparing 04-04
-last_updated: "2026-10-22T17:47:51+08:00"
+stopped_at: Phase 4 wave 3, executing 04-04
+last_updated: "2026-10-22T17:54:57+08:00"
 last_activity: 2026-10-22
-last_activity_desc: Phase 4 04-03 complete; storage and query regressions passed
+last_activity_desc: Phase 4 04-04 overlay complete; bounded merge and cursor in progress
 state_head: 7ddf567840191b8959fa0e94702cc32b82bdbf33
 progress:
   total_phases: 7
@@ -28,9 +28,9 @@ See: .planning/PROJECT.md (updated 2026-10-19)
 ## Current Position
 
 Phase: 4 — Scoped L0 Read
-Plan: 04-04 of 04-07, queued
+Plan: 04-04 of 04-07, in progress
 Status: Executing
-Last activity: 2026-10-22 — 04-03 passed; see `phases/04-scoped-l0-read/04-03-SUMMARY.md`
+Last activity: 2026-10-22 — 04-04 execution in progress; see `phases/04-scoped-l0-read/progress.md`
 
 Progress: [████░░░░░░] 43%
 
@@ -87,5 +87,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-10-21T08:48:07.463Z
-Stopped at: Phase 4 wave 2 complete, preparing 04-04
+Stopped at: Phase 4 wave 3, executing 04-04
 Resume file: None

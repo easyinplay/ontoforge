@@ -43,4 +43,4 @@
 
 ## Next Step
 
-执行 Wave 3 `04-04-PLAN.md`：先以独立 reference model 建立 Rust overlay 的 RED 测试，再接线 `04-02` 的 validated source 与 `04-03` 的 edit candidate API，完成 refill、keyset cursor 与请求级预算。真实 PG parity、Trino `EXPLAIN` 和 isolated p95 仍由 Wave 6 验收。
+执行 Wave 3 `04-04-PLAN.md`：overlay 的 RED/GREEN 已完成；继续以完整有界 edit 集和未编辑 source keyset 实现 Rust 归并、refill、cursor 与请求级预算，并以独立 reference model 验证。真实 PG parity、Trino `EXPLAIN` 和 isolated p95 仍由 Wave 6 验收。
