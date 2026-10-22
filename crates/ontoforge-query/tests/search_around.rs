@@ -184,6 +184,20 @@ async fn outbound_fk_uses_scoped_merged_object_value() {
         vec![json!("E-001"), json!("E-002")]
     );
 
+    let combined_base = ValidatedQuery::new(QueryRequest {
+        set: serde_json::from_value(json!({
+            "kind": "searchAround", "object_type": "Pilot",
+            "base": {"kind": "union", "object_type": "Flight", "sets": [
+                {"kind": "pk", "object_type": "Flight", "pk": "F-1001"},
+                {"kind": "pk", "object_type": "Flight", "pk": "F-1002"}
+            ]},
+            "link": "flightCrew", "direction": "fromTo"
+        })).unwrap(), select: vec![prop("employeeId")],
+    }, vec![], PageSpec { first: 10, after: None },
+    &ontology, &scope.types[&name("Pilot")], CompileLimits::default()).unwrap();
+    assert_eq!(service.execute_list(&combined_base).await.unwrap().rows.iter().map(|row| row.pk.clone()).collect::<Vec<_>>(),
+        vec![json!("E-001"), json!("E-002"), json!("E-003")]);
+
     let first_crew = ValidatedQuery::new(
         crew_request.clone(),
         vec![],
