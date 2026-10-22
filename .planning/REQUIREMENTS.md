@@ -37,25 +37,25 @@
 
 ### Edit store 与 edit log
 
-- [ ] **STORE-01**: edit store 在 PostgreSQL（生产）或 SQLite（dev / test）上运行，两个后端通过同一套 conformance 测试
-- [ ] **STORE-02**: 新增类定义变更在 reload 时自动生成 DDL；破坏性变更被 lint 拦下，经 `ontoforge migrate --plan/--apply` 完成并归档旧列；reload 原子生效（Trino 元数据可见后才切换、`lock_timeout`、`def_version` 栅栏）
-- [ ] **STORE-03**: 每次成功提交的写入都追加到不可变 edit log，记录 actor、action、时间、参数与 edits
-- [ ] **STORE-04**: 客户端可以查询某个对象的变更历史
-- [ ] **STORE-05**: link 基数（1:1、1:N）在 edit store 写入时强制；source 数据的基数由 lint / 校验查询报告，不阻塞读取
-- [ ] **STORE-06**: 开发者可以用 `ontoforge import` 导入 edit-only 对象与替身引擎数据，导入作为系统 edit 记入 edit log；业务数据摄取由 Trino ETL（L3）负责
-- [ ] **STORE-07**: 叠加按属性 patch：edit 只存设置过的属性，未设置的属性跟随 source；tombstone 不复活，release 显式且版本单调递增
+- [x] **STORE-01**: edit store 在 PostgreSQL（生产）或 SQLite（dev / test）上运行，两个后端通过同一套 conformance 测试
+- [x] **STORE-02**: 新增类定义变更在 reload 时自动生成 DDL；破坏性变更被 lint 拦下，经 `ontoforge migrate --plan/--apply` 完成并归档旧列；reload 原子生效（Trino 元数据可见后才切换、`lock_timeout`、`def_version` 栅栏）
+- [x] **STORE-03**: 每次成功提交的写入都追加到不可变 edit log，记录 actor、action、时间、参数与 edits
+- [x] **STORE-04**: 客户端可以查询某个对象的变更历史
+- [x] **STORE-05**: link 基数（1:1、1:N）在 edit store 写入时强制；source 数据的基数由 lint / 校验查询报告，不阻塞读取
+- [x] **STORE-06**: 开发者可以用 `ontoforge import` 导入 edit-only 对象与替身引擎数据，导入作为系统 edit 记入 edit log；业务数据摄取由 Trino ETL（L3）负责
+- [x] **STORE-07**: 叠加按属性 patch：edit 只存设置过的属性，未设置的属性跟随 source；tombstone 不复活，release 显式且版本单调递增
 
 ### Scope 与认证
 
-- [ ] **SCOPE-01**: 管理员可以管理用户、组（可同步自 OIDC `groups` claim）与角色，角色绑定到用户或组
-- [ ] **SCOPE-02**: 角色可授予可见 object type、属性 allow-list、CEL 行谓词（只引用同行属性与 `principal.attrs`）、action 执行权、SQL 级别与 MCP toolset
-- [ ] **SCOPE-03**: 多角色合并为 scoped 基关系（行 = 各角色谓词之 OR，列按授予它的角色谓词遮蔽），所有表达式只能绑定到该关系，不产生跨角色列 × 行泄露
-- [ ] **SCOPE-04**: 同一 CEL 行谓词编译成 SQL 与在 Rust 中对单行求值的结果一致（差分测试覆盖）
-- [ ] **SCOPE-05**: 无授权 = 不可见（fail-closed）；缺失的主体属性使相关谓词为 false；无法编译的谓词在 validate 时报错
-- [ ] **SCOPE-06**: 定义 reload 与角色变更时，被授予某 action 的角色列集必须覆盖其 criteria 引用的列，否则报错不生效
+- [x] **SCOPE-01**: 管理员可以管理用户、组（可同步自 OIDC `groups` claim）与角色，角色绑定到用户或组
+- [x] **SCOPE-02**: 角色可授予可见 object type、属性 allow-list、CEL 行谓词（只引用同行属性与 `principal.attrs`）、action 执行权、SQL 级别与 MCP toolset
+- [x] **SCOPE-03**: 多角色合并为 scoped 基关系（行 = 各角色谓词之 OR，列按授予它的角色谓词遮蔽），所有表达式只能绑定到该关系，不产生跨角色列 × 行泄露
+- [x] **SCOPE-04**: 同一 CEL 行谓词编译成 SQL 与在 Rust 中对单行求值的结果一致（差分测试覆盖）
+- [x] **SCOPE-05**: 无授权 = 不可见（fail-closed）；缺失的主体属性使相关谓词为 false；无法编译的谓词在 validate 时报错
+- [x] **SCOPE-06**: 定义 reload 与角色变更时，被授予某 action 的角色列集必须覆盖其 criteria 引用的列，否则报错不生效
 - [ ] **SCOPE-07**: 角色 / scope 只能经管理通道或 L3 修改并审计；ontology 定义只经部署方 reload；agent MCP 无变更工具；每个请求固定使用开始时的定义版本
-- [ ] **AUTH-01**: 客户端可以用 OIDC 签发的 JWT 认证（JWKS 自动拉取与缓存）
-- [ ] **AUTH-02**: dev 模式下开发者可以用 CLI 生成本地 token，无需外部 IdP
+- [x] **AUTH-01**: 客户端可以用 OIDC 签发的 JWT 认证（JWKS 自动拉取与缓存）
+- [x] **AUTH-02**: dev 模式下开发者可以用 CLI 生成本地 token，无需外部 IdP
 
 ### Object set 查询（L0）
 
@@ -198,22 +198,22 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ENGINE-03 | Phase 2 | Complete |
 | ENGINE-04 | Phase 2（SQLite 替身支撑 Windows cargo test）+ Phase 7（serve --dev，DX-01） | Complete |
 | ENGINE-05 | Phase 2 | Complete |
-| STORE-01 | Phase 3 | Pending |
-| STORE-02 | Phase 3 | Pending |
-| STORE-03 | Phase 3 | Pending |
-| STORE-04 | Phase 3 | Pending |
-| STORE-05 | Phase 3 | Pending |
-| STORE-06 | Phase 3 | Pending |
-| STORE-07 | Phase 3 | Pending |
-| SCOPE-01 | Phase 3 | Pending |
-| SCOPE-02 | Phase 3 | Pending |
-| SCOPE-03 | Phase 3 | Pending |
-| SCOPE-04 | Phase 3 | Pending |
-| SCOPE-05 | Phase 3 | Pending |
-| SCOPE-06 | Phase 3 | Pending |
-| SCOPE-07 | Phase 3 | Pending |
-| AUTH-01 | Phase 3 | Pending |
-| AUTH-02 | Phase 3 | Pending |
+| STORE-01 | Phase 3 | Complete |
+| STORE-02 | Phase 3 | Complete |
+| STORE-03 | Phase 3 | Complete |
+| STORE-04 | Phase 3 | Complete |
+| STORE-05 | Phase 3 | Complete |
+| STORE-06 | Phase 3 | Complete |
+| STORE-07 | Phase 3 | Complete |
+| SCOPE-01 | Phase 3 | Complete |
+| SCOPE-02 | Phase 3 | Complete |
+| SCOPE-03 | Phase 3 | Complete |
+| SCOPE-04 | Phase 3 | Complete |
+| SCOPE-05 | Phase 3 | Complete |
+| SCOPE-06 | Phase 3 | Complete |
+| SCOPE-07 | Phase 3（管理写入与审计）+ Phase 6（请求版本固定）+ Phase 7（MCP 工具限制） | Pending |
+| AUTH-01 | Phase 3 | Complete |
+| AUTH-02 | Phase 3 | Complete |
 | QUERY-01 | Phase 4 | Pending |
 | QUERY-02 | Phase 4 | Pending |
 | QUERY-03 | Phase 4 | Pending |

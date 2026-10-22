@@ -20,6 +20,10 @@ pub enum DefKind {
     ActionType,
     /// Registered under `{profile}/{target}` ([`crate::ir::binding_def_name`]).
     SourceBinding,
+    /// Scope documents (D-01).
+    Role,
+    /// Registered under the name of the role it binds.
+    RoleBinding,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

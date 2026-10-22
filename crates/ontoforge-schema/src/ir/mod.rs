@@ -8,17 +8,20 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 pub mod action;
+pub mod attrs;
 pub mod basetype;
 pub mod binding;
 pub mod link;
 pub mod manifest;
 pub mod names;
 pub mod object;
+pub mod scope;
 
 pub use action::{
     ActionType, CreateObjectRule, DeleteObjectRule, Empty, LinkRule, ModifyObjectRule, ParamType,
     ParameterDef, Rule, SubmissionCriterion, ValueSource,
 };
+pub use attrs::AttrType;
 pub use basetype::BaseType;
 pub use binding::{
     Backing, BindingTarget, BoundColumn, Collation, ColumnBinding, FixtureRef, ProfileBindings,
@@ -28,9 +31,12 @@ pub use link::{Cardinality, LinkEnd, LinkType};
 pub use manifest::Manifest;
 pub use names::{
     ActionTypeName, LinkEndName, LinkTypeName, ObjectTypeName, OntologyName, ParameterName,
-    ProfileName, PropertyName,
+    ProfileName, PropertyName, RoleName,
 };
 pub use object::{DEFAULT_DECIMAL_PRECISION, DEFAULT_DECIMAL_SCALE, ObjectType, PropertyDef};
+pub use scope::{
+    L2Grant, Role, RoleBinding, ScopeDefinition, ScopeSet, SqlLevel, Subject, Toolset, TypeGrant,
+};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields, rename_all = "camelCase")]

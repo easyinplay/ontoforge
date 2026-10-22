@@ -337,6 +337,11 @@
           ],
           "format": "uint32",
           "minimum": 0
+        },
+        "indexed": {
+          "description": "Create an index on this property's edit store column (ADR-0016). Defaults\nto false. The primary key column always has an index, so it needs no\ndeclaration.",
+          "type": "boolean",
+          "default": false
         }
       },
       "additionalProperties": false,

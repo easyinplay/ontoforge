@@ -4,13 +4,14 @@
 //! before `serde_path_to_error` deserializes it; internally tagged enums lose the
 //! error path. Errors are then turned into located `ONT-V` diagnostics.
 
+use serde::de::DeserializeOwned;
 use serde_json::Value;
 use serde_path_to_error::{Path, Segment};
 
 use super::parse::{Kind, Node};
 use super::sourcemap::{FileId, Part, Seg, SourceMap, walk};
 use crate::diag::{Diagnostic, SourceLocation, codes, did_you_mean, parse_custom_de_error};
-use crate::ir::{Definition, Manifest};
+use crate::ir::{Definition, Manifest, ScopeDefinition};
 
 /// Kinds a definition document may declare.
 const KINDS: [&str; 4] = ["ObjectType", "LinkType", "ActionType", "SourceBinding"];
@@ -24,8 +25,55 @@ const RULE_KINDS: [&str; 5] = [
     "addLink",
     "removeLink",
 ];
+/// Kinds a scope document may declare (D-01).
+const SCOPE_KINDS: [&str; 2] = ["Role", "RoleBinding"];
 /// Kinds reserved for later versions.
 const RESERVED_KINDS: [&str; 3] = ["Interface", "ValueType", "SharedProperty"];
+
+/// The family of documents a directory holds. An ontology directory takes definition
+/// documents and a scope directory takes `Role` / `RoleBinding`; a kind of the other
+/// family is reported with where it belongs.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum DocSet {
+    Ontology,
+    Scope,
+}
+
+impl DocSet {
+    fn kinds(self) -> &'static [&'static str] {
+        match self {
+            Self::Ontology => &KINDS,
+            Self::Scope => &SCOPE_KINDS,
+        }
+    }
+
+    /// Kinds this family deserializes in this build.
+    fn implemented(self) -> &'static [&'static str] {
+        match self {
+            Self::Ontology => &IMPLEMENTED_KINDS,
+            Self::Scope => &SCOPE_KINDS,
+        }
+    }
+
+    /// The error for a kind that belongs to the other family, if `kind` is one.
+    fn misplaced(self, kind: &str, at: &SourceLocation) -> Option<Diagnostic> {
+        let (other, message, help) = match self {
+            Self::Ontology => (
+                &SCOPE_KINDS[..],
+                format!("kind `{kind}` belongs in a scope directory"),
+                "move it to a scope directory (the directory passed to `ontoforge scope plan`)",
+            ),
+            Self::Scope => (
+                &KINDS[..],
+                format!("kind `{kind}` belongs in the ontology directory"),
+                "move it to the ontology directory",
+            ),
+        };
+        other
+            .contains(&kind)
+            .then(|| Diagnostic::error(codes::V03, message, at).with_help(help))
+    }
+}
 
 /// What the dispatcher needs to turn a node path into a source location.
 pub struct Ctx<'a> {
@@ -49,6 +97,20 @@ fn ticked(items: &[&str]) -> String {
 
 /// Parse one definition document into its IR.
 pub fn dispatch(doc: &Node, cx: &Ctx) -> Result<Definition, Diagnostic> {
+    deserialize_document(doc, cx, DocSet::Ontology)
+}
+
+/// Parse one scope document (`Role` or `RoleBinding`) into its IR.
+pub fn dispatch_scope(doc: &Node, cx: &Ctx) -> Result<ScopeDefinition, Diagnostic> {
+    deserialize_document(doc, cx, DocSet::Scope)
+}
+
+fn deserialize_document<T: DeserializeOwned>(
+    doc: &Node,
+    cx: &Ctx,
+    set: DocSet,
+) -> Result<T, Diagnostic> {
+    let kinds = set.kinds();
     let root = |p: &[Seg]| cx.at(doc, p, Part::Value);
     if !matches!(doc.kind, Kind::Map(_)) {
         return Err(Diagnostic::error(
@@ -60,7 +122,7 @@ pub fn dispatch(doc: &Node, cx: &Ctx) -> Result<Definition, Diagnostic> {
     let Some((_, kind_node)) = doc.get("kind") else {
         return Err(
             Diagnostic::error(codes::V02, "document has no `kind` field", &root(&[]))
-                .with_help(format!("add `kind: <{}>`", KINDS.join(" | "))),
+                .with_help(format!("add `kind: <{}>`", kinds.join(" | "))),
         );
     };
     let kind_at = || root(&[Seg::Key("kind".into())]);
@@ -78,16 +140,19 @@ pub fn dispatch(doc: &Node, cx: &Ctx) -> Result<Definition, Diagnostic> {
             &kind_at(),
         ));
     }
-    if !IMPLEMENTED_KINDS.contains(&kind.as_str()) {
-        let d = if KINDS.contains(&kind.as_str()) {
+    if let Some(d) = set.misplaced(kind, &kind_at()) {
+        return Err(d);
+    }
+    if !set.implemented().contains(&kind.as_str()) {
+        let d = if kinds.contains(&kind.as_str()) {
             Diagnostic::error(
                 codes::V03,
                 format!("kind `{kind}` is not implemented yet"),
                 &kind_at(),
             )
         } else {
-            let help = did_you_mean(kind, KINDS).map_or_else(
-                || format!("expected one of: {}", ticked(&KINDS)),
+            let help = did_you_mean(kind, kinds.iter().copied()).map_or_else(
+                || format!("expected one of: {}", ticked(kinds)),
                 |s| format!("did you mean `{s}`?"),
             );
             Diagnostic::error(codes::V03, format!("unknown kind `{kind}`"), &kind_at())
@@ -109,7 +174,7 @@ pub fn dispatch(doc: &Node, cx: &Ctx) -> Result<Definition, Diagnostic> {
     }
     let mut wrapped = serde_json::Map::new();
     wrapped.insert(kind.clone(), Value::Object(body));
-    serde_path_to_error::deserialize::<_, Definition>(Value::Object(wrapped))
+    serde_path_to_error::deserialize::<_, T>(Value::Object(wrapped))
         .map_err(|e| map_error(&e, doc, cx))
 }
 

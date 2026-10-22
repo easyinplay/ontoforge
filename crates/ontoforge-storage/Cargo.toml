@@ -1,6 +1,6 @@
 [package]
 name = "ontoforge-storage"
-description = "StorageProvider trait and backends"
+description = "Edit store, definition reload and migration, edit log"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -9,6 +9,37 @@ publish.workspace = true
 [lints]
 workspace = true
 
+[features]
+# Test only: a local PostgreSQL for conformance tests (ADR-0023, RESEARCH Pitfall 5).
+embedded-pg = ["dep:postgresql_embedded"]
+
 [dependencies]
 ontoforge-schema = { path = "../ontoforge-schema" }
-ontoforge-query = { path = "../ontoforge-query" }
+ontoforge-expr = { path = "../ontoforge-expr" }
+ontoforge-auth = { path = "../ontoforge-auth" }
+ontoforge-engine = { path = "../ontoforge-engine" }
+sqlx.workspace = true
+sea-query.workspace = true
+sea-query-sqlx.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+camino.workspace = true
+chrono.workspace = true
+ulid.workspace = true
+tokio.workspace = true
+indexmap.workspace = true
+heck.workspace = true
+secrecy.workspace = true
+csv.workspace = true
+futures-util.workspace = true
+postgresql_embedded = { workspace = true, optional = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+proptest.workspace = true
+insta.workspace = true
+tempfile.workspace = true
+walkdir.workspace = true
+regex.workspace = true
+serde_json.workspace = true

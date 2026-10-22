@@ -7,4 +7,6 @@ pub mod loader;
 pub mod schema_export;
 pub mod validate;
 
-pub use loader::{LoadOutput, load_dir, load_from_memory};
+pub use loader::{
+    LoadOutput, ScopeLoadOutput, load_dir, load_from_memory, load_scope_dir, load_scope_from_memory,
+};

@@ -9,11 +9,11 @@ use crate::error::PrintError;
 
 /// Collation the stand-in registers for decimal text: orders by value, so `1.5` equals
 /// `1.50` and `-10` sorts before `9`, as `DECIMAL` does in Trino (WR-E03).
-pub(crate) const DECIMAL_COLLATION: &str = "ontoforge_decimal";
+pub const DECIMAL_COLLATION: &str = "ontoforge_decimal";
 /// Collation the stand-in registers for timestamp text: orders by instant, so a literal
 /// without milliseconds equals the stored `.000` form and offsets are taken into account
 /// (a value without an offset counts as UTC, Trino's session zone) (WR-E03).
-pub(crate) const TIMESTAMP_COLLATION: &str = "ontoforge_timestamp";
+pub const TIMESTAMP_COLLATION: &str = "ontoforge_timestamp";
 
 /// SQLite storage class of a stand-in column.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

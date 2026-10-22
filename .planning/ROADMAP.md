@@ -13,7 +13,7 @@ Phase 1 定死 IR 契约。2026-10-16 起 Phase 2–7 按 `docs/designs/trino-en
 
 - [x] **Phase 1: Workspace, Schema & Lint** - cargo workspace 骨架，YAML/JSON 到单一 IR，E/W lint 规则与 line:col 诊断 (completed 2026-10-16)
 - [x] **Phase 2: Source Binding & Engine** - IR 数据源绑定与类型契约，`ontoforge-engine`（自写 Trino client、自有 SQL printer、SQLite 替身），`validate --online` 与 drift 校验 (completed 2026-10-19)
-- [ ] **Phase 3: Edit Store & Scope Model** - 按 type 强类型 edit store、DDL diff / migrate / reload 加固、edit log；用户 / 组 / 角色、CEL 行谓词（SQL 编译 + Rust 单行求值）
+- [x] **Phase 3: Edit Store & Scope Model** - 按 type 强类型 edit store、DDL diff / migrate / reload 加固、edit log；用户 / 组 / 角色、CEL 行谓词（SQL 编译 + Rust 单行求值） (completed 2026-10-22)
 - [ ] **Phase 4: Scoped L0 Read** - Rust 编排叠加读：pk 读、列表、聚合分解、searchAround、keyset 分页、HMAC 版本令牌
 - [ ] **Phase 5: Online Action** - Action 鉴权管线 ①-⑨、并发令牌、`command_id`、webhook outbox
 - [ ] **Phase 6: L2 Raw DQL, Toolsets & Audit** - L2 AST 白名单与自检、读审计、定义 reload 门禁与 role 管理通道
@@ -138,7 +138,60 @@ Plans:
   4. 角色可授予 object type、属性 allow-list、CEL 行谓词、action、SQL 级别与 toolset；行谓词只能引用同行属性与 `principal.attrs`，缺失属性按 false；多 role 合并不产生「A 的列 × B 的行」泄露
   5. 同一 CEL 行谓词的 SQL 编译结果与 Rust 单行求值经差分测试一致；criteria 列覆盖 lint 在 reload 与 role 变更时生效；OIDC JWT 与 dev token 均可认证
 
-**Plans**: TBD
+**Plans**: 23/23 plans complete（8 waves + gap closure 2 waves）
+
+Plans:
+
+**Wave 1**
+
+- [x] 03-01-PLAN.md — 依赖 legitimacy 核验、全部新依赖与 crate 依赖方向（ADR-0023）、供应链守卫
+- [x] 03-02-PLAN.md — `indexed`、ONT-V21..V27、主体属性类型、server config 的 `[store]` / `[auth]`
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [x] 03-03-PLAN.md — tracer：物理格式 checkpoint + `reload` 库函数在 SQLite 建 edit 表、SQL 出口守卫（ADR-0024）
+- [x] 03-05-PLAN.md — 行谓词：D-06 checkpoint、CEL 子集 → `Pred` → Kleene 求值（ADR-0025）
+- [x] 03-06-PLAN.md — `Role` / `RoleBinding` 文档、scope 加载器与 JSON Schema
+- [x] 03-07-PLAN.md — OIDC JWT 认证与 JWKS 缓存
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [x] 03-04-PLAN.md — `ontoforge reload` 子命令、PostgreSQL 后端与两种方言 DDL 快照
+- [x] 03-11-PLAN.md — 行谓词降为 SQL、`StringMatch`、差分 proptest、多 role 合并
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [x] 03-08-PLAN.md — edit log 格式 checkpoint、commit 写路径与双后端 conformance 框架
+- [x] 03-10-PLAN.md — 索引（含 1:1 部分唯一索引）、物理名上限与 ONT-V24
+- [x] 03-12-PLAN.md — dev token 与 `ontoforge dev-token`
+- [x] 03-14-PLAN.md — scope 编译：引用 / 谓词 / criteria 列覆盖 / collation
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
+- [x] 03-09-PLAN.md — append-only 触发器、重放重建 edit store、重复提交（ADR-0026）
+- [x] 03-15-PLAN.md — `ontoforge migrate --plan/--apply`、改名与归档
+
+**Wave 6** *(blocked on Wave 5 completion)*
+
+- [x] 03-13-PLAN.md — 完整叠加状态机、参考模型 proptest、基数与并发
+- [x] 03-16-PLAN.md — `ontoforge scope plan|apply`、管理审计、user 记录
+
+**Wave 7** *(blocked on Wave 6 completion)*
+
+- [x] 03-17-PLAN.md — 变更历史 API 与当前 scope 遮蔽
+- [x] 03-18-PLAN.md — reload 加固：栅栏、lock_timeout、D-18 复核、Trino 可见探测
+- [x] 03-19-PLAN.md — `ontoforge import`（editOnly）
+
+**Wave 8** *(blocked on Wave 7 completion)*
+
+- [x] 03-20-PLAN.md — Linux CI（PG conformance、Trino 语料与探测）与 `docs/edit-store.md`
+
+**Gap closure**（03-VERIFICATION gaps 1-3）
+
+- [x] 03-21-PLAN.md — decimal 不再经 f64 舍入；PG 存不下的值在校验阶段拒绝；PG 会话设置固定（wave 1）
+- [x] 03-22-PLAN.md — migrate 复核已 apply 的 role；整对象 criteria 读取按全部属性检查（wave 1）
+- [x] 03-23-PLAN.md — 示例配置在全新检出上可用（store 与 dev 密钥目录自动创建）（wave 2）
+
 **Details**: `.planning/phases/03-edit-store-scope-model/`
 
 ### Phase 4: Scoped L0 Read
@@ -222,7 +275,7 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7（纵切片
 |-------|----------------|--------|-----------|
 | 1. Workspace, Schema & Lint | 14/14 | Complete    | 2026-10-16 |
 | 2. Source Binding & Engine | 10/10 | Complete    | 2026-10-19 |
-| 3. Edit Store & Scope Model | 0/TBD | Not started | - |
+| 3. Edit Store & Scope Model | 23/23 | Complete    | 2026-10-22 |
 | 4. Scoped L0 Read | 0/TBD | Not started | - |
 | 5. Online Action | 0/TBD | Not started | - |
 | 6. L2 Raw DQL, Toolsets & Audit | 0/TBD | Not started | - |

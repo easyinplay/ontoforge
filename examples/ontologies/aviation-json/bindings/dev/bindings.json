@@ -16,12 +16,11 @@
     "source": { "catalog": "demo", "schema": "aviation", "table": "flights" },
     "columns": {
       "flightId": { "column": "flight_id" },
-      "flightNumber": { "column": "flight_no" },
+      "flightNumber": { "column": "flight_no", "collation": "caseInsensitive" },
       "departureAirportCode": { "column": "departure_airport" },
       "arrivalAirportCode": { "column": "arrival_airport" },
       "aircraftTailNumber": { "column": "tail_number" },
       "scheduledDeparture": { "column": "scheduled_departure", "timezone": "Europe/Berlin" },
-      "status": { "collation": "caseInsensitive" },
       "delayMinutes": { "column": "delay_minutes" }
     },
     "fixture": { "file": "fixtures/flights.csv" }

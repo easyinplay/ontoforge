@@ -7,7 +7,7 @@
 use schemars::{JsonSchema, schema_for};
 use serde_json::{Value, json};
 
-use crate::ir::{Definition, Manifest};
+use crate::ir::{Definition, Manifest, ScopeDefinition};
 
 /// A definition file holds one document or, for JSON, an array of them. Export-only:
 /// the loader never deserializes this type.
@@ -17,6 +17,16 @@ use crate::ir::{Definition, Manifest};
 enum DefinitionFile {
     One(Box<Definition>),
     Many(Vec<Definition>),
+}
+
+/// A scope file holds one document or, for JSON, an array of them. Export-only, like
+/// [`DefinitionFile`].
+#[derive(JsonSchema)]
+#[serde(untagged)]
+#[allow(dead_code)]
+enum ScopeFile {
+    One(Box<ScopeDefinition>),
+    Many(Vec<ScopeDefinition>),
 }
 
 fn with_header(mut schema: Value, title: &str, description: &str) -> Value {
@@ -69,6 +79,21 @@ pub fn manifest_schema() -> Value {
     )
 }
 
+/// Schema of one scope file: a `Role` or `RoleBinding` document, or an array of them.
+pub fn scope_schema() -> Value {
+    let mut schema = with_header(
+        serde_json::to_value(schema_for!(ScopeFile)).expect("schema serializes"),
+        "ontoforge scope document",
+        "A Role or RoleBinding document (ADR-0018, ADR-0019), selected by its `kind`. Scope documents live in their own directory, apart from the ontology definition and its SourceBinding files; JSON files may hold an array of them.",
+    );
+    describe_def(
+        &mut schema,
+        "ScopeDefinition",
+        "One scope document: a Role or a RoleBinding, selected by `kind`.",
+    );
+    schema
+}
+
 /// File name and content of each exported schema; content is pretty JSON ending in a
 /// newline and identical on every call.
 pub fn rendered_schemas() -> Vec<(&'static str, String)> {
@@ -83,5 +108,6 @@ pub fn rendered_schemas() -> Vec<(&'static str, String)> {
             render(&definition_schema()),
         ),
         ("ontoforge-manifest.schema.json", render(&manifest_schema())),
+        ("ontoforge-scope.schema.json", render(&scope_schema())),
     ]
 }

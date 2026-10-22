@@ -1,19 +1,19 @@
 ---
 gsd_state_version: "1.0"
-current_phase: 3
-current_phase_name: Edit Store & Scope Model
+current_phase: 4
+current_phase_name: Scoped L0 Read
 status: planning
-stopped_at: Phase 02 complete, ready to plan Phase 3
-last_updated: "2026-10-19T08:35:32.981Z"
-last_activity: 2026-10-19
-last_activity_desc: Phase 02 complete, transitioned to Phase 3
-state_head: 7fea7d8c6e0f2d6fa2eea8228b322b52bf7e25a1
+stopped_at: Phase 3 complete, ready to plan Phase 4
+last_updated: "2026-10-22T02:35:27.008Z"
+last_activity: 2026-10-22
+last_activity_desc: Phase 3 complete, transitioned to Phase 4
+state_head: 1df4a7f17b01583f5677143de4ef3a300295ad15
 progress:
   total_phases: 7
-  completed_phases: 2
-  total_plans: 24
-  completed_plans: 24
-  percent: 29
+  completed_phases: 3
+  total_plans: 47
+  completed_plans: 47
+  percent: 43
 ---
 
 # Project State
@@ -23,23 +23,20 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-19)
 
 **Core value:** 定义一次 ontology，应用和 agent 就能通过 REST 与 MCP 对同一份对象图做受控读写：写入一律经 Action 校验与授权，每次写入都可审计。
-**Current focus:** Phase 3: Edit Store & Scope Model
+**Current focus:** Phase 4 — Scoped L0 Read
 
 ## Current Position
 
-Phase: 3 of 7 (Edit Store & Scope Model)
+Phase: 4 — Scoped L0 Read
 Plan: Not started
 Status: Ready to plan
-Last activity: 2026-10-19, Phase 2 complete, transitioned to Phase 3
+Last activity: 2026-10-22 — Phase 3 complete, transitioned to Phase 4
 
-Progress: [████████████████████] 24/24 plans (100%); phases 2/7 complete
+Progress: [████░░░░░░] 43%
 
 ## Performance Metrics
 
 逐 plan 的耗时与文件数见各 `phases/*/NN-*-SUMMARY.md`。
-
-| Plan | Duration | Tasks | Files |
-|------|----------|-------|-------|
 
 ## Accumulated Context
 
@@ -51,6 +48,26 @@ Progress: [████████████████████] 24/24 p
 - [Phase 2]: 被忽略的 fixture 诊断降为 Info，code 仍为 ONT-V17（ADR-0022）
 - [Phase 2]: nightly Iceberg 用 Trino 本地文件系统代替 MinIO；换 S3 兼容镜像属供应链决策，留给用户（详: `phases/02-source-binding-engine/02-10-SUMMARY.md`）
 - [Design]: Trino 主引擎 + 分级 SQL，ADR-0015..0020（详: `docs/designs/trino-engine-sql-tiers.md`）
+- [Phase 03]: [Phase 03-01]: Crate direction storage -> schema/expr/auth/engine, auth -> schema/expr/engine (ADR-0023); jsonwebtoken aws_lc_rs only; postgresql_embedded test-only under embedded-pg
+- [Phase 03]: [Phase 03-02]: ONT-V21..V27 are V-level (not suppressible via ontoforge.toml); OIDC issuer must not contain '|'; PG connection string only via url_env/url_file
+- [Phase 03]: [Phase 03-03]: edit store set_mask is one <col>__set boolean per non-pk property (ADR-0024, option-a); no set_mask bigint or slot registry; SQLite flag/system columns default 0 so reload can repair tables
+- [Phase 03]: [Phase 03-05]: Row predicates parse with cel but evaluate with own Kleene Pred evaluator (ADR-0025); x in [] is False, no null list elements, string match case-sensitive with literal wildcards, no special case for missing attributes; supersedes ADR-0018's 'missing attribute is false'
+- [Phase 03]: 03-06: an empty scope directory is ONT-V14, not an empty ScopeSet; TypeGrant.properties is required but may be empty (03-14 judges it) — A mistyped scope path must not silently grant nothing; allow-list content is an ontology-level check
+- [Phase 03]: 03-07: key of another type or declared alg is UnknownKey; null attr claim reads as absent; list claim with null/foreign element rejects the token — Cross-issuer forgery with shared kid fails closed; absent attribute is invisible under D-06; ADR-0025 rule 2
+- [Phase 03]: PostgreSQL system columns share SQLite defaults (of_version/of_def_version bigint DEFAULT 0, of_deleted/of_released boolean DEFAULT false); ADR-0024 amended — One repair path (ADD COLUMN after interrupted reload) and one physical_json for both backends; no cost on PG 11+
+- [Phase 03]: 03-08: edit log format = plan layout + S1-S4 (UTC ms timestamps, SQLite edit column with space separator, JSON compared as values, committed_at from Rust); float rounded to f32 once; PG arrays bound as text[] — One canonical PropertyValue encoding for log, history and both backends; seq allocated after row locks keeps per-pk replay order
+- [Phase 03]: 03-10: removed plain indexes stay in the stored PhysicalSchema (keep_plain_indexes_of) so reload stays idempotent; index names checked schema-wide for ONT-V24
+- [Phase 03]: 03-14: example dev binding collation moved from Flight.status to flightNumber so the example dispatcher rowFilter satisfies D-08 — A rowFilter cannot read a caseInsensitive column (ONT-V22); the shipped dispatcher role filters on status
+- [Phase 03]: 03-14: computed object index in a submission criterion is ONT-V23 for any role granted the action (fail-closed) — Which property a criterion reads cannot be proven statically, so a dry run could probe a hidden column
+- [Phase 03]: Replay applies all log records in one transaction and requires the target to hold the records' def_version — A failed replay leaves the target untouched; cross-version replay waits for 03-15 migration_json (ADR-0026)
+- [Phase 03]: 03-15: indexes on a column or table are dropped when it is archived, not at clean-up, because index names are schema-global — A kept index would make CREATE INDEX IF NOT EXISTS on a re-added column of the same name a silent no-op
+- [Phase 03]: 03-13: a commit writes each row once in its final state in lock order; replay shares that path (ADR-0026 section 7 amended); swapping two oneToOne keys in one commit is a CardinalityViolation
+- [Phase 03]: 03-16: only scope_store.rs names of_role / of_role_binding / of_admin_audit (source guard); scope apply is a full sync bound to a reviewed plan hash, re-planned in the write transaction under the definition advisory lock — SCOPE-07 / D-01..D-03; indexes created for row predicates are only ever added and are not recorded in the physical schema
+- [Phase 03]: 03-18: reload/migrate lock the state row before DDL, advisory lock key per edit schema, lock_timeout set before the advisory lock; migrate probes Trino after its single-transaction switch — Avoids fence/DDL deadlock (40P01), unbounded lock waits and cross-deployment serialization; archive/rename steps cannot be committed ahead of the switch
+- [Phase 03]: 03-19: import checks the whole file before writing and treats a deleted object or removed edge as existing in every mode — An import is not a general write door: create-only by default, skip and update are explicit, nothing brings back a deleted object, a failed batch is reported so a skip rerun finishes the file; existence is read before the batches (a concurrent creator between read and commit is not refused, see SUMMARY)
+- [Phase 03]: 03-21: decimal 的 JSON 数字只收整数，带小数要求写成字符串；NUL 与 0 年 date / timestamp 按两后端交集在校验阶段拒绝；WR-A03 实测为 disproved，会话设置固定仅作纵深防御
+- [Phase 03]: 03-22: migrate --apply 在定义锁内复核已 apply 的 role(roles: Option<&RolesCheck>);objects.<param> 整体读取按读取该类型全部属性检查 allow-list — SCOPE-06 / D-18 延伸到 migrate;关闭 WR-B07 与 WR-C05
+- [Phase 03]: 03-23: 目录创建放在库里（EditStore::open、DevKey::load_or_create），CLI 与 serve --dev 共用；Windows 密钥 ACL 不改，记为已知缺口 7
 
 ### Pending Todos
 
@@ -69,6 +86,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-19
-Stopped at: Phase 2 complete, ready to plan Phase 3
+Last session: 2026-10-21T08:48:07.463Z
+Stopped at: Phase 3 complete, ready to plan Phase 4
 Resume file: None
