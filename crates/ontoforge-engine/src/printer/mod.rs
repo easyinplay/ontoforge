@@ -49,6 +49,13 @@ pub fn print_select(select: &ast::Select, dialect: Dialect) -> Result<PrintedSql
     dialect::print_select(select, dialect)
 }
 
+pub fn print_explain_distributed(
+    _select: &ast::Select,
+    _dialect: Dialect,
+) -> Result<PrintedSql, PrintError> {
+    Err(PrintError::UnsupportedDialect)
+}
+
 /// Prints the Trino call that makes a catalog forget the table metadata it cached:
 /// `CALL "<catalog>".system.flush_metadata_cache()`. The catalog name is the only variable part
 /// and goes through the identifier quoting.

@@ -32,6 +32,11 @@ pub struct SelectItem {
 pub enum Expr {
     Column(String),
     Literal(Literal),
+    CaseWhen {
+        when: Box<Expr>,
+        then: Box<Expr>,
+        otherwise: Box<Expr>,
+    },
     CountStar,
     Aggregate {
         func: AggregateFunc,

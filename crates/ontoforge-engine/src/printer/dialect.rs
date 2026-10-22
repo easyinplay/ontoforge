@@ -111,6 +111,7 @@ fn expr(e: &Expr, dialect: Dialect) -> Result<String, PrintError> {
     match e {
         Expr::Column(name) => quote_ident(name),
         Expr::Literal(l) => literal(l, dialect),
+        Expr::CaseWhen { .. } => Err(PrintError::UnsupportedDialect),
         Expr::CountStar => Ok("count(*)".to_owned()),
         Expr::Aggregate { func, arg } => Ok(format!(
             "{}({})",

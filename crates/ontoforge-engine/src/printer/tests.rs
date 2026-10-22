@@ -1,7 +1,7 @@
 use super::ast::{
     AggregateFunc, CompareOp, Expr, Literal, MatchKind, OrderItem, Select, SelectItem,
 };
-use super::{Dialect, print_flush_metadata_cache, print_select};
+use super::{Dialect, print_explain_distributed, print_flush_metadata_cache, print_select};
 use crate::TableRef;
 
 fn col(name: &str) -> Expr {
@@ -82,6 +82,41 @@ fn print_trino_and_sqlite() {
     let sqlite = print_select(&select, Dialect::Sqlite).unwrap();
     insta::assert_snapshot!("print_trino", trino.as_str());
     insta::assert_snapshot!("print_sqlite", sqlite.as_str());
+}
+
+#[test]
+fn case_when_masks_only_projection() {
+    let mut select = sample();
+    select.projection = vec![SelectItem {
+        expr: Expr::CaseWhen {
+            when: Box::new(Expr::Compare {
+                left: Box::new(col("owner\"id")),
+                op: CompareOp::Eq,
+                right: Box::new(Expr::Literal(Literal::String("o'hara".into()))),
+            }),
+            then: Box::new(col("secret")),
+            otherwise: Box::new(Expr::Literal(Literal::Null)),
+        },
+        alias: Some("masked".into()),
+    }];
+    for dialect in [Dialect::Trino, Dialect::Sqlite] {
+        let sql = print_select(&select, dialect).unwrap();
+        assert!(sql.as_str().starts_with(
+            "SELECT CASE WHEN (\"owner\"\"id\" = 'o''hara') THEN (\"secret\") ELSE (NULL) END AS \"masked\""
+        ));
+    }
+}
+
+#[test]
+fn distributed_explain_wraps_typed_select() {
+    let select = sample();
+    let plain = print_select(&select, Dialect::Trino).unwrap();
+    let explain = print_explain_distributed(&select, Dialect::Trino).unwrap();
+    assert_eq!(explain.as_str(), format!("EXPLAIN (TYPE DISTRIBUTED) {}", plain.as_str()));
+    assert_eq!(
+        print_explain_distributed(&select, Dialect::Sqlite).unwrap_err(),
+        crate::error::PrintError::UnsupportedDialect
+    );
 }
 
 /// The text after `WHERE` of `SELECT 1 FROM .. WHERE <e>`.
