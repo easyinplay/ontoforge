@@ -1,0 +1,149 @@
+use std::collections::{BTreeMap, BTreeSet};
+use std::sync::Arc;
+use std::time::Duration;
+
+use camino::{Utf8Path, Utf8PathBuf};
+use ontoforge_auth::authn::PrincipalId;
+use ontoforge_auth::scope::{ScopeInputs, attr_types, compile_scope};
+use ontoforge_auth::Principal;
+use ontoforge_engine::sqlite::SqliteEngine;
+use ontoforge_engine::sqlite::fixture::plan_fixture_tables;
+use ontoforge_engine::{Engine, EngineError, EngineStatus, QueryContext, QueryOutput, TableRef};
+use ontoforge_engine::printer::{Dialect, PrintedSql};
+use ontoforge_query::{ExecutionLimits, ObjectSet, QueryRequest, QueryService, TokenCodec};
+use ontoforge_schema::ir::{ObjectTypeName, ProfileName, PropertyName};
+use ontoforge_schema::{load_dir, load_scope_dir};
+use ontoforge_storage::commit::{Actor, Commit, Edit, ObjectOp};
+use ontoforge_storage::reload::{ReloadOptions, reload};
+use ontoforge_storage::store::{BackendSettings, EditStore, StoreSettings};
+use ontoforge_storage::value::PropertyValue;
+use serde_json::json;
+
+const AVIATION: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../examples/ontologies/aviation");
+const SCOPE: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../examples/scopes/aviation");
+
+struct Fixture {
+    _dir: tempfile::TempDir,
+    store: EditStore,
+    principal: Principal,
+    scope: ontoforge_auth::scope::PrincipalScope,
+}
+
+fn name(raw: &str) -> ObjectTypeName { ObjectTypeName::try_from(raw.to_owned()).unwrap() }
+fn prop(raw: &str) -> PropertyName { PropertyName::try_from(raw.to_owned()).unwrap() }
+fn request(object_type: &str, pk: &str, select: &[&str]) -> QueryRequest {
+    QueryRequest {
+        set: ObjectSet::Pk { object_type: name(object_type), pk: json!(pk) },
+        select: select.iter().map(|p| prop(p)).collect(),
+    }
+}
+
+async fn fixture() -> Fixture {
+    let dir = tempfile::tempdir().unwrap();
+    let path = Utf8PathBuf::from_path_buf(dir.path().join("edit.db")).unwrap();
+    let store = EditStore::open(StoreSettings {
+        backend: BackendSettings::Sqlite { path },
+        lock_timeout: Duration::from_secs(5),
+        probe_timeout: Duration::from_secs(5),
+        trino_catalog: None,
+    }).await.unwrap();
+    let loaded = load_dir(Utf8Path::new(AVIATION));
+    assert!(loaded.diagnostics.is_empty(), "{:?}", loaded.diagnostics);
+    let ontology = loaded.ontology.unwrap();
+    reload(&store, &ontology, &ReloadOptions::default()).await.unwrap();
+    let loaded_scope = load_scope_dir(Utf8Path::new(SCOPE));
+    let cfg = serde_json::from_value(json!({
+        "principal_attrs": { "homeAirports": { "claim": "airports", "type": "string_list" } }
+    })).unwrap();
+    let compiled = compile_scope(&ScopeInputs {
+        ontology: &ontology,
+        profile: Some(&ProfileName::try_from("dev".to_owned()).unwrap()),
+        attrs: &attr_types(Some(&cfg)),
+        scope: &loaded_scope.scope.unwrap(),
+        sources: Some(&loaded_scope.sources),
+    }).unwrap();
+    let principal = Principal {
+        id: PrincipalId::new("ontoforge-dev", "alice"),
+        issuer: "ontoforge-dev".to_owned(),
+        subject: "alice".to_owned(),
+        groups: BTreeSet::from(["dispatchers".to_owned()]),
+        attrs: Default::default(),
+    };
+    let scope = compiled.for_principal(&principal);
+    Fixture { _dir: dir, store, principal, scope }
+}
+
+struct NeverEngine;
+
+impl Engine for NeverEngine {
+    fn dialect(&self) -> Dialect { Dialect::Sqlite }
+    async fn execute(&self, _: &PrintedSql, _: &QueryContext) -> Result<QueryOutput, EngineError> {
+        panic!("edit-only read called source engine")
+    }
+    async fn describe_tables(&self, _: &[TableRef], _: &QueryContext)
+        -> Result<BTreeMap<TableRef, Vec<ontoforge_engine::PhysicalColumn>>, EngineError> {
+        panic!("edit-only read described source tables")
+    }
+    async fn status(&self) -> EngineStatus { EngineStatus::Available }
+}
+
+#[test]
+fn execution_limits_phase4_defaults_are_exact() {
+    let got = ExecutionLimits::phase4_default();
+    assert_eq!((got.max_backend_calls, got.max_raw_candidates, got.max_backfill_keys, got.max_decoded_bytes),
+        (32, 10_000, 2_048, 64 * 1024 * 1024));
+}
+
+#[tokio::test]
+async fn edited_pk_uses_store_only() {
+    let f = fixture().await;
+    let active = f.store.active_definition().await.unwrap();
+    let mut values = BTreeMap::new();
+    values.insert(prop("name"), PropertyValue::String("Berlin Airport".to_owned()));
+    f.store.commit(Commit {
+        actor: Actor::Principal(f.principal.id.to_string()),
+        action: "createAirport".to_owned(),
+        def_version: active.def_version,
+        params: json!({}),
+        edits: vec![Edit::Object {
+            type_name: name("Airport"),
+            pk: PropertyValue::String("BER".to_owned()),
+            op: ObjectOp::Set(values),
+        }],
+    }).await.unwrap();
+    let engine = NeverEngine;
+    let tokens = TokenCodec::new(b"phase4-test-key".to_vec()).unwrap();
+    let service = QueryService {
+        principal: &f.principal, scope: &f.scope, active, engine: &engine, store: &f.store,
+        limits: ExecutionLimits::phase4_default(), tokens: &tokens,
+    };
+    let page = service.execute(request("Airport", "BER", &["name"])).await.unwrap();
+    assert_eq!(page.rows.len(), 1);
+    assert_eq!(page.rows[0].properties["name"], json!("Berlin Airport"));
+    assert!(!page.rows[0].version.is_empty());
+}
+
+#[tokio::test]
+async fn missing_read_has_no_side_effect() {
+    let f = fixture().await;
+    let active = f.store.active_definition().await.unwrap();
+    assert!(f.store.read_object_edit(&active, &name("Airport"),
+        &PropertyValue::String("NONE".to_owned())).await.unwrap().is_none());
+}
+
+#[tokio::test]
+async fn unedited_pk_uses_single_source_query() {
+    let f = fixture().await;
+    let loaded = load_dir(Utf8Path::new(AVIATION));
+    let ontology = loaded.ontology.unwrap();
+    let plan = plan_fixture_tables(&ontology, &loaded.sources,
+        &ProfileName::try_from("dev".to_owned()).unwrap()).unwrap();
+    let engine = SqliteEngine::from_fixtures(Utf8Path::new(AVIATION), &plan.tables).await.unwrap();
+    let tokens = TokenCodec::new(b"phase4-test-key".to_vec()).unwrap();
+    let service = QueryService {
+        principal: &f.principal, scope: &f.scope, active: f.store.active_definition().await.unwrap(),
+        engine: &engine, store: &f.store, limits: ExecutionLimits::phase4_default(), tokens: &tokens,
+    };
+    let page = service.execute(request("Flight", "F-1001", &["flightNumber", "status"])).await.unwrap();
+    assert_eq!(page.rows[0].properties["flightNumber"], json!("LH100"));
+}

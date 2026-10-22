@@ -1,6 +1,6 @@
 [package]
 name = "ontoforge-query"
-description = "ObjectSet AST and sea-query compilation"
+description = "Scoped ObjectSet reads with Rust-orchestrated source and edit overlay"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -11,3 +11,18 @@ workspace = true
 
 [dependencies]
 ontoforge-schema = { path = "../ontoforge-schema" }
+ontoforge-storage = { path = "../ontoforge-storage" }
+ontoforge-auth = { path = "../ontoforge-auth" }
+ontoforge-expr = { path = "../ontoforge-expr" }
+ontoforge-engine = { path = "../ontoforge-engine" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+jsonwebtoken.workspace = true
+tokio.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+camino.workspace = true
+tempfile.workspace = true
+sqlx.workspace = true
