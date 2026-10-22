@@ -3,10 +3,10 @@ gsd_state_version: "1.0"
 current_phase: 4
 current_phase_name: Scoped L0 Read
 status: executing
-stopped_at: Phase 4 wave 4 complete, preparing 04-06
-last_updated: "2026-10-22T22:17:36+08:00"
+stopped_at: Phase 4 wave 5, executing 04-06
+last_updated: "2026-10-22T22:18:53+08:00"
 last_activity: 2026-10-22
-last_activity_desc: Phase 4 04-05 traversal and set operations verified; preparing 04-06
+last_activity_desc: Phase 4 04-05 verified; executing 04-06 exact scoped aggregates
 state_head: ace4421e1e8bc23614633eb6f748013553348cb8
 progress:
   total_phases: 7
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-19)
 ## Current Position
 
 Phase: 4 — Scoped L0 Read
-Plan: 04-06 of 04-07, queued
+Plan: 04-06 of 04-07, in progress
 Status: Executing
 Last activity: 2026-10-22 — 04-05 passed; see `phases/04-scoped-l0-read/04-05-SUMMARY.md`
 
@@ -87,5 +87,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-10-21T08:48:07.463Z
-Stopped at: Phase 4 wave 4 complete, preparing 04-06
+Stopped at: Phase 4 wave 5, executing 04-06
 Resume file: None
