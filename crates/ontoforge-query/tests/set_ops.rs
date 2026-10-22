@@ -90,6 +90,24 @@ fn valid_same_type_set_and_cross_type_rejection() {
         validate(serde_json::from_value(cross_type).unwrap()),
         Err(QueryError::InvalidQuery)
     ));
+
+    let empty: ObjectSet = serde_json::from_value(json!({
+        "kind": "union", "object_type": "Flight", "sets": []
+    })).unwrap();
+    assert!(matches!(validate(empty), Err(QueryError::InvalidQuery)));
+
+    let nested: ObjectSet = serde_json::from_value(json!({
+        "kind": "union", "object_type": "Flight", "sets": [
+            {"kind": "intersect", "object_type": "Flight", "sets": [
+                {"kind": "type", "object_type": "Flight"}
+            ]}
+        ]
+    })).unwrap();
+    let tight = CompileLimits { max_depth: 2, ..CompileLimits::default() };
+    assert!(matches!(ValidatedQuery::new(
+        QueryRequest { set: nested, select: vec![] }, vec![],
+        PageSpec { first: 10, after: None }, &ontology, &scope, tight,
+    ), Err(QueryError::QueryTooComplex)));
 }
 
 #[tokio::test]
