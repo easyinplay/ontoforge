@@ -116,7 +116,12 @@ impl<E: Engine> QueryService<'_, E> {
         let base_select = if *direction == LinkDirection::ToFrom
             && definition.cardinality != Cardinality::ManyToMany
         {
-            vec![fk.ok_or(QueryError::InvalidQuery)?.clone()]
+            let fk = fk.ok_or(QueryError::InvalidQuery)?;
+            if base_scope.columns.contains_key(fk) {
+                vec![fk.clone()]
+            } else {
+                Vec::new()
+            }
         } else {
             Vec::new()
         };
@@ -149,36 +154,35 @@ impl<E: Engine> QueryService<'_, E> {
                 }
                 LinkDirection::FromTo => {
                     let fk = fk.ok_or(QueryError::InvalidQuery)?;
-                    if !target_scope.columns.contains_key(fk) {
-                        return Err(QueryError::NotFound);
-                    }
-                    for row in base_rows {
-                        let child = ValidatedQuery::new(
-                            QueryRequest {
-                                set: ObjectSet::Where {
-                                    object_type: target_type.clone(),
-                                    predicate: WhereClause::Eq {
-                                        property: fk.clone(),
-                                        value: QueryLiteral(row.pk),
+                    if target_scope.columns.contains_key(fk) {
+                        for row in base_rows {
+                            let child = ValidatedQuery::new(
+                                QueryRequest {
+                                    set: ObjectSet::Where {
+                                        object_type: target_type.clone(),
+                                        predicate: WhereClause::Eq {
+                                            property: fk.clone(),
+                                            value: QueryLiteral(row.pk),
+                                        },
                                     },
+                                    select: Vec::new(),
                                 },
-                                select: Vec::new(),
-                            },
-                            Vec::new(),
-                            PageSpec {
-                                first: self.limits.max_raw_candidates.min(10_000) as u64,
-                                after: None,
-                            },
-                            &self.active.ontology,
-                            target_scope,
-                            CompileLimits::default(),
-                        )?;
-                        keys.extend(
-                            self.collect_rows(&child, budget)
-                                .await?
-                                .into_iter()
-                                .map(|row| row.pk.to_string()),
-                        );
+                                Vec::new(),
+                                PageSpec {
+                                    first: self.limits.max_raw_candidates.min(10_000) as u64,
+                                    after: None,
+                                },
+                                &self.active.ontology,
+                                target_scope,
+                                CompileLimits::default(),
+                            )?;
+                            keys.extend(
+                                self.collect_rows(&child, budget)
+                                    .await?
+                                    .into_iter()
+                                    .map(|row| row.pk.to_string()),
+                            );
+                        }
                     }
                 }
             },
