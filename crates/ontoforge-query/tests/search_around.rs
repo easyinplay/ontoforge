@@ -55,6 +55,26 @@ fn many_to_many_merges_source_and_link_edits_fixed() {
     assert_eq!(actual, reference(&source, &edits));
 }
 
+#[test]
+fn duplicate_edits_use_highest_version_independent_of_input_order() {
+    let removed = LinkEdit {
+        row: LinkRow { deleted: true, version: 2 },
+        ..edit(1, 2, true)
+    };
+    let restored = LinkEdit {
+        row: LinkRow { deleted: false, version: 3 },
+        ..edit(1, 2, false)
+    };
+    for edits in [vec![removed.clone(), restored.clone()], vec![restored.clone(), removed.clone()]] {
+        assert_eq!(merge_edges(vec![edge(1, 2)], &edits).unwrap(), vec![edge(1, 2)]);
+    }
+    let conflict = LinkEdit {
+        row: LinkRow { deleted: true, version: 3 },
+        ..removed
+    };
+    assert!(merge_edges(vec![], &[restored, conflict]).is_err());
+}
+
 proptest! {
     #![proptest_config(ProptestConfig::with_cases(256))]
     #[test]
