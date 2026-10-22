@@ -1,7 +1,25 @@
 use std::collections::BTreeSet;
 
 use ontoforge_query::set::{SetOperator, evaluate_set_operation};
+use ontoforge_query::ast::ObjectSet;
 use proptest::prelude::*;
+use serde_json::json;
+
+#[test]
+fn nested_set_wire_accepts_logical_names_only() {
+    let wire = json!({
+        "kind": "union",
+        "objectType": "Flight",
+        "sets": [
+            {"kind": "pk", "objectType": "Flight", "pk": "F-1001"},
+            {"kind": "subtract", "objectType": "Flight",
+             "left": {"kind": "type", "objectType": "Flight"},
+             "right": {"kind": "pk", "objectType": "Flight", "pk": "F-1002"}}
+        ]
+    });
+    let parsed: ObjectSet = serde_json::from_value(wire.clone()).unwrap();
+    assert_eq!(serde_json::to_value(parsed).unwrap(), wire);
+}
 
 fn reference(operator: SetOperator, operands: &[Vec<u8>]) -> BTreeSet<String> {
     let sets = operands
