@@ -7,6 +7,22 @@ use ontoforge_storage::value::PropertyValue;
 use proptest::prelude::*;
 use ontoforge_query::ast::ObjectSet;
 use serde_json::json;
+use camino::{Utf8Path, Utf8PathBuf};
+use ontoforge_auth::Principal;
+use ontoforge_auth::authn::PrincipalId;
+use ontoforge_auth::scope::{PrincipalScope, TypeScope};
+use ontoforge_engine::sqlite::SqliteEngine;
+use ontoforge_engine::sqlite::fixture::plan_fixture_tables;
+use ontoforge_expr::{Attrs, Pred};
+use ontoforge_query::ast::PageSpec;
+use ontoforge_query::compile::{CompileLimits, ValidatedQuery};
+use ontoforge_query::{ExecutionLimits, QueryRequest, QueryService, TokenCodec};
+use ontoforge_schema::ir::{ObjectTypeName, ProfileName, PropertyName};
+use ontoforge_schema::load_dir;
+use ontoforge_storage::reload::{ReloadOptions, reload};
+use ontoforge_storage::store::{BackendSettings, EditStore, StoreSettings};
+use std::sync::Arc;
+use std::time::Duration;
 
 #[test]
 fn search_around_wire_uses_only_logical_names() {
@@ -17,6 +33,56 @@ fn search_around_wire_uses_only_logical_names() {
     });
     let parsed: ObjectSet = serde_json::from_value(wire.clone()).unwrap();
     assert_eq!(serde_json::to_value(parsed).unwrap(), wire);
+}
+
+#[tokio::test]
+async fn outbound_fk_uses_scoped_merged_object_value() {
+    let root = Utf8Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../../examples/ontologies/aviation"));
+    let loaded = load_dir(root);
+    let ontology = loaded.ontology.unwrap();
+    let profile = ProfileName::try_from("dev".to_owned()).unwrap();
+    let fixtures = plan_fixture_tables(&ontology, &loaded.sources, &profile).unwrap();
+    let engine = SqliteEngine::from_fixtures(root, &fixtures.tables).await.unwrap();
+    let dir = tempfile::tempdir().unwrap();
+    let store = EditStore::open(StoreSettings {
+        backend: BackendSettings::Sqlite { path: Utf8PathBuf::from_path_buf(dir.path().join("edits.db")).unwrap() },
+        lock_timeout: Duration::from_secs(5), probe_timeout: Duration::from_secs(5), trino_catalog: None,
+    }).await.unwrap();
+    reload(&store, &ontology, &ReloadOptions::default()).await.unwrap();
+    let active = store.active_definition().await.unwrap();
+    let name = |raw: &str| ObjectTypeName::try_from(raw.to_owned()).unwrap();
+    let prop = |raw: &str| PropertyName::try_from(raw.to_owned()).unwrap();
+    let scope = PrincipalScope {
+        types: ["Flight", "Airport"].into_iter().map(|raw| {
+            let ty = name(raw);
+            (ty.clone(), TypeScope {
+                row: Pred::Const(true),
+                columns: ontology.object_types[&ty].properties.keys().cloned().map(|p| (p, Pred::Const(true))).collect(),
+            })
+        }).collect(),
+        ..PrincipalScope::default()
+    };
+    let principal = Principal {
+        id: PrincipalId::new("test", "reader"), issuer: "test".into(), subject: "reader".into(),
+        groups: BTreeSet::new(), attrs: Attrs::default(),
+    };
+    let tokens = TokenCodec::new(b"link-test".to_vec()).unwrap();
+    let service = QueryService {
+        principal: &principal, scope: &scope, active: Arc::clone(&active), engine: &engine,
+        store: &store, limits: ExecutionLimits::phase4_default(), tokens: &tokens,
+    };
+    let request = QueryRequest {
+        set: serde_json::from_value(json!({
+            "kind": "searchAround", "object_type": "Airport",
+            "base": {"kind": "pk", "object_type": "Flight", "pk": "F-1001"},
+            "link": "flightDepartureAirport", "direction": "toFrom"
+        })).unwrap(),
+        select: vec![prop("code")],
+    };
+    let query = ValidatedQuery::new(request, vec![], PageSpec { first: 10, after: None },
+        &ontology, &scope.types[&name("Airport")], CompileLimits::default()).unwrap();
+    let page = service.execute_list(&query).await.unwrap();
+    assert_eq!(page.rows.iter().map(|row| row.pk.clone()).collect::<Vec<_>>(), vec![json!("FRA")]);
 }
 
 fn edge(from: u8, to: u8) -> LinkEdge {
