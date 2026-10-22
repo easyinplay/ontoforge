@@ -2,14 +2,14 @@
 
 use std::collections::BTreeMap;
 
-use ontoforge_schema::ir::{ObjectTypeName, PropertyDef};
+use ontoforge_schema::ir::{LinkTypeName, ObjectTypeName, PropertyDef};
 use sea_query::{Alias, Condition, Expr, ExprTrait, Order, Query};
 
 use crate::commit::{bind, cell_json, decode_object, read_expr};
 use crate::error::StoreError;
 use crate::physical::ObjectTable;
 use crate::sql_exit::{self, Cell, CellKind};
-use crate::state::EditRow;
+use crate::state::{EditRow, LinkRow};
 use crate::store::{ActiveDefinition, Backend, EditStore};
 use crate::value::PropertyValue;
 
@@ -32,6 +32,32 @@ pub struct EditScanCursor {
 pub struct EditScanPage {
     pub edits: Vec<ObjectEdit>,
     pub next: Option<EditScanCursor>,
+    pub has_more: bool,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum LinkEndpoint {
+    From(PropertyValue),
+    To(PropertyValue),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct LinkEdit {
+    pub from: PropertyValue,
+    pub to: PropertyValue,
+    pub row: LinkRow,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct LinkScanCursor {
+    from: PropertyValue,
+    to: PropertyValue,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct LinkScanPage {
+    pub edits: Vec<LinkEdit>,
+    pub next: Option<LinkScanCursor>,
     pub has_more: bool,
 }
 
@@ -125,6 +151,17 @@ fn decode_edit(
 }
 
 impl EditStore {
+    pub async fn read_link_edits(
+        &self,
+        _active: &ActiveDefinition,
+        _link_name: &LinkTypeName,
+        _endpoint: LinkEndpoint,
+        _after: Option<&LinkScanCursor>,
+        _limit: usize,
+    ) -> Result<LinkScanPage, StoreError> {
+        Ok(LinkScanPage { edits: Vec::new(), next: None, has_more: false })
+    }
+
     /// Reads one edit row without creating or locking a row.
     pub async fn read_object_edit(
         &self,

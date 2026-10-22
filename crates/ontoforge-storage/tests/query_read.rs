@@ -2,16 +2,20 @@ mod support;
 
 use std::collections::BTreeMap;
 
-use ontoforge_schema::ir::{ObjectTypeName, PropertyName};
+use ontoforge_schema::ir::{LinkTypeName, ObjectTypeName, PropertyName};
 use ontoforge_storage::commit::{Actor, Commit, Edit, ObjectOp};
-use ontoforge_storage::query_read::ObjectEdit;
+use ontoforge_storage::query_read::{LinkEndpoint, ObjectEdit};
 use ontoforge_storage::reload::{ReloadOptions, reload};
 use ontoforge_storage::value::PropertyValue;
 
-const DEFS: &str = "kind: ObjectType\napiName: Gate\nbacking: source\nprimaryKey: code\nproperties:\n  code: { type: string, required: true }\n  name: { type: string }\n  short: { type: short }\n  byte: { type: byte }\n  integer: { type: integer }\n  long: { type: long }\n  float: { type: float }\n  double: { type: double }\n  bool: { type: boolean }\n  decimal: { type: decimal, precision: 8, scale: 2 }\n  date: { type: date }\n  timestamp: { type: timestamp }\n  strings: { type: array, items: string }\n  point: { type: geopoint }\n";
+const DEFS: &str = "kind: ObjectType\napiName: Gate\nbacking: source\nprimaryKey: code\nproperties:\n  code: { type: string, required: true }\n  name: { type: string }\n  short: { type: short }\n  byte: { type: byte }\n  integer: { type: integer }\n  long: { type: long }\n  float: { type: float }\n  double: { type: double }\n  bool: { type: boolean }\n  decimal: { type: decimal, precision: 8, scale: 2 }\n  date: { type: date }\n  timestamp: { type: timestamp }\n  strings: { type: array, items: string }\n  point: { type: geopoint }\n---\nkind: ObjectType\napiName: Stand\nbacking: source\nprimaryKey: id\nproperties:\n  id: { type: integer, required: true }\n  gate: { type: string }\n---\nkind: LinkType\napiName: gateStands\ncardinality: manyToMany\nfrom: { objectType: Gate, apiName: stands }\nto: { objectType: Stand, apiName: gates }\nbacking: source\n---\nkind: LinkType\napiName: gateStand\ncardinality: oneToOne\nfrom: { objectType: Gate, apiName: stand }\nto: { objectType: Stand, apiName: assignedGate, foreignKey: gate }\n";
 
 fn gate() -> ObjectTypeName {
     ObjectTypeName::try_from("Gate".to_owned()).unwrap()
+}
+
+fn link(name: &str) -> LinkTypeName {
+    LinkTypeName::try_from(name.to_owned()).unwrap()
 }
 
 fn s(value: &str) -> PropertyValue {
@@ -302,6 +306,37 @@ async fn scan_includes_release_and_skips_version_zero() {
     assert_eq!(page.edits[0].pk, s("A"));
     assert!(page.edits[0].row.released);
     assert!(!page.has_more);
+}
+
+#[tokio::test]
+async fn links_from_or_to_endpoint_are_bounded_and_preserve_removed_edges() {
+    let (fixture, active) = fixture().await;
+    let table = &active.physical.links[&link("gateStands")];
+    let pool = fixture.side_pool().await;
+    for (a, b, deleted, version) in [("A", 3, false, 1), ("A", 1, true, 2), ("A", 2, false, 1), ("B", 1, false, 1), ("A", 4, false, 0)] {
+        let sql = format!("INSERT INTO \"{}\" (\"{}\", \"{}\", of_deleted, of_version) VALUES ('{a}', {b}, {deleted}, {version})", table.table, table.a.column, table.b.column);
+        sqlx::query(sqlx::AssertSqlSafe(sql)).execute(&pool).await.unwrap();
+    }
+    let first = fixture.store.read_link_edits(&active, &link("gateStands"), LinkEndpoint::From(s("A")), None, 2).await.unwrap();
+    assert_eq!(first.edits.iter().map(|e| &e.to).collect::<Vec<_>>(), vec![&PropertyValue::Int(1), &PropertyValue::Int(2)]);
+    assert!(first.edits[0].row.deleted);
+    assert_eq!(first.edits[0].row.version, 2);
+    assert!(first.has_more);
+    let second = fixture.store.read_link_edits(&active, &link("gateStands"), LinkEndpoint::From(s("A")), first.next.as_ref(), 2).await.unwrap();
+    assert_eq!(second.edits.iter().map(|e| &e.to).collect::<Vec<_>>(), vec![&PropertyValue::Int(3)]);
+    assert!(!second.has_more);
+    let reverse = fixture.store.read_link_edits(&active, &link("gateStands"), LinkEndpoint::To(PropertyValue::Int(1)), None, 2).await.unwrap();
+    assert_eq!(reverse.edits.iter().map(|e| &e.from).collect::<Vec<_>>(), vec![&s("A"), &s("B")]);
+    assert!(fixture.store.read_link_edits(&active, &link("gateStands"), LinkEndpoint::From(s("A")), None, 0).await.is_err());
+    assert!(fixture.store.read_link_edits(&active, &link("gateStands"), LinkEndpoint::From(s("A")), None, 257).await.is_err());
+}
+
+#[tokio::test]
+async fn link_fk_request_is_rejected_with_logical_name() {
+    let (fixture, active) = fixture().await;
+    let err = fixture.store.read_link_edits(&active, &link("gateStand"), LinkEndpoint::From(s("A")), None, 1).await.unwrap_err();
+    assert!(err.to_string().contains("gateStand"));
+    assert!(!err.to_string().contains("of_lnk"));
 }
 
 #[tokio::test]
