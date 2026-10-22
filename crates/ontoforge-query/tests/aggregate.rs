@@ -12,7 +12,7 @@ use ontoforge_engine::sqlite::fixture::plan_fixture_tables;
 use ontoforge_engine::sqlite::SqliteEngine;
 use ontoforge_expr::{Attrs, Pred};
 use ontoforge_query::aggregate::{AggregateBucket, AggregateCapabilities, AggregateResult};
-use ontoforge_query::ast::{AggregateMeasure, ObjectSet};
+use ontoforge_query::ast::{AggregateMeasure, ObjectSet, QueryLiteral, WhereClause};
 use ontoforge_query::{ExecutionLimits, QueryService, TokenCodec};
 use ontoforge_schema::ir::{ObjectTypeName, ProfileName, PropertyName};
 use ontoforge_schema::load_dir;
@@ -123,7 +123,13 @@ async fn count_sum_avg_match_full_materialization_reference() {
         tokens: &tokens,
     };
     let request = AggregateRequest {
-        set: ObjectSet::Type { object_type: flight },
+        set: ObjectSet::Where {
+            object_type: flight,
+            predicate: WhereClause::In {
+                property: prop("flightId"),
+                values: vec![QueryLiteral(json!("F-1001")), QueryLiteral(json!("F-1002"))],
+            },
+        },
         group_by: vec![],
         measures: vec![
             AggregateMeasure::Count { property: None },
