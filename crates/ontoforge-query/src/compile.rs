@@ -216,6 +216,22 @@ fn validate_nested_set(
                 if operands > limits.max_in_values {
                     return Err(QueryError::QueryTooComplex);
                 }
+                if let ObjectSet::Where { predicate, .. } = leaf {
+                    let mut predicates = vec![(predicate, depth + 1)];
+                    while let Some((part, predicate_depth)) = predicates.pop() {
+                        nodes = nodes.checked_add(1).ok_or(QueryError::QueryTooComplex)?;
+                        if nodes > limits.max_nodes || predicate_depth > limits.max_depth {
+                            return Err(QueryError::QueryTooComplex);
+                        }
+                        match part {
+                            WhereClause::And { clauses } | WhereClause::Or { clauses } => {
+                                predicates.extend(clauses.iter().map(|child| (child, predicate_depth + 1)));
+                            }
+                            WhereClause::Not { clause } => predicates.push((clause, predicate_depth + 1)),
+                            _ => {}
+                        }
+                    }
+                }
                 ValidatedQuery::new(
                     QueryRequest {
                         set: leaf.clone(),
