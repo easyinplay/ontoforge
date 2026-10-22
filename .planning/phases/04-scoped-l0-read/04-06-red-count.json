@@ -1,0 +1,10 @@
+{
+  "command": "RUSTC_BOOTSTRAP=1 cargo test -p ontoforge-query --test aggregate --locked count_sum_avg_match_full_materialization_reference -- -Z unstable-options --format=junit",
+  "exitCode": 1,
+  "output": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"test\" package=\"test\" id=\"0\" errors=\"0\" failures=\"1\" tests=\"1\" skipped=\"0\" ><testcase classname=\"integration\" name=\"count_sum_avg_match_full_materialization_reference\" time=\"0\"><failure type=\"assert\"/><system-out><![CDATA[]]>&#xA;<![CDATA[thread 'count_sum_avg_match_full_materialization_reference' (17800) panicked at crates\\ontoforge-query\\tests\\aggregate.rs:140:17:]]>&#xA;<![CDATA[called `Result::unwrap()` on an `Err` value: Unsupported]]>&#xA;<![CDATA[note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace]]>&#xA;<![CDATA[]]></system-out></testcase><system-out/><system-err/></testsuite></testsuites>",
+  "targetTest": "count_sum_avg_match_full_materialization_reference",
+  "targetFile": "crates/ontoforge-query/tests/aggregate.rs",
+  "expected": "aggregate equals independent full-materialization reference with patch and tombstone",
+  "actual": "execute_aggregate returned Unsupported",
+  "semanticAssessment": "The named integration test executed its SQLite fixture and failed at the planned aggregate assertion because the implementation was still a deliberate Unsupported stub."
+}

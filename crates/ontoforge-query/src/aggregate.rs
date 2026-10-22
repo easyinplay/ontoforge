@@ -1,5 +1,9 @@
 use serde::Serialize;
 use serde_json::Value;
+use ontoforge_engine::Engine;
+
+use crate::ast::AggregateRequest;
+use crate::QueryService;
 
 use crate::QueryError;
 
@@ -49,6 +53,21 @@ pub struct AggregateCapabilities {
     pub case_when: bool,
 }
 
+impl AggregateCapabilities {
+    #[must_use]
+    pub fn all_supported() -> Self {
+        Self {
+            count: true,
+            sum_integer: true,
+            sum_double: true,
+            min_max: true,
+            distinct: true,
+            group_by: true,
+            case_when: true,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AggregateBucket {
@@ -76,4 +95,15 @@ pub enum AggregateError {
     Store,
     #[error("unsupported numeric value")]
     UnsupportedNumericValue,
+}
+
+impl<E: Engine> QueryService<'_, E> {
+    pub async fn execute_aggregate(
+        &self,
+        _request: AggregateRequest,
+        _capabilities: AggregateCapabilities,
+        _limits: AggregateLimits,
+    ) -> Result<AggregateResult, AggregateError> {
+        Err(AggregateError::Unsupported)
+    }
 }
