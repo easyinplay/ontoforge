@@ -49,7 +49,7 @@ pub struct QueryPage {
     pub truncated: bool,
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error, Serialize)]
 pub enum QueryError {
     #[error("object not found")]
     NotFound,
@@ -65,6 +65,13 @@ pub enum QueryError {
     Store,
     #[error("invalid version token")]
     InvalidToken,
+}
+
+impl QueryError {
+    #[must_use]
+    pub fn code(&self) -> &'static str {
+        "QUERY_ERROR"
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -124,7 +131,7 @@ impl TokenCodec {
         Ok(Self { key })
     }
 
-    fn sign_version(&self, fields: &[&[u8]]) -> Result<String, QueryError> {
+    pub fn sign_version(&self, fields: &[&[u8]]) -> Result<String, QueryError> {
         use jsonwebtoken::{Algorithm, EncodingKey};
         let mut message = Vec::new();
         for field in fields {
@@ -138,6 +145,17 @@ impl TokenCodec {
             Algorithm::HS256,
         )
         .map_err(|_| QueryError::InvalidToken)
+    }
+
+    pub fn verify_version(&self, _token: &str, _fields: &[&[u8]]) -> Result<(), QueryError> {
+        Err(QueryError::InvalidToken)
+    }
+}
+
+impl QueryPage {
+    #[must_use]
+    pub fn bounded(rows: Vec<ObjectRow>, _max_rows: usize, _max_bytes: usize) -> Self {
+        Self { rows, truncated: false }
     }
 }
 
