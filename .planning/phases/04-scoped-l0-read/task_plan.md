@@ -28,7 +28,7 @@
 
 ## Execution Progress
 
-- [ ] Wave 1 `04-01`：scoped pk tracer 与安全边界；RED、GREEN、SUMMARY 和聚焦测试均须完成。
+- [x] Wave 1 `04-01`：scoped pk tracer 与安全边界；RED、GREEN、SUMMARY 和聚焦测试完成。
 - [ ] Wave 2 `04-02`、`04-03`：typed compiler/printer 与 storage 只读批量 API。
 - [ ] Wave 3 `04-04`：Rust overlay、refill、cursor 与预算。
 - [ ] Wave 4 `04-05`：searchAround 与集合运算。
@@ -43,4 +43,4 @@
 
 ## Next Step
 
-完成 `04-01-PLAN.md` 的 Wave 0 RED 测试、scoped pk tracer 与安全边界，运行聚焦测试并写 `04-01-SUMMARY.md`。每个核心子任务按 TDD red-green-refactor，Wave 6 必须取得真实 Linux CI、Trino `EXPLAIN` 与 isolated p95 证据后才能进入 Phase 4 verify。
+执行 Wave 2：`04-02-PLAN.md` 建立 typed compiler/printer，`04-03-PLAN.md` 建立 storage 有界只读 API；两者先读 `04-01-SUMMARY.md` 并按各自文件所有权执行。每个核心子任务按 TDD red-green-refactor，Wave 6 必须取得真实 Linux CI、Trino `EXPLAIN` 与 isolated p95 证据后才能进入 Phase 4 verify。
