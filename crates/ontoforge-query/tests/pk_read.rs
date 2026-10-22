@@ -1,3 +1,8 @@
+#![allow(
+    clippy::unused_async_trait_impl,
+    reason = "test engines return immediately"
+)]
+
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
@@ -32,7 +37,7 @@ const SCOPE: &str = concat!(
 );
 
 struct Fixture {
-    _dir: tempfile::TempDir,
+    dir: tempfile::TempDir,
     store: EditStore,
     principal: Principal,
     scope: ontoforge_auth::scope::PrincipalScope,
@@ -64,7 +69,9 @@ impl Engine for StaticEngine {
         _: &QueryContext,
     ) -> Result<QueryOutput, EngineError> {
         self.calls.fetch_add(1, Ordering::SeqCst);
-        *self.sql.lock().unwrap() = sql.as_str().to_owned();
+        let mut recorded = self.sql.lock().unwrap();
+        recorded.clear();
+        recorded.push_str(sql.as_str());
         Ok(QueryOutput {
             columns: Vec::new(),
             rows: self.rows.clone(),
@@ -183,11 +190,11 @@ async fn fixture() -> Fixture {
         issuer: "ontoforge-dev".to_owned(),
         subject: "alice".to_owned(),
         groups: BTreeSet::from(["dispatchers".to_owned()]),
-        attrs: Default::default(),
+        attrs: ontoforge_expr::Attrs::default(),
     };
     let scope = compiled.for_principal(&principal);
     Fixture {
-        _dir: dir,
+        dir,
         store,
         principal,
         scope,
@@ -276,7 +283,7 @@ async fn edited_pk_uses_store_only() {
 async fn missing_read_has_no_side_effect() {
     let f = fixture().await;
     let active = f.store.active_definition().await.unwrap();
-    let path = Utf8PathBuf::from_path_buf(f._dir.path().join("edit.db")).unwrap();
+    let path = Utf8PathBuf::from_path_buf(f.dir.path().join("edit.db")).unwrap();
     let pool =
         sqlx::SqlitePool::connect_with(ontoforge_storage::store::sqlite_connect_options(&path))
             .await
@@ -481,6 +488,32 @@ async fn scope_runs_after_overlay() {
     .unwrap();
     assert_eq!(page.rows[0].properties["status"], json!("scheduled"));
     assert!(!page.rows[0].properties.contains_key("aircraftTailNumber"));
+}
+
+#[tokio::test]
+async fn partial_edit_without_source_is_not_found() {
+    let f = fixture().await;
+    commit_edit(
+        &f,
+        "Flight",
+        "F-1001",
+        ObjectOp::Set(BTreeMap::from([(
+            prop("status"),
+            PropertyValue::String("scheduled".to_owned()),
+        )])),
+    )
+    .await;
+    let engine = StaticEngine::new(Vec::new());
+    let tokens = TokenCodec::new(b"phase4-test-key".to_vec()).unwrap();
+    let result = service(
+        &f,
+        f.store.active_definition().await.unwrap(),
+        &engine,
+        &tokens,
+    )
+    .execute(request("Flight", "F-1001", &["status"]))
+    .await;
+    assert!(matches!(result, Err(ontoforge_query::QueryError::NotFound)));
 }
 
 #[test]

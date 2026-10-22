@@ -10,6 +10,7 @@ use ontoforge_engine::printer::print_select;
 use ontoforge_engine::{Engine, QueryContext, TableRef};
 use ontoforge_expr::Scalar;
 use ontoforge_schema::ir::{Backing, ObjectTypeName, PropertyName};
+use ontoforge_storage::query_read::ObjectEdit;
 use ontoforge_storage::store::{ActiveDefinition, EditStore};
 use ontoforge_storage::value::PropertyValue;
 use serde::{Deserialize, Serialize};
@@ -70,7 +71,15 @@ pub enum QueryError {
 impl QueryError {
     #[must_use]
     pub fn code(&self) -> &'static str {
-        "QUERY_ERROR"
+        match self {
+            Self::NotFound => "NOT_FOUND",
+            Self::AmbiguousObject => "AMBIGUOUS_OBJECT",
+            Self::InvalidQuery => "INVALID_QUERY",
+            Self::CostExceeded => "COST_EXCEEDED",
+            Self::Source => "SOURCE_UNAVAILABLE",
+            Self::Store => "STORE_UNAVAILABLE",
+            Self::InvalidToken => "INVALID_TOKEN",
+        }
     }
 }
 
@@ -133,12 +142,7 @@ impl TokenCodec {
 
     pub fn sign_version(&self, fields: &[&[u8]]) -> Result<String, QueryError> {
         use jsonwebtoken::{Algorithm, EncodingKey};
-        let mut message = Vec::new();
-        for field in fields {
-            let len = u64::try_from(field.len()).map_err(|_| QueryError::CostExceeded)?;
-            message.extend_from_slice(&len.to_be_bytes());
-            message.extend_from_slice(field);
-        }
+        let message = version_message(fields)?;
         jsonwebtoken::crypto::sign(
             &message,
             &EncodingKey::from_secret(&self.key),
@@ -147,16 +151,53 @@ impl TokenCodec {
         .map_err(|_| QueryError::InvalidToken)
     }
 
-    pub fn verify_version(&self, _token: &str, _fields: &[&[u8]]) -> Result<(), QueryError> {
-        Err(QueryError::InvalidToken)
+    pub fn verify_version(&self, token: &str, fields: &[&[u8]]) -> Result<(), QueryError> {
+        use jsonwebtoken::{Algorithm, DecodingKey};
+        let message = version_message(fields)?;
+        match jsonwebtoken::crypto::verify(
+            token,
+            &message,
+            &DecodingKey::from_secret(&self.key),
+            Algorithm::HS256,
+        ) {
+            Ok(true) => Ok(()),
+            Ok(false) | Err(_) => Err(QueryError::InvalidToken),
+        }
     }
 }
 
 impl QueryPage {
     #[must_use]
-    pub fn bounded(rows: Vec<ObjectRow>, _max_rows: usize, _max_bytes: usize) -> Self {
-        Self { rows, truncated: false }
+    pub fn bounded(rows: Vec<ObjectRow>, max_rows: usize, max_bytes: usize) -> Self {
+        let mut kept = Vec::new();
+        let mut bytes = 0usize;
+        for row in rows {
+            let row_bytes = serde_json::to_vec(&row).map_or(usize::MAX, |encoded| encoded.len());
+            let next = bytes.checked_add(row_bytes);
+            if kept.len() >= max_rows || next.is_none_or(|n| n > max_bytes) {
+                return Self {
+                    rows: kept,
+                    truncated: true,
+                };
+            }
+            bytes = next.expect("checked above");
+            kept.push(row);
+        }
+        Self {
+            rows: kept,
+            truncated: false,
+        }
     }
+}
+
+fn version_message(fields: &[&[u8]]) -> Result<Vec<u8>, QueryError> {
+    let mut message = Vec::new();
+    for field in fields {
+        let len = u64::try_from(field.len()).map_err(|_| QueryError::CostExceeded)?;
+        message.extend_from_slice(&len.to_be_bytes());
+        message.extend_from_slice(field);
+    }
+    Ok(message)
 }
 
 pub struct QueryService<'a, E: Engine> {
@@ -213,6 +254,9 @@ impl<E: Engine> QueryService<'_, E> {
         } else {
             None
         };
+        if ty.backing == Backing::Source && !all_patched && source.is_none() {
+            return Err(QueryError::NotFound);
+        }
         let mut merged = source.clone().unwrap_or_default();
         merged.insert(ty.primary_key.clone(), canonical_pk.to_json());
         if let Some(edit) = &edit
@@ -248,46 +292,53 @@ impl<E: Engine> QueryService<'_, E> {
             .filter(|p| visibility.columns.contains(p))
             .filter_map(|p| merged.get(&p).map(|v| (p, v.clone())))
             .collect();
-        let version = self.tokens.sign_version(&[
-            self.principal.id.as_str().as_bytes(),
-            object_type.as_str().as_bytes(),
-            canonical_pk.to_json().to_string().as_bytes(),
-            &self.active.def_version.to_be_bytes(),
-            serde_json::to_vec(&source)
-                .map_err(|_| QueryError::Source)?
-                .as_slice(),
-            serde_json::to_vec(&edit.as_ref().map(|e| {
-                (
-                    e.row.version,
-                    e.row.deleted,
-                    e.row.released,
-                    e.row
-                        .set
-                        .iter()
-                        .map(|(k, v)| (k.as_str(), v.to_json()))
-                        .collect::<BTreeMap<_, _>>(),
-                )
-            }))
-            .map_err(|_| QueryError::Store)?
-            .as_slice(),
-        ])?;
+        let version =
+            self.version_for(&object_type, &canonical_pk, source.as_ref(), edit.as_ref())?;
         let row = ObjectRow {
             object_type,
             pk: canonical_pk.to_json(),
             properties,
             version,
         };
-        let encoded = serde_json::to_vec(&row).map_err(|_| QueryError::Source)?;
-        if encoded.len() > self.limits.max_decoded_bytes {
-            return Ok(QueryPage {
-                rows: Vec::new(),
-                truncated: true,
-            });
-        }
-        Ok(QueryPage {
-            rows: vec![row],
-            truncated: false,
-        })
+        Ok(QueryPage::bounded(
+            vec![row],
+            self.limits.max_raw_candidates,
+            self.limits.max_decoded_bytes,
+        ))
+    }
+
+    fn version_for(
+        &self,
+        object_type: &ObjectTypeName,
+        pk: &PropertyValue,
+        source: Option<&BTreeMap<PropertyName, Value>>,
+        edit: Option<&ObjectEdit>,
+    ) -> Result<String, QueryError> {
+        let scope = format!("{:?}", self.scope);
+        let pk_json = pk.to_json().to_string();
+        let source_json = serde_json::to_vec(&source).map_err(|_| QueryError::Source)?;
+        let edit_json = serde_json::to_vec(&edit.map(|e| {
+            (
+                e.row.version,
+                e.row.deleted,
+                e.row.released,
+                e.row
+                    .set
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v.to_json()))
+                    .collect::<BTreeMap<_, _>>(),
+            )
+        }))
+        .map_err(|_| QueryError::Store)?;
+        self.tokens.sign_version(&[
+            self.principal.id.as_str().as_bytes(),
+            scope.as_bytes(),
+            object_type.as_str().as_bytes(),
+            pk_json.as_bytes(),
+            &self.active.def_version.to_be_bytes(),
+            &source_json,
+            &edit_json,
+        ])
     }
 
     async fn read_source(
@@ -403,7 +454,6 @@ fn engine_json(value: ontoforge_engine::Value) -> Result<Value, QueryError> {
 
 fn scope_scalar(value: &Value) -> Scalar {
     match value {
-        Value::Null => Scalar::Null,
         Value::Bool(v) => Scalar::Bool(*v),
         Value::Number(v) => v.as_i64().map_or_else(
             || v.as_f64().map_or(Scalar::Null, Scalar::Double),
