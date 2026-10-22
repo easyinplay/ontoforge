@@ -5,6 +5,8 @@ use ontoforge_auth::scope::{RoleTypeGrant, merge};
 use ontoforge_expr::{Attrs, CmpOp, Operand, Pred, Scalar};
 use ontoforge_query::ast::{Direction, Nulls, ObjectSet, OrderBy, QueryLiteral, WhereClause};
 use ontoforge_query::overlay::{compare_rows, eligible_row, overlay_candidates, overlay_object};
+use ontoforge_query::execute::WorkBudget;
+use ontoforge_query::{ExecutionLimits, QueryError};
 use ontoforge_schema::ir::{ObjectTypeName, PropertyName};
 use ontoforge_schema::load_dir;
 use ontoforge_storage::query_read::ObjectEdit;
@@ -329,4 +331,34 @@ fn ordering_is_total_and_deterministic() {
             assert_eq!(actual, expected);
         }
     }
+}
+
+#[test]
+fn pagination_execution_limit_boundaries_are_inclusive() {
+    let defaults = ExecutionLimits::phase4_default();
+    assert_eq!((defaults.max_backend_calls, defaults.max_raw_candidates, defaults.max_backfill_keys, defaults.max_decoded_bytes), (32, 10_000, 2_048, 64 * 1024 * 1024));
+    let mut budget = WorkBudget::new(defaults);
+    budget.charge_backend_calls(32).unwrap();
+    budget.charge_raw_candidates(10_000).unwrap();
+    budget.charge_backfill_keys(2_048).unwrap();
+    budget.charge_decoded_bytes(64 * 1024 * 1024).unwrap();
+    assert!(matches!(budget.charge_backend_calls(1), Err(QueryError::WorkBudgetExceeded)));
+    assert!(matches!(budget.charge_raw_candidates(1), Err(QueryError::WorkBudgetExceeded)));
+    assert!(matches!(budget.charge_backfill_keys(1), Err(QueryError::WorkBudgetExceeded)));
+    assert!(matches!(budget.charge_decoded_bytes(1), Err(QueryError::WorkBudgetExceeded)));
+}
+
+#[test]
+fn pagination_budget_rejects_overflow_and_untrusted_limits() {
+    for invalid in [
+        ExecutionLimits::try_new(0, 1, 1, 1),
+        ExecutionLimits::try_new(1, 0, 1, 1),
+        ExecutionLimits::try_new(1, 1, 0, 1),
+        ExecutionLimits::try_new(1, 1, 1, 0),
+        ExecutionLimits::try_new(usize::MAX, 1, 1, 1),
+    ] {
+        assert!(matches!(invalid, Err(QueryError::InvalidQuery)));
+    }
+    let mut budget = WorkBudget::new(ExecutionLimits::phase4_default());
+    assert!(matches!(budget.charge_raw_candidates(usize::MAX), Err(QueryError::WorkBudgetExceeded)));
 }

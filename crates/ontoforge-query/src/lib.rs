@@ -19,6 +19,7 @@ use serde_json::Value;
 pub mod ast;
 pub mod compile;
 pub mod overlay;
+pub mod execute;
 pub use ast::ObjectSet;
 
 pub const CRATE_NAME: &str = env!("CARGO_PKG_NAME");
@@ -64,6 +65,8 @@ pub enum QueryError {
     Store,
     #[error("invalid version token")]
     InvalidToken,
+    #[error("query work budget exceeded")]
+    WorkBudgetExceeded,
 }
 
 impl QueryError {
@@ -78,6 +81,7 @@ impl QueryError {
             Self::Source => "SOURCE_UNAVAILABLE",
             Self::Store => "STORE_UNAVAILABLE",
             Self::InvalidToken => "INVALID_TOKEN",
+            Self::WorkBudgetExceeded => "WORK_BUDGET_EXCEEDED",
         }
     }
 }
