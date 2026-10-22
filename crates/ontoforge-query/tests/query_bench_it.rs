@@ -16,13 +16,13 @@ use ontoforge_engine::{
     QueryContext, QueryOutput, TableRef, Value as EngineValue,
 };
 use ontoforge_expr::{Attrs, Pred};
-use ontoforge_query::aggregate::{AggregateCapabilities, AggregateLimits};
+use ontoforge_query::aggregate::{AggregateCapabilities, AggregateError, AggregateLimits};
 use ontoforge_query::ast::{
     AggregateMeasure, AggregateRequest, Direction, Nulls, ObjectSet, OrderBy, PageSpec,
     QueryLiteral, WhereClause,
 };
 use ontoforge_query::compile::{CompileLimits, ValidatedQuery};
-use ontoforge_query::{ExecutionLimits, QueryRequest, QueryService, TokenCodec};
+use ontoforge_query::{ExecutionLimits, QueryError, QueryRequest, QueryService, TokenCodec};
 use ontoforge_schema::ir::{ObjectTypeName, PropertyName};
 use ontoforge_storage::commit::{Actor, Commit, Edit, ObjectOp};
 use ontoforge_storage::reload::{ReloadOptions, reload};
@@ -152,17 +152,8 @@ impl Fixture {
                     break;
                 }
             };
-            let plan = output
-                .rows
-                .iter()
-                .flat_map(|row| row.iter())
-                .map(|value| match value {
-                    EngineValue::String(text) => Ok(text.as_str()),
-                    _ => Err("distributed EXPLAIN returned a non-text cell"),
-                })
-                .collect::<Result<Vec<_>, _>>();
-            let plan = match plan {
-                Ok(cells) => cells.join("\n"),
+            let plan = match complete_plan(&output) {
+                Ok(plan) => plan,
                 Err(error) => {
                     capture.error = Some(format!("{path}[{iteration}][{index}]: {error}"));
                     break;
@@ -186,6 +177,22 @@ impl Fixture {
         }
         capture
     }
+}
+
+fn complete_plan(output: &QueryOutput) -> Result<String, &'static str> {
+    if output.truncated {
+        return Err("distributed EXPLAIN output was truncated");
+    }
+    output
+        .rows
+        .iter()
+        .flat_map(|row| row.iter())
+        .map(|value| match value {
+            EngineValue::String(text) => Ok(text.as_str()),
+            _ => Err("distributed EXPLAIN returned a non-text cell"),
+        })
+        .collect::<Result<Vec<_>, _>>()
+        .map(|cells| cells.join("\n"))
 }
 
 fn parse_fragments(plan: &str) -> Result<usize, String> {
@@ -503,6 +510,7 @@ struct Sample {
     iteration: usize,
     elapsed_ms: f64,
     error: Option<String>,
+    limit_error: bool,
     source_calls: usize,
     plans: Vec<PlanEvidence>,
 }
@@ -510,9 +518,11 @@ struct Sample {
 #[derive(Serialize)]
 struct PathEvidence {
     name: &'static str,
+    query_shape: &'static str,
     threshold_ms: f64,
     warmups: Vec<Sample>,
     measured: Vec<Sample>,
+    limit_error_samples: usize,
     p50_ms: Option<f64>,
     p95_ms: Option<f64>,
     max_ms: Option<f64>,
@@ -559,7 +569,24 @@ impl Path {
             Self::EditedPk => 50.0,
         }
     }
+
+    fn shape(self) -> &'static str {
+        match self {
+            Self::SourcePk => {
+                "Flight pk flightId=B-10000; select flightId,status; unedited source read"
+            }
+            Self::List => {
+                "Flight where status=bench-hot; order flightId ASC NULLS LAST; first=20, after=null; select flightId,status"
+            }
+            Self::Aggregate => "Flight where status=bench-hot; groupBy=[]; measure=count(*)",
+            Self::EditedPk => {
+                "Flight pk flightId=B-00001; select flightId,status; fully patched PG-direct read, zero source calls"
+            }
+        }
+    }
 }
+
+type TimedResult = Result<(), (String, bool)>;
 
 #[allow(
     clippy::too_many_lines,
@@ -569,7 +596,7 @@ async fn sample(f: &Fixture, path: Path, iteration: usize) -> Sample {
     let _ = f.engine.take();
     let service = f.service();
     let start = Instant::now();
-    let result = match path {
+    let result: TimedResult = match path {
         Path::SourcePk | Path::EditedPk => {
             let pk = if matches!(path, Path::SourcePk) {
                 key(ROWS)
@@ -585,26 +612,41 @@ async fn sample(f: &Fixture, path: Path, iteration: usize) -> Sample {
                     select: vec![prop("flightId"), prop("status")],
                 })
                 .await
-                .map_err(|error| error.to_string())
+                .map_err(|error| {
+                    let limited = matches!(
+                        error,
+                        QueryError::CostExceeded | QueryError::WorkBudgetExceeded
+                    );
+                    (error.to_string(), limited)
+                })
                 .and_then(|page| {
                     if page.rows.len() == 1 {
                         Ok(())
                     } else {
-                        Err(format!("pk returned {} rows, expected 1", page.rows.len()))
+                        Err((
+                            format!("pk returned {} rows, expected 1", page.rows.len()),
+                            false,
+                        ))
                     }
                 })
         }
         Path::List => service
             .execute_list(&list_query(f))
             .await
-            .map_err(|error| error.to_string())
+            .map_err(|error| {
+                let limited = matches!(
+                    error,
+                    QueryError::CostExceeded | QueryError::WorkBudgetExceeded
+                );
+                (error.to_string(), limited)
+            })
             .and_then(|page| {
                 if page.rows.len() == 20 {
                     Ok(())
                 } else {
-                    Err(format!(
-                        "fixed list returned {} rows, expected 20",
-                        page.rows.len()
+                    Err((
+                        format!("fixed list returned {} rows, expected 20", page.rows.len()),
+                        false,
                     ))
                 }
             }),
@@ -625,20 +667,29 @@ async fn sample(f: &Fixture, path: Path, iteration: usize) -> Sample {
                 AggregateLimits::phase4_default(),
             )
             .await
-            .map_err(|error| error.to_string())
+            .map_err(|error| {
+                let limited = matches!(error, AggregateError::AggregateCostExceeded);
+                (error.to_string(), limited)
+            })
             .and_then(|result| {
                 if result.buckets.len() == 1 && result.buckets[0].values == [json!(910)] {
                     Ok(())
                 } else {
-                    Err(format!(
-                        "fixed aggregate returned {:?}, expected count 910",
-                        result.buckets
+                    Err((
+                        format!(
+                            "fixed aggregate returned {:?}, expected count 910",
+                            result.buckets
+                        ),
+                        false,
                     ))
                 }
             }),
     };
     let elapsed_ms = start.elapsed().as_secs_f64() * 1_000.0;
-    let mut error = result.err();
+    let (mut error, limit_error) = match result {
+        Ok(()) => (None, false),
+        Err((message, limited)) => (Some(message), limited),
+    };
     let mut plans = Vec::new();
     let source_calls;
     if matches!(path, Path::List | Path::Aggregate) {
@@ -663,6 +714,7 @@ async fn sample(f: &Fixture, path: Path, iteration: usize) -> Sample {
         iteration,
         elapsed_ms,
         error,
+        limit_error,
         source_calls,
         plans,
     }
@@ -681,6 +733,11 @@ async fn measure(f: &Fixture, path: Path, mode: &str) -> PathEvidence {
     let p50_ms = nearest_rank(&measured, 50);
     let p95_ms = nearest_rank(&measured, 95);
     let max_ms = nearest_rank(&measured, 100);
+    let limit_error_samples = warmups
+        .iter()
+        .chain(&measured)
+        .filter(|sample| sample.limit_error)
+        .count();
     let passed = measured
         .iter()
         .chain(&warmups)
@@ -688,9 +745,11 @@ async fn measure(f: &Fixture, path: Path, mode: &str) -> PathEvidence {
         && (mode != "isolated" || p95_ms.is_some_and(|p95| p95 < path.threshold()));
     PathEvidence {
         name: path.name(),
+        query_shape: path.shape(),
         threshold_ms: path.threshold(),
         warmups,
         measured,
+        limit_error_samples,
         p50_ms,
         p95_ms,
         max_ms,
@@ -713,6 +772,11 @@ async fn phase4_real_backend_p95() {
     }
     let limits = ExecutionLimits::phase4_default();
     let aggregate_limits = AggregateLimits::phase4_default();
+    let limit_error_samples: usize = paths.iter().map(|path| path.limit_error_samples).sum();
+    let limit_error_known = paths
+        .iter()
+        .flat_map(|path| path.warmups.iter().chain(&path.measured))
+        .all(|sample| sample.error.is_none() || sample.limit_error);
     let evidence = json!({
         "schema_version": 1,
         "mode": mode,
@@ -721,11 +785,14 @@ async fn phase4_real_backend_p95() {
         "runner": {"name": std::env::var("RUNNER_NAME").unwrap_or_else(|_| "local".to_owned()), "os": std::env::var("RUNNER_OS").unwrap_or_else(|_| std::env::consts::OS.to_owned()), "isolation": mode == "isolated"},
         "connector": "Trino 483 PostgreSQL connector + direct PostgreSQL 17 edit store",
         "versions": {"trino": fixture.trino_version, "postgresql": fixture.pg_version},
-        "dataset": {"seed": 4, "source_rows": ROWS, "edit_coverage": {"total": PATCHES + TOMBSTONES + RELEASES, "patch": PATCHES, "tombstone": TOMBSTONES, "release": RELEASES}, "query_filter": "status == bench-hot", "hot_source_rows": 1_000},
+        "dataset": {"seed": 4, "benchmark_rows": ROWS, "benchmark_key_range": ["B-00001", "B-10000"], "other_aviation_seed_and_query_corpus_rows_share_table": true, "edit_coverage": {"total": PATCHES + TOMBSTONES + RELEASES, "patch": PATCHES, "tombstone": TOMBSTONES, "release": RELEASES}, "query_filter": "status == bench-hot", "hot_benchmark_rows": 1_000},
         "definition": {"ontology_tree_hash": fixture.ontology_tree_hash, "version": fixture.active.def_version},
         "execution_limits": {"max_backend_calls": limits.max_backend_calls, "max_raw_candidates": limits.max_raw_candidates, "max_backfill_keys": limits.max_backfill_keys, "max_decoded_bytes": limits.max_decoded_bytes},
         "aggregate_limits": {"max_groups": aggregate_limits.max_groups, "max_buckets": aggregate_limits.max_buckets, "max_distinct_values": aggregate_limits.max_distinct_values, "max_distinct_memory_bytes": aggregate_limits.max_distinct_memory_bytes},
         "guardrails_raised": false,
+        "limit_error_samples": limit_error_samples,
+        "limit_error_known": limit_error_known,
+        "limit_error_detection": "typed QueryError::CostExceeded/WorkBudgetExceeded and AggregateError::AggregateCostExceeded; any error sample fails its path",
         "paths": paths,
     });
     let directory = std::env::var("ONTOFORGE_BENCH_ARTIFACT_DIR").unwrap_or_else(|_| {
@@ -757,6 +824,7 @@ fn nearest_rank_uses_all_samples_and_rejects_failures() {
             iteration,
             elapsed_ms,
             error: None,
+            limit_error: false,
             source_calls: 0,
             plans: vec![],
         })
@@ -766,4 +834,17 @@ fn nearest_rank_uses_all_samples_and_rejects_failures() {
     let mut failed = values;
     failed[0].error = Some("backend failed".to_owned());
     assert_eq!(nearest_rank(&failed, 95), None);
+}
+
+#[test]
+fn truncated_distributed_explain_is_rejected_before_fragment_count() {
+    let output = QueryOutput {
+        columns: vec![],
+        rows: vec![vec![EngineValue::String("Fragment 0 [SOURCE]".to_owned())]],
+        truncated: true,
+    };
+    assert_eq!(
+        complete_plan(&output),
+        Err("distributed EXPLAIN output was truncated")
+    );
 }
