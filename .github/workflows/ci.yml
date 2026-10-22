@@ -77,6 +77,7 @@ jobs:
           psql -v ON_ERROR_STOP=1 -v fixtures="$PWD/examples/ontologies/aviation/bindings/dev/fixtures" -d demo -f ci/pg/seed.sql
           # The fixed row predicate corpus of the Trino differential test (D-09).
           psql -v ON_ERROR_STOP=1 -d demo -f ci/pg/rowpred_corpus.sql
+          psql -v ON_ERROR_STOP=1 -d demo -f ci/pg/query_corpus.sql
       # The same conformance cases that run on SQLite in the `test` job, on a real PostgreSQL 17
       # (STORE-01, ROADMAP SC2). Every test creates its own pair of schemas in `editstore`, so
       # the tests do not disturb each other. The database is the one the Trino catalog
@@ -127,9 +128,20 @@ jobs:
           ONTOFORGE_PG_URL: postgres://postgres:ontoforge-ci-only@localhost:5432/editstore
         # A catalog-wide flush from one case would invalidate another case's stale metadata.
         run: cargo test -p ontoforge-storage --locked --test reload_trino_it -- --ignored --test-threads=1
+      - name: Query read storage integration (PostgreSQL)
+        env:
+          ONTOFORGE_PG_URL: postgres://postgres:ontoforge-ci-only@localhost:5432/editstore
+        run: cargo test -p ontoforge-storage --test query_read_pg --locked -- --ignored --test-threads=1
+      - name: Query integration (Trino + PostgreSQL)
+        env:
+          ONTOFORGE_TRINO_URL: http://localhost:8080
+          ONTOFORGE_PG_URL: postgres://postgres:ontoforge-ci-only@localhost:5432/editstore
+          ONTOFORGE_QUERY_PLAN_DIR: target/query-plans
+        run: cargo test -p ontoforge-query --test trino_query_it --locked -- --ignored --test-threads=1
       # A green run must not mean "nothing ran" (RESEARCH Pitfall 8).
       - name: Ignored tests are actually there
         run: |
+          set -euo pipefail
           targets=(
             "ontoforge-engine trino_it"
             "ontoforge cli_trino_it"
@@ -140,16 +152,17 @@ jobs:
             "ontoforge-storage history_masking"
             "ontoforge-storage import"
             "ontoforge-storage reload_trino_it"
+            "ontoforge-storage query_read_pg"
             "ontoforge-auth rowpred_trino_it"
+            "ontoforge-query trino_query_it"
           )
           for target in "${targets[@]}"; do
             set -- $target
-            count=$(cargo test -p "$1" --test "$2" --locked -- --ignored --list | grep -c ': test$' || true)
-            echo "$2: $count ignored tests"
-            if [ "$count" -eq 0 ]; then
-              echo "::error::$2 lists no ignored tests"
+            if ! count=$(cargo test -p "$1" --test "$2" --locked -- --ignored --list | awk '/: test$/ { n++ } END { print n+0; exit(n > 0 ? 0 : 1) }'); then
+              echo "::error::$2 discovery failed or lists no ignored tests"
               exit 1
             fi
+            echo "$2: $count ignored tests"
           done
       - name: Trino logs
         if: failure()
