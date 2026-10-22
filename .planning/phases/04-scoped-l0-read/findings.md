@@ -16,3 +16,4 @@
 - Wave 6 远端前置核对：`origin` 为 `easyinplay/ontoforge`，`gh` 当前账户可读 `ci`/`nightly` workflow；现有 `ci` integration job 已配置 PostgreSQL 17 与 Trino 483。`04-07` 的新测试、distributed `EXPLAIN` 和 isolated p95 仍须实际运行；当前没有 Phase 4 远端验收结果。
 - `compile_source_select` 在排序列含 `caseInsensitive` 时清空source `ORDER BY`（`sql_shape.rs::collation_forces_recheck_and_disables_source_order`）；这种查询必须在预算内以稳定PK keyset扫尽source并由Rust排序，或返回成本错误。未排序 `LIMIT` 不能作为分页完整性证据。
 - `04-04` 独立只读审查发现的 Decimal 数值排序、cursor `principal.attrs` 绑定、重复 source PK 冲突均由 RED `ceba54b`/GREEN `04e1992` 修复；`ee46d5b` 补真实双 lane 共享预算与无 partial response。四维默认 B/B+1 用 `WorkBudget` 精确测试，请求级用 calls/raw/bytes/双维临界及 257-key backfill 证明路径；独立复跑 overlay 11/11、security 21/21。
+- `04-05` 计划的 M:N `release` 措辞与 accepted ADR-0024 和生产 `LinkRow { deleted, version }`、`LinkOp::{Add, Remove}` 冲突；按既有合同修为 source + Add/Remove 叠加，不扩展物理 schema 或写路径。link grant 也不在现有 `Role`/`PrincipalScope` 中；Grok 第二意见推荐沿用 D19 的两端 scope + FK 属性可见，用户 A/B 决定仍待答复。
