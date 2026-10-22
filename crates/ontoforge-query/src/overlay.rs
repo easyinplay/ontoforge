@@ -6,12 +6,177 @@ use ontoforge_storage::value::PropertyValue;
 use serde_json::Value;
 
 use crate::QueryError;
+use crate::ast::{Direction, Nulls};
+use crate::ast::{ObjectSet, OrderBy};
+use crate::compile::{evaluate_search, evaluate_where};
+use ontoforge_auth::scope::TypeScope;
+use ontoforge_expr::Attrs;
+use ontoforge_schema::ir::ObjectType;
+use std::cmp::Ordering;
 
 pub fn overlay_object(
     source: Option<&BTreeMap<PropertyName, Value>>,
-    _edit: Option<&ObjectEdit>,
-    _pk_name: &PropertyName,
-    _pk: &PropertyValue,
+    edit: Option<&ObjectEdit>,
+    pk_name: &PropertyName,
+    pk: &PropertyValue,
 ) -> Result<Option<BTreeMap<PropertyName, Value>>, QueryError> {
-    Ok(source.cloned())
+    if let Some(edit) = edit {
+        if edit.pk != *pk || edit.row.version <= 0 || (edit.row.deleted && edit.row.released) {
+            return Err(QueryError::Store);
+        }
+        if edit.row.deleted {
+            return Ok(None);
+        }
+    }
+    let mut merged = match source {
+        Some(row) => row.clone(),
+        None if edit.is_some_and(|edit| !edit.row.released) => BTreeMap::new(),
+        None => return Ok(None),
+    };
+    merged.insert(pk_name.clone(), pk.to_json());
+    if let Some(edit) = edit.filter(|edit| !edit.row.released) {
+        for (property, value) in &edit.row.set {
+            if property != pk_name {
+                merged.insert(property.clone(), value.to_json());
+            }
+        }
+    }
+    Ok(Some(merged))
+}
+
+pub fn overlay_candidates(
+    sources: Vec<(PropertyValue, BTreeMap<PropertyName, Value>)>,
+    edits: Vec<ObjectEdit>,
+    pk_name: &PropertyName,
+) -> Result<Vec<BTreeMap<PropertyName, Value>>, QueryError> {
+    let mut by_key = BTreeMap::new();
+    for (pk, source) in sources {
+        let slot = by_key
+            .entry(pk.to_json().to_string())
+            .or_insert_with(|| (pk, None, None));
+        if slot.1.as_ref().is_some_and(|existing| existing != &source) {
+            return Err(QueryError::AmbiguousObject);
+        }
+        slot.1 = Some(source);
+    }
+    for edit in edits {
+        let slot = by_key
+            .entry(edit.pk.to_json().to_string())
+            .or_insert_with(|| (edit.pk.clone(), None, None::<ObjectEdit>));
+        if let Some(existing) = &slot.2 {
+            if existing.row.version == edit.row.version && existing != &edit {
+                return Err(QueryError::Store);
+            }
+            if existing.row.version > edit.row.version {
+                continue;
+            }
+        }
+        slot.2 = Some(edit);
+    }
+    by_key
+        .into_values()
+        .filter_map(|(pk, source, edit)| {
+            overlay_object(source.as_ref(), edit.as_ref(), pk_name, &pk).transpose()
+        })
+        .collect()
+}
+
+pub fn eligible_row(
+    merged: &BTreeMap<PropertyName, Value>,
+    set: &ObjectSet,
+    ty: &ObjectType,
+    scope: &TypeScope,
+    attrs: &Attrs,
+) -> Option<BTreeMap<PropertyName, Value>> {
+    let scalar_row = merged
+        .iter()
+        .map(|(property, value)| (property.clone(), crate::scope_scalar(value)))
+        .collect::<BTreeMap<_, _>>();
+    let visibility = scope.evaluate(&scalar_row, attrs);
+    if !visibility.visible {
+        return None;
+    }
+    let matches = match set {
+        ObjectSet::Pk { pk, .. } => merged.get(&ty.primary_key) == Some(pk),
+        ObjectSet::Type { .. } => true,
+        ObjectSet::Where { predicate, .. } => {
+            evaluate_where(predicate, merged, &visibility, ty).is_true()
+        }
+        ObjectSet::Search {
+            property,
+            query,
+            mode,
+            ..
+        } => evaluate_search(property, query, *mode, merged, &visibility).is_true(),
+    };
+    matches.then(|| {
+        merged
+            .iter()
+            .filter(|(property, _)| visibility.columns.contains(*property))
+            .map(|(property, value)| (property.clone(), value.clone()))
+            .collect()
+    })
+}
+
+pub fn compare_rows(
+    left: &BTreeMap<PropertyName, Value>,
+    right: &BTreeMap<PropertyName, Value>,
+    order: &[OrderBy],
+    pk: &PropertyName,
+    ty: &ObjectType,
+) -> Ordering {
+    for key in order {
+        let lhs = left.get(&key.property).filter(|v| !v.is_null());
+        let rhs = right.get(&key.property).filter(|v| !v.is_null());
+        let result = match (lhs, rhs) {
+            (None, None) => Ordering::Equal,
+            (None, Some(_)) => {
+                if key.nulls == Nulls::First {
+                    Ordering::Less
+                } else {
+                    Ordering::Greater
+                }
+            }
+            (Some(_), None) => {
+                if key.nulls == Nulls::First {
+                    Ordering::Greater
+                } else {
+                    Ordering::Less
+                }
+            }
+            (Some(lhs), Some(rhs)) => {
+                let result = ty.properties.get(&key.property).map_or_else(
+                    || lhs.to_string().cmp(&rhs.to_string()),
+                    |def| compare_typed(lhs, rhs, def),
+                );
+                if key.direction == Direction::Desc {
+                    result.reverse()
+                } else {
+                    result
+                }
+            }
+        };
+        if result != Ordering::Equal {
+            return result;
+        }
+    }
+    match (left.get(pk), right.get(pk), ty.properties.get(pk)) {
+        (Some(lhs), Some(rhs), Some(def)) => compare_typed(lhs, rhs, def),
+        (Some(lhs), Some(rhs), None) => lhs.to_string().cmp(&rhs.to_string()),
+        _ => Ordering::Equal,
+    }
+}
+
+fn compare_typed(left: &Value, right: &Value, def: &ontoforge_schema::ir::PropertyDef) -> Ordering {
+    let lhs = PropertyValue::from_json(def, left);
+    let rhs = PropertyValue::from_json(def, right);
+    match (lhs, rhs) {
+        (Ok(PropertyValue::Bool(a)), Ok(PropertyValue::Bool(b))) => a.cmp(&b),
+        (Ok(PropertyValue::Int(a)), Ok(PropertyValue::Int(b))) => a.cmp(&b),
+        (Ok(PropertyValue::Double(a)), Ok(PropertyValue::Double(b))) => a.total_cmp(&b),
+        (Ok(PropertyValue::String(a)), Ok(PropertyValue::String(b)))
+        | (Ok(PropertyValue::Date(a)), Ok(PropertyValue::Date(b)))
+        | (Ok(PropertyValue::Timestamp(a)), Ok(PropertyValue::Timestamp(b))) => a.cmp(&b),
+        _ => left.to_string().cmp(&right.to_string()),
+    }
 }
