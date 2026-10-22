@@ -50,10 +50,17 @@ pub fn print_select(select: &ast::Select, dialect: Dialect) -> Result<PrintedSql
 }
 
 pub fn print_explain_distributed(
-    _select: &ast::Select,
-    _dialect: Dialect,
+    select: &ast::Select,
+    dialect: Dialect,
 ) -> Result<PrintedSql, PrintError> {
-    Err(PrintError::UnsupportedDialect)
+    if dialect != Dialect::Trino {
+        return Err(PrintError::UnsupportedDialect);
+    }
+    let printed = print_select(select, dialect)?;
+    Ok(PrintedSql::new(format!(
+        "EXPLAIN (TYPE DISTRIBUTED) {}",
+        printed.as_str()
+    )))
 }
 
 /// Prints the Trino call that makes a catalog forget the table metadata it cached:

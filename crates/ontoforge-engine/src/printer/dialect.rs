@@ -111,7 +111,16 @@ fn expr(e: &Expr, dialect: Dialect) -> Result<String, PrintError> {
     match e {
         Expr::Column(name) => quote_ident(name),
         Expr::Literal(l) => literal(l, dialect),
-        Expr::CaseWhen { .. } => Err(PrintError::UnsupportedDialect),
+        Expr::CaseWhen {
+            when,
+            then,
+            otherwise,
+        } => Ok(format!(
+            "CASE WHEN ({}) THEN ({}) ELSE ({}) END",
+            expr(when, dialect)?,
+            expr(then, dialect)?,
+            expr(otherwise, dialect)?
+        )),
         Expr::CountStar => Ok("count(*)".to_owned()),
         Expr::Aggregate { func, arg } => Ok(format!(
             "{}({})",
@@ -186,6 +195,7 @@ fn operand(e: &Expr, dialect: Dialect) -> Result<String, PrintError> {
             | Expr::And(_)
             | Expr::Or(_)
             | Expr::Not(_)
+            | Expr::CaseWhen { .. }
     ) {
         Ok(format!("({text})"))
     } else {
