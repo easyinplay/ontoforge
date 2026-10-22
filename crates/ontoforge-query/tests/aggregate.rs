@@ -2,6 +2,7 @@ use ontoforge_query::aggregate::AggregateLimits;
 use ontoforge_query::ast::AggregateRequest;
 use serde_json::json;
 use std::collections::{BTreeMap, BTreeSet};
+use std::sync::Mutex;
 use std::time::Duration;
 
 use camino::{Utf8Path, Utf8PathBuf};
@@ -10,6 +11,7 @@ use ontoforge_auth::scope::{PrincipalScope, TypeScope};
 use ontoforge_auth::Principal;
 use ontoforge_engine::sqlite::fixture::plan_fixture_tables;
 use ontoforge_engine::sqlite::SqliteEngine;
+use ontoforge_engine::{Engine, EngineError, EngineStatus, PhysicalColumn, PrintedSql, QueryContext, QueryOutput, TableRef};
 use ontoforge_expr::{Attrs, Pred};
 use ontoforge_query::aggregate::{AggregateBucket, AggregateCapabilities, AggregateResult};
 use ontoforge_query::ast::{AggregateMeasure, ObjectSet, QueryLiteral, WhereClause};
@@ -28,6 +30,27 @@ fn name(raw: &str) -> ObjectTypeName {
 
 fn prop(raw: &str) -> PropertyName {
     PropertyName::try_from(raw.to_owned()).unwrap()
+}
+
+struct RecordingEngine {
+    inner: SqliteEngine,
+    sql: Mutex<Vec<String>>,
+}
+
+impl Engine for RecordingEngine {
+    fn dialect(&self) -> ontoforge_engine::Dialect { self.inner.dialect() }
+
+    async fn execute(&self, sql: &PrintedSql, ctx: &QueryContext) -> Result<QueryOutput, EngineError> {
+        self.sql.lock().unwrap().push(sql.as_str().to_owned());
+        self.inner.execute(sql, ctx).await
+    }
+
+    async fn describe_tables(&self, tables: &[TableRef], ctx: &QueryContext)
+        -> Result<BTreeMap<TableRef, Vec<PhysicalColumn>>, EngineError> {
+        self.inner.describe_tables(tables, ctx).await
+    }
+
+    async fn status(&self) -> EngineStatus { self.inner.status().await }
 }
 
 fn full_materialization_reference() -> AggregateResult {
@@ -94,7 +117,10 @@ async fn count_sum_avg_match_full_materialization_reference() {
     let ontology = loaded.ontology.unwrap();
     let profile = ProfileName::try_from("dev".to_owned()).unwrap();
     let fixtures = plan_fixture_tables(&ontology, &loaded.sources, &profile).unwrap();
-    let engine = SqliteEngine::from_fixtures(root, &fixtures.tables).await.unwrap();
+    let engine = RecordingEngine {
+        inner: SqliteEngine::from_fixtures(root, &fixtures.tables).await.unwrap(),
+        sql: Mutex::new(Vec::new()),
+    };
     let dir = tempfile::tempdir().unwrap();
     let store = EditStore::open(StoreSettings {
         backend: BackendSettings::Sqlite {
@@ -185,6 +211,7 @@ async fn count_sum_avg_match_full_materialization_reference() {
         ).await.unwrap(),
         full_materialization_reference(),
     );
+    assert!(engine.sql.lock().unwrap().iter().any(|sql| sql.contains("SUM(")));
 }
 
 #[test]
