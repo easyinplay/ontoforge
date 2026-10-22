@@ -3,11 +3,11 @@ gsd_state_version: "1.0"
 current_phase: 4
 current_phase_name: Scoped L0 Read
 status: executing
-stopped_at: Phase 4 wave 6, executing 04-07 task 1
-last_updated: "2026-10-22T23:29:49+08:00"
+stopped_at: Phase 4 wave 6, executing 04-07 tasks 1-2
+last_updated: "2026-10-22T23:56:11+08:00"
 last_activity: 2026-10-22
-last_activity_desc: Phase 4 04-06 verified; executing 04-07 real backend corpus
-state_head: 1a1effd
+last_activity_desc: Phase 4 04-07 real backend corpus audit fixes and CI wiring
+state_head: 1e1659d
 progress:
   total_phases: 7
   completed_phases: 3
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-19)
 ## Current Position
 
 Phase: 4 — Scoped L0 Read
-Plan: 04-07 of 04-07, executing task 1
+Plan: 04-07 of 04-07, executing tasks 1-2
 Status: Executing
 Last activity: 2026-10-22 — 04-06 passed; see `phases/04-scoped-l0-read/04-06-SUMMARY.md`
 
@@ -87,5 +87,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-10-21T08:48:07.463Z
-Stopped at: Phase 4 wave 6, executing 04-07 task 1
+Stopped at: Phase 4 wave 6, executing 04-07 tasks 1-2
 Resume file: None
