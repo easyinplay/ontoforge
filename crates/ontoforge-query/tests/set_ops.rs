@@ -290,6 +290,13 @@ async fn set_result_reuses_normal_hydration_order_and_cursor() {
     assert_eq!(second.rows[0].pk, json!("F-1002"));
     assert!(!second.has_more);
 
+    let targeted = QueryService {
+        principal: &principal, scope: &scope, active: Arc::clone(&active), engine: &engine,
+        store: &store, limits: ExecutionLimits::try_new(6, 4, 2, 64 * 1024 * 1024).unwrap(),
+        tokens: &tokens,
+    };
+    assert_eq!(targeted.execute_list(&query(None)).await.unwrap().rows[0].pk, json!("F-1001"));
+
     let budget_limited = QueryService {
         limits: ExecutionLimits::try_new(3, 10_000, 2_048, 64 * 1024 * 1024).unwrap(),
         active: Arc::clone(&active),
