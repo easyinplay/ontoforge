@@ -309,34 +309,205 @@ async fn scan_includes_release_and_skips_version_zero() {
 }
 
 #[tokio::test]
-async fn links_from_or_to_endpoint_are_bounded_and_preserve_removed_edges() {
+async fn link_from_or_to_endpoint_is_bounded_and_preserves_removed_edges() {
     let (fixture, active) = fixture().await;
     let table = &active.physical.links[&link("gateStands")];
     let pool = fixture.side_pool().await;
-    for (a, b, deleted, version) in [("A", 3, false, 1), ("A", 1, true, 2), ("A", 2, false, 1), ("B", 1, false, 1), ("A", 4, false, 0)] {
-        let sql = format!("INSERT INTO \"{}\" (\"{}\", \"{}\", of_deleted, of_version) VALUES ('{a}', {b}, {deleted}, {version})", table.table, table.a.column, table.b.column);
-        sqlx::query(sqlx::AssertSqlSafe(sql)).execute(&pool).await.unwrap();
+    for (a, b, deleted, version) in [
+        ("A", 3, false, 1),
+        ("A", 1, true, 2),
+        ("A", 2, false, 1),
+        ("B", 1, false, 1),
+        ("A", 4, false, 0),
+    ] {
+        let sql = format!(
+            "INSERT INTO \"{}\" (\"{}\", \"{}\", of_deleted, of_version) VALUES ('{a}', {b}, {deleted}, {version})",
+            table.table, table.a.column, table.b.column
+        );
+        sqlx::query(sqlx::AssertSqlSafe(sql))
+            .execute(&pool)
+            .await
+            .unwrap();
     }
-    let first = fixture.store.read_link_edits(&active, &link("gateStands"), LinkEndpoint::From(s("A")), None, 2).await.unwrap();
-    assert_eq!(first.edits.iter().map(|e| &e.to).collect::<Vec<_>>(), vec![&PropertyValue::Int(1), &PropertyValue::Int(2)]);
+    let first = fixture
+        .store
+        .read_link_edits(
+            &active,
+            &link("gateStands"),
+            LinkEndpoint::From(s("A")),
+            None,
+            2,
+        )
+        .await
+        .unwrap();
+    assert_eq!(
+        first.edits.iter().map(|e| &e.to).collect::<Vec<_>>(),
+        vec![&PropertyValue::Int(1), &PropertyValue::Int(2)]
+    );
     assert!(first.edits[0].row.deleted);
     assert_eq!(first.edits[0].row.version, 2);
     assert!(first.has_more);
-    let second = fixture.store.read_link_edits(&active, &link("gateStands"), LinkEndpoint::From(s("A")), first.next.as_ref(), 2).await.unwrap();
-    assert_eq!(second.edits.iter().map(|e| &e.to).collect::<Vec<_>>(), vec![&PropertyValue::Int(3)]);
+    let second = fixture
+        .store
+        .read_link_edits(
+            &active,
+            &link("gateStands"),
+            LinkEndpoint::From(s("A")),
+            first.next.as_ref(),
+            2,
+        )
+        .await
+        .unwrap();
+    assert_eq!(
+        second.edits.iter().map(|e| &e.to).collect::<Vec<_>>(),
+        vec![&PropertyValue::Int(3)]
+    );
     assert!(!second.has_more);
-    let reverse = fixture.store.read_link_edits(&active, &link("gateStands"), LinkEndpoint::To(PropertyValue::Int(1)), None, 2).await.unwrap();
-    assert_eq!(reverse.edits.iter().map(|e| &e.from).collect::<Vec<_>>(), vec![&s("A"), &s("B")]);
-    assert!(fixture.store.read_link_edits(&active, &link("gateStands"), LinkEndpoint::From(s("A")), None, 0).await.is_err());
-    assert!(fixture.store.read_link_edits(&active, &link("gateStands"), LinkEndpoint::From(s("A")), None, 257).await.is_err());
+    let reverse = fixture
+        .store
+        .read_link_edits(
+            &active,
+            &link("gateStands"),
+            LinkEndpoint::To(PropertyValue::Int(1)),
+            None,
+            2,
+        )
+        .await
+        .unwrap();
+    assert_eq!(
+        reverse.edits.iter().map(|e| &e.from).collect::<Vec<_>>(),
+        vec![&s("A"), &s("B")]
+    );
+    assert!(
+        fixture
+            .store
+            .read_link_edits(
+                &active,
+                &link("gateStands"),
+                LinkEndpoint::From(s("A")),
+                None,
+                0
+            )
+            .await
+            .is_err()
+    );
+    assert!(
+        fixture
+            .store
+            .read_link_edits(
+                &active,
+                &link("gateStands"),
+                LinkEndpoint::From(s("A")),
+                None,
+                257
+            )
+            .await
+            .is_err()
+    );
 }
 
 #[tokio::test]
 async fn link_fk_request_is_rejected_with_logical_name() {
     let (fixture, active) = fixture().await;
-    let err = fixture.store.read_link_edits(&active, &link("gateStand"), LinkEndpoint::From(s("A")), None, 1).await.unwrap_err();
+    let err = fixture
+        .store
+        .read_link_edits(
+            &active,
+            &link("gateStand"),
+            LinkEndpoint::From(s("A")),
+            None,
+            1,
+        )
+        .await
+        .unwrap_err();
     assert!(err.to_string().contains("gateStand"));
     assert!(!err.to_string().contains("of_lnk"));
+}
+
+#[tokio::test]
+async fn corrupt_property_error_uses_logical_name() {
+    let fixture = support::sqlite_store().await;
+    let ontology = support::ontology_from(&[(
+        "gate.yaml",
+        "kind: ObjectType\napiName: Gate\nbacking: source\nprimaryKey: code\nproperties:\n  code: { type: string, required: true }\n  openedAt: { type: timestamp }\n",
+    )]);
+    reload(&fixture.store, &ontology, &ReloadOptions::default())
+        .await
+        .unwrap();
+    let active = fixture.store.active_definition().await.unwrap();
+    let table = &active.physical.objects[&gate()];
+    let column = &table.properties[&PropertyName::try_from("openedAt".to_owned()).unwrap()];
+    let pool = fixture.side_pool().await;
+    let sql = format!(
+        "INSERT INTO \"{}\" (\"{}\", \"{}\", \"{}\", of_version) VALUES ('A', 'invalid', true, 1)",
+        table.table, table.pk.column, column.column, column.set_column
+    );
+    sqlx::query(sqlx::AssertSqlSafe(sql))
+        .execute(&pool)
+        .await
+        .unwrap();
+    let err = fixture
+        .store
+        .read_object_edit(&active, &gate(), &s("A"))
+        .await
+        .unwrap_err();
+    assert!(err.to_string().contains("openedAt"));
+    assert!(!err.to_string().contains(&column.column));
+}
+
+#[tokio::test]
+async fn link_reads_leave_row_log_and_definition_counts_unchanged() {
+    let (fixture, active) = fixture().await;
+    let table = &active.physical.links[&link("gateStands")];
+    let pool = fixture.side_pool().await;
+    let sql = format!(
+        "INSERT INTO \"{}\" (\"{}\", \"{}\", of_version) VALUES ('A', 1, 1)",
+        table.table, table.a.column, table.b.column
+    );
+    sqlx::query(sqlx::AssertSqlSafe(sql))
+        .execute(&pool)
+        .await
+        .unwrap();
+    let snapshot = || async {
+        sqlx::query_as::<_, (i64, i64, i64)>(sqlx::AssertSqlSafe(format!(
+            "SELECT (SELECT count(*) FROM \"{}\"), (SELECT count(*) FROM of_edit_log), (SELECT count(*) FROM of_def_version)", table.table
+        ))).fetch_one(&pool).await.unwrap()
+    };
+    let before = snapshot().await;
+    fixture
+        .store
+        .read_link_edits(
+            &active,
+            &link("gateStands"),
+            LinkEndpoint::From(s("A")),
+            None,
+            1,
+        )
+        .await
+        .unwrap();
+    fixture
+        .store
+        .read_link_edits(
+            &active,
+            &link("gateStands"),
+            LinkEndpoint::To(PropertyValue::Int(1)),
+            None,
+            1,
+        )
+        .await
+        .unwrap();
+    fixture
+        .store
+        .read_link_edits(
+            &active,
+            &link("gateStands"),
+            LinkEndpoint::From(s("missing")),
+            None,
+            1,
+        )
+        .await
+        .unwrap();
+    assert_eq!(before, snapshot().await);
 }
 
 #[tokio::test]

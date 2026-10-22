@@ -7,7 +7,7 @@ use sea_query::{Alias, Condition, Expr, ExprTrait, Order, Query};
 
 use crate::commit::{bind, cell_json, decode_object, read_expr};
 use crate::error::StoreError;
-use crate::physical::ObjectTable;
+use crate::physical::{ColumnType, LinkTable, ObjectTable};
 use crate::sql_exit::{self, Cell, CellKind};
 use crate::state::{EditRow, LinkRow};
 use crate::store::{ActiveDefinition, Backend, EditStore};
@@ -71,14 +71,25 @@ fn bounded(limit: usize) -> Result<(), StoreError> {
     }
 }
 
-fn logical_read_error(type_name: &ObjectTypeName, error: StoreError) -> StoreError {
+fn logical_read_error(name: &impl std::fmt::Display, error: StoreError) -> StoreError {
     match error {
         StoreError::Query { sqlstate, .. } => StoreError::Query {
             sqlstate,
-            message: format!("logical object type `{type_name}` read failed"),
+            message: format!("logical edit `{name}` read failed"),
         },
         other => other,
     }
+}
+
+fn decode_key(
+    cell: Cell,
+    ty: &ColumnType,
+    def: &PropertyDef,
+    name: &impl std::fmt::Display,
+) -> Result<PropertyValue, StoreError> {
+    let json = cell_json(cell, ty)?;
+    PropertyValue::from_json(def, &json)
+        .map_err(|e| StoreError::Corrupt(format!("logical key `{name}` is invalid: {e}")))
 }
 
 fn object_definition<'a>(
@@ -139,27 +150,197 @@ fn decode_edit(
     mut cells: Vec<Cell>,
 ) -> Result<Option<ObjectEdit>, StoreError> {
     let key = cells.remove(0);
-    let json = cell_json(key, &table.pk.ty)?;
-    let pk = PropertyValue::from_json(pk_def, &json).map_err(|e| {
-        StoreError::Corrupt(format!(
-            "logical primary key `{}` is invalid: {e}",
-            ty.primary_key
-        ))
-    })?;
+    let pk = decode_key(key, &table.pk.ty, pk_def, &ty.primary_key)?;
     let row = decode_object(ty, table, cells)?;
     Ok((row.version > 0).then_some(ObjectEdit { pk, row }))
 }
 
+struct LinkMapping<'a> {
+    table: &'a LinkTable,
+    from_ty: &'a ontoforge_schema::ir::ObjectType,
+    to_ty: &'a ontoforge_schema::ir::ObjectType,
+    from_def: &'a PropertyDef,
+    to_def: &'a PropertyDef,
+}
+
+fn link_mapping<'a>(
+    active: &'a ActiveDefinition,
+    link_name: &LinkTypeName,
+) -> Result<LinkMapping<'a>, StoreError> {
+    active
+        .ontology
+        .link_types
+        .get(link_name)
+        .ok_or_else(|| StoreError::Config(format!("unknown logical link `{link_name}`")))?;
+    let table = active.physical.links.get(link_name).ok_or_else(|| {
+        StoreError::Config(format!(
+            "logical link `{link_name}` is not a many-to-many link"
+        ))
+    })?;
+    let from_ty = active
+        .ontology
+        .object_types
+        .get(&table.from_type)
+        .ok_or_else(|| {
+            StoreError::Corrupt(format!("logical link `{link_name}` has no from type"))
+        })?;
+    let to_ty = active
+        .ontology
+        .object_types
+        .get(&table.to_type)
+        .ok_or_else(|| StoreError::Corrupt(format!("logical link `{link_name}` has no to type")))?;
+    let from_def = from_ty
+        .properties
+        .get(&from_ty.primary_key)
+        .ok_or_else(|| {
+            StoreError::Corrupt(format!("logical link `{link_name}` has no from key"))
+        })?;
+    let to_def = to_ty
+        .properties
+        .get(&to_ty.primary_key)
+        .ok_or_else(|| StoreError::Corrupt(format!("logical link `{link_name}` has no to key")))?;
+    Ok(LinkMapping {
+        table,
+        from_ty,
+        to_ty,
+        from_def,
+        to_def,
+    })
+}
+
+fn decode_link(
+    cells: Vec<Cell>,
+    mapping: &LinkMapping<'_>,
+    link_name: &LinkTypeName,
+) -> Result<Option<LinkEdit>, StoreError> {
+    let mut row = cells.into_iter();
+    let from = decode_key(
+        row.next().unwrap(),
+        &mapping.table.a.ty,
+        mapping.from_def,
+        &mapping.from_ty.primary_key,
+    )?;
+    let to = decode_key(
+        row.next().unwrap(),
+        &mapping.table.b.ty,
+        mapping.to_def,
+        &mapping.to_ty.primary_key,
+    )?;
+    let (Some(Cell::Bool(deleted)), Some(Cell::Int(version))) = (row.next(), row.next()) else {
+        return Err(StoreError::Corrupt(format!(
+            "logical link `{link_name}` has invalid edit flags"
+        )));
+    };
+    Ok((version > 0).then_some(LinkEdit {
+        from,
+        to,
+        row: LinkRow { deleted, version },
+    }))
+}
+
 impl EditStore {
+    /// Reads one bounded, stable page of M:N edits adjacent to a logical endpoint.
     pub async fn read_link_edits(
         &self,
-        _active: &ActiveDefinition,
-        _link_name: &LinkTypeName,
-        _endpoint: LinkEndpoint,
-        _after: Option<&LinkScanCursor>,
-        _limit: usize,
+        active: &ActiveDefinition,
+        link_name: &LinkTypeName,
+        endpoint: LinkEndpoint,
+        after: Option<&LinkScanCursor>,
+        limit: usize,
     ) -> Result<LinkScanPage, StoreError> {
-        Ok(LinkScanPage { edits: Vec::new(), next: None, has_more: false })
+        bounded(limit)?;
+        let mapping = link_mapping(active, link_name)?;
+        let LinkMapping {
+            table,
+            from_def,
+            to_def,
+            ..
+        } = &mapping;
+        let backend = self.backend();
+        let (from_expr, from_kind) = read_expr(&table.a.column, &table.a.ty, backend);
+        let (to_expr, to_kind) = read_expr(&table.b.column, &table.b.ty, backend);
+        let mut select = Query::select();
+        select
+            .expr(from_expr)
+            .expr(to_expr)
+            .column(Alias::new("of_deleted"))
+            .column(Alias::new("of_version"))
+            .from(sql_exit::edit_table(self.schema_edit(), &table.table))
+            .and_where(Expr::col(Alias::new("of_version")).gt(0))
+            .limit((limit + 1) as u64);
+        let (filter_column, filter_type, filter_def, other_column, other_type, other_def, value) =
+            match &endpoint {
+                LinkEndpoint::From(value) => (
+                    &table.a.column,
+                    &table.a.ty,
+                    from_def,
+                    &table.b.column,
+                    &table.b.ty,
+                    to_def,
+                    value,
+                ),
+                LinkEndpoint::To(value) => (
+                    &table.b.column,
+                    &table.b.ty,
+                    to_def,
+                    &table.a.column,
+                    &table.a.ty,
+                    from_def,
+                    value,
+                ),
+            };
+        let key = value.canonical(filter_def).map_err(|e| {
+            StoreError::Config(format!(
+                "invalid endpoint for logical link `{link_name}`: {e}"
+            ))
+        })?;
+        select
+            .and_where(Expr::col(Alias::new(filter_column)).eq(bind(&key, filter_type, backend)))
+            .order_by(Alias::new(other_column), Order::Asc)
+            .order_by(Alias::new(&table.a.column), Order::Asc)
+            .order_by(Alias::new(&table.b.column), Order::Asc);
+        if let Some(cursor) = after {
+            let (fixed, other) = match &endpoint {
+                LinkEndpoint::From(_) => (&cursor.from, &cursor.to),
+                LinkEndpoint::To(_) => (&cursor.to, &cursor.from),
+            };
+            if fixed != &key {
+                return Err(StoreError::Config(format!(
+                    "cursor does not match logical link `{link_name}` endpoint"
+                )));
+            }
+            let other = other.canonical(other_def).map_err(|e| {
+                StoreError::Config(format!(
+                    "invalid cursor for logical link `{link_name}`: {e}"
+                ))
+            })?;
+            select.and_where(
+                Expr::col(Alias::new(other_column)).gt(bind(&other, other_type, backend)),
+            );
+        }
+        let kinds = [from_kind, to_kind, CellKind::Bool, CellKind::Int64];
+        let cells =
+            sql_exit::fetch_all_cells_read(&self.db, sql_exit::build_for(&select, backend), &kinds)
+                .await
+                .map_err(|error| logical_read_error(link_name, error))?;
+        let mut edits = cells
+            .into_iter()
+            .map(|row| decode_link(row, &mapping, link_name))
+            .collect::<Result<Vec<_>, _>>()?
+            .into_iter()
+            .flatten()
+            .collect::<Vec<_>>();
+        let has_more = edits.len() > limit;
+        edits.truncate(limit);
+        let next = edits.last().map(|edit| LinkScanCursor {
+            from: edit.from.clone(),
+            to: edit.to.clone(),
+        });
+        Ok(LinkScanPage {
+            edits,
+            next,
+            has_more,
+        })
     }
 
     /// Reads one edit row without creating or locking a row.
