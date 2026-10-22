@@ -976,31 +976,259 @@ mod tests {
     use camino::Utf8Path;
     use ontoforge_schema::ir::ObjectTypeName;
     use ontoforge_schema::load_dir;
+    use proptest::prelude::*;
     use serde_json::json;
 
-    #[test]
-    fn group_distinct_treats_negative_and_positive_zero_as_one_value() {
+    fn fixture_type() -> (ObjectTypeName, ObjectType) {
         let root = Utf8Path::new(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/../../examples/ontologies/aviation"
         ));
         let ontology = load_dir(root).ontology.unwrap();
         let flight = ObjectTypeName::try_from("Flight".to_owned()).unwrap();
-        let mut ty = ontology.object_types[&flight].clone();
-        let delay = PropertyName::try_from("delayMinutes".to_owned()).unwrap();
-        ty.properties.get_mut(&delay).unwrap().base_type = BaseType::Double;
-        let request = AggregateRequest {
+        let ty = ontology.object_types[&flight].clone();
+        (flight, ty)
+    }
+
+    fn property(raw: &str) -> PropertyName {
+        PropertyName::try_from(raw.to_owned()).unwrap()
+    }
+
+    fn request(
+        flight: ObjectTypeName,
+        group_by: Vec<PropertyName>,
+        measures: Vec<AggregateMeasure>,
+    ) -> AggregateRequest {
+        AggregateRequest {
             set: crate::ast::ObjectSet::Type {
                 object_type: flight,
             },
-            group_by: vec![],
-            measures: vec![AggregateMeasure::Distinct {
+            group_by,
+            measures,
+        }
+    }
+
+    #[test]
+    fn group_distinct_treats_negative_and_positive_zero_as_one_value() {
+        let (flight, mut ty) = fixture_type();
+        let delay = property("delayMinutes");
+        ty.properties.get_mut(&delay).unwrap().base_type = BaseType::Double;
+        let request = request(
+            flight,
+            vec![],
+            vec![AggregateMeasure::Distinct {
                 property: delay.clone(),
             }],
-        };
+        );
         let mut builder = AggregateBuilder::new(&request, &ty, AggregateLimits::phase4_default());
-        builder.push(&BTreeMap::from([(delay.clone(), json!(-0.0))])).unwrap();
-        builder.push(&BTreeMap::from([(delay, json!(0.0))])).unwrap();
+        builder
+            .push(&BTreeMap::from([(delay.clone(), json!(-0.0))]))
+            .unwrap();
+        builder
+            .push(&BTreeMap::from([(delay, json!(0.0))]))
+            .unwrap();
         assert_eq!(builder.finish().unwrap().buckets[0].values, vec![json!(1)]);
+    }
+
+    #[test]
+    fn group_distinct_group_and_bucket_bounds_are_inclusive() {
+        let (flight, ty) = fixture_type();
+        let status = property("status");
+        let count = AggregateMeasure::Count { property: None };
+        let group_request = request(flight.clone(), vec![status.clone()], vec![count.clone()]);
+        let mut groups =
+            AggregateBuilder::new(&group_request, &ty, AggregateLimits::phase4_default());
+        for index in 0..1_024 {
+            groups
+                .push(&BTreeMap::from([(
+                    status.clone(),
+                    json!(format!("g{index}")),
+                )]))
+                .unwrap();
+        }
+        assert_eq!(groups.buckets.len(), 1_024);
+        assert!(matches!(
+            groups.push(&BTreeMap::from([(status.clone(), json!("overflow"))])),
+            Err(AggregateError::AggregateCostExceeded)
+        ));
+
+        let bucket_limits =
+            AggregateLimits::try_new(4_097, 4_096, 10_000, 16 * 1024 * 1024).unwrap();
+        let bucket_request = request(flight, vec![status.clone()], vec![count]);
+        let mut buckets = AggregateBuilder::new(&bucket_request, &ty, bucket_limits);
+        for index in 0..4_096 {
+            buckets
+                .push(&BTreeMap::from([(
+                    status.clone(),
+                    json!(format!("b{index}")),
+                )]))
+                .unwrap();
+        }
+        assert_eq!(buckets.bucket_count, 4_096);
+        assert!(matches!(
+            buckets.push(&BTreeMap::from([(status, json!("overflow"))])),
+            Err(AggregateError::AggregateCostExceeded)
+        ));
+    }
+
+    #[test]
+    fn group_distinct_value_and_memory_bounds_are_inclusive_and_shared() {
+        let (flight, ty) = fixture_type();
+        let delay = property("delayMinutes");
+        let status = property("status");
+        let value_request = request(
+            flight.clone(),
+            vec![],
+            vec![AggregateMeasure::Distinct {
+                property: delay.clone(),
+            }],
+        );
+        let mut values =
+            AggregateBuilder::new(&value_request, &ty, AggregateLimits::phase4_default());
+        for index in 0..10_000 {
+            values
+                .push(&BTreeMap::from([(delay.clone(), json!(index))]))
+                .unwrap();
+        }
+        assert_eq!(values.distinct_count, 10_000);
+        assert!(matches!(
+            values.push(&BTreeMap::from([(delay.clone(), json!(10_000))])),
+            Err(AggregateError::AggregateCostExceeded)
+        ));
+
+        let memory_request = request(
+            flight.clone(),
+            vec![],
+            vec![AggregateMeasure::Distinct {
+                property: status.clone(),
+            }],
+        );
+        let mut memory =
+            AggregateBuilder::new(&memory_request, &ty, AggregateLimits::phase4_default());
+        let max_bytes = 16 * 1024 * 1024;
+        memory
+            .push(&BTreeMap::from([(
+                status.clone(),
+                json!("a".repeat(max_bytes - 2)),
+            )]))
+            .unwrap();
+        assert_eq!(memory.distinct_bytes, max_bytes);
+        let mut over_memory =
+            AggregateBuilder::new(&memory_request, &ty, AggregateLimits::phase4_default());
+        assert!(matches!(
+            over_memory.push(&BTreeMap::from([(
+                status.clone(),
+                json!("a".repeat(max_bytes - 1))
+            )])),
+            Err(AggregateError::AggregateCostExceeded)
+        ));
+
+        let shared = request(
+            flight,
+            vec![status.clone()],
+            vec![
+                AggregateMeasure::Distinct {
+                    property: delay.clone(),
+                },
+                AggregateMeasure::Distinct {
+                    property: delay.clone(),
+                },
+            ],
+        );
+        let limits = AggregateLimits::try_new(2, 4, 2, 16 * 1024 * 1024).unwrap();
+        let mut builder = AggregateBuilder::new(&shared, &ty, limits);
+        builder
+            .push(&BTreeMap::from([
+                (status.clone(), json!("a")),
+                (delay.clone(), json!(1)),
+            ]))
+            .unwrap();
+        assert_eq!(builder.distinct_count, 2);
+        assert!(matches!(
+            builder.push(&BTreeMap::from([(status, json!("b")), (delay, json!(2))])),
+            Err(AggregateError::AggregateCostExceeded)
+        ));
+    }
+
+    proptest! {
+        #![proptest_config(ProptestConfig::with_cases(64))]
+        #[test]
+        fn count_sum_avg_random_old_new_correction_matches_reference(
+            rows in proptest::collection::vec((
+                proptest::option::of(-100i16..100),
+                proptest::option::of(-100i16..100),
+                any::<bool>(), any::<bool>(), any::<bool>(), any::<bool>(),
+            ), 0..40),
+        ) {
+            let (flight, ty) = fixture_type();
+            let status = property("status");
+            let delay = property("delayMinutes");
+            let request = request(
+                flight,
+                vec![status.clone()],
+                vec![
+                    AggregateMeasure::Count { property: None },
+                    AggregateMeasure::Sum { property: delay.clone() },
+                    AggregateMeasure::Avg { property: delay.clone() },
+                ],
+            );
+            let mut builder = AggregateBuilder::new(&request, &ty, AggregateLimits::phase4_default());
+            let visible_row = |group: bool, value: Option<i16>| BTreeMap::from([
+                (status.clone(), json!(if group { "a" } else { "b" })),
+                (delay.clone(), value.map_or(Value::Null, |n| json!(n))),
+            ]);
+            for source_group in [false, true] {
+                let source_rows = rows.iter().filter(|(_, _, group, _, _, _)| *group == source_group)
+                    .collect::<Vec<_>>();
+                if source_rows.is_empty() {
+                    continue;
+                }
+                let non_null = source_rows.iter().filter_map(|(value, ..)| *value).collect::<Vec<_>>();
+                let sum: i64 = non_null.iter().map(|value| i64::from(*value)).sum();
+                let count = non_null.len();
+                builder.seed_partial(vec![
+                    json!(if source_group { "a" } else { "b" }),
+                    json!(source_rows.len()),
+                    json!(source_rows.len()),
+                    if count == 0 { Value::Null } else { json!(sum) },
+                    json!(count),
+                    if count == 0 { Value::Null } else { json!(sum) },
+                    json!(count),
+                ]).unwrap();
+            }
+            let mut oracle = BTreeMap::<String, (Vec<Value>, u64, i64, u64)>::new();
+            for (old, new, old_group, new_group, edited, alive) in rows {
+                let old_row = visible_row(old_group, old);
+                if edited {
+                    builder.subtract(&old_row).unwrap();
+                }
+                if !edited || alive {
+                    let (group, value) = if edited { (new_group, new) } else { (old_group, old) };
+                    let row = visible_row(group, value);
+                    if edited {
+                        builder.push(&row).unwrap();
+                    }
+                    let group = vec![json!(if group { "a" } else { "b" })];
+                    let entry = oracle.entry(serde_json::to_string(&group).unwrap())
+                        .or_insert_with(|| (group, 0, 0, 0));
+                    entry.1 += 1;
+                    if let Some(value) = value {
+                        entry.2 += i64::from(value);
+                        entry.3 += 1;
+                    }
+                }
+            }
+            let expected = AggregateResult {
+                buckets: oracle.into_values().map(|(group, rows, sum, count)| AggregateBucket {
+                    group,
+                    values: vec![
+                        json!(rows),
+                        if count == 0 { Value::Null } else { json!(sum) },
+                        if count == 0 { Value::Null } else { json!(sum as f64 / count as f64) },
+                    ],
+                }).collect(),
+            };
+            prop_assert_eq!(builder.finish().unwrap(), expected);
+        }
     }
 }

@@ -20,7 +20,9 @@ use ontoforge_engine::{
     Engine, EngineError, EngineStatus, QueryContext, QueryOutput, TableRef, Value,
 };
 use ontoforge_expr::Pred;
+use ontoforge_query::aggregate::{AggregateCapabilities, AggregateError, AggregateLimits};
 use ontoforge_query::ast::PageSpec;
+use ontoforge_query::ast::{AggregateMeasure, AggregateRequest};
 use ontoforge_query::ast::{Direction, Nulls, OrderBy};
 use ontoforge_query::compile::{CompileLimits, ValidatedQuery};
 use ontoforge_query::cursor::{CursorCodec, CursorContext, CursorPosition};
@@ -485,6 +487,87 @@ fn request(object_type: &str, pk: &str, select: &[&str]) -> QueryRequest {
         },
         select: select.iter().map(|p| prop(p)).collect(),
     }
+}
+
+#[tokio::test]
+async fn aggregate_invalid_names_and_limits_fail_before_backend_access() {
+    let f = fixture().await;
+    let active = f.store.active_definition().await.unwrap();
+    let ty = &active.ontology.object_types[&name("Flight")];
+    let mut scope = f.scope.clone();
+    scope.types.insert(
+        name("Flight"),
+        TypeScope {
+            row: Pred::Const(true),
+            columns: ty
+                .properties
+                .keys()
+                .cloned()
+                .map(|property| (property, Pred::Const(true)))
+                .collect(),
+        },
+    );
+    let engine = OneWindowEngine(AtomicUsize::new(0));
+    let tokens = TokenCodec::new(b"aggregate-security".to_vec()).unwrap();
+    let service = QueryService {
+        principal: &f.principal,
+        scope: &scope,
+        active,
+        engine: &engine,
+        store: &f.store,
+        limits: ExecutionLimits::phase4_default(),
+        tokens: &tokens,
+    };
+    let mut request = AggregateRequest {
+        set: ObjectSet::Type {
+            object_type: name("Flight"),
+        },
+        group_by: vec![prop("logicalSecret")],
+        measures: vec![AggregateMeasure::Count { property: None }],
+    };
+    for invalid in [request.clone(), {
+        request.group_by.clear();
+        request.measures = vec![AggregateMeasure::Distinct {
+            property: prop("logicalSecret"),
+        }];
+        request.clone()
+    }] {
+        let error = service
+            .execute_aggregate(
+                invalid,
+                AggregateCapabilities::all_supported(),
+                AggregateLimits::phase4_default(),
+            )
+            .await
+            .unwrap_err();
+        assert!(matches!(error, AggregateError::InvalidQuery));
+        let outward = format!("{} {}", error, serde_json::to_string(&error).unwrap());
+        for physical in ["flight_id", "flights", "query_id", "SELECT"] {
+            assert!(!outward.contains(physical), "{outward}");
+        }
+    }
+    assert!(matches!(
+        service
+            .execute_aggregate(
+                request,
+                AggregateCapabilities::all_supported(),
+                AggregateLimits {
+                    max_groups: 0,
+                    ..AggregateLimits::phase4_default()
+                },
+            )
+            .await,
+        Err(AggregateError::InvalidQuery)
+    ));
+    assert_eq!(engine.0.load(Ordering::SeqCst), 0);
+    let injected = json!({
+        "set": {"kind": "type", "objectType": "Flight"},
+        "groupBy": [],
+        "measures": [{"op": "count", "property": null}],
+        "maxDistinctValues": 1_000_000
+    });
+    assert!(serde_json::from_value::<AggregateRequest>(injected).is_err());
+    assert_eq!(engine.0.load(Ordering::SeqCst), 0);
 }
 
 async fn commit_object_edit(f: &Fixture, pk: &str, op: ObjectOp) {
