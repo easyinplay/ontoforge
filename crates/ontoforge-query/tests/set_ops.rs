@@ -203,6 +203,16 @@ async fn set_result_reuses_normal_hydration_order_and_cursor() {
     assert_eq!(second.rows[0].pk, json!("F-1002"));
     assert!(!second.has_more);
 
+    let budget_limited = QueryService {
+        limits: ExecutionLimits::try_new(3, 10_000, 2_048, 64 * 1024 * 1024).unwrap(),
+        active: Arc::clone(&active),
+        ..service
+    };
+    assert!(matches!(
+        budget_limited.execute_list(&query(None)).await,
+        Err(QueryError::WorkBudgetExceeded)
+    ));
+
     store.commit(Commit {
         actor: Actor::Principal(principal.id.to_string()),
         action: "setTestTombstone".to_owned(),
@@ -224,7 +234,11 @@ async fn set_result_reuses_normal_hydration_order_and_cursor() {
         })).collect(),
         ..PrincipalScope::default()
     };
-    let hidden = QueryService { scope: &hidden_scope, ..service };
+    let hidden = QueryService {
+        scope: &hidden_scope,
+        limits: ExecutionLimits::phase4_default(),
+        ..budget_limited
+    };
     assert!(hidden.execute_list(&query(None)).await.unwrap().rows.is_empty());
 }
 
