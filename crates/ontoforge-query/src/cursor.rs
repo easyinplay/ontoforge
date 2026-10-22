@@ -1,6 +1,7 @@
 use base64::Engine;
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use ontoforge_auth::scope::PrincipalScope;
+use ontoforge_expr::Attrs;
 use ontoforge_schema::ir::ObjectTypeName;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -28,13 +29,14 @@ impl CursorContext {
     pub fn new(
         principal_id: &str,
         scope: &PrincipalScope,
+        attrs: &Attrs,
         def_version: i64,
         object_type: ObjectTypeName,
         order: Vec<NormalizedOrder>,
     ) -> Self {
         Self {
             principal_id: principal_id.to_owned(),
-            scope: format!("{scope:?}"),
+            scope: format!("{scope:?}|{attrs:?}"),
             def_version,
             object_type,
             order,

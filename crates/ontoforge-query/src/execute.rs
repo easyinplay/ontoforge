@@ -1,5 +1,6 @@
 use std::cmp::Ordering;
 use std::collections::BTreeMap;
+use std::future::Future;
 
 use ontoforge_auth::scope::TypeScope;
 use ontoforge_engine::printer::ast::{CompareOp, Expr, Literal, OrderItem, Select, SelectItem};
@@ -21,6 +22,13 @@ use crate::{ExecutionLimits, ListPage, ObjectRow, QueryError, QueryService, engi
 const SOURCE_WINDOW: usize = 256;
 const FINAL_ROW_CAP: usize = 10_000;
 const FINAL_BYTE_CAP: usize = 16 * 1024 * 1024;
+
+async fn join_initial_candidates<S: Future, E: Future>(
+    source: S,
+    edits: E,
+) -> (S::Output, E::Output) {
+    tokio::join!(source, edits)
+}
 type SourceRow = (PropertyValue, BTreeMap<PropertyName, Value>);
 
 struct EligibleCandidate<'a> {
@@ -43,7 +51,6 @@ impl CandidateSet {
         &mut self,
         pk: PropertyValue,
         row: BTreeMap<PropertyName, Value>,
-        backfill: bool,
     ) -> Result<(), QueryError> {
         let entry = self
             .0
@@ -53,11 +60,10 @@ impl CandidateSet {
                 source: None,
                 edit: None,
             });
-        if !backfill
-            && entry
-                .source
-                .as_ref()
-                .is_some_and(|existing| existing != &row)
+        if entry
+            .source
+            .as_ref()
+            .is_some_and(|existing| existing != &row)
         {
             return Err(QueryError::AmbiguousObject);
         }
@@ -434,6 +440,7 @@ impl<E: Engine> QueryService<'_, E> {
         let cursor_context = CursorContext::new(
             self.principal.id.as_str(),
             self.scope,
+            &self.principal.attrs,
             self.active.def_version,
             type_name.clone(),
             normalized.clone(),
@@ -500,11 +507,12 @@ impl<E: Engine> QueryService<'_, E> {
                 .map_err(|_| QueryError::Source)?;
             let mut ctx = QueryContext::new("l0-list".to_owned(), Vec::new());
             ctx.max_rows = SOURCE_WINDOW + 1;
-            let (source_result, edit_result) = tokio::join!(
+            let (source_result, edit_result) = join_initial_candidates(
                 self.engine.execute(&sql, &ctx),
                 self.store
                     .scan_object_edits(&self.active, type_name, None, MAX_EDIT_READ),
-            );
+            )
+            .await;
             source_rows = decode_source(
                 source_result.map_err(|_| QueryError::Source)?,
                 &plan.required_columns,
@@ -567,7 +575,7 @@ impl<E: Engine> QueryService<'_, E> {
                     )
                     .await?;
                 for (pk, row) in rows {
-                    candidates.add_source(pk, row, true)?;
+                    candidates.add_source(pk, row)?;
                 }
             }
         }
@@ -577,7 +585,7 @@ impl<E: Engine> QueryService<'_, E> {
             .map(|(_, row)| source_sort_view(row, ty, scope, &self.principal.attrs))
             .transpose()?;
         for (pk, row) in source_rows {
-            candidates.add_source(pk, row, false)?;
+            candidates.add_source(pk, row)?;
         }
         while !source_exhausted {
             if seek_order.len() == normalized.len()
@@ -617,7 +625,7 @@ impl<E: Engine> QueryService<'_, E> {
                 .map(|(_, row)| source_sort_view(row, ty, scope, &self.principal.attrs))
                 .transpose()?;
             for (pk, row) in rows {
-                candidates.add_source(pk, row, false)?;
+                candidates.add_source(pk, row)?;
             }
         }
         self.finish_list(
@@ -850,4 +858,32 @@ fn source_sort_view(
             .ok_or(QueryError::Source)?,
     );
     Ok(view)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::join_initial_candidates;
+
+    #[tokio::test]
+    async fn list_runs_source_and_edit_lanes_before_first_merge() {
+        let (source_polled, source_seen) = tokio::sync::oneshot::channel();
+        let (edit_polled, edit_seen) = tokio::sync::oneshot::channel();
+        let source = async move {
+            source_polled.send(()).unwrap();
+            edit_seen.await.unwrap();
+            "source"
+        };
+        let edit = async move {
+            edit_polled.send(()).unwrap();
+            source_seen.await.unwrap();
+            "edit"
+        };
+        let joined = tokio::time::timeout(
+            std::time::Duration::from_secs(1),
+            join_initial_candidates(source, edit),
+        )
+        .await
+        .unwrap();
+        assert_eq!(joined, ("source", "edit"));
+    }
 }

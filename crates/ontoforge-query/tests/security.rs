@@ -291,25 +291,44 @@ impl Engine for RecordingSqlEngine {
 
 struct DuplicateBackfillEngine(AtomicUsize);
 impl Engine for DuplicateBackfillEngine {
-    fn dialect(&self) -> Dialect { Dialect::Sqlite }
+    fn dialect(&self) -> Dialect {
+        Dialect::Sqlite
+    }
     async fn execute(&self, _: &PrintedSql, _: &QueryContext) -> Result<QueryOutput, EngineError> {
         let call = self.0.fetch_add(1, Ordering::SeqCst);
-        let row = |status: &str| vec![
-            Value::String("F-1001".to_owned()), Value::String("LH100".to_owned()),
-            Value::String("FRA".to_owned()), Value::String("JFK".to_owned()),
-            Value::String("D-AAAA".to_owned()),
-            Value::Timestamp("2026-03-28T09:15:00".to_owned()),
-            Value::String(status.to_owned()), Value::Long(0), Value::Array(Vec::new()),
-        ];
+        let row = |status: &str| {
+            vec![
+                Value::String("F-1001".to_owned()),
+                Value::String("LH100".to_owned()),
+                Value::String("FRA".to_owned()),
+                Value::String("JFK".to_owned()),
+                Value::String("D-AAAA".to_owned()),
+                Value::Timestamp("2026-03-28T09:15:00".to_owned()),
+                Value::String(status.to_owned()),
+                Value::Long(0),
+                Value::Array(Vec::new()),
+            ]
+        };
         Ok(QueryOutput {
-            columns: Vec::new(), truncated: false,
-            rows: if call == 0 { Vec::new() } else { vec![row("scheduled"), row("cancelled")] },
+            columns: Vec::new(),
+            truncated: false,
+            rows: if call == 0 {
+                Vec::new()
+            } else {
+                vec![row("scheduled"), row("cancelled")]
+            },
         })
     }
-    async fn describe_tables(&self, _: &[TableRef], _: &QueryContext) -> Result<BTreeMap<TableRef, Vec<ontoforge_engine::PhysicalColumn>>, EngineError> {
+    async fn describe_tables(
+        &self,
+        _: &[TableRef],
+        _: &QueryContext,
+    ) -> Result<BTreeMap<TableRef, Vec<ontoforge_engine::PhysicalColumn>>, EngineError> {
         panic!("list read must not describe source tables")
     }
-    async fn status(&self) -> EngineStatus { EngineStatus::Available }
+    async fn status(&self) -> EngineStatus {
+        EngineStatus::Available
+    }
 }
 
 struct FalsePositiveEngine {
@@ -550,35 +569,112 @@ async fn pagination_list_source_keyset_and_has_more() {
 }
 
 #[tokio::test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "two requests replay one signed cursor"
+)]
 async fn cursor_rejects_same_principal_when_attributes_change() {
     let f = fixture().await;
     let active = f.store.active_definition().await.unwrap();
     let ty = &active.ontology.object_types[&name("Flight")];
     let mut scope = f.scope.clone();
-    scope.types.insert(name("Flight"), TypeScope {
-        row: Pred::Const(true),
-        columns: ty.properties.keys().cloned().map(|property| (property, Pred::Const(true))).collect(),
-    });
+    scope.types.insert(
+        name("Flight"),
+        TypeScope {
+            row: Pred::Const(true),
+            columns: ty
+                .properties
+                .keys()
+                .cloned()
+                .map(|property| (property, Pred::Const(true)))
+                .collect(),
+        },
+    );
     let profile = ProfileName::try_from("dev".to_owned()).unwrap();
-    let fixtures = plan_fixture_tables(&active.ontology, &load_dir(Utf8Path::new(AVIATION)).sources, &profile).unwrap();
-    let engine = SqliteEngine::from_fixtures(Utf8Path::new(AVIATION), &fixtures.tables).await.unwrap();
+    let fixtures = plan_fixture_tables(
+        &active.ontology,
+        &load_dir(Utf8Path::new(AVIATION)).sources,
+        &profile,
+    )
+    .unwrap();
+    let engine = SqliteEngine::from_fixtures(Utf8Path::new(AVIATION), &fixtures.tables)
+        .await
+        .unwrap();
     let tokens = TokenCodec::new(b"list-key".to_vec()).unwrap();
     let mut first_principal = f.principal.clone();
-    first_principal.attrs.insert("region", ontoforge_expr::AttrValue::Scalar(ontoforge_expr::Scalar::String("west".to_owned()))).unwrap();
+    first_principal
+        .attrs
+        .insert(
+            "region",
+            ontoforge_expr::AttrValue::Scalar(ontoforge_expr::Scalar::String("west".to_owned())),
+        )
+        .unwrap();
     let mut second_principal = first_principal.clone();
-    second_principal.attrs.insert("region", ontoforge_expr::AttrValue::Scalar(ontoforge_expr::Scalar::String("east".to_owned()))).unwrap();
-    let request = QueryRequest { set: ObjectSet::Type { object_type: name("Flight") }, select: vec![prop("status")] };
-    let order = vec![OrderBy { property: prop("flightId"), direction: Direction::Asc, nulls: Nulls::Last }];
-    let query = ValidatedQuery::new(request.clone(), order.clone(), PageSpec { first: 1, after: None }, &active.ontology, &scope.types[&name("Flight")], CompileLimits::default()).unwrap();
+    second_principal
+        .attrs
+        .insert(
+            "region",
+            ontoforge_expr::AttrValue::Scalar(ontoforge_expr::Scalar::String("east".to_owned())),
+        )
+        .unwrap();
+    let request = QueryRequest {
+        set: ObjectSet::Type {
+            object_type: name("Flight"),
+        },
+        select: vec![prop("status")],
+    };
+    let order = vec![OrderBy {
+        property: prop("flightId"),
+        direction: Direction::Asc,
+        nulls: Nulls::Last,
+    }];
+    let query = ValidatedQuery::new(
+        request.clone(),
+        order.clone(),
+        PageSpec {
+            first: 1,
+            after: None,
+        },
+        &active.ontology,
+        &scope.types[&name("Flight")],
+        CompileLimits::default(),
+    )
+    .unwrap();
     let first = QueryService {
-        principal: &first_principal, scope: &scope, active: Arc::clone(&active), engine: &engine, store: &f.store,
-        limits: ExecutionLimits::phase4_default(), tokens: &tokens,
-    }.execute_list(&query).await.unwrap();
-    let query = ValidatedQuery::new(request, order, PageSpec { first: 1, after: first.cursor }, &active.ontology, &scope.types[&name("Flight")], CompileLimits::default()).unwrap();
+        principal: &first_principal,
+        scope: &scope,
+        active: Arc::clone(&active),
+        engine: &engine,
+        store: &f.store,
+        limits: ExecutionLimits::phase4_default(),
+        tokens: &tokens,
+    }
+    .execute_list(&query)
+    .await
+    .unwrap();
+    let query = ValidatedQuery::new(
+        request,
+        order,
+        PageSpec {
+            first: 1,
+            after: first.cursor,
+        },
+        &active.ontology,
+        &scope.types[&name("Flight")],
+        CompileLimits::default(),
+    )
+    .unwrap();
     let replay = QueryService {
-        principal: &second_principal, scope: &scope, active, engine: &engine, store: &f.store,
-        limits: ExecutionLimits::phase4_default(), tokens: &tokens,
-    }.execute_list(&query).await;
+        principal: &second_principal,
+        scope: &scope,
+        active,
+        engine: &engine,
+        store: &f.store,
+        limits: ExecutionLimits::phase4_default(),
+        tokens: &tokens,
+    }
+    .execute_list(&query)
+    .await;
     assert!(matches!(replay, Err(QueryError::InvalidCursor)));
 }
 
@@ -784,6 +880,7 @@ async fn pagination_cursor_seeks_source_on_first_window() {
     let context = CursorContext::new(
         f.principal.id.as_str(),
         &scope,
+        &f.principal.attrs,
         active.def_version,
         name("Flight"),
         vec![normal_order(order.clone())],
@@ -1086,6 +1183,10 @@ async fn pagination_case_insensitive_order_scans_pk_windows_before_rust_sort() {
 }
 
 #[tokio::test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "one fixture checks both batch size and shared budget"
+)]
 async fn pagination_backfill_batches_never_exceed_256() {
     let f = fixture().await;
     let active = f.store.active_definition().await.unwrap();
@@ -1158,46 +1259,107 @@ async fn pagination_backfill_batches_never_exceed_256() {
     let page = service.execute_list(&query).await.unwrap();
     assert_eq!(page.rows[0].pk, json!("F-3000"));
     assert!(page.has_more);
-    let sql = engine.0.lock().unwrap();
-    let backfills = sql
-        .iter()
-        .filter(|statement| statement.contains(" IN ("))
-        .collect::<Vec<_>>();
-    assert_eq!(backfills.len(), 2, "{sql:?}");
-    assert_eq!(
-        backfills
+    {
+        let sql = engine.0.lock().unwrap();
+        let backfills = sql
             .iter()
-            .map(|statement| statement.matches("F-3").count())
-            .collect::<Vec<_>>(),
-        vec![256, 1]
+            .filter(|statement| statement.contains(" IN ("))
+            .collect::<Vec<_>>();
+        assert_eq!(backfills.len(), 2, "{sql:?}");
+        assert_eq!(
+            backfills
+                .iter()
+                .map(|statement| statement.matches("F-3").count())
+                .collect::<Vec<_>>(),
+            vec![256, 1]
+        );
+    }
+    engine.0.lock().unwrap().clear();
+    let tight_service = QueryService {
+        principal: &f.principal,
+        scope: &scope,
+        active: Arc::clone(&active),
+        engine: &engine,
+        store: &f.store,
+        limits: ExecutionLimits::try_new(32, 10_000, 256, 64 * 1024 * 1024).unwrap(),
+        tokens: &tokens,
+    };
+    assert!(matches!(
+        tight_service.execute_list(&query).await,
+        Err(QueryError::WorkBudgetExceeded)
+    ));
+    let sql = engine.0.lock().unwrap();
+    assert_eq!(
+        sql.iter()
+            .filter(|statement| statement.contains(" IN ("))
+            .count(),
+        1
     );
 }
 
 #[tokio::test]
 async fn pagination_backfill_rejects_conflicting_duplicate_pk() {
     let f = fixture().await;
-    commit_object_edit(&f, "F-1001", ObjectOp::Set(BTreeMap::from([
-        (prop("status"), PropertyValue::String("delayed".to_owned())),
-    ]))).await;
+    commit_object_edit(
+        &f,
+        "F-1001",
+        ObjectOp::Set(BTreeMap::from([(
+            prop("status"),
+            PropertyValue::String("delayed".to_owned()),
+        )])),
+    )
+    .await;
     let active = f.store.active_definition().await.unwrap();
     let ty = &active.ontology.object_types[&name("Flight")];
     let mut scope = f.scope.clone();
-    scope.types.insert(name("Flight"), TypeScope {
-        row: Pred::Const(true),
-        columns: ty.properties.keys().cloned().map(|property| (property, Pred::Const(true))).collect(),
-    });
+    scope.types.insert(
+        name("Flight"),
+        TypeScope {
+            row: Pred::Const(true),
+            columns: ty
+                .properties
+                .keys()
+                .cloned()
+                .map(|property| (property, Pred::Const(true)))
+                .collect(),
+        },
+    );
     let engine = DuplicateBackfillEngine(AtomicUsize::new(0));
     let tokens = TokenCodec::new(b"list-key".to_vec()).unwrap();
     let service = QueryService {
-        principal: &f.principal, scope: &scope, active: Arc::clone(&active), engine: &engine, store: &f.store,
-        limits: ExecutionLimits::phase4_default(), tokens: &tokens,
+        principal: &f.principal,
+        scope: &scope,
+        active: Arc::clone(&active),
+        engine: &engine,
+        store: &f.store,
+        limits: ExecutionLimits::phase4_default(),
+        tokens: &tokens,
     };
     let query = ValidatedQuery::new(
-        QueryRequest { set: ObjectSet::Type { object_type: name("Flight") }, select: vec![prop("status")] },
-        vec![OrderBy { property: prop("flightId"), direction: Direction::Asc, nulls: Nulls::Last }],
-        PageSpec { first: 1, after: None }, &active.ontology, &scope.types[&name("Flight")], CompileLimits::default(),
-    ).unwrap();
-    assert!(matches!(service.execute_list(&query).await, Err(QueryError::AmbiguousObject)));
+        QueryRequest {
+            set: ObjectSet::Type {
+                object_type: name("Flight"),
+            },
+            select: vec![prop("status")],
+        },
+        vec![OrderBy {
+            property: prop("flightId"),
+            direction: Direction::Asc,
+            nulls: Nulls::Last,
+        }],
+        PageSpec {
+            first: 1,
+            after: None,
+        },
+        &active.ontology,
+        &scope.types[&name("Flight")],
+        CompileLimits::default(),
+    )
+    .unwrap();
+    assert!(matches!(
+        service.execute_list(&query).await,
+        Err(QueryError::AmbiguousObject)
+    ));
     assert_eq!(engine.0.load(Ordering::SeqCst), 2);
 }
 
@@ -1444,6 +1606,7 @@ async fn cursor_rejects_tamper_and_context_replay() {
     let context = CursorContext::new(
         fixture.principal.id.as_str(),
         &fixture.scope,
+        &fixture.principal.attrs,
         7,
         name("Flight"),
         order.clone(),
@@ -1486,6 +1649,7 @@ async fn cursor_rejects_tamper_and_context_replay() {
         CursorContext::new(
             "other-principal",
             &fixture.scope,
+            &fixture.principal.attrs,
             7,
             name("Flight"),
             order.clone(),
@@ -1493,6 +1657,7 @@ async fn cursor_rejects_tamper_and_context_replay() {
         CursorContext::new(
             fixture.principal.id.as_str(),
             &scope,
+            &fixture.principal.attrs,
             7,
             name("Flight"),
             order.clone(),
@@ -1500,6 +1665,7 @@ async fn cursor_rejects_tamper_and_context_replay() {
         CursorContext::new(
             fixture.principal.id.as_str(),
             &same_roles_new_grant,
+            &fixture.principal.attrs,
             7,
             name("Flight"),
             order.clone(),
@@ -1507,6 +1673,7 @@ async fn cursor_rejects_tamper_and_context_replay() {
         CursorContext::new(
             fixture.principal.id.as_str(),
             &fixture.scope,
+            &fixture.principal.attrs,
             8,
             name("Flight"),
             order.clone(),
@@ -1514,6 +1681,7 @@ async fn cursor_rejects_tamper_and_context_replay() {
         CursorContext::new(
             fixture.principal.id.as_str(),
             &fixture.scope,
+            &fixture.principal.attrs,
             7,
             name("Aircraft"),
             order.clone(),
@@ -1521,6 +1689,7 @@ async fn cursor_rejects_tamper_and_context_replay() {
         CursorContext::new(
             fixture.principal.id.as_str(),
             &fixture.scope,
+            &fixture.principal.attrs,
             7,
             name("Flight"),
             vec![normal_order(OrderBy {
@@ -1532,6 +1701,7 @@ async fn cursor_rejects_tamper_and_context_replay() {
         CursorContext::new(
             fixture.principal.id.as_str(),
             &fixture.scope,
+            &fixture.principal.attrs,
             7,
             name("Flight"),
             vec![NormalizedOrder {

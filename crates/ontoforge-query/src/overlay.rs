@@ -224,6 +224,7 @@ fn compare_typed(
         (Ok(PropertyValue::Bool(a)), Ok(PropertyValue::Bool(b))) => a.cmp(&b),
         (Ok(PropertyValue::Int(a)), Ok(PropertyValue::Int(b))) => a.cmp(&b),
         (Ok(PropertyValue::Double(a)), Ok(PropertyValue::Double(b))) => a.total_cmp(&b),
+        (Ok(PropertyValue::Decimal(a)), Ok(PropertyValue::Decimal(b))) => compare_decimal(&a, &b),
         (Ok(PropertyValue::String(a)), Ok(PropertyValue::String(b)))
             if collation == Collation::CaseInsensitive =>
         {
@@ -234,4 +235,14 @@ fn compare_typed(
         | (Ok(PropertyValue::Timestamp(a)), Ok(PropertyValue::Timestamp(b))) => a.cmp(&b),
         _ => left.to_string().cmp(&right.to_string()),
     }
+}
+
+fn compare_decimal(left: &str, right: &str) -> Ordering {
+    let scaled = |value: &str| {
+        value
+            .replace('.', "")
+            .parse::<i128>()
+            .expect("validated decimal has at most 38 digits")
+    };
+    scaled(left).cmp(&scaled(right))
 }

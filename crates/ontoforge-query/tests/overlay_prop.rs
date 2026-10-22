@@ -2,6 +2,7 @@ use std::collections::BTreeMap;
 
 use camino::Utf8Path;
 use ontoforge_auth::scope::{RoleTypeGrant, merge};
+use ontoforge_engine::sqlite::fixture::normalize_decimal;
 use ontoforge_expr::{Attrs, CmpOp, Operand, Pred, Scalar};
 use ontoforge_query::ast::{Direction, Nulls, ObjectSet, OrderBy, QueryLiteral, WhereClause};
 use ontoforge_query::execute::WorkBudget;
@@ -367,20 +368,50 @@ fn ordering_decimal_uses_numeric_magnitude() {
     let mut ty = flight();
     let def = ty.properties.get_mut(&prop("delayMinutes")).unwrap();
     def.base_type = BaseType::Decimal;
-    def.precision = Some(12);
-    def.scale = Some(2);
+    def.precision = Some(38);
+    def.scale = Some(4);
     let order = [OrderBy {
-        property: prop("delayMinutes"), direction: Direction::Asc, nulls: Nulls::Last,
+        property: prop("delayMinutes"),
+        direction: Direction::Asc,
+        nulls: Nulls::Last,
     }];
     let rows = [
-        ("F-1", "2.00"), ("F-2", "10.00"), ("F-3", "-2.00"), ("F-4", "-10.00"),
+        ("F-01", "2.0"),
+        ("F-02", "10.00"),
+        ("F-03", "-2.000"),
+        ("F-04", "-10.00"),
+        ("F-05", "0"),
+        ("F-06", "-0.00"),
+        ("F-07", "2.00"),
+        ("F-08", "9999999999999999999999999999999999.9999"),
+        ("F-09", "-9999999999999999999999999999999999.9999"),
+        ("F-10", "0.0001"),
+        ("F-11", "-0.0001"),
     ];
-    let mut rows = rows.into_iter().map(|(pk, value)| BTreeMap::from([
-        (prop("flightId"), json!(pk)), (prop("delayMinutes"), json!(value)),
-    ])).collect::<Vec<_>>();
+    let mut reference = rows
+        .iter()
+        .map(|(pk, value)| {
+            let canonical = normalize_decimal(value, 38, 4).unwrap();
+            (*pk, canonical.replace('.', "").parse::<i128>().unwrap())
+        })
+        .collect::<Vec<_>>();
+    reference.sort_by(|left, right| left.1.cmp(&right.1).then_with(|| left.0.cmp(right.0)));
+    let mut rows = rows
+        .into_iter()
+        .map(|(pk, value)| {
+            BTreeMap::from([
+                (prop("flightId"), json!(pk)),
+                (prop("delayMinutes"), json!(value)),
+            ])
+        })
+        .collect::<Vec<_>>();
     rows.sort_by(|a, b| compare_rows(a, b, &order, &ty.primary_key, &ty));
-    assert_eq!(rows.iter().map(|row| row[&ty.primary_key].as_str().unwrap()).collect::<Vec<_>>(),
-        vec!["F-4", "F-3", "F-1", "F-2"]);
+    assert_eq!(
+        rows.iter()
+            .map(|row| row[&ty.primary_key].as_str().unwrap())
+            .collect::<Vec<_>>(),
+        reference.iter().map(|(pk, _)| *pk).collect::<Vec<_>>()
+    );
 }
 
 #[test]
