@@ -2,6 +2,14 @@ use std::collections::BTreeSet;
 
 use ontoforge_query::set::{SetOperator, evaluate_set_operation};
 use ontoforge_query::ast::ObjectSet;
+use ontoforge_query::ast::PageSpec;
+use ontoforge_query::compile::{CompileLimits, ValidatedQuery};
+use ontoforge_query::{QueryError, QueryRequest};
+use ontoforge_auth::scope::TypeScope;
+use ontoforge_expr::Pred;
+use ontoforge_schema::ir::ObjectTypeName;
+use ontoforge_schema::load_dir;
+use camino::Utf8Path;
 use proptest::prelude::*;
 use serde_json::json;
 
@@ -9,16 +17,56 @@ use serde_json::json;
 fn nested_set_wire_accepts_logical_names_only() {
     let wire = json!({
         "kind": "union",
-        "objectType": "Flight",
+        "object_type": "Flight",
         "sets": [
-            {"kind": "pk", "objectType": "Flight", "pk": "F-1001"},
-            {"kind": "subtract", "objectType": "Flight",
-             "left": {"kind": "type", "objectType": "Flight"},
-             "right": {"kind": "pk", "objectType": "Flight", "pk": "F-1002"}}
+            {"kind": "pk", "object_type": "Flight", "pk": "F-1001"},
+            {"kind": "subtract", "object_type": "Flight",
+             "left": {"kind": "type", "object_type": "Flight"},
+             "right": {"kind": "pk", "object_type": "Flight", "pk": "F-1002"}}
         ]
     });
     let parsed: ObjectSet = serde_json::from_value(wire.clone()).unwrap();
     assert_eq!(serde_json::to_value(parsed).unwrap(), wire);
+}
+
+#[test]
+fn valid_same_type_set_and_cross_type_rejection() {
+    let ontology = load_dir(Utf8Path::new(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../examples/ontologies/aviation"
+    )))
+    .ontology
+    .unwrap();
+    let flight = ObjectTypeName::try_from("Flight".to_owned()).unwrap();
+    let scope = TypeScope {
+        row: Pred::Const(true),
+        columns: ontology.object_types[&flight]
+            .properties
+            .keys()
+            .cloned()
+            .map(|name| (name, Pred::Const(true)))
+            .collect(),
+    };
+    let wire = json!({
+        "kind": "union", "object_type": "Flight", "sets": [
+            {"kind": "type", "object_type": "Flight"},
+            {"kind": "pk", "object_type": "Flight", "pk": "F-1001"}
+        ]
+    });
+    let validate = |set| {
+        ValidatedQuery::new(
+            QueryRequest { set, select: vec![] }, vec![],
+            PageSpec { first: 10, after: None }, &ontology, &scope,
+            CompileLimits::default(),
+        )
+    };
+    assert!(validate(serde_json::from_value(wire.clone()).unwrap()).is_ok());
+    let mut cross_type = wire;
+    cross_type["sets"][1]["object_type"] = json!("Airport");
+    assert!(matches!(
+        validate(serde_json::from_value(cross_type).unwrap()),
+        Err(QueryError::InvalidQuery)
+    ));
 }
 
 fn reference(operator: SetOperator, operands: &[Vec<u8>]) -> BTreeSet<String> {
