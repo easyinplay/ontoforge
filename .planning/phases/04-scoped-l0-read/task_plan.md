@@ -31,7 +31,7 @@
 - [x] Wave 1 `04-01`：scoped pk tracer 与安全边界；RED、GREEN、SUMMARY 和聚焦测试完成。
 - [x] Wave 2 `04-02`、`04-03`：typed compiler/printer 与 storage 只读批量 API。
 - [x] Wave 3 `04-04`：Rust overlay、refill、cursor 与预算；SUMMARY、独立复审和聚焦测试通过。
-- [ ] Wave 4 `04-05`：searchAround 与集合运算。
+- [x] Wave 4 `04-05`：searchAround 与集合运算；SUMMARY、独立复审及聚焦测试通过。
 - [ ] Wave 5 `04-06`：exact scoped 聚合。
 - [ ] Wave 6 `04-07`：真实 Trino/PG、distributed EXPLAIN 与 isolated p95。
 
@@ -43,4 +43,4 @@
 
 ## Next Step
 
-按 `04-05-PLAN.md` 已对齐D19的两端scope + FK属性可见合同继续 Wave 4；set 和 M:N 纯 edge overlay 已提交至 `aa6a112`，FK/M:N 对外遍历、target hydration 和集成验收仍待完成。真实 PG parity、Trino `EXPLAIN` 和 isolated p95 仍由 Wave 6 验收。
+执行 Wave 5 `04-06-PLAN.md`：在统一 scoped overlay 与共享 WorkBudget 上实现 exact count/sum/avg/min/max/distinct/groupBy，按 connector 能力选择 source partial、TopN 或有界 Rust path，无法证明 exact 时返回明确错误。真实 PG parity、Trino `EXPLAIN` 和 isolated p95 仍由 Wave 6 验收。
