@@ -108,6 +108,21 @@ fn valid_same_type_set_and_cross_type_rejection() {
         QueryRequest { set: nested, select: vec![] }, vec![],
         PageSpec { first: 10, after: None }, &ontology, &scope, tight,
     ), Err(QueryError::QueryTooComplex)));
+
+    let wide: ObjectSet = serde_json::from_value(json!({
+        "kind": "union", "object_type": "Flight", "sets": [
+            {"kind": "union", "object_type": "Flight", "sets": [
+                {"kind": "type", "object_type": "Flight"},
+                {"kind": "type", "object_type": "Flight"}
+            ]},
+            {"kind": "type", "object_type": "Flight"}
+        ]
+    })).unwrap();
+    let tight_operands = CompileLimits { max_in_values: 2, ..CompileLimits::default() };
+    assert!(matches!(ValidatedQuery::new(
+        QueryRequest { set: wide, select: vec![] }, vec![],
+        PageSpec { first: 10, after: None }, &ontology, &scope, tight_operands,
+    ), Err(QueryError::QueryTooComplex)));
 }
 
 #[tokio::test]
