@@ -15,7 +15,8 @@
 - 2026-10-22：`04-04` Task 1 RED/GREEN `0c0dd2d`/`5c04205`（overlay 7/7），budget RED `8eaf828`、cursor RED `611757b`。选定完整有界edit集 + source自身keyset + Rust归并的C方案；见 `findings.md` 和修订后的 `04-04-PLAN.md`。
 - 2026-10-22：`04-04` 完成，GREEN `15b7ff6`、审查修复 RED/GREEN `ceba54b`/`04e1992`、共享预算回归 `ee46d5b`、SUMMARY `89cf791`。Decimal 数值排序、attrs cursor 重放、重复 PK 与双 lane 预算已复审；executor 全量测试、Clippy、fmt 通过，主 session 复跑 `overlay_prop` 11/11、`security` 21/21。
 - 2026-10-22：进入 GSD execute-phase 4 Wave 4 `04-05`；`04-05-PLAN.md` 与既有 ADR 已锁定 FK/M:N、target hydration 和同类型集合运算合同，因此跳过新的 brainstorming。核心关系与集合逻辑仍按 TDD 执行。
+- 2026-10-22：`04-05` 独立部分提交至 `aa6a112`：set wire/递归校验/已授权 operand 运算/共享预算与 M:N source+Add/Remove 纯 edge overlay。query 全量测试、Clippy `-D warnings`、fmt 均通过。SearchAround 对外授权 A/B 合同待用户选择；FK/M:N 遍历和 target hydration 尚未完成，PLAN 保持执行中。
 
 ## 待办
 
-- 执行 Wave 4 `04-05`，完成 scoped searchAround 与集合运算。
+- 等待用户决定 SearchAround 授权 A/B；随后完成 `04-05` 的 FK/M:N 遍历、target scoped hydration、分页及集成验收。

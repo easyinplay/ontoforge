@@ -43,4 +43,4 @@
 
 ## Next Step
 
-执行 Wave 4 `04-05-PLAN.md`：在 `04-04` 统一 scoped list/overlay 内核上实现 FK/M:N searchAround 和同类型已授权 pk 集合运算，沿用相同 scope、预算与分页路径。真实 PG parity、Trino `EXPLAIN` 和 isolated p95 仍由 Wave 6 验收。
+等待用户决定 `04-05-PLAN.md` 的 SearchAround 授权合同 A/B；set 和 M:N 纯 edge overlay 已提交至 `aa6a112`，但 FK/M:N 对外遍历、target hydration 和集成验收尚未完成。决定后继续 Wave 4；真实 PG parity、Trino `EXPLAIN` 和 isolated p95 仍由 Wave 6 验收。
