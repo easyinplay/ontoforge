@@ -11,7 +11,7 @@ use ontoforge_storage::value::PropertyValue;
 use serde::Serialize;
 use serde_json::Value;
 
-use crate::ast::{AggregateMeasure, AggregateRequest, Direction, Nulls, OrderBy, PageSpec};
+use crate::ast::{AggregateMeasure, AggregateRequest, Direction, Nulls, ObjectSet, OrderBy, PageSpec};
 use crate::compile::{CompileLimits, ValidatedQuery, compile_aggregate_partial};
 use crate::execute::{WorkBudget, charge_edit_page, raw_backfill_select};
 use crate::overlay::{eligible_row, overlay_object};
@@ -456,9 +456,7 @@ impl<'a> AggregateBuilder<'a> {
                         )
                         .map_err(|_| AggregateError::UnsupportedNumericValue)?;
                         let canonical = match typed {
-                            PropertyValue::Double(number) if number == 0.0 => {
-                                PropertyValue::Double(0.0)
-                            }
+                            PropertyValue::Double(0.0) => PropertyValue::Double(0.0),
                             other => other,
                         }
                         .to_json()
@@ -699,6 +697,21 @@ fn validate_request(
 }
 
 impl<E: Engine> QueryService<'_, E> {
+    async fn execute_aggregate_page(
+        &self,
+        query: &ValidatedQuery,
+        budget: &mut WorkBudget,
+    ) -> Result<crate::ListPage, AggregateError> {
+        let page = match &query.request.set {
+            ObjectSet::Union { .. }
+            | ObjectSet::Intersect { .. }
+            | ObjectSet::Subtract { .. } => self.execute_set_list(query, budget).await?,
+            ObjectSet::SearchAround { .. } => self.execute_search_around(query, budget).await?,
+            _ => self.execute_list_internal(query, budget, None).await?,
+        };
+        Ok(page)
+    }
+
     async fn execute_minmax_topn(
         &self,
         request: &AggregateRequest,
@@ -730,7 +743,7 @@ impl<E: Engine> QueryService<'_, E> {
                 scope,
                 CompileLimits::default(),
             )?;
-            let page = self.execute_list_internal(&query, budget, None).await?;
+            let page = self.execute_aggregate_page(&query, budget).await?;
             if page.truncated {
                 return Err(AggregateError::AggregateCostExceeded);
             }
@@ -954,9 +967,7 @@ impl<E: Engine> QueryService<'_, E> {
                 scope,
                 CompileLimits::default(),
             )?;
-            let page = self
-                .execute_list_internal(&query, &mut budget, None)
-                .await?;
+            let page = self.execute_aggregate_page(&query, &mut budget).await?;
             if page.truncated {
                 return Err(AggregateError::AggregateCostExceeded);
             }
@@ -1154,6 +1165,7 @@ mod tests {
     proptest! {
         #![proptest_config(ProptestConfig::with_cases(64))]
         #[test]
+        #[allow(clippy::cast_precision_loss, reason = "random oracle values and row counts are bounded below 40,000")]
         fn count_sum_avg_random_old_new_correction_matches_reference(
             rows in proptest::collection::vec((
                 proptest::option::of(-100i16..100),
