@@ -1,5 +1,5 @@
 use std::cmp::Ordering;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::future::Future;
 
 use ontoforge_auth::scope::TypeScope;
@@ -393,6 +393,28 @@ impl<E: Engine> QueryService<'_, E> {
         reason = "keeps the bounded source and edit state machine together"
     )]
     pub async fn execute_list(&self, query: &ValidatedQuery) -> Result<ListPage, QueryError> {
+        let mut budget = WorkBudget::new(self.limits);
+        if matches!(
+            query.request.set,
+            crate::ast::ObjectSet::Union { .. }
+                | crate::ast::ObjectSet::Intersect { .. }
+                | crate::ast::ObjectSet::Subtract { .. }
+        ) {
+            return self.execute_set_list(query, &mut budget).await;
+        }
+        self.execute_list_internal(query, &mut budget, None).await
+    }
+
+    #[allow(
+        clippy::too_many_lines,
+        reason = "keeps the bounded source and edit state machine together"
+    )]
+    pub(crate) async fn execute_list_internal(
+        &self,
+        query: &ValidatedQuery,
+        budget: &mut WorkBudget,
+        allowed_keys: Option<&BTreeSet<String>>,
+    ) -> Result<ListPage, QueryError> {
         let type_name = query.request.set.object_type();
         let ty = self
             .active
@@ -452,7 +474,6 @@ impl<E: Engine> QueryService<'_, E> {
             .as_deref()
             .map(|token| codec.decode(token, &cursor_context))
             .transpose()?;
-        let mut budget = WorkBudget::new(self.limits);
         let mut candidates = CandidateSet::default();
         let mut source_plan = binding
             .map(|binding| {
@@ -518,10 +539,10 @@ impl<E: Engine> QueryService<'_, E> {
                 &plan.required_columns,
                 ty,
                 SOURCE_WINDOW,
-                &mut budget,
+                budget,
             )?;
             let edits = edit_result.map_err(|_| QueryError::Store)?;
-            charge_edit_page(&edits, &mut budget)?;
+            charge_edit_page(&edits, budget)?;
             edit_cursor = edits.next;
             edit_more = edits.has_more;
             for edit in edits.edits {
@@ -534,7 +555,7 @@ impl<E: Engine> QueryService<'_, E> {
                 .scan_object_edits(&self.active, type_name, None, MAX_EDIT_READ)
                 .await
                 .map_err(|_| QueryError::Store)?;
-            charge_edit_page(&edits, &mut budget)?;
+            charge_edit_page(&edits, budget)?;
             edit_cursor = edits.next;
             edit_more = edits.has_more;
             for edit in edits.edits {
@@ -548,7 +569,7 @@ impl<E: Engine> QueryService<'_, E> {
                 .scan_object_edits(&self.active, type_name, edit_cursor.as_ref(), MAX_EDIT_READ)
                 .await
                 .map_err(|_| QueryError::Store)?;
-            charge_edit_page(&edits, &mut budget)?;
+            charge_edit_page(&edits, budget)?;
             edit_cursor = edits.next;
             edit_more = edits.has_more;
             for edit in edits.edits {
@@ -571,7 +592,7 @@ impl<E: Engine> QueryService<'_, E> {
                         &ty.properties.keys().cloned().collect::<Vec<_>>(),
                         ty,
                         keys.len() + 1,
-                        &mut budget,
+                        budget,
                     )
                     .await?;
                 for (pk, row) in rows {
@@ -597,6 +618,7 @@ impl<E: Engine> QueryService<'_, E> {
                     position.as_ref(),
                     &candidates,
                     source_frontier.as_ref().ok_or(QueryError::Source)?,
+                    allowed_keys,
                 )?
             {
                 break;
@@ -615,7 +637,7 @@ impl<E: Engine> QueryService<'_, E> {
                     &plan.required_columns,
                     ty,
                     SOURCE_WINDOW,
-                    &mut budget,
+                    budget,
                 )
                 .await?;
             plan.select.filter = Some(base_filter);
@@ -637,6 +659,7 @@ impl<E: Engine> QueryService<'_, E> {
             &cursor_context,
             &codec,
             &candidates,
+            allowed_keys,
         )
     }
 
@@ -674,8 +697,10 @@ impl<E: Engine> QueryService<'_, E> {
         cursor_context: &CursorContext,
         codec: &CursorCodec<'_>,
         candidates: &CandidateSet,
+        allowed_keys: Option<&BTreeSet<String>>,
     ) -> Result<ListPage, QueryError> {
-        let eligible = self.eligible_candidates(query, ty, scope, order, after, candidates)?;
+        let eligible =
+            self.eligible_candidates(query, ty, scope, order, after, candidates, allowed_keys)?;
         let total = eligible.len();
         let page_size = usize::try_from(query.page.first).map_err(|_| QueryError::InvalidQuery)?;
         let mut rows = Vec::new();
@@ -769,8 +794,10 @@ impl<E: Engine> QueryService<'_, E> {
         after: Option<&CursorPosition>,
         candidates: &CandidateSet,
         frontier: &BTreeMap<PropertyName, Value>,
+        allowed_keys: Option<&BTreeSet<String>>,
     ) -> Result<bool, QueryError> {
-        let eligible = self.eligible_candidates(query, ty, scope, order, after, candidates)?;
+        let eligible =
+            self.eligible_candidates(query, ty, scope, order, after, candidates, allowed_keys)?;
         let page_size = usize::try_from(query.page.first).map_err(|_| QueryError::InvalidQuery)?;
         Ok(eligible.get(page_size).is_some_and(|item| {
             compare_rows_normalized(&item.sort_row, frontier, order, &ty.primary_key, ty)
@@ -778,6 +805,10 @@ impl<E: Engine> QueryService<'_, E> {
         }))
     }
 
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "shares final eligibility with set membership"
+    )]
     fn eligible_candidates<'a>(
         &self,
         query: &ValidatedQuery,
@@ -786,6 +817,7 @@ impl<E: Engine> QueryService<'_, E> {
         order: &[NormalizedOrder],
         after: Option<&CursorPosition>,
         candidates: &'a CandidateSet,
+        allowed_keys: Option<&BTreeSet<String>>,
     ) -> Result<Vec<EligibleCandidate<'a>>, QueryError> {
         let mut eligible = Vec::new();
         let after_row = after.map(|position| {
@@ -798,6 +830,10 @@ impl<E: Engine> QueryService<'_, E> {
             row
         });
         for candidate in candidates.0.values() {
+            if allowed_keys.is_some_and(|keys| !keys.contains(&candidate.pk.to_json().to_string()))
+            {
+                continue;
+            }
             if let Some(merged) = overlay_object(
                 candidate.source.as_ref(),
                 candidate.edit.as_ref(),

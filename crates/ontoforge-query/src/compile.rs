@@ -48,6 +48,10 @@ pub struct ValidatedQuery {
 }
 
 impl ValidatedQuery {
+    #[allow(
+        clippy::too_many_lines,
+        reason = "keeps the existing query validation path together"
+    )]
     pub fn new(
         request: QueryRequest,
         order_by: Vec<OrderBy>,
@@ -150,9 +154,7 @@ impl ValidatedQuery {
                     }
                 }
             }
-            ObjectSet::Union { .. }
-            | ObjectSet::Intersect { .. }
-            | ObjectSet::Subtract { .. } => {
+            ObjectSet::Union { .. } | ObjectSet::Intersect { .. } | ObjectSet::Subtract { .. } => {
                 validate_nested_set(&request, &order_by, &page, ontology, scope, limits)?;
             }
         }

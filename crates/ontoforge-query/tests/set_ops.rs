@@ -1,29 +1,29 @@
 use std::collections::BTreeSet;
 
-use ontoforge_query::set::{SetOperator, evaluate_set_operation};
-use ontoforge_query::ast::ObjectSet;
-use ontoforge_query::ast::PageSpec;
-use ontoforge_query::compile::{CompileLimits, ValidatedQuery};
-use ontoforge_query::{QueryError, QueryRequest};
-use ontoforge_auth::scope::TypeScope;
-use ontoforge_expr::Pred;
-use ontoforge_schema::ir::ObjectTypeName;
-use ontoforge_schema::load_dir;
 use camino::Utf8Path;
 use camino::Utf8PathBuf;
 use ontoforge_auth::Principal;
 use ontoforge_auth::authn::PrincipalId;
 use ontoforge_auth::scope::PrincipalScope;
+use ontoforge_auth::scope::TypeScope;
 use ontoforge_engine::sqlite::SqliteEngine;
 use ontoforge_engine::sqlite::fixture::plan_fixture_tables;
+use ontoforge_expr::{Attrs, Pred};
+use ontoforge_query::ast::ObjectSet;
+use ontoforge_query::ast::PageSpec;
+use ontoforge_query::compile::{CompileLimits, ValidatedQuery};
+use ontoforge_query::set::{SetOperator, evaluate_set_operation};
+use ontoforge_query::{ExecutionLimits, QueryService, TokenCodec};
+use ontoforge_query::{QueryError, QueryRequest};
+use ontoforge_schema::ir::ObjectTypeName;
 use ontoforge_schema::ir::{ProfileName, PropertyName};
+use ontoforge_schema::load_dir;
 use ontoforge_storage::reload::{ReloadOptions, reload};
 use ontoforge_storage::store::{BackendSettings, EditStore, StoreSettings};
-use ontoforge_query::{ExecutionLimits, QueryService, TokenCodec};
-use std::sync::Arc;
-use std::time::Duration;
 use proptest::prelude::*;
 use serde_json::json;
+use std::sync::Arc;
+use std::time::Duration;
 
 #[test]
 fn nested_set_wire_accepts_logical_names_only() {
@@ -67,8 +67,17 @@ fn valid_same_type_set_and_cross_type_rejection() {
     });
     let validate = |set| {
         ValidatedQuery::new(
-            QueryRequest { set, select: vec![] }, vec![],
-            PageSpec { first: 10, after: None }, &ontology, &scope,
+            QueryRequest {
+                set,
+                select: vec![],
+            },
+            vec![],
+            PageSpec {
+                first: 10,
+                after: None,
+            },
+            &ontology,
+            &scope,
             CompileLimits::default(),
         )
     };
@@ -132,7 +141,7 @@ async fn set_result_reuses_normal_hydration_order_and_cursor() {
         issuer: "test".into(),
         subject: "set-reader".into(),
         groups: BTreeSet::new(),
-        attrs: Default::default(),
+        attrs: Attrs::default(),
     };
     let tokens = TokenCodec::new(b"set-test".to_vec()).unwrap();
     let service = QueryService {
