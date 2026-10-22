@@ -17,6 +17,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 pub mod ast;
+pub mod aggregate;
 pub mod compile;
 pub mod cursor;
 pub mod execute;

@@ -157,3 +157,35 @@ pub struct PageSpec {
     pub first: u64,
     pub after: Option<String>,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
+pub struct AggregateRequest {
+    pub set: ObjectSet,
+    pub group_by: Vec<PropertyName>,
+    pub measures: Vec<AggregateMeasure>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "op", rename_all = "camelCase", deny_unknown_fields)]
+pub enum AggregateMeasure {
+    Count { property: Option<PropertyName> },
+    Sum { property: PropertyName },
+    Avg { property: PropertyName },
+    Min { property: PropertyName },
+    Max { property: PropertyName },
+    Distinct { property: PropertyName },
+}
+
+impl AggregateMeasure {
+    pub fn property(&self) -> Option<&PropertyName> {
+        match self {
+            Self::Count { property } => property.as_ref(),
+            Self::Sum { property }
+            | Self::Avg { property }
+            | Self::Min { property }
+            | Self::Max { property }
+            | Self::Distinct { property } => Some(property),
+        }
+    }
+}
