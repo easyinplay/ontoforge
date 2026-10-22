@@ -187,6 +187,9 @@ fn validate_nested_set(
         }
         match set {
             ObjectSet::Union { sets, .. } | ObjectSet::Intersect { sets, .. } => {
+                if sets.is_empty() {
+                    return Err(QueryError::InvalidQuery);
+                }
                 if sets.len() > limits.max_in_values {
                     return Err(QueryError::QueryTooComplex);
                 }
