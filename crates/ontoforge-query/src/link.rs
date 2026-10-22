@@ -231,7 +231,15 @@ impl<E: Engine> QueryService<'_, E> {
                     after,
                 },
             };
-            let page = self.execute_list_internal(&current, budget, None).await?;
+            let page = match &current.request.set {
+                ObjectSet::Union { .. } | ObjectSet::Intersect { .. } | ObjectSet::Subtract { .. } => {
+                    Box::pin(self.execute_set_list(&current, budget)).await?
+                }
+                ObjectSet::SearchAround { .. } => {
+                    Box::pin(self.execute_search_around(&current, budget)).await?
+                }
+                _ => self.execute_list_internal(&current, budget, None).await?,
+            };
             if page.truncated {
                 return Err(QueryError::WorkBudgetExceeded);
             }
