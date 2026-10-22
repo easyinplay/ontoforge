@@ -4,10 +4,13 @@ use camino::Utf8Path;
 use ontoforge_auth::scope::{RoleTypeGrant, merge};
 use ontoforge_expr::{Attrs, CmpOp, Operand, Pred, Scalar};
 use ontoforge_query::ast::{Direction, Nulls, ObjectSet, OrderBy, QueryLiteral, WhereClause};
-use ontoforge_query::overlay::{compare_rows, eligible_row, overlay_candidates, overlay_object};
 use ontoforge_query::execute::WorkBudget;
+use ontoforge_query::overlay::{
+    NormalizedOrder, compare_rows, compare_rows_normalized, eligible_row, overlay_candidates,
+    overlay_object,
+};
 use ontoforge_query::{ExecutionLimits, QueryError};
-use ontoforge_schema::ir::{ObjectTypeName, PropertyName};
+use ontoforge_schema::ir::{Collation, ObjectTypeName, PropertyName};
 use ontoforge_schema::load_dir;
 use ontoforge_storage::query_read::ObjectEdit;
 use ontoforge_storage::state::EditRow;
@@ -177,7 +180,7 @@ proptest! {
     ) {
         let ty = flight();
         let mut rows = (0..3).map(|index| BTreeMap::from([
-            (prop("flightId"), json!((index + 1) as i64)),
+            (prop("flightId"), json!(i64::try_from(index + 1).unwrap())),
             (prop("delayMinutes"), json!(delays[index])),
             (prop("status"), json!(if statuses[index] { "z" } else { "a" })),
         ])).collect::<Vec<_>>();
@@ -190,7 +193,7 @@ proptest! {
         ];
         rows.sort_by(|a, b| compare_rows(a, b, &order, &ty.primary_key, &ty));
         let actual = rows.iter().map(|row| row[&ty.primary_key].as_i64().unwrap()).collect::<Vec<_>>();
-        let mut expected = (0..3).map(|index| (delays[index], statuses[index], (index + 1) as i64)).collect::<Vec<_>>();
+        let mut expected = (0..3).map(|index| (delays[index], statuses[index], i64::try_from(index + 1).unwrap())).collect::<Vec<_>>();
         expected.sort_by(|a, b| a.0.cmp(&b.0).then_with(|| b.1.cmp(&a.1)).then_with(|| a.2.cmp(&b.2)));
         prop_assert_eq!(actual, expected.into_iter().map(|item| item.2).collect::<Vec<_>>());
     }
@@ -334,18 +337,64 @@ fn ordering_is_total_and_deterministic() {
 }
 
 #[test]
+fn ordering_case_insensitive_unicode_uses_final_rust_recheck() {
+    let ty = flight();
+    let first = BTreeMap::from([
+        (prop("flightId"), json!(2)),
+        (prop("status"), json!("Äpfel")),
+    ]);
+    let second = BTreeMap::from([
+        (prop("flightId"), json!(1)),
+        (prop("status"), json!("äPFEL")),
+    ]);
+    let key = NormalizedOrder {
+        order: OrderBy {
+            property: prop("status"),
+            direction: Direction::Asc,
+            nulls: Nulls::Last,
+        },
+        collation: Collation::CaseInsensitive,
+        final_recheck: true,
+    };
+    assert_eq!(
+        compare_rows_normalized(&first, &second, &[key], &ty.primary_key, &ty),
+        std::cmp::Ordering::Greater
+    );
+}
+
+#[test]
 fn pagination_execution_limit_boundaries_are_inclusive() {
     let defaults = ExecutionLimits::phase4_default();
-    assert_eq!((defaults.max_backend_calls, defaults.max_raw_candidates, defaults.max_backfill_keys, defaults.max_decoded_bytes), (32, 10_000, 2_048, 64 * 1024 * 1024));
+    assert_eq!(
+        (
+            defaults.max_backend_calls,
+            defaults.max_raw_candidates,
+            defaults.max_backfill_keys,
+            defaults.max_decoded_bytes
+        ),
+        (32, 10_000, 2_048, 64 * 1024 * 1024)
+    );
     let mut budget = WorkBudget::new(defaults);
     budget.charge_backend_calls(32).unwrap();
     budget.charge_raw_candidates(10_000).unwrap();
     budget.charge_backfill_keys(2_048).unwrap();
     budget.charge_decoded_bytes(64 * 1024 * 1024).unwrap();
-    assert!(matches!(budget.charge_backend_calls(1), Err(QueryError::WorkBudgetExceeded)));
-    assert!(matches!(budget.charge_raw_candidates(1), Err(QueryError::WorkBudgetExceeded)));
-    assert!(matches!(budget.charge_backfill_keys(1), Err(QueryError::WorkBudgetExceeded)));
-    assert!(matches!(budget.charge_decoded_bytes(1), Err(QueryError::WorkBudgetExceeded)));
+    assert!(matches!(
+        budget.charge_backend_calls(1),
+        Err(QueryError::WorkBudgetExceeded)
+    ));
+    assert!(matches!(
+        budget.charge_raw_candidates(1),
+        Err(QueryError::WorkBudgetExceeded)
+    ));
+    assert!(matches!(
+        budget.charge_backfill_keys(1),
+        Err(QueryError::WorkBudgetExceeded)
+    ));
+    assert!(matches!(
+        budget.charge_decoded_bytes(1),
+        Err(QueryError::WorkBudgetExceeded)
+    ));
 }
 
 #[test]
@@ -360,5 +409,8 @@ fn pagination_budget_rejects_overflow_and_untrusted_limits() {
         assert!(matches!(invalid, Err(QueryError::InvalidQuery)));
     }
     let mut budget = WorkBudget::new(ExecutionLimits::phase4_default());
-    assert!(matches!(budget.charge_raw_candidates(usize::MAX), Err(QueryError::WorkBudgetExceeded)));
+    assert!(matches!(
+        budget.charge_raw_candidates(usize::MAX),
+        Err(QueryError::WorkBudgetExceeded)
+    ));
 }
