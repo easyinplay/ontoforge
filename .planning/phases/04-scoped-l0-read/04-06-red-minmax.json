@@ -1,0 +1,10 @@
+{
+  "command": "RUSTC_BOOTSTRAP=1 cargo test -p ontoforge-query --test aggregate --locked min_max_edited_values_can_win_or_remove_winner -- -Z unstable-options --format=junit",
+  "exitCode": 1,
+  "output": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"test\" package=\"test\" id=\"0\" errors=\"0\" failures=\"1\" tests=\"1\" skipped=\"0\" ><testcase classname=\"integration\" name=\"min_max_edited_values_can_win_or_remove_winner\" time=\"0\"><failure type=\"assert\"/><system-out><![CDATA[]]>&#xA;<![CDATA[thread 'min_max_edited_values_can_win_or_remove_winner' (14588) panicked at crates\\ontoforge-query\\tests\\aggregate.rs:385:5:]]>&#xA;<![CDATA[assertion `left == right` failed]]>&#xA;<![CDATA[  left: [Null, Null]]]>&#xA;<![CDATA[ right: [Number(-10), Number(80)]]]>&#xA;<![CDATA[note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace]]>&#xA;<![CDATA[]]></system-out></testcase><system-out/><system-err/></testsuite></testsuites>",
+  "targetTest": "min_max_edited_values_can_win_or_remove_winner",
+  "targetFile": "crates/ontoforge-query/tests/aggregate.rs",
+  "expected": "min and max match the independent post-edit values (-10, 80)",
+  "actual": "min and max returned null",
+  "semanticAssessment": "The named SQLite integration target executed, fixture edits succeeded, and the planned min/max value assertion failed; no setup error occurred."
+}

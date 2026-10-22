@@ -297,6 +297,97 @@ async fn count_sum_avg_match_full_materialization_reference() {
     );
 }
 
+#[tokio::test]
+#[allow(clippy::too_many_lines, reason = "fixture and winner-changing edits exercise both directions")]
+async fn min_max_edited_values_can_win_or_remove_winner() {
+    let root = Utf8Path::new(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../examples/ontologies/aviation"
+    ));
+    let loaded = load_dir(root);
+    let ontology = loaded.ontology.unwrap();
+    let profile = ProfileName::try_from("dev".to_owned()).unwrap();
+    let fixtures = plan_fixture_tables(&ontology, &loaded.sources, &profile).unwrap();
+    let engine = RecordingEngine {
+        inner: SqliteEngine::from_fixtures(root, &fixtures.tables).await.unwrap(),
+        sql: Mutex::new(Vec::new()),
+    };
+    let dir = tempfile::tempdir().unwrap();
+    let store = EditStore::open(StoreSettings {
+        backend: BackendSettings::Sqlite {
+            path: Utf8PathBuf::from_path_buf(dir.path().join("edits.db")).unwrap(),
+        },
+        lock_timeout: Duration::from_secs(5),
+        probe_timeout: Duration::from_secs(5),
+        trino_catalog: None,
+    }).await.unwrap();
+    reload(&store, &ontology, &ReloadOptions::default()).await.unwrap();
+    let active = store.active_definition().await.unwrap();
+    let flight = name("Flight");
+    let scope = PrincipalScope {
+        types: std::iter::once((flight.clone(), TypeScope {
+            row: Pred::Const(true),
+            columns: ontology.object_types[&flight].properties.keys().cloned()
+                .map(|property| (property, Pred::Const(true))).collect(),
+        })).collect(),
+        ..PrincipalScope::default()
+    };
+    let principal = Principal {
+        id: PrincipalId::new("test", "minmax-reader"),
+        issuer: "test".into(), subject: "minmax-reader".into(),
+        groups: BTreeSet::new(), attrs: Attrs::default(),
+    };
+    let csv = include_str!("../../../examples/ontologies/aviation/bindings/dev/fixtures/flights.csv");
+    let mut rows = csv.lines().skip(1).map(|line| {
+        let mut cells = line.split(',');
+        let key = cells.next().unwrap().to_owned();
+        let delay = cells.nth(6).unwrap().trim().parse::<i64>().ok();
+        (key, delay)
+    }).collect::<BTreeMap<_, _>>();
+    let source_max = rows.iter().filter_map(|(key, value)| value.map(|v| (key.clone(), v)))
+        .max_by_key(|(_, value)| *value).unwrap().0;
+    assert_ne!(source_max, "F-1001");
+    store.commit(Commit {
+        actor: Actor::Principal(principal.id.to_string()),
+        action: "minmaxCorpus".to_owned(),
+        def_version: active.def_version, params: json!({}),
+        edits: vec![
+            Edit::Object {
+                type_name: flight.clone(),
+                pk: PropertyValue::String("F-1001".to_owned()),
+                op: ObjectOp::Set(BTreeMap::from([(prop("delayMinutes"), PropertyValue::Int(-10))])),
+            },
+            Edit::Object {
+                type_name: flight.clone(),
+                pk: PropertyValue::String(source_max.clone()),
+                op: ObjectOp::Tombstone,
+            },
+        ],
+    }).await.unwrap();
+    rows.insert("F-1001".to_owned(), Some(-10));
+    rows.remove(&source_max);
+    let expected_min = rows.values().copied().flatten().min().unwrap();
+    let expected_max = rows.values().copied().flatten().max().unwrap();
+    let tokens = TokenCodec::new(b"minmax-test".to_vec()).unwrap();
+    let service = QueryService {
+        principal: &principal, scope: &scope, active,
+        engine: &engine, store: &store,
+        limits: ExecutionLimits::phase4_default(), tokens: &tokens,
+    };
+    let result = service.execute_aggregate(AggregateRequest {
+        set: ObjectSet::Type { object_type: flight },
+        group_by: vec![],
+        measures: vec![
+            AggregateMeasure::Min { property: prop("delayMinutes") },
+            AggregateMeasure::Max { property: prop("delayMinutes") },
+        ],
+    }, AggregateCapabilities::all_supported(), AggregateLimits::phase4_default()).await.unwrap();
+    assert_eq!(result.buckets[0].values, vec![json!(expected_min), json!(expected_max)]);
+    let statements = engine.sql.lock().unwrap();
+    assert!(statements.iter().any(|sql| sql.contains("ORDER BY") && sql.contains("LIMIT")));
+    assert!(statements.iter().all(|sql| !sql.contains("min(") && !sql.contains("max(")));
+}
+
 #[test]
 fn count_sum_avg_limits_phase4_defaults_are_exact() {
     let limits = AggregateLimits::phase4_default();
