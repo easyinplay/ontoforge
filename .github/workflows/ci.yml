@@ -4,6 +4,13 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+    inputs:
+      phase4_query_bench:
+        description: Phase 4 query benchmark mode
+        required: true
+        type: choice
+        options: [isolated]
 
 permissions:
   contents: read
@@ -136,8 +143,15 @@ jobs:
         env:
           ONTOFORGE_TRINO_URL: http://localhost:8080
           ONTOFORGE_PG_URL: postgres://postgres:ontoforge-ci-only@localhost:5432/editstore
-          ONTOFORGE_QUERY_PLAN_DIR: target/query-plans
+          ONTOFORGE_QUERY_PLAN_DIR: ${{ github.workspace }}/target/query-plans
         run: cargo test -p ontoforge-query --test trino_query_it --locked -- --ignored --test-threads=1
+      - name: Query benchmark smoke (Trino + PostgreSQL)
+        env:
+          ONTOFORGE_TRINO_URL: http://localhost:8080
+          ONTOFORGE_PG_URL: postgres://postgres:ontoforge-ci-only@localhost:5432/editstore
+          ONTOFORGE_BENCH_MODE: smoke
+          ONTOFORGE_BENCH_ARTIFACT_DIR: ${{ github.workspace }}/target/query-bench
+        run: cargo test -p ontoforge-query --test query_bench_it --locked -- --ignored --test-threads=1
       # A green run must not mean "nothing ran" (RESEARCH Pitfall 8).
       - name: Ignored tests are actually there
         run: |
@@ -155,6 +169,7 @@ jobs:
             "ontoforge-storage query_read_pg"
             "ontoforge-auth rowpred_trino_it"
             "ontoforge-query trino_query_it"
+            "ontoforge-query query_bench_it"
           )
           for target in "${targets[@]}"; do
             set -- $target
@@ -170,6 +185,74 @@ jobs:
         with:
           name: phase4-query-plans
           path: target/query-plans/*.txt
+          if-no-files-found: error
+      - name: Upload query benchmark smoke evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: phase4-query-bench-smoke
+          path: target/query-bench/*.json
+          if-no-files-found: error
+      - name: Trino logs
+        if: failure()
+        run: docker logs trino
+
+  isolated-query-bench:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.phase4_query_bench == 'isolated' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    services:
+      postgres:
+        image: postgres:17.11@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3
+        env:
+          POSTGRES_PASSWORD: ontoforge-ci-only
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: ontoforge-ci-only
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # v1
+        with:
+          toolchain: "1.98.0"
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - name: Seed dedicated PostgreSQL
+        run: |
+          psql -v ON_ERROR_STOP=1 -d postgres -c 'CREATE DATABASE demo' -c 'CREATE DATABASE editstore'
+          psql -v ON_ERROR_STOP=1 -v fixtures="$PWD/examples/ontologies/aviation/bindings/dev/fixtures" -d demo -f ci/pg/seed.sql
+          psql -v ON_ERROR_STOP=1 -d demo -f ci/pg/query_corpus.sql
+      - name: Start dedicated Trino 483
+        run: docker run -d --name trino --network host -v "$PWD/ci/trino/catalog:/etc/trino/catalog:ro" trinodb/trino:483@sha256:db58cc93e593a2706553745f276bb119c9810e69918be56ecde088ba7ccb0534
+      - name: Wait for dedicated Trino
+        run: |
+          deadline=$((SECONDS + 180))
+          until curl -fsS http://localhost:8080/v1/info | jq -e '.starting == false' >/dev/null 2>&1; do
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "Trino did not finish starting within 180 s"
+              docker logs trino
+              exit 1
+            fi
+            sleep 2
+          done
+      - name: Query benchmark isolated thresholds
+        env:
+          ONTOFORGE_TRINO_URL: http://localhost:8080
+          ONTOFORGE_PG_URL: postgres://postgres:ontoforge-ci-only@localhost:5432/editstore
+          ONTOFORGE_BENCH_MODE: isolated
+          ONTOFORGE_BENCH_ARTIFACT_DIR: ${{ github.workspace }}/target/query-bench
+        run: cargo test -p ontoforge-query --test query_bench_it --locked -- --ignored --test-threads=1 --nocapture
+      - name: Upload isolated raw timings and distributed EXPLAIN
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: phase4-query-bench-isolated
+          path: target/query-bench/*.json
           if-no-files-found: error
       - name: Trino logs
         if: failure()
