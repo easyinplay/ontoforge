@@ -20,7 +20,7 @@ use ontoforge_query::{ExecutionLimits, QueryRequest, QueryService, TokenCodec};
 use ontoforge_schema::ir::{ObjectTypeName, ProfileName, PropertyName};
 use ontoforge_schema::load_dir;
 use ontoforge_storage::reload::{ReloadOptions, reload};
-use ontoforge_storage::commit::{Actor, Commit, Edit, ObjectOp};
+use ontoforge_storage::commit::{Actor, Commit, Edit, LinkOp, ObjectOp};
 use ontoforge_storage::store::{BackendSettings, EditStore, StoreSettings};
 use std::sync::Arc;
 use std::time::Duration;
@@ -106,6 +106,30 @@ async fn outbound_fk_uses_scoped_merged_object_value() {
         &ontology, &scope.types[&name("Pilot")], CompileLimits::default()).unwrap();
     let crew = service.execute_list(&crew_query).await.unwrap();
     assert_eq!(crew.rows.iter().map(|row| row.pk.clone()).collect::<Vec<_>>(), vec![json!("E-001"), json!("E-002")]);
+
+    let inbound = ValidatedQuery::new(QueryRequest {
+        set: serde_json::from_value(json!({
+            "kind": "searchAround", "object_type": "Flight",
+            "base": {"kind": "pk", "object_type": "Airport", "pk": "FRA"},
+            "link": "flightDepartureAirport", "direction": "fromTo"
+        })).unwrap(),
+        select: vec![prop("flightId")],
+    }, vec![], PageSpec { first: 10, after: None },
+    &ontology, &scope.types[&name("Flight")], CompileLimits::default()).unwrap();
+    assert_eq!(service.execute_list(&inbound).await.unwrap().rows.iter().map(|row| row.pk.clone()).collect::<Vec<_>>(), vec![json!("F-1001"), json!("F-2010"), json!("F-2020")]);
+
+    store.commit(Commit {
+        actor: Actor::Principal(principal.id.to_string()), action: "crewEdit".to_owned(),
+        def_version: active.def_version, params: json!({}),
+        edits: vec![
+            Edit::Link { link: ontoforge_schema::ir::LinkTypeName::try_from("flightCrew".to_owned()).unwrap(),
+                a: PropertyValue::String("F-1001".to_owned()), b: PropertyValue::String("E-001".to_owned()), op: LinkOp::Remove },
+            Edit::Link { link: ontoforge_schema::ir::LinkTypeName::try_from("flightCrew".to_owned()).unwrap(),
+                a: PropertyValue::String("F-1001".to_owned()), b: PropertyValue::String("E-003".to_owned()), op: LinkOp::Add },
+        ],
+    }).await.unwrap();
+    let edited_crew = service.execute_list(&crew_query).await.unwrap();
+    assert_eq!(edited_crew.rows.iter().map(|row| row.pk.clone()).collect::<Vec<_>>(), vec![json!("E-002"), json!("E-003")]);
 }
 
 fn edge(from: u8, to: u8) -> LinkEdge {
