@@ -667,21 +667,31 @@ async fn outbound_fk_uses_scoped_merged_object_value() {
         active: Arc::clone(&active),
         ..service
     };
-    assert!(
-        hidden_fk
-            .execute_list(&query)
-            .await
-            .unwrap()
-            .rows
-            .is_empty()
+    let hidden_outbound =
+        serde_json::to_value(hidden_fk.execute_list(&query).await.unwrap()).unwrap();
+    let hidden_inbound =
+        serde_json::to_value(hidden_fk.execute_list(&inbound).await.unwrap()).unwrap();
+    assert_eq!(hidden_outbound["rows"], json!([]));
+    assert_eq!(hidden_inbound["rows"], json!([]));
+    let mut missing_fk_scope = scope.clone();
+    missing_fk_scope
+        .types
+        .get_mut(&name("Flight"))
+        .unwrap()
+        .columns
+        .remove(&prop("departureAirportCode"));
+    let missing_fk = QueryService {
+        scope: &missing_fk_scope,
+        active: Arc::clone(&active),
+        ..hidden_fk
+    };
+    assert_eq!(
+        serde_json::to_value(missing_fk.execute_list(&query).await.unwrap()).unwrap(),
+        hidden_outbound
     );
-    assert!(
-        hidden_fk
-            .execute_list(&inbound)
-            .await
-            .unwrap()
-            .rows
-            .is_empty()
+    assert_eq!(
+        serde_json::to_value(missing_fk.execute_list(&inbound).await.unwrap()).unwrap(),
+        hidden_inbound
     );
 
     let mut hidden_base_scope = scope.clone();
