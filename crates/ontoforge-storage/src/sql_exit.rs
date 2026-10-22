@@ -184,6 +184,30 @@ pub(crate) async fn fetch_cells(
     }
 }
 
+/// The first row of a built read-only query through the pool, without a write transaction.
+pub(crate) async fn fetch_cells_read(
+    db: &Db,
+    (sql, values): Built,
+    kinds: &[CellKind],
+) -> Result<Option<Vec<Cell>>, StoreError> {
+    match db {
+        Db::Sqlite(pool) => {
+            let row = sqlx::query_with(AssertSqlSafe(sql), values)
+                .fetch_optional(pool)
+                .await
+                .map_err(|e| StoreError::from_sqlx(&e))?;
+            row.map(|row| sqlite_cells(&row, kinds)).transpose()
+        }
+        Db::Postgres { pool, .. } => {
+            let row = sqlx::query_with(AssertSqlSafe(sql), values)
+                .fetch_optional(pool)
+                .await
+                .map_err(|e| StoreError::from_sqlx(&e))?;
+            row.map(|row| pg_cells(&row, kinds)).transpose()
+        }
+    }
+}
+
 fn sqlite_cells(row: &SqliteRow, kinds: &[CellKind]) -> Result<Vec<Cell>, StoreError> {
     let fail = |e: &sqlx::Error| StoreError::from_sqlx(e);
     kinds

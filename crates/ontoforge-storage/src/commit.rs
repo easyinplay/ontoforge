@@ -832,7 +832,7 @@ async fn load_object(
     decode_object(ty, table, cells).map_err(EditError::from)
 }
 
-fn decode_object(
+pub(crate) fn decode_object(
     ty: &ObjectType,
     table: &ObjectTable,
     cells: Vec<Cell>,
