@@ -598,6 +598,35 @@ async fn min_max_edited_values_can_win_or_remove_winner() {
         masked.buckets[0].values,
         vec![json!(visible_min), json!(expected_max)]
     );
+    store
+        .commit(Commit {
+            actor: Actor::Principal(principal.id.to_string()),
+            action: "equalMinTie".to_owned(),
+            def_version: masked_service.active.def_version,
+            params: json!({}),
+            edits: vec![Edit::Object {
+                type_name: flight.clone(),
+                pk: PropertyValue::String("F-1003".to_owned()),
+                op: ObjectOp::Set(BTreeMap::from([(
+                    prop("delayMinutes"),
+                    PropertyValue::Int(-10),
+                )])),
+            }],
+        })
+        .await
+        .unwrap();
+    let tied = masked_service
+        .execute_aggregate(
+            minmax(flight.clone()),
+            AggregateCapabilities::all_supported(),
+            AggregateLimits::phase4_default(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(
+        tied.buckets[0].values,
+        vec![json!(-10), json!(expected_max)]
+    );
     let mut all_hidden_scope = masked_scope.clone();
     all_hidden_scope
         .types
