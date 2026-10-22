@@ -170,11 +170,27 @@ fn valid_same_type_set_and_cross_type_rejection() {
             {"kind": "where", "object_type": "Flight", "predicate": {"op": "isNull", "property": "status"}}
         ]
     })).unwrap();
-    let node_limit = CompileLimits { max_nodes: 6, ..CompileLimits::default() };
-    assert!(matches!(ValidatedQuery::new(
-        QueryRequest { set: predicates, select: vec![] }, vec![],
-        PageSpec { first: 10, after: None }, &ontology, &scope, node_limit,
-    ), Err(QueryError::QueryTooComplex)));
+    let node_limit = CompileLimits {
+        max_nodes: 6,
+        ..CompileLimits::default()
+    };
+    assert!(matches!(
+        ValidatedQuery::new(
+            QueryRequest {
+                set: predicates,
+                select: vec![]
+            },
+            vec![],
+            PageSpec {
+                first: 10,
+                after: None
+            },
+            &ontology,
+            &scope,
+            node_limit,
+        ),
+        Err(QueryError::QueryTooComplex)
+    ));
 }
 
 #[tokio::test]

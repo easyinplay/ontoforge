@@ -157,13 +157,27 @@ impl ValidatedQuery {
             ObjectSet::Union { .. } | ObjectSet::Intersect { .. } | ObjectSet::Subtract { .. } => {
                 validate_nested_set(&request, &order_by, &page, ontology, scope, limits)?;
             }
-            ObjectSet::SearchAround { base, link, direction, .. } => {
-                let definition = ontology.link_types.get(link).ok_or(QueryError::InvalidQuery)?;
+            ObjectSet::SearchAround {
+                base,
+                link,
+                direction,
+                ..
+            } => {
+                let definition = ontology
+                    .link_types
+                    .get(link)
+                    .ok_or(QueryError::InvalidQuery)?;
                 let (expected_base, expected_target) = match direction {
-                    crate::ast::LinkDirection::FromTo => (&definition.from.object_type, &definition.to.object_type),
-                    crate::ast::LinkDirection::ToFrom => (&definition.to.object_type, &definition.from.object_type),
+                    crate::ast::LinkDirection::FromTo => {
+                        (&definition.from.object_type, &definition.to.object_type)
+                    }
+                    crate::ast::LinkDirection::ToFrom => {
+                        (&definition.to.object_type, &definition.from.object_type)
+                    }
                 };
-                if base.object_type() != expected_base || request.set.object_type() != expected_target {
+                if base.object_type() != expected_base
+                    || request.set.object_type() != expected_target
+                {
                     return Err(QueryError::InvalidQuery);
                 }
             }
@@ -225,9 +239,13 @@ fn validate_nested_set(
                         }
                         match part {
                             WhereClause::And { clauses } | WhereClause::Or { clauses } => {
-                                predicates.extend(clauses.iter().map(|child| (child, predicate_depth + 1)));
+                                predicates.extend(
+                                    clauses.iter().map(|child| (child, predicate_depth + 1)),
+                                );
                             }
-                            WhereClause::Not { clause } => predicates.push((clause, predicate_depth + 1)),
+                            WhereClause::Not { clause } => {
+                                predicates.push((clause, predicate_depth + 1));
+                            }
                             _ => {}
                         }
                     }
