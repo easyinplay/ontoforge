@@ -16,10 +16,24 @@ pub fn merge_edges(source: Vec<LinkEdge>, edits: &[LinkEdit]) -> Result<Vec<Link
     for edge in source {
         live.insert(edge_key(&edge), edge);
     }
+    let mut latest = BTreeMap::new();
     for edit in edits {
         if edit.row.version <= 0 {
             return Err(QueryError::Store);
         }
+        let key = (edit.from.to_json().to_string(), edit.to.to_json().to_string());
+        if let Some(previous) = latest.get(&key) {
+            let previous: &LinkEdit = previous;
+            if previous.row.version == edit.row.version && previous != edit {
+                return Err(QueryError::Store);
+            }
+            if previous.row.version >= edit.row.version {
+                continue;
+            }
+        }
+        latest.insert(key, edit.clone());
+    }
+    for edit in latest.into_values() {
         let edge = LinkEdge {
             from: edit.from.clone(),
             to: edit.to.clone(),
