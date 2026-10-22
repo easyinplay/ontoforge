@@ -21,7 +21,10 @@ pub fn merge_edges(source: Vec<LinkEdge>, edits: &[LinkEdit]) -> Result<Vec<Link
         if edit.row.version <= 0 {
             return Err(QueryError::Store);
         }
-        let key = (edit.from.to_json().to_string(), edit.to.to_json().to_string());
+        let key = (
+            edit.from.to_json().to_string(),
+            edit.to.to_json().to_string(),
+        );
         if let Some(previous) = latest.get(&key) {
             let previous: &LinkEdit = previous;
             if previous.row.version == edit.row.version && previous != edit {
@@ -48,5 +51,8 @@ pub fn merge_edges(source: Vec<LinkEdge>, edits: &[LinkEdit]) -> Result<Vec<Link
 }
 
 fn edge_key(edge: &LinkEdge) -> (String, String) {
-    (edge.from.to_json().to_string(), edge.to.to_json().to_string())
+    (
+        edge.from.to_json().to_string(),
+        edge.to.to_json().to_string(),
+    )
 }

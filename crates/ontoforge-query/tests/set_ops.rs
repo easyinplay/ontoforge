@@ -18,8 +18,8 @@ use ontoforge_query::{QueryError, QueryRequest};
 use ontoforge_schema::ir::ObjectTypeName;
 use ontoforge_schema::ir::{ProfileName, PropertyName};
 use ontoforge_schema::load_dir;
-use ontoforge_storage::reload::{ReloadOptions, reload};
 use ontoforge_storage::commit::{Actor, Commit, Edit, ObjectOp};
+use ontoforge_storage::reload::{ReloadOptions, reload};
 use ontoforge_storage::store::{BackendSettings, EditStore, StoreSettings};
 use ontoforge_storage::value::PropertyValue;
 use proptest::prelude::*;
@@ -44,6 +44,10 @@ fn nested_set_wire_accepts_logical_names_only() {
 }
 
 #[test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "keeps nested validation boundaries together"
+)]
 fn valid_same_type_set_and_cross_type_rejection() {
     let ontology = load_dir(Utf8Path::new(concat!(
         env!("CARGO_MANIFEST_DIR"),
@@ -93,7 +97,8 @@ fn valid_same_type_set_and_cross_type_rejection() {
 
     let empty: ObjectSet = serde_json::from_value(json!({
         "kind": "union", "object_type": "Flight", "sets": []
-    })).unwrap();
+    }))
+    .unwrap();
     assert!(matches!(validate(empty), Err(QueryError::InvalidQuery)));
 
     let nested: ObjectSet = serde_json::from_value(json!({
@@ -102,14 +107,31 @@ fn valid_same_type_set_and_cross_type_rejection() {
                 {"kind": "type", "object_type": "Flight"}
             ]}
         ]
-    })).unwrap();
-    let tight = CompileLimits { max_depth: 2, ..CompileLimits::default() };
-    assert!(matches!(ValidatedQuery::new(
-        QueryRequest { set: nested, select: vec![] }, vec![],
-        PageSpec { first: 10, after: None }, &ontology, &scope, tight,
-    ), Err(QueryError::QueryTooComplex)));
+    }))
+    .unwrap();
+    let tight = CompileLimits {
+        max_depth: 2,
+        ..CompileLimits::default()
+    };
+    assert!(matches!(
+        ValidatedQuery::new(
+            QueryRequest {
+                set: nested,
+                select: vec![]
+            },
+            vec![],
+            PageSpec {
+                first: 10,
+                after: None
+            },
+            &ontology,
+            &scope,
+            tight,
+        ),
+        Err(QueryError::QueryTooComplex)
+    ));
 
-    let wide: ObjectSet = serde_json::from_value(json!({
+    let nested_operands: ObjectSet = serde_json::from_value(json!({
         "kind": "union", "object_type": "Flight", "sets": [
             {"kind": "union", "object_type": "Flight", "sets": [
                 {"kind": "type", "object_type": "Flight"},
@@ -117,15 +139,36 @@ fn valid_same_type_set_and_cross_type_rejection() {
             ]},
             {"kind": "type", "object_type": "Flight"}
         ]
-    })).unwrap();
-    let tight_operands = CompileLimits { max_in_values: 2, ..CompileLimits::default() };
-    assert!(matches!(ValidatedQuery::new(
-        QueryRequest { set: wide, select: vec![] }, vec![],
-        PageSpec { first: 10, after: None }, &ontology, &scope, tight_operands,
-    ), Err(QueryError::QueryTooComplex)));
+    }))
+    .unwrap();
+    let tight_operands = CompileLimits {
+        max_in_values: 2,
+        ..CompileLimits::default()
+    };
+    assert!(matches!(
+        ValidatedQuery::new(
+            QueryRequest {
+                set: nested_operands,
+                select: vec![]
+            },
+            vec![],
+            PageSpec {
+                first: 10,
+                after: None
+            },
+            &ontology,
+            &scope,
+            tight_operands,
+        ),
+        Err(QueryError::QueryTooComplex)
+    ));
 }
 
 #[tokio::test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "one fixture checks pagination, edits, scope and budget"
+)]
 async fn set_result_reuses_normal_hydration_order_and_cursor() {
     let root = Utf8Path::new(concat!(
         env!("CARGO_MANIFEST_DIR"),
@@ -228,25 +271,39 @@ async fn set_result_reuses_normal_hydration_order_and_cursor() {
         Err(QueryError::WorkBudgetExceeded)
     ));
 
-    store.commit(Commit {
-        actor: Actor::Principal(principal.id.to_string()),
-        action: "setTestTombstone".to_owned(),
-        def_version: active.def_version,
-        params: json!({}),
-        edits: vec![Edit::Object {
-            type_name: flight.clone(),
-            pk: PropertyValue::String("F-1001".to_owned()),
-            op: ObjectOp::Tombstone,
-        }],
-    }).await.unwrap();
+    store
+        .commit(Commit {
+            actor: Actor::Principal(principal.id.to_string()),
+            action: "setTestTombstone".to_owned(),
+            def_version: active.def_version,
+            params: json!({}),
+            edits: vec![Edit::Object {
+                type_name: flight.clone(),
+                pk: PropertyValue::String("F-1001".to_owned()),
+                op: ObjectOp::Tombstone,
+            }],
+        })
+        .await
+        .unwrap();
     let after_tombstone = service.execute_list(&query(None)).await.unwrap();
-    assert_eq!(after_tombstone.rows.iter().map(|row| &row.pk).collect::<Vec<_>>(), vec![&json!("F-1002")]);
+    assert_eq!(
+        after_tombstone
+            .rows
+            .iter()
+            .map(|row| &row.pk)
+            .collect::<Vec<_>>(),
+        vec![&json!("F-1002")]
+    );
 
     let hidden_scope = PrincipalScope {
-        types: std::iter::once((flight.clone(), TypeScope {
-            row: Pred::Const(false),
-            columns: scope.types[&flight].columns.clone(),
-        })).collect(),
+        types: std::iter::once((
+            flight.clone(),
+            TypeScope {
+                row: Pred::Const(false),
+                columns: scope.types[&flight].columns.clone(),
+            },
+        ))
+        .collect(),
         ..PrincipalScope::default()
     };
     let hidden = QueryService {
@@ -254,7 +311,14 @@ async fn set_result_reuses_normal_hydration_order_and_cursor() {
         limits: ExecutionLimits::phase4_default(),
         ..budget_limited
     };
-    assert!(hidden.execute_list(&query(None)).await.unwrap().rows.is_empty());
+    assert!(
+        hidden
+            .execute_list(&query(None))
+            .await
+            .unwrap()
+            .rows
+            .is_empty()
+    );
 }
 
 fn reference(operator: SetOperator, operands: &[Vec<u8>]) -> BTreeSet<String> {

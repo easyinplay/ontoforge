@@ -17,7 +17,10 @@ fn edit(from: u8, to: u8, deleted: bool) -> LinkEdit {
     LinkEdit {
         from: PropertyValue::Int(i64::from(from)),
         to: PropertyValue::Int(i64::from(to)),
-        row: LinkRow { deleted, version: 1 },
+        row: LinkRow {
+            deleted,
+            version: 1,
+        },
     }
 }
 
@@ -48,7 +51,9 @@ fn many_to_many_merges_source_and_link_edits_fixed() {
     let actual = merged
         .iter()
         .map(|edge| match (&edge.from, &edge.to) {
-            (PropertyValue::Int(from), PropertyValue::Int(to)) => (*from as u8, *to as u8),
+            (PropertyValue::Int(from), PropertyValue::Int(to)) => {
+                (u8::try_from(*from).unwrap(), u8::try_from(*to).unwrap())
+            }
             _ => panic!("unexpected endpoint type"),
         })
         .collect::<BTreeSet<_>>();
@@ -58,18 +63,33 @@ fn many_to_many_merges_source_and_link_edits_fixed() {
 #[test]
 fn duplicate_edits_use_highest_version_independent_of_input_order() {
     let removed = LinkEdit {
-        row: LinkRow { deleted: true, version: 2 },
+        row: LinkRow {
+            deleted: true,
+            version: 2,
+        },
         ..edit(1, 2, true)
     };
     let restored = LinkEdit {
-        row: LinkRow { deleted: false, version: 3 },
+        row: LinkRow {
+            deleted: false,
+            version: 3,
+        },
         ..edit(1, 2, false)
     };
-    for edits in [vec![removed.clone(), restored.clone()], vec![restored.clone(), removed.clone()]] {
-        assert_eq!(merge_edges(vec![edge(1, 2)], &edits).unwrap(), vec![edge(1, 2)]);
+    for edits in [
+        vec![removed.clone(), restored.clone()],
+        vec![restored.clone(), removed.clone()],
+    ] {
+        assert_eq!(
+            merge_edges(vec![edge(1, 2)], &edits).unwrap(),
+            vec![edge(1, 2)]
+        );
     }
     let conflict = LinkEdit {
-        row: LinkRow { deleted: true, version: 3 },
+        row: LinkRow {
+            deleted: true,
+            version: 3,
+        },
         ..removed
     };
     assert!(merge_edges(vec![], &[restored, conflict]).is_err());
@@ -88,7 +108,9 @@ proptest! {
             &logical_edits.iter().map(|&(from, to, deleted)| edit(from, to, deleted)).collect::<Vec<_>>(),
         ).unwrap();
         let actual = merged.iter().map(|edge| match (&edge.from, &edge.to) {
-            (PropertyValue::Int(from), PropertyValue::Int(to)) => (*from as u8, *to as u8),
+            (PropertyValue::Int(from), PropertyValue::Int(to)) => {
+                (u8::try_from(*from).unwrap(), u8::try_from(*to).unwrap())
+            }
             _ => panic!("unexpected endpoint type"),
         }).collect::<BTreeSet<_>>();
         prop_assert_eq!(actual, reference(&source, &logical_edits));
