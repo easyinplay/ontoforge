@@ -7,7 +7,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use camino::Utf8Path;
 use ontoforge_auth::Principal;
 use ontoforge_auth::authn::PrincipalId;
-use ontoforge_auth::scope::{PrincipalScope, TypeScope};
+use ontoforge_auth::scope::{PrincipalScope, ScopeInputs, TypeScope, compile_scope};
 use ontoforge_engine::config::{build_trino_engines, parse_server_config};
 use ontoforge_engine::printer::print_explain_distributed_sql;
 use ontoforge_engine::{
@@ -22,7 +22,9 @@ use ontoforge_query::ast::{
 };
 use ontoforge_query::compile::{CompileLimits, ValidatedQuery};
 use ontoforge_query::{ExecutionLimits, QueryError, QueryRequest, QueryService, TokenCodec};
-use ontoforge_schema::ir::{LinkTypeName, ObjectTypeName, PropertyName};
+use ontoforge_schema::ir::{
+    LinkTypeName, ObjectTypeName, PropertyName, Role, RoleBinding, RoleName, ScopeSet, Subject,
+};
 use ontoforge_storage::commit::{Actor, Commit, Edit, LinkOp, ObjectOp};
 use ontoforge_storage::reload::{ReloadOptions, reload};
 use ontoforge_storage::store::{ActiveDefinition, BackendSettings, EditStore, StoreSettings};
@@ -706,13 +708,15 @@ async fn where_search_set_and_relationship_corpus() {
                 object_type: name("Flight"),
                 pk: json!("Q-0001"),
             },
-            delayed.clone(),
+            ObjectSet::Intersect {
+                object_type: name("Flight"),
+                sets: vec![corpus_set(), delayed.clone()],
+            },
         ],
     };
     let query = validated(&f, request(union.clone(), &["status"]), 100, None);
     let page = service.execute_list(&query).await.expect("union");
-    assert!(keys(&page.rows).contains(&"Q-0001".to_owned()));
-    assert!(keys(&page.rows).contains(&"Q-0002".to_owned()));
+    assert_eq!(keys(&page.rows), ["Q-0001", "Q-0002", "Q-0004"]);
     f.explain_captured("set_union").await;
     let subtract = ObjectSet::Subtract {
         object_type: name("Flight"),
@@ -874,21 +878,24 @@ async fn aggregate_corpus_and_distributed_explain() {
         )
         .await
         .expect("groupBy");
-    for (group, expected) in [
-        (json!("Boarding"), 1),
-        (json!("delayed"), 2),
-        (Value::Null, 1),
-        (json!("scheduled"), 1),
-    ] {
-        let bucket = result
-            .buckets
-            .iter()
-            .find(|bucket| bucket.group == vec![group.clone()]);
-        assert_eq!(
-            bucket.map(|bucket| &bucket.values),
-            Some(&vec![json!(expected)])
-        );
-    }
+    let actual = result
+        .buckets
+        .iter()
+        .map(|bucket| {
+            serde_json::to_string(&(bucket.group.clone(), bucket.values.clone())).unwrap()
+        })
+        .collect::<BTreeSet<_>>();
+    let expected = [
+        (vec![json!("Boarding")], vec![json!(1)]),
+        (vec![json!("delayed")], vec![json!(2)]),
+        (vec![Value::Null], vec![json!(1)]),
+        (vec![json!("scheduled")], vec![json!(1)]),
+    ]
+    .into_iter()
+    .map(|bucket| serde_json::to_string(&bucket).unwrap())
+    .collect::<BTreeSet<_>>();
+    assert_eq!(result.buckets.len(), expected.len());
+    assert_eq!(actual, expected);
     f.explain_captured("aggregate_group_by").await;
 }
 
@@ -981,21 +988,73 @@ async fn real_security_roles_and_cursor_replay() {
         );
     }
 
-    let mut role_scope = f.scope.clone();
-    // A row seen through the broad role must not inherit `status` from the narrow role.
-    role_scope
-        .types
-        .get_mut(&name("Flight"))
-        .unwrap()
-        .columns
-        .insert(
-            prop("status"),
-            Pred::Cmp {
-                left: Operand::Column(prop("flightId")),
-                op: CmpOp::Eq,
-                right: Operand::Lit(Scalar::String("Q-0001".into())),
+    let mut role_set = ScopeSet::default();
+    for (role_name, properties, row_filter) in [
+        (
+            "wideReader",
+            vec!["flightId"],
+            "object.flightId != 'Q-0001'",
+        ),
+        (
+            "narrowReader",
+            vec!["flightId", "status"],
+            "object.flightId == 'Q-0001'",
+        ),
+    ] {
+        let key = RoleName::try_from(role_name.to_owned()).unwrap();
+        let role: Role = serde_json::from_value(json!({
+            "apiName": role_name,
+            "objectTypes": {
+                "Flight": { "properties": properties, "rowFilter": row_filter }
+            }
+        }))
+        .unwrap();
+        role_set.roles.insert(key.clone(), role);
+        role_set.bindings.insert(
+            key.clone(),
+            RoleBinding {
+                role: key,
+                subjects: vec![Subject::User(f.principal.id.as_str().to_owned())],
             },
         );
+    }
+    let compiled = compile_scope(&ScopeInputs {
+        ontology: &f.active.ontology,
+        profile: None,
+        attrs: &BTreeMap::new(),
+        scope: &role_set,
+        sources: None,
+    })
+    .unwrap_or_else(|diagnostics| panic!("real role grants: {diagnostics:#?}"));
+    let role_scope = compiled.for_principal(&f.principal);
+    assert_eq!(
+        role_scope.roles,
+        BTreeSet::from([
+            RoleName::try_from("narrowReader".to_owned()).unwrap(),
+            RoleName::try_from("wideReader".to_owned()).unwrap(),
+        ])
+    );
+    let role_query = |request, order| {
+        ValidatedQuery::new(
+            request,
+            order,
+            PageSpec {
+                first: 20,
+                after: None,
+            },
+            &f.active.ontology,
+            &role_scope.types[&name("Flight")],
+            CompileLimits::default(),
+        )
+        .unwrap()
+    };
+    let flight_order = || {
+        vec![OrderBy {
+            property: prop("flightId"),
+            direction: Direction::Asc,
+            nulls: Nulls::Last,
+        }]
+    };
     let service = QueryService {
         principal: &f.principal,
         scope: &role_scope,
@@ -1005,11 +1064,15 @@ async fn real_security_roles_and_cursor_replay() {
         limits: ExecutionLimits::phase4_default(),
         tokens: &f.tokens,
     };
-    let query = validated(&f, request(corpus_set(), &["status"]), 20, None);
+    let query = role_query(request(corpus_set(), &["status"]), flight_order());
     let page = service
         .execute_list(&query)
         .await
         .expect("role scoped list");
+    assert_eq!(
+        keys(&page.rows),
+        ["Q-0001", "Q-0002", "Q-0004", "Q-0005", "Q-0006"]
+    );
     for row in &page.rows {
         if row.pk != json!("Q-0001") {
             assert!(
@@ -1032,7 +1095,7 @@ async fn real_security_roles_and_cursor_replay() {
             },
         ],
     };
-    let query = validated(&f, request(filtered, &["status"]), 20, None);
+    let query = role_query(request(filtered, &["status"]), flight_order());
     assert!(
         service
             .execute_list(&query)
@@ -1042,27 +1105,20 @@ async fn real_security_roles_and_cursor_replay() {
             .is_empty()
     );
     f.explain_captured("multi_role_filter").await;
-    let query = ValidatedQuery::new(
+    let query = role_query(
         request(corpus_set(), &["status"]),
         vec![OrderBy {
             property: prop("status"),
             direction: Direction::Asc,
             nulls: Nulls::Last,
         }],
-        PageSpec {
-            first: 20,
-            after: None,
-        },
-        &f.active.ontology,
-        &role_scope.types[&name("Flight")],
-        CompileLimits::default(),
-    )
-    .unwrap();
+    );
     let sorted = service
         .execute_list(&query)
         .await
         .expect("role scoped sort");
     assert_eq!(sorted.rows[0].pk, json!("Q-0001"));
+    assert_eq!(sorted.rows.len(), 5);
     assert!(
         sorted
             .rows
@@ -1084,13 +1140,22 @@ async fn real_security_roles_and_cursor_replay() {
         )
         .await
         .expect("role scoped group");
-    assert!(
-        grouped
-            .buckets
-            .iter()
-            .all(|bucket| bucket.group == vec![json!("Boarding")]
-                || bucket.group == vec![Value::Null])
-    );
+    let actual = grouped
+        .buckets
+        .iter()
+        .map(|bucket| {
+            serde_json::to_string(&(bucket.group.clone(), bucket.values.clone())).unwrap()
+        })
+        .collect::<BTreeSet<_>>();
+    let expected = [
+        (vec![json!("Boarding")], vec![json!(1)]),
+        (vec![Value::Null], vec![json!(4)]),
+    ]
+    .into_iter()
+    .map(|bucket| serde_json::to_string(&bucket).unwrap())
+    .collect::<BTreeSet<_>>();
+    assert_eq!(grouped.buckets.len(), expected.len());
+    assert_eq!(actual, expected);
     f.explain_captured("multi_role_group").await;
 
     let mut hidden_target_scope = f.scope.clone();
@@ -1178,6 +1243,8 @@ async fn real_physical_errors_are_sanitized() {
         .expect_err("Trino missing table must fail");
     assert!(matches!(error, QueryError::Source), "{error:?}");
     outward_error(&error);
+    let response = json!({ "code": error.code(), "message": error.to_string() }).to_string();
+    assert!(!response.contains("not_a_real_phase4_table"), "{response}");
     assert_eq!(
         f.engine.take().len(),
         1,
@@ -1206,6 +1273,8 @@ async fn real_physical_errors_are_sanitized() {
         .expect_err("PG missing edit table must fail");
     assert!(matches!(error, QueryError::Store), "{error:?}");
     outward_error(&error);
+    let response = json!({ "code": error.code(), "message": error.to_string() }).to_string();
+    assert!(!response.contains(&f.edit_schema), "{response}");
     assert!(
         f.engine.take().is_empty(),
         "PG failure must stop before source"
