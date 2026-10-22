@@ -154,8 +154,61 @@ impl ValidatedQuery {
                     }
                 }
             }
-            ObjectSet::Union { .. } | ObjectSet::Intersect { .. } | ObjectSet::Subtract { .. } => {
+            ObjectSet::Union { .. }
+            | ObjectSet::Intersect { .. }
+            | ObjectSet::Subtract { .. }
+            | ObjectSet::SearchAround { .. } => {
                 validate_nested_set(&request, &order_by, &page, ontology, scope, limits)?;
+            }
+        }
+        Ok(Self {
+            request,
+            order_by,
+            page,
+        })
+    }
+}
+
+#[allow(
+    clippy::too_many_lines,
+    reason = "one traversal shares depth and node accounting across sets and predicates"
+)]
+fn validate_nested_set(
+    request: &QueryRequest,
+    order_by: &[OrderBy],
+    page: &PageSpec,
+    ontology: &Ontology,
+    scope: &TypeScope,
+    limits: CompileLimits,
+) -> Result<(), QueryError> {
+    let root_type = request.set.object_type();
+    let mut stack = vec![(&request.set, 1usize, root_type.clone())];
+    let mut nodes = 0usize;
+    let mut operands = 0usize;
+    while let Some((set, depth, expected_type)) = stack.pop() {
+        nodes = nodes.checked_add(1).ok_or(QueryError::QueryTooComplex)?;
+        if nodes > limits.max_nodes || depth > limits.max_depth {
+            return Err(QueryError::QueryTooComplex);
+        }
+        if set.object_type() != &expected_type {
+            return Err(QueryError::InvalidQuery);
+        }
+        match set {
+            ObjectSet::Union { sets, .. } | ObjectSet::Intersect { sets, .. } => {
+                if sets.is_empty() {
+                    return Err(QueryError::InvalidQuery);
+                }
+                if sets.len() > limits.max_in_values {
+                    return Err(QueryError::QueryTooComplex);
+                }
+                stack.extend(
+                    sets.iter()
+                        .map(|child| (child, depth + 1, expected_type.clone())),
+                );
+            }
+            ObjectSet::Subtract { left, right, .. } => {
+                stack.push((left, depth + 1, expected_type.clone()));
+                stack.push((right, depth + 1, expected_type));
             }
             ObjectSet::SearchAround {
                 base,
@@ -167,7 +220,7 @@ impl ValidatedQuery {
                     .link_types
                     .get(link)
                     .ok_or(QueryError::InvalidQuery)?;
-                let (expected_base, expected_target) = match direction {
+                let (base_type, target_type) = match direction {
                     crate::ast::LinkDirection::FromTo => {
                         (&definition.from.object_type, &definition.to.object_type)
                     }
@@ -175,56 +228,11 @@ impl ValidatedQuery {
                         (&definition.to.object_type, &definition.from.object_type)
                     }
                 };
-                if base.object_type() != expected_base
-                    || request.set.object_type() != expected_target
-                {
+                if set.object_type() != target_type {
                     return Err(QueryError::InvalidQuery);
                 }
+                stack.push((base, depth + 1, base_type.clone()));
             }
-        }
-        Ok(Self {
-            request,
-            order_by,
-            page,
-        })
-    }
-}
-
-fn validate_nested_set(
-    request: &QueryRequest,
-    order_by: &[OrderBy],
-    page: &PageSpec,
-    ontology: &Ontology,
-    scope: &TypeScope,
-    limits: CompileLimits,
-) -> Result<(), QueryError> {
-    let root_type = request.set.object_type();
-    let mut stack = vec![(&request.set, 1usize)];
-    let mut nodes = 0usize;
-    let mut operands = 0usize;
-    while let Some((set, depth)) = stack.pop() {
-        nodes = nodes.checked_add(1).ok_or(QueryError::QueryTooComplex)?;
-        if nodes > limits.max_nodes || depth > limits.max_depth {
-            return Err(QueryError::QueryTooComplex);
-        }
-        if set.object_type() != root_type {
-            return Err(QueryError::InvalidQuery);
-        }
-        match set {
-            ObjectSet::Union { sets, .. } | ObjectSet::Intersect { sets, .. } => {
-                if sets.is_empty() {
-                    return Err(QueryError::InvalidQuery);
-                }
-                if sets.len() > limits.max_in_values {
-                    return Err(QueryError::QueryTooComplex);
-                }
-                stack.extend(sets.iter().map(|child| (child, depth + 1)));
-            }
-            ObjectSet::Subtract { left, right, .. } => {
-                stack.push((left, depth + 1));
-                stack.push((right, depth + 1));
-            }
-            ObjectSet::SearchAround { .. } => return Err(QueryError::InvalidQuery),
             leaf => {
                 operands = operands.checked_add(1).ok_or(QueryError::QueryTooComplex)?;
                 if operands > limits.max_in_values {
@@ -250,15 +258,37 @@ fn validate_nested_set(
                         }
                     }
                 }
+                let ty = ontology
+                    .object_types
+                    .get(leaf.object_type())
+                    .ok_or(QueryError::InvalidQuery)?;
+                let synthetic_scope = TypeScope {
+                    row: ontoforge_expr::Pred::Const(true),
+                    columns: ty
+                        .properties
+                        .keys()
+                        .cloned()
+                        .map(|name| (name, ontoforge_expr::Pred::Const(true)))
+                        .collect(),
+                };
+                let same_type = leaf.object_type() == root_type;
                 ValidatedQuery::new(
                     QueryRequest {
                         set: leaf.clone(),
-                        select: request.select.clone(),
+                        select: if same_type {
+                            request.select.clone()
+                        } else {
+                            Vec::new()
+                        },
                     },
-                    order_by.to_vec(),
+                    if same_type {
+                        order_by.to_vec()
+                    } else {
+                        Vec::new()
+                    },
                     page.clone(),
                     ontology,
-                    scope,
+                    if same_type { scope } else { &synthetic_scope },
                     limits,
                 )?;
             }

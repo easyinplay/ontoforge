@@ -23,7 +23,7 @@ const SOURCE_WINDOW: usize = 256;
 const FINAL_ROW_CAP: usize = 10_000;
 const FINAL_BYTE_CAP: usize = 16 * 1024 * 1024;
 
-async fn join_initial_candidates<S: Future, E: Future>(
+pub(crate) async fn join_initial_candidates<S: Future, E: Future>(
     source: S,
     edits: E,
 ) -> (S::Output, E::Output) {
@@ -481,6 +481,63 @@ impl<E: Engine> QueryService<'_, E> {
             .map(|token| codec.decode(token, &cursor_context))
             .transpose()?;
         let mut candidates = CandidateSet::default();
+        if let Some(keys) = allowed_keys {
+            let pk_def = ty
+                .properties
+                .get(&ty.primary_key)
+                .ok_or(QueryError::InvalidQuery)?;
+            let canonical = keys
+                .iter()
+                .map(|key| {
+                    let json = serde_json::from_str(key).map_err(|_| QueryError::InvalidQuery)?;
+                    PropertyValue::from_json(pk_def, &json).map_err(|_| QueryError::InvalidQuery)
+                })
+                .collect::<Result<Vec<_>, _>>()?;
+            for batch in canonical.chunks(MAX_EDIT_READ) {
+                budget.charge_backfill_keys(batch.len())?;
+                budget.charge_backend_calls(1)?;
+                let slots = self
+                    .store
+                    .read_object_edits(&self.active, type_name, batch)
+                    .await
+                    .map_err(|_| QueryError::Store)?;
+                let edits = EditScanPage {
+                    edits: slots.into_iter().flatten().collect(),
+                    next: None,
+                    has_more: false,
+                };
+                charge_edit_page(&edits, budget)?;
+                for edit in edits.edits {
+                    candidates.add_edit(edit)?;
+                }
+                if let Some(binding) = binding {
+                    let select = raw_backfill_select(ty, binding, batch)?;
+                    let rows = self
+                        .read_source_select(
+                            &select,
+                            &ty.properties.keys().cloned().collect::<Vec<_>>(),
+                            ty,
+                            batch.len() + 1,
+                            budget,
+                        )
+                        .await?;
+                    for (pk, row) in rows {
+                        candidates.add_source(pk, row)?;
+                    }
+                }
+            }
+            return self.finish_list(
+                query,
+                ty,
+                scope,
+                &normalized,
+                position.as_ref(),
+                &cursor_context,
+                &codec,
+                &candidates,
+                allowed_keys,
+            );
+        }
         let mut source_plan = binding
             .map(|binding| {
                 compile_source_select(
@@ -907,7 +964,7 @@ mod tests {
     use super::join_initial_candidates;
 
     #[tokio::test]
-    async fn list_runs_source_and_edit_lanes_before_first_merge() {
+    async fn source_and_edit_lanes_are_polled_before_first_merge() {
         let (source_polled, source_seen) = tokio::sync::oneshot::channel();
         let (edit_polled, edit_seen) = tokio::sync::oneshot::channel();
         let source = async move {

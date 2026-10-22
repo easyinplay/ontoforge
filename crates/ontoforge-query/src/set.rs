@@ -106,7 +106,11 @@ impl<E: Engine> QueryService<'_, E> {
                     after,
                 },
             };
-            let page = self.execute_list_internal(&query, budget, None).await?;
+            let page = if matches!(set, ObjectSet::SearchAround { .. }) {
+                Box::pin(self.execute_search_around(&query, budget)).await?
+            } else {
+                self.execute_list_internal(&query, budget, None).await?
+            };
             if page.truncated {
                 return Err(QueryError::WorkBudgetExceeded);
             }

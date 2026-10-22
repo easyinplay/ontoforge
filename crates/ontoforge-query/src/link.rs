@@ -9,7 +9,7 @@ use ontoforge_storage::value::PropertyValue;
 
 use crate::ast::{LinkDirection, ObjectSet, PageSpec, QueryLiteral, WhereClause};
 use crate::compile::{CompileLimits, ValidatedQuery};
-use crate::execute::WorkBudget;
+use crate::execute::{WorkBudget, join_initial_candidates};
 use crate::{ListPage, ObjectRow, QueryError, QueryRequest, QueryService, engine_json};
 
 pub struct SearchAroundPlan {
@@ -232,7 +232,9 @@ impl<E: Engine> QueryService<'_, E> {
                 },
             };
             let page = match &current.request.set {
-                ObjectSet::Union { .. } | ObjectSet::Intersect { .. } | ObjectSet::Subtract { .. } => {
+                ObjectSet::Union { .. }
+                | ObjectSet::Intersect { .. }
+                | ObjectSet::Subtract { .. } => {
                     Box::pin(self.execute_set_list(&current, budget)).await?
                 }
                 ObjectSet::SearchAround { .. } => {
@@ -275,6 +277,11 @@ impl<E: Engine> QueryService<'_, E> {
             .profile_bindings(profile)
             .and_then(|profile| profile.links.get(link));
         let mut source = Vec::new();
+        let edit_endpoint = match direction {
+            LinkDirection::FromTo => LinkEndpoint::From(endpoint.clone()),
+            LinkDirection::ToFrom => LinkEndpoint::To(endpoint.clone()),
+        };
+        let mut first_edit_page = None;
         if let Some(binding) = binding {
             let from_column = binding.column_for("from").to_owned();
             let to_column = binding.column_for("to").to_owned();
@@ -325,16 +332,32 @@ impl<E: Engine> QueryService<'_, E> {
                     }],
                     limit: Some(MAX_EDIT_READ as u64),
                 };
-                budget.charge_backend_calls(1)?;
                 let sql =
                     print_select(&select, self.engine.dialect()).map_err(|_| QueryError::Source)?;
                 let mut ctx = QueryContext::new("l0-link".to_owned(), Vec::new());
                 ctx.max_rows = MAX_EDIT_READ + 1;
-                let output = self
-                    .engine
-                    .execute(&sql, &ctx)
-                    .await
-                    .map_err(|_| QueryError::Source)?;
+                let output = if first_edit_page.is_none() {
+                    budget.charge_backend_calls(2)?;
+                    let (source_result, edit_result) = join_initial_candidates(
+                        self.engine.execute(&sql, &ctx),
+                        self.store.read_link_edits(
+                            &self.active,
+                            link,
+                            edit_endpoint.clone(),
+                            None,
+                            MAX_EDIT_READ,
+                        ),
+                    )
+                    .await;
+                    first_edit_page = Some(edit_result.map_err(|_| QueryError::Store)?);
+                    source_result.map_err(|_| QueryError::Source)?
+                } else {
+                    budget.charge_backend_calls(1)?;
+                    self.engine
+                        .execute(&sql, &ctx)
+                        .await
+                        .map_err(|_| QueryError::Source)?
+                };
                 if output.truncated || output.rows.len() > MAX_EDIT_READ {
                     return Err(QueryError::WorkBudgetExceeded);
                 }
@@ -377,25 +400,24 @@ impl<E: Engine> QueryService<'_, E> {
                 }
             }
         }
-        let endpoint = match direction {
-            LinkDirection::FromTo => LinkEndpoint::From(endpoint.clone()),
-            LinkDirection::ToFrom => LinkEndpoint::To(endpoint.clone()),
-        };
         let mut edits = Vec::new();
         let mut cursor = None;
         loop {
-            budget.charge_backend_calls(1)?;
-            let page = self
-                .store
-                .read_link_edits(
-                    &self.active,
-                    link,
-                    endpoint.clone(),
-                    cursor.as_ref(),
-                    MAX_EDIT_READ,
-                )
-                .await
-                .map_err(|_| QueryError::Store)?;
+            let page = if let Some(page) = first_edit_page.take() {
+                page
+            } else {
+                budget.charge_backend_calls(1)?;
+                self.store
+                    .read_link_edits(
+                        &self.active,
+                        link,
+                        edit_endpoint.clone(),
+                        cursor.as_ref(),
+                        MAX_EDIT_READ,
+                    )
+                    .await
+                    .map_err(|_| QueryError::Store)?
+            };
             budget.charge_raw_candidates(page.edits.len())?;
             for edit in &page.edits {
                 budget.charge_decoded_bytes(
