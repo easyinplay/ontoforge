@@ -157,6 +157,16 @@ impl ValidatedQuery {
             ObjectSet::Union { .. } | ObjectSet::Intersect { .. } | ObjectSet::Subtract { .. } => {
                 validate_nested_set(&request, &order_by, &page, ontology, scope, limits)?;
             }
+            ObjectSet::SearchAround { base, link, direction, .. } => {
+                let definition = ontology.link_types.get(link).ok_or(QueryError::InvalidQuery)?;
+                let (expected_base, expected_target) = match direction {
+                    crate::ast::LinkDirection::FromTo => (&definition.from.object_type, &definition.to.object_type),
+                    crate::ast::LinkDirection::ToFrom => (&definition.to.object_type, &definition.from.object_type),
+                };
+                if base.object_type() != expected_base || request.set.object_type() != expected_target {
+                    return Err(QueryError::InvalidQuery);
+                }
+            }
         }
         Ok(Self {
             request,
@@ -200,6 +210,7 @@ fn validate_nested_set(
                 stack.push((left, depth + 1));
                 stack.push((right, depth + 1));
             }
+            ObjectSet::SearchAround { .. } => return Err(QueryError::InvalidQuery),
             leaf => {
                 operands = operands.checked_add(1).ok_or(QueryError::QueryTooComplex)?;
                 if operands > limits.max_in_values {
@@ -356,7 +367,8 @@ pub fn compile_source_select(
         | ObjectSet::Type { .. }
         | ObjectSet::Union { .. }
         | ObjectSet::Intersect { .. }
-        | ObjectSet::Subtract { .. } => None,
+        | ObjectSet::Subtract { .. }
+        | ObjectSet::SearchAround { .. } => None,
     };
     let filter = Some(match candidate {
         Some(candidate) => Expr::And(vec![lower.row, candidate]),

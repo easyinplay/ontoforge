@@ -108,7 +108,10 @@ pub fn eligible_row(
             mode,
             ..
         } => evaluate_search(property, query, *mode, merged, &visibility).is_true(),
-        ObjectSet::Union { .. } | ObjectSet::Intersect { .. } | ObjectSet::Subtract { .. } => false,
+        ObjectSet::Union { .. }
+        | ObjectSet::Intersect { .. }
+        | ObjectSet::Subtract { .. }
+        | ObjectSet::SearchAround { .. } => false,
     };
     matches.then(|| {
         merged

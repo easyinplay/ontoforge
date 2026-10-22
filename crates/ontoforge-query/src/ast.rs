@@ -1,4 +1,4 @@
-use ontoforge_schema::ir::{ObjectTypeName, PropertyName};
+use ontoforge_schema::ir::{LinkTypeName, ObjectTypeName, PropertyName};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -35,6 +35,12 @@ pub enum ObjectSet {
         left: Box<ObjectSet>,
         right: Box<ObjectSet>,
     },
+    SearchAround {
+        object_type: ObjectTypeName,
+        base: Box<ObjectSet>,
+        link: LinkTypeName,
+        direction: LinkDirection,
+    },
 }
 
 impl ObjectSet {
@@ -46,9 +52,17 @@ impl ObjectSet {
             | Self::Search { object_type, .. }
             | Self::Union { object_type, .. }
             | Self::Intersect { object_type, .. }
-            | Self::Subtract { object_type, .. } => object_type,
+            | Self::Subtract { object_type, .. }
+            | Self::SearchAround { object_type, .. } => object_type,
         }
     }
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum LinkDirection {
+    FromTo,
+    ToFrom,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
