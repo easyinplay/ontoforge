@@ -1,7 +1,7 @@
 ---
 phase: "04"
 slug: "scoped-l0-read"
-status: draft
+status: planned
 nyquist_compliant: false
 wave_0_complete: false
 created: "2026-10-22"
@@ -30,18 +30,18 @@ created: "2026-10-22"
 
 | Requirement | Candidate automated command after Wave 0 | Boundary | Status |
 |-------------|------------------------------------------|----------|--------|
-| QUERY-01 | `cargo test -p ontoforge-query --test sqlite_query --locked pk` | SQLite plus real Trino/PG pk case | pending |
-| QUERY-02 | `cargo test -p ontoforge-query --test sqlite_query --locked where_clause` | SQLite differential and Trino corpus | pending |
-| QUERY-03 | `cargo test -p ontoforge-query --test sqlite_query --locked token_search` | SQLite and Trino token corpus | pending |
-| QUERY-04 | `cargo test -p ontoforge-query --test overlay_prop --locked pagination` | Rust model and Trino/PG refill case | pending |
-| QUERY-05 | `cargo test -p ontoforge-query --test sqlite_query --locked search_around` | FK and M:N with real Trino/PG | pending |
-| QUERY-06 | `cargo test -p ontoforge-query --test overlay_prop --locked set_ops` | Scoped Rust reference model | pending |
-| QUERY-07 | `cargo test -p ontoforge-query --test overlay_prop --locked aggregate` | Model plus Trino/PG fixed corpus | pending |
-| QUERY-08 | `cargo test -p ontoforge-query --test overlay_prop --locked` | Proptest plus CI `trino_query_it` | pending |
-| QUERY-09 | `cargo test -p ontoforge-query --test security --locked` | Token, authorization, error and cap corpus | pending |
-| QUERY-10 | `cargo test -p ontoforge-query --test sql_shape --locked` | Real Trino `EXPLAIN` and isolated p95 | pending |
+| QUERY-01 | `cargo test -p ontoforge-query --test pk_read --locked` | SQLite plus real Trino/PG pk case | planned in 04-01/07 |
+| QUERY-02 | `cargo test -p ontoforge-query --test sqlite_query --locked` | SQLite differential and Trino corpus | planned in 04-02/07 |
+| QUERY-03 | `cargo test -p ontoforge-query --test sqlite_query --locked` | SQLite and Trino token corpus | planned in 04-02/07 |
+| QUERY-04 | `cargo test -p ontoforge-query --test overlay_prop --locked` | Rust model and Trino/PG refill case | planned in 04-04/07 |
+| QUERY-05 | `cargo test -p ontoforge-query --test search_around --locked` | FK and M:N with real Trino/PG | planned in 04-05/07 |
+| QUERY-06 | `cargo test -p ontoforge-query --test set_ops --locked` | Scoped Rust reference model | planned in 04-05/07 |
+| QUERY-07 | `cargo test -p ontoforge-query --test aggregate --locked` | Model plus Trino/PG fixed corpus | planned in 04-06/07 |
+| QUERY-08 | `cargo test -p ontoforge-query --test overlay_prop --locked` | Proptest plus CI `trino_query_it` | planned in 04-01..07 |
+| QUERY-09 | `cargo test -p ontoforge-query --test security --locked` | Token, authorization, error and cap corpus | planned in 04-01/04/06/07 |
+| QUERY-10 | `cargo test -p ontoforge-query --test sql_shape --locked` | Real Trino `EXPLAIN` and isolated p95 | planned in 04-02/06/07 |
 
-Task IDs, wave assignments, threat refs and exact test names must be filled from the checked `04-*-PLAN.md` files before execution.
+Task IDs, wave assignments and threat refs are in the checked `04-*-PLAN.md` files. Test targets above must be created in Wave 0 before their commands run; real backend and performance results remain execution gates.
 
 ## Wave 0 Requirements
 

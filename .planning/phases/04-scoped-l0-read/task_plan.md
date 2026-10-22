@@ -9,8 +9,22 @@
 - [x] P0：隔离 `gsd/phase-04-scoped-l0-read` 分支，核对 Phase 3 UAT 2/2、VERIFICATION 8/8 与新 HEAD CI 三 job；前置依赖：Phase 3 完成。
 - [x] P1：从 `.planning/adr/0020-query-execution-rust-orchestrated-overlay.md` ingest 决策到 `04-CONTEXT.md`，关联 scope、edit store 与设计文档；验收：不重开已有 ADR 的决定。
 - [x] P2：研究 `crates/ontoforge-query/`、`crates/ontoforge-engine/`、`crates/ontoforge-storage/`、`crates/ontoforge-auth/` 的复用点与风险，产出 `04-RESEARCH.md`、`04-PATTERNS.md` 与 `04-VALIDATION.md` 草案；依赖 P1。
-- [ ] P3：运行 GSD plan-phase 4，由独立 planner 生成 `04-*-PLAN.md`，plan-checker 核对 QUERY-01..10、Trino 查询形态、scope 安全与验证命令；依赖 P2。
-- [ ] P4：把最终 PLAN 的文件所有权、wave 顺序和验收命令蒸馏到本文件，更新 `progress.md` 与 `.planning/STATE.md`；依赖 P3。
+- [x] P3：GSD planner 生成 7 份 `04-*-PLAN.md`，独立 checker 核对 QUERY-01..10、Trino 查询形态、scope 安全与验证命令并给出 `VERIFICATION PASSED`；依赖 P2。
+- [x] P4：把 PLAN 的所有权、wave 顺序和验收命令蒸馏到本文件，更新 `progress.md`、`04-VALIDATION.md`、`ROADMAP.md` 与 `.planning/STATE.md`；依赖 P3。
+
+## Execution Order
+
+| Wave | Plan | 主文件所有权 | 验收入口 |
+|------|------|--------------|----------|
+| 1 | `04-01-PLAN.md` | `crates/ontoforge-query/src/lib.rs`、`crates/ontoforge-storage/src/query_read.rs`、`tests/pk_read.rs`、`tests/security.rs` | `cargo test -p ontoforge-query --test pk_read --test security --locked` |
+| 2 | `04-02-PLAN.md` | `crates/ontoforge-query/src/{ast,compile}.rs`、`crates/ontoforge-engine/src/printer/`、`tests/sqlite_query.rs`、`tests/sql_shape.rs` | `cargo test -p ontoforge-query --test sqlite_query --test sql_shape --locked` |
+| 2 | `04-03-PLAN.md` | `crates/ontoforge-storage/src/query_read.rs`、`tests/query_read.rs`、`tests/query_read_pg.rs` | `cargo test -p ontoforge-storage --test query_read --locked` |
+| 3 | `04-04-PLAN.md` | `crates/ontoforge-query/src/{overlay,execute,cursor}.rs`、`tests/overlay_prop.rs` | `cargo test -p ontoforge-query --test overlay_prop --test security --locked` |
+| 4 | `04-05-PLAN.md` | `crates/ontoforge-query/src/{link,set}.rs`、`tests/search_around.rs`、`tests/set_ops.rs` | `cargo test -p ontoforge-query --test search_around --test set_ops --locked` |
+| 5 | `04-06-PLAN.md` | `crates/ontoforge-query/src/aggregate.rs`、`tests/aggregate.rs` | `cargo test -p ontoforge-query --test aggregate --test sql_shape --test security --locked` |
+| 6 | `04-07-PLAN.md` | `tests/trino_query_it.rs`、`tests/query_bench_it.rs`、`.github/workflows/ci.yml`、`04-PERFORMANCE.md` | Linux CI 实跑 Trino/PG ignored tests、distributed `EXPLAIN`、isolated p95 |
+
+同一 wave 的 `04-02` 与 `04-03` 分别持有 query/compiler 和 storage/read 文件；共享 `lib.rs` 接线只由 `04-02` 主导，`04-03` 只改 storage。各 plan 的逐 task 文件清单和 RED 测试是真相源。
 
 ## Acceptance
 
@@ -20,4 +34,4 @@
 
 ## Next Step
 
-由 GSD planner 按 `04-CONTEXT.md`、`04-RESEARCH.md`、`04-PATTERNS.md` 和 `04-VALIDATION.md` 生成 Phase 4 的 tracer-first PLAN。
+进入 GSD execute-phase 4，从 `04-01-PLAN.md` 的 Wave 0 RED 测试与 scoped pk tracer 开始；实现尚未开始。每个核心子任务按 TDD red-green-refactor，Wave 6 必须取得真实 Linux CI、Trino `EXPLAIN` 与 isolated p95 证据后才能进入 Phase 4 verify。

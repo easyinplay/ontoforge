@@ -8,3 +8,6 @@
 - `04-RESEARCH.md` 发现 storage 的写事务读取会创建 version 0 行，Phase 4 须新增无副作用的有界 edit/link 读取 API；engine typed AST 尚无列遮蔽 `CASE`；单表 AST 不能独自证明 Trino ≤2 fragment，真实 Trino `EXPLAIN` 需入验证。
 - `04-PATTERNS.md` 映射了 engine `Select`/`Engine`、auth `TypeScope::evaluate/lower`、storage edit 解码与现有 proptest 差分模式；缺少 Rust 叠加、补取、keyset、聚合的现成实现。
 - 研究的成本与游标问题按已接受 ADR 的安全边界规划：结果行/字节上限产生 `truncated`；无法保证完整结果的工作预算耗尽和高成本 distinct 返回明确错误；游标不得跨主体、scope、定义或排序上下文复用。具体阈值和密钥注入位置由 planner 写成可测试合同。
+- `04-01/04/06` 已锁定初始请求级 `ExecutionLimits` 32/10,000/2,048/64 MiB 与 `AggregateLimits` 1,024/4,096/10,000/16 MiB；host 注入并冻结，逐维 B/B+1 测试，超限无 partial data。Grok CLI 的两次建议在 backend calls 与 groups/buckets 上不一致，因此只采纳其“DoS 上限而非 SLA”的原则，并采用内部一致的保守初值。
+- 独立 GSD plan-checker 初检 2 blocker、1 warning：研究开放问题、远端 CI 前置门禁、PowerShell shell。研究与 PLAN 修订后复检 `VERIFICATION PASSED`；路径探针在 Windows 为 `not_applicable`，不等同路径已通过。
+- 计划阶段没有业务代码修改，TDD 不适用；Wave 1 起的核心叠加、授权、游标与聚合均按 PLAN 先 RED 再 GREEN。Wave 6 的 remote GitHub Actions、真实 Trino/PG 和 isolated p95 是执行验收，当前尚无 Phase 4 性能结论。
