@@ -141,6 +141,10 @@ impl Fixture {
                 .execute(&explain, &ctx)
                 .await
                 .unwrap_or_else(|e| panic!("{case}[{index}]: distributed EXPLAIN failed: {e}"));
+            assert!(
+                !output.truncated,
+                "{case}[{index}]: distributed EXPLAIN output truncated"
+            );
             let plan = output
                 .rows
                 .iter()
