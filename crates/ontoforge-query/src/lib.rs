@@ -20,6 +20,7 @@ pub mod ast;
 pub mod compile;
 pub mod cursor;
 pub mod execute;
+pub mod link;
 pub mod overlay;
 pub mod set;
 pub use ast::ObjectSet;
