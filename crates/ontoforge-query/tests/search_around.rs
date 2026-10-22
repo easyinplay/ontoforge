@@ -63,7 +63,7 @@ async fn outbound_fk_uses_scoped_merged_object_value() {
         }],
     }).await.unwrap();
     let scope = PrincipalScope {
-        types: ["Flight", "Airport"].into_iter().map(|raw| {
+        types: ["Flight", "Airport", "Pilot"].into_iter().map(|raw| {
             let ty = name(raw);
             (ty.clone(), TypeScope {
                 row: Pred::Const(true),
@@ -93,6 +93,19 @@ async fn outbound_fk_uses_scoped_merged_object_value() {
         &ontology, &scope.types[&name("Airport")], CompileLimits::default()).unwrap();
     let page = service.execute_list(&query).await.unwrap();
     assert_eq!(page.rows.iter().map(|row| row.pk.clone()).collect::<Vec<_>>(), vec![json!("FRA")]);
+
+    let crew_request = QueryRequest {
+        set: serde_json::from_value(json!({
+            "kind": "searchAround", "object_type": "Pilot",
+            "base": {"kind": "pk", "object_type": "Flight", "pk": "F-1001"},
+            "link": "flightCrew", "direction": "fromTo"
+        })).unwrap(),
+        select: vec![prop("employeeId")],
+    };
+    let crew_query = ValidatedQuery::new(crew_request, vec![], PageSpec { first: 10, after: None },
+        &ontology, &scope.types[&name("Pilot")], CompileLimits::default()).unwrap();
+    let crew = service.execute_list(&crew_query).await.unwrap();
+    assert_eq!(crew.rows.iter().map(|row| row.pk.clone()).collect::<Vec<_>>(), vec![json!("E-001"), json!("E-002")]);
 }
 
 fn edge(from: u8, to: u8) -> LinkEdge {
