@@ -19,7 +19,9 @@ use ontoforge_schema::ir::ObjectTypeName;
 use ontoforge_schema::ir::{ProfileName, PropertyName};
 use ontoforge_schema::load_dir;
 use ontoforge_storage::reload::{ReloadOptions, reload};
+use ontoforge_storage::commit::{Actor, Commit, Edit, ObjectOp};
 use ontoforge_storage::store::{BackendSettings, EditStore, StoreSettings};
+use ontoforge_storage::value::PropertyValue;
 use proptest::prelude::*;
 use serde_json::json;
 use std::sync::Arc;
@@ -182,6 +184,30 @@ async fn set_result_reuses_normal_hydration_order_and_cursor() {
     assert_eq!(second.rows.len(), 1);
     assert_eq!(second.rows[0].pk, json!("F-1002"));
     assert!(!second.has_more);
+
+    store.commit(Commit {
+        actor: Actor::Principal(principal.id.to_string()),
+        action: "setTestTombstone".to_owned(),
+        def_version: active.def_version,
+        params: json!({}),
+        edits: vec![Edit::Object {
+            type_name: flight.clone(),
+            pk: PropertyValue::String("F-1001".to_owned()),
+            op: ObjectOp::Tombstone,
+        }],
+    }).await.unwrap();
+    let after_tombstone = service.execute_list(&query(None)).await.unwrap();
+    assert_eq!(after_tombstone.rows.iter().map(|row| &row.pk).collect::<Vec<_>>(), vec![&json!("F-1002")]);
+
+    let hidden_scope = PrincipalScope {
+        types: std::iter::once((flight.clone(), TypeScope {
+            row: Pred::Const(false),
+            columns: scope.types[&flight].columns.clone(),
+        })).collect(),
+        ..PrincipalScope::default()
+    };
+    let hidden = QueryService { scope: &hidden_scope, ..service };
+    assert!(hidden.execute_list(&query(None)).await.unwrap().rows.is_empty());
 }
 
 fn reference(operator: SetOperator, operands: &[Vec<u8>]) -> BTreeSet<String> {
