@@ -16,6 +16,8 @@ use crate::ast::{
     Direction, Nulls, ObjectSet, OrderBy, PageSpec, QueryLiteral, TermMode, WhereClause,
 };
 use crate::{QueryError, QueryRequest};
+use crate::aggregate::AggregateCapabilities;
+use crate::ast::AggregateRequest;
 
 #[derive(Debug, Clone, Copy)]
 pub struct CompileLimits {
@@ -359,6 +361,17 @@ pub struct SourceSelect {
     pub required_columns: Vec<PropertyName>,
     pub final_recheck: bool,
     pub logical_order: Vec<OrderBy>,
+}
+
+pub fn compile_aggregate_partial(
+    _request: &AggregateRequest,
+    _ontology: &Ontology,
+    _binding: &SourceBinding,
+    _scope: &TypeScope,
+    _attrs: &Attrs,
+    _capabilities: AggregateCapabilities,
+) -> Result<Option<Select>, QueryError> {
+    Ok(None)
 }
 
 #[allow(clippy::too_many_lines)]
