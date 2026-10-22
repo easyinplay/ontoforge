@@ -1,6 +1,6 @@
 # Phase 4 progress
 
-当前节点：Phase 4 Wave 6 `04-07` 本地实现与预检完成，等待匹配commit的远端Linux CI；6/7 PLAN 完成。
+当前节点：Phase 4 的 7/7 PLAN 已完成；匹配commit的Linux CI通过，等待 verify-work 与 phase-level verification。
 
 - 2026-10-22：从已通过 CI 的 `c57165d` 建立 `gsd/phase-04-scoped-l0-read` 分支；保留原有未跟踪文件。
 - 2026-10-22：核对 Phase 3 UAT 2/2、VERIFICATION 8/8 和 V2 后的 CI run 39715917662 三 job 通过。
@@ -26,7 +26,9 @@
 - 2026-10-23：Task 3 benchmark target 已编译、ignored list 1项、Clippy通过，本机真实 Docker smoke通过。发现 Cargo test的工作目录导致相对artifact路径落到crate内，worker正在改CI为`${{ github.workspace }}/target/...`并复查；isolated 40样本及远端Linux仍pending。
 - 2026-10-23：Task 3本机真实Docker isolated四路各5+40、p95 79.65/357.39/415.81/1.09ms，commit `7872b3e`；remote ref/SHA缺失，远端未dispatch。独立审查发现Task1与Task3的EXPLAIN均漏拒绝`QueryOutput.truncated`，两个executor正在分别修复并复跑；raw证据元数据也在补全。QUERY-10保持pending。
 - 2026-10-23：截断计划修复 `b98a13c`、`21ca37f` 后，Task1真实PG/Trino 5/5；Task3本机isolated四路5+40 p95 88.55/379.16/338.81/1.07ms，raw JSON hash与schema经主session核对。`cargo test --workspace --locked -j 4`、workspace Clippy `-D warnings`、fmt全绿。`04-PERFORMANCE.md`状态为pending remote；`origin`无Phase4 ref，声明env均未设，未运行Linux CI或verify-work。
+- 2026-10-23：将 `e8d6d6ef1f5103c1b603a89aa66a92ada0ff5600` 推至 `origin/gsd/phase-04-scoped-l0-read`；修正 preflight 的 PowerShell 逐行输出误判后，远端ref/SHA/workflow/Actions读取全部通过。`workflow_dispatch` run 39818657834（UTC 2026-10-22 16:59:03）匹配SHA，Linux integration与isolated job运行中；产物和阈值未核验，QUERY-10保持pending。
+- 2026-10-23：run 39818657834 四job全部成功；integration的真实query PG 2/2、Trino/PG 5/5、smoke 1/1；137份计划1-2 fragments。隔离四路各5+40样本，p95 95.75/440.75/345.50/0.87ms，edited PG-direct 45次source calls为0；三个artifact及digest已核对，详`04-PERFORMANCE.md`。`04-07`完成，Phase 4 UAT与总验证待运行。
 
 ## 待办
 
-- 建立与本地最终commit匹配的remote ref后，按`04-07-PLAN.md`只读preflight、实际运行Linux integration与isolated job并核对artifact；然后完成04-07 SUMMARY、Phase4 verify-work。QUERY-10保持pending。
+- 执行 Phase 4 `gsd-verify-work` 和 phase-level verification，再从验证产物派生 ROADMAP/REQUIREMENTS/STATE 的完成状态。

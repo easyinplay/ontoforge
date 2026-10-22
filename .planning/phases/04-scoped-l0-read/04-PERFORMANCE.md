@@ -1,7 +1,7 @@
 ---
 phase: 04-scoped-l0-read
-status: pending_remote_ci
-verdict: not_verified
+status: verified
+verdict: PASS
 ---
 
 # Phase 4 Performance Evidence
@@ -24,6 +24,22 @@ verdict: not_verified
 
 List and aggregate produced 450 complete distributed `EXPLAIN` plans across warmups and measured samples, each with 1-2 fragments. Edited PG-direct used zero source calls in all 45 samples.
 
-## Remote Gate
+## Linux CI Acceptance
 
-`QUERY-10` is not verified. `origin` has no `gsd/phase-04-scoped-l0-read` ref; `ONTOFORGE_PHASE4_REMOTE_REF` and `ONTOFORGE_PHASE4_COMMIT_SHA` are unset. No matching-commit Linux integration or isolated workflow run, immutable run URL, or downloadable artifact digest exists. Do not mark this report PASS until the read-only preflight, matching SHA dispatch, successful Linux jobs, complete raw artifact and all four thresholds are verified.
+- Verdict: **PASS** for `QUERY-10` at code commit `e8d6d6ef1f5103c1b603a89aa66a92ada0ff5600` on `origin/gsd/phase-04-scoped-l0-read`.
+- Immutable run: https://github.com/easyinplay/ontoforge/actions/runs/39818657834 (`workflow_dispatch`, completed/success). The isolated benchmark, integration, Windows test and Ubuntu test jobs all succeeded; the isolated job ran on its own Linux runner with fresh PostgreSQL/Trino services and no parallel test load inside that job.
+- Raw timings and distributed plans: https://github.com/easyinplay/ontoforge/actions/runs/39818657834/artifacts/12443901512 (`phase4-query-bench-isolated`). GitHub artifact ZIP digest `sha256:4d1e109c88427cc19596ac2928bb905067ac581479bc38e1bd31526c2c5d921f`; downloaded `phase4-isolated.json` SHA256 `D1B6D3051785BF2D3CCA1AD1113DE849A51CEB299B94975386C8F6D7795AE757`.
+- Integration plans: https://github.com/easyinplay/ontoforge/actions/runs/39818657834/artifacts/12443337882 (`phase4-query-plans`, ZIP digest `sha256:1ca9ef4e5f5c59e2abfa87ea16782971c7e10c2742f4282cbef48fb51d1787df`). All 137 downloaded plans have complete headers: 103 have one fragment and 34 have two.
+- Smoke evidence: https://github.com/easyinplay/ontoforge/actions/runs/39818657834/artifacts/12443252430 (`phase4-query-bench-smoke`, ZIP digest `sha256:11d023bf79a8b9917182f35cc116f8e0ddec513240922b2e1b5138550ad8bfe2`); all four paths passed. Integration logs show `query_read_pg` 2/2, `trino_query_it` 5/5, smoke 1/1 and nonzero ignored-test discovery.
+- Environment: Trino 483 PostgreSQL connector, PostgreSQL 17.11 direct edit store, Linux runner. The fixed aviation dataset has 10,000 benchmark rows plus seed/query corpus rows; 800 patches, 100 tombstones and 100 releases. The filtered workload uses `status == bench-hot` over 1,000 matching benchmark rows.
+- Query shapes: unedited `Flight` pk `B-10000`; filtered `Flight` list ordered by `flightId` with `first=20`; `Flight` count aggregate over the same filter; fully patched PG-direct pk `B-00001`. Each path has 5 warmups and 40 measured samples, with all 180 samples retained and zero errors or typed limit errors. Nearest-rank p95 was recomputed from the downloaded measured samples.
+- Frozen `ExecutionLimits`: 32 backend calls, 10,000 raw candidates, 2,048 backfill keys, 64 MiB decoded bytes. Frozen `AggregateLimits`: 1,024 groups, 4,096 buckets, 10,000 distinct values, 16 MiB distinct memory. These initial guardrails were neither raised nor hit and are not a latency SLA or ADR promise.
+
+| Path | p50 (ms) | p95 (ms) | max (ms) | Required p95 (ms) | Verdict |
+|------|---------:|---------:|---------:|------------------:|---------|
+| source pk | 75.50 | 95.75 | 109.89 | <500 | PASS |
+| filtered list page | 321.76 | 440.75 | 454.03 | <1000 | PASS |
+| aggregate | 306.45 | 345.50 | 373.00 | <1500 | PASS |
+| edited PG-direct pk | 0.73 | 0.87 | 0.96 | <50 | PASS |
+
+The list and aggregate samples contain 450 distributed `EXPLAIN` plans, all with 1-2 fragments. The edited PG-direct path made zero source calls across all 45 warmup and measured samples.
