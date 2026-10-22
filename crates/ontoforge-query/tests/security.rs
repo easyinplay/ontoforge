@@ -19,6 +19,8 @@ use ontoforge_query::{
     ExecutionLimits, ObjectRow, ObjectSet, QueryError, QueryPage, QueryRequest, QueryService,
     TokenCodec,
 };
+use ontoforge_query::ast::{Direction, Nulls, OrderBy};
+use ontoforge_query::cursor::{CursorCodec, CursorContext, CursorPosition};
 use ontoforge_schema::ir::{ObjectTypeName, ProfileName, PropertyName};
 use ontoforge_schema::{load_dir, load_scope_dir};
 use ontoforge_storage::commit::{Actor, Commit, Edit, ObjectOp};
@@ -178,6 +180,37 @@ fn request(object_type: &str, pk: &str, select: &[&str]) -> QueryRequest {
         },
         select: select.iter().map(|p| prop(p)).collect(),
     }
+}
+
+#[tokio::test]
+async fn cursor_rejects_tamper_and_context_replay() {
+    let fixture = fixture().await;
+    let signer = TokenCodec::new(b"cursor-key".to_vec()).unwrap();
+    let codec = CursorCodec::new(&signer);
+    let order = vec![OrderBy { property: prop("delayMinutes"), direction: Direction::Asc, nulls: Nulls::Last }];
+    let context = CursorContext::new(fixture.principal.id.as_str(), &fixture.scope, 7, name("Flight"), order.clone());
+    let position = CursorPosition { sort_values: vec![json!(5)], pk: json!("F-1001") };
+    let token = codec.encode(&context, &position).unwrap();
+    assert_eq!(codec.decode(&token, &context).unwrap(), position);
+    assert!(!token.contains("of_obj_"));
+    let mut altered = token.clone().into_bytes();
+    let index = altered.iter().position(|byte| *byte != b'.').unwrap();
+    altered[index] = if altered[index] == b'A' { b'B' } else { b'A' };
+    assert!(matches!(codec.decode(&String::from_utf8(altered).unwrap(), &context), Err(QueryError::InvalidCursor)));
+    let mut scope = fixture.scope.clone();
+    scope.types.remove(&name("Flight"));
+    let contexts = [
+        CursorContext::new("other-principal", &fixture.scope, 7, name("Flight"), order.clone()),
+        CursorContext::new(fixture.principal.id.as_str(), &scope, 7, name("Flight"), order.clone()),
+        CursorContext::new(fixture.principal.id.as_str(), &fixture.scope, 8, name("Flight"), order.clone()),
+        CursorContext::new(fixture.principal.id.as_str(), &fixture.scope, 7, name("Aircraft"), order.clone()),
+        CursorContext::new(fixture.principal.id.as_str(), &fixture.scope, 7, name("Flight"), vec![OrderBy { property: prop("delayMinutes"), direction: Direction::Desc, nulls: Nulls::Last }]),
+    ];
+    for changed in &contexts {
+        assert!(matches!(codec.decode(&token, changed), Err(QueryError::InvalidCursor)));
+    }
+    let rotated = TokenCodec::new(b"rotated-key".to_vec()).unwrap();
+    assert!(matches!(CursorCodec::new(&rotated).decode(&token, &context), Err(QueryError::InvalidCursor)));
 }
 
 #[test]

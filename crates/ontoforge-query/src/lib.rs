@@ -20,6 +20,7 @@ pub mod ast;
 pub mod compile;
 pub mod overlay;
 pub mod execute;
+pub mod cursor;
 pub use ast::ObjectSet;
 
 pub const CRATE_NAME: &str = env!("CARGO_PKG_NAME");
@@ -67,6 +68,8 @@ pub enum QueryError {
     InvalidToken,
     #[error("query work budget exceeded")]
     WorkBudgetExceeded,
+    #[error("invalid cursor")]
+    InvalidCursor,
 }
 
 impl QueryError {
@@ -82,6 +85,7 @@ impl QueryError {
             Self::Store => "STORE_UNAVAILABLE",
             Self::InvalidToken => "INVALID_TOKEN",
             Self::WorkBudgetExceeded => "WORK_BUDGET_EXCEEDED",
+            Self::InvalidCursor => "INVALID_CURSOR",
         }
     }
 }
