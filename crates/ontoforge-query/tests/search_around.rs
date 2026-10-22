@@ -5,6 +5,19 @@ use ontoforge_storage::query_read::LinkEdit;
 use ontoforge_storage::state::LinkRow;
 use ontoforge_storage::value::PropertyValue;
 use proptest::prelude::*;
+use ontoforge_query::ast::ObjectSet;
+use serde_json::json;
+
+#[test]
+fn search_around_wire_uses_only_logical_names() {
+    let wire = json!({
+        "kind": "searchAround", "object_type": "Airport",
+        "base": {"kind": "pk", "object_type": "Flight", "pk": "F-1001"},
+        "link": "flightDepartureAirport", "direction": "toFrom"
+    });
+    let parsed: ObjectSet = serde_json::from_value(wire.clone()).unwrap();
+    assert_eq!(serde_json::to_value(parsed).unwrap(), wire);
+}
 
 fn edge(from: u8, to: u8) -> LinkEdge {
     LinkEdge {
