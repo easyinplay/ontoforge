@@ -3,7 +3,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use ontoforge_auth::scope::{RowVisibility, TypeScope};
 use ontoforge_engine::printer::ast::{
-    CompareOp, Expr, Literal, MatchKind, OrderItem, Select, SelectItem,
+    AggregateFunc, CompareOp, Expr, Literal, MatchKind, OrderItem, Select, SelectItem,
 };
 use ontoforge_expr::{Attrs, Tri};
 use ontoforge_schema::ir::{
@@ -17,7 +17,7 @@ use crate::ast::{
 };
 use crate::{QueryError, QueryRequest};
 use crate::aggregate::AggregateCapabilities;
-use crate::ast::AggregateRequest;
+use crate::ast::{AggregateMeasure, AggregateRequest};
 
 #[derive(Debug, Clone, Copy)]
 pub struct CompileLimits {
@@ -364,14 +364,98 @@ pub struct SourceSelect {
 }
 
 pub fn compile_aggregate_partial(
-    _request: &AggregateRequest,
-    _ontology: &Ontology,
-    _binding: &SourceBinding,
-    _scope: &TypeScope,
-    _attrs: &Attrs,
-    _capabilities: AggregateCapabilities,
+    request: &AggregateRequest,
+    ontology: &Ontology,
+    binding: &SourceBinding,
+    scope: &TypeScope,
+    attrs: &Attrs,
+    capabilities: AggregateCapabilities,
 ) -> Result<Option<Select>, QueryError> {
-    Ok(None)
+    if !capabilities.count || !capabilities.case_when
+        || (!request.group_by.is_empty() && !capabilities.group_by)
+        || request.group_by.iter().any(|p| is_ci(binding, p))
+        || !match &request.set {
+            ObjectSet::Type { .. } | ObjectSet::Pk { .. } => true,
+            ObjectSet::Where { predicate, .. } => can_push(predicate, binding),
+            _ => false,
+        }
+    {
+        return Ok(None);
+    }
+    let ty = ontology.object_types.get(request.set.object_type())
+        .ok_or(QueryError::InvalidQuery)?;
+    for measure in &request.measures {
+        if matches!(measure, AggregateMeasure::Min { .. }
+            | AggregateMeasure::Max { .. } | AggregateMeasure::Distinct { .. }) {
+            return Ok(None);
+        }
+        if matches!(measure, AggregateMeasure::Sum { .. } | AggregateMeasure::Avg { .. }) {
+            let def = ty.properties.get(measure.property().ok_or(QueryError::InvalidQuery)?)
+                .ok_or(QueryError::InvalidQuery)?;
+            let supported = match def.base_type {
+                BaseType::Integer => capabilities.sum_integer,
+                BaseType::Double => capabilities.sum_double,
+                _ => false,
+            };
+            if !supported { return Ok(None); }
+        }
+    }
+    let selected = request.group_by.iter().cloned()
+        .chain(request.measures.iter().filter_map(|m| m.property().cloned()))
+        .collect::<BTreeSet<_>>().into_iter().collect();
+    let query = ValidatedQuery::new(
+        QueryRequest { set: request.set.clone(), select: selected },
+        Vec::new(),
+        PageSpec { first: 1, after: None },
+        ontology, scope, CompileLimits::default(),
+    )?;
+    let mut select = compile_source_select(&query, ontology, binding, scope, attrs)?.select;
+    let column = |property: &PropertyName| binding.column_for(property.as_str()).to_owned();
+    let grants = scope.lower(attrs, &column).columns;
+    let visible = |property: &PropertyName| -> Result<Expr, QueryError> {
+        Ok(Expr::CaseWhen {
+            when: Box::new(grants.get(property).cloned().ok_or(QueryError::InvalidQuery)?),
+            then: Box::new(Expr::Column(column(property))),
+            otherwise: Box::new(Expr::Literal(Literal::Null)),
+        })
+    };
+    select.projection.clear();
+    for (index, property) in request.group_by.iter().enumerate() {
+        let expr = visible(property)?;
+        select.group_by.push(expr.clone());
+        select.projection.push(SelectItem { expr, alias: Some(format!("g{index}")) });
+    }
+    select.projection.push(SelectItem {
+        expr: Expr::CountStar,
+        alias: Some("rows".to_owned()),
+    });
+    for (index, measure) in request.measures.iter().enumerate() {
+        let expr = match measure {
+            AggregateMeasure::Count { property: None } => Expr::CountStar,
+            AggregateMeasure::Count { property: Some(property) } => Expr::Aggregate {
+                func: AggregateFunc::Count,
+                arg: Box::new(visible(property)?),
+            },
+            AggregateMeasure::Sum { property } | AggregateMeasure::Avg { property } => Expr::Aggregate {
+                func: AggregateFunc::Sum,
+                arg: Box::new(visible(property)?),
+            },
+            _ => unreachable!("unsupported measure returned above"),
+        };
+        select.projection.push(SelectItem { expr, alias: Some(format!("m{index}")) });
+        if let AggregateMeasure::Avg { property } = measure {
+            select.projection.push(SelectItem {
+                expr: Expr::Aggregate {
+                    func: AggregateFunc::Count,
+                    arg: Box::new(visible(property)?),
+                },
+                alias: Some(format!("c{index}")),
+            });
+        }
+    }
+    select.order_by.clear();
+    select.limit = None;
+    Ok(Some(select))
 }
 
 #[allow(clippy::too_many_lines)]
