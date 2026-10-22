@@ -2,12 +2,12 @@
 gsd_state_version: "1.0"
 current_phase: 4
 current_phase_name: Scoped L0 Read
-status: verifying
-stopped_at: Phase 4 execution complete, awaiting verify-work and phase verification
-last_updated: "2026-10-23T01:11:20+08:00"
+status: executing
+stopped_at: Phase 4 security gap closure before verification
+last_updated: "2026-10-23T01:44:42+08:00"
 last_activity: 2026-10-23
-last_activity_desc: Phase 4 04-07 matching-commit Linux CI run 39818657834 passed; verify pending
-state_head: e8d6d6e
+last_activity_desc: Phase 4 CI passed at dd19706; two high security contract decisions remain open
+state_head: dd19706
 progress:
   total_phases: 7
   completed_phases: 3
@@ -28,9 +28,9 @@ See: .planning/PROJECT.md (updated 2026-10-19)
 ## Current Position
 
 Phase: 4 — Scoped L0 Read
-Plan: 04-07 of 04-07 complete; Phase 4 verification pending
-Status: Verifying
-Last activity: 2026-10-23 — matching-commit CI passed; see `phases/04-scoped-l0-read/04-PERFORMANCE.md`
+Plan: 04-07 of 04-07 complete; security gap closure required
+Status: Executing
+Last activity: 2026-10-23 — S1 fixed and matching-SHA CI passed; two high security contract decisions remain open (see `phases/04-scoped-l0-read/04-SECURITY.md`)
 
 Progress: [████░░░░░░] 43%
 
@@ -87,5 +87,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-10-21T08:48:07.463Z
-Stopped at: Phase 4 execution complete, awaiting verify-work and phase verification
+Stopped at: Phase 4 security gap closure before verification
 Resume file: None

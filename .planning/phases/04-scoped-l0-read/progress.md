@@ -1,6 +1,6 @@
 # Phase 4 progress
 
-当前节点：Phase 4 的 7/7 PLAN 已完成；匹配commit的Linux CI通过，等待 verify-work 与 phase-level verification。
+当前节点：Phase 4 的 7/7 原 PLAN 已执行；安全审计发现 3 项 high 阻断，正在准备缺口修复与重新验收。
 
 - 2026-10-22：从已通过 CI 的 `c57165d` 建立 `gsd/phase-04-scoped-l0-read` 分支；保留原有未跟踪文件。
 - 2026-10-22：核对 Phase 3 UAT 2/2、VERIFICATION 8/8 和 V2 后的 CI run 39715917662 三 job 通过。
@@ -28,7 +28,12 @@
 - 2026-10-23：截断计划修复 `b98a13c`、`21ca37f` 后，Task1真实PG/Trino 5/5；Task3本机isolated四路5+40 p95 88.55/379.16/338.81/1.07ms，raw JSON hash与schema经主session核对。`cargo test --workspace --locked -j 4`、workspace Clippy `-D warnings`、fmt全绿。`04-PERFORMANCE.md`状态为pending remote；`origin`无Phase4 ref，声明env均未设，未运行Linux CI或verify-work。
 - 2026-10-23：将 `e8d6d6ef1f5103c1b603a89aa66a92ada0ff5600` 推至 `origin/gsd/phase-04-scoped-l0-read`；修正 preflight 的 PowerShell 逐行输出误判后，远端ref/SHA/workflow/Actions读取全部通过。`workflow_dispatch` run 39818657834（UTC 2026-10-22 16:59:03）匹配SHA，Linux integration与isolated job运行中；产物和阈值未核验，QUERY-10保持pending。
 - 2026-10-23：run 39818657834 四job全部成功；integration的真实query PG 2/2、Trino/PG 5/5、smoke 1/1；137份计划1-2 fragments。隔离四路各5+40样本，p95 95.75/440.75/345.50/0.87ms，edited PG-direct 45次source calls为0；三个artifact及digest已核对，详`04-PERFORMANCE.md`。`04-07`完成，Phase 4 UAT与总验证待运行。
+- 2026-10-23：Nyquist审计18/18 task、10/10 QUERY requirement覆盖通过；安全审计31/35唯一威胁关闭，T-04-22/28/32 high与T-04-08 medium保持OPEN，详`04-SECURITY.md`。Grok第二意见请求返回429限额，未取得独立结论。修复生产代码后须对新commit重跑CI，当前性能报告只证明`e8d6d6e`。
+- 2026-10-23：已在`task_plan.md`增加S1-S5安全修复及新SHA远端重验；S1的`ValidatedQuery`公开构造绕过交由worker按TDD处理。T-04-28/32提出可信host与公开临时CI凭据的合同修订供用户选择，未获选择前仍保持OPEN。
+- 2026-10-23：S1按TDD完成：两条`compile_fail` doctest的RED均因绕过代码实际可编译而失败，字段收紧`pub(crate)`后GREEN 2/2，`search_around` 6/6、query全量非ignored、Clippy、fmt通过；代码未提交，新SHA Linux CI仍待重验。
+- 2026-10-23：S1代码提交`dd19706`并推送；匹配full SHA `dd197063da260f8b92d180eafc733e0b7a81b54e` 的Linux CI run 39823812039已启动，四job运行中，artifact及性能阈值待核对。
+- 2026-10-23：run 39823812039匹配`dd19706`且四job全部成功；真实PG query 2/2、Trino/PG 5/5、smoke 1/1，137份integration plans为1-2 fragments。isolated四路各5+40样本，p95为115.77/443.80/346.56/0.85ms，450份plan均1 fragment，edited 45次source calls为0；artifact digest详`04-PERFORMANCE.md`。S2若修改生产代码，须再对新SHA重验。
 
 ## 待办
 
-- 执行 Phase 4 `gsd-verify-work` 和 phase-level verification，再从验证产物派生 ROADMAP/REQUIREMENTS/STATE 的完成状态。
+- 关闭`04-SECURITY.md`中的high威胁，重跑匹配新commit的Linux CI，再执行 Phase 4 `gsd-verify-work` 和 phase-level verification。

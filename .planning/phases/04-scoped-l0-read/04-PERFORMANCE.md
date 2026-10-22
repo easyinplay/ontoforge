@@ -43,3 +43,19 @@ List and aggregate produced 450 complete distributed `EXPLAIN` plans across warm
 | edited PG-direct pk | 0.73 | 0.87 | 0.96 | <50 | PASS |
 
 The list and aggregate samples contain 450 distributed `EXPLAIN` plans, all with 1-2 fragments. The edited PG-direct path made zero source calls across all 45 warmup and measured samples.
+
+## Security Fix Reverification
+
+- Current code commit: `dd197063da260f8b92d180eafc733e0b7a81b54e` (the `ValidatedQuery` boundary fix). Matching [CI run 39823812039](https://github.com/easyinplay/ontoforge/actions/runs/39823812039) completed successfully: isolated benchmark, integration, Windows workspace tests, and Ubuntu workspace tests all passed. This supersedes the code-SHA coverage of run 39818657834.
+- [Isolated raw artifact](https://github.com/easyinplay/ontoforge/actions/runs/39823812039/artifacts/12445083610): ZIP `sha256:605382f76bcd13b1e5a17b73425e79997eef8c66b5760f2d7bc5c585de9ae89b`; downloaded `phase4-isolated.json` SHA256 `6C4BCC60F12D32CC607ED4C5D2B814DEF8876800E9762ED5569927AB6E706A75`. Its embedded SHA and run URL match this CI run; guardrails were not raised and `limit_error_samples=0`.
+- [Integration plans](https://github.com/easyinplay/ontoforge/actions/runs/39823812039/artifacts/12445557864): ZIP `sha256:e3b6a7b9c90e536dea53ed0c6f7516998f192ac91bec2d3337d61b031e180855`; 137 complete plans, 103 with one fragment and 34 with two. [Smoke artifact](https://github.com/easyinplay/ontoforge/actions/runs/39823812039/artifacts/12446380722): ZIP `sha256:80b511eef766967f3530b98f89097ab2ae26a1e6a6bb3ef7bf385e1e7703bfe9`.
+- Real PostgreSQL query read tests passed 2/2, Trino/PostgreSQL query tests 5/5, and benchmark smoke 1/1. The isolated Linux job used its own PostgreSQL 17.11 and Trino 483 services. Each of four paths retained 5 warmups and 40 measured samples with zero errors; the p95 below was recomputed from the downloaded measured samples using nearest rank.
+
+| Path | p50 (ms) | p95 (ms) | max (ms) | Required p95 (ms) | Verdict |
+|------|---------:|---------:|---------:|------------------:|---------|
+| source pk | 83.62 | 115.77 | 143.49 | <500 | PASS |
+| filtered list page | 365.18 | 443.80 | 532.85 | <1000 | PASS |
+| aggregate | 313.92 | 346.56 | 373.21 | <1500 | PASS |
+| edited PG-direct pk | 0.73 | 0.85 | 0.87 | <50 | PASS |
+
+The isolated list and aggregate paths retained 450 complete distributed plans, all with one fragment; edited PG-direct made zero source calls across 45 samples. A later production-code change requires another matching-SHA CI run before this evidence can cover it.
