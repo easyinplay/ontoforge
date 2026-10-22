@@ -10,7 +10,7 @@ use ontoforge_query::overlay::{
     overlay_object,
 };
 use ontoforge_query::{ExecutionLimits, QueryError};
-use ontoforge_schema::ir::{Collation, ObjectTypeName, PropertyName};
+use ontoforge_schema::ir::{BaseType, Collation, ObjectTypeName, PropertyName};
 use ontoforge_schema::load_dir;
 use ontoforge_storage::query_read::ObjectEdit;
 use ontoforge_storage::state::EditRow;
@@ -360,6 +360,27 @@ fn ordering_case_insensitive_unicode_uses_final_rust_recheck() {
         compare_rows_normalized(&first, &second, &[key], &ty.primary_key, &ty),
         std::cmp::Ordering::Greater
     );
+}
+
+#[test]
+fn ordering_decimal_uses_numeric_magnitude() {
+    let mut ty = flight();
+    let def = ty.properties.get_mut(&prop("delayMinutes")).unwrap();
+    def.base_type = BaseType::Decimal;
+    def.precision = Some(12);
+    def.scale = Some(2);
+    let order = [OrderBy {
+        property: prop("delayMinutes"), direction: Direction::Asc, nulls: Nulls::Last,
+    }];
+    let rows = [
+        ("F-1", "2.00"), ("F-2", "10.00"), ("F-3", "-2.00"), ("F-4", "-10.00"),
+    ];
+    let mut rows = rows.into_iter().map(|(pk, value)| BTreeMap::from([
+        (prop("flightId"), json!(pk)), (prop("delayMinutes"), json!(value)),
+    ])).collect::<Vec<_>>();
+    rows.sort_by(|a, b| compare_rows(a, b, &order, &ty.primary_key, &ty));
+    assert_eq!(rows.iter().map(|row| row[&ty.primary_key].as_str().unwrap()).collect::<Vec<_>>(),
+        vec!["F-4", "F-3", "F-1", "F-2"]);
 }
 
 #[test]
