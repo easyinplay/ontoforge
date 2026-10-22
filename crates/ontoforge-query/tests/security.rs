@@ -490,6 +490,10 @@ fn request(object_type: &str, pk: &str, select: &[&str]) -> QueryRequest {
 }
 
 #[tokio::test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "validation and physical-error probes share one store fixture"
+)]
 async fn aggregate_invalid_names_and_limits_fail_before_backend_access() {
     let f = fixture().await;
     let active = f.store.active_definition().await.unwrap();
@@ -594,7 +598,12 @@ async fn aggregate_invalid_names_and_limits_fail_before_backend_access() {
         .unwrap_err();
     assert!(matches!(error, AggregateError::Source));
     let outward = format!("{} {}", error, serde_json::to_string(&error).unwrap());
-    for physical in ["ontoforge_edit", "of_obj_secret", "hidden_column", "20261022_very_secret"] {
+    for physical in [
+        "ontoforge_edit",
+        "of_obj_secret",
+        "hidden_column",
+        "20261022_very_secret",
+    ] {
         assert!(!outward.contains(physical), "{outward}");
     }
 }

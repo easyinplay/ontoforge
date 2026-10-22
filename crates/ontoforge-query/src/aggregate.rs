@@ -11,7 +11,9 @@ use ontoforge_storage::value::PropertyValue;
 use serde::Serialize;
 use serde_json::Value;
 
-use crate::ast::{AggregateMeasure, AggregateRequest, Direction, Nulls, ObjectSet, OrderBy, PageSpec};
+use crate::ast::{
+    AggregateMeasure, AggregateRequest, Direction, Nulls, ObjectSet, OrderBy, PageSpec,
+};
 use crate::compile::{CompileLimits, ValidatedQuery, compile_aggregate_partial};
 use crate::execute::{WorkBudget, charge_edit_page, raw_backfill_select};
 use crate::overlay::{eligible_row, overlay_object};
@@ -703,9 +705,9 @@ impl<E: Engine> QueryService<'_, E> {
         budget: &mut WorkBudget,
     ) -> Result<crate::ListPage, AggregateError> {
         let page = match &query.request.set {
-            ObjectSet::Union { .. }
-            | ObjectSet::Intersect { .. }
-            | ObjectSet::Subtract { .. } => self.execute_set_list(query, budget).await?,
+            ObjectSet::Union { .. } | ObjectSet::Intersect { .. } | ObjectSet::Subtract { .. } => {
+                self.execute_set_list(query, budget).await?
+            }
             ObjectSet::SearchAround { .. } => self.execute_search_around(query, budget).await?,
             _ => self.execute_list_internal(query, budget, None).await?,
         };

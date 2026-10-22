@@ -1020,7 +1020,9 @@ async fn group_distinct_matches_visible_merged_reference() {
                 group_by: vec![],
                 measures: vec![
                     AggregateMeasure::Count { property: None },
-                    AggregateMeasure::Distinct { property: prop("delayMinutes") },
+                    AggregateMeasure::Distinct {
+                        property: prop("delayMinutes"),
+                    },
                 ],
             },
             AggregateCapabilities::all_supported(),
