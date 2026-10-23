@@ -2014,12 +2014,17 @@ name = "ontoforge-action"
 version = "0.1.0"
 dependencies = [
  "camino",
+ "chrono",
+ "ontoforge-auth",
  "ontoforge-expr",
  "ontoforge-schema",
  "ontoforge-storage",
+ "serde",
  "serde_json",
+ "sha2 0.10.9",
  "sqlx",
  "tempfile",
+ "thiserror",
  "tokio",
 ]
 

@@ -9,14 +9,22 @@ publish.workspace = true
 [lints]
 workspace = true
 
+[features]
+embedded-pg = ["ontoforge-storage/embedded-pg"]
+
 [dependencies]
 ontoforge-storage = { path = "../ontoforge-storage" }
 ontoforge-expr = { path = "../ontoforge-expr" }
+ontoforge-schema = { path = "../ontoforge-schema" }
+ontoforge-auth = { path = "../ontoforge-auth" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+chrono.workspace = true
+sha2 = "0.10.9"
 
 [dev-dependencies]
-ontoforge-schema = { path = "../ontoforge-schema" }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 tempfile.workspace = true
 camino.workspace = true
 sqlx.workspace = true
-serde_json.workspace = true

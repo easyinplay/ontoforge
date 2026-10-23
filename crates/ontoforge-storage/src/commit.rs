@@ -12,6 +12,7 @@ use ontoforge_schema::ir::{
     Backing, Cardinality, LinkTypeName, ObjectType, ObjectTypeName, PropertyDef, PropertyName,
 };
 use sea_query::{Alias, Expr, ExprTrait, LockType, OnConflict, Query};
+use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value, json};
 
 use crate::error::StoreError;
@@ -101,6 +102,97 @@ pub struct Receipt {
     pub versions: Vec<i64>,
 }
 
+/// Position of one flattened edit in the caller's batch.
+#[derive(Debug, Clone)]
+pub struct ActionEditPosition {
+    pub item_ordinal: usize,
+    pub rule_ordinal: usize,
+}
+
+/// The caller supplies only trusted identity and preflight observations. SQL and the
+/// transaction remain private to storage.
+#[derive(Debug, Clone)]
+pub struct ActionTransactionInput {
+    pub commit: Commit,
+    pub command_id: Option<String>,
+    pub request_hash: String,
+    pub action_def_hash: String,
+    pub chosen_current_time: String,
+    pub expires_at: String,
+    pub item_count: usize,
+    pub positions: Vec<ActionEditPosition>,
+    pub observed_versions: Vec<i64>,
+    pub validate_only: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct EditSummary {
+    pub rule_ordinal: usize,
+    pub edit_ordinal: usize,
+    pub kind: String,
+    pub type_name: String,
+    pub pk: Value,
+    pub operation: String,
+    pub version_after: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ItemReceipt {
+    pub item_ordinal: usize,
+    pub edits: Vec<EditSummary>,
+}
+
+/// Only audit identifiers and versions cross the receipt boundary; no row state does.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ActionReceipt {
+    pub command_id: String,
+    pub event_id: String,
+    pub log_seq: i64,
+    pub committed_at: String,
+    pub items: Vec<ItemReceipt>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ActionStage {
+    Begin,
+    Fence,
+    Claim,
+    Locks,
+    Cas,
+    Log,
+    EditRows,
+    Entries,
+    Command,
+    Outbox,
+    Commit,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum ActionCommitOutcome {
+    Committed {
+        receipt: ActionReceipt,
+        trace: Vec<ActionStage>,
+    },
+    Replay(ActionReceipt),
+    Validated,
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum ActionCommitError {
+    #[error("a normal Action submission needs a non-empty command_id")]
+    MissingCommandId,
+    #[error("command_id has already been used for another request")]
+    CommandIdReused,
+    #[error("the observed edit version changed")]
+    VersionConflict,
+    #[error("invalid Action transaction input: {0}")]
+    InvalidInput(&'static str),
+    #[error(transparent)]
+    Edit(#[from] EditError),
+    #[error(transparent)]
+    Store(#[from] StoreError),
+}
+
 /// Why a commit was refused. Nothing is written in any of these cases.
 #[derive(Debug, thiserror::Error)]
 pub enum EditError {
@@ -162,6 +254,109 @@ impl EditStore {
         }
     }
 
+    /// Composes the Action claim, edit log, edit rows, receipt and outbox in one write
+    /// transaction. The definition fence is its first database statement.
+    pub async fn commit_action(
+        &self,
+        input: ActionTransactionInput,
+    ) -> Result<ActionCommitOutcome, ActionCommitError> {
+        let principal_id = validate_action_input(&input)?;
+
+        let mut tx = self.begin_write().await?;
+        let mut trace = vec![ActionStage::Begin];
+        let result = async {
+            let def = self.fence(&mut tx, input.commit.def_version).await?;
+            trace.push(ActionStage::Fence);
+            if !input.validate_only {
+                let command_id = input
+                    .command_id
+                    .as_deref()
+                    .ok_or(ActionCommitError::MissingCommandId)?;
+                if let Some(receipt) =
+                    claim_action(&mut tx, principal_id, command_id, &input).await?
+                {
+                    return Ok(ActionCommitOutcome::Replay(receipt));
+                }
+                trace.push(ActionStage::Claim);
+            }
+            let mut plan = validate(&def, &input.commit)?;
+            sort_plan(&mut plan);
+            let schema = tx.schema_edit().map(str::to_owned);
+            let advanced = lock_and_advance(&mut tx, schema.as_deref(), &plan).await?;
+            trace.push(ActionStage::Locks);
+            for planned in &plan {
+                let before = &advanced
+                    .rows
+                    .get(&planned.key)
+                    .ok_or(ActionCommitError::InvalidInput("locked row is missing"))?
+                    .0;
+                if before.version() != input.observed_versions[planned.ordinal] {
+                    return Err(ActionCommitError::VersionConflict);
+                }
+            }
+            trace.push(ActionStage::Cas);
+            if input.validate_only {
+                return Ok(ActionCommitOutcome::Validated);
+            }
+
+            let event_id = ulid::Ulid::generate().to_string();
+            let committed_at = Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);
+            let seq = append_header(
+                &mut tx,
+                &NewRecord {
+                    event_id: &event_id,
+                    actor: principal_id,
+                    action: &input.commit.action,
+                    committed_at: &committed_at,
+                    def_version: input.commit.def_version,
+                    params: &input.commit.params,
+                },
+            )
+            .await?;
+            trace.push(ActionStage::Log);
+            write_rows(
+                &mut tx,
+                schema.as_deref(),
+                &def,
+                input.commit.def_version,
+                seq,
+                &plan,
+                &advanced,
+            )
+            .await?;
+            trace.push(ActionStage::EditRows);
+
+            let mut entries: Vec<(LogEntry, Value)> = plan
+                .iter()
+                .zip(&advanced.after)
+                .map(|(planned, state)| (log_entry(planned, state), state.snapshot()))
+                .collect();
+            entries.sort_by_key(|(entry, _)| entry.ordinal);
+            for (entry, snapshot) in &entries {
+                log::append_entry(&mut tx, seq, entry).await?;
+                history::append_snapshot(&mut tx, seq, entry, snapshot).await?;
+            }
+            trace.push(ActionStage::Entries);
+            let command_id = input
+                .command_id
+                .as_deref()
+                .ok_or(ActionCommitError::MissingCommandId)?;
+            let receipt =
+                action_receipt(command_id, &event_id, seq, &committed_at, &entries, &input)?;
+            store_action_receipt(&mut tx, principal_id, command_id, &receipt).await?;
+            trace.push(ActionStage::Command);
+            enqueue_action_event(&mut tx, principal_id, &input.commit.action, &receipt).await?;
+            trace.push(ActionStage::Outbox);
+            Ok(ActionCommitOutcome::Committed {
+                receipt,
+                trace: std::mem::take(&mut trace),
+            })
+        }
+        .await;
+
+        finish_action(tx, result).await
+    }
+
     /// The `def_version` fence (ADR-0016 / D20): the first statement of the write transaction
     /// reads the active definition version from the database, `FOR SHARE` on PostgreSQL, so a
     /// switch (which updates that row) waits for this commit to end and every commit that starts
@@ -202,6 +397,228 @@ impl EditStore {
         }
         Ok(def)
     }
+}
+
+fn validate_action_input(input: &ActionTransactionInput) -> Result<&str, ActionCommitError> {
+    check_shape(&input.commit)?;
+    if input.positions.len() != input.commit.edits.len()
+        || input.observed_versions.len() != input.commit.edits.len()
+        || input.item_count == 0
+        || input
+            .positions
+            .iter()
+            .any(|p| p.item_ordinal >= input.item_count)
+    {
+        return Err(ActionCommitError::InvalidInput(
+            "edit positions and observed versions must match the batch",
+        ));
+    }
+    let Actor::Principal(principal_id) = &input.commit.actor else {
+        return Err(ActionCommitError::InvalidInput(
+            "Action actor must be a principal",
+        ));
+    };
+    if !input.validate_only && input.command_id.as_deref().is_none_or(str::is_empty) {
+        return Err(ActionCommitError::MissingCommandId);
+    }
+    if input
+        .command_id
+        .as_deref()
+        .is_some_and(|id| id.contains('\0'))
+        || input.request_hash.is_empty()
+        || input.action_def_hash.is_empty()
+    {
+        return Err(ActionCommitError::InvalidInput(
+            "invalid command identifier or fingerprint",
+        ));
+    }
+    Ok(principal_id)
+}
+
+async fn finish_action(
+    tx: WriteTx<'_>,
+    result: Result<ActionCommitOutcome, ActionCommitError>,
+) -> Result<ActionCommitOutcome, ActionCommitError> {
+    match result {
+        Ok(ActionCommitOutcome::Committed { receipt, mut trace }) => {
+            sql_exit::commit(tx).await?;
+            trace.push(ActionStage::Commit);
+            Ok(ActionCommitOutcome::Committed { receipt, trace })
+        }
+        Ok(outcome) => {
+            sql_exit::rollback(tx).await;
+            Ok(outcome)
+        }
+        Err(error) => {
+            sql_exit::rollback(tx).await;
+            Err(error)
+        }
+    }
+}
+
+async fn claim_action(
+    tx: &mut WriteTx<'_>,
+    principal_id: &str,
+    command_id: &str,
+    input: &ActionTransactionInput,
+) -> Result<Option<ActionReceipt>, ActionCommitError> {
+    let backend = tx.backend();
+    let insert = Query::insert()
+        .into_table(col("of_action_command"))
+        .columns([
+            col("principal_id"),
+            col("command_id"),
+            col("action"),
+            col("request_hash"),
+            col("action_def_hash"),
+            col("def_version"),
+            col("chosen_current_time"),
+            col("expires_at"),
+        ])
+        .values_panic([
+            Expr::val(principal_id.to_owned()),
+            Expr::val(command_id.to_owned()),
+            Expr::val(input.commit.action.clone()),
+            Expr::val(input.request_hash.clone()),
+            Expr::val(input.action_def_hash.clone()),
+            Expr::val(input.commit.def_version),
+            sql_exit::typed_text(backend, &input.chosen_current_time, "timestamptz"),
+            sql_exit::typed_text(backend, &input.expires_at, "timestamptz"),
+        ])
+        .on_conflict(
+            OnConflict::columns([col("principal_id"), col("command_id")])
+                .do_nothing()
+                .to_owned(),
+        )
+        .to_owned();
+    let built = sql_exit::build(&insert, tx);
+    if sql_exit::execute_built(tx, built).await? == 1 {
+        return Ok(None);
+    }
+
+    let select = Query::select()
+        .column(col("action"))
+        .column(col("request_hash"))
+        .column(col("action_def_hash"))
+        .expr(sql_exit::column_text(backend, "receipt"))
+        .from(col("of_action_command"))
+        .and_where(Expr::col(col("principal_id")).eq(principal_id))
+        .and_where(Expr::col(col("command_id")).eq(command_id))
+        .lock(LockType::Update)
+        .to_owned();
+    let built = sql_exit::build(&select, tx);
+    let cells = sql_exit::fetch_cells(tx, built, &[CellKind::Text; 4])
+        .await?
+        .ok_or_else(|| StoreError::Corrupt("a command claim disappeared".to_owned()))?;
+    let [
+        Cell::Text(action),
+        Cell::Text(request_hash),
+        Cell::Text(action_def_hash),
+        Cell::Text(receipt),
+    ] = cells.as_slice()
+    else {
+        return Err(StoreError::Corrupt("an existing command has no receipt".to_owned()).into());
+    };
+    if action != &input.commit.action
+        || request_hash != &input.request_hash
+        || action_def_hash != &input.action_def_hash
+    {
+        return Err(ActionCommitError::CommandIdReused);
+    }
+    serde_json::from_str(receipt)
+        .map(Some)
+        .map_err(|e| StoreError::Corrupt(format!("invalid stored Action receipt: {e}")).into())
+}
+
+fn action_receipt(
+    command_id: &str,
+    event_id: &str,
+    log_seq: i64,
+    committed_at: &str,
+    entries: &[(LogEntry, Value)],
+    input: &ActionTransactionInput,
+) -> Result<ActionReceipt, ActionCommitError> {
+    let mut items: Vec<ItemReceipt> = (0..input.item_count)
+        .map(|item_ordinal| ItemReceipt {
+            item_ordinal,
+            edits: Vec::new(),
+        })
+        .collect();
+    for (entry, _) in entries {
+        let edit_ordinal = usize::try_from(entry.ordinal)
+            .map_err(|_| ActionCommitError::InvalidInput("invalid edit ordinal"))?;
+        let position = input
+            .positions
+            .get(edit_ordinal)
+            .ok_or(ActionCommitError::InvalidInput("missing edit position"))?;
+        items[position.item_ordinal].edits.push(EditSummary {
+            rule_ordinal: position.rule_ordinal,
+            edit_ordinal,
+            kind: entry.kind.as_str().to_owned(),
+            type_name: entry.type_name.clone(),
+            pk: entry.pk.clone(),
+            operation: entry.op.as_str().to_owned(),
+            version_after: entry.version_after,
+        });
+    }
+    Ok(ActionReceipt {
+        command_id: command_id.to_owned(),
+        event_id: event_id.to_owned(),
+        log_seq,
+        committed_at: committed_at.to_owned(),
+        items,
+    })
+}
+
+async fn store_action_receipt(
+    tx: &mut WriteTx<'_>,
+    principal_id: &str,
+    command_id: &str,
+    receipt: &ActionReceipt,
+) -> Result<(), ActionCommitError> {
+    let json = serde_json::to_string(receipt)
+        .map_err(|e| StoreError::Corrupt(format!("cannot serialize Action receipt: {e}")))?;
+    let update = Query::update()
+        .table(col("of_action_command"))
+        .value(col("event_id"), receipt.event_id.clone())
+        .value(
+            col("receipt"),
+            sql_exit::typed_text(tx.backend(), &json, "jsonb"),
+        )
+        .and_where(Expr::col(col("principal_id")).eq(principal_id))
+        .and_where(Expr::col(col("command_id")).eq(command_id))
+        .to_owned();
+    let built = sql_exit::build(&update, tx);
+    if sql_exit::execute_built(tx, built).await? != 1 {
+        return Err(StoreError::Corrupt("the Action claim was not updated".to_owned()).into());
+    }
+    Ok(())
+}
+
+async fn enqueue_action_event(
+    tx: &mut WriteTx<'_>,
+    principal_id: &str,
+    action: &str,
+    receipt: &ActionReceipt,
+) -> Result<(), ActionCommitError> {
+    let payload = json!({
+        "event_id": receipt.event_id,
+        "principal_id": principal_id,
+        "action": action,
+        "receipt": receipt,
+    });
+    let insert = Query::insert()
+        .into_table(col("of_webhook_outbox"))
+        .columns([col("event_id"), col("payload"), col("next_attempt_at")])
+        .values_panic([
+            Expr::val(receipt.event_id.clone()),
+            sql_exit::typed_text(tx.backend(), &payload.to_string(), "jsonb"),
+            sql_exit::typed_text(tx.backend(), &receipt.committed_at, "timestamptz"),
+        ])
+        .to_owned();
+    let built = sql_exit::build(&insert, tx);
+    sql_exit::execute_built(tx, built).await?;
+    Ok(())
 }
 
 fn value_error(property: &str, reason: &(impl std::fmt::Display + ?Sized)) -> EditError {
