@@ -457,6 +457,123 @@ async fn source_backed_query_token_roundtrip_and_source_drift() {
 }
 
 #[tokio::test]
+async fn later_alias_criterion_samples_shared_source_key() {
+    let defs = format!(
+        "{DEFS}---\nkind: ActionType\napiName: renameByAlias\nparameters:\n  a: {{ type: {{ objectReference: Gate }}, required: true }}\n  z: {{ type: {{ objectReference: Gate }}, required: true }}\n  name: {{ type: string, required: true }}\nrules:\n  - kind: modifyObject\n    object: a\n    properties:\n      name: {{ param: name }}\nsubmissionCriteria:\n  - condition: 'objects.z.status == \"open\"'\n    failureMessage: source status required\n"
+    );
+    let mut f = fixture_with_defs(false, &defs).await;
+    f.scope
+        .actions
+        .insert("renameByAlias".to_owned().try_into().expect("action"));
+    f.scope.types.get_mut("Gate").expect("Gate scope").row = Pred::Const(true);
+    let req = ActionRequest {
+        action: "renameByAlias".to_owned(),
+        command_id: Some("alias-criterion".to_owned()),
+        items: vec![ActionItem {
+            params: serde_json::from_value(serde_json::json!({"a":"G1","z":"G1","name":"New"}))
+                .expect("params"),
+            expected_versions: BTreeMap::new(),
+        }],
+        validate_only: true,
+    };
+    let engine = CountingEngine::rows(vec![source_row("open")]);
+    let outcome = ActionService::new(
+        &f.store,
+        limits().with_work_limits(2, 1).expect("one source call"),
+        &f.tokens,
+    )
+    .with_engine(&engine)
+    .execute(&f.principal, &f.scope, f.version, req)
+    .await
+    .expect("later criterion must see source status");
+    assert!(matches!(outcome, ActionOutcome::Validated));
+    assert_eq!(engine.calls(), 1);
+}
+
+#[tokio::test]
+async fn later_alias_release_samples_shared_source_key() {
+    let defs = format!(
+        "{DEFS}---\nkind: ActionType\napiName: releaseByAlias\nparameters:\n  a: {{ type: {{ objectReference: Gate }}, required: true }}\n  z: {{ type: {{ objectReference: Gate }}, required: true }}\nrules:\n  - kind: releaseObject\n    object: z\n"
+    );
+    let mut f = fixture_with_defs(true, &defs).await;
+    f.scope
+        .actions
+        .insert("releaseByAlias".to_owned().try_into().expect("action"));
+    let req = ActionRequest {
+        action: "releaseByAlias".to_owned(),
+        command_id: Some("alias-release".to_owned()),
+        items: vec![ActionItem {
+            params: serde_json::from_value(serde_json::json!({"a":"G1","z":"G1"})).expect("params"),
+            expected_versions: BTreeMap::new(),
+        }],
+        validate_only: true,
+    };
+    let engine = CountingEngine::rows(vec![source_row("open")]);
+    let outcome = ActionService::new(
+        &f.store,
+        limits().with_work_limits(2, 1).expect("one source call"),
+        &f.tokens,
+    )
+    .with_engine(&engine)
+    .execute(&f.principal, &f.scope, f.version, req)
+    .await
+    .expect("later release must sample source once");
+    assert!(matches!(outcome, ActionOutcome::Validated));
+    assert_eq!(engine.calls(), 1);
+}
+
+#[tokio::test]
+async fn later_item_token_samples_shared_source_key() {
+    let mut f = fixture(false).await;
+    f.scope.types.get_mut("Gate").expect("Gate scope").row = Pred::Const(true);
+    let query_engine = CountingEngine::rows(vec![source_row("open")]);
+    let query = QueryService {
+        principal: &f.principal,
+        scope: &f.scope,
+        active: f.store.active_definition().await.expect("active"),
+        engine: &query_engine,
+        store: &f.store,
+        limits: ExecutionLimits::phase4_default(),
+        tokens: &f.tokens,
+    };
+    let token = query
+        .execute(QueryRequest {
+            set: ObjectSet::Pk {
+                object_type: "Gate".to_owned().try_into().expect("type"),
+                pk: serde_json::json!("G1"),
+            },
+            select: ["code", "name", "status"]
+                .into_iter()
+                .map(|name| name.to_owned().try_into().expect("property"))
+                .collect(),
+        })
+        .await
+        .expect("query token")
+        .rows[0]
+        .version
+        .clone();
+    assert_eq!(query_engine.calls(), 1);
+
+    let mut repeated = request("later-token");
+    repeated.validate_only = true;
+    let mut second = repeated.items[0].clone();
+    second.expected_versions.insert("gate".to_owned(), token);
+    repeated.items.push(second);
+    let engine = CountingEngine::rows(vec![source_row("open")]);
+    let outcome = ActionService::new(
+        &f.store,
+        limits().with_work_limits(2, 1).expect("one source call"),
+        &f.tokens,
+    )
+    .with_engine(&engine)
+    .execute(&f.principal, &f.scope, f.version, repeated)
+    .await
+    .expect("later token must see one source sample");
+    assert!(matches!(outcome, ActionOutcome::Validated));
+    assert_eq!(engine.calls(), 1);
+}
+
+#[tokio::test]
 async fn batch_deduplicates_source_keys_and_enforces_limit() {
     let f = fixture(false).await;
     let engine = CountingEngine::rows(vec![source_row("open")]);

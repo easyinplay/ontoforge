@@ -7,6 +7,7 @@ use ontoforge_query::{QueryError, read_pk_source};
 use ontoforge_schema::ir::{ActionType, Backing, ObjectTypeName, ParamType, PropertyName, Rule};
 use ontoforge_storage::{
     commit::ActionGuardRead,
+    query_read::ObjectEdit,
     store::{ActiveDefinition, EditStore},
     value::PropertyValue,
 };
@@ -43,6 +44,7 @@ pub(crate) async fn prepare<E: Engine>(
     let mut reads = Vec::new();
     let mut snapshots = SourceSnapshots::new();
     let mut seen = BTreeSet::new();
+    let mut edits: BTreeMap<RowKey, Option<ObjectEdit>> = BTreeMap::new();
     let mut source_calls = 0usize;
     for (request, item) in requests.iter().zip(items) {
         for (name, pk) in &item.references {
@@ -52,16 +54,21 @@ pub(crate) async fn prepare<E: Engine>(
                 continue;
             };
             let key = row_key(type_name, pk);
-            if !seen.insert(key.clone()) {
-                continue;
-            }
             let ty = active
                 .ontology
                 .object_types
                 .get(type_name)
                 .ok_or_else(|| ActionError::InvalidRequest("unknown object type".to_owned()))?;
-            let edit = store.read_object_edit(active, type_name, pk).await?;
-            let row = edit.as_ref().map(|e| &e.row);
+            if !edits.contains_key(&key) {
+                edits.insert(
+                    key.clone(),
+                    store.read_object_edit(active, type_name, pk).await?,
+                );
+            }
+            let row = edits
+                .get(&key)
+                .and_then(|edit| edit.as_ref())
+                .map(|e| &e.row);
             let denied = || {
                 if criteria::is_target_ref(action, name) {
                     ActionError::NotFound
@@ -91,6 +98,7 @@ pub(crate) async fn prepare<E: Engine>(
                 property != &ty.primary_key && row.is_none_or(|row| !row.set.contains_key(property))
             });
             if ty.backing == Backing::Source
+                && !snapshots.contains_key(&key)
                 && (row.is_none_or(|row| row.released)
                     || missing
                     || token_requires_source
@@ -105,20 +113,23 @@ pub(crate) async fn prepare<E: Engine>(
                     ));
                 }
                 let engine = engine.ok_or(ActionError::EngineUnavailable)?;
-                let sampled = read_pk_source(active, engine, type_name, pk, limits.request_bytes)
-                    .await
-                    .map_err(|error| match error {
-                        QueryError::AmbiguousObject => ActionError::AmbiguousObject,
-                        _ => ActionError::EngineUnavailable,
-                    })?
-                    .ok_or_else(denied)?;
-                snapshots.insert(key, sampled);
+                let sampled =
+                    read_pk_source(active, engine, type_name, pk, 3, limits.request_bytes)
+                        .await
+                        .map_err(|error| match error {
+                            QueryError::AmbiguousObject => ActionError::AmbiguousObject,
+                            _ => ActionError::EngineUnavailable,
+                        })?
+                        .ok_or_else(denied)?;
+                snapshots.insert(key.clone(), sampled);
             }
-            reads.push(ActionGuardRead {
-                type_name: type_name.clone(),
-                pk: pk.clone(),
-                observed_version: row.map_or(0, |row| row.version),
-            });
+            if seen.insert(key) {
+                reads.push(ActionGuardRead {
+                    type_name: type_name.clone(),
+                    pk: pk.clone(),
+                    observed_version: row.map_or(0, |row| row.version),
+                });
+            }
         }
     }
     Ok(PreparedSources { reads, snapshots })
