@@ -7,7 +7,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Arc;
 
-use chrono::{SecondsFormat, Utc};
+use chrono::{DateTime, SecondsFormat, Utc};
 use ontoforge_schema::ir::{
     Backing, Cardinality, LinkTypeName, ObjectType, ObjectTypeName, PropertyDef, PropertyName,
 };
@@ -151,6 +151,196 @@ pub struct ActionReceipt {
     pub committed_at: String,
     pub chosen_current_time: String,
     pub items: Vec<ItemReceipt>,
+}
+
+/// A pending event claimed for one lease generation.
+#[derive(Debug, Clone)]
+pub struct ClaimedOutboxEvent {
+    pub event_id: String,
+    pub payload: String,
+    pub attempt_count: u32,
+    /// Unique fencing token; a worker identity alone cannot fence an expired attempt.
+    pub lease_owner: String,
+}
+
+impl EditStore {
+    /// Atomically claims due events. The transaction ends before callers perform network I/O.
+    pub async fn claim_due_outbox(
+        &self,
+        now: DateTime<Utc>,
+        owner: &str,
+        lease_until: DateTime<Utc>,
+        limit: u32,
+    ) -> Result<Vec<ClaimedOutboxEvent>, StoreError> {
+        if owner.is_empty() || limit == 0 || limit > 100 || lease_until <= now {
+            return Err(StoreError::Config(
+                "invalid outbox lease settings".to_owned(),
+            ));
+        }
+        let mut tx = self.begin_write().await?;
+        let result = async {
+            let backend = tx.backend();
+            let now_text = now.to_rfc3339_opts(SecondsFormat::Millis, true);
+            let until_text = lease_until.to_rfc3339_opts(SecondsFormat::Millis, true);
+            let due = || {
+                Expr::col(col("delivered_at"))
+                    .is_null()
+                    .and(Expr::col(col("next_attempt_at")).lte(sql_exit::typed_text(
+                        backend,
+                        &now_text,
+                        "timestamptz",
+                    )))
+                    .and(Expr::col(col("lease_until")).is_null().or(
+                        Expr::col(col("lease_until")).lte(sql_exit::typed_text(
+                            backend,
+                            &now_text,
+                            "timestamptz",
+                        )),
+                    ))
+            };
+            let mut select = Query::select()
+                .expr(Expr::col(col("event_id")))
+                .expr(sql_exit::column_text(backend, "payload"))
+                .expr(Expr::col(col("attempt_count")))
+                .from(col("of_webhook_outbox"))
+                .and_where(due())
+                .order_by(col("next_attempt_at"), sea_query::Order::Asc)
+                .order_by(col("event_id"), sea_query::Order::Asc)
+                .limit(u64::from(limit))
+                .to_owned();
+            if backend == crate::store::Backend::Postgres {
+                select.lock(LockType::Update);
+            }
+            let built = sql_exit::build(&select, &tx);
+            let rows = sql_exit::fetch_all_cells(
+                &mut tx,
+                built,
+                &[CellKind::Text, CellKind::Text, CellKind::Int32],
+            )
+            .await?;
+            let mut claimed = Vec::with_capacity(rows.len());
+            for row in rows {
+                let [
+                    Cell::Text(event_id),
+                    Cell::Text(payload),
+                    Cell::Int(attempt_count),
+                ] = row.as_slice()
+                else {
+                    return Err(StoreError::Corrupt("invalid outbox row".to_owned()));
+                };
+                let token = format!("{owner}:{}", ulid::Ulid::generate());
+                let update = Query::update()
+                    .table(col("of_webhook_outbox"))
+                    .value(col("lease_owner"), token.clone())
+                    .value(
+                        col("lease_until"),
+                        sql_exit::typed_text(backend, &until_text, "timestamptz"),
+                    )
+                    .and_where(Expr::col(col("event_id")).eq(event_id.as_str()))
+                    .and_where(due())
+                    .to_owned();
+                let built = sql_exit::build(&update, &tx);
+                if sql_exit::execute_built(&mut tx, built).await? != 1 {
+                    return Err(StoreError::Conflict("outbox lease changed".to_owned()));
+                }
+                claimed.push(ClaimedOutboxEvent {
+                    event_id: event_id.clone(),
+                    payload: payload.clone(),
+                    attempt_count: (*attempt_count).try_into().map_err(|_| {
+                        StoreError::Corrupt("invalid outbox attempt count".to_owned())
+                    })?,
+                    lease_owner: token,
+                });
+            }
+            Ok(claimed)
+        }
+        .await;
+        match result {
+            Ok(events) => {
+                sql_exit::commit(tx).await?;
+                Ok(events)
+            }
+            Err(error) => {
+                sql_exit::rollback(tx).await;
+                Err(error)
+            }
+        }
+    }
+
+    /// The current lease token must match for a successful delivery to become final.
+    pub async fn mark_delivered(
+        &self,
+        event_id: &str,
+        lease_owner: &str,
+        delivered_at: DateTime<Utc>,
+    ) -> Result<bool, StoreError> {
+        let mut tx = self.begin_write().await?;
+        let timestamp = delivered_at.to_rfc3339_opts(SecondsFormat::Millis, true);
+        let update = Query::update()
+            .table(col("of_webhook_outbox"))
+            .value(
+                col("delivered_at"),
+                sql_exit::typed_text(tx.backend(), &timestamp, "timestamptz"),
+            )
+            .value(col("lease_owner"), Option::<String>::None)
+            .value(col("lease_until"), Expr::cust("NULL"))
+            .and_where(Expr::col(col("event_id")).eq(event_id))
+            .and_where(Expr::col(col("lease_owner")).eq(lease_owner))
+            .and_where(Expr::col(col("delivered_at")).is_null())
+            .to_owned();
+        let built = sql_exit::build(&update, &tx);
+        let affected = sql_exit::execute_built(&mut tx, built).await;
+        match affected {
+            Ok(count) => {
+                sql_exit::commit(tx).await?;
+                Ok(count == 1)
+            }
+            Err(error) => {
+                sql_exit::rollback(tx).await;
+                Err(error)
+            }
+        }
+    }
+
+    /// Records a safe error category and releases only the current failed attempt.
+    pub async fn record_retry(
+        &self,
+        event_id: &str,
+        lease_owner: &str,
+        attempts: u32,
+        next_attempt_at: DateTime<Utc>,
+        safe_error: &str,
+    ) -> Result<bool, StoreError> {
+        let mut tx = self.begin_write().await?;
+        let timestamp = next_attempt_at.to_rfc3339_opts(SecondsFormat::Millis, true);
+        let update = Query::update()
+            .table(col("of_webhook_outbox"))
+            .value(col("attempt_count"), i64::from(attempts))
+            .value(
+                col("next_attempt_at"),
+                sql_exit::typed_text(tx.backend(), &timestamp, "timestamptz"),
+            )
+            .value(col("lease_owner"), Option::<String>::None)
+            .value(col("lease_until"), Expr::cust("NULL"))
+            .value(col("last_error"), safe_error)
+            .and_where(Expr::col(col("event_id")).eq(event_id))
+            .and_where(Expr::col(col("lease_owner")).eq(lease_owner))
+            .and_where(Expr::col(col("delivered_at")).is_null())
+            .and_where(Expr::col(col("attempt_count")).eq(i64::from(attempts) - 1))
+            .to_owned();
+        let built = sql_exit::build(&update, &tx);
+        let affected = sql_exit::execute_built(&mut tx, built).await;
+        match affected {
+            Ok(count) => {
+                sql_exit::commit(tx).await?;
+                Ok(count == 1)
+            }
+            Err(error) => {
+                sql_exit::rollback(tx).await;
+                Err(error)
+            }
+        }
+    }
 }
 
 /// A committed command, looked up only by its trusted principal and command ID.
@@ -879,7 +1069,10 @@ async fn enqueue_action_event(
     receipt: &ActionReceipt,
 ) -> Result<(), ActionCommitError> {
     let payload = json!({
+        "schema_version": 1,
         "event_id": receipt.event_id,
+        "log_seq": receipt.log_seq,
+        "committed_at": receipt.committed_at,
         "principal_id": principal_id,
         "action": action,
         "receipt": receipt,

@@ -19,6 +19,7 @@ use std::sync::Arc;
 
 mod criteria;
 mod fingerprint;
+pub mod outbox;
 mod params;
 mod rules;
 mod source;

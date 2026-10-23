@@ -2024,6 +2024,7 @@ dependencies = [
  "ontoforge-schema",
  "ontoforge-storage",
  "postgresql_embedded",
+ "reqwest",
  "secrecy",
  "serde",
  "serde_json",
@@ -2033,6 +2034,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "ulid",
+ "wiremock",
 ]
 
 [[package]]
