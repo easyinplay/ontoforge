@@ -8,4 +8,6 @@
 - 2026-10-23：验证重点为 SQLite/真实 PG 双后端事务回滚与并发，Trino 可用/不可用分流，遮蔽 criteria 的 dry-run 防探测，`command_id` 重放重新授权，outbox 重试。现有 storage conformance、query token、auth scope 测试可复用。
 - 2026-10-23：Grok 只读第二意见支持以整个批次为幂等单元、批级回执与单条 outbox 事件，并指出“全 patch 跳过内容读”与“重复 pk 检查”语义不同。其全局唯一 `command_id`、逐 edit 日志、本地 PK registry 建议不符合 ADR-0018/0026 与现有结构，不直接采纳。已向用户提出批量粒度选择。
 - 2026-10-23：`docs/designs/trino-engine-sql-tiers.md` 的 `batch` action 指 Nessie/Iceberg 写入模式，已推迟到下一 milestone；ACTION-05 的在线批量调用是 Phase 5 范围，两者不能混同。
-- 2026-10-23：Grok 对 source 重复 pk 与离线写入的定向复核指出：无 PK registry、现有全 patch 跳 Trino、ADR-0018 允许 source 采样后漂移三者并存时，无法对未读取的 source 状态作绝对唯一性承诺。建议 ACTION-12 将 `AmbiguousObject` 精确定为“本次 Action 的 source 读取观测到重复 pk 时拒写”，仅含已编辑对象的路径保持 Trino 离线可执行。这是需求语义收窄，尚待用户裁决；另一选择是每次 source-backed 写入都查重，但会改变 ROADMAP 的离线成功标准。
+- 2026-10-23：Grok 对 source 重复 pk 与离线写入的定向复核指出：无 PK registry、现有全 patch 跳 Trino、ADR-0018 允许 source 采样后漂移三者并存时，无法对未读取的 source 状态作绝对唯一性承诺。ACTION-12 已精确为“本次 Action 的 source 读取观测到重复 pk 时拒写”，仅含已编辑对象的路径保持 Trino 离线可执行；另一选择是每次 source-backed 写入都查重，但会改变 ROADMAP 的离线成功标准。
+- 2026-10-23：GSD researcher 已交付 `05-RESEARCH.md`（`66b7bef`）。发现独立审查 E1 的 claim→fence 顺序违反现有定义栅栏首语句约束，已改为 fence→claim；该顺序必须有真实 PG 并发测试。研究的 Validation Architecture 已用于 `05-VALIDATION.md` 草案。
+- 2026-10-23：独立架构审查 `05-ENG-REVIEW.md` 找到事务组合、共享 `_version`、删除后回执鉴权、同 `command_id` 并发争用四项 plan blocker；正式 gstack `plan-eng-review` 因当前无 AskUserQuestion 变体未通过 gate。Grok 对回执重鉴权的第二意见支持“主体限定、当前 action 权、最小审计摘要”，不以已删除行当前可见性否决回执。已在 CONTEXT 中定下此规则；ACTION-12 已按 source 实际观测语义精确化。

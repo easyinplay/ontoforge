@@ -83,7 +83,7 @@
 - [ ] **ACTION-09**: 客户端可附带读取时的 `_version` 令牌，不一致返回 `VersionConflict`；edit 读集在事务内按稳定顺序加锁
 - [ ] **ACTION-10**: `command_id` 以主体为作用域幂等：重放前重新鉴权，同键异参报 `CommandIdReused`，响应丢失后可凭同键查询结果
 - [ ] **ACTION-11**: 提交成功后经事务性 outbox 向下游 webhook 至少投递一次带 `event_id` 的事件
-- [ ] **ACTION-12**: Action 只在目标或读集需要 Trino 时依赖 Trino；source 重复 pk 的对象返回 `AmbiguousObject` 且拒绝写入
+- [ ] **ACTION-12**: Action 只在目标或读集需要 Trino 时依赖 Trino；本次 Action 从 source 读取并观测到重复 pk 时返回 `AmbiguousObject` 且拒绝写入；无需 source 内容的已编辑对象可在 Trino 不可用时执行
 
 ### L2 与审计
 

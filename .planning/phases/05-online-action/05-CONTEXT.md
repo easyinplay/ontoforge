@@ -16,7 +16,7 @@
 
 ### 批量与幂等
 - **D-01:** 同一 Action 的一次批量调用是一个原子命令：一个主体作用域的 `command_id`、一条含所有 edit entry 的 edit log、一份含逐项结果的批级回执、一条带稳定 `event_id` 的 outbox 事件。任一项失败时全部回滚，幂等记录和事件也不留存。此粒度复用 ADR-0018 的 `(principal_id, command_id)` 与 ADR-0026 的一次 `Commit` 一条日志；不采纳 Grok 建议的全局唯一键或逐 edit 日志。— **Reversibility:** one-way — 发布后改幂等键和日志粒度会改变客户端重试契约及已存档日志的读取方式。
-- **D-02:** 同键同参重放只返回已存回执，不追加 edit、日志或 outbox；同键异参返回 `CommandIdReused`。返回回执或 `get_command_result` 前按当前主体、当前定义与 scope 重新检查 action 执行权及回执字段的披露权限；失权时拒绝披露，不撤销原提交。成功删除后的对象不再可见，不能以“当前目标行可见”作为查询原回执的必要条件。请求指纹覆盖 action、整批参数与影响执行语义的选项，以规范化结构计算，不依赖 JSON 键顺序。
+- **D-02:** 同键同参重放只返回已存回执，不追加 edit、日志或 outbox；同键异参返回 `CommandIdReused`。回执只含发起主体原提交的对象/link 标识、operation 与版本等审计摘要，不含旧属性值或当前对象状态。重放或 `get_command_result` 以 `(principal_id, command_id)` 限定主体，按当前授权重新检查 action 执行权；失权时拒绝披露，不撤销原提交。成功删除后的目标行不可见不妨碍有权主体查询原回执；若未来返回当前对象数据，该数据另按当前行列 scope 过滤。请求指纹覆盖 action、整批客户端参数与影响执行语义的选项，以规范化结构计算，不依赖 JSON 键顺序；server 生成的 `currentTime` 不进客户端指纹，选定值随回执持久化。默认幂等保留 7 天，过期后的同键不承诺去重。
 
 ### 授权与并发
 - **D-03:** 保持 ADR-0018 的 ①-⑨ 管线：前置目标不可见与不存在同错；写字段越界、criteria 读取遮蔽列、写后不可见（含 link 两端与 release）返回不泄露状态的 `ScopeDenied`。validate-only 执行同样的检查且不写入。
@@ -24,7 +24,7 @@
 
 ### 参数与 source
 - **D-05:** ACTION-01 的“约束”限当前 Action IR 可表达的 base type、objectReference、items、required、default 与 rule 静态合同；逐参数返回运行时错误。enum/range/regex/UUID/uniqueness 等新 value types 属 SCHEMAX-04，不引入 Phase 5。
-- **D-06:** ACTION-12 的 `AmbiguousObject` 针对本次 Action 确实从 source 读取并观测到的重复 pk；只涉及已编辑对象且无需 source 内容的路径可在 Trino 不可用时执行。没有本地 PK registry，无法同时保证此离线路径对未读取的 source 重复 pk 做绝对检测；ADR-0018 本来也允许 source 采样后变化不检测。对实际读取到的重复 pk 必须拒写；此解释应在架构审查和验收中显式验证。
+- **D-06:** ACTION-12 的 `AmbiguousObject` 针对本次 Action 确实从 source 读取并观测到的重复 pk；只涉及已编辑对象且无需 source 内容的路径可在 Trino 不可用时执行。没有本地 PK registry，无法同时保证此离线路径对未读取的 source 重复 pk 做绝对检测；ADR-0018 本来也允许 source 采样后变化不检测。对实际读取到的重复 pk 必须拒写；验收文字与此观测语义保持一致。
 
 ### Planner Discretion
 

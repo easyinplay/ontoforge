@@ -188,7 +188,7 @@ PostgreSQL 命令争用的关键 SQL 形状为 `INSERT ... ON CONFLICT DO NOTHIN
 
 | Finding | Required task contract | Executable evidence |
 |---|---|---|
-| E1 | 组合事务负责 claim、fence、锁、CAS、log/edit/command/outbox；任一失败回滚。 | SQLite 与真实 PG 分别在 edit row、log、command、outbox 后注入失败，检查所有表和版本无残留；validate-only 同检但零残留。[VERIFIED: .planning/phases/05-online-action/05-ENG-REVIEW.md:12-12,31-33] |
+| E1 | 组合事务按 fence、claim、锁、CAS、log/edit/command/outbox 排序；任一失败回滚。 | SQLite 与真实 PG 分别在 edit row、log、command、outbox 后注入失败，检查所有表和版本无残留；validate-only 同检但零残留。[VERIFIED: .planning/phases/05-online-action/05-ENG-REVIEW.md:12-12,31-33] |
 | E2 | query/Action 共用版本化 codec；旧 token 明确失效。 | query 发 token 后 Action 接受；edit、scope、attrs、key 变化拒绝；无 token 同 pk 双请求只成功一条。[VERIFIED: .planning/phases/05-online-action/05-ENG-REVIEW.md:13-13] [ASSUMED] |
 | E3 | 主体限定 + 当前 action grant + 最小历史回执。 | `get_command_result` 和 same-key replay 分别覆盖 role 撤销、row predicate 变化、delete、release、action 删除、过期；无当前 grant 不披露。[VERIFIED: .planning/phases/05-online-action/05-ENG-REVIEW.md:14-14] |
 | E4 | 唯一 claim 与 winner/loser 状态机。 | 真实 PG 两连接 same-key 同参/异参、winner abort、响应丢失重试；SQLite 同语义；仅一 log 和一 outbox。[VERIFIED: .planning/phases/05-online-action/05-ENG-REVIEW.md:15-15] |

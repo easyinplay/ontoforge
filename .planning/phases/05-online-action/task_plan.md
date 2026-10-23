@@ -8,8 +8,9 @@
 
 - [x] P0：从已完成的 Phase 4 HEAD 建立 `gsd/phase-05-online-action` 分支，检查工作区和现有 phase 产物；验收：原有未跟踪文件未改动。
 - [x] P1：审阅 ADR-0016/0018/0024/0026、Phase 3/4 API 与 Action 设计，按 GSD discuss-phase 锁定仍开放的 Phase 5 决策；产出 `05-CONTEXT.md` 与 `findings.md`；依赖 P0。
-- [ ] P2：对跨 query、auth、storage 的事务与宿主边界做 gstack `plan-eng-review`；决策落 ADR 或 `05-CONTEXT.md`，不复制进 ROADMAP；依赖 P1。
-- [ ] P3：GSD plan-phase 研究、生成 `05-*-PLAN.md`，由独立 checker 核对 ACTION-01..12 与 RED/GREEN、真实 PG/Trino 和失败回滚验收；更新 `task_plan.md`、`progress.md`、`05-VALIDATION.md`；依赖 P2。
+- [x] P2a：对跨 query、auth、storage 的事务与宿主边界做独立工程审查，结果写入 `05-ENG-REVIEW.md`；依赖 P1。
+- [ ] P2b：正式 gstack `plan-eng-review` gate；当前因 AskUserQuestion 不可用而阻塞，不能记为通过；实施前处理。
+- [ ] P3：GSD plan-phase 研究、生成 `05-*-PLAN.md`，由独立 checker 核对 ACTION-01..12 与 RED/GREEN、真实 PG/Trino 和失败回滚验收；更新 `task_plan.md`、`progress.md`、`05-VALIDATION.md`；依赖 P2a。
 - [ ] P4：按 GSD execute-phase 的 wave 执行 `crates/ontoforge-query/`、`crates/ontoforge-auth/`、`crates/ontoforge-storage/` 及所需宿主接线；逐子任务 TDD 与测试证据写入各 SUMMARY；依赖 P3。具体文件所有权由 PLAN 锁定。
 - [ ] P5：GSD verify-work、phase-level verification、安全复审及匹配代码 SHA 的 CI 验收；更新 ROADMAP/STATE 的完成指针；依赖 P4。
 
@@ -21,4 +22,4 @@
 
 ## Next Step
 
-对 `05-CONTEXT.md` 做 gstack `plan-eng-review`，重点复核组合事务、令牌与 ACTION-12 的观测解释。
+将 `05-ENG-REVIEW.md` 的 E1-E7 纳入 GSD plan-phase 研究与计划检查；正式 gstack gate 状态不得误标为通过。
