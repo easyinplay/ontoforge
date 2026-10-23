@@ -15,6 +15,7 @@
 - 2026-10-23：Wave 1 executor 已开始 Action 测试准备。`Cargo.toml` 新增直接依赖使旧计划的 `Cargo.lock` 禁改约束与 `--locked` 冲突，初次构建失败为无效 RED。收取 Grok 第二意见后修订 05-01：允许仅更新 Action package 的 lockfile 依赖表，先恢复 `--locked` 一致性，再运行真实行为 RED；Rust 原生 JUnit 报告须通过 GSD RED 分类器。
 - 2026-10-23：Wave 1 Task 1 有效 RED 提交 `e40b764`。`tracer_commits_one_action_batch` 实际运行 1 个测试，因缺少 Action command 表断言失败；Rust 原生 JUnit 经 GSD `tdd-red-evidence` 得到 `RED_EVIDENCE_OK`（tests=1、fail=1）。`cargo metadata --locked --offline` 通过，`Cargo.lock` 仅增加 Action 依赖边；executor 进入 GREEN。
 - 2026-10-23：Wave 1 Task 1 GREEN 提交 `7c0a7b5`，提交后 tracer 重跑通过；Action lib 3/3 与集成 schema 测试 1/1 曾通过。Clippy 尚有 Action 函数长度、limits 字段前缀和测试默认值 lint，Task 2 后做局部重构并重跑，故 Wave 1 尚未验收。
+- 2026-10-23：宿主 `turn_aborted` 中断上一 executor，原因未提供；已提交成果及 Task 2 未提交 conformance case 均保留。typed GSD executor 续跑真实 PG `action_batch_writes_one_command_and_outbox`，目标实际运行 1 个并因缺 `of_action_command` 断言失败；独立运行 GSD `tdd-red-evidence` 得到 `RED_EVIDENCE_OK`。SQLite 路径在 Task 1 已做绿，计划澄清其同 case 结果为对照，不强行制造 RED。
 
 ## 待办
 
