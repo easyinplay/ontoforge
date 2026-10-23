@@ -9,6 +9,8 @@
 - 2026-10-23：用户重申遇事先咨询 Grok。按已有第二意见与 ADR 自主定下批级命令、观测到重复 pk 即拒写等合同；GSD discuss-phase 上下文及审计记录已落盘。
 - 2026-10-23：独立工程审查已写 `05-ENG-REVIEW.md`，正式 gstack gate 因 AskUserQuestion 不可用为 blocked；对删除后回执鉴权又征询 Grok 并更新 CONTEXT。ACTION-12 验收文字已改为本次实际 source 读取的观测语义；进入 plan-phase 时必须覆盖 E1-E7。
 
+- 2026-10-23：pattern-mapper 写入 `05-PATTERNS.md`；对 `_version` 旧格式兼容征询 Grok，并依据现有代码与 ADR-0018 锁定 D-07。首次文档补丁因上下文不匹配失败，调整定位后重试。
+
 ## 待办
 
 - GSD plan-phase 研究、规划及独立 checker；实施前再处理正式 gstack gate 或明确替代审查结论。

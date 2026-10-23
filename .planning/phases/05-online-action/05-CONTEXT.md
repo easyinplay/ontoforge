@@ -21,6 +21,7 @@
 ### 授权与并发
 - **D-03:** 保持 ADR-0018 的 ①-⑨ 管线：前置目标不可见与不存在同错；写字段越界、criteria 读取遮蔽列、写后不可见（含 link 两端与 release）返回不泄露状态的 `ScopeDenied`。validate-only 执行同样的检查且不写入。
 - **D-04:** `_version` 是可选的客户端条件；有令牌时比较事务内锁定读集重算的 HMAC。无令牌也必须以本次前置读取观察到的 edit 版本做并发条件，使同 pk 并发提交最多一个成功。source 在前置读到提交间的变化按 ADR-0018 不二次读取。
+- **D-07:** query 与 Action 共用一个带显式格式版本、规范化 scope 输入的 `_version` codec。首次切换新格式时旧格式令牌失效，客户端需重新读取获取新令牌；不保留依赖 Rust `Debug` 文本的旧验证分支。旧令牌和密钥轮换均按 `VersionConflict` 处理。沿用当前确定性 HMAC 合同，不在 Phase 5 添加令牌 TTL、nonce 或强制密钥轮换。测试须覆盖 query 签发到 Action 验证、旧格式拒绝、scope/密钥变化及无令牌的 edit 版本 CAS。
 
 ### 参数与 source
 - **D-05:** ACTION-01 的“约束”限当前 Action IR 可表达的 base type、objectReference、items、required、default 与 rule 静态合同；逐参数返回运行时错误。enum/range/regex/UUID/uniqueness 等新 value types 属 SCHEMAX-04，不引入 Phase 5。
