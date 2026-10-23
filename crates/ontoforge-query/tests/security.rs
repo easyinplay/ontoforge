@@ -19,13 +19,15 @@ use ontoforge_engine::sqlite::fixture::plan_fixture_tables;
 use ontoforge_engine::{
     Engine, EngineError, EngineStatus, QueryContext, QueryOutput, TableRef, Value,
 };
-use ontoforge_expr::Pred;
+use ontoforge_expr::{AttrValue, Pred, Scalar};
 use ontoforge_query::aggregate::{AggregateCapabilities, AggregateError, AggregateLimits};
 use ontoforge_query::ast::PageSpec;
 use ontoforge_query::ast::{AggregateMeasure, AggregateRequest};
 use ontoforge_query::ast::{Direction, Nulls, OrderBy};
 use ontoforge_query::compile::{CompileLimits, ValidatedQuery};
-use ontoforge_query::cursor::{CursorCodec, CursorContext, CursorPosition};
+use ontoforge_query::cursor::{
+    CursorCodec, CursorContext, CursorPosition, VersionClaims, VersionTokenCodec, VersionTokenError,
+};
 use ontoforge_query::overlay::NormalizedOrder;
 use ontoforge_query::{
     ExecutionLimits, ObjectRow, ObjectSet, QueryError, QueryPage, QueryRequest, QueryService,
@@ -35,6 +37,7 @@ use ontoforge_schema::ir::{Collation, ObjectTypeName, ProfileName, PropertyName}
 use ontoforge_schema::{load_dir, load_scope_dir};
 use ontoforge_storage::commit::{Actor, Commit, Edit, ObjectOp};
 use ontoforge_storage::reload::{ReloadOptions, reload};
+use ontoforge_storage::state::EditRow;
 use ontoforge_storage::store::{BackendSettings, EditStore, StoreSettings};
 use ontoforge_storage::value::PropertyValue;
 use serde_json::json;
@@ -2063,6 +2066,98 @@ fn version_changes_with_principal_scope_definition_and_row() {
 }
 
 #[tokio::test]
+async fn version_claims_are_canonical_and_format_tagged() {
+    let f = fixture().await;
+    let signer = TokenCodec::new(b"first-key".to_vec()).unwrap();
+    let codec = VersionTokenCodec::new(&signer);
+    let object_type = name("Airport");
+    let pk = PropertyValue::String("BER".to_owned());
+    let mut first = f.principal.clone();
+    first
+        .attrs
+        .insert("z", AttrValue::Scalar(Scalar::Int(2)))
+        .unwrap();
+    first
+        .attrs
+        .insert("a", AttrValue::Scalar(Scalar::String("x".to_owned())))
+        .unwrap();
+    let mut reordered = f.principal.clone();
+    reordered
+        .attrs
+        .insert("a", AttrValue::Scalar(Scalar::String("x".to_owned())))
+        .unwrap();
+    reordered
+        .attrs
+        .insert("z", AttrValue::Scalar(Scalar::Int(2)))
+        .unwrap();
+    let source_a = BTreeMap::from([(prop("name"), json!({"z": 1, "a": {"y": 2, "x": 3}}))]);
+    let source_b = BTreeMap::from([(prop("name"), json!({"a": {"x": 3, "y": 2}, "z": 1}))]);
+    let row = EditRow {
+        set: BTreeMap::from([(prop("name"), PropertyValue::String("Berlin".to_owned()))]),
+        deleted: false,
+        released: false,
+        version: 1,
+    };
+    let claims = |principal, scope, source, edit, def_version| VersionClaims {
+        principal,
+        scope,
+        object_type: &object_type,
+        pk: &pk,
+        def_version,
+        source,
+        edit,
+    };
+    let baseline = claims(&first, &f.scope, Some(&source_a), Some(&row), 1);
+    let token = codec.sign(&baseline).unwrap();
+    assert!(token.starts_with("v1."));
+    assert_eq!(
+        token,
+        codec
+            .sign(&claims(
+                &reordered,
+                &f.scope,
+                Some(&source_b),
+                Some(&row),
+                1
+            ))
+            .unwrap()
+    );
+    assert_eq!(codec.verify(&token, &baseline), Ok(()));
+
+    let mut narrower = f.scope.clone();
+    narrower
+        .types
+        .get_mut(&object_type)
+        .unwrap()
+        .columns
+        .remove(&prop("city"));
+    let different_source = BTreeMap::from([(prop("name"), json!({"a": {"x": 4, "y": 2}, "z": 1}))]);
+    let mut changed_row = row.clone();
+    changed_row.version += 1;
+    for different in [
+        claims(&first, &narrower, Some(&source_a), Some(&row), 1),
+        claims(&first, &f.scope, Some(&source_a), Some(&row), 2),
+        claims(&first, &f.scope, Some(&different_source), Some(&row), 1),
+        claims(&first, &f.scope, Some(&source_a), Some(&changed_row), 1),
+    ] {
+        assert_eq!(
+            codec.verify(&token, &different),
+            Err(VersionTokenError::Invalid)
+        );
+    }
+    let legacy = signer.sign_version(&[b"old-untagged"]).unwrap();
+    assert_eq!(
+        codec.verify(&legacy, &baseline),
+        Err(VersionTokenError::UnsupportedFormat)
+    );
+    let rotated = TokenCodec::new(b"rotated-key".to_vec()).unwrap();
+    assert_eq!(
+        VersionTokenCodec::new(&rotated).verify(&token, &baseline),
+        Err(VersionTokenError::Invalid)
+    );
+}
+
+#[tokio::test]
 async fn version_query_uses_format_tag_and_changes_with_scope() {
     let f = fixture().await;
     let active = f.store.active_definition().await.unwrap();
@@ -2097,7 +2192,10 @@ async fn version_query_uses_format_tag_and_changes_with_scope() {
     .execute(request("Airport", "BER", &["name"]))
     .await
     .unwrap();
-    assert!(first.rows[0].version.starts_with("v1."), "query token needs a format tag");
+    assert!(
+        first.rows[0].version.starts_with("v1."),
+        "query token needs a format tag"
+    );
     let mut narrower = f.scope.clone();
     narrower
         .types

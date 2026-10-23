@@ -338,31 +338,17 @@ impl<E: Engine> QueryService<'_, E> {
         source: Option<&BTreeMap<PropertyName, Value>>,
         edit: Option<&ObjectEdit>,
     ) -> Result<String, QueryError> {
-        let scope = format!("{:?}", self.scope);
-        let pk_json = pk.to_json().to_string();
-        let source_json = serde_json::to_vec(&source).map_err(|_| QueryError::Source)?;
-        let edit_json = serde_json::to_vec(&edit.map(|e| {
-            (
-                e.row.version,
-                e.row.deleted,
-                e.row.released,
-                e.row
-                    .set
-                    .iter()
-                    .map(|(k, v)| (k.as_str(), v.to_json()))
-                    .collect::<BTreeMap<_, _>>(),
-            )
-        }))
-        .map_err(|_| QueryError::Store)?;
-        self.tokens.sign_version(&[
-            self.principal.id.as_str().as_bytes(),
-            scope.as_bytes(),
-            object_type.as_str().as_bytes(),
-            pk_json.as_bytes(),
-            &self.active.def_version.to_be_bytes(),
-            &source_json,
-            &edit_json,
-        ])
+        cursor::VersionTokenCodec::new(self.tokens)
+            .sign(&cursor::VersionClaims {
+                principal: self.principal,
+                scope: self.scope,
+                object_type,
+                pk,
+                def_version: self.active.def_version,
+                source,
+                edit: edit.map(|value| &value.row),
+            })
+            .map_err(|_| QueryError::InvalidToken)
     }
 
     async fn read_source(
