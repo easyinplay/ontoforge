@@ -199,7 +199,25 @@ impl<'a> ActionService<'a> {
             .ontology
             .action_types
             .get(&action_name)
-            .ok_or_else(|| ActionError::UnknownAction(request.action.clone()))?;
+            .ok_or(ActionError::ScopeDenied)?;
+        let fingerprint = json!({
+            "action": request.action,
+            "items": request.items,
+            "validate_only": request.validate_only,
+        });
+        let request_hash = digest(&fingerprint);
+        if !request.validate_only
+            && let Some(command_id) = request.command_id.as_deref()
+            && let Some(command) = self
+                .store
+                .action_command(principal.id.as_str(), command_id)
+                .await?
+        {
+            if command.action != request.action || command.request_hash != request_hash {
+                return Err(ActionCommitError::CommandIdReused.into());
+            }
+            return Ok(ActionOutcome::Committed(command.receipt));
+        }
         let chosen_time = Utc::now();
         let chosen_current_time = chosen_time.to_rfc3339_opts(SecondsFormat::Millis, true);
         let expires_at =
@@ -224,11 +242,6 @@ impl<'a> ActionService<'a> {
             .map(|item| item.expected_versions.clone())
             .collect();
 
-        let fingerprint = json!({
-            "action": request.action,
-            "items": request.items,
-            "validate_only": request.validate_only,
-        });
         let input = ActionTransactionInput {
             commit: Commit {
                 actor: Actor::Principal(principal.id.as_str().to_owned()),
@@ -238,7 +251,7 @@ impl<'a> ActionService<'a> {
                 edits: prepared.edits,
             },
             command_id: request.command_id,
-            request_hash: digest(&fingerprint),
+            request_hash,
             action_def_hash: digest(
                 &serde_json::to_value(action)
                     .map_err(|e| ActionError::InvalidRequest(e.to_string()))?,

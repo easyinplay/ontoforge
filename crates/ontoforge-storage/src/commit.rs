@@ -152,6 +152,15 @@ pub struct ActionReceipt {
     pub items: Vec<ItemReceipt>,
 }
 
+/// A committed command, looked up only by its trusted principal and command ID.
+#[derive(Debug, Clone)]
+pub struct ActionCommandRecord {
+    pub action: String,
+    pub request_hash: String,
+    pub expires_at: String,
+    pub receipt: ActionReceipt,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ActionStage {
     Begin,
@@ -280,6 +289,55 @@ pub enum EditError {
 }
 
 impl EditStore {
+    /// Reads a completed command before Action preflight. An uncommitted claim is invisible.
+    pub async fn action_command(
+        &self,
+        principal_id: &str,
+        command_id: &str,
+    ) -> Result<Option<ActionCommandRecord>, StoreError> {
+        let backend = match &self.db {
+            crate::store::Db::Sqlite(_) => Backend::Sqlite,
+            crate::store::Db::Postgres { .. } => Backend::Postgres,
+        };
+        let select = Query::select()
+            .column(col("action"))
+            .column(col("request_hash"))
+            .expr(sql_exit::timestamp_text(backend, "expires_at"))
+            .expr(sql_exit::column_text(backend, "receipt"))
+            .from(col("of_action_command"))
+            .and_where(Expr::col(col("principal_id")).eq(principal_id))
+            .and_where(Expr::col(col("command_id")).eq(command_id))
+            .to_owned();
+        let rows = sql_exit::fetch_all_cells_read(
+            &self.db,
+            sql_exit::build_for(&select, backend),
+            &[CellKind::Text; 4],
+        )
+        .await?;
+        let Some(cells) = rows.into_iter().next() else {
+            return Ok(None);
+        };
+        let [
+            Cell::Text(action),
+            Cell::Text(request_hash),
+            Cell::Text(expires_at),
+            Cell::Text(receipt),
+        ] = cells.as_slice()
+        else {
+            return Err(StoreError::Corrupt(
+                "a committed command has no receipt".to_owned(),
+            ));
+        };
+        let receipt = serde_json::from_str(receipt)
+            .map_err(|e| StoreError::Corrupt(format!("invalid stored Action receipt: {e}")))?;
+        Ok(Some(ActionCommandRecord {
+            action: action.clone(),
+            request_hash: request_hash.clone(),
+            expires_at: expires_at.clone(),
+            receipt,
+        }))
+    }
+
     /// Applies `commit` in one transaction: the definition version is checked against the
     /// database first (the fence), then every row is locked or created, then the log record gets
     /// its `seq`, then the rows, the entries and the history snapshots are written. Because `seq`
@@ -345,6 +403,10 @@ impl EditStore {
         .await
     }
 
+    #[expect(
+        clippy::too_many_lines,
+        reason = "the Action claim and write stages share one transaction boundary"
+    )]
     async fn commit_action_guarded_inner(
         &self,
         input: ActionTransactionInput,
@@ -356,21 +418,51 @@ impl EditStore {
 
         let mut tx = self.begin_write().await?;
         let mut trace = vec![ActionStage::Begin];
-        let result = async {
-            let def = self.fence(&mut tx, input.commit.def_version).await?;
-            trace.push(ActionStage::Fence);
-            if !input.validate_only {
-                let command_id = input
-                    .command_id
-                    .as_deref()
-                    .ok_or(ActionCommitError::MissingCommandId)?;
-                if let Some(receipt) =
-                    claim_action(&mut tx, principal_id, command_id, &input).await?
-                {
-                    return Ok(ActionCommitOutcome::Replay(receipt));
-                }
-                trace.push(ActionStage::Claim);
+        let def = match self.fence(&mut tx, input.commit.def_version).await {
+            Ok(def) => def,
+            Err(error) => {
+                sql_exit::rollback(tx).await;
+                return Err(error.into());
             }
+        };
+        trace.push(ActionStage::Fence);
+        if !input.validate_only {
+            let command_id = input
+                .command_id
+                .as_deref()
+                .ok_or(ActionCommitError::MissingCommandId)?;
+            let claim = tokio::time::timeout(
+                self.settings.lock_timeout,
+                claim_action(&mut tx, principal_id, command_id, &input),
+            )
+            .await
+            .unwrap_or_else(|_| {
+                Err(StoreError::Conflict("command claim timed out".to_owned()).into())
+            });
+            match claim {
+                Ok(CommandClaimOutcome::Winner) => trace.push(ActionStage::Claim),
+                Ok(CommandClaimOutcome::Existing) => {
+                    sql_exit::rollback(tx).await;
+                    let command = self
+                        .action_command(principal_id, command_id)
+                        .await?
+                        .ok_or_else(|| {
+                            StoreError::Corrupt("a command claim disappeared".to_owned())
+                        })?;
+                    if command.action != input.commit.action
+                        || command.request_hash != input.request_hash
+                    {
+                        return Err(ActionCommitError::CommandIdReused);
+                    }
+                    return Ok(ActionCommitOutcome::Replay(command.receipt));
+                }
+                Err(error) => {
+                    sql_exit::rollback(tx).await;
+                    return Err(error);
+                }
+            }
+        }
+        let result = async {
             let mut plan = validate(&def, &input.commit)?;
             sort_plan(&mut plan);
             let read_plan = guard_read_plan(&def, reads)?;
@@ -644,12 +736,17 @@ async fn finish_action(
     }
 }
 
+enum CommandClaimOutcome {
+    Winner,
+    Existing,
+}
+
 async fn claim_action(
     tx: &mut WriteTx<'_>,
     principal_id: &str,
     command_id: &str,
     input: &ActionTransactionInput,
-) -> Result<Option<ActionReceipt>, ActionCommitError> {
+) -> Result<CommandClaimOutcome, ActionCommitError> {
     let backend = tx.backend();
     let insert = Query::insert()
         .into_table(col("of_action_command"))
@@ -681,41 +778,9 @@ async fn claim_action(
         .to_owned();
     let built = sql_exit::build(&insert, tx);
     if sql_exit::execute_built(tx, built).await? == 1 {
-        return Ok(None);
+        return Ok(CommandClaimOutcome::Winner);
     }
-
-    let select = Query::select()
-        .column(col("action"))
-        .column(col("request_hash"))
-        .column(col("action_def_hash"))
-        .expr(sql_exit::column_text(backend, "receipt"))
-        .from(col("of_action_command"))
-        .and_where(Expr::col(col("principal_id")).eq(principal_id))
-        .and_where(Expr::col(col("command_id")).eq(command_id))
-        .lock(LockType::Update)
-        .to_owned();
-    let built = sql_exit::build(&select, tx);
-    let cells = sql_exit::fetch_cells(tx, built, &[CellKind::Text; 4])
-        .await?
-        .ok_or_else(|| StoreError::Corrupt("a command claim disappeared".to_owned()))?;
-    let [
-        Cell::Text(action),
-        Cell::Text(request_hash),
-        Cell::Text(action_def_hash),
-        Cell::Text(receipt),
-    ] = cells.as_slice()
-    else {
-        return Err(StoreError::Corrupt("an existing command has no receipt".to_owned()).into());
-    };
-    if action != &input.commit.action
-        || request_hash != &input.request_hash
-        || action_def_hash != &input.action_def_hash
-    {
-        return Err(ActionCommitError::CommandIdReused);
-    }
-    serde_json::from_str(receipt)
-        .map(Some)
-        .map_err(|e| StoreError::Corrupt(format!("invalid stored Action receipt: {e}")).into())
+    Ok(CommandClaimOutcome::Existing)
 }
 
 fn action_receipt(
