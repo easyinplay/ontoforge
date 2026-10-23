@@ -1,5 +1,10 @@
 # Phase 5 findings
 
+- 2026-10-23：独立 review 与 verifier 发现 source `seen.insert` 先于别名级需求判断，导致同 RowKey 后续别名或 item 的 criteria、token、release 可能漏采样。Grok 只读第二意见确认，并建议逐 occurrence 计算、按 key 缓存 edit 状态、实际采样前检查 `source_calls`，每 key 一次 Engine 调用；先补跨 item token 与双别名 release 的失败测试。`read_pk_source` 固定 `ctx.max_rows=3` 会在 Query host 限额 1 时突破旧行为；将上限由 Query/Action 调用方显式传入，保留 SQL LIMIT 2。两项均不能凭现有全量测试通过结案。
+- 2026-10-23：verifier 发现 `WebhookWorker::poll_at` 只有测试显式调用，当前 `ontoforge-server`/`ontoforge-api` 仍占位且 CLI 无长期 Action host。Phase 5 原验收要求实际投递，需可信运行入口持续驱动并说明部署前提；独立进程、Action 内后台任务或延期到 Phase 7 的分叉待 Grok 第二意见与现有结构核对。05-02 的计划路径 `src/execute.rs` 与实际 `src/lib.rs` 偏差只需修订计划，不复制实现。
+- 2026-10-23：Grok 第二意见与仓库结构一致：选独立常驻 `webhook-worker` CLI，使用服务管理器保证重启，worker 现有 lease/fencing 负责双进程 claim；Action 提交后触发一次后台任务无法覆盖进程退出或下游 500，推迟到 Phase 7 则不满足 ACTION-11。本次不增加死信上限，沿用现有 1..300 秒退避和 event_id 去重合同；可信 `[webhook]` 配置选择 target。测试须经真实 CLI 入口投递而非直接调用 `poll_at`，并覆盖重启和关闭；如果仅测 `--once` 则不能代替持续循环验收。
+- 2026-10-24：新代码复审识别 `WebhookWorker::poll_at` 用 claim 时间而非 send 结束时间计算 retry/delivered，且一次预领 batch 中后段事件的 lease 可能先于发送过期。Grok 第二意见建议逐条 claim 到 `batch_limit`，每次尝试结束才记录时间；这样租约只需覆盖单次 `request_timeout`，保留现有 fencing 和至少一次合同。测试应以慢 HTTP/可控时钟证明重试不提前、双 worker 不在后段事件在途时重复领租；固定时钟旧测试保持确定性。
+
 - 2026-10-23：05-07 workspace gate 的 `cli_schema` 失败根因为 05-06 新增 `Rule::ReleaseObject` 后未同步 `schemas/ontoforge-definition.schema.json`；该测试逐字节比较三个 CLI 导出 fixture。用已有 `schema export` 命令重生成后仅 definition schema 增加 19 行 release 分支，目标测试 4/4 通过。workspace 全量测试仍待复跑；这次失败没有 rusqlite lock 或终端异常关闭证据。
 
 - 2026-10-23：ROADMAP 已定义 Phase 5 Goal、五项 Success Criteria 与 ACTION-01..12；`.planning/phases/05-online-action/` 原先不存在。当前分支从已完成的 Phase 4 提交 `9c4ba02` 建立，尚无 Phase 5 代码改动。
