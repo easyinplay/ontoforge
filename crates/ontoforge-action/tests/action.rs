@@ -3,7 +3,7 @@ use ontoforge_action::{ActionError, ActionLimits, ActionRequest, ActionService};
 use ontoforge_auth::{Principal, PrincipalId, scope::PrincipalScope};
 use ontoforge_expr::rowpred::Attrs;
 use ontoforge_schema::load_from_memory;
-use ontoforge_storage::commit::{Actor, Commit, Edit, ObjectOp};
+use ontoforge_storage::commit::{ActionCommitError, Actor, Commit, Edit, EditError, ObjectOp};
 use ontoforge_storage::reload::{ReloadOptions, reload};
 use ontoforge_storage::store::{BackendSettings, EditStore, StoreSettings, sqlite_connect_options};
 use ontoforge_storage::value::PropertyValue;
@@ -55,6 +55,10 @@ async fn action_batch_schema_exists() {
 }
 
 #[tokio::test]
+#[expect(
+    clippy::too_many_lines,
+    reason = "SQLite fixture checks parameter aggregation and no writes"
+)]
 async fn params_report_all_errors() {
     const DEFS: &str = "kind: ObjectType
 apiName: Gate
@@ -126,7 +130,7 @@ rules:
                             "extra": true
                         }))
                         .expect("params"),
-                        expected_versions: Default::default(),
+                        expected_versions: BTreeMap::default(),
                     },
                     ontoforge_action::ActionItem {
                         params: serde_json::from_value(serde_json::json!({
@@ -134,7 +138,7 @@ rules:
                             "tags": [false]
                         }))
                         .expect("params"),
-                        expected_versions: Default::default(),
+                        expected_versions: BTreeMap::default(),
                     },
                 ],
                 validate_only: false,
@@ -145,7 +149,11 @@ rules:
     let ActionError::ParameterErrors(problems) = &error else {
         panic!("expected parameter problems, got {error}");
     };
-    assert_eq!(problems.len(), 8, "all items must report errors: {problems:?}");
+    assert_eq!(
+        problems.len(),
+        8,
+        "all items must report errors: {problems:?}"
+    );
     let message = error.to_string();
     for name in ["gate", "name", "count", "tags", "extra"] {
         assert!(message.contains(name), "missing {name} in {message}");
@@ -171,6 +179,10 @@ rules:
 }
 
 #[tokio::test]
+#[expect(
+    clippy::too_many_lines,
+    reason = "one SQLite fixture covers all rule kinds and ordinal receipts"
+)]
 async fn batch_all_rule_kinds_expand_in_declared_order() {
     const DEFS: &str = "kind: ObjectType
 apiName: Gate
@@ -299,7 +311,7 @@ rules:
                         "newCode": "C1", "name": "New"
                     }))
                     .expect("params"),
-                    expected_versions: Default::default(),
+                    expected_versions: BTreeMap::default(),
                 }],
                 validate_only: false,
             },
@@ -326,7 +338,7 @@ rules:
                         "newCode": "C1", "name": "New"
                     }))
                     .expect("params"),
-                    expected_versions: Default::default(),
+                    expected_versions: BTreeMap::default(),
                 }],
                 validate_only: false,
             },
@@ -362,6 +374,10 @@ rules:
 }
 
 #[tokio::test]
+#[expect(
+    clippy::too_many_lines,
+    reason = "SQLite fixture verifies repeated edit versions and batch rollback"
+)]
 async fn batch_ordinal_and_same_pk_order_are_stable() {
     const DEFS: &str = "kind: ObjectType
 apiName: Gate
@@ -386,6 +402,19 @@ rules:
     object: gate
     properties:
       name: { param: second }
+---
+kind: ActionType
+apiName: deleteGateTwice
+parameters:
+  gate: { type: { objectReference: Gate }, required: true }
+  name: { type: string, required: true }
+rules:
+  - kind: modifyObject
+    object: gate
+    properties:
+      name: { param: name }
+  - kind: deleteObject
+    object: gate
 ";
     let dir = tempfile::tempdir().expect("tempdir");
     let path = Utf8PathBuf::from_path_buf(dir.path().join("edit.db")).expect("utf8 path");
@@ -436,11 +465,14 @@ rules:
     scope
         .actions
         .insert("changeGate".to_owned().try_into().expect("action"));
+    scope
+        .actions
+        .insert("deleteGateTwice".to_owned().try_into().expect("action"));
     let service = ActionService::new(&store, ActionLimits::new(8, 8, 65536).expect("limits"));
     let item = |name: &str| ontoforge_action::ActionItem {
         params: serde_json::from_value(serde_json::json!({"gate": "A1", "name": name}))
             .expect("params"),
-        expected_versions: Default::default(),
+        expected_versions: BTreeMap::default(),
     };
     let receipt = service
         .execute(
@@ -489,6 +521,29 @@ rules:
     assert_eq!(
         row.row.set["name"],
         PropertyValue::String("Default".to_owned())
+    );
+
+    let late_failure = service
+        .execute(
+            &principal,
+            &scope,
+            version,
+            ActionRequest {
+                action: "deleteGateTwice".to_owned(),
+                command_id: Some("late-rollback".to_owned()),
+                items: vec![item("First"), item("Second")],
+                validate_only: false,
+            },
+        )
+        .await;
+    assert!(
+        matches!(
+            late_failure,
+            Err(ActionError::Commit(ActionCommitError::Edit(
+                EditError::Tombstoned
+            )))
+        ),
+        "later edit must fail in the transaction: {late_failure:?}"
     );
 
     let mut invalid = item("Ignored");
