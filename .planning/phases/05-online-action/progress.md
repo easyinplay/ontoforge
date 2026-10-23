@@ -1,6 +1,6 @@
 # Phase 5 progress
 
-当前节点：P4 Wave 3（05-03）已完成，下一计划 05-04；release source 与 source-backed token 专项指向 05-06。GSD 7/7 计划已通过独立 checker；正式 gstack gate 受工具限制未通过，使用记录在 `findings.md` 的 Phase 5 一次性替代治理。
+当前节点：P4 Wave 4（05-04）已完成，下一计划 05-05；release source、source-backed token 与 guard 竞态专项指向 05-06。GSD 7/7 计划已通过独立 checker；正式 gstack gate 受工具限制未通过，使用记录在 `findings.md` 的 Phase 5 一次性替代治理。
 2026-10-23：恢复 Wave 2（05-02）执行。确认 HEAD `8c65ab1`，05-02 无代码提交或有效 RED；先执行 Task 1 原生 JUnit RED 门槛，再实现参数与 rule。事务内 scope/criteria 复核边界待只读第二意见和代码验证。
 
 - 2026-10-23：Phase 4 的 7/7 PLAN、36/36 verification、23/23 UAT 已通过。由 `9c4ba02` 建立 `gsd/phase-05-online-action`；保留 Phase 2 `.review-diagnostics/` 与 `docs/` 未跟踪文件。
@@ -26,3 +26,4 @@
 - 2026-10-23：上一 executor 在 Task 2 决策检查点结束，宿主此前的 `turn_aborted` 原因未知，未见数据库锁证据。Grok 第二意见与 ADR-0018 核对后，release source 专项调整到 05-06，05-02 不声称覆盖；Task 2 GREEN 工作区原样保留，继续验证并收尾。
 - 2026-10-23：05-02 Task 2 GREEN `08014bd`、SUMMARY `f0a193c` 已提交。Action 19/19、SQLite 5/5、真实 embedded PostgreSQL 5/5，Clippy/fmt 通过。GSD advance-plan 将 STATE 指向 05-03，ROADMAP 摘要更新为 2/7；ACTION-08 仍待 05-06。
 - 2026-10-23：05-03 RED/GREEN 与 SUMMARY `e9eba3b` 已提交。Action 24/24、Query version 3/3、SQLite/真实 embedded PostgreSQL CAS 各 2/2，Clippy/fmt 通过；GSD advance-plan 指向 05-04。source-backed token 暂时 fail closed 为 VersionConflict，05-06 负责真实往返；ACTION-09 尚不全量验收。
+- 2026-10-23：05-04 故障矩阵 SQLite/真实 PG 各 5/5、真实 PG 并发 4/4，Clippy/fmt 通过；SUMMARY `0223451`，随后将缺席 edit pk 的 create/create 用例更名并明确仅证明 version-0 CAS，修订提交 `a12f08f`。source-backed 目标 guard 竞态指向 05-06；GSD advance-plan 指向 05-05。

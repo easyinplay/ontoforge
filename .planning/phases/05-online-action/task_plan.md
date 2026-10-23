@@ -22,4 +22,4 @@
 
 ## Next Step
 
-执行 `05-04-PLAN.md` 的事务并发与回滚验收；05-03 测试证据见 `05-03-SUMMARY.md`。release source 与 source-backed token 仍由 05-06 验收，ACTION-08/09 暂不完成。正式 gstack gate 仍为 BLOCKED，关键 PR 前回补。
+执行 `05-05-PLAN.md` 的幂等与回执合同；05-04 双后端回滚与真实 PG 竞态证据见 `05-04-SUMMARY.md`。release source、source-backed token 与 guard 竞态仍由 05-06 验收，ACTION-08/09 暂不完成。正式 gstack gate 仍为 BLOCKED，关键 PR 前回补。
