@@ -185,12 +185,51 @@ pub enum ActionCommitError {
     CommandIdReused,
     #[error("the observed edit version changed")]
     VersionConflict,
+    #[error(transparent)]
+    Guard(#[from] ActionGuardRejection),
     #[error("invalid Action transaction input: {0}")]
     InvalidInput(&'static str),
     #[error(transparent)]
     Edit(#[from] EditError),
     #[error(transparent)]
     Store(#[from] StoreError),
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum ActionGuardRejection {
+    #[error("the object does not exist")]
+    NotFound,
+    #[error("the Action is not available to this principal")]
+    ScopeDenied,
+    #[error("{0}")]
+    CriteriaFailed(String),
+}
+
+#[derive(Debug, Clone)]
+pub struct ActionGuardRead {
+    pub type_name: ObjectTypeName,
+    pub pk: PropertyValue,
+    pub observed_version: i64,
+}
+
+#[derive(Debug, Clone)]
+pub struct ActionGuardStep {
+    pub ordinal: usize,
+    pub before: RowState,
+    pub after: RowState,
+}
+
+#[derive(Debug, Clone)]
+pub struct ActionGuardObject {
+    pub type_name: ObjectTypeName,
+    pub pk: PropertyValue,
+    pub row: EditRow,
+}
+
+#[derive(Debug, Clone)]
+pub struct ActionGuardView {
+    pub steps: Vec<ActionGuardStep>,
+    pub reads: Vec<ActionGuardObject>,
 }
 
 /// Why a commit was refused. Nothing is written in any of these cases.
@@ -260,6 +299,16 @@ impl EditStore {
         &self,
         input: ActionTransactionInput,
     ) -> Result<ActionCommitOutcome, ActionCommitError> {
+        self.commit_action_guarded(input, &[], |_| Ok(())).await
+    }
+
+    /// Runs a synchronous, read-only authorization guard under the same locks as the write.
+    pub async fn commit_action_guarded(
+        &self,
+        input: ActionTransactionInput,
+        reads: &[ActionGuardRead],
+        guard: impl FnOnce(&ActionGuardView) -> Result<(), ActionGuardRejection>,
+    ) -> Result<ActionCommitOutcome, ActionCommitError> {
         let principal_id = validate_action_input(&input)?;
 
         let mut tx = self.begin_write().await?;
@@ -281,20 +330,14 @@ impl EditStore {
             }
             let mut plan = validate(&def, &input.commit)?;
             sort_plan(&mut plan);
+            let read_plan = guard_read_plan(&def, reads)?;
             let schema = tx.schema_edit().map(str::to_owned);
-            let advanced = lock_and_advance(&mut tx, schema.as_deref(), &plan).await?;
+            let advanced =
+                lock_and_advance_with_reads(&mut tx, schema.as_deref(), &plan, &read_plan).await?;
             trace.push(ActionStage::Locks);
-            for planned in &plan {
-                let before = &advanced
-                    .rows
-                    .get(&planned.key)
-                    .ok_or(ActionCommitError::InvalidInput("locked row is missing"))?
-                    .0;
-                if before.version() != input.observed_versions[planned.ordinal] {
-                    return Err(ActionCommitError::VersionConflict);
-                }
-            }
+            let view = action_guard_view(&input, reads, &read_plan, &plan, &advanced)?;
             trace.push(ActionStage::Cas);
+            guard(&view)?;
             if input.validate_only {
                 return Ok(ActionCommitOutcome::Validated);
             }
@@ -397,6 +440,88 @@ impl EditStore {
         }
         Ok(def)
     }
+}
+
+fn guard_read_plan<'a>(
+    def: &'a ActiveDefinition,
+    reads: &[ActionGuardRead],
+) -> Result<Vec<Planned<'a>>, ActionCommitError> {
+    reads
+        .iter()
+        .map(|read| {
+            let ty = def
+                .ontology
+                .object_types
+                .get(&read.type_name)
+                .ok_or(ActionCommitError::InvalidInput("unknown guard read type"))?;
+            let table = def.physical.objects.get(&read.type_name).ok_or(
+                ActionCommitError::InvalidInput("guard read has no edit table"),
+            )?;
+            Ok(Planned::new(
+                usize::MAX,
+                read.type_name.as_str(),
+                Target::Object {
+                    ty,
+                    table,
+                    pk: read.pk.clone(),
+                    op: ObjectOp::Set(BTreeMap::new()),
+                },
+            ))
+        })
+        .collect()
+}
+
+fn action_guard_view(
+    input: &ActionTransactionInput,
+    reads: &[ActionGuardRead],
+    read_plan: &[Planned<'_>],
+    plan: &[Planned<'_>],
+    advanced: &Advanced,
+) -> Result<ActionGuardView, ActionCommitError> {
+    for planned in plan {
+        let before = &advanced
+            .rows
+            .get(&planned.key)
+            .ok_or(ActionCommitError::InvalidInput("locked row is missing"))?
+            .0;
+        if before.version() != input.observed_versions[planned.ordinal] {
+            return Err(ActionCommitError::VersionConflict);
+        }
+    }
+    let mut guard_reads = Vec::with_capacity(reads.len());
+    for (read, planned) in reads.iter().zip(read_plan) {
+        let before = &advanced
+            .rows
+            .get(&planned.key)
+            .ok_or(ActionCommitError::InvalidInput("guard read row is missing"))?
+            .0;
+        if before.version() != read.observed_version {
+            return Err(ActionCommitError::VersionConflict);
+        }
+        let RowState::Object(row) = before else {
+            return Err(ActionCommitError::InvalidInput(
+                "guard read is not an object",
+            ));
+        };
+        guard_reads.push(ActionGuardObject {
+            type_name: read.type_name.clone(),
+            pk: read.pk.clone(),
+            row: row.clone(),
+        });
+    }
+    Ok(ActionGuardView {
+        steps: plan
+            .iter()
+            .zip(&advanced.before)
+            .zip(&advanced.after)
+            .map(|((planned, before), after)| ActionGuardStep {
+                ordinal: planned.ordinal,
+                before: before.clone(),
+                after: after.clone(),
+            })
+            .collect(),
+        reads: guard_reads,
+    })
 }
 
 fn validate_action_input(input: &ActionTransactionInput) -> Result<&str, ActionCommitError> {
@@ -898,13 +1023,13 @@ fn plan_object_op(ty: &ObjectType, op: &ObjectOp) -> Result<ObjectOp, EditError>
 
 /// The state of a row as the commit sees it.
 #[derive(Debug, Clone)]
-pub(crate) enum RowState {
+pub enum RowState {
     Object(EditRow),
     Link(LinkRow),
 }
 
 impl RowState {
-    pub(crate) fn version(&self) -> i64 {
+    pub fn version(&self) -> i64 {
         match self {
             Self::Object(row) => row.version,
             Self::Link(row) => row.version,
@@ -929,6 +1054,7 @@ impl RowState {
 
 /// The rows of a plan after their edits.
 pub(crate) struct Advanced {
+    pub(crate) before: Vec<RowState>,
     /// The state after each planned edit, in plan order.
     pub(crate) after: Vec<RowState>,
     /// Each row as it was when locked and as the commit leaves it.
@@ -943,9 +1069,21 @@ pub(crate) async fn lock_and_advance(
     schema: Option<&str>,
     plan: &[Planned<'_>],
 ) -> Result<Advanced, EditError> {
+    lock_and_advance_with_reads(tx, schema, plan, &[]).await
+}
+
+async fn lock_and_advance_with_reads(
+    tx: &mut WriteTx<'_>,
+    schema: Option<&str>,
+    plan: &[Planned<'_>],
+    reads: &[Planned<'_>],
+) -> Result<Advanced, EditError> {
     let mut rows: BTreeMap<RowKey, (RowState, RowState)> = BTreeMap::new();
+    let mut before = Vec::with_capacity(plan.len());
     let mut after: Vec<RowState> = Vec::with_capacity(plan.len());
-    for planned in plan {
+    let mut ordered: Vec<&Planned<'_>> = plan.iter().chain(reads).collect();
+    ordered.sort_by(|a, b| a.key.cmp(&b.key));
+    for planned in ordered {
         if !rows.contains_key(&planned.key) {
             let loaded = load_row(tx, schema, &planned.target).await?;
             rows.insert(planned.key.clone(), (loaded.clone(), loaded));
@@ -953,11 +1091,18 @@ pub(crate) async fn lock_and_advance(
         let (_, current) = rows.get_mut(&planned.key).ok_or_else(|| {
             StoreError::Corrupt("a locked row is missing from the commit".to_owned())
         })?;
-        let next = advance(current, &planned.target)?;
-        current.clone_from(&next);
-        after.push(next);
+        if planned.ordinal != usize::MAX {
+            before.push(current.clone());
+            let next = advance(current, &planned.target)?;
+            current.clone_from(&next);
+            after.push(next);
+        }
     }
-    Ok(Advanced { after, rows })
+    Ok(Advanced {
+        before,
+        after,
+        rows,
+    })
 }
 
 /// Writes each row of `plan` once, in lock order, in the state the plan leaves it. A unique

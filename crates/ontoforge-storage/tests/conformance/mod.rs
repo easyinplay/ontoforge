@@ -14,8 +14,9 @@ use std::sync::Arc;
 
 use ontoforge_schema::ir::{LinkTypeName, ObjectTypeName, PropertyName};
 use ontoforge_storage::commit::{
-    ActionCommitError, ActionCommitOutcome, ActionEditPosition, ActionStage,
-    ActionTransactionInput, Actor, Commit, Edit, EditError, LinkOp, ObjectOp, Receipt, SystemActor,
+    ActionCommitError, ActionCommitOutcome, ActionEditPosition, ActionGuardRead,
+    ActionGuardRejection, ActionStage, ActionTransactionInput, Actor, Commit, Edit, EditError,
+    LinkOp, ObjectOp, Receipt, RowState, SystemActor,
 };
 use ontoforge_storage::log::{EditOp, EntryKind, ReplayError, replay};
 use ontoforge_storage::reload::{ReloadOptions, reload};
@@ -2111,6 +2112,103 @@ pub async fn action_batch_writes_one_command_and_outbox(h: &Harness) {
     assert_eq!(log[1].seq, receipt.log_seq);
 }
 
+pub async fn action_batch_guard_interleaves_reads_and_edits(h: &Harness) {
+    let version = h.load().await;
+    commit_ok(h, create_gate(version, "A1")).await;
+    commit_ok(h, create_gate(version, "B1")).await;
+    commit_ok(h, create_gate(version, "A2")).await;
+    let mut input = action_input(version, ALICE, "guarded", "A1");
+    input.commit.edits = vec![
+        gate_edit("B1", set(&[("name", s("First"))])),
+        gate_edit("A1", set(&[("name", s("Second"))])),
+        gate_edit("B1", set(&[("name", s("Third"))])),
+    ];
+    input.positions = (0..3)
+        .map(|rule_ordinal| ActionEditPosition {
+            item_ordinal: 0,
+            rule_ordinal,
+        })
+        .collect();
+    input.observed_versions = vec![1; 3];
+    let reads = ["B1", "A2", "A1"].map(|code| ActionGuardRead {
+        type_name: "Gate".to_owned().try_into().expect("type"),
+        pk: s(code),
+        observed_version: 1,
+    });
+    let mut dry = input.clone();
+    dry.validate_only = true;
+    dry.command_id = None;
+    let result = h
+        .store()
+        .commit_action_guarded(dry, &reads, |view| {
+            assert_eq!(
+                view.steps
+                    .iter()
+                    .map(|step| step.ordinal)
+                    .collect::<Vec<_>>(),
+                [1, 0, 2]
+            );
+            assert_eq!(
+                view.steps
+                    .iter()
+                    .map(|step| step.before.version())
+                    .collect::<Vec<_>>(),
+                [1, 1, 2]
+            );
+            assert_eq!(
+                view.steps
+                    .iter()
+                    .map(|step| step.after.version())
+                    .collect::<Vec<_>>(),
+                [2, 2, 3]
+            );
+            assert_eq!(
+                view.reads
+                    .iter()
+                    .map(|read| read.row.version)
+                    .collect::<Vec<_>>(),
+                [1, 1, 1]
+            );
+            assert!(matches!(view.steps[0].after, RowState::Object(_)));
+            Ok(())
+        })
+        .await
+        .expect("validated under locks");
+    assert_eq!(result, ActionCommitOutcome::Validated);
+    let denied = h
+        .store()
+        .commit_action_guarded(input.clone(), &reads, |_| {
+            Err(ActionGuardRejection::ScopeDenied)
+        })
+        .await;
+    assert!(matches!(
+        denied,
+        Err(ActionCommitError::Guard(ActionGuardRejection::ScopeDenied))
+    ));
+    assert_eq!(
+        log_len(h).await,
+        3,
+        "guard refusal and dry-run must roll back"
+    );
+    assert!(
+        h.rows(Tables::Sys, "of_action_command", &["command_id"], None)
+            .await
+            .is_empty()
+    );
+    let outcome = h
+        .store()
+        .commit_action_guarded(input, &reads, |_| Ok(()))
+        .await
+        .expect("normal commit after two rollbacks");
+    let ActionCommitOutcome::Committed { receipt, .. } = outcome else {
+        panic!("committed")
+    };
+    assert_eq!(
+        receipt.log_seq, 4,
+        "dry-run must not allocate a log sequence"
+    );
+}
+
 pub async fn action_batch_principal_scopes_command_id(h: &Harness) {
     let v = h.load().await;
     assert_action_tables(h).await;
@@ -2225,6 +2323,7 @@ macro_rules! conformance_case {
 macro_rules! all_cases {
     ($factory:path $(, $attr:meta)?) => {
         $crate::conformance::conformance_case!($factory, action_batch_writes_one_command_and_outbox $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, action_batch_guard_interleaves_reads_and_edits $(, $attr)?);
         $crate::conformance::conformance_case!($factory, action_batch_principal_scopes_command_id $(, $attr)?);
         $crate::conformance::conformance_case!($factory, action_batch_stale_definition_leaves_no_action_rows $(, $attr)?);
         $crate::conformance::conformance_case!($factory, action_batch_migration_constraints_match_contract $(, $attr)?);

@@ -4,8 +4,8 @@ use chrono::{Duration, SecondsFormat, Utc};
 use ontoforge_auth::{Principal, scope::PrincipalScope};
 use ontoforge_schema::ir::{ActionType, ActionTypeName};
 use ontoforge_storage::commit::{
-    ActionCommitError, ActionCommitOutcome, ActionEditPosition, ActionTransactionInput, Actor,
-    Commit, Edit,
+    ActionCommitError, ActionCommitOutcome, ActionEditPosition, ActionGuardRead,
+    ActionGuardRejection, ActionTransactionInput, Actor, Commit, Edit,
 };
 use ontoforge_storage::error::StoreError;
 use ontoforge_storage::store::{ActiveDefinition, EditStore};
@@ -14,10 +14,17 @@ use serde_json::{Map, Value, json};
 use sha2::{Digest, Sha256};
 use std::collections::BTreeSet;
 
+mod criteria;
 mod params;
 mod rules;
 
 pub use ontoforge_storage::commit::{ActionReceipt, EditSummary, ItemReceipt};
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum ActionOutcome {
+    Committed(ActionReceipt),
+    Validated,
+}
 
 /// Cargo package name of this crate.
 pub const CRATE_NAME: &str = env!("CARGO_PKG_NAME");
@@ -89,6 +96,10 @@ pub enum ActionError {
     MissingCommandId,
     #[error("the Action is not available to this principal")]
     ScopeDenied,
+    #[error("the object does not exist")]
+    NotFound,
+    #[error("{0}")]
+    CriteriaFailed(String),
     #[error("unknown Action `{0}`")]
     UnknownAction(String),
     #[error("invalid Action request: {0}")]
@@ -122,21 +133,15 @@ impl<'a> ActionService<'a> {
         Self { store, limits }
     }
 
-    /// Executes the edit-only `ModifyObject` slice using an authenticated principal and
-    /// the host's resolved scope. Other rule kinds are refused until their full path exists.
+    /// Executes an Action with a trusted principal, frozen scope and host limits.
     pub async fn execute(
         &self,
         principal: &Principal,
         scope: &PrincipalScope,
         def_version: i64,
         request: ActionRequest,
-    ) -> Result<ActionReceipt, ActionError> {
+    ) -> Result<ActionOutcome, ActionError> {
         validate_request(&request, self.limits)?;
-        let active = self
-            .store
-            .active_definition()
-            .await
-            .ok_or_else(|| ActionError::InvalidRequest("no active definition".to_owned()))?;
         let action_name: ActionTypeName = request
             .action
             .clone()
@@ -145,6 +150,11 @@ impl<'a> ActionService<'a> {
         if !scope.actions.contains(&action_name) {
             return Err(ActionError::ScopeDenied);
         }
+        let active = self
+            .store
+            .active_definition()
+            .await
+            .ok_or_else(|| ActionError::InvalidRequest("no active definition".to_owned()))?;
         let action = active
             .ontology
             .action_types
@@ -164,6 +174,10 @@ impl<'a> ActionService<'a> {
             self.limits,
         )
         .await?;
+        let guard_edits = prepared.edits.clone();
+        let guard_positions = prepared.positions.clone();
+        let guard_items = prepared.resolved;
+        let guard_reads = prepared.reads;
 
         let fingerprint = json!({
             "action": request.action,
@@ -194,26 +208,51 @@ impl<'a> ActionService<'a> {
                 .unwrap_or(0),
             positions: prepared.positions,
             observed_versions: prepared.observed_versions,
-            validate_only: false,
+            validate_only: request.validate_only,
         };
-        match self.store.commit_action(input).await? {
-            ActionCommitOutcome::Committed { receipt, .. }
-            | ActionCommitOutcome::Replay(receipt) => Ok(receipt),
-            ActionCommitOutcome::Validated => Err(ActionError::InvalidRequest(
-                "unexpected validation result".to_owned(),
-            )),
+        let result = self
+            .store
+            .commit_action_guarded(input, &guard_reads, |view| {
+                criteria::authorize(
+                    criteria::Authorization {
+                        active: &active,
+                        action,
+                        principal,
+                        scope,
+                        items: &guard_items,
+                        edits: &guard_edits,
+                        positions: &guard_positions,
+                    },
+                    view,
+                )
+            })
+            .await
+            .map_err(|error| match error {
+                ActionCommitError::Guard(ActionGuardRejection::NotFound) => ActionError::NotFound,
+                ActionCommitError::Guard(ActionGuardRejection::ScopeDenied) => {
+                    ActionError::ScopeDenied
+                }
+                ActionCommitError::Guard(ActionGuardRejection::CriteriaFailed(message)) => {
+                    ActionError::CriteriaFailed(message)
+                }
+                other => ActionError::Commit(other),
+            })?;
+        Ok(outcome(result))
+    }
+}
+
+fn outcome(result: ActionCommitOutcome) -> ActionOutcome {
+    match result {
+        ActionCommitOutcome::Committed { receipt, .. } | ActionCommitOutcome::Replay(receipt) => {
+            ActionOutcome::Committed(receipt)
         }
+        ActionCommitOutcome::Validated => ActionOutcome::Validated,
     }
 }
 
 fn validate_request(request: &ActionRequest, limits: ActionLimits) -> Result<(), ActionError> {
     if !request.validate_only && request.command_id.as_deref().is_none_or(str::is_empty) {
         return Err(ActionError::MissingCommandId);
-    }
-    if request.validate_only {
-        return Err(ActionError::InvalidRequest(
-            "validate-only is not available in the edit-only tracer".to_owned(),
-        ));
     }
     if request.items.is_empty() || request.items.len() > limits.items {
         return Err(ActionError::InvalidRequest(
@@ -234,6 +273,8 @@ struct PreparedEdits {
     edits: Vec<Edit>,
     positions: Vec<ActionEditPosition>,
     observed_versions: Vec<i64>,
+    resolved: Vec<params::ResolvedItem>,
+    reads: Vec<ActionGuardRead>,
 }
 
 async fn prepare_edits(
@@ -299,7 +340,10 @@ async fn prepare_edits(
         edits: Vec::new(),
         positions: Vec::new(),
         observed_versions: Vec::new(),
+        resolved: Vec::new(),
+        reads: Vec::new(),
     };
+    prepared.reads = load_guard_reads(store, active, action, &resolved).await?;
     let mut created = BTreeSet::new();
     for (item_ordinal, item) in resolved.iter().enumerate() {
         for (rule_ordinal, rule) in action.rules.iter().enumerate() {
@@ -331,7 +375,52 @@ async fn prepare_edits(
             prepared.observed_versions.push(observed_version);
         }
     }
+    prepared.resolved = resolved;
     Ok(prepared)
+}
+
+async fn load_guard_reads(
+    store: &EditStore,
+    active: &ActiveDefinition,
+    action: &ActionType,
+    items: &[params::ResolvedItem],
+) -> Result<Vec<ActionGuardRead>, ActionError> {
+    let mut reads: Vec<ActionGuardRead> = Vec::new();
+    for item in items {
+        for (name, pk) in &item.references {
+            let Some(ontoforge_schema::ir::ParamType::ObjectReference(type_name)) =
+                action.parameters.get(name).map(|def| &def.param_type)
+            else {
+                continue;
+            };
+            if reads
+                .iter()
+                .any(|read| &read.type_name == type_name && &read.pk == pk)
+            {
+                continue;
+            }
+            let denied = || {
+                if criteria::is_target_ref(action, name) {
+                    ActionError::NotFound
+                } else {
+                    ActionError::ScopeDenied
+                }
+            };
+            let observed = store
+                .read_object_edit(active, type_name, pk)
+                .await?
+                .ok_or_else(denied)?;
+            if observed.row.deleted || observed.row.released {
+                return Err(denied());
+            }
+            reads.push(ActionGuardRead {
+                type_name: type_name.clone(),
+                pk: pk.clone(),
+                observed_version: observed.row.version,
+            });
+        }
+    }
+    Ok(reads)
 }
 
 fn canonical_json(value: &Value) -> Value {
@@ -358,11 +447,15 @@ fn digest(value: &Value) -> String {
 #[cfg(test)]
 mod tests {
     use super::{
-        ActionError, ActionItem, ActionLimits, ActionRequest, ActionService, CRATE_NAME, digest,
+        ActionError, ActionItem, ActionLimits, ActionOutcome, ActionRequest, ActionService,
+        CRATE_NAME, digest,
     };
     use camino::Utf8PathBuf;
-    use ontoforge_auth::{Principal, PrincipalId, scope::PrincipalScope};
-    use ontoforge_expr::rowpred::Attrs;
+    use ontoforge_auth::{
+        Principal, PrincipalId,
+        scope::{PrincipalScope, TypeScope},
+    };
+    use ontoforge_expr::{Pred, rowpred::Attrs};
     use ontoforge_schema::load_from_memory;
     use ontoforge_storage::commit::{
         ActionCommitError, ActionCommitOutcome, ActionEditPosition, ActionStage,
@@ -457,6 +550,21 @@ rules:
         scope
             .actions
             .insert("renameGate".to_owned().try_into().expect("action name"));
+        scope.types.insert(
+            "Gate".to_owned().try_into().expect("type"),
+            TypeScope {
+                row: Pred::Const(true),
+                columns: ["code", "name"]
+                    .into_iter()
+                    .map(|name| {
+                        (
+                            name.to_owned().try_into().expect("column"),
+                            Pred::Const(true),
+                        )
+                    })
+                    .collect(),
+            },
+        );
         let service = ActionService::new(&store, ActionLimits::new(8, 8, 65536).expect("limits"));
         let request = ActionRequest {
             action: "renameGate".to_owned(),
@@ -472,6 +580,9 @@ rules:
             .execute(&principal, &scope, version, request.clone())
             .await
             .expect("Action execute");
+        let ActionOutcome::Committed(receipt) = receipt else {
+            panic!("normal submission must commit")
+        };
         let pool = SqlitePoolOptions::new()
             .max_connections(1)
             .connect_with(sqlite_connect_options(&path))

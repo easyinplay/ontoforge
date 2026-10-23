@@ -166,9 +166,9 @@ async fn reference(
     let observed = store
         .read_object_edit(active, type_name, &pk)
         .await?
-        .ok_or(ActionError::ScopeDenied)?;
+        .ok_or(ActionError::NotFound)?;
     if observed.row.deleted || observed.row.released {
-        return Err(ActionError::ScopeDenied);
+        return Err(ActionError::NotFound);
     }
     Ok((type_name.clone(), pk, observed.row.version))
 }

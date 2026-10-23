@@ -2014,6 +2014,7 @@ name = "ontoforge-action"
 version = "0.1.0"
 dependencies = [
  "camino",
+ "cel",
  "chrono",
  "indexmap",
  "ontoforge-auth",

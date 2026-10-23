@@ -1,6 +1,9 @@
 use camino::Utf8PathBuf;
-use ontoforge_action::{ActionError, ActionLimits, ActionRequest, ActionService};
-use ontoforge_auth::{Principal, PrincipalId, scope::{PrincipalScope, TypeScope}};
+use ontoforge_action::{ActionError, ActionLimits, ActionOutcome, ActionRequest, ActionService};
+use ontoforge_auth::{
+    Principal, PrincipalId,
+    scope::{PrincipalScope, TypeScope},
+};
 use ontoforge_expr::{Pred, rowpred::Attrs};
 use ontoforge_schema::load_from_memory;
 use ontoforge_storage::commit::{ActionCommitError, Actor, Commit, Edit, EditError, ObjectOp};
@@ -10,6 +13,26 @@ use ontoforge_storage::value::PropertyValue;
 use sqlx::sqlite::SqlitePoolOptions;
 use std::collections::{BTreeMap, BTreeSet};
 use std::time::Duration;
+
+fn allow_types(scope: &mut PrincipalScope) {
+    for type_name in ["Gate", "Pilot"] {
+        scope.types.insert(
+            type_name.to_owned().try_into().expect("type"),
+            TypeScope {
+                row: Pred::Const(true),
+                columns: ["code", "name"]
+                    .into_iter()
+                    .map(|name| {
+                        (
+                            name.to_owned().try_into().expect("column"),
+                            Pred::Const(true),
+                        )
+                    })
+                    .collect(),
+            },
+        );
+    }
+}
 
 #[test]
 fn action_request_wire_cannot_override_host_limits() {
@@ -296,6 +319,7 @@ rules:
     scope
         .actions
         .insert("updateGates".to_owned().try_into().expect("action"));
+    allow_types(&mut scope);
     let limited = ActionService::new(&store, ActionLimits::new(8, 1, 65536).expect("limits"));
     let limited_result = limited
         .execute(
@@ -348,7 +372,9 @@ rules:
         receipt.is_ok(),
         "five ordered rules must commit: {receipt:?}"
     );
-    let receipt = receipt.expect("receipt");
+    let ActionOutcome::Committed(receipt) = receipt.expect("receipt") else {
+        panic!("normal submission must commit")
+    };
     assert_eq!(receipt.items.len(), 1);
     let ordinals: Vec<_> = receipt.items[0]
         .edits
@@ -468,6 +494,7 @@ rules:
     scope
         .actions
         .insert("deleteGateTwice".to_owned().try_into().expect("action"));
+    allow_types(&mut scope);
     let service = ActionService::new(&store, ActionLimits::new(8, 8, 65536).expect("limits"));
     let item = |name: &str| ontoforge_action::ActionItem {
         params: serde_json::from_value(serde_json::json!({"gate": "A1", "name": name}))
@@ -488,6 +515,9 @@ rules:
         )
         .await
         .expect("ordered batch");
+    let ActionOutcome::Committed(receipt) = receipt else {
+        panic!("normal submission must commit")
+    };
     assert_eq!(receipt.items.len(), 2);
     let edits: Vec<_> = receipt
         .items
@@ -585,7 +615,10 @@ rules:
 }
 
 #[tokio::test]
-#[expect(clippy::too_many_lines, reason = "SQLite fixture checks validation and five persisted table counts")]
+#[expect(
+    clippy::too_many_lines,
+    reason = "SQLite fixture checks validation and five persisted table counts"
+)]
 async fn validate_only_runs_full_pipeline_without_writes() {
     const DEFS: &str = "kind: ObjectType
 apiName: Gate
@@ -614,50 +647,122 @@ rules:
         lock_timeout: Duration::from_secs(5),
         probe_timeout: Duration::from_secs(5),
         trino_catalog: None,
-    }).await.expect("open store");
+    })
+    .await
+    .expect("open store");
     let loaded = load_from_memory(&[("ontology.yaml", "apiName: demo\n"), ("defs.yaml", DEFS)]);
     assert!(loaded.diagnostics.is_empty(), "{:?}", loaded.diagnostics);
-    let version = reload(&store, &loaded.ontology.expect("ontology"), &ReloadOptions::default())
-        .await.expect("reload").def_version.expect("version");
+    let version = reload(
+        &store,
+        &loaded.ontology.expect("ontology"),
+        &ReloadOptions::default(),
+    )
+    .await
+    .expect("reload")
+    .def_version
+    .expect("version");
     let principal = Principal {
         id: PrincipalId::new("https://idp.example.com", "alice"),
         issuer: "https://idp.example.com".to_owned(),
-        subject: "alice".to_owned(), groups: BTreeSet::new(), attrs: Attrs::new(),
+        subject: "alice".to_owned(),
+        groups: BTreeSet::new(),
+        attrs: Attrs::new(),
     };
     let mut scope = PrincipalScope::default();
-    scope.actions.insert("createGate".to_owned().try_into().expect("action"));
-    scope.types.insert("Gate".to_owned().try_into().expect("type"), TypeScope {
-        row: Pred::Const(true),
-        columns: BTreeMap::from([
-            ("code".to_owned().try_into().expect("code"), Pred::Const(true)),
-            ("name".to_owned().try_into().expect("name"), Pred::Const(true)),
-        ]),
-    });
+    scope
+        .actions
+        .insert("createGate".to_owned().try_into().expect("action"));
+    scope.types.insert(
+        "Gate".to_owned().try_into().expect("type"),
+        TypeScope {
+            row: Pred::Const(true),
+            columns: BTreeMap::from([
+                (
+                    "code".to_owned().try_into().expect("code"),
+                    Pred::Const(true),
+                ),
+                (
+                    "name".to_owned().try_into().expect("name"),
+                    Pred::Const(true),
+                ),
+            ]),
+        },
+    );
     let request = ActionRequest {
-        action: "createGate".to_owned(), command_id: None,
+        action: "createGate".to_owned(),
+        command_id: None,
         items: vec![ontoforge_action::ActionItem {
             params: serde_json::from_value(serde_json::json!({
                 "code": "A1", "name": "New"
-            })).expect("params"),
+            }))
+            .expect("params"),
             expected_versions: BTreeMap::default(),
-        }], validate_only: true,
+        }],
+        validate_only: true,
     };
     let service = ActionService::new(&store, ActionLimits::new(8, 8, 65536).expect("limits"));
-    let outcome = service.execute(&principal, &scope, version, request.clone()).await;
-    assert!(outcome.is_ok(), "valid dry-run must succeed: {outcome:?}");
-    let denied = service.execute(&principal, &PrincipalScope::default(), version, request).await;
+    let outcome = service
+        .execute(&principal, &scope, version, request.clone())
+        .await;
+    assert!(
+        matches!(outcome, Ok(ActionOutcome::Validated)),
+        "valid dry-run must succeed: {outcome:?}"
+    );
+    let denied = service
+        .execute(
+            &principal,
+            &PrincipalScope::default(),
+            version,
+            request.clone(),
+        )
+        .await;
     assert!(matches!(denied, Err(ActionError::ScopeDenied)));
-    let pool = SqlitePoolOptions::new().max_connections(1)
-        .connect_with(sqlite_connect_options(&path)).await.expect("inspect");
+    let mut hidden_post = scope.clone();
+    hidden_post.types.get_mut("Gate").expect("type").row = Pred::Const(false);
+    let failed_dry_run = service
+        .execute(&principal, &hidden_post, version, request.clone())
+        .await;
+    assert!(matches!(failed_dry_run, Err(ActionError::ScopeDenied)));
+    let pool = SqlitePoolOptions::new()
+        .max_connections(1)
+        .connect_with(sqlite_connect_options(&path))
+        .await
+        .expect("inspect");
     let skeletons: i64 = sqlx::query_scalar("SELECT count(*) FROM of_obj_gate")
-        .fetch_one(&pool).await.expect("objects");
+        .fetch_one(&pool)
+        .await
+        .expect("objects");
     let edits: i64 = sqlx::query_scalar("SELECT count(*) FROM of_edit_log_entry")
-        .fetch_one(&pool).await.expect("edits");
+        .fetch_one(&pool)
+        .await
+        .expect("edits");
     let logs: i64 = sqlx::query_scalar("SELECT count(*) FROM of_edit_log")
-        .fetch_one(&pool).await.expect("logs");
+        .fetch_one(&pool)
+        .await
+        .expect("logs");
     let commands: i64 = sqlx::query_scalar("SELECT count(*) FROM of_action_command")
-        .fetch_one(&pool).await.expect("commands");
+        .fetch_one(&pool)
+        .await
+        .expect("commands");
     let outbox: i64 = sqlx::query_scalar("SELECT count(*) FROM of_webhook_outbox")
-        .fetch_one(&pool).await.expect("outbox");
+        .fetch_one(&pool)
+        .await
+        .expect("outbox");
     assert_eq!((skeletons, edits, logs, commands, outbox), (0, 0, 0, 0, 0));
+    let real = ActionRequest {
+        command_id: Some("after-dry-run".to_owned()),
+        validate_only: false,
+        ..request
+    };
+    let outcome = service
+        .execute(&principal, &scope, version, real)
+        .await
+        .expect("real commit");
+    let ActionOutcome::Committed(receipt) = outcome else {
+        panic!("committed")
+    };
+    assert_eq!(
+        receipt.log_seq, 1,
+        "dry-run must not consume a log sequence"
+    );
 }
