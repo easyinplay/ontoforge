@@ -52,32 +52,19 @@ jobs:
   integration:
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    services:
-      postgres:
-        # Container images are pinned to a digest, like the actions to a commit SHA; the tag
-        # names the version (WR-C06).
-        image: postgres:17.11@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3
-        env:
-          # Throwaway password that only exists inside this job's containers.
-          POSTGRES_PASSWORD: ontoforge-ci-only
-        # Published to the runner so that the host network Trino and the runner's psql can
-        # reach localhost:5432 (E25).
-        ports: ["5432:5432"]
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 20
     env:
       PGHOST: localhost
       PGUSER: postgres
-      PGPASSWORD: ontoforge-ci-only
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # v1
         with:
           toolchain: "1.98.0"
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      # The password is masked before it is passed to either container or later steps.
+      - name: Start PostgreSQL 17.11 with job-scoped credentials
+        run: bash ci/query-services.sh postgres
       - name: Seed PostgreSQL from the aviation fixtures
         run: |
           psql -v ON_ERROR_STOP=1 -d postgres -c 'CREATE DATABASE demo' -c 'CREATE DATABASE editstore'
@@ -90,17 +77,14 @@ jobs:
       # the tests do not disturb each other. The database is the one the Trino catalog
       # `editstore` maps (ci/trino/catalog/editstore.properties).
       - name: Edit store conformance (PostgreSQL)
-        env:
-          ONTOFORGE_PG_URL: postgres://postgres:ontoforge-ci-only@localhost:5432/editstore
         run: >-
           cargo test -p ontoforge-storage --locked
           --test conformance_pg --test reload_pg --test scope_store
           --test migrate_pg --test history_masking --test import
           -- --ignored
-      # A service container starts before checkout and cannot mount repository files, so Trino
-      # is started here (RESEARCH Pitfall 7).
+      # Trino uses a runtime catalog outside the checkout; nightly keeps the checked-in catalog.
       - name: Start Trino 483
-        run: docker run -d --name trino --network host -v "$PWD/ci/trino/catalog:/etc/trino/catalog:ro" trinodb/trino:483@sha256:db58cc93e593a2706553745f276bb119c9810e69918be56ecde088ba7ccb0534
+        run: bash ci/query-services.sh trino
       - name: Wait for Trino
         run: |
           deadline=$((SECONDS + 180))
@@ -132,23 +116,18 @@ jobs:
       - name: Reload visibility probe (Trino + PostgreSQL)
         env:
           ONTOFORGE_TRINO_URL: http://localhost:8080
-          ONTOFORGE_PG_URL: postgres://postgres:ontoforge-ci-only@localhost:5432/editstore
         # A catalog-wide flush from one case would invalidate another case's stale metadata.
         run: cargo test -p ontoforge-storage --locked --test reload_trino_it -- --ignored --test-threads=1
       - name: Query read storage integration (PostgreSQL)
-        env:
-          ONTOFORGE_PG_URL: postgres://postgres:ontoforge-ci-only@localhost:5432/editstore
         run: cargo test -p ontoforge-storage --test query_read_pg --locked -- --ignored --test-threads=1
       - name: Query integration (Trino + PostgreSQL)
         env:
           ONTOFORGE_TRINO_URL: http://localhost:8080
-          ONTOFORGE_PG_URL: postgres://postgres:ontoforge-ci-only@localhost:5432/editstore
           ONTOFORGE_QUERY_PLAN_DIR: ${{ github.workspace }}/target/query-plans
         run: cargo test -p ontoforge-query --test trino_query_it --locked -- --ignored --test-threads=1
       - name: Query benchmark smoke (Trino + PostgreSQL)
         env:
           ONTOFORGE_TRINO_URL: http://localhost:8080
-          ONTOFORGE_PG_URL: postgres://postgres:ontoforge-ci-only@localhost:5432/editstore
           ONTOFORGE_BENCH_MODE: smoke
           ONTOFORGE_BENCH_ARTIFACT_DIR: ${{ github.workspace }}/target/query-bench
         run: cargo test -p ontoforge-query --test query_bench_it --locked -- --ignored --test-threads=1
@@ -179,15 +158,19 @@ jobs:
             fi
             echo "$2: $count ignored tests"
           done
-      - name: Upload distributed query plans
+      - id: credential_scan
+        name: Check query artifacts for job credentials
         if: ${{ !cancelled() }}
+        run: bash ci/query-services.sh check-artifacts target/query-plans target/query-bench
+      - name: Upload distributed query plans
+        if: ${{ !cancelled() && steps.credential_scan.outcome == 'success' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: phase4-query-plans
           path: target/query-plans/*.txt
           if-no-files-found: error
       - name: Upload query benchmark smoke evidence
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.credential_scan.outcome == 'success' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: phase4-query-bench-smoke
@@ -195,40 +178,37 @@ jobs:
           if-no-files-found: error
       - name: Trino logs
         if: failure()
-        run: docker logs trino
+        run: docker logs trino 2>&1 || true
+      - name: PostgreSQL logs
+        if: failure()
+        run: docker logs postgres 2>&1 || true
+      - name: Clean up query containers and catalog
+        if: ${{ always() && steps.checkout.outcome == 'success' }}
+        run: bash ci/query-services.sh cleanup
 
   isolated-query-bench:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.phase4_query_bench == 'isolated' }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    services:
-      postgres:
-        image: postgres:17.11@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3
-        env:
-          POSTGRES_PASSWORD: ontoforge-ci-only
-        ports: ["5432:5432"]
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 20
     env:
       PGHOST: localhost
       PGUSER: postgres
-      PGPASSWORD: ontoforge-ci-only
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # v1
         with:
           toolchain: "1.98.0"
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - name: Start dedicated PostgreSQL 17.11 with job-scoped credentials
+        run: bash ci/query-services.sh postgres
       - name: Seed dedicated PostgreSQL
         run: |
           psql -v ON_ERROR_STOP=1 -d postgres -c 'CREATE DATABASE demo' -c 'CREATE DATABASE editstore'
           psql -v ON_ERROR_STOP=1 -v fixtures="$PWD/examples/ontologies/aviation/bindings/dev/fixtures" -d demo -f ci/pg/seed.sql
           psql -v ON_ERROR_STOP=1 -d demo -f ci/pg/query_corpus.sql
       - name: Start dedicated Trino 483
-        run: docker run -d --name trino --network host -v "$PWD/ci/trino/catalog:/etc/trino/catalog:ro" trinodb/trino:483@sha256:db58cc93e593a2706553745f276bb119c9810e69918be56ecde088ba7ccb0534
+        run: bash ci/query-services.sh trino
       - name: Wait for dedicated Trino
         run: |
           deadline=$((SECONDS + 180))
@@ -243,12 +223,15 @@ jobs:
       - name: Query benchmark isolated thresholds
         env:
           ONTOFORGE_TRINO_URL: http://localhost:8080
-          ONTOFORGE_PG_URL: postgres://postgres:ontoforge-ci-only@localhost:5432/editstore
           ONTOFORGE_BENCH_MODE: isolated
           ONTOFORGE_BENCH_ARTIFACT_DIR: ${{ github.workspace }}/target/query-bench
         run: cargo test -p ontoforge-query --test query_bench_it --locked -- --ignored --test-threads=1 --nocapture
-      - name: Upload isolated raw timings and distributed EXPLAIN
+      - id: credential_scan
+        name: Check benchmark artifact for job credentials
         if: ${{ !cancelled() }}
+        run: bash ci/query-services.sh check-artifacts target/query-bench
+      - name: Upload isolated raw timings and distributed EXPLAIN
+        if: ${{ !cancelled() && steps.credential_scan.outcome == 'success' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: phase4-query-bench-isolated
@@ -256,4 +239,10 @@ jobs:
           if-no-files-found: error
       - name: Trino logs
         if: failure()
-        run: docker logs trino
+        run: docker logs trino 2>&1 || true
+      - name: PostgreSQL logs
+        if: failure()
+        run: docker logs postgres 2>&1 || true
+      - name: Clean up query containers and catalog
+        if: ${{ always() && steps.checkout.outcome == 'success' }}
+        run: bash ci/query-services.sh cleanup

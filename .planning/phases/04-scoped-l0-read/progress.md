@@ -33,6 +33,7 @@
 - 2026-10-23：S1按TDD完成：两条`compile_fail` doctest的RED均因绕过代码实际可编译而失败，字段收紧`pub(crate)`后GREEN 2/2，`search_around` 6/6、query全量非ignored、Clippy、fmt通过；代码未提交，新SHA Linux CI仍待重验。
 - 2026-10-23：S1代码提交`dd19706`并推送；匹配full SHA `dd197063da260f8b92d180eafc733e0b7a81b54e` 的Linux CI run 39823812039已启动，四job运行中，artifact及性能阈值待核对。
 - 2026-10-23：run 39823812039匹配`dd19706`且四job全部成功；真实PG query 2/2、Trino/PG 5/5、smoke 1/1，137份integration plans为1-2 fragments。isolated四路各5+40样本，p95为115.77/443.80/346.56/0.85ms，450份plan均1 fragment，edited 45次source calls为0；artifact digest详`04-PERFORMANCE.md`。S2若修改生产代码，须再对新SHA重验。
+- 2026-10-23：Grok第二意见与本仓库复核后，ADR-0027确定T-04-28由可信host按connector注入；wire负例与aggregate 7/7、Clippy/fmt通过，真实SQL Server端到端列为未来host接入门禁，提交`1e20e03`。S3随机CI凭据与临时Trino catalog已本地完成YAML、shell、扫描门禁和PostgreSQL登录smoke；远端Linux CI待运行，T-04-32仍OPEN。
 
 ## 待办
 
