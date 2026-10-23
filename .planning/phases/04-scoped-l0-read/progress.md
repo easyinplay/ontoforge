@@ -1,6 +1,6 @@
 # Phase 4 progress
 
-当前节点：Phase 4 的 7/7 原 PLAN、S1-S4 修复、匹配 SHA CI 和自动验证已完成；等待用户 UAT。
+当前节点：Phase 4 已完成，7/7 PLAN、36/36 自动验证、23/23 UAT 与 35/35 安全复审均通过；当前工作指针在 Phase 5。
 
 - 2026-10-22：从已通过 CI 的 `c57165d` 建立 `gsd/phase-04-scoped-l0-read` 分支；保留原有未跟踪文件。
 - 2026-10-22：核对 Phase 3 UAT 2/2、VERIFICATION 8/8 和 V2 后的 CI run 39715917662 三 job 通过。
@@ -36,7 +36,8 @@
 - 2026-10-23：Grok第二意见与本仓库复核后，ADR-0027确定T-04-28由可信host按connector注入；wire负例与aggregate 7/7、Clippy/fmt通过，真实SQL Server端到端列为未来host接入门禁，提交`1e20e03`。S3随机CI凭据与临时Trino catalog已本地完成YAML、shell、扫描门禁和PostgreSQL登录smoke；远端Linux CI待运行，T-04-32仍OPEN。
 - 2026-10-23：S3 提交 `c39a971` 并推送；run 39878005620 的 headSha 匹配，四 job 全绿。真实 PG 2/2、Trino/PG 5/5、smoke 1/1；137 份 integration plan 为 103 份单 fragment、34 份双 fragment。隔离四路各 5+40，p95 101.01/456.53/287.81/0.76 ms，edited PG-direct 45 次 source calls 为 0。日志和 139 个 artifact 文件无凭据命中，独立安全复审 35/35 closed。详 `04-PERFORMANCE.md`、`04-SECURITY.md`。
 - 2026-10-23：独立 GSD verifier 完成 `04-VERIFICATION.md`：ROADMAP 5/5 与 PLAN 31/31 must-have 有自动行为证据，`verification.status` 为 `passed`；交互式 UAT 尚未运行，Phase 4 仍未关闭。
+- 2026-10-23：用户明确委托代理自测 UAT Test 1。主 session 复跑 `cargo test -p ontoforge-query --locked` 全绿，重新核对匹配代码 SHA 的四个 CI job、137 份计划与四路 p95；GSD UAT 23/23 passed、0 gaps，`phase uat-passed 4 --require-verification` 为 true。`phase.complete 4` 已将 ROADMAP/REQUIREMENTS/STATE 过渡到 Phase 5。
 
 ## 待办
 
-- 运行 `$gsd-verify-work 4`；用户 UAT 通过后才能关闭 Phase 4。
+- Phase 4 无待办；Phase 5 从 `.planning/ROADMAP.md` 的目标与验收项启动。

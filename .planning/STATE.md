@@ -1,38 +1,38 @@
 ---
 gsd_state_version: "1.0"
-current_phase: 4
-current_phase_name: Scoped L0 Read
-status: executing
-stopped_at: Phase 4 user UAT
-last_updated: "2026-10-23T01:44:42+08:00"
+current_phase: 5
+current_phase_name: Online Action
+status: planning
+stopped_at: Phase 4 complete, ready to plan Phase 5
+last_updated: "2026-10-23T01:33:19.273Z"
 last_activity: 2026-10-23
-last_activity_desc: Phase 4 c39a971 CI and 36/36 verification passed; user UAT pending
-state_head: c39a971
+last_activity_desc: Phase 4 complete, transitioned to Phase 5
+state_head: e8ed7ff32e8c40a9dd47963e5364d69164be9f55
 progress:
   total_phases: 7
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 54
   completed_plans: 54
-  percent: 43
+  percent: 57
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-10-19)
+See: .planning/PROJECT.md (updated 2026-10-23)
 
 **Core value:** 定义一次 ontology，应用和 agent 就能通过 REST 与 MCP 对同一份对象图做受控读写：写入一律经 Action 校验与授权，每次写入都可审计。
-**Current focus:** Phase 4 — Scoped L0 Read
+**Current focus:** Phase 5 — Online Action
 
 ## Current Position
 
-Phase: 4 — Scoped L0 Read
-Plan: 04-07 of 04-07 complete; S1-S4 remediation and automated verification passed; user UAT pending
-Status: Executing
-Last activity: 2026-10-23 — `c39a971` CI passed; security 35/35 closed; verification 36/36 passed; user UAT pending (see `phases/04-scoped-l0-read/`)
+Phase: 5 — Online Action
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-10-23 — Phase 4 complete, transitioned to Phase 5
 
-Progress: [████░░░░░░] 43%
+Progress: [██████░░░░] 57%
 
 ## Performance Metrics
 
@@ -68,6 +68,7 @@ Progress: [████░░░░░░] 43%
 - [Phase 03]: 03-21: decimal 的 JSON 数字只收整数，带小数要求写成字符串；NUL 与 0 年 date / timestamp 按两后端交集在校验阶段拒绝；WR-A03 实测为 disproved，会话设置固定仅作纵深防御
 - [Phase 03]: 03-22: migrate --apply 在定义锁内复核已 apply 的 role(roles: Option<&RolesCheck>);objects.<param> 整体读取按读取该类型全部属性检查 allow-list — SCOPE-06 / D-18 延伸到 migrate;关闭 WR-B07 与 WR-C05
 - [Phase 03]: 03-23: 目录创建放在库里（EditStore::open、DevKey::load_or_create），CLI 与 serve --dev 共用；Windows 密钥 ACL 不改，记为已知缺口 7
+- [Phase 4]: 聚合 capability 由可信 host 按 connector 注入，wire 不能指定；未来 SQL Server host 需验证 `sum(integer)=false`（ADR-0027）
 
 ### Pending Todos
 
@@ -86,6 +87,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-21T08:48:07.463Z
-Stopped at: Phase 4 user UAT
+Last session: 2026-10-23T01:33:19.273Z
+Stopped at: Phase 4 complete, ready to plan Phase 5
 Resume file: None

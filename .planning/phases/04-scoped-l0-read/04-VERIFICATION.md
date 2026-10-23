@@ -44,7 +44,7 @@ overrides_applied: 0
 
 **Phase Goal:** 调用者只能在自己的 scope 内读取对象；Rust 编排 pk、过滤、分页、遍历、集合与聚合叠加，Trino 只承担单表查询。
 **Code SHA:** `c39a971a25bb5ebf410bfdcd41243da4ab45c56c`
-**Automated verdict:** passed. 这只证明 Phase 4 库边界及匹配 SHA 的 CI 验收。`$gsd-verify-work 4` 的交互式用户 UAT 尚未运行，不能据此关闭 Phase 4。
+**Automated verdict:** passed. 这只证明 Phase 4 库边界及匹配 SHA 的 CI 验收。用户随后委托代理自测；`04-UAT.md` 记录 23/23 通过，Phase 4 由 GSD transition 关闭。
 
 ## Goal Achievement
 
@@ -110,10 +110,10 @@ No phase-declared `probe-*.sh` exists. Source/test/CI files scanned for unrefere
 
 ## Human Verification
 
-N/A for this internal library phase: the defined Phase 4 semantics have direct automated behavioral and real-backend checks. The **separate interactive `$gsd-verify-work 4` UAT remains pending** and requires user responses. This report does not mark UAT passed or Phase 4 complete.
+N/A for this internal library phase: the defined Phase 4 semantics have direct automated behavioral and real-backend checks. 用户委托代理完成 Test 1 后，`04-UAT.md` 记录 23/23 自动验收通过；`phase uat-passed 4 --require-verification` 返回 true。此处是后续验收结果，不改变本报告原有的代码级验证结论。
 
 ## Gaps
 
-No implementation blocker or behavior-unverified truth found. The only remaining workflow action is interactive UAT; if it reports a mismatch, reopen verification and structure the new gap before closing the phase.
+No implementation blocker or behavior-unverified truth found. UAT 记录无 gap；后续若发现回归，按新缺口重新验证。
 
 _Verifier: gsd-verifier; 2026-10-23T00:45:51Z_

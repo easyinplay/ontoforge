@@ -15,12 +15,12 @@ ontoforge 是一个用 Rust 实现、可自托管的开源 Ontology 操作层，
 - ✓ ontology-as-code：YAML/JSON → 单一 IR，line:col 诊断，导出 JSON Schema 供编辑器补全 — Phase 1
 - ✓ lint 引擎：E 级规则 + W01–W11，human / JSON 双格式，`ontoforge.toml` 配置 — Phase 1
 - ✓ 数据源绑定与 Trino 连接（BIND-01..03、ENGINE-01..05）：`SourceBinding` 文件与必填 `backing`、类型契约 lint、`validate --online` / `--check-pk`、自写 Trino client、自有 SQL printer、SQLite 替身、Linux CI Trino + PG 与 nightly Iceberg；ontoforge 只带连接能力，不打包 Trino（ADR-0015、ADR-0017、ADR-0021） — Phase 2
+- ✓ edit store、edit log 与 scope 模型（SCOPE-01..06 等） — Phase 3，详 `.planning/phases/03-edit-store-scope-model/`
+- ✓ scoped L0 读取（QUERY-01..10）：Rust 编排 source/edit 叠加、行列授权与单表 Trino 查询 — Phase 4，详 `.planning/phases/04-scoped-l0-read/`
 
 ### Active
 
-- [ ] edit store 按 object type 强类型分表、按属性 patch，不可变 edit log — ADR-0016
-- [ ] 用户 / 组 / 角色与 scope 模型（行列级安全提前进 v1）、Action 鉴权管线 — ADR-0018
-- [ ] scoped L0 读：Rust 编排叠加，Trino 只跑单表查询 — ADR-0020
+- [ ] Action 鉴权管线 — ADR-0018，Phase 5
 - [ ] online Action：并发令牌、`command_id`、webhook outbox
 - [ ] L2 Raw DQL（AST 白名单 + Trino 侧权限自检）与全级别读审计
 - [ ] REST（OpenAPI 3.1 + Rust / TS client）与 MCP（toolset 分层）两个出口；`serve --dev` 单二进制演示 — ADR-0019
@@ -37,7 +37,7 @@ ontoforge 是一个用 Rust 实现、可自托管的开源 Ontology 操作层，
 - 外部系统原生 writeback 连接器：MVP 只留 webhook side effect 扩展点
 - GraphQL：MVP 只做 REST + MCP（ADR-0007）
 
-v2 候选（不在当前 milestone）：interfaces 与 shared properties、struct、value types、runtime 派生属性、行 / 列级安全、vector + KNN、scenarios、functions 运行时、WebSocket 订阅、schema branching + proposals、ontology 级强类型 SDK codegen。
+v2 候选（不在当前 milestone）：interfaces 与 shared properties、struct、value types、runtime 派生属性、vector + KNN、scenarios、functions 运行时、WebSocket 订阅、schema branching + proposals、ontology 级强类型 SDK codegen。
 
 ## Context
 
@@ -91,4 +91,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-10-19 after Phase 2*
+*Last updated: 2026-10-23 after Phase 4*

@@ -2,7 +2,7 @@
 
 ## Goal
 
-按 `.planning/ROADMAP.md` 的 Phase 4 交付 QUERY-01..10。当前先完成研究、GSD plan-phase、独立计划检查，再进入 execute。详细实现任务以本目录 `04-*-PLAN.md` 为真相源；本文件只跟踪计划与执行顺序。
+按 `.planning/ROADMAP.md` 的 Phase 4 交付 QUERY-01..10，7 份 PLAN、自动验证和 UAT 均已完成。详细实现任务以本目录 `04-*-PLAN.md` 为真相源；本文件只跟踪计划与执行顺序。
 
 ## Tasks
 
@@ -41,7 +41,7 @@
 - [x] S2 (T-04-28)：ADR-0027 锁定可信 host 按 connector 注入 capability；wire 负例和 aggregate 7/7、fmt、Clippy 通过。现有 `sum_integer=false` 仅证明 planner 不选 partial pushdown；真实 SQL Server 端到端列为未来 host 接入门禁。
 - [x] S3 (T-04-32)：Phase 4 CI 的 PostgreSQL 密码在 step 内逐轮生成、先 mask 再启动服务，Trino catalog 使用运行时副本；`nightly.yml` 保持原有 fixture。run 39878005620 的日志和 139 个 artifact 文件扫描无凭据命中；历史公开测试值的剩余风险见 `04-SECURITY.md`。
 - [x] S4：`c39a971` 的 Linux CI 四 job、真实 PG/Trino、137 份 EXPLAIN 与 isolated p95 全部通过；完整证据见 `04-PERFORMANCE.md`。
-- [ ] S5：安全复审 35/35 closed；完成 phase-level `04-VERIFICATION.md` 与 `$gsd-verify-work 4`；只有用户 UAT 通过才同步 ROADMAP/STATE 为完成。
+- [x] S5：安全复审 35/35 closed；phase-level `04-VERIFICATION.md` 为 36/36；用户委托代理执行的 `$gsd-verify-work 4` 自动验收 23/23，ROADMAP/STATE 已由 GSD transition 同步。
 
 ## Acceptance
 
@@ -51,4 +51,4 @@
 
 ## Next Step
 
-完成 phase-level verification，再执行 `$gsd-verify-work 4` 取得用户 UAT 反馈；当前 CI 证据匹配 `c39a971`。
+Phase 4 已完成；Phase 5 的下一步见 `.planning/ROADMAP.md` 与 `.planning/STATE.md`。

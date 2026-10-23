@@ -14,7 +14,7 @@ Phase 1 定死 IR 契约。2026-10-16 起 Phase 2–7 按 `docs/designs/trino-en
 - [x] **Phase 1: Workspace, Schema & Lint** - cargo workspace 骨架，YAML/JSON 到单一 IR，E/W lint 规则与 line:col 诊断 (completed 2026-10-16)
 - [x] **Phase 2: Source Binding & Engine** - IR 数据源绑定与类型契约，`ontoforge-engine`（自写 Trino client、自有 SQL printer、SQLite 替身），`validate --online` 与 drift 校验 (completed 2026-10-19)
 - [x] **Phase 3: Edit Store & Scope Model** - 按 type 强类型 edit store、DDL diff / migrate / reload 加固、edit log；用户 / 组 / 角色、CEL 行谓词（SQL 编译 + Rust 单行求值） (completed 2026-10-22)
-- [ ] **Phase 4: Scoped L0 Read** - Rust 编排叠加读：pk 读、列表、聚合分解、searchAround、keyset 分页、HMAC 版本令牌
+- [x] **Phase 4: Scoped L0 Read** - Rust 编排叠加读：pk 读、列表、聚合分解、searchAround、keyset 分页、HMAC 版本令牌 (completed 2026-10-23)
 - [ ] **Phase 5: Online Action** - Action 鉴权管线 ①-⑨、并发令牌、`command_id`、webhook outbox
 - [ ] **Phase 6: L2 Raw DQL, Toolsets & Audit** - L2 AST 白名单与自检、读审计、定义 reload 门禁与 role 管理通道
 - [ ] **Phase 7: REST & MCP Shell** - REST + OpenAPI + clients、MCP toolset（core / full / sql:raw）、`serve --dev`、release
@@ -209,7 +209,7 @@ Plans:
   4. 越权 conformance（换 ID、伪造主体属性、多 role 列 × 行交叉、谓词 / 聚合反推、令牌反推）全部被拒绝；L0 输入输出与错误不含物理名；结果超限带 `truncated`
   5. 编译器保证每条 Trino 查询单表、≤ 2 fragment；安静或隔离集群下 pk 读 p95 < 500ms、列表 p95 < 1s、聚合 p95 < 1.5s（私有 fixture 实测记录）
 
-**Plans**: 7/7 executed, 6 waves; 等待 Phase 4 验证，详: `.planning/phases/04-scoped-l0-read/`
+**Plans**: 7/7 executed, 6 waves; verification 36/36、UAT 23/23，详: `.planning/phases/04-scoped-l0-read/`
 **Details**: `.planning/phases/04-scoped-l0-read/`
 
 ### Phase 5: Online Action
@@ -276,7 +276,7 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7（纵切片
 | 1. Workspace, Schema & Lint | 14/14 | Complete    | 2026-10-16 |
 | 2. Source Binding & Engine | 10/10 | Complete    | 2026-10-19 |
 | 3. Edit Store & Scope Model | 23/23 | Complete    | 2026-10-22 |
-| 4. Scoped L0 Read | 0/TBD | Not started | - |
+| 4. Scoped L0 Read | 7/7 | Complete    | 2026-10-23 |
 | 5. Online Action | 0/TBD | Not started | - |
 | 6. L2 Raw DQL, Toolsets & Audit | 0/TBD | Not started | - |
 | 7. REST & MCP Shell | 0/TBD | Not started | - |

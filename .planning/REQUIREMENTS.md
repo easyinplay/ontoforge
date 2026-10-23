@@ -59,16 +59,16 @@
 
 ### Object set 查询（L0）
 
-- [ ] **QUERY-01**: 客户端可以按 primary key 获取单个对象（已编辑对象 PG 直读，未编辑对象 Trino 单表查询），并可指定返回的属性子集
-- [ ] **QUERY-02**: 客户端可以用 WhereClause（eq / gt / gte / lt / lte / isNull / in / startsWith / containsAnyTerm / containsAllTerms / and / or / not）过滤对象
-- [ ] **QUERY-03**: 客户端可以对 String 属性做 token 匹配搜索（Trino 上无相关度排序）
-- [ ] **QUERY-04**: 客户端可以对结果排序，并用 keyset 游标分页遍历（`has_more` 判定结束）
-- [ ] **QUERY-05**: 客户端可以沿 link 遍历（searchAround），也可以获取单个对象的关联对象
-- [ ] **QUERY-06**: 客户端可以对 object set 做 union / intersect / subtract
-- [ ] **QUERY-07**: 客户端可以对 object set 做聚合（count / sum / avg / min / max / distinct），支持 groupBy
-- [ ] **QUERY-08**: Rust 叠加实现对照内存参考模型的 proptest 通过，SQLite 替身与 Trino 的单表查询语义一致
-- [ ] **QUERY-09**: 读结果带不透明的 HMAC `_version` 令牌；L0 输入、输出与错误不含物理名；结果按行数与字节上限截断并标 `truncated`
-- [ ] **QUERY-10**: 每条 Trino 查询单表、≤ 2 fragment；安静或隔离集群下 pk 读 p95 < 500ms、列表 p95 < 1s、聚合 p95 < 1.5s、已编辑对象 PG 直读 p95 < 50ms
+- [x] **QUERY-01**: 客户端可以按 primary key 获取单个对象（已编辑对象 PG 直读，未编辑对象 Trino 单表查询），并可指定返回的属性子集
+- [x] **QUERY-02**: 客户端可以用 WhereClause（eq / gt / gte / lt / lte / isNull / in / startsWith / containsAnyTerm / containsAllTerms / and / or / not）过滤对象
+- [x] **QUERY-03**: 客户端可以对 String 属性做 token 匹配搜索（Trino 上无相关度排序）
+- [x] **QUERY-04**: 客户端可以对结果排序，并用 keyset 游标分页遍历（`has_more` 判定结束）
+- [x] **QUERY-05**: 客户端可以沿 link 遍历（searchAround），也可以获取单个对象的关联对象
+- [x] **QUERY-06**: 客户端可以对 object set 做 union / intersect / subtract
+- [x] **QUERY-07**: 客户端可以对 object set 做聚合（count / sum / avg / min / max / distinct），支持 groupBy
+- [x] **QUERY-08**: Rust 叠加实现对照内存参考模型的 proptest 通过，SQLite 替身与 Trino 的单表查询语义一致
+- [x] **QUERY-09**: 读结果带不透明的 HMAC `_version` 令牌；L0 输入、输出与错误不含物理名；结果按行数与字节上限截断并标 `truncated`
+- [x] **QUERY-10**: 每条 Trino 查询单表、≤ 2 fragment；安静或隔离集群下 pk 读 p95 < 500ms、列表 p95 < 1s、聚合 p95 < 1.5s、已编辑对象 PG 直读 p95 < 50ms
 
 ### Action
 
@@ -214,16 +214,16 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SCOPE-07 | Phase 3（管理写入与审计）+ Phase 6（请求版本固定）+ Phase 7（MCP 工具限制） | Pending |
 | AUTH-01 | Phase 3 | Complete |
 | AUTH-02 | Phase 3 | Complete |
-| QUERY-01 | Phase 4 | Pending |
-| QUERY-02 | Phase 4 | Pending |
-| QUERY-03 | Phase 4 | Pending |
-| QUERY-04 | Phase 4 | Pending |
-| QUERY-05 | Phase 4 | Pending |
-| QUERY-06 | Phase 4 | Pending |
-| QUERY-07 | Phase 4 | Pending |
-| QUERY-08 | Phase 4 | Pending |
-| QUERY-09 | Phase 4 | Pending |
-| QUERY-10 | Phase 4 | Pending |
+| QUERY-01 | Phase 4 | Complete |
+| QUERY-02 | Phase 4 | Complete |
+| QUERY-03 | Phase 4 | Complete |
+| QUERY-04 | Phase 4 | Complete |
+| QUERY-05 | Phase 4 | Complete |
+| QUERY-06 | Phase 4 | Complete |
+| QUERY-07 | Phase 4 | Complete |
+| QUERY-08 | Phase 4 | Complete |
+| QUERY-09 | Phase 4 | Complete |
+| QUERY-10 | Phase 4 | Complete |
 | ACTION-01 | Phase 5 | Pending |
 | ACTION-02 | Phase 5 | Pending |
 | ACTION-03 | Phase 5 | Pending |
