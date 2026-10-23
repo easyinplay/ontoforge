@@ -26,7 +26,7 @@
     {
       "number": "5",
       "name": "Online Action",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "number": "6",
@@ -44,5 +44,5 @@
     "label": "Advance to the next step",
     "reason": "Phase 5 of 7 · 57% · executing"
   },
-  "updated_at": "2026-10-23T05:25:54.454Z"
+  "updated_at": "2026-10-23T07:13:05.226Z"
 }

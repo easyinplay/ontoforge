@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 3
+open_count: 4
 waived_count: 0
 fixed_count: 3
-total_count: 6
-last_updated: 2026-10-17T01:06:08.569Z
+total_count: 7
+last_updated: 2026-10-23T07:09:41.788Z
 ---
 
 # Broken Windows Ledger
@@ -21,6 +21,7 @@ last_updated: 2026-10-17T01:06:08.569Z
 | 4 | 02 | deviation | docs/source-binding.md |  | SQLite stand-in reports float properties as double, so fixture-mode --online flags float properties as ONT-V17 (float reads only real); fix is in sqlite/fixture.rs physical_of, outside 02-08 scope | fixed |  | 2026-10-16T21:49:10.933Z | 2026-10-16T21:55:10.377Z |
 | 5 | 02 | unrun-verify | .github/workflows/ci.yml |  | integration job (PostgreSQL + Trino 483, trino_it / cli_trino_it --ignored) not yet run on GitHub; describe_types_golden and decode_golden are PROVISIONAL until the first run (E21) | open |  | 2026-10-17T01:06:08.093Z |  |
 | 6 | 02 | unrun-verify | .github/workflows/nightly.yml |  | nightly Iceberg workflow (Trino 483/484, local-warehouse JDBC catalog, report-failure issue job) not yet run; needs a workflow_dispatch run (E21) | open |  | 2026-10-17T01:06:08.569Z |  |
+| 7 | 05 | stub | crates/ontoforge-action/src/lib.rs | 186 | validate-only is explicitly refused by the edit-only tracer; planned in 05-02 | open |  | 2026-10-23T07:09:41.788Z |  |
 
 ````json
 [
@@ -95,6 +96,19 @@ last_updated: 2026-10-17T01:06:08.569Z
     "reason": "",
     "recorded_at": "2026-10-17T01:06:08.569Z",
     "resolved_at": null
+  },
+  {
+    "id": 7,
+    "kind": "stub",
+    "phase": "05",
+    "file": "crates/ontoforge-action/src/lib.rs",
+    "line": 186,
+    "description": "validate-only is explicitly refused by the edit-only tracer; planned in 05-02",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-23T07:09:41.788Z",
+    "resolved_at": null,
+    "milestone": null
   }
 ]
 ````

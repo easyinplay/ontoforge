@@ -22,4 +22,4 @@
 
 ## Next Step
 
-按 `05-01-PLAN.md` 开始 Wave 1 的 TDD tracer；首先确认替代治理验收仍成立，正式 gstack gate 不得误标为通过。
+按 `05-02-PLAN.md` 执行下一波 Action 参数、rules 与 batch 扩展；05-01 tracer 的真实测试和提交证据见 `05-01-SUMMARY.md`。正式 gstack gate 仍为 BLOCKED，关键 PR 前回补。

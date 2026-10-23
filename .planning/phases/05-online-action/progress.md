@@ -1,6 +1,6 @@
 # Phase 5 progress
 
-当前节点：P4 Wave 1 执行中。GSD 7/7 计划已通过独立 checker；正式 gstack gate 受工具限制未通过，使用记录在 `findings.md` 的 Phase 5 一次性替代治理。
+当前节点：P4 Wave 1 已完成，下一份计划为 05-02。GSD 7/7 计划已通过独立 checker；正式 gstack gate 受工具限制未通过，使用记录在 `findings.md` 的 Phase 5 一次性替代治理。
 
 - 2026-10-23：Phase 4 的 7/7 PLAN、36/36 verification、23/23 UAT 已通过。由 `9c4ba02` 建立 `gsd/phase-05-online-action`；保留 Phase 2 `.review-diagnostics/` 与 `docs/` 未跟踪文件。
 - 2026-10-23：读取 ROADMAP Phase 5 五项 Success Criteria 与 REQUIREMENTS ACTION-01..12；开始 P1。现有 roadmap 约束已明确，跳过战略层 `/office-hours` 和 `/plan-ceo-review`；Phase 级实现决策与跨模块事务需讨论。
@@ -16,7 +16,9 @@
 - 2026-10-23：Wave 1 Task 1 有效 RED 提交 `e40b764`。`tracer_commits_one_action_batch` 实际运行 1 个测试，因缺少 Action command 表断言失败；Rust 原生 JUnit 经 GSD `tdd-red-evidence` 得到 `RED_EVIDENCE_OK`（tests=1、fail=1）。`cargo metadata --locked --offline` 通过，`Cargo.lock` 仅增加 Action 依赖边；executor 进入 GREEN。
 - 2026-10-23：Wave 1 Task 1 GREEN 提交 `7c0a7b5`，提交后 tracer 重跑通过；Action lib 3/3 与集成 schema 测试 1/1 曾通过。Clippy 尚有 Action 函数长度、limits 字段前缀和测试默认值 lint，Task 2 后做局部重构并重跑，故 Wave 1 尚未验收。
 - 2026-10-23：宿主 `turn_aborted` 中断上一 executor，原因未提供；已提交成果及 Task 2 未提交 conformance case 均保留。typed GSD executor 续跑真实 PG `action_batch_writes_one_command_and_outbox`，目标实际运行 1 个并因缺 `of_action_command` 断言失败；独立运行 GSD `tdd-red-evidence` 得到 `RED_EVIDENCE_OK`。SQLite 路径在 Task 1 已做绿，计划澄清其同 case 结果为对照，不强行制造 RED。
+- 2026-10-23：Wave 1 Task 2 的 RED `20989ee`、GREEN `88b051b` 和局部 REFACTOR `5305dcd` 已提交。两份原生 JUnit RED 记录重新经 GSD 分类器得到 `RED_EVIDENCE_OK`，各实际运行并失败 1 个目标测试。真实 PG/SQLite `action_batch_` 各 4/4、Action lib 3/3、集成 2/2、Clippy 与 fmt 已通过；`cargo test -p ontoforge-storage --locked` 全量回归正在运行，待结果写入 05-01 SUMMARY。
+- 2026-10-23：`cargo test -p ontoforge-storage --locked` 退出码 0，storage 单元 48/48、默认目标无失败；真实 PG 的 4/4 由显式 `embedded-pg --ignored` 命令证明。05-01 SUMMARY 已写并通过文件/提交自检，`validate-only` 的计划内限制登记于 WINDOWS；ACTION 需求仍须后续计划完成。
 
 ## 待办
 
-- Wave 1 执行 Task 2 的 SQLite/真实 PostgreSQL conformance RED/GREEN，再完成局部 Clippy 修正和 05-01 验收；关键模块 PR 前回补正式 gstack 审查。
+- 执行 05-02，扩展 Action 参数、rules 与 batch 行为；关键模块 PR 前回补正式 gstack 审查。
