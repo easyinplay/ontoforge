@@ -29,3 +29,4 @@
 - 2026-10-23：05-04 故障矩阵 SQLite/真实 PG 各 5/5、真实 PG 并发 4/4，Clippy/fmt 通过；SUMMARY `0223451`，随后将缺席 edit pk 的 create/create 用例更名并明确仅证明 version-0 CAS，修订提交 `a12f08f`。source-backed 目标 guard 竞态指向 05-06；GSD advance-plan 指向 05-05。
 - 2026-10-23：恢复 05-05 Task 2。既有 RED `a3959d4`、`f69f2a1` 和未提交 GREEN 均保留；真实 PostgreSQL 6/6、fmt 与 diff 检查通过。Clippy 在既有 `action_pg.rs` 四处并发测试报 `large_futures`，完成最小修正后复测并提交。
 - 2026-10-23：05-05 GREEN `3096bf9`、SUMMARY `1f8a2cd` 已提交。Action 34/34、真实 PostgreSQL 幂等 6/6 与并发 4/4，storage 全量非 ignored、Clippy/fmt 通过；Windows 并行 15 个 linker 的内存压力使初次全量构建中止，`-j 2` 重跑退出码 0。GSD advance-plan 将 STATE 指向 05-06。
+- 2026-10-23：05-06 Task 1 RED `01af076`、`c345f55`、`7c5083b` 和 GREEN `b184215` 已提交。source 9/9（含真实 embedded PostgreSQL 插入竞态）、Query pk_read 10/10、release schema 2/2、embedded-pg Clippy/fmt 通过。Task 2 的真实 Trino/PostgreSQL 服务尚未运行，不记为通过；本机 Docker Engine 与 CI 镜像已确认可用，下一步建立独立容器、加载 aviation fixture 后执行 ignored tests。
