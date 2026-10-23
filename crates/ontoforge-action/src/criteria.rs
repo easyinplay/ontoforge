@@ -6,6 +6,7 @@ use ontoforge_auth::{
     scope::{PrincipalScope, RowVisibility},
 };
 use ontoforge_expr::{Scalar, analyze, member_paths};
+use ontoforge_query::overlay_pk;
 use ontoforge_schema::ir::{ActionType, ObjectTypeName, ParameterName, PropertyName, Rule};
 use ontoforge_storage::{
     commit::{
@@ -18,12 +19,16 @@ use ontoforge_storage::{
 };
 use serde_json::{Map, Value, json};
 
-use crate::params::ResolvedItem;
+use crate::{
+    params::ResolvedItem,
+    source::{SourceSnapshots, row_key},
+};
 
 pub(crate) fn is_target_ref(action: &ActionType, name: &ParameterName) -> bool {
     action.rules.iter().any(|rule| match rule {
         Rule::ModifyObject(rule) => &rule.object == name,
         Rule::DeleteObject(rule) => &rule.object == name,
+        Rule::ReleaseObject(rule) => &rule.object == name,
         _ => false,
     })
 }
@@ -47,15 +52,14 @@ fn visibility(
     type_name: &ObjectTypeName,
     pk: &PropertyValue,
     row: &EditRow,
+    source: Option<&BTreeMap<PropertyName, Value>>,
 ) -> Option<RowVisibility> {
     let ty = active.ontology.object_types.get(type_name)?;
     let type_scope = scope.types.get(type_name)?;
-    let mut values: BTreeMap<PropertyName, Scalar> = row
-        .set
-        .iter()
-        .map(|(name, value)| (name.clone(), scalar(value.to_json())))
+    let values: BTreeMap<PropertyName, Scalar> = overlay_pk(ty, pk, source, Some(row))
+        .into_iter()
+        .map(|(name, value)| (name, scalar(value)))
         .collect();
-    values.insert(ty.primary_key.clone(), scalar(pk.to_json()));
     Some(type_scope.evaluate(&values, &principal.attrs))
 }
 
@@ -66,11 +70,12 @@ fn allowed_row(
     type_name: &ObjectTypeName,
     pk: &PropertyValue,
     row: &EditRow,
+    source: Option<&BTreeMap<PropertyName, Value>>,
 ) -> Result<RowVisibility, Denied> {
-    if row.version == 0 || row.deleted || row.released {
+    if (row.version == 0 && source.is_none()) || row.deleted || (row.released && source.is_none()) {
         return Err(Denied::NotFound);
     }
-    visibility(scope, principal, active, type_name, pk, row)
+    visibility(scope, principal, active, type_name, pk, row, source)
         .filter(|visible| visible.visible)
         .ok_or(Denied::NotFound)
 }
@@ -140,6 +145,7 @@ pub(crate) struct Authorization<'a> {
     pub items: &'a [ResolvedItem],
     pub edits: &'a [Edit],
     pub positions: &'a [ActionEditPosition],
+    pub sources: &'a SourceSnapshots,
 }
 
 fn masked_items(
@@ -154,6 +160,7 @@ fn masked_items(
         items,
         edits,
         positions,
+        sources,
     } = input;
     let mut item_objects: Vec<VisibleObjects> = vec![BTreeMap::new(); items.len()];
     for (item_ordinal, (item, objects)) in items.iter().zip(&mut item_objects).enumerate() {
@@ -179,28 +186,25 @@ fn masked_items(
                 };
                 before
             });
-            let permission =
-                allowed_row(scope, principal, active, type_name, pk, state).map_err(|error| {
+            let source = sources.get(&row_key(type_name, pk));
+            let permission = allowed_row(scope, principal, active, type_name, pk, state, source)
+                .map_err(|error| {
                     if is_target_ref(action, name) {
                         error
                     } else {
                         Denied::ScopeDenied
                     }
                 })?;
-            let mut row: Map<String, Value> = state
-                .set
-                .iter()
-                .filter(|(name, _)| permission.columns.contains(*name))
-                .map(|(name, value)| (name.as_str().to_owned(), value.to_json()))
-                .collect();
             let ty = active
                 .ontology
                 .object_types
                 .get(type_name)
                 .ok_or(Denied::ScopeDenied)?;
-            if permission.columns.contains(&ty.primary_key) {
-                row.insert(ty.primary_key.as_str().to_owned(), pk.to_json());
-            }
+            let row: Map<String, Value> = overlay_pk(ty, pk, source, Some(state))
+                .into_iter()
+                .filter(|(name, _)| permission.columns.contains(name))
+                .map(|(name, value)| (name.as_str().to_owned(), value))
+                .collect();
             objects.insert(name.as_str().to_owned(), (permission, row));
         }
     }
@@ -215,6 +219,7 @@ pub(crate) fn authorize(input: Authorization<'_>, view: &ActionGuardView) -> Res
         scope,
         items,
         edits,
+        sources,
         ..
     } = input;
     let item_objects = masked_items(input, view)?;
@@ -227,9 +232,10 @@ pub(crate) fn authorize(input: Authorization<'_>, view: &ActionGuardView) -> Res
             RowState::Object(after),
         ) = (edit, &step.before, &step.after)
         {
-            let pre = if before.version > 0 {
+            let source = sources.get(&row_key(type_name, pk));
+            let pre = if before.version > 0 || source.is_some() {
                 Some(allowed_row(
-                    scope, principal, active, type_name, pk, before,
+                    scope, principal, active, type_name, pk, before, source,
                 )?)
             } else {
                 None
@@ -237,7 +243,7 @@ pub(crate) fn authorize(input: Authorization<'_>, view: &ActionGuardView) -> Res
             if let ObjectOp::Set(values) = op {
                 let created = if pre.is_none() {
                     Some(
-                        visibility(scope, principal, active, type_name, pk, after)
+                        visibility(scope, principal, active, type_name, pk, after, source)
                             .filter(|v| v.visible)
                             .ok_or(Denied::ScopeDenied)?,
                     )
@@ -271,8 +277,16 @@ pub(crate) fn authorize(input: Authorization<'_>, view: &ActionGuardView) -> Res
     for step in &view.steps {
         if let (Edit::Object { type_name, pk, .. }, RowState::Object(after)) =
             (&edits[step.ordinal], &step.after)
-            && !visibility(scope, principal, active, type_name, pk, after)
-                .is_some_and(|permission| permission.visible)
+            && !visibility(
+                scope,
+                principal,
+                active,
+                type_name,
+                pk,
+                after,
+                sources.get(&row_key(type_name, pk)),
+            )
+            .is_some_and(|permission| permission.visible)
         {
             return Err(Denied::ScopeDenied);
         }
@@ -287,6 +301,7 @@ fn check_link_endpoints(input: Authorization<'_>, view: &ActionGuardView) -> Res
         principal,
         scope,
         edits,
+        sources,
         ..
     } = input;
     for step in &view.steps {
@@ -322,8 +337,16 @@ fn check_link_endpoints(input: Authorization<'_>, view: &ActionGuardView) -> Res
                     };
                     after
                 });
-                allowed_row(scope, principal, active, type_name, pk, row)
-                    .map_err(|_| Denied::ScopeDenied)?;
+                allowed_row(
+                    scope,
+                    principal,
+                    active,
+                    type_name,
+                    pk,
+                    row,
+                    sources.get(&row_key(type_name, pk)),
+                )
+                .map_err(|_| Denied::ScopeDenied)?;
             }
         }
     }

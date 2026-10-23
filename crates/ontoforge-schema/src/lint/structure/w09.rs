@@ -53,6 +53,7 @@ impl LintRule for W09 {
                     Rule::CreateObject(r) => Some(r.object_type.as_str()),
                     Rule::ModifyObject(r) => referenced_type(action, r.object.as_str()),
                     Rule::DeleteObject(r) => referenced_type(action, r.object.as_str()),
+                    Rule::ReleaseObject(r) => referenced_type(action, r.object.as_str()),
                     Rule::AddLink(_) | Rule::RemoveLink(_) => None,
                 };
                 if let Some(owner) = owner {

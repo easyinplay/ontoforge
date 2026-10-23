@@ -18,10 +18,11 @@ const KINDS: [&str; 4] = ["ObjectType", "LinkType", "ActionType", "SourceBinding
 /// Kinds whose deserialization exists in this build.
 const IMPLEMENTED_KINDS: [&str; 4] = ["ObjectType", "LinkType", "ActionType", "SourceBinding"];
 /// Rule kinds an action may use; `function` is recognised only to reject it.
-const RULE_KINDS: [&str; 5] = [
+const RULE_KINDS: [&str; 6] = [
     "createObject",
     "modifyObject",
     "deleteObject",
+    "releaseObject",
     "addLink",
     "removeLink",
 ];

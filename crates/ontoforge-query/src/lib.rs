@@ -11,6 +11,7 @@ use ontoforge_engine::{Engine, QueryContext, TableRef};
 use ontoforge_expr::Scalar;
 use ontoforge_schema::ir::{Backing, ObjectTypeName, PropertyName};
 use ontoforge_storage::query_read::ObjectEdit;
+use ontoforge_storage::state::EditRow;
 use ontoforge_storage::store::{ActiveDefinition, EditStore};
 use ontoforge_storage::value::PropertyValue;
 use serde::{Deserialize, Serialize};
@@ -281,15 +282,12 @@ impl<E: Engine> QueryService<'_, E> {
         if ty.backing == Backing::Source && !all_patched && source.is_none() {
             return Err(QueryError::NotFound);
         }
-        let mut merged = source.clone().unwrap_or_default();
-        merged.insert(ty.primary_key.clone(), canonical_pk.to_json());
-        if let Some(edit) = &edit
-            && !edit.row.released
-        {
-            for (property, value) in &edit.row.set {
-                merged.insert(property.clone(), value.to_json());
-            }
-        }
+        let merged = overlay_pk(
+            ty,
+            &canonical_pk,
+            source.as_ref(),
+            edit.as_ref().map(|e| &e.row),
+        );
         if source.is_none()
             && edit
                 .as_ref()
@@ -356,71 +354,107 @@ impl<E: Engine> QueryService<'_, E> {
         type_name: &ObjectTypeName,
         pk: &PropertyValue,
     ) -> Result<Option<BTreeMap<PropertyName, Value>>, QueryError> {
-        let ontology = &self.active.ontology;
-        let profile = ontology
-            .default_profile
-            .as_ref()
-            .ok_or(QueryError::Source)?;
-        let binding = ontology
-            .profile_bindings(profile)
-            .and_then(|p| p.objects.get(type_name))
-            .ok_or(QueryError::Source)?;
-        let ty = ontology
-            .object_types
-            .get(type_name)
-            .ok_or(QueryError::NotFound)?;
-        let columns = ty.properties.keys().cloned().collect::<Vec<_>>();
-        let pk_column = binding.column_for(ty.primary_key.as_str());
-        let select = Select {
-            projection: columns
-                .iter()
-                .map(|p| SelectItem {
-                    expr: Expr::Column(binding.column_for(p.as_str()).to_owned()),
-                    alias: Some(p.as_str().to_owned()),
-                })
-                .collect(),
-            from: Some(TableRef {
-                catalog: binding.source.catalog.clone(),
-                schema: binding.source.schema.clone(),
-                table: binding.source.table.clone(),
-            }),
-            filter: Some(Expr::Compare {
-                left: Box::new(Expr::Column(pk_column.to_owned())),
-                op: CompareOp::Eq,
-                right: Box::new(Expr::Literal(pk_literal(pk)?)),
-            }),
-            group_by: Vec::new(),
-            having: None,
-            order_by: Vec::new(),
-            limit: Some(2),
-        };
-        let sql = print_select(&select, self.engine.dialect()).map_err(|_| QueryError::Source)?;
-        let mut ctx = QueryContext::new("l0-pk".to_owned(), Vec::new());
-        ctx.max_rows = self.limits.max_raw_candidates.min(3);
-        ctx.max_bytes = self.limits.max_decoded_bytes;
-        let output = self
-            .engine
-            .execute(&sql, &ctx)
-            .await
-            .map_err(|_| QueryError::Source)?;
-        if output.truncated {
-            return Err(QueryError::CostExceeded);
-        }
-        if output.rows.len() > 1 {
-            return Err(QueryError::AmbiguousObject);
-        }
-        let Some(values) = output.rows.into_iter().next() else {
-            return Ok(None);
-        };
-        if values.len() != columns.len() {
-            return Err(QueryError::Source);
-        }
-        let mut row = BTreeMap::new();
-        for (property, value) in columns.into_iter().zip(values) {
-            row.insert(property, engine_json(value)?);
-        }
-        Ok(Some(row))
+        read_pk_source(
+            &self.active,
+            self.engine,
+            type_name,
+            pk,
+            self.limits.max_decoded_bytes,
+        )
+        .await
     }
+}
+
+/// The canonical bounded source lookup shared by Query and Action before its write transaction.
+pub async fn read_pk_source<E: Engine>(
+    active: &ActiveDefinition,
+    engine: &E,
+    type_name: &ObjectTypeName,
+    pk: &PropertyValue,
+    max_decoded_bytes: usize,
+) -> Result<Option<BTreeMap<PropertyName, Value>>, QueryError> {
+    let ontology = &active.ontology;
+    let profile = ontology
+        .default_profile
+        .as_ref()
+        .ok_or(QueryError::Source)?;
+    let binding = ontology
+        .profile_bindings(profile)
+        .and_then(|p| p.objects.get(type_name))
+        .ok_or(QueryError::Source)?;
+    let ty = ontology
+        .object_types
+        .get(type_name)
+        .ok_or(QueryError::NotFound)?;
+    let columns = ty.properties.keys().cloned().collect::<Vec<_>>();
+    let pk_column = binding.column_for(ty.primary_key.as_str());
+    let select = Select {
+        projection: columns
+            .iter()
+            .map(|p| SelectItem {
+                expr: Expr::Column(binding.column_for(p.as_str()).to_owned()),
+                alias: Some(p.as_str().to_owned()),
+            })
+            .collect(),
+        from: Some(TableRef {
+            catalog: binding.source.catalog.clone(),
+            schema: binding.source.schema.clone(),
+            table: binding.source.table.clone(),
+        }),
+        filter: Some(Expr::Compare {
+            left: Box::new(Expr::Column(pk_column.to_owned())),
+            op: CompareOp::Eq,
+            right: Box::new(Expr::Literal(pk_literal(pk)?)),
+        }),
+        group_by: Vec::new(),
+        having: None,
+        order_by: Vec::new(),
+        limit: Some(2),
+    };
+    let sql = print_select(&select, engine.dialect()).map_err(|_| QueryError::Source)?;
+    let mut ctx = QueryContext::new("l0-pk".to_owned(), Vec::new());
+    ctx.max_rows = 3;
+    ctx.max_bytes = max_decoded_bytes;
+    let output = engine
+        .execute(&sql, &ctx)
+        .await
+        .map_err(|_| QueryError::Source)?;
+    if output.truncated {
+        return Err(QueryError::CostExceeded);
+    }
+    if output.rows.len() > 1 {
+        return Err(QueryError::AmbiguousObject);
+    }
+    let Some(values) = output.rows.into_iter().next() else {
+        return Ok(None);
+    };
+    if values.len() != columns.len() {
+        return Err(QueryError::Source);
+    }
+    let mut row = BTreeMap::new();
+    for (property, value) in columns.into_iter().zip(values) {
+        row.insert(property, engine_json(value)?);
+    }
+    Ok(Some(row))
+}
+
+/// Applies an edit overlay to a sampled source row with the same semantics as an L0 pk read.
+pub fn overlay_pk(
+    ty: &ontoforge_schema::ir::ObjectType,
+    pk: &PropertyValue,
+    source: Option<&BTreeMap<PropertyName, Value>>,
+    edit: Option<&EditRow>,
+) -> BTreeMap<PropertyName, Value> {
+    let mut merged = source.cloned().unwrap_or_default();
+    merged.insert(ty.primary_key.clone(), pk.to_json());
+    if let Some(edit) = edit
+        && !edit.released
+    {
+        for (property, value) in &edit.set {
+            merged.insert(property.clone(), value.to_json());
+        }
+    }
+    merged
 }
 
 fn charge(current: &mut usize, amount: usize, cap: usize) -> Result<(), QueryError> {

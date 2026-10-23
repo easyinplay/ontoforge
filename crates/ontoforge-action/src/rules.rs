@@ -2,14 +2,22 @@ use std::collections::BTreeMap;
 
 use ontoforge_auth::Principal;
 use ontoforge_schema::ir::{ActionType, Backing, LinkRule, Rule, ValueSource};
-use ontoforge_storage::commit::{Edit, LinkOp, ObjectOp};
+use ontoforge_storage::commit::{ActionGuardRead, Edit, LinkOp, ObjectOp};
 use ontoforge_storage::query_read::{LinkEndpoint, MAX_EDIT_READ};
 use ontoforge_storage::store::{ActiveDefinition, EditStore};
 use ontoforge_storage::value::PropertyValue;
 use serde_json::Value;
 
-use crate::{ActionError, params::ResolvedItem};
+use crate::{
+    ActionError,
+    params::ResolvedItem,
+    source::{SourceSnapshots, row_key},
+};
 
+#[expect(
+    clippy::too_many_arguments,
+    reason = "rule expansion needs the prepared Action context"
+)]
 pub(crate) async fn expand(
     store: &EditStore,
     active: &ActiveDefinition,
@@ -18,6 +26,8 @@ pub(crate) async fn expand(
     item: &ResolvedItem,
     principal: &Principal,
     chosen_current_time: &str,
+    reads: &[ActionGuardRead],
+    sources: &SourceSnapshots,
 ) -> Result<(Edit, i64), ActionError> {
     match rule {
         Rule::CreateObject(rule) => {
@@ -44,7 +54,7 @@ pub(crate) async fn expand(
         }
         Rule::ModifyObject(rule) => {
             let (type_name, pk, version) =
-                reference(store, active, action, item, &rule.object).await?;
+                reference(active, action, item, &rule.object, reads, sources)?;
             let ty = active
                 .ontology
                 .object_types
@@ -62,7 +72,7 @@ pub(crate) async fn expand(
         }
         Rule::DeleteObject(rule) => {
             let (type_name, pk, version) =
-                reference(store, active, action, item, &rule.object).await?;
+                reference(active, action, item, &rule.object, reads, sources)?;
             Ok((
                 Edit::Object {
                     type_name,
@@ -72,15 +82,51 @@ pub(crate) async fn expand(
                 version,
             ))
         }
+        Rule::ReleaseObject(rule) => {
+            let (type_name, pk, version) =
+                reference(active, action, item, &rule.object, reads, sources)?;
+            Ok((
+                Edit::Object {
+                    type_name,
+                    pk,
+                    op: ObjectOp::Release,
+                },
+                version,
+            ))
+        }
         Rule::AddLink(link_rule) => {
-            expand_link(store, active, action, item, link_rule, LinkOp::Add).await
+            expand_link(
+                store,
+                active,
+                action,
+                item,
+                link_rule,
+                LinkOp::Add,
+                reads,
+                sources,
+            )
+            .await
         }
         Rule::RemoveLink(link_rule) => {
-            expand_link(store, active, action, item, link_rule, LinkOp::Remove).await
+            expand_link(
+                store,
+                active,
+                action,
+                item,
+                link_rule,
+                LinkOp::Remove,
+                reads,
+                sources,
+            )
+            .await
         }
     }
 }
 
+#[expect(
+    clippy::too_many_arguments,
+    reason = "link expansion shares the prepared Action context"
+)]
 async fn expand_link(
     store: &EditStore,
     active: &ActiveDefinition,
@@ -88,6 +134,8 @@ async fn expand_link(
     item: &ResolvedItem,
     rule: &LinkRule,
     op: LinkOp,
+    reads: &[ActionGuardRead],
+    sources: &SourceSnapshots,
 ) -> Result<(Edit, i64), ActionError> {
     let link = active
         .ontology
@@ -97,8 +145,8 @@ async fn expand_link(
     if link.backing != Some(Backing::EditOnly) {
         return Err(ActionError::UnsupportedRule);
     }
-    let (from_type, a, _) = reference(store, active, action, item, &rule.from).await?;
-    let (to_type, b, _) = reference(store, active, action, item, &rule.to).await?;
+    let (from_type, a, _) = reference(active, action, item, &rule.from, reads, sources)?;
+    let (to_type, b, _) = reference(active, action, item, &rule.to, reads, sources)?;
     if from_type != link.from.object_type || to_type != link.to.object_type {
         return Err(ActionError::InvalidRequest(
             "link endpoint type mismatch".to_owned(),
@@ -134,12 +182,13 @@ async fn expand_link(
     ))
 }
 
-async fn reference(
-    store: &EditStore,
+fn reference(
     active: &ActiveDefinition,
     action: &ActionType,
     item: &ResolvedItem,
     name: &ontoforge_schema::ir::ParameterName,
+    reads: &[ActionGuardRead],
+    sources: &SourceSnapshots,
 ) -> Result<(ontoforge_schema::ir::ObjectTypeName, PropertyValue, i64), ActionError> {
     let def = action
         .parameters
@@ -155,22 +204,21 @@ async fn reference(
         .object_types
         .get(type_name)
         .ok_or_else(|| ActionError::InvalidRequest("unknown object type".to_owned()))?;
-    if ty.backing != Backing::EditOnly {
-        return Err(ActionError::UnsupportedRule);
-    }
     let pk = item
         .references
         .get(name)
         .cloned()
         .ok_or_else(|| ActionError::InvalidRequest("missing object reference".to_owned()))?;
-    let observed = store
-        .read_object_edit(active, type_name, &pk)
-        .await?
+    let observed = reads
+        .iter()
+        .find(|read| read.type_name == *type_name && read.pk == pk)
         .ok_or(ActionError::NotFound)?;
-    if observed.row.deleted || observed.row.released {
+    if observed.observed_version == 0
+        && (ty.backing != Backing::Source || !sources.contains_key(&row_key(type_name, &pk)))
+    {
         return Err(ActionError::NotFound);
     }
-    Ok((type_name.clone(), pk, observed.row.version))
+    Ok((type_name.clone(), pk, observed.observed_version))
 }
 
 fn properties(

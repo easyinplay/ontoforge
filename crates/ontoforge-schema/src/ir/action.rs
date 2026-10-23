@@ -109,6 +109,8 @@ pub enum Rule {
     ModifyObject(ModifyObjectRule),
     /// Delete an existing object passed as a parameter.
     DeleteObject(DeleteObjectRule),
+    /// Restore the source view by clearing the edit overlay.
+    ReleaseObject(ReleaseObjectRule),
     /// Link two existing objects.
     AddLink(LinkRule),
     /// Unlink two existing objects.
@@ -137,6 +139,13 @@ pub struct ModifyObjectRule {
 #[serde(deny_unknown_fields, rename_all = "camelCase")]
 pub struct DeleteObjectRule {
     /// Name of an `objectReference` parameter holding the object to delete.
+    pub object: ParameterName,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
+pub struct ReleaseObjectRule {
+    /// Name of an `objectReference` parameter for a source-backed object.
     pub object: ParameterName,
 }
 

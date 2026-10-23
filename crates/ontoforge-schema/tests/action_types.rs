@@ -2,8 +2,8 @@
 //! structural checks V09 and V12 for parameters, rules and value sources.
 
 use ontoforge_schema::diag::{Diagnostic, codes};
-use ontoforge_schema::ir::{BaseType, Rule};
 use ontoforge_schema::ir::basetype::{check_literal, widens_to};
+use ontoforge_schema::ir::{BaseType, Rule};
 use ontoforge_schema::{LoadOutput, load_from_memory};
 use serde_json::{Value, json};
 
@@ -14,7 +14,27 @@ fn release_object_is_a_public_rule_kind() {
     let rule = serde_json::from_value::<Rule>(json!({
         "releaseObject": {"object": "flight"}
     }));
-    assert!(rule.is_ok(), "releaseObject must parse as an Action rule: {rule:?}");
+    assert!(
+        rule.is_ok(),
+        "releaseObject must parse as an Action rule: {rule:?}"
+    );
+}
+
+#[test]
+fn release_object_rejects_edit_only_definition() {
+    let out = load(
+        "kind: ActionType\napiName: releaseFlight\nparameters:\n  flight: { type: { objectReference: Flight }, required: true }\nrules:\n  - kind: releaseObject\n    object: flight\n",
+    );
+    assert!(
+        out.diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.code == codes::V12
+                && diagnostic
+                    .message
+                    .contains("releaseObject requires a source-backed object")),
+        "{:?}",
+        out.diagnostics
+    );
 }
 
 const OBJECTS: &str = "kind: ObjectType

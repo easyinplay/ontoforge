@@ -19,7 +19,7 @@ pub mod scope;
 
 pub use action::{
     ActionType, CreateObjectRule, DeleteObjectRule, Empty, LinkRule, ModifyObjectRule, ParamType,
-    ParameterDef, Rule, SubmissionCriterion, ValueSource,
+    ParameterDef, ReleaseObjectRule, Rule, SubmissionCriterion, ValueSource,
 };
 pub use attrs::AttrType;
 pub use basetype::BaseType;

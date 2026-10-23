@@ -4,10 +4,10 @@ use ontoforge_query::{
     TokenCodec,
     cursor::{VersionClaims, VersionTokenCodec},
 };
-use ontoforge_schema::ir::{Backing, ParamType};
+use ontoforge_schema::ir::ParamType;
 use ontoforge_storage::commit::{ActionGuardRejection, ActionGuardView};
 
-use crate::criteria::Authorization;
+use crate::{criteria::Authorization, source::row_key};
 
 pub(crate) fn authorize(
     authorization: Authorization<'_>,
@@ -21,6 +21,7 @@ pub(crate) fn authorize(
         principal,
         scope,
         items,
+        sources,
         ..
     } = authorization;
     let codec = VersionTokenCodec::new(tokens);
@@ -39,14 +40,6 @@ pub(crate) fn authorize(
                     item.references.get(param).map(|pk| (type_name, pk))
                 })
                 .ok_or(ActionGuardRejection::VersionConflict)?;
-            let ty = active
-                .ontology
-                .object_types
-                .get(type_name)
-                .ok_or(ActionGuardRejection::VersionConflict)?;
-            if ty.backing != Backing::EditOnly {
-                return Err(ActionGuardRejection::VersionConflict);
-            }
             let read = view
                 .reads
                 .iter()
@@ -61,8 +54,8 @@ pub(crate) fn authorize(
                         object_type: type_name,
                         pk,
                         def_version: active.def_version,
-                        source: None,
-                        edit: Some(&read.row),
+                        source: sources.get(&row_key(type_name, pk)),
+                        edit: (read.row.version > 0).then_some(&read.row),
                     },
                 )
                 .map_err(|_| ActionGuardRejection::VersionConflict)?;

@@ -2,6 +2,7 @@
 
 use chrono::{DateTime, Duration, SecondsFormat, Utc};
 use ontoforge_auth::{Principal, scope::PrincipalScope};
+use ontoforge_engine::{AnyEngine, Engine};
 use ontoforge_query::TokenCodec;
 use ontoforge_schema::ir::{ActionType, ActionTypeName};
 use ontoforge_storage::commit::{
@@ -20,6 +21,7 @@ mod criteria;
 mod fingerprint;
 mod params;
 mod rules;
+mod source;
 mod version;
 
 use fingerprint::digest;
@@ -105,6 +107,10 @@ pub enum ActionError {
     ScopeDenied,
     #[error("the object does not exist")]
     NotFound,
+    #[error("source unavailable")]
+    EngineUnavailable,
+    #[error("object key is ambiguous")]
+    AmbiguousObject,
     #[error("{0}")]
     CriteriaFailed(String),
     #[error("unknown Action `{0}`")]
@@ -130,20 +136,35 @@ pub struct ParameterProblem {
     pub reason: String,
 }
 
-pub struct ActionService<'a> {
+pub struct ActionService<'a, E: Engine = AnyEngine> {
     store: &'a EditStore,
     limits: ActionLimits,
     tokens: &'a TokenCodec,
+    engine: Option<&'a E>,
     clock: Arc<dyn Fn() -> DateTime<Utc> + Send + Sync>,
 }
 
-impl<'a> ActionService<'a> {
+impl<'a> ActionService<'a, AnyEngine> {
     pub fn new(store: &'a EditStore, limits: ActionLimits, tokens: &'a TokenCodec) -> Self {
         Self {
             store,
             limits,
             tokens,
+            engine: None,
             clock: Arc::new(Utc::now),
+        }
+    }
+}
+
+impl<'a, E: Engine> ActionService<'a, E> {
+    /// The host supplies the same trusted Engine used by Query for source-backed objects.
+    pub fn with_engine<U: Engine>(self, engine: &'a U) -> ActionService<'a, U> {
+        ActionService {
+            store: self.store,
+            limits: self.limits,
+            tokens: self.tokens,
+            engine: Some(engine),
+            clock: self.clock,
         }
     }
 
@@ -269,9 +290,11 @@ impl<'a> ActionService<'a> {
             (chosen_time + Duration::days(7)).to_rfc3339_opts(SecondsFormat::Millis, true);
         let prepared = prepare_edits(
             self.store,
+            self.engine,
             &active,
             action,
             principal,
+            scope,
             &request.items,
             &chosen_current_time,
             self.limits,
@@ -281,6 +304,7 @@ impl<'a> ActionService<'a> {
         let guard_positions = prepared.positions.clone();
         let guard_items = prepared.resolved;
         let guard_reads = prepared.reads;
+        let source_snapshots = prepared.snapshots;
         let expected_versions: Vec<_> = request
             .items
             .iter()
@@ -321,6 +345,7 @@ impl<'a> ActionService<'a> {
             items: &guard_items,
             edits: &guard_edits,
             positions: &guard_positions,
+            sources: &source_snapshots,
         };
         gate.await;
         let result = self
@@ -382,13 +407,20 @@ struct PreparedEdits {
     observed_versions: Vec<i64>,
     resolved: Vec<params::ResolvedItem>,
     reads: Vec<ActionGuardRead>,
+    snapshots: source::SourceSnapshots,
 }
 
-async fn prepare_edits(
+#[expect(
+    clippy::too_many_arguments,
+    reason = "edit preparation owns the Action read context"
+)]
+async fn prepare_edits<E: Engine>(
     store: &EditStore,
+    engine: Option<&E>,
     active: &ActiveDefinition,
     action: &ActionType,
     principal: &Principal,
+    scope: &PrincipalScope,
     items: &[ActionItem],
     chosen_current_time: &str,
     limits: ActionLimits,
@@ -430,27 +462,20 @@ async fn prepare_edits(
             "read key count exceeds host limits".to_owned(),
         ));
     }
-    let source_calls = read_keys
-        .iter()
-        .filter(|(name, _)| {
-            active.ontology.object_types.iter().any(|(type_name, ty)| {
-                type_name.as_str() == name && ty.backing != ontoforge_schema::ir::Backing::EditOnly
-            })
-        })
-        .count();
-    if source_calls > limits.source_calls {
-        return Err(ActionError::InvalidRequest(
-            "source call count exceeds host limits".to_owned(),
-        ));
-    }
     let mut prepared = PreparedEdits {
         edits: Vec::new(),
         positions: Vec::new(),
         observed_versions: Vec::new(),
         resolved: Vec::new(),
         reads: Vec::new(),
+        snapshots: source::SourceSnapshots::new(),
     };
-    prepared.reads = load_guard_reads(store, active, action, &resolved).await?;
+    let sampled = source::prepare(
+        store, engine, active, action, scope, items, &resolved, limits,
+    )
+    .await?;
+    prepared.reads = sampled.reads;
+    prepared.snapshots = sampled.snapshots;
     let mut created = BTreeSet::new();
     for (item_ordinal, item) in resolved.iter().enumerate() {
         for (rule_ordinal, rule) in action.rules.iter().enumerate() {
@@ -462,6 +487,8 @@ async fn prepare_edits(
                 item,
                 principal,
                 chosen_current_time,
+                &prepared.reads,
+                &prepared.snapshots,
             )
             .await?;
             if matches!(rule, ontoforge_schema::ir::Rule::CreateObject(_)) {
@@ -484,50 +511,6 @@ async fn prepare_edits(
     }
     prepared.resolved = resolved;
     Ok(prepared)
-}
-
-async fn load_guard_reads(
-    store: &EditStore,
-    active: &ActiveDefinition,
-    action: &ActionType,
-    items: &[params::ResolvedItem],
-) -> Result<Vec<ActionGuardRead>, ActionError> {
-    let mut reads: Vec<ActionGuardRead> = Vec::new();
-    for item in items {
-        for (name, pk) in &item.references {
-            let Some(ontoforge_schema::ir::ParamType::ObjectReference(type_name)) =
-                action.parameters.get(name).map(|def| &def.param_type)
-            else {
-                continue;
-            };
-            if reads
-                .iter()
-                .any(|read| &read.type_name == type_name && &read.pk == pk)
-            {
-                continue;
-            }
-            let denied = || {
-                if criteria::is_target_ref(action, name) {
-                    ActionError::NotFound
-                } else {
-                    ActionError::ScopeDenied
-                }
-            };
-            let observed = store
-                .read_object_edit(active, type_name, pk)
-                .await?
-                .ok_or_else(denied)?;
-            if observed.row.deleted || observed.row.released {
-                return Err(denied());
-            }
-            reads.push(ActionGuardRead {
-                type_name: type_name.clone(),
-                pk: pk.clone(),
-                observed_version: observed.row.version,
-            });
-        }
-    }
-    Ok(reads)
 }
 
 fn command_expired(expires_at: &str, now: DateTime<Utc>) -> bool {
