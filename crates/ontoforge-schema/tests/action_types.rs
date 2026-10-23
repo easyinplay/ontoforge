@@ -2,12 +2,20 @@
 //! structural checks V09 and V12 for parameters, rules and value sources.
 
 use ontoforge_schema::diag::{Diagnostic, codes};
-use ontoforge_schema::ir::BaseType;
+use ontoforge_schema::ir::{BaseType, Rule};
 use ontoforge_schema::ir::basetype::{check_literal, widens_to};
 use ontoforge_schema::{LoadOutput, load_from_memory};
 use serde_json::{Value, json};
 
 const MANIFEST: &str = "apiName: demo\n";
+
+#[test]
+fn release_object_is_a_public_rule_kind() {
+    let rule = serde_json::from_value::<Rule>(json!({
+        "releaseObject": {"object": "flight"}
+    }));
+    assert!(rule.is_ok(), "releaseObject must parse as an Action rule: {rule:?}");
+}
 
 const OBJECTS: &str = "kind: ObjectType
 apiName: Flight
