@@ -1,7 +1,25 @@
 use camino::Utf8PathBuf;
+use ontoforge_action::{ActionLimits, ActionRequest};
 use ontoforge_storage::store::{BackendSettings, EditStore, StoreSettings, sqlite_connect_options};
 use sqlx::sqlite::SqlitePoolOptions;
 use std::time::Duration;
+
+#[test]
+fn action_request_wire_cannot_override_host_limits() {
+    let request = serde_json::json!({
+        "action": "renameGate",
+        "commandId": "command-1",
+        "items": [{"params": {"gate": "A1", "name": "New"}}],
+        "validateOnly": false
+    });
+    let parsed: ActionRequest = serde_json::from_value(request.clone()).expect("public request");
+    assert_eq!(parsed.command_id.as_deref(), Some("command-1"));
+    assert_eq!(parsed.items.len(), 1);
+    let mut untrusted = request;
+    untrusted["maxItems"] = serde_json::json!(1000);
+    assert!(serde_json::from_value::<ActionRequest>(untrusted).is_err());
+    assert!(ActionLimits::new(0, 8, 1024).is_err());
+}
 
 #[tokio::test]
 async fn action_batch_schema_exists() {

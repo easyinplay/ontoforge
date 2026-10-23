@@ -14,7 +14,8 @@ use std::sync::Arc;
 
 use ontoforge_schema::ir::{LinkTypeName, ObjectTypeName, PropertyName};
 use ontoforge_storage::commit::{
-    Actor, Commit, Edit, EditError, LinkOp, ObjectOp, Receipt, SystemActor,
+    ActionCommitError, ActionCommitOutcome, ActionEditPosition, ActionStage,
+    ActionTransactionInput, Actor, Commit, Edit, EditError, LinkOp, ObjectOp, Receipt, SystemActor,
 };
 use ontoforge_storage::log::{EditOp, EntryKind, ReplayError, replay};
 use ontoforge_storage::reload::{ReloadOptions, reload};
@@ -1999,6 +2000,209 @@ pub async fn concurrent_fk_claims_one_wins(h: &Harness) {
     assert_eq!(history.len(), 1, "and no history");
 }
 
+fn action_input(
+    version: i64,
+    principal: &str,
+    command_id: &str,
+    code: &str,
+) -> ActionTransactionInput {
+    ActionTransactionInput {
+        commit: Commit {
+            actor: Actor::Principal(principal.to_owned()),
+            action: "renameGate".to_owned(),
+            def_version: version,
+            params: json!({"items": [{"gate": code, "name": "South"}]}),
+            edits: vec![gate_edit(code, set(&[("name", s("South"))]))],
+        },
+        command_id: Some(command_id.to_owned()),
+        request_hash: format!("hash-{command_id}"),
+        action_def_hash: "definition-hash".to_owned(),
+        chosen_current_time: "2026-10-23T00:00:00.000Z".to_owned(),
+        expires_at: "2026-10-30T00:00:00.000Z".to_owned(),
+        item_count: 1,
+        positions: vec![ActionEditPosition {
+            item_ordinal: 0,
+            rule_ordinal: 0,
+        }],
+        observed_versions: vec![1],
+        validate_only: false,
+    }
+}
+
+async fn assert_action_tables(h: &Harness) {
+    for table in ["of_action_command", "of_webhook_outbox"] {
+        let sql = format!("SELECT 1 FROM {} LIMIT 0", h.sys_table(table));
+        assert!(
+            h.try_exec(&sql).await.is_ok(),
+            "Action table {table} must exist"
+        );
+    }
+}
+
+pub async fn action_batch_writes_one_command_and_outbox(h: &Harness) {
+    let v = h.load().await;
+    assert_action_tables(h).await;
+    commit_ok(h, create_gate(v, "A1")).await;
+    let outcome = h
+        .store()
+        .commit_action(action_input(v, ALICE, "batch-1", "A1"))
+        .await
+        .expect("Action commit");
+    let ActionCommitOutcome::Committed { receipt, trace } = outcome else {
+        panic!("first command must commit");
+    };
+    assert_eq!(
+        trace[0..3],
+        [ActionStage::Begin, ActionStage::Fence, ActionStage::Claim]
+    );
+    assert_eq!(trace.last(), Some(&ActionStage::Commit));
+    assert_eq!(receipt.items[0].edits[0].version_after, 2);
+    let commands = h
+        .rows(
+            Tables::Sys,
+            "of_action_command",
+            &[
+                "command_id",
+                "principal_id",
+                "event_id",
+                "receipt",
+                "chosen_current_time",
+                "expires_at",
+            ],
+            None,
+        )
+        .await;
+    let outbox = h
+        .rows(
+            Tables::Sys,
+            "of_webhook_outbox",
+            &["event_id", "payload", "attempt_count", "next_attempt_at"],
+            None,
+        )
+        .await;
+    assert_eq!((commands.len(), outbox.len()), (1, 1));
+    assert_eq!(commands[0][0], text("batch-1"));
+    assert_eq!(commands[0][1], text(ALICE));
+    assert_eq!(commands[0][2], text(&receipt.event_id));
+    assert_eq!(outbox[0][0], text(&receipt.event_id));
+    assert_eq!(
+        json_cell(&commands[0][3]),
+        serde_json::to_value(&receipt).expect("receipt JSON")
+    );
+    let payload = json_cell(&outbox[0][1]);
+    assert_eq!(payload["receipt"], json_cell(&commands[0][3]));
+    assert_eq!(payload["event_id"], receipt.event_id);
+    assert_eq!(outbox[0][2], text("0"));
+    for (actual, expected) in [
+        (&commands[0][4], "2026-10-23T00:00:00.000Z"),
+        (&commands[0][5], "2026-10-30T00:00:00.000Z"),
+        (&outbox[0][3], receipt.committed_at.as_str()),
+    ] {
+        let actual = chrono::DateTime::parse_from_rfc3339(actual.as_deref().expect("time"))
+            .expect("stored time");
+        let expected = chrono::DateTime::parse_from_rfc3339(expected).expect("expected time");
+        assert_eq!(actual.timestamp_millis(), expected.timestamp_millis());
+    }
+    let log = h.store().read_log(0, 10).await.expect("read log");
+    assert_eq!(log.len(), 2);
+    assert_eq!(log[1].event_id, receipt.event_id);
+    assert_eq!(log[1].seq, receipt.log_seq);
+}
+
+pub async fn action_batch_principal_scopes_command_id(h: &Harness) {
+    let v = h.load().await;
+    assert_action_tables(h).await;
+    commit_ok(h, create_gate(v, "A1")).await;
+    commit_ok(h, create_gate(v, "A2")).await;
+    let first = action_input(v, ALICE, "shared", "A1");
+    let replay = first.clone();
+    let second = action_input(v, "https://idp.example.com|bob", "shared", "A2");
+    let first = h.store().commit_action(first).await.expect("first command");
+    let replayed = h.store().commit_action(replay).await.expect("same command");
+    let second = h
+        .store()
+        .commit_action(second)
+        .await
+        .expect("other principal");
+    let ActionCommitOutcome::Committed { receipt: first, .. } = first else {
+        panic!("first commit");
+    };
+    assert_eq!(replayed, ActionCommitOutcome::Replay(first));
+    assert!(matches!(second, ActionCommitOutcome::Committed { .. }));
+    let commands = h
+        .rows(
+            Tables::Sys,
+            "of_action_command",
+            &["principal_id", "command_id"],
+            None,
+        )
+        .await;
+    assert_eq!(commands.len(), 2);
+    assert!(commands.iter().all(|row| row[1] == text("shared")));
+}
+
+pub async fn action_batch_stale_definition_leaves_no_action_rows(h: &Harness) {
+    let v = h.load().await;
+    assert_action_tables(h).await;
+    commit_ok(h, create_gate(v, "A1")).await;
+    let stale = action_input(v + 1, ALICE, "stale", "A1");
+    assert!(matches!(
+        h.store().commit_action(stale).await,
+        Err(ActionCommitError::Edit(EditError::DefinitionStale { .. }))
+    ));
+    assert!(
+        h.rows(Tables::Sys, "of_action_command", &["command_id"], None)
+            .await
+            .is_empty()
+    );
+    assert!(
+        h.rows(Tables::Sys, "of_webhook_outbox", &["event_id"], None)
+            .await
+            .is_empty()
+    );
+    assert_eq!(h.store().read_log(0, 10).await.expect("log").len(), 1);
+}
+
+pub async fn action_batch_migration_constraints_match_contract(h: &Harness) {
+    h.load().await;
+    assert_action_tables(h).await;
+    let command = h.sys_table("of_action_command");
+    let outbox = h.sys_table("of_webhook_outbox");
+    let log = h.sys_table("of_edit_log");
+    let orphan = format!(
+        "INSERT INTO {outbox} (event_id, payload, next_attempt_at) VALUES ('orphan', '{{}}', '2026-10-23T00:00:00.000Z')"
+    );
+    assert!(
+        h.try_exec(&orphan).await.is_err(),
+        "outbox requires an edit log event"
+    );
+    let duplicate = format!("SELECT principal_id, command_id FROM {command} LIMIT 0");
+    assert!(h.try_exec(&duplicate).await.is_ok());
+    assert!(
+        h.try_exec(&format!("SELECT event_id FROM {log} LIMIT 0"))
+            .await
+            .is_ok()
+    );
+    if let Harness::Pg(pg) = h {
+        let rows: Vec<(String, String)> = sqlx::query_as(
+            "SELECT CAST(table_name AS text), CAST(column_name AS text) FROM information_schema.columns WHERE table_schema = $1 AND ((table_name = 'of_action_command' AND column_name IN ('receipt', 'chosen_current_time')) OR (table_name = 'of_webhook_outbox' AND column_name IN ('payload', 'next_attempt_at'))) ORDER BY table_name, column_name")
+            .bind(&pg.schema_sys).fetch_all(pg.side()).await.expect("PG action columns");
+        assert_eq!(rows.len(), 4);
+        let types: Vec<String> = sqlx::query_scalar(
+            "SELECT CAST(data_type AS text) FROM information_schema.columns WHERE table_schema = $1 AND ((table_name = 'of_action_command' AND column_name IN ('receipt', 'chosen_current_time')) OR (table_name = 'of_webhook_outbox' AND column_name IN ('payload', 'next_attempt_at'))) ORDER BY table_name, column_name")
+            .bind(&pg.schema_sys).fetch_all(pg.side()).await.expect("PG action types");
+        assert_eq!(
+            types,
+            [
+                "timestamp with time zone",
+                "jsonb",
+                "timestamp with time zone",
+                "jsonb"
+            ]
+        );
+    }
+}
+
 // ---------------------------------------------------------------------------------------------
 // Expansion
 // ---------------------------------------------------------------------------------------------
@@ -2018,6 +2222,10 @@ macro_rules! conformance_case {
 /// second argument is an attribute for every test (`ignore = ".."` for PostgreSQL).
 macro_rules! all_cases {
     ($factory:path $(, $attr:meta)?) => {
+        $crate::conformance::conformance_case!($factory, action_batch_writes_one_command_and_outbox $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, action_batch_principal_scopes_command_id $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, action_batch_stale_definition_leaves_no_action_rows $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, action_batch_migration_constraints_match_contract $(, $attr)?);
         $crate::conformance::conformance_case!($factory, commit_set_creates_edit_row $(, $attr)?);
         $crate::conformance::conformance_case!($factory, commit_appends_one_log_record $(, $attr)?);
         $crate::conformance::conformance_case!($factory, commit_writes_history_snapshot $(, $attr)?);
