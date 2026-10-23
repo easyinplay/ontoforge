@@ -4,13 +4,13 @@ use std::collections::BTreeMap;
 
 use chrono::{Duration, SecondsFormat, Utc};
 use ontoforge_auth::{Principal, scope::PrincipalScope};
-use ontoforge_schema::ir::{ActionTypeName, Backing, ParamType, Rule, ValueSource};
+use ontoforge_schema::ir::{ActionType, ActionTypeName, Backing, ParamType, Rule, ValueSource};
 use ontoforge_storage::commit::{
     ActionCommitError, ActionCommitOutcome, ActionEditPosition, ActionTransactionInput, Actor,
     Commit, Edit, ObjectOp,
 };
 use ontoforge_storage::error::StoreError;
-use ontoforge_storage::store::EditStore;
+use ontoforge_storage::store::{ActiveDefinition, EditStore};
 use ontoforge_storage::value::PropertyValue;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value, json};
@@ -41,9 +41,9 @@ pub struct ActionItem {
 /// Cost caps come from the trusted host, never from an Action request.
 #[derive(Debug, Clone, Copy)]
 pub struct ActionLimits {
-    max_items: usize,
-    max_edits: usize,
-    max_request_bytes: usize,
+    items: usize,
+    edits: usize,
+    request_bytes: usize,
 }
 
 impl ActionLimits {
@@ -56,9 +56,9 @@ impl ActionLimits {
             return Err(ActionError::InvalidLimits);
         }
         Ok(Self {
-            max_items,
-            max_edits,
-            max_request_bytes,
+            items: max_items,
+            edits: max_edits,
+            request_bytes: max_request_bytes,
         })
     }
 }
@@ -102,26 +102,7 @@ impl<'a> ActionService<'a> {
         def_version: i64,
         request: ActionRequest,
     ) -> Result<ActionReceipt, ActionError> {
-        if !request.validate_only && request.command_id.as_deref().is_none_or(str::is_empty) {
-            return Err(ActionError::MissingCommandId);
-        }
-        if request.validate_only {
-            return Err(ActionError::InvalidRequest(
-                "validate-only is not available in the edit-only tracer".to_owned(),
-            ));
-        }
-        if request.items.is_empty() || request.items.len() > self.limits.max_items {
-            return Err(ActionError::InvalidRequest(
-                "item count exceeds host limits".to_owned(),
-            ));
-        }
-        let request_value = serde_json::to_value(&request)
-            .map_err(|e| ActionError::InvalidRequest(e.to_string()))?;
-        if request_value.to_string().len() > self.limits.max_request_bytes {
-            return Err(ActionError::InvalidRequest(
-                "request exceeds host byte limit".to_owned(),
-            ));
-        }
+        validate_request(&request, self.limits)?;
         let active = self
             .store
             .active_definition()
@@ -144,102 +125,16 @@ impl<'a> ActionService<'a> {
         let chosen_current_time = chosen_time.to_rfc3339_opts(SecondsFormat::Millis, true);
         let expires_at =
             (chosen_time + Duration::days(7)).to_rfc3339_opts(SecondsFormat::Millis, true);
-        let mut edits = Vec::new();
-        let mut positions = Vec::new();
-        let mut observed_versions = Vec::new();
-
-        for (item_ordinal, item) in request.items.iter().enumerate() {
-            for name in item.params.keys() {
-                let known = action.parameters.keys().any(|key| key.as_str() == name);
-                if !known {
-                    return Err(ActionError::InvalidRequest(format!(
-                        "unknown parameter `{name}`"
-                    )));
-                }
-            }
-            for (name, def) in &action.parameters {
-                if def.required && !item.params.contains_key(name.as_str()) && def.default.is_none()
-                {
-                    return Err(ActionError::InvalidRequest(format!(
-                        "missing parameter `{name}`"
-                    )));
-                }
-            }
-            for (rule_ordinal, rule) in action.rules.iter().enumerate() {
-                let Rule::ModifyObject(rule) = rule else {
-                    return Err(ActionError::UnsupportedRule);
-                };
-                let reference = action.parameters.get(&rule.object).ok_or_else(|| {
-                    ActionError::InvalidRequest("unknown object parameter".to_owned())
-                })?;
-                let ParamType::ObjectReference(type_name) = &reference.param_type else {
-                    return Err(ActionError::InvalidRequest(
-                        "object parameter is not a reference".to_owned(),
-                    ));
-                };
-                let ty =
-                    active.ontology.object_types.get(type_name).ok_or_else(|| {
-                        ActionError::InvalidRequest("unknown object type".to_owned())
-                    })?;
-                if ty.backing != Backing::EditOnly {
-                    return Err(ActionError::UnsupportedRule);
-                }
-                let pk_def = ty.properties.get(&ty.primary_key).ok_or_else(|| {
-                    ActionError::InvalidRequest("missing primary key definition".to_owned())
-                })?;
-                let pk_json =
-                    parameter_value(item, rule.object.as_str(), reference.default.as_ref())?;
-                let pk = PropertyValue::from_json(pk_def, pk_json).map_err(|e| {
-                    ActionError::InvalidRequest(format!("invalid object reference: {e}"))
-                })?;
-                let observed = self
-                    .store
-                    .read_object_edit(&active, type_name, &pk)
-                    .await?
-                    .ok_or(ActionError::ScopeDenied)?;
-                if observed.row.deleted || observed.row.released {
-                    return Err(ActionError::ScopeDenied);
-                }
-                let mut set = BTreeMap::new();
-                for (property, source) in &rule.properties {
-                    let property_def = ty.properties.get(property).ok_or_else(|| {
-                        ActionError::InvalidRequest("unknown rule property".to_owned())
-                    })?;
-                    let raw = match source {
-                        ValueSource::Param(name) => {
-                            let param = action.parameters.get(name).ok_or_else(|| {
-                                ActionError::InvalidRequest("unknown value parameter".to_owned())
-                            })?;
-                            parameter_value(item, name.as_str(), param.default.as_ref())?.clone()
-                        }
-                        ValueSource::Static(value) => value.clone(),
-                        ValueSource::CurrentUser(_) => {
-                            Value::String(principal.id.as_str().to_owned())
-                        }
-                        ValueSource::CurrentTime(_) => Value::String(chosen_current_time.clone()),
-                    };
-                    let value = PropertyValue::from_json(property_def, &raw).map_err(|e| {
-                        ActionError::InvalidRequest(format!("invalid `{property}` value: {e}"))
-                    })?;
-                    set.insert(property.clone(), value);
-                }
-                edits.push(Edit::Object {
-                    type_name: type_name.clone(),
-                    pk,
-                    op: ObjectOp::Set(set),
-                });
-                positions.push(ActionEditPosition {
-                    item_ordinal,
-                    rule_ordinal,
-                });
-                observed_versions.push(observed.row.version);
-                if edits.len() > self.limits.max_edits {
-                    return Err(ActionError::InvalidRequest(
-                        "edit count exceeds host limits".to_owned(),
-                    ));
-                }
-            }
-        }
+        let prepared = prepare_edits(
+            self.store,
+            &active,
+            action,
+            principal,
+            &request.items,
+            &chosen_current_time,
+            self.limits.edits,
+        )
+        .await?;
 
         let fingerprint = json!({
             "action": request.action,
@@ -252,7 +147,7 @@ impl<'a> ActionService<'a> {
                 action: request.action,
                 def_version,
                 params: json!({ "items": request.items }),
-                edits,
+                edits: prepared.edits,
             },
             command_id: request.command_id,
             request_hash: digest(&fingerprint),
@@ -262,13 +157,14 @@ impl<'a> ActionService<'a> {
             ),
             chosen_current_time,
             expires_at,
-            item_count: positions
+            item_count: prepared
+                .positions
                 .iter()
                 .map(|p| p.item_ordinal + 1)
                 .max()
                 .unwrap_or(0),
-            positions,
-            observed_versions,
+            positions: prepared.positions,
+            observed_versions: prepared.observed_versions,
             validate_only: false,
         };
         match self.store.commit_action(input).await? {
@@ -279,6 +175,146 @@ impl<'a> ActionService<'a> {
             )),
         }
     }
+}
+
+fn validate_request(request: &ActionRequest, limits: ActionLimits) -> Result<(), ActionError> {
+    if !request.validate_only && request.command_id.as_deref().is_none_or(str::is_empty) {
+        return Err(ActionError::MissingCommandId);
+    }
+    if request.validate_only {
+        return Err(ActionError::InvalidRequest(
+            "validate-only is not available in the edit-only tracer".to_owned(),
+        ));
+    }
+    if request.items.is_empty() || request.items.len() > limits.items {
+        return Err(ActionError::InvalidRequest(
+            "item count exceeds host limits".to_owned(),
+        ));
+    }
+    let request_value =
+        serde_json::to_value(request).map_err(|e| ActionError::InvalidRequest(e.to_string()))?;
+    if request_value.to_string().len() > limits.request_bytes {
+        return Err(ActionError::InvalidRequest(
+            "request exceeds host byte limit".to_owned(),
+        ));
+    }
+    Ok(())
+}
+
+struct PreparedEdits {
+    edits: Vec<Edit>,
+    positions: Vec<ActionEditPosition>,
+    observed_versions: Vec<i64>,
+}
+
+async fn prepare_edits(
+    store: &EditStore,
+    active: &ActiveDefinition,
+    action: &ActionType,
+    principal: &Principal,
+    items: &[ActionItem],
+    chosen_current_time: &str,
+    max_edits: usize,
+) -> Result<PreparedEdits, ActionError> {
+    let mut prepared = PreparedEdits {
+        edits: Vec::new(),
+        positions: Vec::new(),
+        observed_versions: Vec::new(),
+    };
+    for (item_ordinal, item) in items.iter().enumerate() {
+        validate_item_params(action, item)?;
+        for (rule_ordinal, rule) in action.rules.iter().enumerate() {
+            let Rule::ModifyObject(rule) = rule else {
+                return Err(ActionError::UnsupportedRule);
+            };
+            let reference = action.parameters.get(&rule.object).ok_or_else(|| {
+                ActionError::InvalidRequest("unknown object parameter".to_owned())
+            })?;
+            let ParamType::ObjectReference(type_name) = &reference.param_type else {
+                return Err(ActionError::InvalidRequest(
+                    "object parameter is not a reference".to_owned(),
+                ));
+            };
+            let ty = active
+                .ontology
+                .object_types
+                .get(type_name)
+                .ok_or_else(|| ActionError::InvalidRequest("unknown object type".to_owned()))?;
+            if ty.backing != Backing::EditOnly {
+                return Err(ActionError::UnsupportedRule);
+            }
+            let pk_def = ty.properties.get(&ty.primary_key).ok_or_else(|| {
+                ActionError::InvalidRequest("missing primary key definition".to_owned())
+            })?;
+            let pk_json = parameter_value(item, rule.object.as_str(), reference.default.as_ref())?;
+            let pk = PropertyValue::from_json(pk_def, pk_json).map_err(|e| {
+                ActionError::InvalidRequest(format!("invalid object reference: {e}"))
+            })?;
+            let observed = store
+                .read_object_edit(active, type_name, &pk)
+                .await?
+                .ok_or(ActionError::ScopeDenied)?;
+            if observed.row.deleted || observed.row.released {
+                return Err(ActionError::ScopeDenied);
+            }
+            let mut set = BTreeMap::new();
+            for (property, source) in &rule.properties {
+                let property_def = ty.properties.get(property).ok_or_else(|| {
+                    ActionError::InvalidRequest("unknown rule property".to_owned())
+                })?;
+                let raw = match source {
+                    ValueSource::Param(name) => {
+                        let param = action.parameters.get(name).ok_or_else(|| {
+                            ActionError::InvalidRequest("unknown value parameter".to_owned())
+                        })?;
+                        parameter_value(item, name.as_str(), param.default.as_ref())?.clone()
+                    }
+                    ValueSource::Static(value) => value.clone(),
+                    ValueSource::CurrentUser(_) => Value::String(principal.id.as_str().to_owned()),
+                    ValueSource::CurrentTime(_) => Value::String(chosen_current_time.to_owned()),
+                };
+                let value = PropertyValue::from_json(property_def, &raw).map_err(|e| {
+                    ActionError::InvalidRequest(format!("invalid `{property}` value: {e}"))
+                })?;
+                set.insert(property.clone(), value);
+            }
+            prepared.edits.push(Edit::Object {
+                type_name: type_name.clone(),
+                pk,
+                op: ObjectOp::Set(set),
+            });
+            prepared.positions.push(ActionEditPosition {
+                item_ordinal,
+                rule_ordinal,
+            });
+            prepared.observed_versions.push(observed.row.version);
+            if prepared.edits.len() > max_edits {
+                return Err(ActionError::InvalidRequest(
+                    "edit count exceeds host limits".to_owned(),
+                ));
+            }
+        }
+    }
+    Ok(prepared)
+}
+
+fn validate_item_params(action: &ActionType, item: &ActionItem) -> Result<(), ActionError> {
+    for name in item.params.keys() {
+        let known = action.parameters.keys().any(|key| key.as_str() == name);
+        if !known {
+            return Err(ActionError::InvalidRequest(format!(
+                "unknown parameter `{name}`"
+            )));
+        }
+    }
+    for (name, def) in &action.parameters {
+        if def.required && !item.params.contains_key(name.as_str()) && def.default.is_none() {
+            return Err(ActionError::InvalidRequest(format!(
+                "missing parameter `{name}`"
+            )));
+        }
+    }
+    Ok(())
 }
 
 fn parameter_value<'a>(
@@ -332,7 +368,7 @@ mod tests {
     };
     use ontoforge_storage::value::PropertyValue;
     use sqlx::sqlite::SqlitePoolOptions;
-    use std::collections::BTreeMap;
+    use std::collections::{BTreeMap, BTreeSet};
     use std::time::Duration;
 
     const DEFS: &str = "kind: ObjectType
@@ -361,6 +397,10 @@ rules:
     }
 
     #[tokio::test]
+    #[expect(
+        clippy::too_many_lines,
+        reason = "one database tracer checks commit, rollback and ordering"
+    )]
     async fn tracer_commits_one_action_batch() {
         let dir = tempfile::tempdir().expect("tempdir");
         let path = Utf8PathBuf::from_path_buf(dir.path().join("edit.db")).expect("utf8 path");
@@ -404,7 +444,7 @@ rules:
             id: PrincipalId::new("https://idp.example.com", "alice"),
             issuer: "https://idp.example.com".to_owned(),
             subject: "alice".to_owned(),
-            groups: Default::default(),
+            groups: BTreeSet::default(),
             attrs: Attrs::new(),
         };
         let mut scope = PrincipalScope::default();
