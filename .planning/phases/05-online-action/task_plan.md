@@ -22,4 +22,4 @@
 
 ## Next Step
 
-执行 `05-03-PLAN.md` 的 version/CAS 合同；05-02 的真实测试和提交证据见 `05-02-SUMMARY.md`。release source 专项仍由 05-06 验收，ACTION-08 暂不完成。正式 gstack gate 仍为 BLOCKED，关键 PR 前回补。
+执行 `05-04-PLAN.md` 的事务并发与回滚验收；05-03 测试证据见 `05-03-SUMMARY.md`。release source 与 source-backed token 仍由 05-06 验收，ACTION-08/09 暂不完成。正式 gstack gate 仍为 BLOCKED，关键 PR 前回补。
