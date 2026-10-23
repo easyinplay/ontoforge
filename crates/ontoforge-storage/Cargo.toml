@@ -12,6 +12,7 @@ workspace = true
 [features]
 # Test only: a local PostgreSQL for conformance tests (ADR-0023, RESEARCH Pitfall 5).
 embedded-pg = ["dep:postgresql_embedded"]
+test-support = []
 
 [dependencies]
 ontoforge-schema = { path = "../ontoforge-schema" }

@@ -18,6 +18,8 @@ use ontoforge_storage::commit::{
     ActionGuardRejection, ActionStage, ActionTransactionInput, Actor, Commit, Edit, EditError,
     LinkOp, ObjectOp, Receipt, RowState, SystemActor,
 };
+#[cfg(feature = "test-support")]
+use ontoforge_storage::commit::ActionWriteStage;
 use ontoforge_storage::log::{EditOp, EntryKind, ReplayError, replay};
 use ontoforge_storage::reload::{ReloadOptions, reload};
 use ontoforge_storage::store::{Backend, EditStore};
@@ -2112,6 +2114,63 @@ pub async fn action_batch_writes_one_command_and_outbox(h: &Harness) {
     assert_eq!(log[1].seq, receipt.log_seq);
 }
 
+#[cfg(feature = "test-support")]
+async fn action_atomic_snapshot(h: &Harness) -> Vec<Vec<Vec<Option<String>>>> {
+    let mut snapshot = log_rows(h).await;
+    snapshot.push(h.rows(Tables::Edit, "of_obj_gate", &["code", "name", "of_version", "of_log_seq", "of_deleted", "of_released"], None).await);
+    snapshot.push(h.rows(Tables::Sys, "of_action_command", &["principal_id", "command_id", "event_id", "receipt", "chosen_current_time", "expires_at"], None).await);
+    snapshot.push(h.rows(Tables::Sys, "of_webhook_outbox", &["event_id", "payload", "attempt_count", "next_attempt_at"], None).await);
+    snapshot
+}
+
+#[cfg(feature = "test-support")]
+async fn action_atomic_failure(h: &Harness, stage: ActionWriteStage) {
+    let version = h.load().await;
+    commit_ok(h, create_gate(version, "A1")).await;
+    let before = action_atomic_snapshot(h).await;
+    let input = action_input(version, ALICE, "atomic-fault", "A1");
+    let result = h.store().commit_action_with_fault(input.clone(), stage).await;
+    assert!(matches!(result, Err(ActionCommitError::InjectedFault(actual)) if actual == stage), "{stage:?} must fail after its write stage: {result:?}");
+    assert_eq!(action_atomic_snapshot(h).await, before, "{stage:?} must roll back all domains");
+    assert!(matches!(h.store().commit_action(input).await, Ok(ActionCommitOutcome::Committed { .. })), "same command must be reusable after rollback");
+}
+
+#[cfg(feature = "test-support")]
+pub async fn action_atomic_after_log_failure(h: &Harness) {
+    action_atomic_failure(h, ActionWriteStage::AfterLog).await;
+}
+
+#[cfg(feature = "test-support")]
+pub async fn action_atomic_after_edits_failure(h: &Harness) {
+    action_atomic_failure(h, ActionWriteStage::AfterEdits).await;
+}
+
+#[cfg(feature = "test-support")]
+pub async fn action_atomic_after_command_failure(h: &Harness) {
+    action_atomic_failure(h, ActionWriteStage::AfterCommand).await;
+}
+
+#[cfg(feature = "test-support")]
+pub async fn action_atomic_after_outbox_failure(h: &Harness) {
+    action_atomic_failure(h, ActionWriteStage::AfterOutbox).await;
+}
+
+#[cfg(feature = "test-support")]
+pub async fn action_atomic_success_changes_all_domains_once(h: &Harness) {
+    let version = h.load().await;
+    commit_ok(h, create_gate(version, "A1")).await;
+    let before = action_atomic_snapshot(h).await;
+    let outcome = h.store().commit_action(action_input(version, ALICE, "atomic-success", "A1")).await.expect("Action commit");
+    assert!(matches!(outcome, ActionCommitOutcome::Committed { .. }));
+    let after = action_atomic_snapshot(h).await;
+    assert_eq!(after[0].len(), before[0].len() + 1, "log header");
+    assert_eq!(after[1].len(), before[1].len() + 1, "log entry");
+    assert_eq!(after[2].len(), before[2].len() + 1, "history");
+    assert_eq!(after[3][0][2], text("2"), "edit version");
+    assert_eq!(after[4].len(), before[4].len() + 1, "command");
+    assert_eq!(after[5].len(), before[5].len() + 1, "outbox");
+}
+
 pub async fn action_batch_guard_interleaves_reads_and_edits(h: &Harness) {
     let version = h.load().await;
     commit_ok(h, create_gate(version, "A1")).await;
@@ -2393,6 +2452,16 @@ macro_rules! conformance_case {
 /// second argument is an attribute for every test (`ignore = ".."` for PostgreSQL).
 macro_rules! all_cases {
     ($factory:path $(, $attr:meta)?) => {
+        #[cfg(feature = "test-support")]
+        $crate::conformance::conformance_case!($factory, action_atomic_after_log_failure $(, $attr)?);
+        #[cfg(feature = "test-support")]
+        $crate::conformance::conformance_case!($factory, action_atomic_after_edits_failure $(, $attr)?);
+        #[cfg(feature = "test-support")]
+        $crate::conformance::conformance_case!($factory, action_atomic_after_command_failure $(, $attr)?);
+        #[cfg(feature = "test-support")]
+        $crate::conformance::conformance_case!($factory, action_atomic_after_outbox_failure $(, $attr)?);
+        #[cfg(feature = "test-support")]
+        $crate::conformance::conformance_case!($factory, action_atomic_success_changes_all_domains_once $(, $attr)?);
         $crate::conformance::conformance_case!($factory, action_batch_writes_one_command_and_outbox $(, $attr)?);
         $crate::conformance::conformance_case!($factory, action_batch_guard_interleaves_reads_and_edits $(, $attr)?);
         $crate::conformance::conformance_case!($factory, action_batch_principal_scopes_command_id $(, $attr)?);

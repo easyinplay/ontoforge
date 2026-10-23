@@ -167,6 +167,16 @@ pub enum ActionStage {
     Commit,
 }
 
+/// Stage selected by the integration-only fault probe.
+#[cfg(feature = "test-support")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ActionWriteStage {
+    AfterLog,
+    AfterEdits,
+    AfterCommand,
+    AfterOutbox,
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum ActionCommitOutcome {
     Committed {
@@ -179,6 +189,9 @@ pub enum ActionCommitOutcome {
 
 #[derive(Debug, thiserror::Error)]
 pub enum ActionCommitError {
+    #[cfg(feature = "test-support")]
+    #[error("injected Action failure after {0:?}")]
+    InjectedFault(ActionWriteStage),
     #[error("a normal Action submission needs a non-empty command_id")]
     MissingCommandId,
     #[error("command_id has already been used for another request")]
@@ -302,6 +315,16 @@ impl EditStore {
         input: ActionTransactionInput,
     ) -> Result<ActionCommitOutcome, ActionCommitError> {
         self.commit_action_guarded(input, &[], |_| Ok(())).await
+    }
+
+    /// Integration-only probe; the RED harness asserts that the selected stage aborts.
+    #[cfg(feature = "test-support")]
+    pub async fn commit_action_with_fault(
+        &self,
+        input: ActionTransactionInput,
+        _stage: ActionWriteStage,
+    ) -> Result<ActionCommitOutcome, ActionCommitError> {
+        self.commit_action(input).await
     }
 
     /// Runs a synchronous, read-only authorization guard under the same locks as the write.
