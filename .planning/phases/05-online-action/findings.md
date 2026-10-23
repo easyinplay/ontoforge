@@ -1,5 +1,7 @@
 # Phase 5 findings
 
+- 2026-10-23：05-07 workspace gate 的 `cli_schema` 失败根因为 05-06 新增 `Rule::ReleaseObject` 后未同步 `schemas/ontoforge-definition.schema.json`；该测试逐字节比较三个 CLI 导出 fixture。用已有 `schema export` 命令重生成后仅 definition schema 增加 19 行 release 分支，目标测试 4/4 通过。workspace 全量测试仍待复跑；这次失败没有 rusqlite lock 或终端异常关闭证据。
+
 - 2026-10-23：ROADMAP 已定义 Phase 5 Goal、五项 Success Criteria 与 ACTION-01..12；`.planning/phases/05-online-action/` 原先不存在。当前分支从已完成的 Phase 4 提交 `9c4ba02` 建立，尚无 Phase 5 代码改动。
 - 2026-10-23：Action 涉及单事务 edit/edit log/`action_commands`/outbox、行列 scope、乐观并发与幂等、按需 Trino，是跨 query/auth/storage 的高可靠性工作。Phase 级 discuss 与架构审查触发；具体合同需先核对 ADR 和现有代码，不在此推定。
 - 2026-10-23：只读调查确认 `ontoforge-action` 仍为占位；schema 已有 Action IR、rule 和参数的配置期校验，auth 已有 scope/criteria 列覆盖，query 已有 HMAC `_version` 与按需 source 的 pk 读。运行时参数校验、criteria、写前/写后授权、批量与回执均待实现。

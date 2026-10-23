@@ -609,6 +609,25 @@
           ]
         },
         {
+          "description": "Restore the source view by clearing the edit overlay.",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "releaseObject"
+            },
+            "object": {
+              "description": "Name of an `objectReference` parameter for a source-backed object.",
+              "$ref": "#/$defs/ParameterName"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "object"
+          ]
+        },
+        {
           "description": "Link two existing objects.",
           "type": "object",
           "properties": {
