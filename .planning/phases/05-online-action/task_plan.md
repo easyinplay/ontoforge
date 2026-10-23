@@ -22,4 +22,4 @@
 
 ## Next Step
 
-执行 `05-07-PLAN.md` 的 outbox worker、写入口边界与 CI；05-06 source、release、token 和真实 Trino 证据见 `05-06-SUMMARY.md`。ACTION-08/09/12 的计划级验收已完成，Phase 5 总体验证仍待执行。正式 gstack gate 仍为 BLOCKED，关键 PR 前回补。
+05-07 的 outbox worker、写入口边界与 CI 证据见 `05-07-SUMMARY.md`。先修复 workspace `cli_schema` schema fixture 不一致并重跑全量测试，再执行 Phase 5 verify-work 与关键审查。正式 gstack gate 仍为 BLOCKED，关键 PR 前回补。
