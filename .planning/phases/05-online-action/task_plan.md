@@ -18,6 +18,7 @@
 - [ ] P5c：05-02 PLAN 的 `src/execute.rs` 假指针已校正到实际 `src/lib.rs`；复跑独立 verification、GSD UAT 与关键审查，远端 CI 和正式 gstack gate 分开记录。
 - [x] P5d：关闭新代码复审的 outbox 时间 WARNING。`d4517e0` 先取得两项有效 RED，再逐条 claim、完成时计时；SQLite outbox 11/11、真实 PG outbox 2/2、局部 Clippy/fmt/diff check 通过，独立代码复审 clean。
 - [ ] P5e：修复远端 `ci.yml` run `39997950852` 的 PostgreSQL conformance 回归。`append_only_rejects_truncate_on_pg` 的三表 TRUNCATE 未包含 Phase 5 新增的两个 `of_edit_log` 外键引用表，实际先报 `0A000`。保持 `23000` trigger 断言，显式补齐依赖表；使用失败的远端 RED、真实 PostgreSQL GREEN、重新触发匹配新 SHA 的 CI 验收。所有权：`crates/ontoforge-storage/tests/conformance/mod.rs`；不得更改 migration。
+- [ ] P5f：修复远端 `ci.yml` run `39999716926` 的 PostgreSQL reload 精确系统表断言。`first_reload_on_pg_puts_edit_tables_in_edit_schema` 的预期列表补充 Phase 5 新增的两张系统表；真实 PostgreSQL 定向与完整 `reload_pg` 通过，再重跑匹配 SHA 的远端 CI。所有权：`crates/ontoforge-storage/tests/reload_pg.rs`；不更改生产 schema。
 
 ## Acceptance
 
@@ -27,4 +28,4 @@
 
 ## Next Step
 
-P5e 先修复 PostgreSQL conformance 测试并重跑真实后端及远端 CI。`05-VERIFICATION.md` 为 human_needed；UAT 第 18 项、真实部署和正式 gstack gate 尚待确认，不更新 REQUIREMENTS 完成勾选。
+P5f 先修复 PostgreSQL reload 的测试预期，复跑真实后端并重新触发远端 CI。`05-VERIFICATION.md` 为 human_needed；UAT 第 18 项、真实部署和正式 gstack gate 尚待确认，不更新 REQUIREMENTS 完成勾选。

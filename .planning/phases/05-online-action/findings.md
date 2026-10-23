@@ -1,5 +1,7 @@
 # Phase 5 findings
 
+- 2026-10-24：`f57e7f4` 的远端 CI run `39999716926` 已使 PostgreSQL conformance 36/36 通过，但同一 integration 步骤的 `reload_pg` 10/11：`first_reload_on_pg_puts_edit_tables_in_edit_schema` 精确系统表预期漏了 `of_action_command` 和 `of_webhook_outbox`。代码中两表属于 Phase 5 migration 的 sys schema，故这是测试列表陈旧，不是运行时 schema 错误；当前失败截断了 Action/Trino 后续步骤。
+
 - 2026-10-24：远端 `ci.yml` run `39997950852` 匹配 `e8c5e41`，integration 的 PostgreSQL conformance 35/36，通过的前两个单表 TRUNCATE 已验证 append-only trigger；三表 TRUNCATE 因 Phase 5 新增 `of_action_command`、`of_webhook_outbox` 对 `of_edit_log` 的 FK 先报 `0A000`，未达到预期 trigger `23000`。Grok 只读第二意见建议补齐依赖表或 `CASCADE`，不改 migration、不接受 `0A000` 作为 trigger 证据；本轮选显式表名。`isolated-query-bench` 通过，其余 job 当时仍运行。
 
 - 2026-10-23：独立 review 与 verifier 发现 source `seen.insert` 先于别名级需求判断，导致同 RowKey 后续别名或 item 的 criteria、token、release 可能漏采样。Grok 只读第二意见确认，并建议逐 occurrence 计算、按 key 缓存 edit 状态、实际采样前检查 `source_calls`，每 key 一次 Engine 调用；先补跨 item token 与双别名 release 的失败测试。`read_pk_source` 固定 `ctx.max_rows=3` 会在 Query host 限额 1 时突破旧行为；将上限由 Query/Action 调用方显式传入，保留 SQL LIMIT 2。两项均不能凭现有全量测试通过结案。

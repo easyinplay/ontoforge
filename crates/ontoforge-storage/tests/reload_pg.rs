@@ -90,6 +90,7 @@ async fn first_reload_on_pg_puts_edit_tables_in_edit_schema() {
         names(&sys),
         BTreeSet::from([
             "_sqlx_migrations",
+            "of_action_command",
             "of_def_state",
             "of_def_version",
             "of_admin_audit",
@@ -98,7 +99,8 @@ async fn first_reload_on_pg_puts_edit_tables_in_edit_schema() {
             "of_edit_log_entry",
             "of_role",
             "of_role_binding",
-            "of_user"
+            "of_user",
+            "of_webhook_outbox"
         ]),
         "system tables only"
     );
