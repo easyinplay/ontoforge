@@ -9,7 +9,7 @@ created: "2026-10-23"
 
 # Phase 05 - Validation Strategy
 
-> 执行期反馈与收尾验收合同；实际任务映射由 `05-*-PLAN.md` 产出后补全。
+> 执行期反馈与收尾验收合同；任务细节与失败信号见 `05-01..07-PLAN.md`。
 
 ## Test Infrastructure
 
@@ -31,15 +31,13 @@ created: "2026-10-23"
 
 ## Per-Task Verification Map
 
-| Slice | Requirement | Secure behavior / failure | Test type | Automated command | File exists | Status |
-|-------|-------------|---------------------------|-----------|-------------------|-------------|--------|
-| 参数与 rule | ACTION-01..03,08 | 逐参数错误、masked criteria、前置隐藏与不存在同错、写后不可见 | unit + SQLite | `cargo test -p ontoforge-action --locked` | W0 pending | pending |
-| 原子批量 | ACTION-02,04..06 | 逐项摘要、后项失败回滚、validate-only 零持久化 | SQLite + real PG | `cargo test -p ontoforge-storage --test conformance_sqlite --locked`；PG 目标 | W0 pending | pending |
-| 写入口 | ACTION-07 | 非 Action principal 写被拒，审计导入保留 | source/API audit + integration | Action 与 storage 定向目标，命令由 PLAN 固定 | W0 pending | pending |
-| scope 与版本 | ACTION-08,09 | 读集锁序、同 pk 并发仅一成功、query 令牌通用 | real PG + security integration | 新 Action PG 双连接目标，命令由 PLAN 固定 | W0 pending | pending |
-| 幂等 | ACTION-10 | 同键竞态一日志一 outbox、异参拒绝、失权重放拒绝、删除后回执 | SQLite + real PG | 新 command race 目标，命令由 PLAN 固定 | W0 pending | pending |
-| outbox | ACTION-11 | 提交后崩溃、HTTP 失败、发送后标记前崩溃均可重试同 event_id | `wiremock` + DB reopen | 新 worker 集成目标，命令由 PLAN 固定 | W0 pending | pending |
-| source | ACTION-12 | 实际观测重复 pk 拒写、按需 Trino、全 patch 离线零调用 | fake Engine + real Trino | 新 `trino_action_it` 目标，命令由 PLAN 固定 | W0 pending | pending |
+| Plans | Requirement | Secure behavior / failure | Test type | Representative automated command | Status |
+|-------|-------------|---------------------------|-----------|----------------------------------|--------|
+| 05-01, 05-02 | ACTION-01..06,08 | 参数矩阵、五类 rule、逐项摘要、masked criteria、validate-only 零写入 | unit + SQLite + real PG | `cargo test -p ontoforge-action --test action --locked batch_ -- --nocapture` | planned; tests pending |
+| 05-03, 05-04 | ACTION-08,09 | 共享 token、旧格式失效、稳定读集锁序、双后端故障回滚与同 pk 并发 | SQLite + real PG | `cargo test -p ontoforge-action --features embedded-pg --test action_pg --locked concurrent_same_pk_ -- --ignored --nocapture` | planned; tests pending |
+| 05-05 | ACTION-10 | 同键竞态一日志一 outbox、异参拒绝、失权重放拒绝、删除后最小回执 | SQLite + real PG | `cargo test -p ontoforge-action --features embedded-pg --test idempotency_pg --locked pg_same_key_ -- --ignored --nocapture` | planned; tests pending |
+| 05-06 | ACTION-12 | 实际观测重复 pk 拒写、按需 Trino、全 patch 离线零调用 | fake Engine + real Trino | `cargo test -p ontoforge-action --test trino_action_it --locked trino_action_ -- --ignored --nocapture` | planned; tests pending |
+| 05-07 | ACTION-07,11 | 非 Action principal 写被拒；提交后崩溃、HTTP 失败、发送后标记前崩溃重试同 event_id | source/API audit + `wiremock` + DB reopen | `cargo test -p ontoforge-action --test outbox --locked crash_ -- --nocapture` | planned; tests pending |
 
 ## Wave 0 Requirements
 
