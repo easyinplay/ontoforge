@@ -4,7 +4,7 @@ use std::time::Duration;
 use camino::Utf8PathBuf;
 use ontoforge_action::{ActionItem, ActionLimits, ActionRequest, ActionService};
 use ontoforge_auth::{Principal, PrincipalId, scope::{PrincipalScope, TypeScope}};
-use ontoforge_expr::{Pred, rowpred::Attrs};
+use ontoforge_expr::{Pred, Operand, rowpred::Attrs};
 use ontoforge_query::TokenCodec;
 use ontoforge_schema::load_from_memory;
 use ontoforge_storage::{
@@ -82,7 +82,10 @@ async fn source_required_offline_is_engine_unavailable_without_tx() {
     let mut scope = PrincipalScope::default();
     scope.actions.insert("renameGate".to_owned().try_into().expect("action"));
     scope.types.insert("Gate".to_owned().try_into().expect("type"), TypeScope {
-        row: Pred::Const(true),
+        row: Pred::IsNull {
+            operand: Operand::Column("status".to_owned().try_into().expect("property")),
+            negated: true,
+        },
         columns: ["code", "name", "status"].into_iter().map(|name| (
             name.to_owned().try_into().expect("property"), Pred::Const(true),
         )).collect(),
