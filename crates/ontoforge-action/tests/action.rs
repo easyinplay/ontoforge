@@ -123,6 +123,7 @@ rules:
                         "extra": true
                     }))
                     .expect("params"),
+                    expected_versions: Default::default(),
                 }],
                 validate_only: false,
             },
@@ -239,6 +240,19 @@ rules:
     };
     let mut scope = PrincipalScope::default();
     scope.actions.insert("updateGates".to_owned().try_into().expect("action"));
+    let limited = ActionService::new(&store, ActionLimits::new(8, 1, 65536).expect("limits"));
+    let limited_result = limited.execute(&principal, &scope, version, ActionRequest {
+        action: "updateGates".to_owned(), command_id: Some("too-many-edits".to_owned()),
+        items: vec![ontoforge_action::ActionItem {
+            params: serde_json::from_value(serde_json::json!({
+                "gate": "hidden", "doomed": "B1", "pilot": "P1",
+                "newCode": "C1", "name": "New"
+            })).expect("params"),
+            expected_versions: Default::default(),
+        }], validate_only: false,
+    }).await.expect_err("expanded edits must be bounded before target reads");
+    assert!(limited_result.to_string().contains("edit count exceeds host limits"),
+        "unexpected limit result: {limited_result}");
     let receipt = ActionService::new(&store, ActionLimits::new(8, 16, 65536).expect("limits"))
         .execute(&principal, &scope, version, ActionRequest {
             action: "updateGates".to_owned(), command_id: Some("all-rules".to_owned()),
@@ -247,6 +261,7 @@ rules:
                     "gate": "A1", "doomed": "B1", "pilot": "P1",
                     "newCode": "C1", "name": "New"
                 })).expect("params"),
+                expected_versions: Default::default(),
             }],
             validate_only: false,
         }).await;
@@ -257,6 +272,102 @@ rules:
     assert_eq!(ordinals, [0, 1, 2, 3, 4]);
     let pool = SqlitePoolOptions::new().max_connections(1)
         .connect_with(sqlite_connect_options(&path)).await.expect("inspect store");
+    let commands: i64 = sqlx::query_scalar("SELECT count(*) FROM of_action_command")
+        .fetch_one(&pool).await.expect("commands");
+    let outbox: i64 = sqlx::query_scalar("SELECT count(*) FROM of_webhook_outbox")
+        .fetch_one(&pool).await.expect("outbox");
+    assert_eq!((commands, outbox), (1, 1));
+    assert_eq!(store.read_log(0, 10).await.expect("log").len(), 2);
+}
+
+#[tokio::test]
+async fn batch_ordinal_and_same_pk_order_are_stable() {
+    const DEFS: &str = "kind: ObjectType
+apiName: Gate
+backing: editOnly
+primaryKey: code
+properties:
+  code: { type: string, required: true }
+  name: { type: string, required: true }
+---
+kind: ActionType
+apiName: changeGate
+parameters:
+  gate: { type: { objectReference: Gate }, required: true }
+  name: { type: string, required: true }
+  second: { type: string, default: Default }
+rules:
+  - kind: modifyObject
+    object: gate
+    properties:
+      name: { param: name }
+  - kind: modifyObject
+    object: gate
+    properties:
+      name: { param: second }
+";
+    let dir = tempfile::tempdir().expect("tempdir");
+    let path = Utf8PathBuf::from_path_buf(dir.path().join("edit.db")).expect("utf8 path");
+    let store = EditStore::open(StoreSettings {
+        backend: BackendSettings::Sqlite { path: path.clone() },
+        lock_timeout: Duration::from_secs(5),
+        probe_timeout: Duration::from_secs(5),
+        trino_catalog: None,
+    }).await.expect("open store");
+    let loaded = load_from_memory(&[("ontology.yaml", "apiName: demo\n"), ("defs.yaml", DEFS)]);
+    assert!(loaded.diagnostics.is_empty(), "{:?}", loaded.diagnostics);
+    let version = reload(&store, &loaded.ontology.expect("ontology"), &ReloadOptions::default())
+        .await.expect("reload").def_version.expect("version");
+    store.commit(Commit {
+        actor: Actor::Principal("https://idp.example.com|alice".to_owned()),
+        action: "seed".to_owned(), def_version: version, params: serde_json::Value::Null,
+        edits: vec![Edit::Object {
+            type_name: "Gate".to_owned().try_into().expect("type"),
+            pk: PropertyValue::String("A1".to_owned()),
+            op: ObjectOp::Set(BTreeMap::from([(
+                "name".to_owned().try_into().expect("property"),
+                PropertyValue::String("Old".to_owned()),
+            )])),
+        }],
+    }).await.expect("seed");
+    let principal = Principal {
+        id: PrincipalId::new("https://idp.example.com", "alice"),
+        issuer: "https://idp.example.com".to_owned(),
+        subject: "alice".to_owned(), groups: BTreeSet::new(), attrs: Attrs::new(),
+    };
+    let mut scope = PrincipalScope::default();
+    scope.actions.insert("changeGate".to_owned().try_into().expect("action"));
+    let service = ActionService::new(&store, ActionLimits::new(8, 8, 65536).expect("limits"));
+    let item = |name: &str| ontoforge_action::ActionItem {
+        params: serde_json::from_value(serde_json::json!({"gate": "A1", "name": name}))
+            .expect("params"),
+        expected_versions: Default::default(),
+    };
+    let receipt = service.execute(&principal, &scope, version, ActionRequest {
+        action: "changeGate".to_owned(), command_id: Some("ordered".to_owned()),
+        items: vec![item("First"), item("Second")], validate_only: false,
+    }).await.expect("ordered batch");
+    assert_eq!(receipt.items.len(), 2);
+    let edits: Vec<_> = receipt.items.iter().flat_map(|item| item.edits.iter()
+        .map(move |edit| (item.item_ordinal, edit.rule_ordinal, edit.edit_ordinal,
+            edit.version_after))).collect();
+    assert_eq!(edits, [(0, 0, 0, 2), (0, 1, 1, 3), (1, 0, 2, 4), (1, 1, 3, 5)]);
+    let active = store.active_definition().await.expect("active");
+    let row = store.read_object_edit(&active, &"Gate".to_owned().try_into().expect("type"),
+        &PropertyValue::String("A1".to_owned())).await.expect("read").expect("row");
+    assert_eq!(row.row.version, 5);
+    assert_eq!(row.row.set["name"],
+        PropertyValue::String("Default".to_owned()));
+
+    let mut invalid = item("Ignored");
+    invalid.params.insert("extra".to_owned(), serde_json::json!(true));
+    let failed = service.execute(&principal, &scope, version, ActionRequest {
+        action: "changeGate".to_owned(), command_id: Some("rollback".to_owned()),
+        items: vec![item("Valid"), invalid], validate_only: false,
+    }).await;
+    assert!(failed.is_err(), "later invalid item must reject whole batch");
+    let pool = SqlitePoolOptions::new().max_connections(1)
+        .connect_with(sqlite_connect_options(&path)).await.expect("inspect");
     let commands: i64 = sqlx::query_scalar("SELECT count(*) FROM of_action_command")
         .fetch_one(&pool).await.expect("commands");
     let outbox: i64 = sqlx::query_scalar("SELECT count(*) FROM of_webhook_outbox")
