@@ -90,7 +90,7 @@ SQLite and real PostgreSQL now prove full Action rollback after log, edit rows, 
 
 - The existing storage test support module was reused from the Action integration test. Three existing workspace packages became Action dev dependencies; `Cargo.lock` changed only the Action dependency list, with no new package or version.
 - Existing 05-03 CAS already satisfied the race behavior. No production lock or isolation contract was changed. A feature-gated `execute_with_test_gate` provides deterministic test timing after preparation.
-- The missing target case exercises `createObject` from version zero, with an explicit absent-row assertion before the two concurrent requests. It establishes absent-key CAS behavior; it does not claim a separate source-backed guard-read scenario.
+- The absent edit case exercises `createObject` from version zero, with an explicit absent-row assertion before the two concurrent requests. It establishes absent-key CAS behavior; the source-backed target guard-read race remains in 05-06 and is not counted as 05-04 coverage.
 
 ## Self-Check: PASSED
 

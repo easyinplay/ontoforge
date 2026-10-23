@@ -330,7 +330,7 @@ async fn concurrent_multirow_reverse_request_order_does_not_deadlock() {
 
 #[tokio::test(flavor = "multi_thread")]
 #[ignore = "needs ONTOFORGE_PG_URL or --features embedded-pg"]
-async fn concurrent_guard_absent_target_insert_is_denied() {
+async fn concurrent_absent_edit_create_is_serialized() {
     let f = fixture().await;
     let active = f.pg.store.active_definition().await.unwrap();
     let absent =
