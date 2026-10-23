@@ -1,6 +1,6 @@
 //! Delivery of committed Action events from the durable outbox.
 
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use chrono::{DateTime, Utc};
 use ontoforge_storage::commit::ClaimedOutboxEvent;
@@ -119,20 +119,35 @@ impl<'a> WebhookWorker<'a> {
         now: DateTime<Utc>,
         mut after_send: impl FnMut(&ClaimedOutboxEvent) -> Result<(), WebhookError>,
     ) -> Result<usize, WebhookError> {
-        let until = now
-            + chrono::Duration::from_std(self.config.lease_duration)
-                .map_err(|_| WebhookError::Config)?;
-        let events = self
-            .store
-            .claim_due_outbox(now, &self.worker_id, until, self.config.batch_limit)
-            .await?;
-        let count = events.len();
-        for event in events {
-            match self.transport.send(&self.config, &event).await {
+        let started = Instant::now();
+        let lease_duration = chrono::Duration::from_std(self.config.lease_duration)
+            .map_err(|_| WebhookError::Config)?;
+        let mut count = 0;
+        while count < self.config.batch_limit as usize {
+            let lease_start = if count == 0 {
+                now
+            } else {
+                now + chrono::Duration::from_std(started.elapsed())
+                    .map_err(|_| WebhookError::Config)?
+            };
+            // Keep this poll's due cutoff fixed so a failed event is not retried twice in one poll.
+            let Some(event) = self
+                .store
+                .claim_due_outbox(now, &self.worker_id, lease_start + lease_duration, 1)
+                .await?
+                .pop()
+            else {
+                break;
+            };
+            let result = self.transport.send(&self.config, &event).await;
+            let completed_at = now
+                + chrono::Duration::from_std(started.elapsed())
+                    .map_err(|_| WebhookError::Config)?;
+            match result {
                 Ok(()) => {
                     after_send(&event)?;
                     self.store
-                        .mark_delivered(&event.event_id, &event.lease_owner, now)
+                        .mark_delivered(&event.event_id, &event.lease_owner, completed_at)
                         .await?;
                 }
                 Err(category) => {
@@ -140,7 +155,7 @@ impl<'a> WebhookWorker<'a> {
                         StoreError::Corrupt("outbox attempt count overflow".to_owned())
                     })?;
                     let backoff = 1_i64 << (attempts - 1).min(16);
-                    let retry_at = now + chrono::Duration::seconds(backoff.min(300));
+                    let retry_at = completed_at + chrono::Duration::seconds(backoff.min(300));
                     self.store
                         .record_retry(
                             &event.event_id,
@@ -152,6 +167,7 @@ impl<'a> WebhookWorker<'a> {
                         .await?;
                 }
             }
+            count += 1;
         }
         Ok(count)
     }

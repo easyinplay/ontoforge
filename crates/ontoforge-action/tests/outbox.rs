@@ -257,6 +257,122 @@ async fn outbox_row(path: &Utf8PathBuf) -> (i64, String, Option<String>, Option<
     .expect("outbox row")
 }
 
+async fn add_second_outbox_event(path: &Utf8PathBuf, event_id: &str) -> String {
+    let pool = SqlitePoolOptions::new()
+        .max_connections(1)
+        .connect_with(sqlite_connect_options(path))
+        .await
+        .expect("inspection pool");
+    let second = format!("{event_id}-second");
+    sqlx::query("INSERT INTO of_edit_log (event_id, actor, action, committed_at, def_version, params) SELECT ?, actor, action, committed_at, def_version, params FROM of_edit_log WHERE event_id = ?")
+        .bind(&second)
+        .bind(event_id)
+        .execute(&pool)
+        .await
+        .expect("second log event");
+    let (payload, due): (String, String) =
+        sqlx::query_as("SELECT payload, next_attempt_at FROM of_webhook_outbox WHERE event_id = ?")
+            .bind(event_id)
+            .fetch_one(&pool)
+            .await
+            .expect("first outbox event");
+    let mut payload: serde_json::Value = serde_json::from_str(&payload).expect("JSON payload");
+    payload["event_id"] = serde_json::Value::String(second.clone());
+    sqlx::query(
+        "INSERT INTO of_webhook_outbox (event_id, payload, next_attempt_at) VALUES (?, ?, ?)",
+    )
+    .bind(&second)
+    .bind(payload.to_string())
+    .bind(due)
+    .execute(&pool)
+    .await
+    .expect("second outbox event");
+    second
+}
+
+#[tokio::test]
+async fn retry_delay_starts_after_slow_response() {
+    let (_dir, path, store, receipt) = committed().await;
+    let server = MockServer::start().await;
+    Mock::given(method("POST"))
+        .respond_with(ResponseTemplate::new(503).set_delay(Duration::from_millis(300)))
+        .mount(&server)
+        .await;
+    let now = poll_time(&receipt);
+    assert_eq!(worker(&store, &server).poll_at(now).await.unwrap(), 1);
+    let next = DateTime::parse_from_rfc3339(&outbox_row(&path).await.1)
+        .unwrap()
+        .to_utc();
+    assert!(
+        next >= now + chrono::Duration::milliseconds(1200),
+        "retry must be scheduled after the response: {next}"
+    );
+}
+
+#[tokio::test]
+async fn later_event_is_unclaimed_while_first_delivery_is_in_flight() {
+    let (_dir, path, store, receipt) = committed().await;
+    let second = add_second_outbox_event(&path, &receipt.event_id).await;
+    let server = MockServer::start().await;
+    let (started_tx, started_rx) = tokio::sync::oneshot::channel();
+    let started_tx = std::sync::Mutex::new(Some(started_tx));
+    Mock::given(method("POST"))
+        .respond_with(move |_: &wiremock::Request| {
+            if let Some(tx) = started_tx.lock().unwrap().take() {
+                let _ = tx.send(());
+            }
+            ResponseTemplate::new(204).set_delay(Duration::from_millis(400))
+        })
+        .mount(&server)
+        .await;
+    let sender = worker(&store, &server);
+    let inspect = async {
+        started_rx.await.expect("first request started");
+        let pool = SqlitePoolOptions::new()
+            .max_connections(1)
+            .connect_with(sqlite_connect_options(&path))
+            .await
+            .expect("inspection pool");
+        let owner: Option<String> =
+            sqlx::query_scalar("SELECT lease_owner FROM of_webhook_outbox WHERE event_id = ?")
+                .bind(&second)
+                .fetch_one(&pool)
+                .await
+                .expect("second lease");
+        assert!(owner.is_none(), "later event was leased before its send");
+    };
+    let (delivered, ()) = tokio::join!(sender.poll_at(poll_time(&receipt)), inspect);
+    assert_eq!(delivered.unwrap(), 2);
+    assert_eq!(server.received_requests().await.unwrap().len(), 2);
+}
+
+#[tokio::test]
+async fn poll_does_not_exceed_batch_limit() {
+    let (_dir, path, store, receipt) = committed().await;
+    add_second_outbox_event(&path, &receipt.event_id).await;
+    let server = MockServer::start().await;
+    Mock::given(method("POST"))
+        .respond_with(ResponseTemplate::new(204))
+        .mount(&server)
+        .await;
+    let sender = WebhookWorker::new(
+        &store,
+        WebhookConfig::new(
+            &format!("{}/events", server.uri()),
+            Duration::from_secs(10),
+            Duration::from_secs(2),
+            1,
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    let now = poll_time(&receipt);
+    assert_eq!(sender.poll_at(now).await.unwrap(), 1);
+    assert_eq!(server.received_requests().await.unwrap().len(), 1);
+    assert_eq!(sender.poll_at(now).await.unwrap(), 1);
+    assert_eq!(server.received_requests().await.unwrap().len(), 2);
+}
+
 #[tokio::test]
 async fn crash_before_send_committed_event_survives_restart() {
     let (_dir, path, store, receipt) = committed().await;
@@ -322,13 +438,10 @@ async fn http_failure_retries_with_same_event_id() {
     assert_eq!(row.3.as_deref(), Some("http_status_503"));
     assert!(!row.3.as_deref().unwrap().contains("SECRET"));
     assert_eq!(sender.poll_at(first).await.expect("not due"), 0);
-    assert_eq!(
-        sender
-            .poll_at(first + chrono::Duration::seconds(1))
-            .await
-            .expect("retry"),
-        1
-    );
+    let retry_at = DateTime::parse_from_rfc3339(&row.1)
+        .expect("retry time")
+        .to_utc();
+    assert_eq!(sender.poll_at(retry_at).await.expect("retry"), 1);
     assert!(outbox_row(&path).await.2.is_some());
     let requests = server.received_requests().await.expect("requests");
     assert_eq!(requests.len(), 2);
@@ -488,7 +601,8 @@ async fn retry_backoff_caps_at_five_minutes_without_leaking_response() {
             .expect("next attempt")
             .to_utc();
         let delay = (1_i64 << (attempt - 1)).min(300);
-        assert_eq!(next - due, chrono::Duration::seconds(delay));
+        assert!(next - due >= chrono::Duration::seconds(delay));
+        assert!(next - due < chrono::Duration::seconds(delay + 1));
         assert_eq!(sender.poll_at(due).await.expect("not yet due"), 0);
         due = next;
     }
