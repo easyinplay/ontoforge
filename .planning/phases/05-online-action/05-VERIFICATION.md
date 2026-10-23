@@ -1,12 +1,12 @@
 ---
 phase: 05-online-action
-verified: 2026-10-23T17:17:15Z
+verified: 2026-10-23T18:23:24Z
 status: human_needed
 score: 5/5 must-haves verified
 behavior_unverified: 0
 overrides_applied: 0
-covered_files: [".github/workflows/ci.yml",".github/workflows/nightly.yml",".planning/phases/05-online-action/05-01-PLAN.md",".planning/phases/05-online-action/05-01-SUMMARY.md",".planning/phases/05-online-action/05-02-PLAN.md",".planning/phases/05-online-action/05-02-SUMMARY.md",".planning/phases/05-online-action/05-03-PLAN.md",".planning/phases/05-online-action/05-03-SUMMARY.md",".planning/phases/05-online-action/05-04-PLAN.md",".planning/phases/05-online-action/05-04-SUMMARY.md",".planning/phases/05-online-action/05-05-PLAN.md",".planning/phases/05-online-action/05-05-SUMMARY.md",".planning/phases/05-online-action/05-06-PLAN.md",".planning/phases/05-online-action/05-06-SUMMARY.md",".planning/phases/05-online-action/05-07-PLAN.md",".planning/phases/05-online-action/05-07-SUMMARY.md","Cargo.lock","crates/ontoforge-action/Cargo.toml","crates/ontoforge-action/src/criteria.rs","crates/ontoforge-action/src/fingerprint.rs","crates/ontoforge-action/src/lib.rs","crates/ontoforge-action/src/outbox.rs","crates/ontoforge-action/src/params.rs","crates/ontoforge-action/src/rules.rs","crates/ontoforge-action/src/source.rs","crates/ontoforge-action/src/version.rs","crates/ontoforge-action/tests/action.rs","crates/ontoforge-action/tests/action_pg.rs","crates/ontoforge-action/tests/entrypoints.rs","crates/ontoforge-action/tests/idempotency.rs","crates/ontoforge-action/tests/idempotency_pg.rs","crates/ontoforge-action/tests/outbox.rs","crates/ontoforge-action/tests/outbox_pg.rs","crates/ontoforge-action/tests/security.rs","crates/ontoforge-action/tests/source.rs","crates/ontoforge-action/tests/trino_action_it.rs","crates/ontoforge-action/tests/version.rs","crates/ontoforge-engine/src/config.rs","crates/ontoforge-query/Cargo.toml","crates/ontoforge-query/src/cursor.rs","crates/ontoforge-query/src/lib.rs","crates/ontoforge-query/tests/pk_read.rs","crates/ontoforge-query/tests/security.rs","crates/ontoforge-schema/src/ir/action.rs","crates/ontoforge-schema/src/ir/mod.rs","crates/ontoforge-schema/src/lint/e08.rs","crates/ontoforge-schema/src/lint/structure/w09.rs","crates/ontoforge-schema/src/loader/dispatch.rs","crates/ontoforge-schema/src/validate/actions.rs","crates/ontoforge-schema/tests/action_types.rs","crates/ontoforge-storage/Cargo.toml","crates/ontoforge-storage/migrations/postgres/0004_action.sql","crates/ontoforge-storage/migrations/sqlite/0004_action.sql","crates/ontoforge-storage/src/commit.rs","crates/ontoforge-storage/src/import.rs","crates/ontoforge-storage/tests/conformance/mod.rs","crates/ontoforge/WEBHOOK-WORKER.md","crates/ontoforge/src/cli.rs","crates/ontoforge/src/lib.rs","crates/ontoforge/src/webhook_worker.rs","crates/ontoforge/tests/cli_webhook_worker.rs","crates/ontoforge/tests/snapshots/invalid_examples__v03-function-rule.snap","schemas/ontoforge-definition.schema.json"]
-covered_digest: "v3:sha256:dea30394659522cab748fe4d88b7ff08c93ec664a30f683115b6d5b9969035ce"
+covered_files: [".github/workflows/ci.yml",".github/workflows/nightly.yml",".planning/phases/05-online-action/05-01-PLAN.md",".planning/phases/05-online-action/05-01-SUMMARY.md",".planning/phases/05-online-action/05-02-PLAN.md",".planning/phases/05-online-action/05-02-SUMMARY.md",".planning/phases/05-online-action/05-03-PLAN.md",".planning/phases/05-online-action/05-03-SUMMARY.md",".planning/phases/05-online-action/05-04-PLAN.md",".planning/phases/05-online-action/05-04-SUMMARY.md",".planning/phases/05-online-action/05-05-PLAN.md",".planning/phases/05-online-action/05-05-SUMMARY.md",".planning/phases/05-online-action/05-06-PLAN.md",".planning/phases/05-online-action/05-06-SUMMARY.md",".planning/phases/05-online-action/05-07-PLAN.md",".planning/phases/05-online-action/05-07-SUMMARY.md","Cargo.lock","crates/ontoforge-action/Cargo.toml","crates/ontoforge-action/src/criteria.rs","crates/ontoforge-action/src/fingerprint.rs","crates/ontoforge-action/src/lib.rs","crates/ontoforge-action/src/outbox.rs","crates/ontoforge-action/src/params.rs","crates/ontoforge-action/src/rules.rs","crates/ontoforge-action/src/source.rs","crates/ontoforge-action/src/version.rs","crates/ontoforge-action/tests/action.rs","crates/ontoforge-action/tests/action_pg.rs","crates/ontoforge-action/tests/entrypoints.rs","crates/ontoforge-action/tests/idempotency.rs","crates/ontoforge-action/tests/idempotency_pg.rs","crates/ontoforge-action/tests/outbox.rs","crates/ontoforge-action/tests/outbox_pg.rs","crates/ontoforge-action/tests/security.rs","crates/ontoforge-action/tests/source.rs","crates/ontoforge-action/tests/trino_action_it.rs","crates/ontoforge-action/tests/version.rs","crates/ontoforge-engine/src/config.rs","crates/ontoforge-query/Cargo.toml","crates/ontoforge-query/src/cursor.rs","crates/ontoforge-query/src/lib.rs","crates/ontoforge-query/tests/pk_read.rs","crates/ontoforge-query/tests/security.rs","crates/ontoforge-schema/src/ir/action.rs","crates/ontoforge-schema/src/ir/mod.rs","crates/ontoforge-schema/src/lint/e08.rs","crates/ontoforge-schema/src/lint/structure/w09.rs","crates/ontoforge-schema/src/loader/dispatch.rs","crates/ontoforge-schema/src/validate/actions.rs","crates/ontoforge-schema/tests/action_types.rs","crates/ontoforge-storage/Cargo.toml","crates/ontoforge-storage/migrations/postgres/0004_action.sql","crates/ontoforge-storage/migrations/sqlite/0004_action.sql","crates/ontoforge-storage/src/commit.rs","crates/ontoforge-storage/src/import.rs","crates/ontoforge-storage/tests/conformance/mod.rs","crates/ontoforge-storage/tests/reload_pg.rs","crates/ontoforge/WEBHOOK-WORKER.md","crates/ontoforge/src/cli.rs","crates/ontoforge/src/lib.rs","crates/ontoforge/src/webhook_worker.rs","crates/ontoforge/tests/cli_webhook_worker.rs","crates/ontoforge/tests/snapshots/invalid_examples__v03-function-rule.snap","schemas/ontoforge-definition.schema.json"]
+covered_digest: "v3:sha256:4ab7346c79d476e07d74153ded15b4ecfbb69a80e6de0a9616e68486c9a440df"
 re_verification:
   previous_status: gaps_found
   previous_score: 1/5
@@ -19,19 +19,20 @@ re_verification:
   regressions: []
   additional_checks:
     - "d4517e0 outbox 单条 claim、慢响应完成后计时与 batch limit：SQLite 11/11，embedded-pg 2/2"
+    - "CI run 40000699036 在 ac711db 上四 job success；Action PG ignored 与 Trino Action 非零发现且运行通过"
 human_verification:
-  - test: "匹配当前提交的远端 CI/nightly 高风险测试实际运行"
-    expected: "真实 PostgreSQL/Trino Action、outbox ignored targets 的发现数非零且执行通过。"
-    why_human: "gh run list 对当前分支返回 []，本地执行不证明远端 CI 运行。"
   - test: "确认真实部署中的 worker 常驻及下游接收"
     expected: "服务管理器重启退出的 webhook-worker；真实下游收到带稳定 event_id 的通知。"
-    why_human: "进程级 wiremock 测试证明实现路径，无法证明部署配置与真实下游。05-UAT.md 的总体确认仍待答复。"
+    why_human: "进程级 wiremock 与 CI 证明代码行为，无法证明真实部署配置或外部接收。"
+  - test: "完成 05-UAT.md 第 18 项总确认"
+    expected: "用户确认 Phase 5 真实使用没有未报告的偏差。"
+    why_human: "当前 UAT frontmatter 仍为 awaiting: user response。"
 ---
 
 # Phase 5: Online Action Verification
 
 **Phase Goal:** As a caller with Action permission, I want to modify the object graph through scoped online Actions, so that each change is atomic, auditable, safe to retry, and notifies downstream systems.
-**Status:** human_needed. 五条 ROADMAP 行为合同已有代码与测试证据；远端 CI 和实际部署仍待确认。
+**Status:** human_needed. 五条 ROADMAP 行为合同已有代码、测试与远端 CI 证据；真实部署和 UAT 仍待确认。
 **Re-verification:** 上次 1/5、四项 gap，本次 5/5、无代码 gap。
 
 ## User Flow Coverage
@@ -80,7 +81,7 @@ read_pk_source 的 SQL 固定 LIMIT 2，Action 专用 QueryContext.max_rows=3 �
 | ACTION-07 | SATISFIED within repository | production 写入入口扫描仅允许 Action 与 audited import；无法约束仓库外自建 host。 |
 | ACTION-08..09 | SATISFIED | scope/link/release 与令牌测试，新增同 RowKey 后别名三目标通过。 |
 | ACTION-10 | SATISFIED | SQLite/PG 幂等、失权和响应丢失重试目标已运行。 |
-| ACTION-11 | SATISFIED in code | CLI 常驻 worker 发送、重试、重启恢复三目标通过；真实部署前提见 WEBHOOK-WORKER.md。 |
+| ACTION-11 | SATISFIED in code and CI | CLI 常驻 worker 发送、重试、重启恢复；CI run 40000699036 的 PG webhook 2/2 与 Trino Action 4/4 通过。真实部署前提见 WEBHOOK-WORKER.md。 |
 | ACTION-12 | SATISFIED | 真实 Trino duplicate/offline 目标先前通过；后别名按需采样本轮通过。 |
 
 ## Behavioral Spot Checks
@@ -93,21 +94,22 @@ read_pk_source 的 SQL 固定 LIMIT 2，Action 专用 QueryContext.max_rows=3 �
 | cargo test -p ontoforge-action --test outbox --locked -j 2 | 11 passed, 0 failed；含新增慢 503、第二条未提前 claim、batch limit 三项 |
 | cargo test -p ontoforge-action --features embedded-pg --test outbox_pg --locked -j 2 -- --ignored | 2 passed, 0 failed；真实本地 PostgreSQL |
 | 先前八条目标，包括真实 PG/Trino 故障、竞态、duplicate/offline | 各 1 passed；详见前次复验记录，本轮未重复运行。 |
+| GitHub Actions ci run 40000699036 (code SHA ac711db) | integration: conformance_pg 36/36, reload_pg 11/11；Action PG atomicity 5/5、same-pk 4/4、idempotency 6/6、webhook 2/2；Trino Action 4/4；四 job success。 |
 
 ## Anti-Patterns And Gates
 
-d4517e0 的失败 503 在 HTTP 完成后起算退避；同轮 due cutoff 固定，防止立即重试；逐条 claim 避免后续事件 lease 在前一个慢请求期间耗尽。无环境变量的 PG 命令只触发测试前置检查，改用 embedded-pg 后 2/2 通过。相关实现文件未发现未关联 TBD/FIXME/XXX。ci.yml/nightly.yml 含 ignored test 非零发现及真实 PG/Trino 运行命令；gh run list --branch gsd/phase-05-online-action --limit 5 返回 []，没有匹配当前提交的远端运行证据。正式 gstack gate 与 05-UAT.md 总体确认尚无通过证据，不计入通过。
+d4517e0 的失败 503 在 HTTP 完成后起算退避；同轮 due cutoff 固定，防止立即重试；逐条 claim 避免后续事件 lease 在前一个慢请求期间耗尽。f57e7f4 将 TRUNCATE 测试的联合表补齐引用 of_edit_log 的 Action 表；ac711db 将新增系统表纳入 reload_pg 清单，均仅调整测试预期。CI run 40000699036 的 headSha 为已验证代码提交 ac711db，integration、Windows、Ubuntu、isolated-query-bench 四 job 全为 success；integration 日志证实 ignored discovery 非零且全部执行通过。正式 gstack gate 与 05-UAT.md 总体确认尚无通过证据，不计入通过。
 
 ## Human Verification Required
 
-1. 在当前 commit 的远端 CI/nightly 检查真实 PostgreSQL/Trino、outbox ignored targets 的发现数非零且执行成功；本地目标测试不能证明远端 workflow 成功。
-2. 在真实部署确认服务管理器维持 webhook-worker，进程重启后真实下游收到稳定 event_id；wiremock 仅证明本地执行路径。05-UAT.md 的总确认项仍待答复。
+1. 在真实部署确认服务管理器维持 webhook-worker，进程重启后真实下游收到稳定 event_id；CI 和 wiremock 不证明部署配置。
+2. 完成 05-UAT.md 第 18 项总体确认；当前仍为 awaiting: user response。
 
 ## Gaps Summary
 
-四项旧 gap 已关闭或重新判定合同范围。无可复现的代码 blocker；尚需完成上述人工/外部 gate 才能将 Phase 5 标记 passed。
+四项旧 gap 已关闭或重新判定合同范围，远端 CI 已在代码提交 ac711db 通过。无可复现的代码 blocker；真实部署、UAT 和正式 gstack gate 尚未确认。
 
 ---
 
-_Verified: 2026-10-23T17:17:15Z_
+_Verified: 2026-10-23T18:23:24Z_
 _Verifier: gsd-verifier; no commit._
