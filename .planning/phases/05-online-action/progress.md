@@ -1,6 +1,7 @@
 # Phase 5 progress
 
-当前节点：P4 Wave 1 已完成，下一份计划为 05-02。GSD 7/7 计划已通过独立 checker；正式 gstack gate 受工具限制未通过，使用记录在 `findings.md` 的 Phase 5 一次性替代治理。
+当前节点：P4 Wave 2（05-02 Task 2 GREEN）进行中，release source 专项指向 05-06。GSD 7/7 计划已通过独立 checker；正式 gstack gate 受工具限制未通过，使用记录在 `findings.md` 的 Phase 5 一次性替代治理。
+2026-10-23：恢复 Wave 2（05-02）执行。确认 HEAD `8c65ab1`，05-02 无代码提交或有效 RED；先执行 Task 1 原生 JUnit RED 门槛，再实现参数与 rule。事务内 scope/criteria 复核边界待只读第二意见和代码验证。
 
 - 2026-10-23：Phase 4 的 7/7 PLAN、36/36 verification、23/23 UAT 已通过。由 `9c4ba02` 建立 `gsd/phase-05-online-action`；保留 Phase 2 `.review-diagnostics/` 与 `docs/` 未跟踪文件。
 - 2026-10-23：读取 ROADMAP Phase 5 五项 Success Criteria 与 REQUIREMENTS ACTION-01..12；开始 P1。现有 roadmap 约束已明确，跳过战略层 `/office-hours` 和 `/plan-ceo-review`；Phase 级实现决策与跨模块事务需讨论。
@@ -21,4 +22,5 @@
 
 ## 待办
 
-- 执行 05-02，扩展 Action 参数、rules 与 batch 行为；关键模块 PR 前回补正式 gstack 审查。
+- 05-02 Task 1 已提交 `04a58e5`；Task 2 RED 已提交 `90343d3`。继续 storage 锁内 guard、scope/criteria 与 validate-only GREEN；关键模块 PR 前回补正式 gstack 审查。
+- 2026-10-23：上一 executor 在 Task 2 决策检查点结束，宿主此前的 `turn_aborted` 原因未知，未见数据库锁证据。Grok 第二意见与 ADR-0018 核对后，release source 专项调整到 05-06，05-02 不声称覆盖；Task 2 GREEN 工作区原样保留，继续验证并收尾。

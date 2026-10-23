@@ -22,4 +22,4 @@
 
 ## Next Step
 
-按 `05-02-PLAN.md` 执行下一波 Action 参数、rules 与 batch 扩展；05-01 tracer 的真实测试和提交证据见 `05-01-SUMMARY.md`。正式 gstack gate 仍为 BLOCKED，关键 PR 前回补。
+恢复 05-02 Task 2 GREEN 并完成真实测试；release source 验收移至 05-06（含 Action IR 入口及 source sampler），不得计入 05-02 完成项。05-01 提交证据见 `05-01-SUMMARY.md`。正式 gstack gate 仍为 BLOCKED，关键 PR 前回补。
