@@ -1,6 +1,6 @@
 # Phase 4 progress
 
-当前节点：Phase 4 的 7/7 原 PLAN 已执行；安全审计发现 3 项 high 阻断，正在准备缺口修复与重新验收。
+当前节点：Phase 4 的 7/7 原 PLAN、S1-S4 修复、匹配 SHA CI 和自动验证已完成；等待用户 UAT。
 
 - 2026-10-22：从已通过 CI 的 `c57165d` 建立 `gsd/phase-04-scoped-l0-read` 分支；保留原有未跟踪文件。
 - 2026-10-22：核对 Phase 3 UAT 2/2、VERIFICATION 8/8 和 V2 后的 CI run 39715917662 三 job 通过。
@@ -34,7 +34,9 @@
 - 2026-10-23：S1代码提交`dd19706`并推送；匹配full SHA `dd197063da260f8b92d180eafc733e0b7a81b54e` 的Linux CI run 39823812039已启动，四job运行中，artifact及性能阈值待核对。
 - 2026-10-23：run 39823812039匹配`dd19706`且四job全部成功；真实PG query 2/2、Trino/PG 5/5、smoke 1/1，137份integration plans为1-2 fragments。isolated四路各5+40样本，p95为115.77/443.80/346.56/0.85ms，450份plan均1 fragment，edited 45次source calls为0；artifact digest详`04-PERFORMANCE.md`。S2若修改生产代码，须再对新SHA重验。
 - 2026-10-23：Grok第二意见与本仓库复核后，ADR-0027确定T-04-28由可信host按connector注入；wire负例与aggregate 7/7、Clippy/fmt通过，真实SQL Server端到端列为未来host接入门禁，提交`1e20e03`。S3随机CI凭据与临时Trino catalog已本地完成YAML、shell、扫描门禁和PostgreSQL登录smoke；远端Linux CI待运行，T-04-32仍OPEN。
+- 2026-10-23：S3 提交 `c39a971` 并推送；run 39878005620 的 headSha 匹配，四 job 全绿。真实 PG 2/2、Trino/PG 5/5、smoke 1/1；137 份 integration plan 为 103 份单 fragment、34 份双 fragment。隔离四路各 5+40，p95 101.01/456.53/287.81/0.76 ms，edited PG-direct 45 次 source calls 为 0。日志和 139 个 artifact 文件无凭据命中，独立安全复审 35/35 closed。详 `04-PERFORMANCE.md`、`04-SECURITY.md`。
+- 2026-10-23：独立 GSD verifier 完成 `04-VERIFICATION.md`：ROADMAP 5/5 与 PLAN 31/31 must-have 有自动行为证据，`verification.status` 为 `passed`；交互式 UAT 尚未运行，Phase 4 仍未关闭。
 
 ## 待办
 
-- 关闭`04-SECURITY.md`中的high威胁，重跑匹配新commit的Linux CI，再执行 Phase 4 `gsd-verify-work` 和 phase-level verification。
+- 运行 `$gsd-verify-work 4`；用户 UAT 通过后才能关闭 Phase 4。

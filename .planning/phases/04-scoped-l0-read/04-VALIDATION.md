@@ -20,7 +20,7 @@ validated: "2026-10-23"
 | Real backend command | CI `integration` runs `query_read_pg`, `trino_query_it` and benchmark smoke with `--ignored` |
 | Performance command | CI `isolated-query-bench` runs `query_bench_it` with `--ignored` on a dedicated Linux runner |
 
-The local workspace command passed on 2026-10-23 (exit code 0). After the S1 boundary fix, [CI run 39823812039](https://github.com/easyinplay/ontoforge/actions/runs/39823812039) passed on `headSha` `dd197063da260f8b92d180eafc733e0b7a81b54e`: `integration`, `isolated-query-bench`, Windows test and Ubuntu test all concluded `success`. Ignored targets are absent from the ordinary local workspace run and executed in CI. The prior run `39818657834` covers the earlier `e8d6d6e` commit only.
+The local workspace command passed on 2026-10-23 (exit code 0). [CI run 39878005620](https://github.com/easyinplay/ontoforge/actions/runs/39878005620) matches current `headSha` `c39a971a25bb5ebf410bfdcd41243da4ab45c56c`: `integration`, `isolated-query-bench`, Windows test and Ubuntu test all concluded `success`, including workspace tests, Clippy and fmt. Ignored real-backend targets are absent from the ordinary local workspace run and executed in CI. Earlier runs cover earlier commits only.
 
 ## Per-Task Verification Map
 
@@ -45,7 +45,7 @@ The local workspace command passed on 2026-10-23 (exit code 0). After the S1 bou
 | 04-07-2 | QUERY-08, QUERY-09 | CI executes ignored tests and rejects zero-test discovery | CI `integration` job and plan/smoke artifacts | green |
 | 04-07-3 | QUERY-10 | Four p95 thresholds, 1-2 fragments and PG-direct zero source calls | CI `isolated-query-bench`; `04-PERFORMANCE.md` | green |
 
-Security remediation S1 (T-04-22/08) adds two external-crate `compile_fail` doctests for direct `ValidatedQuery` construction and mutation. Both failed before the fix because the bypass code compiled, then passed 2/2 after field visibility was restricted. `search_around` 6/6, all non-ignored query crate tests, focused Clippy/fmt, and the matching-SHA CI passed. T-04-28/32 remain security-audit decisions, not behavioral coverage gaps.
+Security remediation S1 (T-04-22/08) adds two external-crate `compile_fail` doctests for direct `ValidatedQuery` construction and mutation. Both failed before the fix because the bypass code compiled, then passed 2/2 after field visibility was restricted. S2 adds an aggregate wire rejection test and ADR-0027 for trusted host capability injection. S3 generates and masks job-scoped PostgreSQL credentials, scans artifacts, and passed matching-SHA CI. The independent security reaudit closed 35/35 threats; scope and residual boundaries are in `04-SECURITY.md`.
 
 ## Requirement Coverage
 

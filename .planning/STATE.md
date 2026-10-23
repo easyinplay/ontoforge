@@ -3,11 +3,11 @@ gsd_state_version: "1.0"
 current_phase: 4
 current_phase_name: Scoped L0 Read
 status: executing
-stopped_at: Phase 4 security gap closure before verification
+stopped_at: Phase 4 user UAT
 last_updated: "2026-10-23T01:44:42+08:00"
 last_activity: 2026-10-23
-last_activity_desc: Phase 4 CI passed at dd19706; two high security contract decisions remain open
-state_head: dd19706
+last_activity_desc: Phase 4 c39a971 CI and 36/36 verification passed; user UAT pending
+state_head: c39a971
 progress:
   total_phases: 7
   completed_phases: 3
@@ -28,9 +28,9 @@ See: .planning/PROJECT.md (updated 2026-10-19)
 ## Current Position
 
 Phase: 4 — Scoped L0 Read
-Plan: 04-07 of 04-07 complete; security gap closure required
+Plan: 04-07 of 04-07 complete; S1-S4 remediation and automated verification passed; user UAT pending
 Status: Executing
-Last activity: 2026-10-23 — S1 fixed and matching-SHA CI passed; two high security contract decisions remain open (see `phases/04-scoped-l0-read/04-SECURITY.md`)
+Last activity: 2026-10-23 — `c39a971` CI passed; security 35/35 closed; verification 36/36 passed; user UAT pending (see `phases/04-scoped-l0-read/`)
 
 Progress: [████░░░░░░] 43%
 
@@ -87,5 +87,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-10-21T08:48:07.463Z
-Stopped at: Phase 4 security gap closure before verification
+Stopped at: Phase 4 user UAT
 Resume file: None
