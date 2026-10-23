@@ -1,7 +1,7 @@
 use camino::Utf8PathBuf;
 use ontoforge_action::{ActionError, ActionLimits, ActionRequest, ActionService};
-use ontoforge_auth::{Principal, PrincipalId, scope::PrincipalScope};
-use ontoforge_expr::rowpred::Attrs;
+use ontoforge_auth::{Principal, PrincipalId, scope::{PrincipalScope, TypeScope}};
+use ontoforge_expr::{Pred, rowpred::Attrs};
 use ontoforge_schema::load_from_memory;
 use ontoforge_storage::commit::{ActionCommitError, Actor, Commit, Edit, EditError, ObjectOp};
 use ontoforge_storage::reload::{ReloadOptions, reload};
@@ -582,4 +582,82 @@ rules:
         .expect("outbox");
     assert_eq!((commands, outbox), (1, 1));
     assert_eq!(store.read_log(0, 10).await.expect("log").len(), 2);
+}
+
+#[tokio::test]
+#[expect(clippy::too_many_lines, reason = "SQLite fixture checks validation and five persisted table counts")]
+async fn validate_only_runs_full_pipeline_without_writes() {
+    const DEFS: &str = "kind: ObjectType
+apiName: Gate
+backing: editOnly
+primaryKey: code
+properties:
+  code: { type: string, required: true }
+  name: { type: string, required: true }
+---
+kind: ActionType
+apiName: createGate
+parameters:
+  code: { type: string, required: true }
+  name: { type: string, required: true }
+rules:
+  - kind: createObject
+    objectType: Gate
+    properties:
+      code: { param: code }
+      name: { param: name }
+";
+    let dir = tempfile::tempdir().expect("tempdir");
+    let path = Utf8PathBuf::from_path_buf(dir.path().join("edit.db")).expect("utf8 path");
+    let store = EditStore::open(StoreSettings {
+        backend: BackendSettings::Sqlite { path: path.clone() },
+        lock_timeout: Duration::from_secs(5),
+        probe_timeout: Duration::from_secs(5),
+        trino_catalog: None,
+    }).await.expect("open store");
+    let loaded = load_from_memory(&[("ontology.yaml", "apiName: demo\n"), ("defs.yaml", DEFS)]);
+    assert!(loaded.diagnostics.is_empty(), "{:?}", loaded.diagnostics);
+    let version = reload(&store, &loaded.ontology.expect("ontology"), &ReloadOptions::default())
+        .await.expect("reload").def_version.expect("version");
+    let principal = Principal {
+        id: PrincipalId::new("https://idp.example.com", "alice"),
+        issuer: "https://idp.example.com".to_owned(),
+        subject: "alice".to_owned(), groups: BTreeSet::new(), attrs: Attrs::new(),
+    };
+    let mut scope = PrincipalScope::default();
+    scope.actions.insert("createGate".to_owned().try_into().expect("action"));
+    scope.types.insert("Gate".to_owned().try_into().expect("type"), TypeScope {
+        row: Pred::Const(true),
+        columns: BTreeMap::from([
+            ("code".to_owned().try_into().expect("code"), Pred::Const(true)),
+            ("name".to_owned().try_into().expect("name"), Pred::Const(true)),
+        ]),
+    });
+    let request = ActionRequest {
+        action: "createGate".to_owned(), command_id: None,
+        items: vec![ontoforge_action::ActionItem {
+            params: serde_json::from_value(serde_json::json!({
+                "code": "A1", "name": "New"
+            })).expect("params"),
+            expected_versions: BTreeMap::default(),
+        }], validate_only: true,
+    };
+    let service = ActionService::new(&store, ActionLimits::new(8, 8, 65536).expect("limits"));
+    let outcome = service.execute(&principal, &scope, version, request.clone()).await;
+    assert!(outcome.is_ok(), "valid dry-run must succeed: {outcome:?}");
+    let denied = service.execute(&principal, &PrincipalScope::default(), version, request).await;
+    assert!(matches!(denied, Err(ActionError::ScopeDenied)));
+    let pool = SqlitePoolOptions::new().max_connections(1)
+        .connect_with(sqlite_connect_options(&path)).await.expect("inspect");
+    let skeletons: i64 = sqlx::query_scalar("SELECT count(*) FROM of_obj_gate")
+        .fetch_one(&pool).await.expect("objects");
+    let edits: i64 = sqlx::query_scalar("SELECT count(*) FROM of_edit_log_entry")
+        .fetch_one(&pool).await.expect("edits");
+    let logs: i64 = sqlx::query_scalar("SELECT count(*) FROM of_edit_log")
+        .fetch_one(&pool).await.expect("logs");
+    let commands: i64 = sqlx::query_scalar("SELECT count(*) FROM of_action_command")
+        .fetch_one(&pool).await.expect("commands");
+    let outbox: i64 = sqlx::query_scalar("SELECT count(*) FROM of_webhook_outbox")
+        .fetch_one(&pool).await.expect("outbox");
+    assert_eq!((skeletons, edits, logs, commands, outbox), (0, 0, 0, 0, 0));
 }
