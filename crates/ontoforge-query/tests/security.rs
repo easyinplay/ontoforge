@@ -2063,7 +2063,7 @@ fn version_changes_with_principal_scope_definition_and_row() {
 }
 
 #[tokio::test]
-async fn service_version_changes_with_scope() {
+async fn version_query_uses_format_tag_and_changes_with_scope() {
     let f = fixture().await;
     let active = f.store.active_definition().await.unwrap();
     f.store
@@ -2097,6 +2097,7 @@ async fn service_version_changes_with_scope() {
     .execute(request("Airport", "BER", &["name"]))
     .await
     .unwrap();
+    assert!(first.rows[0].version.starts_with("v1."), "query token needs a format tag");
     let mut narrower = f.scope.clone();
     narrower
         .types
