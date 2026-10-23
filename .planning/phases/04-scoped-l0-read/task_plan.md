@@ -38,8 +38,8 @@
 ## Security Remediation
 
 - [x] S1 (T-04-22/08)：外部 crate 的两条 `compile_fail` doctest RED 证明可绕过构造/修改，GREEN 后字段限为 `pub(crate)`、外部测试经 `ValidatedQuery::new`；query 全量、Clippy、fmt 通过。新 SHA 的真实后端重验归 S4。
-- [ ] S2 (T-04-28)：明确 connector capability 的可信 host/binding 合同，避免 wire 或普通调用方声明支持；先写 SQL Server integer SUM 反例，再实现最小可信来源或修订 PLAN 合同；验收为错误 pushdown 不发生且独立审计确认边界。
-- [ ] S3 (T-04-32)：核对公开短命 CI fixture 密码的可达性、日志及 artifact，正式确定日志去凭据范围和风险处置；验收为 `04-SECURITY.md` 记录证据、处置理由与剩余风险，不把公开测试密码称为真实 secret 泄露。
+- [x] S2 (T-04-28)：ADR-0027 锁定可信 host 按 connector 注入 capability；wire 负例和 aggregate 7/7、fmt、Clippy 通过。现有 `sum_integer=false` 仅证明 planner 不选 partial pushdown；真实 SQL Server 端到端列为未来 host 接入门禁。
+- [ ] S3 (T-04-32)：Phase 4 CI 的 PostgreSQL 密码在 step 内逐轮生成、先 mask 再启动服务，Trino catalog 使用运行时副本；保留 `nightly.yml` 的现有临时 fixture 接线并验证不受影响。验收：新 run 的 integration/isolated 日志不含当前密码，artifact 不含凭据，公开历史测试值的剩余风险写入 `04-SECURITY.md`。
 - [ ] S4：S1/S2 的新代码提交后重跑 workspace 测试、Clippy、fmt 和匹配新 SHA 的 Linux CI；重新核对真实 PG/Trino、EXPLAIN 与 isolated p95 artifact，再更新 `04-PERFORMANCE.md`。
 - [ ] S5：安全复审关闭或明确接受全部 high，完成 phase-level `VERIFICATION.md` 与 `$gsd-verify-work 4`；只有验收通过才同步 ROADMAP/STATE 为完成。
 

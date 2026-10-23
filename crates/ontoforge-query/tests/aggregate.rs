@@ -1123,3 +1123,21 @@ fn count_sum_avg_limits_phase4_defaults_are_exact() {
     });
     assert!(serde_json::from_value::<AggregateRequest>(injected).is_err());
 }
+
+#[test]
+fn aggregate_wire_request_rejects_capabilities() {
+    let request = AggregateRequest {
+        set: ObjectSet::Type {
+            object_type: name("Flight"),
+        },
+        group_by: vec![],
+        measures: vec![AggregateMeasure::Count { property: None }],
+    };
+    let mut wire = serde_json::to_value(request).unwrap();
+    wire.as_object_mut()
+        .unwrap()
+        .insert("capabilities".to_owned(), json!({"sumInteger": true}));
+
+    let error = serde_json::from_value::<AggregateRequest>(wire).unwrap_err();
+    assert!(error.to_string().contains("unknown field `capabilities`"));
+}
