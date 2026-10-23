@@ -14,6 +14,6 @@ expression: out.diagnostics
       "offset": 325,
       "length": 8
     },
-    "help": "use one of: `createObject`, `modifyObject`, `deleteObject`, `addLink`, `removeLink`"
+    "help": "use one of: `createObject`, `modifyObject`, `deleteObject`, `releaseObject`, `addLink`, `removeLink`"
   }
 ]
