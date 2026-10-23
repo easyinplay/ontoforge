@@ -1,5 +1,7 @@
 # Phase 5 findings
 
+- 2026-10-24：远端 `ci.yml` run `39997950852` 匹配 `e8c5e41`，integration 的 PostgreSQL conformance 35/36，通过的前两个单表 TRUNCATE 已验证 append-only trigger；三表 TRUNCATE 因 Phase 5 新增 `of_action_command`、`of_webhook_outbox` 对 `of_edit_log` 的 FK 先报 `0A000`，未达到预期 trigger `23000`。Grok 只读第二意见建议补齐依赖表或 `CASCADE`，不改 migration、不接受 `0A000` 作为 trigger 证据；本轮选显式表名。`isolated-query-bench` 通过，其余 job 当时仍运行。
+
 - 2026-10-23：独立 review 与 verifier 发现 source `seen.insert` 先于别名级需求判断，导致同 RowKey 后续别名或 item 的 criteria、token、release 可能漏采样。Grok 只读第二意见确认，并建议逐 occurrence 计算、按 key 缓存 edit 状态、实际采样前检查 `source_calls`，每 key 一次 Engine 调用；先补跨 item token 与双别名 release 的失败测试。`read_pk_source` 固定 `ctx.max_rows=3` 会在 Query host 限额 1 时突破旧行为；将上限由 Query/Action 调用方显式传入，保留 SQL LIMIT 2。两项均不能凭现有全量测试通过结案。
 - 2026-10-23：verifier 发现 `WebhookWorker::poll_at` 只有测试显式调用，当前 `ontoforge-server`/`ontoforge-api` 仍占位且 CLI 无长期 Action host。Phase 5 原验收要求实际投递，需可信运行入口持续驱动并说明部署前提；独立进程、Action 内后台任务或延期到 Phase 7 的分叉待 Grok 第二意见与现有结构核对。05-02 的计划路径 `src/execute.rs` 与实际 `src/lib.rs` 偏差只需修订计划，不复制实现。
 - 2026-10-23：Grok 第二意见与仓库结构一致：选独立常驻 `webhook-worker` CLI，使用服务管理器保证重启，worker 现有 lease/fencing 负责双进程 claim；Action 提交后触发一次后台任务无法覆盖进程退出或下游 500，推迟到 Phase 7 则不满足 ACTION-11。本次不增加死信上限，沿用现有 1..300 秒退避和 event_id 去重合同；可信 `[webhook]` 配置选择 target。测试须经真实 CLI 入口投递而非直接调用 `poll_at`，并覆盖重启和关闭；如果仅测 `--once` 则不能代替持续循环验收。

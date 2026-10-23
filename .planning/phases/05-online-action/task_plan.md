@@ -17,6 +17,7 @@
 - [x] P5b：关闭 webhook 生产驱动缺口。所有权：`crates/ontoforge/src/{cli,lib,webhook_worker}.rs`、`crates/ontoforge-engine/src/config.rs`、对应 CLI/配置集成测试及两个 Cargo.toml 的最小依赖。独立常驻 `ontoforge webhook-worker --server-config` 读取可信 `[webhook]` 设置并复用 EditStore；真实 CLI 测试覆盖投递、503 重试、进程重启恢复；Ctrl+C 退出尚未自动化测试。提交 `31f7c49`。
 - [ ] P5c：05-02 PLAN 的 `src/execute.rs` 假指针已校正到实际 `src/lib.rs`；复跑独立 verification、GSD UAT 与关键审查，远端 CI 和正式 gstack gate 分开记录。
 - [x] P5d：关闭新代码复审的 outbox 时间 WARNING。`d4517e0` 先取得两项有效 RED，再逐条 claim、完成时计时；SQLite outbox 11/11、真实 PG outbox 2/2、局部 Clippy/fmt/diff check 通过，独立代码复审 clean。
+- [ ] P5e：修复远端 `ci.yml` run `39997950852` 的 PostgreSQL conformance 回归。`append_only_rejects_truncate_on_pg` 的三表 TRUNCATE 未包含 Phase 5 新增的两个 `of_edit_log` 外键引用表，实际先报 `0A000`。保持 `23000` trigger 断言，显式补齐依赖表；使用失败的远端 RED、真实 PostgreSQL GREEN、重新触发匹配新 SHA 的 CI 验收。所有权：`crates/ontoforge-storage/tests/conformance/mod.rs`；不得更改 migration。
 
 ## Acceptance
 
@@ -26,4 +27,4 @@
 
 ## Next Step
 
-P5a/P5b/P5d 已提交；Action 组合测试、独立代码复审 clean、verification 5/5 行为标准已核对。`05-VERIFICATION.md` 为 human_needed：下一步完成 `05-UAT.md` 总体确认、匹配 HEAD 的远端 CI 与真实部署检查，正式 gstack gate 在可用宿主回补；此时不更新 REQUIREMENTS 完成勾选。
+P5e 先修复 PostgreSQL conformance 测试并重跑真实后端及远端 CI。`05-VERIFICATION.md` 为 human_needed；UAT 第 18 项、真实部署和正式 gstack gate 尚待确认，不更新 REQUIREMENTS 完成勾选。

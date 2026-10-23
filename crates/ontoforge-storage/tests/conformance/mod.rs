@@ -1148,9 +1148,8 @@ pub async fn append_only_rejects_truncate_on_pg(h: &Harness) {
     commit_ok(h, create_gate(v, "A1")).await;
     let before = log_rows(h).await;
 
-    // `of_edit_log` is referenced by the entry table, so PostgreSQL checks the foreign key before
-    // it fires the trigger when it is truncated alone. The entry and history tables are
-    // truncated alone, and all three together, so the statement reaches the trigger.
+    // PostgreSQL checks foreign keys before firing TRUNCATE triggers. The entry and history
+    // tables are checked alone; the joint statement includes every reference to of_edit_log.
     for table in ["of_edit_log_entry", "of_edit_history"] {
         let refusal = h
             .try_exec(&format!("TRUNCATE {}", h.sys_table(table)))
@@ -1162,13 +1161,14 @@ pub async fn append_only_rejects_truncate_on_pg(h: &Harness) {
     let all = LOG_TABLES
         .iter()
         .map(|(table, _, _)| h.sys_table(table))
+        .chain(["of_action_command", "of_webhook_outbox"].map(|table| h.sys_table(table)))
         .collect::<Vec<_>>()
         .join(", ");
     let refusal = h
         .try_exec(&format!("TRUNCATE {all}"))
         .await
-        .expect_err("TRUNCATE of the three tables must be refused");
-    assert_refused_as_append_only(&refusal, "TRUNCATE of all three");
+        .expect_err("TRUNCATE including all referencing tables must be refused");
+    assert_refused_as_append_only(&refusal, "TRUNCATE including all referencing tables");
     assert_eq!(refusal.code.as_deref(), Some("23000"));
     assert_eq!(
         log_rows(h).await,
