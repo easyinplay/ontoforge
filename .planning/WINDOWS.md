@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 5
+open_count: 6
 waived_count: 0
-fixed_count: 3
-total_count: 8
-last_updated: 2026-10-23T10:01:46.213Z
+fixed_count: 4
+total_count: 10
+last_updated: 2026-10-23T13:36:20.358Z
 ---
 
 # Broken Windows Ledger
@@ -22,7 +22,9 @@ last_updated: 2026-10-23T10:01:46.213Z
 | 5 | 02 | unrun-verify | .github/workflows/ci.yml |  | integration job (PostgreSQL + Trino 483, trino_it / cli_trino_it --ignored) not yet run on GitHub; describe_types_golden and decode_golden are PROVISIONAL until the first run (E21) | open |  | 2026-10-17T01:06:08.093Z |  |
 | 6 | 02 | unrun-verify | .github/workflows/nightly.yml |  | nightly Iceberg workflow (Trino 483/484, local-warehouse JDBC catalog, report-failure issue job) not yet run; needs a workflow_dispatch run (E21) | open |  | 2026-10-17T01:06:08.569Z |  |
 | 7 | 05 | stub | crates/ontoforge-action/src/lib.rs | 186 | validate-only is explicitly refused by the edit-only tracer; planned in 05-02 | open |  | 2026-10-23T07:09:41.788Z |  |
-| 8 | 05 | stub | crates/ontoforge-action/src/version.rs | 47 | source-backed token 在 05-03 无 source sampler，统一 VersionConflict；05-06 接入真实 source snapshot 与往返验收 | open |  | 2026-10-23T10:01:46.213Z |  |
+| 8 | 05 | stub | crates/ontoforge-action/src/version.rs | 47 | source-backed token 在 05-03 无 source sampler，统一 VersionConflict；05-06 接入真实 source snapshot 与往返验收 | fixed |  | 2026-10-23T10:01:46.213Z | 2026-10-23T13:36:20.358Z |
+| 9 | 05 | deviation | crates/ontoforge-action/tests/trino_action_it.rs |  | Task 2 真实集成断言首次有效运行即通过，缺少独立行为 RED。 | open |  | 2026-10-23T13:34:50.748Z |  |
+| 10 | 05 | deviation | .planning/phases/05-online-action/deferred-items.md |  | 默认 feature 组合的 cargo check/clippy 因现有配置问题失败，已用 embedded-pg 验证计划代码。 | open |  | 2026-10-23T13:34:51.389Z |  |
 
 ````json
 [
@@ -118,9 +120,35 @@ last_updated: 2026-10-23T10:01:46.213Z
     "file": "crates/ontoforge-action/src/version.rs",
     "line": 47,
     "description": "source-backed token 在 05-03 无 source sampler，统一 VersionConflict；05-06 接入真实 source snapshot 与往返验收",
-    "status": "open",
+    "status": "fixed",
     "reason": "",
     "recorded_at": "2026-10-23T10:01:46.213Z",
+    "resolved_at": "2026-10-23T13:36:20.358Z",
+    "milestone": null
+  },
+  {
+    "id": 9,
+    "kind": "deviation",
+    "phase": "05",
+    "file": "crates/ontoforge-action/tests/trino_action_it.rs",
+    "line": null,
+    "description": "Task 2 真实集成断言首次有效运行即通过，缺少独立行为 RED。",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-23T13:34:50.748Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 10,
+    "kind": "deviation",
+    "phase": "05",
+    "file": ".planning/phases/05-online-action/deferred-items.md",
+    "line": null,
+    "description": "默认 feature 组合的 cargo check/clippy 因现有配置问题失败，已用 embedded-pg 验证计划代码。",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-23T13:34:51.389Z",
     "resolved_at": null,
     "milestone": null
   }
