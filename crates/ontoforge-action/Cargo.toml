@@ -10,7 +10,8 @@ publish.workspace = true
 workspace = true
 
 [features]
-embedded-pg = ["ontoforge-storage/embedded-pg"]
+embedded-pg = ["ontoforge-storage/embedded-pg", "test-support"]
+test-support = ["ontoforge-storage/test-support"]
 
 [dependencies]
 ontoforge-storage = { path = "../ontoforge-storage" }
@@ -38,3 +39,4 @@ postgresql_embedded.workspace = true
 secrecy.workspace = true
 ulid.workspace = true
 wiremock.workspace = true
+regex.workspace = true

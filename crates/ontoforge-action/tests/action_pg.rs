@@ -1,3 +1,4 @@
+#![cfg(feature = "test-support")]
 #![allow(
     clippy::unused_async_trait_impl,
     reason = "editOnly token query has no source calls"

@@ -40,12 +40,15 @@ jobs:
           ! cargo tree --workspace --locked --features ontoforge-storage/embedded-pg -e normal,build,dev -i openssl
           ! cargo tree --workspace --locked --features ontoforge-storage/embedded-pg -e normal,build,dev -i native-tls
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - run: cargo check -p ontoforge-action --locked
       # The local PostgreSQL test path (`--features embedded-pg`) is off by default, so nothing
       # else compiles it. Check it here (compile and lint only: no run, no PostgreSQL download)
       # so that it cannot rot unnoticed (plan 03-20).
       - name: Clippy with the embedded-pg feature
         run: cargo clippy -p ontoforge-storage --features embedded-pg --all-targets --locked -- -D warnings
       - run: cargo test --workspace --locked
+      - name: Action SQLite, outbox and write-entry corpus
+        run: cargo test -p ontoforge-action --locked -- --nocapture
 
   # Real PostgreSQL + Trino 483 on Linux (ENGINE-05, ADR-0017). The tests are #[ignore]d so
   # that Windows needs no Docker; this job runs them with --ignored.
@@ -82,6 +85,24 @@ jobs:
           --test conformance_pg --test reload_pg --test scope_store
           --test migrate_pg --test history_masking --test import
           -- --ignored
+      - name: Action atomicity, races, idempotency and webhook delivery (PostgreSQL)
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${ONTOFORGE_PG_URL:?PostgreSQL service must set ONTOFORGE_PG_URL}"
+          run_ignored() {
+            local name="$1"; shift
+            local output count
+            output=$(cargo test "$@" -- --ignored --list)
+            count=$(printf '%s\n' "$output" | awk '/: test$/ { n++ } END { print n+0 }')
+            echo "$name: $count ignored tests discovered"
+            if [ "$count" -eq 0 ]; then echo "::error::$name discovered zero tests"; exit 1; fi
+            cargo test "$@" -- --ignored --nocapture
+          }
+          run_ignored action-atomicity -p ontoforge-storage --features test-support --test conformance_pg --locked action_atomic
+          run_ignored action-same-pk -p ontoforge-action --features test-support --test action_pg --locked concurrent_
+          run_ignored action-idempotency -p ontoforge-action --features test-support --test idempotency_pg --locked pg_
+          run_ignored action-webhook-pg -p ontoforge-action --test outbox_pg --locked postgres_outbox_
       # Trino uses a runtime catalog outside the checkout; nightly keeps the checked-in catalog.
       - name: Start Trino 483
         run: bash ci/query-services.sh trino
@@ -131,6 +152,19 @@ jobs:
           ONTOFORGE_BENCH_MODE: smoke
           ONTOFORGE_BENCH_ARTIFACT_DIR: ${{ github.workspace }}/target/query-bench
         run: cargo test -p ontoforge-query --test query_bench_it --locked -- --ignored --test-threads=1
+      - name: Action source integration (Trino + PostgreSQL)
+        env:
+          ONTOFORGE_TRINO_URL: http://localhost:8080
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${ONTOFORGE_PG_URL:?PostgreSQL service must set ONTOFORGE_PG_URL}"
+          : "${ONTOFORGE_TRINO_URL:?Trino service must set ONTOFORGE_TRINO_URL}"
+          output=$(cargo test -p ontoforge-action --test trino_action_it --locked trino_action_ -- --ignored --list)
+          count=$(printf '%s\n' "$output" | awk '/: test$/ { n++ } END { print n+0 }')
+          echo "trino_action_it: $count ignored tests discovered"
+          if [ "$count" -eq 0 ]; then echo "::error::trino_action_it discovered zero tests"; exit 1; fi
+          cargo test -p ontoforge-action --test trino_action_it --locked trino_action_ -- --ignored --nocapture
       # A green run must not mean "nothing ran" (RESEARCH Pitfall 8).
       - name: Ignored tests are actually there
         run: |
@@ -149,6 +183,8 @@ jobs:
             "ontoforge-auth rowpred_trino_it"
             "ontoforge-query trino_query_it"
             "ontoforge-query query_bench_it"
+            "ontoforge-action outbox_pg"
+            "ontoforge-action trino_action_it"
           )
           for target in "${targets[@]}"; do
             set -- $target

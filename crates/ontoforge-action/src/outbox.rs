@@ -139,8 +139,8 @@ impl<'a> WebhookWorker<'a> {
                     let attempts = event.attempt_count.checked_add(1).ok_or_else(|| {
                         StoreError::Corrupt("outbox attempt count overflow".to_owned())
                     })?;
-                    let backoff = 1_u64 << (attempts - 1).min(16);
-                    let retry_at = now + chrono::Duration::seconds(backoff.min(300) as i64);
+                    let backoff = 1_i64 << (attempts - 1).min(16);
+                    let retry_at = now + chrono::Duration::seconds(backoff.min(300));
                     self.store
                         .record_retry(
                             &event.event_id,

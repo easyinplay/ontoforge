@@ -1,4 +1,4 @@
-#![cfg(feature = "embedded-pg")]
+#![cfg(feature = "test-support")]
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Arc;

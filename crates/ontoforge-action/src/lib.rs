@@ -219,7 +219,7 @@ impl<'a, E: Engine> ActionService<'a, E> {
     }
 
     /// Synchronizes integration races after preparation and before the write transaction.
-    #[cfg(feature = "embedded-pg")]
+    #[cfg(feature = "test-support")]
     pub async fn execute_with_test_gate<F: Future<Output = ()>>(
         &self,
         principal: &Principal,

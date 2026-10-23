@@ -20,7 +20,7 @@ serde_json.workspace = true
 thiserror.workspace = true
 jsonwebtoken.workspace = true
 base64 = "=0.22.1"
-tokio.workspace = true
+tokio = { workspace = true, features = ["macros"] }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }

@@ -16,6 +16,7 @@ use ontoforge_schema::ir::{
 };
 use sea_query::{Alias, Expr, ExprTrait, Query};
 use serde_json::{Value, json};
+use sha2::{Digest, Sha256};
 
 use crate::commit::{
     Actor, Commit, Edit, EditError, LinkOp, ObjectOp, SystemActor, bind, cell_json, link_backing,
@@ -345,13 +346,13 @@ fn read_rows<R: RowReader>(
     file: &Utf8Path,
     opts: &ImportOptions,
     problems: &mut Problems,
-) -> Vec<R::Row> {
+) -> (Vec<R::Row>, String) {
     match format_of(file) {
         Some(Format::Csv) => read_csv(reader, file, opts, problems),
         Some(Format::Json) => read_json(reader, file, opts, problems),
         None => {
             problems.add(0, "the file must be a .csv or a .json file");
-            Vec::new()
+            (Vec::new(), String::new())
         }
     }
 }
@@ -395,15 +396,19 @@ fn read_csv<R: RowReader>(
     file: &Utf8Path,
     opts: &ImportOptions,
     problems: &mut Problems,
-) -> Vec<R::Row> {
+) -> (Vec<R::Row>, String) {
     let Some(handle) = open_limited(file, opts.max_bytes, problems) else {
-        return Vec::new();
+        return (Vec::new(), String::new());
+    };
+    let mut hashed = HashingReader {
+        inner: handle.take(opts.max_bytes.saturating_add(1)),
+        digest: Sha256::new(),
     };
     // The csv reader skips a byte order mark in front of the header.
     let mut csv = csv::ReaderBuilder::new()
         .has_headers(true)
         .flexible(false)
-        .from_reader(handle.take(opts.max_bytes.saturating_add(1)));
+        .from_reader(&mut hashed);
     let headers = match csv.headers() {
         Ok(headers) => headers.clone(),
         Err(error) => {
@@ -411,15 +416,15 @@ fn read_csv<R: RowReader>(
                 line_of(error.position()),
                 format!("cannot read the header: {error}"),
             );
-            return Vec::new();
+            return (Vec::new(), String::new());
         }
     };
     if headers.is_empty() {
         problems.add(1, "the file has no header line");
-        return Vec::new();
+        return (Vec::new(), String::new());
     }
     if !reader.header(&headers, problems) {
-        return Vec::new();
+        return (Vec::new(), String::new());
     }
 
     let mut rows = Vec::new();
@@ -463,7 +468,21 @@ fn read_csv<R: RowReader>(
         }
         rows.extend(reader.record(&record, place, problems));
     }
-    rows
+    drop(csv);
+    (rows, format!("{:x}", hashed.digest.finalize()))
+}
+
+struct HashingReader<R> {
+    inner: R,
+    digest: Sha256,
+}
+
+impl<R: Read> Read for HashingReader<R> {
+    fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+        let count = self.inner.read(buf)?;
+        self.digest.update(&buf[..count]);
+        Ok(count)
+    }
 }
 
 /// Reads the rows of a JSON file: an array of objects, one per row.
@@ -472,9 +491,9 @@ fn read_json<R: RowReader>(
     file: &Utf8Path,
     opts: &ImportOptions,
     problems: &mut Problems,
-) -> Vec<R::Row> {
+) -> (Vec<R::Row>, String) {
     let Some(handle) = open_limited(file, opts.max_bytes, problems) else {
-        return Vec::new();
+        return (Vec::new(), String::new());
     };
     let mut bytes = Vec::new();
     if let Err(error) = handle
@@ -482,7 +501,7 @@ fn read_json<R: RowReader>(
         .read_to_end(&mut bytes)
     {
         problems.add(0, format!("cannot read the file: {}", error.kind()));
-        return Vec::new();
+        return (Vec::new(), String::new());
     }
     if u64::try_from(bytes.len()).is_ok_and(|len| len > opts.max_bytes) {
         problems.add(
@@ -492,7 +511,7 @@ fn read_json<R: RowReader>(
                 opts.max_bytes
             ),
         );
-        return Vec::new();
+        return (Vec::new(), String::new());
     }
     let body = bytes.strip_prefix(b"\xef\xbb\xbf").unwrap_or(&bytes);
     let items = match serde_json::from_slice::<Value>(body) {
@@ -502,19 +521,19 @@ fn read_json<R: RowReader>(
                 0,
                 "the top level of a JSON import file must be an array of objects",
             );
-            return Vec::new();
+            return (Vec::new(), String::new());
         }
         Err(error) => {
             problems.add(
                 u32::try_from(error.line()).unwrap_or(u32::MAX),
                 format!("not valid JSON: {error}"),
             );
-            return Vec::new();
+            return (Vec::new(), String::new());
         }
     };
     if items.len() > opts.max_rows {
         problems.add(0, format!("the file has more than {} rows", opts.max_rows));
-        return Vec::new();
+        return (Vec::new(), String::new());
     }
     let mut rows = Vec::with_capacity(items.len());
     for (index, item) in items.iter().enumerate() {
@@ -527,7 +546,7 @@ fn read_json<R: RowReader>(
         };
         rows.extend(reader.item(item, place, problems));
     }
-    rows
+    (rows, format!("{:x}", Sha256::digest(&bytes)))
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -807,7 +826,7 @@ async fn import_objects(
 
     let mut problems = Problems::new(file);
     let mut reader = ObjectReader::new(Shape::new(ty)?);
-    let rows = read_rows(&mut reader, file, opts, &mut problems);
+    let (rows, source_digest) = read_rows(&mut reader, file, opts, &mut problems);
     if !problems.is_empty() {
         return Err(problems.into_error());
     }
@@ -848,7 +867,16 @@ async fn import_objects(
     if !problems.is_empty() {
         return Err(problems.into_error());
     }
-    commit_in_batches(store, def.def_version, file, edits, opts, &mut report).await?;
+    commit_in_batches(
+        store,
+        def.def_version,
+        file,
+        &source_digest,
+        edits,
+        opts,
+        &mut report,
+    )
+    .await?;
     Ok(report)
 }
 
@@ -1052,7 +1080,7 @@ async fn import_links(
         columns: [None, None],
         seen: FirstSeen::default(),
     };
-    let rows = read_rows(&mut reader, file, opts, &mut problems);
+    let (rows, source_digest) = read_rows(&mut reader, file, opts, &mut problems);
     if !problems.is_empty() {
         return Err(problems.into_error());
     }
@@ -1092,7 +1120,16 @@ async fn import_links(
     if !problems.is_empty() {
         return Err(problems.into_error());
     }
-    commit_in_batches(store, def.def_version, file, edits, opts, &mut report).await?;
+    commit_in_batches(
+        store,
+        def.def_version,
+        file,
+        &source_digest,
+        edits,
+        opts,
+        &mut report,
+    )
+    .await?;
     Ok(report)
 }
 
@@ -1300,6 +1337,7 @@ async fn commit_in_batches(
     store: &EditStore,
     def_version: i64,
     file: &Utf8Path,
+    source_digest: &str,
     edits: Vec<Edit>,
     opts: &ImportOptions,
     report: &mut ImportReport,
@@ -1316,7 +1354,7 @@ async fn commit_in_batches(
             actor: Actor::System(SystemActor::Import),
             action: "system:import".to_owned(),
             def_version,
-            params: json!({ "file": file_name, "batch": batch_index, "rows": batch.len() }),
+            params: json!({ "file": file_name, "source_digest": source_digest, "batch": batch_index, "rows": batch.len() }),
             edits: batch,
         };
         match store.commit(commit).await {
