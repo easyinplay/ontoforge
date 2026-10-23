@@ -46,6 +46,7 @@ struct Fixture {
 struct StaticEngine {
     rows: Vec<Vec<Value>>,
     calls: AtomicUsize,
+    max_rows: AtomicUsize,
     sql: Mutex<String>,
 }
 
@@ -54,6 +55,7 @@ impl StaticEngine {
         Self {
             rows,
             calls: AtomicUsize::new(0),
+            max_rows: AtomicUsize::new(0),
             sql: Mutex::new(String::new()),
         }
     }
@@ -66,9 +68,10 @@ impl Engine for StaticEngine {
     async fn execute(
         &self,
         sql: &PrintedSql,
-        _: &QueryContext,
+        ctx: &QueryContext,
     ) -> Result<QueryOutput, EngineError> {
         self.calls.fetch_add(1, Ordering::SeqCst);
+        self.max_rows.store(ctx.max_rows, Ordering::SeqCst);
         let mut recorded = self.sql.lock().unwrap();
         recorded.clear();
         recorded.push_str(sql.as_str());
@@ -514,6 +517,37 @@ async fn partial_edit_without_source_is_not_found() {
     .execute(request("Flight", "F-1001", &["status"]))
     .await;
     assert!(matches!(result, Err(ontoforge_query::QueryError::NotFound)));
+}
+
+#[tokio::test]
+async fn pk_read_obeys_host_raw_candidate_budget() {
+    let f = fixture().await;
+    commit_edit(
+        &f,
+        "Flight",
+        "F-1001",
+        ObjectOp::Set(BTreeMap::from([(
+            prop("status"),
+            PropertyValue::String("scheduled".to_owned()),
+        )])),
+    )
+    .await;
+    let engine = StaticEngine::new(vec![flight("scheduled")]);
+    let tokens = TokenCodec::new(b"phase4-test-key".to_vec()).unwrap();
+    let mut query = service(
+        &f,
+        f.store.active_definition().await.unwrap(),
+        &engine,
+        &tokens,
+    );
+    query.limits = ExecutionLimits::try_new(32, 1, 2_048, 64 * 1024 * 1024).unwrap();
+
+    let page = query
+        .execute(request("Flight", "F-1001", &["flightNumber"]))
+        .await
+        .unwrap();
+    assert_eq!(page.rows.len(), 1);
+    assert_eq!(engine.max_rows.load(Ordering::SeqCst), 1);
 }
 
 #[test]

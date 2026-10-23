@@ -359,6 +359,7 @@ impl<E: Engine> QueryService<'_, E> {
             self.engine,
             type_name,
             pk,
+            self.limits.max_raw_candidates.min(3),
             self.limits.max_decoded_bytes,
         )
         .await
@@ -371,6 +372,7 @@ pub async fn read_pk_source<E: Engine>(
     engine: &E,
     type_name: &ObjectTypeName,
     pk: &PropertyValue,
+    max_rows: usize,
     max_decoded_bytes: usize,
 ) -> Result<Option<BTreeMap<PropertyName, Value>>, QueryError> {
     let ontology = &active.ontology;
@@ -413,7 +415,7 @@ pub async fn read_pk_source<E: Engine>(
     };
     let sql = print_select(&select, engine.dialect()).map_err(|_| QueryError::Source)?;
     let mut ctx = QueryContext::new("l0-pk".to_owned(), Vec::new());
-    ctx.max_rows = 3;
+    ctx.max_rows = max_rows;
     ctx.max_bytes = max_decoded_bytes;
     let output = engine
         .execute(&sql, &ctx)
