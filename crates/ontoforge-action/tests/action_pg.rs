@@ -293,11 +293,11 @@ async fn assert_single_winner(
 async fn concurrent_same_pk_with_token_has_one_winner() {
     let f = fixture().await;
     let token = query_token(&f).await;
-    let results = race(
+    let results = Box::pin(race(
         &f,
         rename("token-left", &["A1"], Some(&token)),
         rename("token-right", &["A1"], Some(&token)),
-    )
+    ))
     .await;
     assert_single_winner(&f, results, &["A1"]).await;
 }
@@ -306,11 +306,11 @@ async fn concurrent_same_pk_with_token_has_one_winner() {
 #[ignore = "needs ONTOFORGE_PG_URL or --features embedded-pg"]
 async fn concurrent_same_pk_without_token_has_one_winner() {
     let f = fixture().await;
-    let results = race(
+    let results = Box::pin(race(
         &f,
         rename("plain-left", &["A1"], None),
         rename("plain-right", &["A1"], None),
-    )
+    ))
     .await;
     assert_single_winner(&f, results, &["A1"]).await;
 }
@@ -319,11 +319,11 @@ async fn concurrent_same_pk_without_token_has_one_winner() {
 #[ignore = "needs ONTOFORGE_PG_URL or --features embedded-pg"]
 async fn concurrent_multirow_reverse_request_order_does_not_deadlock() {
     let f = fixture().await;
-    let results = race(
+    let results = Box::pin(race(
         &f,
         rename("multi-left", &["A1", "B1"], None),
         rename("multi-right", &["B1", "A1"], None),
-    )
+    ))
     .await;
     assert_single_winner(&f, results, &["A1", "B1"]).await;
 }
@@ -346,11 +346,11 @@ async fn concurrent_absent_edit_create_is_serialized() {
         absent.is_none(),
         "both requests must prepare from an absent target"
     );
-    let results = race(
+    let results = Box::pin(race(
         &f,
         create("insert-left", "C1"),
         create("insert-right", "C1"),
-    )
+    ))
     .await;
     assert_single_winner(&f, results, &["C1"]).await;
 }

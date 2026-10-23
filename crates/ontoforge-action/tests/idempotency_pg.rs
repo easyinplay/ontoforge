@@ -1,3 +1,5 @@
+#![cfg(feature = "embedded-pg")]
+
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Arc;
 use std::time::Duration;
@@ -36,6 +38,17 @@ parameters:
 rules:
   - kind: deleteObject
     object: gate
+---
+kind: ActionType
+apiName: renameGate
+parameters:
+  gate: { type: { objectReference: Gate }, required: true }
+  name: { type: string, required: true }
+rules:
+  - kind: modifyObject
+    object: gate
+    properties:
+      name: { param: name }
 ";
 
 struct Fixture {
@@ -90,6 +103,9 @@ async fn fixture() -> Fixture {
     scope
         .actions
         .insert("deleteGate".to_owned().try_into().unwrap());
+    scope
+        .actions
+        .insert("renameGate".to_owned().try_into().unwrap());
     scope.types.insert(
         "Gate".to_owned().try_into().unwrap(),
         TypeScope {
@@ -115,6 +131,19 @@ fn delete(command: &str, code: &str) -> ActionRequest {
         command_id: Some(command.to_owned()),
         items: vec![ActionItem {
             params: serde_json::from_value(serde_json::json!({"gate": code})).unwrap(),
+            expected_versions: BTreeMap::new(),
+        }],
+        validate_only: false,
+    }
+}
+
+fn rename(command: &str, code: &str) -> ActionRequest {
+    ActionRequest {
+        action: "renameGate".to_owned(),
+        command_id: Some(command.to_owned()),
+        items: vec![ActionItem {
+            params: serde_json::from_value(serde_json::json!({"gate": code, "name": "New"}))
+                .unwrap(),
             expected_versions: BTreeMap::new(),
         }],
         validate_only: false,
@@ -332,5 +361,53 @@ async fn pg_same_command_id_for_different_principals_is_independent() {
     ));
     assert_eq!(f.pg.store.read_log(0, 10).await.unwrap().len(), 3);
     assert_eq!(count(&f, "of_action_command").await, 2);
+    assert_eq!(count(&f, "of_webhook_outbox").await, 2);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+#[ignore = "needs ONTOFORGE_PG_URL or --features embedded-pg"]
+async fn pg_expired_command_concurrent_replacement_has_one_new_winner() {
+    let f = fixture().await;
+    let service = ActionService::new(
+        &f.pg.store,
+        ActionLimits::new(8, 8, 65536).unwrap(),
+        &f.tokens,
+    );
+    let ActionOutcome::Committed(original) = service
+        .execute(
+            &f.principal,
+            &f.scope,
+            f.version,
+            rename("expired-race", "A1"),
+        )
+        .await
+        .unwrap()
+    else {
+        panic!("first execution must commit")
+    };
+    let sql = format!(
+        "UPDATE \"{}\".of_action_command SET expires_at = now() - interval '8 days' WHERE principal_id = $1 AND command_id = $2",
+        f.pg.schema_sys
+    );
+    sqlx::query(sqlx::AssertSqlSafe(sql))
+        .bind(f.principal.id.as_str())
+        .bind("expired-race")
+        .execute(f.pg.side())
+        .await
+        .unwrap();
+    let (left, right) = race(
+        &f,
+        rename("expired-race", "A1"),
+        rename("expired-race", "A1"),
+    )
+    .await;
+    let (Ok(ActionOutcome::Committed(first)), Ok(ActionOutcome::Committed(second))) = (left, right)
+    else {
+        panic!("expired key contenders must converge to one new receipt")
+    };
+    assert_eq!(first, second);
+    assert_ne!(original.event_id, first.event_id);
+    assert_eq!(f.pg.store.read_log(0, 10).await.unwrap().len(), 3);
+    assert_eq!(count(&f, "of_action_command").await, 1);
     assert_eq!(count(&f, "of_webhook_outbox").await, 2);
 }

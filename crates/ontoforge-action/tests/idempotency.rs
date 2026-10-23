@@ -361,19 +361,53 @@ async fn replay_grant_removal_and_action_missing_deny_both_entries() {
 #[tokio::test]
 async fn replay_external_definition_removal_does_not_disclose() {
     let f = fixture().await;
-    let service = ActionService::new(&f.db.store, ActionLimits::new(8, 8, 65536).unwrap(), &f.tokens);
-    receipt(service.execute(&f.principal, &f.scope, f.version, rename("external", Some("New"))).await.unwrap());
+    let service = ActionService::new(
+        &f.db.store,
+        ActionLimits::new(8, 8, 65536).unwrap(),
+        &f.tokens,
+    );
+    receipt(
+        service
+            .execute(
+                &f.principal,
+                &f.scope,
+                f.version,
+                rename("external", Some("New")),
+            )
+            .await
+            .unwrap(),
+    );
 
     let other = f.db.reopen().await;
     let without_action = DEFS.split("---").next().unwrap();
-    let loaded = load_from_memory(&[("ontology.yaml", "apiName: demo\n"), ("object.yaml", without_action)]);
+    let loaded = load_from_memory(&[
+        ("ontology.yaml", "apiName: demo\n"),
+        ("object.yaml", without_action),
+    ]);
     assert!(loaded.diagnostics.is_empty(), "{:?}", loaded.diagnostics);
-    reload(&other, &loaded.ontology.unwrap(), &ReloadOptions::default()).await.unwrap();
+    reload(&other, &loaded.ontology.unwrap(), &ReloadOptions::default())
+        .await
+        .unwrap();
 
-    let retry = service.execute(&f.principal, &f.scope, f.version, rename("external", Some("New"))).await;
-    assert!(matches!(retry, Err(ontoforge_action::ActionError::ScopeDenied)), "{retry:?}");
-    let query = service.get_command_result(&f.principal, &f.scope, "renameGate", "external").await;
-    assert!(matches!(query, Err(ontoforge_action::ActionError::ScopeDenied)), "{query:?}");
+    let retry = service
+        .execute(
+            &f.principal,
+            &f.scope,
+            f.version,
+            rename("external", Some("New")),
+        )
+        .await;
+    assert!(
+        matches!(retry, Err(ontoforge_action::ActionError::ScopeDenied)),
+        "{retry:?}"
+    );
+    let query = service
+        .get_command_result(&f.principal, &f.scope, "renameGate", "external")
+        .await;
+    assert!(
+        matches!(query, Err(ontoforge_action::ActionError::ScopeDenied)),
+        "{query:?}"
+    );
 }
 
 #[tokio::test]

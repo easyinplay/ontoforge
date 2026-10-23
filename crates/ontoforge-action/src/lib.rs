@@ -1,6 +1,6 @@
 //! Action execution through the storage-owned edit/log/command/outbox transaction.
 
-use chrono::{Duration, SecondsFormat, Utc};
+use chrono::{DateTime, Duration, SecondsFormat, Utc};
 use ontoforge_auth::{Principal, scope::PrincipalScope};
 use ontoforge_query::TokenCodec;
 use ontoforge_schema::ir::{ActionType, ActionTypeName};
@@ -12,15 +12,17 @@ use ontoforge_storage::error::StoreError;
 use ontoforge_storage::store::{ActiveDefinition, EditStore};
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value, json};
-use sha2::{Digest, Sha256};
 use std::collections::BTreeSet;
 use std::future::{Future, ready};
+use std::sync::Arc;
 
 mod criteria;
+mod fingerprint;
 mod params;
 mod rules;
 mod version;
 
+use fingerprint::digest;
 pub use ontoforge_storage::commit::{ActionReceipt, EditSummary, ItemReceipt};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -132,6 +134,7 @@ pub struct ActionService<'a> {
     store: &'a EditStore,
     limits: ActionLimits,
     tokens: &'a TokenCodec,
+    clock: Arc<dyn Fn() -> DateTime<Utc> + Send + Sync>,
 }
 
 impl<'a> ActionService<'a> {
@@ -140,7 +143,45 @@ impl<'a> ActionService<'a> {
             store,
             limits,
             tokens,
+            clock: Arc::new(Utc::now),
         }
+    }
+
+    /// Overrides server time for a request, including its command expiry check.
+    #[must_use]
+    pub fn with_clock(mut self, clock: impl Fn() -> DateTime<Utc> + Send + Sync + 'static) -> Self {
+        self.clock = Arc::new(clock);
+        self
+    }
+
+    /// Returns only the stored audit summary for the original principal with a current grant.
+    pub async fn get_command_result(
+        &self,
+        principal: &Principal,
+        scope: &PrincipalScope,
+        action_name: &str,
+        command_id: &str,
+    ) -> Result<Option<ActionReceipt>, ActionError> {
+        let command = self
+            .store
+            .action_command(principal.id.as_str(), command_id)
+            .await?;
+        let action: ActionTypeName = action_name
+            .to_owned()
+            .try_into()
+            .map_err(|_| ActionError::ScopeDenied)?;
+        let active = self
+            .store
+            .current_action_definition()
+            .await?
+            .ok_or(ActionError::ScopeDenied)?;
+        if !scope.actions.contains(&action) || !active.ontology.action_types.contains_key(&action) {
+            return Err(ActionError::ScopeDenied);
+        }
+        let now = (self.clock)();
+        Ok(command
+            .filter(|row| row.action == action_name && !command_expired(&row.expires_at, now))
+            .map(|row| row.receipt))
     }
 
     /// Executes an Action with a trusted principal, frozen scope and host limits.
@@ -192,33 +233,37 @@ impl<'a> ActionService<'a> {
         }
         let active = self
             .store
-            .active_definition()
-            .await
+            .current_action_definition()
+            .await?
             .ok_or_else(|| ActionError::InvalidRequest("no active definition".to_owned()))?;
         let action = active
             .ontology
             .action_types
             .get(&action_name)
             .ok_or(ActionError::ScopeDenied)?;
-        let fingerprint = json!({
-            "action": request.action,
-            "items": request.items,
-            "validate_only": request.validate_only,
-        });
-        let request_hash = digest(&fingerprint);
+        let request_hash = fingerprint::request_hash(&request);
+        let chosen_time = (self.clock)();
         if !request.validate_only
             && let Some(command_id) = request.command_id.as_deref()
             && let Some(command) = self
                 .store
                 .action_command(principal.id.as_str(), command_id)
                 .await?
+            && !command_expired(&command.expires_at, chosen_time)
         {
+            let current = self
+                .store
+                .current_action_definition()
+                .await?
+                .ok_or(ActionError::ScopeDenied)?;
+            if !current.ontology.action_types.contains_key(&action_name) {
+                return Err(ActionError::ScopeDenied);
+            }
             if command.action != request.action || command.request_hash != request_hash {
                 return Err(ActionCommitError::CommandIdReused.into());
             }
             return Ok(ActionOutcome::Committed(command.receipt));
         }
-        let chosen_time = Utc::now();
         let chosen_current_time = chosen_time.to_rfc3339_opts(SecondsFormat::Millis, true);
         let expires_at =
             (chosen_time + Duration::days(7)).to_rfc3339_opts(SecondsFormat::Millis, true);
@@ -485,25 +530,8 @@ async fn load_guard_reads(
     Ok(reads)
 }
 
-fn canonical_json(value: &Value) -> Value {
-    match value {
-        Value::Object(map) => {
-            let mut keys: Vec<_> = map.keys().collect();
-            keys.sort_unstable();
-            let mut ordered = Map::new();
-            for key in keys {
-                ordered.insert(key.clone(), canonical_json(&map[key]));
-            }
-            Value::Object(ordered)
-        }
-        Value::Array(items) => Value::Array(items.iter().map(canonical_json).collect()),
-        other => other.clone(),
-    }
-}
-
-fn digest(value: &Value) -> String {
-    let bytes = serde_json::to_vec(&canonical_json(value)).expect("JSON values serialize");
-    format!("{:x}", Sha256::digest(bytes))
+fn command_expired(expires_at: &str, now: DateTime<Utc>) -> bool {
+    DateTime::parse_from_rfc3339(expires_at).map_or(true, |expires| expires <= now)
 }
 
 #[cfg(test)]

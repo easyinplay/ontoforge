@@ -149,6 +149,7 @@ pub struct ActionReceipt {
     pub event_id: String,
     pub log_seq: i64,
     pub committed_at: String,
+    pub chosen_current_time: String,
     pub items: Vec<ItemReceipt>,
 }
 
@@ -289,6 +290,11 @@ pub enum EditError {
 }
 
 impl EditStore {
+    /// Reads the database's active definition, including switches made by another process.
+    pub async fn current_action_definition(&self) -> Result<Option<ActiveDefinition>, StoreError> {
+        sql_exit::read_active_definition(&self.db).await
+    }
+
     /// Reads a completed command before Action preflight. An uncommitted claim is invisible.
     pub async fn action_command(
         &self,
@@ -780,6 +786,23 @@ async fn claim_action(
     if sql_exit::execute_built(tx, built).await? == 1 {
         return Ok(CommandClaimOutcome::Winner);
     }
+    let retired = Query::delete()
+        .from_table(col("of_action_command"))
+        .and_where(Expr::col(col("principal_id")).eq(principal_id))
+        .and_where(Expr::col(col("command_id")).eq(command_id))
+        .and_where(Expr::col(col("expires_at")).lte(sql_exit::typed_text(
+            backend,
+            &input.chosen_current_time,
+            "timestamptz",
+        )))
+        .to_owned();
+    let built = sql_exit::build(&retired, tx);
+    if sql_exit::execute_built(tx, built).await? == 1 {
+        let built = sql_exit::build(&insert, tx);
+        if sql_exit::execute_built(tx, built).await? == 1 {
+            return Ok(CommandClaimOutcome::Winner);
+        }
+    }
     Ok(CommandClaimOutcome::Existing)
 }
 
@@ -819,6 +842,7 @@ fn action_receipt(
         event_id: event_id.to_owned(),
         log_seq,
         committed_at: committed_at.to_owned(),
+        chosen_current_time: input.chosen_current_time.clone(),
         items,
     })
 }
