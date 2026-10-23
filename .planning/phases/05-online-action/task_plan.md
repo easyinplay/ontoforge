@@ -22,4 +22,4 @@
 
 ## Next Step
 
-执行 `05-06-PLAN.md` 的 source sampler、release source、source-backed token 与 guard 竞态；05-05 幂等与回执证据见 `05-05-SUMMARY.md`。ACTION-08/09/12 暂不完成。正式 gstack gate 仍为 BLOCKED，关键 PR 前回补。
+执行 `05-07-PLAN.md` 的 outbox worker、写入口边界与 CI；05-06 source、release、token 和真实 Trino 证据见 `05-06-SUMMARY.md`。ACTION-08/09/12 的计划级验收已完成，Phase 5 总体验证仍待执行。正式 gstack gate 仍为 BLOCKED，关键 PR 前回补。

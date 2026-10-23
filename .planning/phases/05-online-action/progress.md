@@ -1,6 +1,6 @@
 # Phase 5 progress
 
-当前节点：P4 Wave 5（05-05）已完成，下一计划 05-06；release source、source-backed token 与 guard 竞态专项在本计划验收。GSD 7/7 计划已通过独立 checker；正式 gstack gate 受工具限制未通过，使用记录在 `findings.md` 的 Phase 5 一次性替代治理。
+当前节点：P4 Wave 6（05-06）已完成，下一计划 05-07；source、release、token 与真实 Trino 证据见 `05-06-SUMMARY.md`。GSD 7/7 计划已通过独立 checker；正式 gstack gate 受工具限制未通过，使用记录在 `findings.md` 的 Phase 5 一次性替代治理。
 2026-10-23：恢复 Wave 2（05-02）执行。确认 HEAD `8c65ab1`，05-02 无代码提交或有效 RED；先执行 Task 1 原生 JUnit RED 门槛，再实现参数与 rule。事务内 scope/criteria 复核边界待只读第二意见和代码验证。
 
 - 2026-10-23：Phase 4 的 7/7 PLAN、36/36 verification、23/23 UAT 已通过。由 `9c4ba02` 建立 `gsd/phase-05-online-action`；保留 Phase 2 `.review-diagnostics/` 与 `docs/` 未跟踪文件。
@@ -31,3 +31,4 @@
 - 2026-10-23：05-05 GREEN `3096bf9`、SUMMARY `1f8a2cd` 已提交。Action 34/34、真实 PostgreSQL 幂等 6/6 与并发 4/4，storage 全量非 ignored、Clippy/fmt 通过；Windows 并行 15 个 linker 的内存压力使初次全量构建中止，`-j 2` 重跑退出码 0。GSD advance-plan 将 STATE 指向 05-06。
 - 2026-10-23：05-06 Task 1 RED `01af076`、`c345f55`、`7c5083b` 和 GREEN `b184215` 已提交。source 9/9（含真实 embedded PostgreSQL 插入竞态）、Query pk_read 10/10、release schema 2/2、embedded-pg Clippy/fmt 通过。Task 2 的真实 Trino/PostgreSQL 服务尚未运行，不记为通过；本机 Docker Engine 与 CI 镜像已确认可用，下一步建立独立容器、加载 aviation fixture 后执行 ignored tests。
 - 2026-10-23：专用 Docker 网络与 PostgreSQL 17.11、Trino 483 容器已启动，`demo`/`editstore` 建库及 `ci/pg/seed.sql` 装载完成。Trino 实测 `SELECT count(*) FROM demo.aviation.flights` 返回 23；端口为 Trino 58080、PG 55432。05-06 Task 2 已接续，等待四个 ignored 集成测试的 RED/GREEN 与真实执行证据。
+- 2026-10-23：05-06 Task 2 真实 Trino/PostgreSQL ignored tests 4/4、fake source 9/9、Query pk_read 10/10，embedded-pg Clippy/fmt 通过；集成断言首次有效执行即绿，未制造独立 RED，详见 `05-06-SUMMARY.md`。提交 `c360dd6`、SUMMARY `8e97442`；GSD advance-plan 指向 05-07。Cargo 单独 feature 组合缺口见 `deferred-items.md`，不记为通过。

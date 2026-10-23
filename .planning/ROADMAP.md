@@ -227,7 +227,7 @@ Plans:
   4. 目标或读集需要 Trino 时 Trino 不可用返回 `EngineUnavailable`；只涉及已编辑对象的 Action 照常执行
   5. 提交后下一次读取可见；下游 webhook 至少收到一次带 `event_id` 的事件
 
-**Plans**: 5/7 executed（next 05-06；详: `.planning/phases/05-online-action/`）
+**Plans**: 6/7 executed（next 05-07；详: `.planning/phases/05-online-action/`）
 **Details**: `.planning/phases/05-online-action/`
 
 ### Phase 6: L2 Raw DQL, Toolsets & Audit
@@ -277,6 +277,6 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7（纵切片
 | 2. Source Binding & Engine | 10/10 | Complete    | 2026-10-19 |
 | 3. Edit Store & Scope Model | 23/23 | Complete    | 2026-10-22 |
 | 4. Scoped L0 Read | 7/7 | Complete    | 2026-10-23 |
-| 5. Online Action | 5/7 | In Progress | - |
+| 5. Online Action | 6/7 | In Progress | - |
 | 6. L2 Raw DQL, Toolsets & Audit | 0/TBD | Not started | - |
 | 7. REST & MCP Shell | 0/TBD | Not started | - |
