@@ -11,6 +11,7 @@
 - 2026-10-23：pattern-mapper 写入 `05-PATTERNS.md`；对 `_version` 旧格式兼容征询 Grok，并依据现有代码与 ADR-0018 锁定 D-07。首次文档补丁因上下文不匹配失败，调整定位后重试。
 - 2026-10-23：GSD planner 开始生成 7 个 PLAN；正式 gstack `plan-eng-review` 因宿主无 `AskUserQuestion` 保持 BLOCKED。结合用户持续“继续推进”的指令和 Grok 第二意见，准备以 E1-E7 独立审查 + plan-checker 作为仅限 Phase 5 的替代治理；替代是否满足执行条件待 checker 验证。关键模块 PR 前回补正式 `plan-eng-review` 与 `/review`。
 - 2026-10-23：7 份计划提交为 `0ded1a1`，独立 GSD checker 返回 `VERIFICATION PASSED`；ACTION-01..12、D-01..07、E1..E7 全覆盖。决策覆盖探针 7/7，36 条 verify 命令的路径及失败信号探针均为 0 blocker、0 warning。一次错误的探针子命令已按正确 `verify-failure-directions` 重跑；未运行实现测试。
+- 2026-10-23：执行前 isolation 检查发现 Codex `orchestrator-worktree` 的 `exec` 为空；配置 `workflow.use_worktrees=false`，Phase 5 按 7 个顺序 wave 在当前分支交给 typed executor。`ralph-loop` skill/命令未安装，使用 GSD 迭代验收并保留真实测试证据；Wave 1 尚未修改代码。
 
 ## 待办
 
