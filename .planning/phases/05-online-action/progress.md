@@ -13,7 +13,8 @@
 - 2026-10-23：7 份计划提交为 `0ded1a1`，独立 GSD checker 返回 `VERIFICATION PASSED`；ACTION-01..12、D-01..07、E1..E7 全覆盖。决策覆盖探针 7/7，36 条 verify 命令的路径及失败信号探针均为 0 blocker、0 warning。一次错误的探针子命令已按正确 `verify-failure-directions` 重跑；未运行实现测试。
 - 2026-10-23：执行前 isolation 检查发现 Codex `orchestrator-worktree` 的 `exec` 为空；配置 `workflow.use_worktrees=false`，Phase 5 按 7 个顺序 wave 在当前分支交给 typed executor。`ralph-loop` skill/命令未安装，使用 GSD 迭代验收并保留真实测试证据；Wave 1 尚未修改代码。
 - 2026-10-23：Wave 1 executor 已开始 Action 测试准备。`Cargo.toml` 新增直接依赖使旧计划的 `Cargo.lock` 禁改约束与 `--locked` 冲突，初次构建失败为无效 RED。收取 Grok 第二意见后修订 05-01：允许仅更新 Action package 的 lockfile 依赖表，先恢复 `--locked` 一致性，再运行真实行为 RED；Rust 原生 JUnit 报告须通过 GSD RED 分类器。
+- 2026-10-23：Wave 1 Task 1 有效 RED 提交 `e40b764`。`tracer_commits_one_action_batch` 实际运行 1 个测试，因缺少 Action command 表断言失败；Rust 原生 JUnit 经 GSD `tdd-red-evidence` 得到 `RED_EVIDENCE_OK`（tests=1、fail=1）。`cargo metadata --locked --offline` 通过，`Cargo.lock` 仅增加 Action 依赖边；executor 进入 GREEN。
 
 ## 待办
 
-- Wave 1 按修订后的 `05-01-PLAN.md` 完成最小 lockfile 更新和有效 RED，再实现 storage-owned Action 事务 tracer；关键模块 PR 前回补正式 gstack 审查。
+- Wave 1 继续 Task 1 GREEN，实现 storage-owned Action 事务 tracer；关键模块 PR 前回补正式 gstack 审查。
