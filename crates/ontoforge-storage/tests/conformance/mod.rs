@@ -13,13 +13,13 @@ use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use ontoforge_schema::ir::{LinkTypeName, ObjectTypeName, PropertyName};
+#[cfg(feature = "test-support")]
+use ontoforge_storage::commit::ActionWriteStage;
 use ontoforge_storage::commit::{
     ActionCommitError, ActionCommitOutcome, ActionEditPosition, ActionGuardRead,
     ActionGuardRejection, ActionStage, ActionTransactionInput, Actor, Commit, Edit, EditError,
     LinkOp, ObjectOp, Receipt, RowState, SystemActor,
 };
-#[cfg(feature = "test-support")]
-use ontoforge_storage::commit::ActionWriteStage;
 use ontoforge_storage::log::{EditOp, EntryKind, ReplayError, replay};
 use ontoforge_storage::reload::{ReloadOptions, reload};
 use ontoforge_storage::store::{Backend, EditStore};
@@ -2117,9 +2117,47 @@ pub async fn action_batch_writes_one_command_and_outbox(h: &Harness) {
 #[cfg(feature = "test-support")]
 async fn action_atomic_snapshot(h: &Harness) -> Vec<Vec<Vec<Option<String>>>> {
     let mut snapshot = log_rows(h).await;
-    snapshot.push(h.rows(Tables::Edit, "of_obj_gate", &["code", "name", "of_version", "of_log_seq", "of_deleted", "of_released"], None).await);
-    snapshot.push(h.rows(Tables::Sys, "of_action_command", &["principal_id", "command_id", "event_id", "receipt", "chosen_current_time", "expires_at"], None).await);
-    snapshot.push(h.rows(Tables::Sys, "of_webhook_outbox", &["event_id", "payload", "attempt_count", "next_attempt_at"], None).await);
+    snapshot.push(
+        h.rows(
+            Tables::Edit,
+            "of_obj_gate",
+            &[
+                "code",
+                "name",
+                "of_version",
+                "of_log_seq",
+                "of_deleted",
+                "of_released",
+            ],
+            None,
+        )
+        .await,
+    );
+    snapshot.push(
+        h.rows(
+            Tables::Sys,
+            "of_action_command",
+            &[
+                "principal_id",
+                "command_id",
+                "event_id",
+                "receipt",
+                "chosen_current_time",
+                "expires_at",
+            ],
+            None,
+        )
+        .await,
+    );
+    snapshot.push(
+        h.rows(
+            Tables::Sys,
+            "of_webhook_outbox",
+            &["event_id", "payload", "attempt_count", "next_attempt_at"],
+            None,
+        )
+        .await,
+    );
     snapshot
 }
 
@@ -2129,10 +2167,26 @@ async fn action_atomic_failure(h: &Harness, stage: ActionWriteStage) {
     commit_ok(h, create_gate(version, "A1")).await;
     let before = action_atomic_snapshot(h).await;
     let input = action_input(version, ALICE, "atomic-fault", "A1");
-    let result = h.store().commit_action_with_fault(input.clone(), stage).await;
-    assert!(matches!(result, Err(ActionCommitError::InjectedFault(actual)) if actual == stage), "{stage:?} must fail after its write stage: {result:?}");
-    assert_eq!(action_atomic_snapshot(h).await, before, "{stage:?} must roll back all domains");
-    assert!(matches!(h.store().commit_action(input).await, Ok(ActionCommitOutcome::Committed { .. })), "same command must be reusable after rollback");
+    let result = h
+        .store()
+        .commit_action_with_fault(input.clone(), stage)
+        .await;
+    assert!(
+        matches!(result, Err(ActionCommitError::InjectedFault(actual)) if actual == stage),
+        "{stage:?} must fail after its write stage: {result:?}"
+    );
+    assert_eq!(
+        action_atomic_snapshot(h).await,
+        before,
+        "{stage:?} must roll back all domains"
+    );
+    assert!(
+        matches!(
+            h.store().commit_action(input).await,
+            Ok(ActionCommitOutcome::Committed { .. })
+        ),
+        "same command must be reusable after rollback"
+    );
 }
 
 #[cfg(feature = "test-support")]
@@ -2160,7 +2214,11 @@ pub async fn action_atomic_success_changes_all_domains_once(h: &Harness) {
     let version = h.load().await;
     commit_ok(h, create_gate(version, "A1")).await;
     let before = action_atomic_snapshot(h).await;
-    let outcome = h.store().commit_action(action_input(version, ALICE, "atomic-success", "A1")).await.expect("Action commit");
+    let outcome = h
+        .store()
+        .commit_action(action_input(version, ALICE, "atomic-success", "A1"))
+        .await
+        .expect("Action commit");
     assert!(matches!(outcome, ActionCommitOutcome::Committed { .. }));
     let after = action_atomic_snapshot(h).await;
     assert_eq!(after[0].len(), before[0].len() + 1, "log header");

@@ -317,14 +317,15 @@ impl EditStore {
         self.commit_action_guarded(input, &[], |_| Ok(())).await
     }
 
-    /// Integration-only probe; the RED harness asserts that the selected stage aborts.
+    /// Integration-only probe for a failure after a selected write stage.
     #[cfg(feature = "test-support")]
     pub async fn commit_action_with_fault(
         &self,
         input: ActionTransactionInput,
-        _stage: ActionWriteStage,
+        stage: ActionWriteStage,
     ) -> Result<ActionCommitOutcome, ActionCommitError> {
-        self.commit_action(input).await
+        self.commit_action_guarded_inner(input, &[], |_| Ok(()), Some(stage))
+            .await
     }
 
     /// Runs a synchronous, read-only authorization guard under the same locks as the write.
@@ -333,6 +334,23 @@ impl EditStore {
         input: ActionTransactionInput,
         reads: &[ActionGuardRead],
         guard: impl FnOnce(&ActionGuardView) -> Result<(), ActionGuardRejection>,
+    ) -> Result<ActionCommitOutcome, ActionCommitError> {
+        self.commit_action_guarded_inner(
+            input,
+            reads,
+            guard,
+            #[cfg(feature = "test-support")]
+            None,
+        )
+        .await
+    }
+
+    async fn commit_action_guarded_inner(
+        &self,
+        input: ActionTransactionInput,
+        reads: &[ActionGuardRead],
+        guard: impl FnOnce(&ActionGuardView) -> Result<(), ActionGuardRejection>,
+        #[cfg(feature = "test-support")] fault: Option<ActionWriteStage>,
     ) -> Result<ActionCommitOutcome, ActionCommitError> {
         let principal_id = validate_action_input(&input)?;
 
@@ -382,6 +400,10 @@ impl EditStore {
             )
             .await?;
             trace.push(ActionStage::Log);
+            #[cfg(feature = "test-support")]
+            if fault == Some(ActionWriteStage::AfterLog) {
+                return Err(ActionCommitError::InjectedFault(ActionWriteStage::AfterLog));
+            }
             write_rows(
                 &mut tx,
                 schema.as_deref(),
@@ -393,6 +415,12 @@ impl EditStore {
             )
             .await?;
             trace.push(ActionStage::EditRows);
+            #[cfg(feature = "test-support")]
+            if fault == Some(ActionWriteStage::AfterEdits) {
+                return Err(ActionCommitError::InjectedFault(
+                    ActionWriteStage::AfterEdits,
+                ));
+            }
 
             let mut entries: Vec<(LogEntry, Value)> = plan
                 .iter()
@@ -413,8 +441,20 @@ impl EditStore {
                 action_receipt(command_id, &event_id, seq, &committed_at, &entries, &input)?;
             store_action_receipt(&mut tx, principal_id, command_id, &receipt).await?;
             trace.push(ActionStage::Command);
+            #[cfg(feature = "test-support")]
+            if fault == Some(ActionWriteStage::AfterCommand) {
+                return Err(ActionCommitError::InjectedFault(
+                    ActionWriteStage::AfterCommand,
+                ));
+            }
             enqueue_action_event(&mut tx, principal_id, &input.commit.action, &receipt).await?;
             trace.push(ActionStage::Outbox);
+            #[cfg(feature = "test-support")]
+            if fault == Some(ActionWriteStage::AfterOutbox) {
+                return Err(ActionCommitError::InjectedFault(
+                    ActionWriteStage::AfterOutbox,
+                ));
+            }
             Ok(ActionCommitOutcome::Committed {
                 receipt,
                 trace: std::mem::take(&mut trace),
