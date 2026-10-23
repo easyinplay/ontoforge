@@ -2023,6 +2023,8 @@ dependencies = [
  "ontoforge-query",
  "ontoforge-schema",
  "ontoforge-storage",
+ "postgresql_embedded",
+ "secrecy",
  "serde",
  "serde_json",
  "sha2 0.10.9",
@@ -2030,6 +2032,7 @@ dependencies = [
  "tempfile",
  "thiserror",
  "tokio",
+ "ulid",
 ]
 
 [[package]]

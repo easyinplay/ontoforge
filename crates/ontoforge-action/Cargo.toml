@@ -32,3 +32,6 @@ tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 tempfile.workspace = true
 camino.workspace = true
 sqlx.workspace = true
+postgresql_embedded.workspace = true
+secrecy.workspace = true
+ulid.workspace = true

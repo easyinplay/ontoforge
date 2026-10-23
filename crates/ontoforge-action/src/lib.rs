@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value, json};
 use sha2::{Digest, Sha256};
 use std::collections::BTreeSet;
+use std::future::{Future, ready};
 
 mod criteria;
 mod params;
@@ -143,16 +144,42 @@ impl<'a> ActionService<'a> {
     }
 
     /// Executes an Action with a trusted principal, frozen scope and host limits.
-    #[expect(
-        clippy::too_many_lines,
-        reason = "one Action submission owns preparation and the guarded transaction"
-    )]
     pub async fn execute(
         &self,
         principal: &Principal,
         scope: &PrincipalScope,
         def_version: i64,
         request: ActionRequest,
+    ) -> Result<ActionOutcome, ActionError> {
+        self.execute_inner(principal, scope, def_version, request, ready(()))
+            .await
+    }
+
+    /// Synchronizes integration races after preparation and before the write transaction.
+    #[cfg(feature = "embedded-pg")]
+    pub async fn execute_with_test_gate<F: Future<Output = ()>>(
+        &self,
+        principal: &Principal,
+        scope: &PrincipalScope,
+        def_version: i64,
+        request: ActionRequest,
+        gate: F,
+    ) -> Result<ActionOutcome, ActionError> {
+        self.execute_inner(principal, scope, def_version, request, gate)
+            .await
+    }
+
+    #[expect(
+        clippy::too_many_lines,
+        reason = "one Action submission owns preparation and the guarded transaction"
+    )]
+    async fn execute_inner<F: Future<Output = ()>>(
+        &self,
+        principal: &Principal,
+        scope: &PrincipalScope,
+        def_version: i64,
+        request: ActionRequest,
+        gate: F,
     ) -> Result<ActionOutcome, ActionError> {
         validate_request(&request, self.limits)?;
         let action_name: ActionTypeName = request
@@ -237,6 +264,7 @@ impl<'a> ActionService<'a> {
             edits: &guard_edits,
             positions: &guard_positions,
         };
+        gate.await;
         let result = self
             .store
             .commit_action_guarded(input, &guard_reads, |view| {

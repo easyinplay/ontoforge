@@ -401,9 +401,7 @@ impl EditStore {
             .await?;
             trace.push(ActionStage::Log);
             #[cfg(feature = "test-support")]
-            if fault == Some(ActionWriteStage::AfterLog) {
-                return Err(ActionCommitError::InjectedFault(ActionWriteStage::AfterLog));
-            }
+            fail_after(fault, ActionWriteStage::AfterLog)?;
             write_rows(
                 &mut tx,
                 schema.as_deref(),
@@ -416,11 +414,7 @@ impl EditStore {
             .await?;
             trace.push(ActionStage::EditRows);
             #[cfg(feature = "test-support")]
-            if fault == Some(ActionWriteStage::AfterEdits) {
-                return Err(ActionCommitError::InjectedFault(
-                    ActionWriteStage::AfterEdits,
-                ));
-            }
+            fail_after(fault, ActionWriteStage::AfterEdits)?;
 
             let mut entries: Vec<(LogEntry, Value)> = plan
                 .iter()
@@ -442,19 +436,11 @@ impl EditStore {
             store_action_receipt(&mut tx, principal_id, command_id, &receipt).await?;
             trace.push(ActionStage::Command);
             #[cfg(feature = "test-support")]
-            if fault == Some(ActionWriteStage::AfterCommand) {
-                return Err(ActionCommitError::InjectedFault(
-                    ActionWriteStage::AfterCommand,
-                ));
-            }
+            fail_after(fault, ActionWriteStage::AfterCommand)?;
             enqueue_action_event(&mut tx, principal_id, &input.commit.action, &receipt).await?;
             trace.push(ActionStage::Outbox);
             #[cfg(feature = "test-support")]
-            if fault == Some(ActionWriteStage::AfterOutbox) {
-                return Err(ActionCommitError::InjectedFault(
-                    ActionWriteStage::AfterOutbox,
-                ));
-            }
+            fail_after(fault, ActionWriteStage::AfterOutbox)?;
             Ok(ActionCommitOutcome::Committed {
                 receipt,
                 trace: std::mem::take(&mut trace),
@@ -623,6 +609,18 @@ fn validate_action_input(input: &ActionTransactionInput) -> Result<&str, ActionC
         ));
     }
     Ok(principal_id)
+}
+
+#[cfg(feature = "test-support")]
+fn fail_after(
+    fault: Option<ActionWriteStage>,
+    stage: ActionWriteStage,
+) -> Result<(), ActionCommitError> {
+    if fault == Some(stage) {
+        Err(ActionCommitError::InjectedFault(stage))
+    } else {
+        Ok(())
+    }
 }
 
 async fn finish_action(
