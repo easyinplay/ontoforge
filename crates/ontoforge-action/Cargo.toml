@@ -17,6 +17,7 @@ ontoforge-storage = { path = "../ontoforge-storage" }
 ontoforge-expr = { path = "../ontoforge-expr" }
 ontoforge-schema = { path = "../ontoforge-schema" }
 ontoforge-auth = { path = "../ontoforge-auth" }
+ontoforge-query = { path = "../ontoforge-query" }
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
@@ -26,6 +27,7 @@ indexmap.workspace = true
 cel = "0.15.0"
 
 [dev-dependencies]
+ontoforge-engine = { path = "../ontoforge-engine" }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 tempfile.workspace = true
 camino.workspace = true

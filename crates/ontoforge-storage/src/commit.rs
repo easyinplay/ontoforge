@@ -197,6 +197,8 @@ pub enum ActionCommitError {
 
 #[derive(Debug, thiserror::Error)]
 pub enum ActionGuardRejection {
+    #[error("the observed edit version changed")]
+    VersionConflict,
     #[error("the object does not exist")]
     NotFound,
     #[error("the Action is not available to this principal")]

@@ -2263,6 +2263,77 @@ pub async fn action_batch_stale_definition_leaves_no_action_rows(h: &Harness) {
     assert_eq!(h.store().read_log(0, 10).await.expect("log").len(), 1);
 }
 
+pub async fn action_cas_rejects_stale_no_token_without_side_effects(h: &Harness) {
+    let version = h.load().await;
+    commit_ok(h, create_gate(version, "A1")).await;
+    let first = action_input(version, ALICE, "first", "A1");
+    let second = action_input(version, ALICE, "second", "A1");
+    h.store()
+        .commit_action(first)
+        .await
+        .expect("first observed version commits");
+    let result = h.store().commit_action(second).await;
+    assert!(
+        matches!(result, Err(ActionCommitError::VersionConflict)),
+        "{result:?}"
+    );
+    assert_eq!(log_len(h).await, 2);
+    assert_eq!(
+        h.rows(Tables::Sys, "of_action_command", &["command_id"], None)
+            .await
+            .len(),
+        1
+    );
+    assert_eq!(
+        h.rows(Tables::Sys, "of_webhook_outbox", &["event_id"], None)
+            .await
+            .len(),
+        1
+    );
+    assert_eq!(
+        h.row(Tables::Edit, "of_obj_gate", &["of_version"], "code", "A1")
+            .await[0],
+        text("2")
+    );
+}
+
+pub async fn action_cas_conflict_rolls_back_version_zero_skeleton(h: &Harness) {
+    let version = h.load().await;
+    commit_ok(h, create_gate(version, "A1")).await;
+    let mut input = action_input(version, ALICE, "skeleton", "A1");
+    input
+        .commit
+        .edits
+        .insert(0, gate_edit("A0", set(&[("name", s("New"))])));
+    input.positions.push(ActionEditPosition {
+        item_ordinal: 0,
+        rule_ordinal: 1,
+    });
+    input.observed_versions = vec![0, 0];
+    let result = h.store().commit_action(input).await;
+    assert!(
+        matches!(result, Err(ActionCommitError::VersionConflict)),
+        "{result:?}"
+    );
+    assert!(
+        h.rows(Tables::Edit, "of_obj_gate", &["code"], None)
+            .await
+            .iter()
+            .all(|row| row[0] != text("A0"))
+    );
+    assert_eq!(log_len(h).await, 1);
+    assert!(
+        h.rows(Tables::Sys, "of_action_command", &["command_id"], None)
+            .await
+            .is_empty()
+    );
+    assert!(
+        h.rows(Tables::Sys, "of_webhook_outbox", &["event_id"], None)
+            .await
+            .is_empty()
+    );
+}
+
 pub async fn action_batch_migration_constraints_match_contract(h: &Harness) {
     h.load().await;
     assert_action_tables(h).await;
@@ -2326,6 +2397,8 @@ macro_rules! all_cases {
         $crate::conformance::conformance_case!($factory, action_batch_guard_interleaves_reads_and_edits $(, $attr)?);
         $crate::conformance::conformance_case!($factory, action_batch_principal_scopes_command_id $(, $attr)?);
         $crate::conformance::conformance_case!($factory, action_batch_stale_definition_leaves_no_action_rows $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, action_cas_rejects_stale_no_token_without_side_effects $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, action_cas_conflict_rolls_back_version_zero_skeleton $(, $attr)?);
         $crate::conformance::conformance_case!($factory, action_batch_migration_constraints_match_contract $(, $attr)?);
         $crate::conformance::conformance_case!($factory, commit_set_creates_edit_row $(, $attr)?);
         $crate::conformance::conformance_case!($factory, commit_appends_one_log_record $(, $attr)?);

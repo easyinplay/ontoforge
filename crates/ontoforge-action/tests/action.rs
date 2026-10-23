@@ -5,6 +5,7 @@ use ontoforge_auth::{
     scope::{PrincipalScope, TypeScope},
 };
 use ontoforge_expr::{Pred, rowpred::Attrs};
+use ontoforge_query::TokenCodec;
 use ontoforge_schema::load_from_memory;
 use ontoforge_storage::commit::{ActionCommitError, Actor, Commit, Edit, EditError, ObjectOp};
 use ontoforge_storage::reload::{ReloadOptions, reload};
@@ -12,7 +13,13 @@ use ontoforge_storage::store::{BackendSettings, EditStore, StoreSettings, sqlite
 use ontoforge_storage::value::PropertyValue;
 use sqlx::sqlite::SqlitePoolOptions;
 use std::collections::{BTreeMap, BTreeSet};
+use std::sync::OnceLock;
 use std::time::Duration;
+
+fn tokens() -> &'static TokenCodec {
+    static TOKENS: OnceLock<TokenCodec> = OnceLock::new();
+    TOKENS.get_or_init(|| TokenCodec::new(b"action-test-key".to_vec()).expect("token codec"))
+}
 
 fn allow_types(scope: &mut PrincipalScope) {
     for type_name in ["Gate", "Pilot"] {
@@ -136,39 +143,43 @@ rules:
     scope
         .actions
         .insert("renameGate".to_owned().try_into().expect("action"));
-    let error = ActionService::new(&store, ActionLimits::new(8, 8, 65536).expect("limits"))
-        .execute(
-            &principal,
-            &scope,
-            version,
-            ActionRequest {
-                action: "renameGate".to_owned(),
-                command_id: Some("bad-params".to_owned()),
-                items: vec![
-                    ontoforge_action::ActionItem {
-                        params: serde_json::from_value(serde_json::json!({
-                            "gate": 42,
-                            "count": "wrong",
-                            "tags": ["valid", 2],
-                            "extra": true
-                        }))
-                        .expect("params"),
-                        expected_versions: BTreeMap::default(),
-                    },
-                    ontoforge_action::ActionItem {
-                        params: serde_json::from_value(serde_json::json!({
-                            "name": 5,
-                            "tags": [false]
-                        }))
-                        .expect("params"),
-                        expected_versions: BTreeMap::default(),
-                    },
-                ],
-                validate_only: false,
-            },
-        )
-        .await
-        .expect_err("all invalid parameters must be rejected");
+    let error = ActionService::new(
+        &store,
+        ActionLimits::new(8, 8, 65536).expect("limits"),
+        tokens(),
+    )
+    .execute(
+        &principal,
+        &scope,
+        version,
+        ActionRequest {
+            action: "renameGate".to_owned(),
+            command_id: Some("bad-params".to_owned()),
+            items: vec![
+                ontoforge_action::ActionItem {
+                    params: serde_json::from_value(serde_json::json!({
+                        "gate": 42,
+                        "count": "wrong",
+                        "tags": ["valid", 2],
+                        "extra": true
+                    }))
+                    .expect("params"),
+                    expected_versions: BTreeMap::default(),
+                },
+                ontoforge_action::ActionItem {
+                    params: serde_json::from_value(serde_json::json!({
+                        "name": 5,
+                        "tags": [false]
+                    }))
+                    .expect("params"),
+                    expected_versions: BTreeMap::default(),
+                },
+            ],
+            validate_only: false,
+        },
+    )
+    .await
+    .expect_err("all invalid parameters must be rejected");
     let ActionError::ParameterErrors(problems) = &error else {
         panic!("expected parameter problems, got {error}");
     };
@@ -320,7 +331,11 @@ rules:
         .actions
         .insert("updateGates".to_owned().try_into().expect("action"));
     allow_types(&mut scope);
-    let limited = ActionService::new(&store, ActionLimits::new(8, 1, 65536).expect("limits"));
+    let limited = ActionService::new(
+        &store,
+        ActionLimits::new(8, 1, 65536).expect("limits"),
+        tokens(),
+    );
     let limited_result = limited
         .execute(
             &principal,
@@ -348,26 +363,30 @@ rules:
             .contains("edit count exceeds host limits"),
         "unexpected limit result: {limited_result}"
     );
-    let receipt = ActionService::new(&store, ActionLimits::new(8, 16, 65536).expect("limits"))
-        .execute(
-            &principal,
-            &scope,
-            version,
-            ActionRequest {
-                action: "updateGates".to_owned(),
-                command_id: Some("all-rules".to_owned()),
-                items: vec![ontoforge_action::ActionItem {
-                    params: serde_json::from_value(serde_json::json!({
-                        "gate": "A1", "doomed": "B1", "pilot": "P1",
-                        "newCode": "C1", "name": "New"
-                    }))
-                    .expect("params"),
-                    expected_versions: BTreeMap::default(),
-                }],
-                validate_only: false,
-            },
-        )
-        .await;
+    let receipt = ActionService::new(
+        &store,
+        ActionLimits::new(8, 16, 65536).expect("limits"),
+        tokens(),
+    )
+    .execute(
+        &principal,
+        &scope,
+        version,
+        ActionRequest {
+            action: "updateGates".to_owned(),
+            command_id: Some("all-rules".to_owned()),
+            items: vec![ontoforge_action::ActionItem {
+                params: serde_json::from_value(serde_json::json!({
+                    "gate": "A1", "doomed": "B1", "pilot": "P1",
+                    "newCode": "C1", "name": "New"
+                }))
+                .expect("params"),
+                expected_versions: BTreeMap::default(),
+            }],
+            validate_only: false,
+        },
+    )
+    .await;
     assert!(
         receipt.is_ok(),
         "five ordered rules must commit: {receipt:?}"
@@ -495,7 +514,11 @@ rules:
         .actions
         .insert("deleteGateTwice".to_owned().try_into().expect("action"));
     allow_types(&mut scope);
-    let service = ActionService::new(&store, ActionLimits::new(8, 8, 65536).expect("limits"));
+    let service = ActionService::new(
+        &store,
+        ActionLimits::new(8, 8, 65536).expect("limits"),
+        tokens(),
+    );
     let item = |name: &str| ontoforge_action::ActionItem {
         params: serde_json::from_value(serde_json::json!({"gate": "A1", "name": name}))
             .expect("params"),
@@ -700,7 +723,11 @@ rules:
         }],
         validate_only: true,
     };
-    let service = ActionService::new(&store, ActionLimits::new(8, 8, 65536).expect("limits"));
+    let service = ActionService::new(
+        &store,
+        ActionLimits::new(8, 8, 65536).expect("limits"),
+        tokens(),
+    );
     let outcome = service
         .execute(&principal, &scope, version, request.clone())
         .await;

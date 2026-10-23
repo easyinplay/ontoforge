@@ -8,11 +8,18 @@ use ontoforge_auth::{
     scope::{PrincipalScope, TypeScope},
 };
 use ontoforge_expr::{CmpOp, Operand, Pred, Scalar, rowpred::Attrs};
+use ontoforge_query::TokenCodec;
 use ontoforge_schema::load_from_memory;
 use ontoforge_storage::commit::{Actor, Commit, Edit, ObjectOp};
 use ontoforge_storage::reload::{ReloadOptions, reload};
 use ontoforge_storage::store::{BackendSettings, EditStore, StoreSettings};
 use ontoforge_storage::value::PropertyValue;
+use std::sync::OnceLock;
+
+fn tokens() -> &'static TokenCodec {
+    static TOKENS: OnceLock<TokenCodec> = OnceLock::new();
+    TOKENS.get_or_init(|| TokenCodec::new(b"action-test-key".to_vec()).expect("token codec"))
+}
 
 const DEFS: &str = "kind: ObjectType
 apiName: Gate
@@ -134,7 +141,11 @@ fn request(pk: &str, id: &str) -> ActionRequest {
 #[tokio::test]
 async fn scope_hidden_target_matches_missing_outward_shape() {
     let (_dir, store, version, principal) = setup().await;
-    let service = ActionService::new(&store, ActionLimits::new(8, 8, 65536).expect("limits"));
+    let service = ActionService::new(
+        &store,
+        ActionLimits::new(8, 8, 65536).expect("limits"),
+        tokens(),
+    );
     let hidden = service
         .execute(
             &principal,
@@ -161,7 +172,11 @@ async fn scope_hidden_target_matches_missing_outward_shape() {
 #[tokio::test]
 async fn scope_masked_criteria_is_denied_before_evaluation() {
     let (_dir, store, version, principal) = setup().await;
-    let service = ActionService::new(&store, ActionLimits::new(8, 8, 65536).expect("limits"));
+    let service = ActionService::new(
+        &store,
+        ActionLimits::new(8, 8, 65536).expect("limits"),
+        tokens(),
+    );
     let outcome = service
         .execute(
             &principal,
@@ -196,7 +211,11 @@ async fn scope_criterion_false_uses_configured_message() {
         })
         .await
         .expect("change seed");
-    let service = ActionService::new(&store, ActionLimits::new(8, 8, 65536).expect("limits"));
+    let service = ActionService::new(
+        &store,
+        ActionLimits::new(8, 8, 65536).expect("limits"),
+        tokens(),
+    );
     let result = service
         .execute(
             &principal,
@@ -219,7 +238,11 @@ async fn scope_post_state_must_remain_visible() {
         op: CmpOp::Eq,
         right: Operand::Lit(Scalar::String("Allowed".to_owned())),
     };
-    let service = ActionService::new(&store, ActionLimits::new(8, 8, 65536).expect("limits"));
+    let service = ActionService::new(
+        &store,
+        ActionLimits::new(8, 8, 65536).expect("limits"),
+        tokens(),
+    );
     let result = service
         .execute(
             &principal,
@@ -235,7 +258,11 @@ async fn scope_post_state_must_remain_visible() {
 #[tokio::test]
 async fn scope_each_item_criterion_sees_prior_edit_on_same_row() {
     let (_dir, store, version, principal) = setup().await;
-    let service = ActionService::new(&store, ActionLimits::new(8, 8, 65536).expect("limits"));
+    let service = ActionService::new(
+        &store,
+        ActionLimits::new(8, 8, 65536).expect("limits"),
+        tokens(),
+    );
     let mut batch = request("A1", "two-items");
     batch.items.push(batch.items[0].clone());
     let result = service
@@ -255,7 +282,11 @@ async fn scope_write_column_must_be_visible() {
         "params.name == \"Updated\"",
     );
     let (_dir, store, version, principal) = setup_with_defs(&defs).await;
-    let service = ActionService::new(&store, ActionLimits::new(8, 8, 65536).expect("limits"));
+    let service = ActionService::new(
+        &store,
+        ActionLimits::new(8, 8, 65536).expect("limits"),
+        tokens(),
+    );
     let result = service
         .execute(
             &principal,
@@ -274,7 +305,11 @@ async fn scope_write_column_must_be_visible() {
 #[tokio::test]
 async fn scope_missing_type_matches_hidden_row_and_missing_target() {
     let (_dir, store, version, principal) = setup().await;
-    let service = ActionService::new(&store, ActionLimits::new(8, 8, 65536).expect("limits"));
+    let service = ActionService::new(
+        &store,
+        ActionLimits::new(8, 8, 65536).expect("limits"),
+        tokens(),
+    );
     let hidden = service
         .execute(
             &principal,
@@ -311,7 +346,11 @@ async fn scope_missing_type_matches_hidden_row_and_missing_target() {
 #[tokio::test]
 async fn scope_validate_only_rejects_masked_criteria_without_writes() {
     let (_dir, store, version, principal) = setup().await;
-    let service = ActionService::new(&store, ActionLimits::new(8, 8, 65536).expect("limits"));
+    let service = ActionService::new(
+        &store,
+        ActionLimits::new(8, 8, 65536).expect("limits"),
+        tokens(),
+    );
     let mut dry = request("A1", "ignored-command");
     dry.validate_only = true;
     dry.command_id = None;
@@ -325,7 +364,11 @@ async fn scope_validate_only_rejects_masked_criteria_without_writes() {
 #[tokio::test]
 async fn scope_action_grant_is_checked_before_missing_target() {
     let (_dir, store, version, principal) = setup().await;
-    let service = ActionService::new(&store, ActionLimits::new(8, 8, 65536).expect("limits"));
+    let service = ActionService::new(
+        &store,
+        ActionLimits::new(8, 8, 65536).expect("limits"),
+        tokens(),
+    );
     let result = service
         .execute(
             &principal,
@@ -392,7 +435,11 @@ async fn scope_link_requires_both_endpoints() {
         }],
         validate_only,
     };
-    let service = ActionService::new(&store, ActionLimits::new(8, 8, 65536).expect("limits"));
+    let service = ActionService::new(
+        &store,
+        ActionLimits::new(8, 8, 65536).expect("limits"),
+        tokens(),
+    );
     let mut hidden_from = granted.clone();
     hidden_from.types.get_mut("Gate").expect("Gate").row = Pred::Const(false);
     let mut hidden_to = granted.clone();

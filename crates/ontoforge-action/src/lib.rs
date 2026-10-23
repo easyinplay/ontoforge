@@ -2,6 +2,7 @@
 
 use chrono::{Duration, SecondsFormat, Utc};
 use ontoforge_auth::{Principal, scope::PrincipalScope};
+use ontoforge_query::TokenCodec;
 use ontoforge_schema::ir::{ActionType, ActionTypeName};
 use ontoforge_storage::commit::{
     ActionCommitError, ActionCommitOutcome, ActionEditPosition, ActionGuardRead,
@@ -17,6 +18,7 @@ use std::collections::BTreeSet;
 mod criteria;
 mod params;
 mod rules;
+mod version;
 
 pub use ontoforge_storage::commit::{ActionReceipt, EditSummary, ItemReceipt};
 
@@ -92,6 +94,8 @@ impl ActionLimits {
 
 #[derive(Debug, thiserror::Error)]
 pub enum ActionError {
+    #[error("the observed edit version changed")]
+    VersionConflict,
     #[error("a normal Action submission needs a non-empty command_id")]
     MissingCommandId,
     #[error("the Action is not available to this principal")]
@@ -126,14 +130,23 @@ pub struct ParameterProblem {
 pub struct ActionService<'a> {
     store: &'a EditStore,
     limits: ActionLimits,
+    tokens: &'a TokenCodec,
 }
 
 impl<'a> ActionService<'a> {
-    pub fn new(store: &'a EditStore, limits: ActionLimits) -> Self {
-        Self { store, limits }
+    pub fn new(store: &'a EditStore, limits: ActionLimits, tokens: &'a TokenCodec) -> Self {
+        Self {
+            store,
+            limits,
+            tokens,
+        }
     }
 
     /// Executes an Action with a trusted principal, frozen scope and host limits.
+    #[expect(
+        clippy::too_many_lines,
+        reason = "one Action submission owns preparation and the guarded transaction"
+    )]
     pub async fn execute(
         &self,
         principal: &Principal,
@@ -178,6 +191,11 @@ impl<'a> ActionService<'a> {
         let guard_positions = prepared.positions.clone();
         let guard_items = prepared.resolved;
         let guard_reads = prepared.reads;
+        let expected_versions: Vec<_> = request
+            .items
+            .iter()
+            .map(|item| item.expected_versions.clone())
+            .collect();
 
         let fingerprint = json!({
             "action": request.action,
@@ -210,24 +228,27 @@ impl<'a> ActionService<'a> {
             observed_versions: prepared.observed_versions,
             validate_only: request.validate_only,
         };
+        let authorization = criteria::Authorization {
+            active: &active,
+            action,
+            principal,
+            scope,
+            items: &guard_items,
+            edits: &guard_edits,
+            positions: &guard_positions,
+        };
         let result = self
             .store
             .commit_action_guarded(input, &guard_reads, |view| {
-                criteria::authorize(
-                    criteria::Authorization {
-                        active: &active,
-                        action,
-                        principal,
-                        scope,
-                        items: &guard_items,
-                        edits: &guard_edits,
-                        positions: &guard_positions,
-                    },
-                    view,
-                )
+                version::authorize(authorization, &expected_versions, view, self.tokens)?;
+                criteria::authorize(authorization, view)
             })
             .await
             .map_err(|error| match error {
+                ActionCommitError::VersionConflict
+                | ActionCommitError::Guard(ActionGuardRejection::VersionConflict) => {
+                    ActionError::VersionConflict
+                }
                 ActionCommitError::Guard(ActionGuardRejection::NotFound) => ActionError::NotFound,
                 ActionCommitError::Guard(ActionGuardRejection::ScopeDenied) => {
                     ActionError::ScopeDenied
@@ -456,6 +477,7 @@ mod tests {
         scope::{PrincipalScope, TypeScope},
     };
     use ontoforge_expr::{Pred, rowpred::Attrs};
+    use ontoforge_query::TokenCodec;
     use ontoforge_schema::load_from_memory;
     use ontoforge_storage::commit::{
         ActionCommitError, ActionCommitOutcome, ActionEditPosition, ActionStage,
@@ -565,7 +587,12 @@ rules:
                     .collect(),
             },
         );
-        let service = ActionService::new(&store, ActionLimits::new(8, 8, 65536).expect("limits"));
+        let tokens = TokenCodec::new(b"action-unit-test-key".to_vec()).expect("token codec");
+        let service = ActionService::new(
+            &store,
+            ActionLimits::new(8, 8, 65536).expect("limits"),
+            &tokens,
+        );
         let request = ActionRequest {
             action: "renameGate".to_owned(),
             command_id: Some("command-1".to_owned()),
