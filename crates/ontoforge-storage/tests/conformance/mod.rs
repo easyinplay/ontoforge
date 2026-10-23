@@ -2098,8 +2098,10 @@ pub async fn action_batch_writes_one_command_and_outbox(h: &Harness) {
         (&commands[0][5], "2026-10-30T00:00:00.000Z"),
         (&outbox[0][3], receipt.committed_at.as_str()),
     ] {
-        let actual = chrono::DateTime::parse_from_rfc3339(actual.as_deref().expect("time"))
-            .expect("stored time");
+        let actual_text = actual.as_deref().expect("time");
+        let actual = chrono::DateTime::parse_from_rfc3339(actual_text)
+            .or_else(|_| chrono::DateTime::parse_from_str(actual_text, "%Y-%m-%d %H:%M:%S%.f%#z"))
+            .unwrap_or_else(|error| panic!("stored time {actual_text:?}: {error}"));
         let expected = chrono::DateTime::parse_from_rfc3339(expected).expect("expected time");
         assert_eq!(actual.timestamp_millis(), expected.timestamp_millis());
     }
