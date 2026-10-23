@@ -42,6 +42,20 @@ pub struct ServerConfig {
     /// How callers authenticate.
     #[serde(default)]
     pub auth: Option<AuthConfig>,
+    /// Outbound Action event delivery by a trusted worker process.
+    #[serde(default)]
+    pub webhook: Option<WebhookWorkerConfig>,
+}
+
+/// The `[webhook]` section used by `ontoforge webhook-worker`.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct WebhookWorkerConfig {
+    pub target: String,
+    pub poll_interval_ms: u64,
+    pub request_timeout_ms: u64,
+    pub lease_duration_ms: u64,
+    pub batch_limit: u32,
 }
 
 /// The `[trino]` section.
@@ -526,6 +540,9 @@ impl<'a> Checker<'a> {
         if let Some(auth) = &cfg.auth {
             self.check_auth(auth, &mut errors);
         }
+        if let Some(webhook) = &cfg.webhook {
+            self.check_webhook(webhook, &mut errors);
+        }
         for (name, profile) in &cfg.profiles {
             if profile.engine == EngineKind::Trino && cfg.trino.is_none() {
                 errors.push(
@@ -538,6 +555,48 @@ impl<'a> Checker<'a> {
             }
         }
         errors
+    }
+
+    fn check_webhook(&self, webhook: &WebhookWorkerConfig, errors: &mut Vec<ConfigError>) {
+        let target = Url::parse(&webhook.target).ok();
+        if target.as_ref().is_none_or(|url| {
+            !matches!(url.scheme(), "http" | "https")
+                || url.host().is_none()
+                || !url.username().is_empty()
+                || url.password().is_some()
+                || url.fragment().is_some()
+        }) {
+            errors.push(
+                ConfigError::new(
+                    "`webhook.target` must be an http or https URL without credentials or fragment",
+                )
+                .at(self.key_span(&["webhook", "target"])),
+            );
+        }
+        for (key, value) in [
+            ("poll_interval_ms", webhook.poll_interval_ms),
+            ("request_timeout_ms", webhook.request_timeout_ms),
+            ("lease_duration_ms", webhook.lease_duration_ms),
+        ] {
+            if value == 0 {
+                errors.push(
+                    ConfigError::new(format!("`webhook.{key}` must be greater than zero"))
+                        .at(self.key_span(&["webhook", key])),
+                );
+            }
+        }
+        if webhook.lease_duration_ms <= webhook.request_timeout_ms {
+            errors.push(
+                ConfigError::new("`webhook.lease_duration_ms` must exceed request_timeout_ms")
+                    .at(self.key_span(&["webhook", "lease_duration_ms"])),
+            );
+        }
+        if !(1..=100).contains(&webhook.batch_limit) {
+            errors.push(
+                ConfigError::new("`webhook.batch_limit` must be between 1 and 100")
+                    .at(self.key_span(&["webhook", "batch_limit"])),
+            );
+        }
     }
 
     fn check_trino(&self, trino: &TrinoConfig, errors: &mut Vec<ConfigError>) {

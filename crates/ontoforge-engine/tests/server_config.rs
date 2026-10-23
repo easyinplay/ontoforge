@@ -17,6 +17,43 @@ use secrecy::{ExposeSecret, SecretString};
 
 const SECRET: &str = "s3cr3t-value";
 
+#[test]
+fn accepts_trusted_webhook_worker_config() {
+    let text = "[store]\nkind = \"sqlite\"\npath = \"edit.db\"\n\n[webhook]\ntarget = \"http://127.0.0.1:12345/events\"\npoll_interval_ms = 50\nrequest_timeout_ms = 500\nlease_duration_ms = 2000\nbatch_limit = 4\n";
+    assert!(
+        parse_server_config(text).is_ok(),
+        "webhook config should be accepted"
+    );
+}
+
+#[test]
+fn rejects_invalid_webhook_worker_limits_and_target() {
+    let cases = [
+        ("target = \"http://user:secret@127.0.0.1/events\"", "target"),
+        ("poll_interval_ms = 0", "poll_interval_ms"),
+        ("lease_duration_ms = 500", "lease_duration_ms"),
+        ("batch_limit = 101", "batch_limit"),
+    ];
+    for (replacement, key) in cases {
+        let text = "[webhook]\ntarget = \"http://127.0.0.1/events\"\npoll_interval_ms = 50\nrequest_timeout_ms = 500\nlease_duration_ms = 2000\nbatch_limit = 4\n";
+        let line = match key {
+            "target" => "target = \"http://127.0.0.1/events\"",
+            "poll_interval_ms" => "poll_interval_ms = 50",
+            "lease_duration_ms" => "lease_duration_ms = 2000",
+            _ => "batch_limit = 4",
+        };
+        let invalid = text.replace(line, replacement);
+        let messages = errors(&invalid)
+            .into_iter()
+            .map(|error| error.message)
+            .collect::<Vec<_>>();
+        assert!(
+            messages.iter().any(|message| message.contains(key)),
+            "{key}: {messages:?}"
+        );
+    }
+}
+
 const FULL: &str = r#"
 [trino]
 url = "https://trino.example:8443"

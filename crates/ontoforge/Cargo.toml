@@ -23,17 +23,19 @@ ontoforge-expr = { path = "../ontoforge-expr" }
 ontoforge-engine = { path = "../ontoforge-engine" }
 ontoforge-auth = { path = "../ontoforge-auth" }
 ontoforge-storage = { path = "../ontoforge-storage" }
+ontoforge-action = { path = "../ontoforge-action" }
 clap.workspace = true
 miette.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 camino.workspace = true
 anstream.workspace = true
-tokio.workspace = true
+tokio = { workspace = true, features = ["signal"] }
 ulid.workspace = true
 chrono.workspace = true
 
 [dev-dependencies]
+ontoforge-query = { path = "../ontoforge-query" }
 insta.workspace = true
 tempfile.workspace = true
 serde_json.workspace = true

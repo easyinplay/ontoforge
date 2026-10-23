@@ -12,6 +12,7 @@ pub mod pipeline;
 pub mod reload;
 pub mod render;
 pub mod scope;
+pub mod webhook_worker;
 
 use camino::Utf8Path;
 use cli::{Cli, Command, LintArgs, OutputArgs, SchemaCommand, ValidateArgs};
@@ -29,6 +30,7 @@ pub fn run(cli: Cli) -> u8 {
         Command::Scope(args) => scope::run(&args),
         Command::Import(args) => import::run(&args),
         Command::DevToken(args) => dev_token::run(&args),
+        Command::WebhookWorker(args) => webhook_worker::run(&args),
         Command::Schema(args) => match args.command {
             SchemaCommand::Export { out_dir } => export_schemas(&out_dir),
         },

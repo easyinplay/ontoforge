@@ -36,6 +36,15 @@ pub enum Command {
     /// Issue a development token signed with a local key (accepted only by a server started
     /// with `--dev`).
     DevToken(DevTokenArgs),
+    /// Deliver committed Action events from the edit store to a configured webhook.
+    WebhookWorker(WebhookWorkerArgs),
+}
+
+#[derive(Debug, Args)]
+pub struct WebhookWorkerArgs {
+    /// Server configuration with `[store]` and trusted `[webhook]` sections.
+    #[arg(long, value_name = "FILE")]
+    pub server_config: Utf8PathBuf,
 }
 
 #[derive(Debug, Args)]
