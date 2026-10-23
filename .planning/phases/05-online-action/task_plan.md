@@ -22,4 +22,4 @@
 
 ## Next Step
 
-恢复 05-02 Task 2 GREEN 并完成真实测试；release source 验收移至 05-06（含 Action IR 入口及 source sampler），不得计入 05-02 完成项。05-01 提交证据见 `05-01-SUMMARY.md`。正式 gstack gate 仍为 BLOCKED，关键 PR 前回补。
+执行 `05-03-PLAN.md` 的 version/CAS 合同；05-02 的真实测试和提交证据见 `05-02-SUMMARY.md`。release source 专项仍由 05-06 验收，ACTION-08 暂不完成。正式 gstack gate 仍为 BLOCKED，关键 PR 前回补。
