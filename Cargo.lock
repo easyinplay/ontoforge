@@ -2013,8 +2013,14 @@ dependencies = [
 name = "ontoforge-action"
 version = "0.1.0"
 dependencies = [
+ "camino",
  "ontoforge-expr",
+ "ontoforge-schema",
  "ontoforge-storage",
+ "serde_json",
+ "sqlx",
+ "tempfile",
+ "tokio",
 ]
 
 [[package]]
