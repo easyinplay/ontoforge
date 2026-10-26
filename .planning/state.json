@@ -26,7 +26,7 @@
     {
       "number": "5",
       "name": "Online Action",
-      "status": "in_progress"
+      "status": "complete"
     },
     {
       "number": "6",
@@ -41,8 +41,8 @@
   ],
   "next": {
     "command": "$gsd-progress --next",
-    "label": "Advance to the next step (verify)",
-    "reason": "Phase 5 of 7 · 57% · ready to verify"
+    "label": "Advance to the next step (plan phase 6)",
+    "reason": "Phase 6 of 7 — needs a plan"
   },
-  "updated_at": "2026-10-23T15:29:21.971Z"
+  "updated_at": "2026-10-26T03:47:56.575Z"
 }

@@ -1,20 +1,20 @@
 ---
 gsd_state_version: "1.0"
-current_phase: 05
-current_phase_name: Online Action
-current_plan: 7
-status: verifying
-stopped_at: "Phase 05 verification human_needed: CI green; UAT confirmation, deployment and gstack gates pending"
-last_updated: "2026-10-23T18:23:24Z"
-last_activity: 2026-10-24
-state_head: ac711db21356ec63d68c3b337374d04843684a2e
+current_phase: 6
+current_phase_name: L2 Raw DQL, Toolsets & Audit
+current_plan: Not started
+status: planning
+stopped_at: Phase 05 complete, ready to plan Phase 6
+last_updated: "2026-10-26T03:47:56.383Z"
+last_activity: 2026-10-26
+last_activity_desc: Phase 05 complete, transitioned to Phase 6
+state_head: 9ab1b60a142ce2198db750501f03fa61a22fb5d2
 progress:
   total_phases: 7
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 61
   completed_plans: 61
-  percent: 57
-last_activity_desc: Phase 05 code review clean; CI green; verification human_needed pending UAT and deployment
+  percent: 71
 ---
 
 # Project State
@@ -24,17 +24,17 @@ last_activity_desc: Phase 05 code review clean; CI green; verification human_nee
 See: .planning/PROJECT.md (updated 2026-10-23)
 
 **Core value:** 定义一次 ontology，应用和 agent 就能通过 REST 与 MCP 对同一份对象图做受控读写：写入一律经 Action 校验与授权，每次写入都可审计。
-**Current focus:** Phase 5 — Online Action
+**Current focus:** Phase 6 — L2 Raw DQL, Toolsets & Audit
 
 ## Current Position
 
-Phase: 05 (Online Action)
-Current Plan: 7
-Total Plans in Phase: 7
-Status: 7/7 plans executed; verification in progress
-Last activity: 2026-10-24: code review clean; CI passed at ac711db; UAT and deployment pending
+Phase: 6 — L2 Raw DQL, Toolsets & Audit
+Current Plan: Not started
+Total Plans in Phase: Not planned
+Status: Ready to plan
+Last activity: 2026-10-26 — Phase 05 complete, transitioned to Phase 6
 
-Progress: [██████░░░░] 57%
+Progress: [███████░░░] 71%
 
 ## Performance Metrics
 
@@ -80,6 +80,7 @@ None yet.
 
 - [Ops]: 测试凭据待轮换（`ontoforge_trino_ro`、postgres），测试 catalog `ontoforge_pg` 待删除
 - [Phase 2]: 非阻塞安全 observations 待后续 phase 跟进（详: `phases/02-source-binding-engine/02-SECURITY.md` Observations）
+- [Phase 5]: 生产 webhook 联调与正式 gstack gate 待发布/PR 前完成；GSD 关闭警告详见 `phases/05-online-action/deferred-items.md`
 
 ## Deferred Items
 
@@ -90,5 +91,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-10-23T17:19:22.690Z
-Stopped at: Phase 05 verification human_needed: CI green; UAT confirmation, deployment and gstack gates pending
-Resume file: .planning/phases/05-online-action/05-UAT.md
+Stopped at: Phase 05 complete, ready to plan Phase 6
+Resume file: .planning/ROADMAP.md

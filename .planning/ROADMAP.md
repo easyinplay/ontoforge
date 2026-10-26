@@ -15,7 +15,7 @@ Phase 1 定死 IR 契约。2026-10-16 起 Phase 2–7 按 `docs/designs/trino-en
 - [x] **Phase 2: Source Binding & Engine** - IR 数据源绑定与类型契约，`ontoforge-engine`（自写 Trino client、自有 SQL printer、SQLite 替身），`validate --online` 与 drift 校验 (completed 2026-10-19)
 - [x] **Phase 3: Edit Store & Scope Model** - 按 type 强类型 edit store、DDL diff / migrate / reload 加固、edit log；用户 / 组 / 角色、CEL 行谓词（SQL 编译 + Rust 单行求值） (completed 2026-10-22)
 - [x] **Phase 4: Scoped L0 Read** - Rust 编排叠加读：pk 读、列表、聚合分解、searchAround、keyset 分页、HMAC 版本令牌 (completed 2026-10-23)
-- [ ] **Phase 5: Online Action** - Action 鉴权管线 ①-⑨、并发令牌、`command_id`、webhook outbox
+- [x] **Phase 5: Online Action** - Action 鉴权管线 ①-⑨、并发令牌、`command_id`、webhook outbox (completed 2026-10-26)
 - [ ] **Phase 6: L2 Raw DQL, Toolsets & Audit** - L2 AST 白名单与自检、读审计、定义 reload 门禁与 role 管理通道
 - [ ] **Phase 7: REST & MCP Shell** - REST + OpenAPI + clients、MCP toolset（core / full / sql:raw）、`serve --dev`、release
 
@@ -227,7 +227,7 @@ Plans:
   4. 目标或读集需要 Trino 时 Trino 不可用返回 `EngineUnavailable`；只涉及已编辑对象的 Action 照常执行
   5. 提交后下一次读取可见；下游 webhook 至少收到一次带 `event_id` 的事件
 
-**Plans**: 7/7 executed（verification pending；详: `.planning/phases/05-online-action/`）
+**Plans**: 7/7 executed（verified 2026-10-26；详: `.planning/phases/05-online-action/`）
 **Details**: `.planning/phases/05-online-action/`
 
 ### Phase 6: L2 Raw DQL, Toolsets & Audit
@@ -277,6 +277,6 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7（纵切片
 | 2. Source Binding & Engine | 10/10 | Complete    | 2026-10-19 |
 | 3. Edit Store & Scope Model | 23/23 | Complete    | 2026-10-22 |
 | 4. Scoped L0 Read | 7/7 | Complete    | 2026-10-23 |
-| 5. Online Action | 7/7 | Verification pending | - |
+| 5. Online Action | 7/7 | Complete    | 2026-10-26 |
 | 6. L2 Raw DQL, Toolsets & Audit | 0/TBD | Not started | - |
 | 7. REST & MCP Shell | 0/TBD | Not started | - |

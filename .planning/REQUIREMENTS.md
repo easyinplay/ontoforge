@@ -72,18 +72,18 @@
 
 ### Action
 
-- [ ] **ACTION-01**: 客户端提交 action 时，参数按类型、required 与约束校验，失败时返回逐参数的错误
-- [ ] **ACTION-02**: action 的 rules 在单个事务内执行，生成 create / modify / delete object 与 add / remove link 的 edits
-- [ ] **ACTION-03**: submission criteria 不满足时 action 被拒绝并返回配置的失败信息；criteria 只在调用者的遮蔽视图上求值
-- [ ] **ACTION-04**: 客户端可以用 validate-only 模式提交 action，只得到校验结果，不产生写入
-- [ ] **ACTION-05**: 客户端可以批量提交同一 action，全部成功或全部回滚
-- [ ] **ACTION-06**: action 成功后返回标准化的 edits 摘要（新增 / 修改 / 删除的对象与 link）
-- [ ] **ACTION-07**: 对象只能经 action（或可审计的导入）写入，没有其他写入途径
-- [ ] **ACTION-08**: 写字段必须在调用者对该行的可见列内且非系统字段；写后状态（含 link 两端与 release）必须对调用者可见，否则 `ScopeDenied`，错误不泄露对象状态
-- [ ] **ACTION-09**: 客户端可附带读取时的 `_version` 令牌，不一致返回 `VersionConflict`；edit 读集在事务内按稳定顺序加锁
-- [ ] **ACTION-10**: `command_id` 以主体为作用域幂等：重放前重新鉴权，同键异参报 `CommandIdReused`，响应丢失后可凭同键查询结果
-- [ ] **ACTION-11**: 提交成功后经事务性 outbox 向下游 webhook 至少投递一次带 `event_id` 的事件
-- [ ] **ACTION-12**: Action 只在目标或读集需要 Trino 时依赖 Trino；本次 Action 从 source 读取并观测到重复 pk 时返回 `AmbiguousObject` 且拒绝写入；无需 source 内容的已编辑对象可在 Trino 不可用时执行
+- [x] **ACTION-01**: 客户端提交 action 时，参数按类型、required 与约束校验，失败时返回逐参数的错误
+- [x] **ACTION-02**: action 的 rules 在单个事务内执行，生成 create / modify / delete object 与 add / remove link 的 edits
+- [x] **ACTION-03**: submission criteria 不满足时 action 被拒绝并返回配置的失败信息；criteria 只在调用者的遮蔽视图上求值
+- [x] **ACTION-04**: 客户端可以用 validate-only 模式提交 action，只得到校验结果，不产生写入
+- [x] **ACTION-05**: 客户端可以批量提交同一 action，全部成功或全部回滚
+- [x] **ACTION-06**: action 成功后返回标准化的 edits 摘要（新增 / 修改 / 删除的对象与 link）
+- [x] **ACTION-07**: 对象只能经 action（或可审计的导入）写入，没有其他写入途径
+- [x] **ACTION-08**: 写字段必须在调用者对该行的可见列内且非系统字段；写后状态（含 link 两端与 release）必须对调用者可见，否则 `ScopeDenied`，错误不泄露对象状态
+- [x] **ACTION-09**: 客户端可附带读取时的 `_version` 令牌，不一致返回 `VersionConflict`；edit 读集在事务内按稳定顺序加锁
+- [x] **ACTION-10**: `command_id` 以主体为作用域幂等：重放前重新鉴权，同键异参报 `CommandIdReused`，响应丢失后可凭同键查询结果
+- [x] **ACTION-11**: 提交成功后经事务性 outbox 向下游 webhook 至少投递一次带 `event_id` 的事件
+- [x] **ACTION-12**: Action 只在目标或读集需要 Trino 时依赖 Trino；本次 Action 从 source 读取并观测到重复 pk 时返回 `AmbiguousObject` 且拒绝写入；无需 source 内容的已编辑对象可在 Trino 不可用时执行
 
 ### L2 与审计
 
@@ -224,18 +224,18 @@ Which phases cover which requirements. Updated during roadmap creation.
 | QUERY-08 | Phase 4 | Complete |
 | QUERY-09 | Phase 4 | Complete |
 | QUERY-10 | Phase 4 | Complete |
-| ACTION-01 | Phase 5 | Pending |
-| ACTION-02 | Phase 5 | Pending |
-| ACTION-03 | Phase 5 | Pending |
-| ACTION-04 | Phase 5 | Pending |
-| ACTION-05 | Phase 5 | Pending |
-| ACTION-06 | Phase 5 | Pending |
-| ACTION-07 | Phase 5 | Pending |
-| ACTION-08 | Phase 5 | Pending |
-| ACTION-09 | Phase 5 | Pending |
-| ACTION-10 | Phase 5 | Pending |
-| ACTION-11 | Phase 5 | Pending |
-| ACTION-12 | Phase 5 | Pending |
+| ACTION-01 | Phase 5 | Complete |
+| ACTION-02 | Phase 5 | Complete |
+| ACTION-03 | Phase 5 | Complete |
+| ACTION-04 | Phase 5 | Complete |
+| ACTION-05 | Phase 5 | Complete |
+| ACTION-06 | Phase 5 | Complete |
+| ACTION-07 | Phase 5 | Complete |
+| ACTION-08 | Phase 5 | Complete |
+| ACTION-09 | Phase 5 | Complete |
+| ACTION-10 | Phase 5 | Complete |
+| ACTION-11 | Phase 5 | Complete |
+| ACTION-12 | Phase 5 | Complete |
 | L2-01 | Phase 6 | Pending |
 | L2-02 | Phase 6 | Pending |
 | L2-03 | Phase 6 | Pending |
