@@ -15,6 +15,7 @@ pub mod migrate;
 pub mod naming;
 pub mod physical;
 pub mod query_read;
+pub mod read_audit;
 pub mod reload;
 pub mod scope_store;
 mod sql_exit;

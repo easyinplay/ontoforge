@@ -11,6 +11,7 @@ use ontoforge_engine::{Engine, QueryContext, TableRef};
 use ontoforge_expr::Scalar;
 use ontoforge_schema::ir::{Backing, ObjectTypeName, PropertyName};
 use ontoforge_storage::query_read::ObjectEdit;
+use ontoforge_storage::read_audit::{ReadAuditGuard, ReadAuditMetadata, ReadAuditStatus};
 use ontoforge_storage::state::EditRow;
 use ontoforge_storage::store::{ActiveDefinition, EditStore};
 use ontoforge_storage::value::PropertyValue;
@@ -79,6 +80,8 @@ pub enum QueryError {
     UnsupportedNumericValue,
     #[error("edit store unavailable")]
     Store,
+    #[error("read audit unavailable")]
+    AuditUnavailable,
     #[error("invalid version token")]
     InvalidToken,
     #[error("query work budget exceeded")]
@@ -99,6 +102,7 @@ impl QueryError {
             Self::Source => "SOURCE_UNAVAILABLE",
             Self::UnsupportedNumericValue => "UNSUPPORTED_NUMERIC_VALUE",
             Self::Store => "STORE_UNAVAILABLE",
+            Self::AuditUnavailable => "AUDIT_UNAVAILABLE",
             Self::InvalidToken => "INVALID_TOKEN",
             Self::WorkBudgetExceeded => "WORK_BUDGET_EXCEEDED",
             Self::InvalidCursor => "INVALID_CURSOR",
@@ -235,6 +239,47 @@ pub struct QueryService<'a, E: Engine> {
 
 impl<E: Engine> QueryService<'_, E> {
     pub async fn execute(&self, request: QueryRequest) -> Result<QueryPage, QueryError> {
+        let object_type = request.set.object_type();
+        let mut audit = self
+            .store
+            .read_audit()
+            .reserve(ReadAuditMetadata {
+                principal: self.principal.id.to_string(),
+                tool: "query.pk".to_owned(),
+                object_type: Some(object_type.as_str().to_owned()),
+                condition_api_names: self
+                    .active
+                    .ontology
+                    .object_types
+                    .get(object_type)
+                    .map(|ty| vec![ty.primary_key.as_str().to_owned()])
+                    .unwrap_or_default(),
+                effective_roles: self
+                    .scope
+                    .roles
+                    .iter()
+                    .map(|role| role.as_str().to_owned())
+                    .collect(),
+                def_version: self.active.def_version,
+            })
+            .map_err(|_| QueryError::AuditUnavailable)?;
+        let result = self.execute_pk(request, &mut audit).await;
+        let (status, count) = match &result {
+            Ok(page) => (ReadAuditStatus::Success, page.rows.len()),
+            Err(QueryError::Source | QueryError::Store) => (ReadAuditStatus::SourceError, 0),
+            Err(_) => (ReadAuditStatus::Denied, 0),
+        };
+        audit
+            .finish(status, count)
+            .map_err(|_| QueryError::AuditUnavailable)?;
+        result
+    }
+
+    async fn execute_pk(
+        &self,
+        request: QueryRequest,
+        audit: &mut ReadAuditGuard,
+    ) -> Result<QueryPage, QueryError> {
         let ObjectSet::Pk { object_type, pk } = request.set else {
             return Err(QueryError::InvalidQuery);
         };
@@ -275,7 +320,7 @@ impl<E: Engine> QueryService<'_, E> {
         });
         let source = if ty.backing == Backing::Source && !all_patched {
             charge(&mut calls, 1, self.limits.max_backend_calls)?;
-            self.read_source(&object_type, &canonical_pk).await?
+            self.read_source(&object_type, &canonical_pk, audit).await?
         } else {
             None
         };
@@ -353,14 +398,16 @@ impl<E: Engine> QueryService<'_, E> {
         &self,
         type_name: &ObjectTypeName,
         pk: &PropertyValue,
+        audit: &mut ReadAuditGuard,
     ) -> Result<Option<BTreeMap<PropertyName, Value>>, QueryError> {
-        read_pk_source(
+        read_pk_source_with_audit(
             &self.active,
             self.engine,
             type_name,
             pk,
             self.limits.max_raw_candidates.min(3),
             self.limits.max_decoded_bytes,
+            Some(audit),
         )
         .await
     }
@@ -374,6 +421,27 @@ pub async fn read_pk_source<E: Engine>(
     pk: &PropertyValue,
     max_rows: usize,
     max_decoded_bytes: usize,
+) -> Result<Option<BTreeMap<PropertyName, Value>>, QueryError> {
+    read_pk_source_with_audit(
+        active,
+        engine,
+        type_name,
+        pk,
+        max_rows,
+        max_decoded_bytes,
+        None,
+    )
+    .await
+}
+
+async fn read_pk_source_with_audit<E: Engine>(
+    active: &ActiveDefinition,
+    engine: &E,
+    type_name: &ObjectTypeName,
+    pk: &PropertyValue,
+    max_rows: usize,
+    max_decoded_bytes: usize,
+    audit: Option<&mut ReadAuditGuard>,
 ) -> Result<Option<BTreeMap<PropertyName, Value>>, QueryError> {
     let ontology = &active.ontology;
     let profile = ontology
@@ -414,6 +482,9 @@ pub async fn read_pk_source<E: Engine>(
         limit: Some(2),
     };
     let sql = print_select(&select, engine.dialect()).map_err(|_| QueryError::Source)?;
+    if let Some(audit) = audit {
+        audit.observe_sql(sql.as_str());
+    }
     let mut ctx = QueryContext::new("l0-pk".to_owned(), Vec::new());
     ctx.max_rows = max_rows;
     ctx.max_bytes = max_decoded_bytes;
