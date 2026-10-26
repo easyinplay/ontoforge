@@ -1,3 +1,8 @@
+#![allow(
+    clippy::unused_async_trait_impl,
+    reason = "test engines return immediately or wait for cancellation"
+)]
+
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -9,6 +14,7 @@ use ontoforge_auth::authn::PrincipalId;
 use ontoforge_auth::scope::{ScopeInputs, attr_types, compile_scope};
 use ontoforge_engine::printer::{Dialect, PrintedSql};
 use ontoforge_engine::{Engine, EngineError, EngineStatus, QueryContext, QueryOutput, TableRef};
+use ontoforge_expr::Attrs;
 use ontoforge_query::{
     ExecutionLimits, ObjectSet, QueryError, QueryRequest, QueryService, TokenCodec,
 };
@@ -153,7 +159,7 @@ async fn fixture(audit_settings: Option<ReadAuditSettings>) -> Fixture {
         issuer: "ontoforge-dev".to_owned(),
         subject: "alice".to_owned(),
         groups: BTreeSet::from(["dispatchers".to_owned()]),
-        attrs: Default::default(),
+        attrs: Attrs::default(),
     };
     let scope = compiled.for_principal(&principal);
     let active = store.active_definition().await.unwrap();
@@ -329,7 +335,14 @@ async fn audit_pk_denied_before_source_and_source_failure_have_distinct_statuses
 
 #[tokio::test]
 async fn audit_pk_cancelled_in_flight_records_without_result() {
-    let f = Arc::new(fixture(None).await);
+    let f = Arc::new(
+        fixture(Some(ReadAuditSettings {
+            capacity: 1,
+            batch_size: 1,
+            ..ReadAuditSettings::default()
+        }))
+        .await,
+    );
     let engine = Arc::new(BlockingEngine {
         started: Notify::new(),
     });
@@ -360,6 +373,26 @@ async fn audit_pk_cancelled_in_flight_records_without_result() {
     assert_eq!(rows[0].get::<String, _>("status"), "cancelled");
     assert_eq!(rows[0].get::<i64, _>("row_count"), 0);
     assert_eq!(rows[0].get::<String, _>("sql_sha256").len(), 64);
+    assert_eq!(f.store.read_audit().health().pending, 0);
+    let tokens = TokenCodec::new(b"audit-test-key".to_vec()).unwrap();
+    let next = QueryService {
+        principal: &f.principal,
+        scope: &f.scope,
+        active: Arc::clone(&f.active),
+        engine: &NeverEngine,
+        store: &f.store,
+        limits: ExecutionLimits::phase4_default(),
+        tokens: &tokens,
+    }
+    .execute(request("Airport", "BER", "name"))
+    .await
+    .unwrap();
+    assert_eq!(
+        next.rows.len(),
+        1,
+        "cancelled read must release its audit capacity"
+    );
+    assert_eq!(audit_rows(&f.path, 2).await.len(), 2);
 }
 
 #[tokio::test]
@@ -413,24 +446,38 @@ async fn audit_pk_full_queue_rejects_before_releasing_another_result() {
 
 #[tokio::test]
 async fn audit_worker_shutdown_drains_and_reopen_recovers() {
-    let f = Arc::new(fixture(Some(ReadAuditSettings {
-        capacity: 2,
-        batch_size: 1,
-        flush_interval: Duration::from_millis(10),
-        max_pending_age: Duration::from_millis(100),
-        ..ReadAuditSettings::default()
-    })).await);
-    let pool = sqlx::SqlitePool::connect_with(
-        ontoforge_storage::store::sqlite_connect_options(&f.path),
-    ).await.unwrap();
+    let f = Arc::new(
+        fixture(Some(ReadAuditSettings {
+            capacity: 2,
+            batch_size: 1,
+            flush_interval: Duration::from_millis(10),
+            max_pending_age: Duration::from_millis(100),
+            ..ReadAuditSettings::default()
+        }))
+        .await,
+    );
+    let pool =
+        sqlx::SqlitePool::connect_with(ontoforge_storage::store::sqlite_connect_options(&f.path))
+            .await
+            .unwrap();
     let mut lock = pool.acquire().await.unwrap();
-    sqlx::query("BEGIN IMMEDIATE").execute(&mut *lock).await.unwrap();
+    sqlx::query("BEGIN IMMEDIATE")
+        .execute(&mut *lock)
+        .await
+        .unwrap();
     let tokens = TokenCodec::new(b"audit-test-key".to_vec()).unwrap();
     let first = QueryService {
-        principal: &f.principal, scope: &f.scope, active: Arc::clone(&f.active),
-        engine: &NeverEngine, store: &f.store,
-        limits: ExecutionLimits::phase4_default(), tokens: &tokens,
-    }.execute(request("Airport", "BER", "name")).await.unwrap();
+        principal: &f.principal,
+        scope: &f.scope,
+        active: Arc::clone(&f.active),
+        engine: &NeverEngine,
+        store: &f.store,
+        limits: ExecutionLimits::phase4_default(),
+        tokens: &tokens,
+    }
+    .execute(request("Airport", "BER", "name"))
+    .await
+    .unwrap();
     assert_eq!(first.rows.len(), 1);
     assert_eq!(f.store.read_audit().health().pending, 1);
 
@@ -438,28 +485,57 @@ async fn audit_worker_shutdown_drains_and_reopen_recovers() {
     let shutdown = tokio::spawn(async move { close_store.store.read_audit().shutdown().await });
     tokio::time::sleep(Duration::from_millis(30)).await;
     sqlx::query("ROLLBACK").execute(&mut *lock).await.unwrap();
-    tokio::time::timeout(Duration::from_secs(3), shutdown).await.unwrap().unwrap().unwrap();
+    tokio::time::timeout(Duration::from_secs(3), shutdown)
+        .await
+        .unwrap()
+        .unwrap()
+        .unwrap();
     let rows = audit_rows(&f.path, 1).await;
-    assert_eq!(rows.len(), 1, "shutdown must drain accepted records to SQLite");
-    assert!(!f.store.read_audit().health().available, "shutdown must keep the read gate closed");
+    assert_eq!(
+        rows.len(),
+        1,
+        "shutdown must drain accepted records to SQLite"
+    );
+    assert!(
+        !f.store.read_audit().health().available,
+        "shutdown must keep the read gate closed"
+    );
     let denied = QueryService {
-        principal: &f.principal, scope: &f.scope, active: Arc::clone(&f.active),
-        engine: &NeverEngine, store: &f.store,
-        limits: ExecutionLimits::phase4_default(), tokens: &tokens,
-    }.execute(request("Airport", "BER", "name")).await.unwrap_err();
+        principal: &f.principal,
+        scope: &f.scope,
+        active: Arc::clone(&f.active),
+        engine: &NeverEngine,
+        store: &f.store,
+        limits: ExecutionLimits::phase4_default(),
+        tokens: &tokens,
+    }
+    .execute(request("Airport", "BER", "name"))
+    .await
+    .unwrap_err();
     assert!(matches!(denied, QueryError::AuditUnavailable));
 
     let reopened = EditStore::open(StoreSettings {
-        backend: BackendSettings::Sqlite { path: f.path.clone() },
+        backend: BackendSettings::Sqlite {
+            path: f.path.clone(),
+        },
         lock_timeout: Duration::from_secs(5),
         probe_timeout: Duration::from_secs(5),
         trino_catalog: None,
-    }).await.unwrap();
+    })
+    .await
+    .unwrap();
     let after_restart = QueryService {
-        principal: &f.principal, scope: &f.scope, active: Arc::clone(&f.active),
-        engine: &NeverEngine, store: &reopened,
-        limits: ExecutionLimits::phase4_default(), tokens: &tokens,
-    }.execute(request("Airport", "BER", "name")).await.unwrap();
+        principal: &f.principal,
+        scope: &f.scope,
+        active: Arc::clone(&f.active),
+        engine: &NeverEngine,
+        store: &reopened,
+        limits: ExecutionLimits::phase4_default(),
+        tokens: &tokens,
+    }
+    .execute(request("Airport", "BER", "name"))
+    .await
+    .unwrap();
     assert_eq!(after_restart.rows.len(), 1);
     assert_eq!(audit_rows(&f.path, 2).await.len(), 2);
 }
@@ -472,29 +548,239 @@ async fn audit_worker_persistent_sink_failure_stops_and_reports_failed_drain() {
         flush_interval: Duration::from_millis(10),
         max_pending_age: Duration::from_millis(100),
         ..ReadAuditSettings::default()
-    })).await;
-    let pool = sqlx::SqlitePool::connect_with(
-        ontoforge_storage::store::sqlite_connect_options(&f.path),
-    ).await.unwrap();
-    sqlx::query("DROP TABLE of_read_audit").execute(&pool).await.unwrap();
+    }))
+    .await;
+    let pool =
+        sqlx::SqlitePool::connect_with(ontoforge_storage::store::sqlite_connect_options(&f.path))
+            .await
+            .unwrap();
+    sqlx::query("DROP TABLE of_read_audit")
+        .execute(&pool)
+        .await
+        .unwrap();
     let tokens = TokenCodec::new(b"audit-test-key".to_vec()).unwrap();
     let service = QueryService {
-        principal: &f.principal, scope: &f.scope, active: Arc::clone(&f.active),
-        engine: &NeverEngine, store: &f.store,
-        limits: ExecutionLimits::phase4_default(), tokens: &tokens,
+        principal: &f.principal,
+        scope: &f.scope,
+        active: Arc::clone(&f.active),
+        engine: &NeverEngine,
+        store: &f.store,
+        limits: ExecutionLimits::phase4_default(),
+        tokens: &tokens,
     };
-    assert_eq!(service.execute(request("Airport", "BER", "name")).await.unwrap().rows.len(), 1);
+    assert_eq!(
+        service
+            .execute(request("Airport", "BER", "name"))
+            .await
+            .unwrap()
+            .rows
+            .len(),
+        1
+    );
     tokio::time::timeout(Duration::from_secs(2), async {
         while f.store.read_audit().health().available {
             tokio::time::sleep(Duration::from_millis(10)).await;
         }
-    }).await.unwrap();
+    })
+    .await
+    .unwrap();
     assert!(matches!(
         service.execute(request("Airport", "BER", "name")).await,
         Err(QueryError::AuditUnavailable)
     ));
     let result = tokio::time::timeout(Duration::from_secs(3), f.store.read_audit().shutdown())
-        .await.expect("shutdown must not wait forever on a permanently failing sink");
-    assert!(result.is_err(), "failed drain must not claim that records were persisted");
+        .await
+        .expect("shutdown must not wait forever on a permanently failing sink");
+    assert!(
+        result.is_err(),
+        "failed drain must not claim that records were persisted"
+    );
     assert!(!f.store.read_audit().health().available);
+}
+
+#[tokio::test]
+async fn audit_worker_pending_age_closes_gate_until_blocked_writer_recovers() {
+    let f = fixture(Some(ReadAuditSettings {
+        capacity: 2,
+        batch_size: 1,
+        flush_interval: Duration::from_millis(250),
+        max_pending_age: Duration::from_millis(1000),
+        ..ReadAuditSettings::default()
+    }))
+    .await;
+    let pool =
+        sqlx::SqlitePool::connect_with(ontoforge_storage::store::sqlite_connect_options(&f.path))
+            .await
+            .unwrap();
+    let mut lock = pool.acquire().await.unwrap();
+    sqlx::query("BEGIN IMMEDIATE")
+        .execute(&mut *lock)
+        .await
+        .unwrap();
+    let tokens = TokenCodec::new(b"audit-test-key".to_vec()).unwrap();
+    let service = QueryService {
+        principal: &f.principal,
+        scope: &f.scope,
+        active: Arc::clone(&f.active),
+        engine: &NeverEngine,
+        store: &f.store,
+        limits: ExecutionLimits::phase4_default(),
+        tokens: &tokens,
+    };
+    assert_eq!(
+        service
+            .execute(request("Airport", "BER", "name"))
+            .await
+            .unwrap()
+            .rows
+            .len(),
+        1
+    );
+    tokio::time::timeout(Duration::from_millis(1500), async {
+        while f.store.read_audit().health().available {
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+    })
+    .await
+    .expect("pending age should close the read gate near one second");
+    let health = f.store.read_audit().health();
+    assert_eq!(health.pending, 1);
+    assert!(health.oldest_pending.unwrap() >= Duration::from_millis(1000));
+    assert!(matches!(
+        service.execute(request("Airport", "BER", "name")).await,
+        Err(QueryError::AuditUnavailable)
+    ));
+    sqlx::query("ROLLBACK").execute(&mut *lock).await.unwrap();
+    assert_eq!(audit_rows(&f.path, 1).await.len(), 1);
+    assert!(f.store.read_audit().health().available);
+    assert_eq!(
+        service
+            .execute(request("Airport", "BER", "name"))
+            .await
+            .unwrap()
+            .rows
+            .len(),
+        1
+    );
+    assert_eq!(audit_rows(&f.path, 2).await.len(), 2);
+}
+
+#[tokio::test]
+async fn audit_worker_transient_sink_failure_recovers_before_retry_limit() {
+    let f = fixture(Some(ReadAuditSettings {
+        capacity: 2,
+        batch_size: 1,
+        flush_interval: Duration::from_millis(10),
+        max_pending_age: Duration::from_millis(1000),
+        ..ReadAuditSettings::default()
+    }))
+    .await;
+    let pool =
+        sqlx::SqlitePool::connect_with(ontoforge_storage::store::sqlite_connect_options(&f.path))
+            .await
+            .unwrap();
+    sqlx::query("ALTER TABLE of_read_audit RENAME TO audit_hold")
+        .execute(&pool)
+        .await
+        .unwrap();
+    let tokens = TokenCodec::new(b"audit-test-key".to_vec()).unwrap();
+    let service = QueryService {
+        principal: &f.principal,
+        scope: &f.scope,
+        active: Arc::clone(&f.active),
+        engine: &NeverEngine,
+        store: &f.store,
+        limits: ExecutionLimits::phase4_default(),
+        tokens: &tokens,
+    };
+    assert_eq!(
+        service
+            .execute(request("Airport", "BER", "name"))
+            .await
+            .unwrap()
+            .rows
+            .len(),
+        1
+    );
+    tokio::time::timeout(Duration::from_millis(500), async {
+        while f.store.read_audit().health().available {
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+    })
+    .await
+    .unwrap();
+    assert!(matches!(
+        service.execute(request("Airport", "BER", "name")).await,
+        Err(QueryError::AuditUnavailable)
+    ));
+    sqlx::query("ALTER TABLE audit_hold RENAME TO of_read_audit")
+        .execute(&pool)
+        .await
+        .unwrap();
+    let rows = audit_rows(&f.path, 1).await;
+    assert_eq!(rows.len(), 1);
+    assert!(f.store.read_audit().health().available);
+    assert_eq!(
+        service
+            .execute(request("Airport", "BER", "name"))
+            .await
+            .unwrap()
+            .rows
+            .len(),
+        1
+    );
+    assert_eq!(audit_rows(&f.path, 2).await.len(), 2);
+}
+
+#[test]
+fn audit_worker_rejects_invalid_limits() {
+    let defaults = ReadAuditSettings::default();
+    for invalid in [
+        ReadAuditSettings {
+            capacity: 0,
+            ..defaults
+        },
+        ReadAuditSettings {
+            capacity: 65_537,
+            ..defaults
+        },
+        ReadAuditSettings {
+            batch_size: 0,
+            ..defaults
+        },
+        ReadAuditSettings {
+            batch_size: defaults.capacity + 1,
+            ..defaults
+        },
+        ReadAuditSettings {
+            flush_interval: Duration::ZERO,
+            ..defaults
+        },
+        ReadAuditSettings {
+            flush_interval: Duration::from_millis(1001),
+            ..defaults
+        },
+        ReadAuditSettings {
+            max_pending_age: Duration::from_millis(249),
+            ..defaults
+        },
+        ReadAuditSettings {
+            max_pending_age: Duration::from_millis(1001),
+            ..defaults
+        },
+        ReadAuditSettings {
+            retention: Duration::ZERO,
+            ..defaults
+        },
+        ReadAuditSettings {
+            retention: Duration::from_hours(3651 * 24),
+            ..defaults
+        },
+    ] {
+        assert!(
+            invalid.validate().is_err(),
+            "invalid read audit settings accepted: {invalid:?}"
+        );
+    }
+    assert!(defaults.validate().is_ok());
 }

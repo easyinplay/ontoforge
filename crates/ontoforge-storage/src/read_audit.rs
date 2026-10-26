@@ -31,7 +31,7 @@ impl Default for ReadAuditSettings {
             batch_size: 128,
             flush_interval: Duration::from_millis(250),
             max_pending_age: Duration::from_millis(1000),
-            retention: Duration::from_secs(30 * 24 * 60 * 60),
+            retention: Duration::from_hours(30 * 24),
         }
     }
 }
@@ -45,7 +45,7 @@ impl ReadAuditSettings {
                 .contains(&self.flush_interval)
             || self.max_pending_age < self.flush_interval
             || self.max_pending_age > Duration::from_millis(1000)
-            || !(Duration::from_secs(24 * 60 * 60)..=Duration::from_secs(3650 * 24 * 60 * 60))
+            || !(Duration::from_hours(24)..=Duration::from_hours(3650 * 24))
                 .contains(&self.retention)
         {
             return Err(StoreError::Config("invalid read audit limits".to_owned()));
@@ -145,7 +145,7 @@ struct Queued {
 pub struct ReadAudit {
     state: Arc<State>,
     sender: Mutex<Option<mpsc::Sender<Queued>>>,
-    worker: tokio::sync::Mutex<Option<JoinHandle<()>>>,
+    worker: tokio::sync::Mutex<Option<JoinHandle<Result<(), AuditUnavailable>>>>,
 }
 
 impl ReadAudit {
@@ -166,7 +166,10 @@ impl ReadAudit {
             }
             // Plan 06-02 installs the PostgreSQL system table and sink. Until then, PG reads
             // fail closed rather than releasing an unpersisted result.
-            Db::Postgres { .. } => tokio::spawn(async move { drop(receiver) }),
+            Db::Postgres { .. } => tokio::spawn(async move {
+                drop(receiver);
+                Err(AuditUnavailable)
+            }),
         };
         Self {
             state,
@@ -215,7 +218,7 @@ impl ReadAudit {
         let Some(handle) = self.worker.lock().await.take() else {
             return Ok(());
         };
-        handle.await.map_err(|_| AuditUnavailable)
+        handle.await.map_err(|_| AuditUnavailable)?
     }
 }
 
@@ -297,7 +300,7 @@ async fn run_sqlite(
     pool: SqlitePool,
     state: Arc<State>,
     settings: ReadAuditSettings,
-) {
+) -> Result<(), AuditUnavailable> {
     let _liveness = WorkerLiveness(Arc::clone(&state));
     let mut interval = tokio::time::interval(settings.flush_interval);
     interval.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
@@ -312,12 +315,13 @@ async fn run_sqlite(
             _ = interval.tick(), if !batch.is_empty() => due = true,
         }
         if due || batch.len() == settings.batch_size {
-            flush_sqlite(&pool, &state, settings, &mut batch).await;
+            flush_sqlite(&pool, &state, settings, &mut batch).await?;
         }
     }
     if !batch.is_empty() {
-        flush_sqlite(&pool, &state, settings, &mut batch).await;
+        flush_sqlite(&pool, &state, settings, &mut batch).await?;
     }
+    Ok(())
 }
 
 async fn flush_sqlite(
@@ -325,21 +329,26 @@ async fn flush_sqlite(
     state: &State,
     settings: ReadAuditSettings,
     batch: &mut Vec<Queued>,
-) {
+) -> Result<(), AuditUnavailable> {
+    let mut failed_since = None;
     loop {
-        match write_sqlite(pool, settings.retention, batch).await {
-            Ok(()) => {
-                for item in batch.drain(..) {
-                    state.forget(item.id);
-                }
-                state.available.store(true, Ordering::Release);
-                return;
+        if let Ok(()) = write_sqlite(pool, settings.retention, batch).await {
+            for item in batch.drain(..) {
+                state.forget(item.id);
             }
-            Err(()) => {
-                state.available.store(false, Ordering::Release);
-                tokio::time::sleep(Duration::from_millis(50)).await;
-            }
+            state.available.store(true, Ordering::Release);
+            return Ok(());
         }
+        state.available.store(false, Ordering::Release);
+        let first = failed_since.get_or_insert_with(Instant::now);
+        if first.elapsed() >= settings.max_pending_age {
+            for item in batch.drain(..) {
+                state.forget(item.id);
+            }
+            eprintln!("read audit sink did not recover before the pending age limit");
+            return Err(AuditUnavailable);
+        }
+        tokio::time::sleep(Duration::from_millis(50)).await;
     }
 }
 
