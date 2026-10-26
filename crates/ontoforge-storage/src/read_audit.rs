@@ -1,4 +1,4 @@
-//! Bounded read-audit acceptance and asynchronous SQLite persistence.
+//! Bounded read-audit acceptance and asynchronous persistence.
 
 use std::collections::BTreeMap;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
@@ -7,7 +7,7 @@ use std::time::{Duration, Instant};
 
 use chrono::{SecondsFormat, Utc};
 use sha2::{Digest, Sha256};
-use sqlx::SqlitePool;
+use sqlx::{PgPool, SqlitePool};
 use tokio::sync::{Semaphore, mpsc};
 use tokio::task::JoinHandle;
 use ulid::Ulid;
@@ -141,6 +141,11 @@ struct Queued {
     _permit: tokio::sync::OwnedSemaphorePermit,
 }
 
+enum SinkPool {
+    Sqlite(SqlitePool),
+    Postgres(PgPool),
+}
+
 /// One store owns one worker. Dropping the store closes the channel and drains accepted rows.
 pub struct ReadAudit {
     state: Arc<State>,
@@ -151,26 +156,20 @@ pub struct ReadAudit {
 impl ReadAudit {
     pub(crate) fn start(db: &Db, settings: ReadAuditSettings) -> Self {
         let state = Arc::new(State {
-            available: AtomicBool::new(matches!(db, Db::Sqlite(_))),
+            available: AtomicBool::new(true),
             slots: Arc::new(Semaphore::new(settings.capacity)),
             pending: Mutex::new(BTreeMap::new()),
             next_id: AtomicU64::new(1),
             max_pending_age: settings.max_pending_age,
         });
         let (sender, receiver) = mpsc::channel(settings.capacity);
-        let handle = match db {
-            Db::Sqlite(pool) => {
-                let pool = pool.clone();
-                let state = Arc::clone(&state);
-                tokio::spawn(async move { run_sqlite(receiver, pool, state, settings).await })
-            }
-            // Plan 06-02 installs the PostgreSQL system table and sink. Until then, PG reads
-            // fail closed rather than releasing an unpersisted result.
-            Db::Postgres { .. } => tokio::spawn(async move {
-                drop(receiver);
-                Err(AuditUnavailable)
-            }),
+        let sink = match db {
+            Db::Sqlite(pool) => SinkPool::Sqlite(pool.clone()),
+            Db::Postgres { pool, .. } => SinkPool::Postgres(pool.clone()),
         };
+        let worker_state = Arc::clone(&state);
+        let handle =
+            tokio::spawn(async move { run_worker(receiver, sink, worker_state, settings).await });
         Self {
             state,
             sender: Mutex::new(Some(sender)),
@@ -295,9 +294,9 @@ impl Drop for ReadAuditGuard {
     }
 }
 
-async fn run_sqlite(
+async fn run_worker(
     mut receiver: mpsc::Receiver<Queued>,
-    pool: SqlitePool,
+    sink: SinkPool,
     state: Arc<State>,
     settings: ReadAuditSettings,
 ) -> Result<(), AuditUnavailable> {
@@ -315,24 +314,28 @@ async fn run_sqlite(
             _ = interval.tick(), if !batch.is_empty() => due = true,
         }
         if due || batch.len() == settings.batch_size {
-            flush_sqlite(&pool, &state, settings, &mut batch).await?;
+            flush(&sink, &state, settings, &mut batch).await?;
         }
     }
     if !batch.is_empty() {
-        flush_sqlite(&pool, &state, settings, &mut batch).await?;
+        flush(&sink, &state, settings, &mut batch).await?;
     }
     Ok(())
 }
 
-async fn flush_sqlite(
-    pool: &SqlitePool,
+async fn flush(
+    sink: &SinkPool,
     state: &State,
     settings: ReadAuditSettings,
     batch: &mut Vec<Queued>,
 ) -> Result<(), AuditUnavailable> {
     let mut failed_since = None;
     loop {
-        if let Ok(()) = write_sqlite(pool, settings.retention, batch).await {
+        let write = match sink {
+            SinkPool::Sqlite(pool) => write_sqlite(pool, settings.retention, batch).await,
+            SinkPool::Postgres(pool) => write_postgres(pool, settings.retention, batch).await,
+        };
+        if write.is_ok() {
             for item in batch.drain(..) {
                 state.forget(item.id);
             }
@@ -375,6 +378,41 @@ async fn write_sqlite(pool: &SqlitePool, retention: Duration, batch: &[Queued]) 
         .bind(&row.metadata.object_type)
         .bind(serde_json::to_string(&row.metadata.condition_api_names).map_err(|_| ())?)
         .bind(serde_json::to_string(&row.metadata.effective_roles).map_err(|_| ())?)
+        .bind(&row.sql_sha256)
+        .bind(row.row_count)
+        .bind(row.elapsed_ms)
+        .bind(row.metadata.def_version)
+        .bind(row.status.as_str())
+        .execute(&mut *tx)
+        .await
+        .map_err(|_| ())?;
+    }
+    tx.commit().await.map_err(|_| ())
+}
+
+async fn write_postgres(pool: &PgPool, retention: Duration, batch: &[Queued]) -> Result<(), ()> {
+    let cutoff = Utc::now() - chrono::Duration::from_std(retention).map_err(|_| ())?;
+    let mut tx = pool.begin().await.map_err(|_| ())?;
+    sqlx::query("DELETE FROM of_read_audit WHERE at < $1")
+        .bind(cutoff)
+        .execute(&mut *tx)
+        .await
+        .map_err(|_| ())?;
+    for item in batch {
+        let row = &item.record;
+        let at = chrono::DateTime::parse_from_rfc3339(&row.at).map_err(|_| ())?;
+        sqlx::query(
+            "INSERT INTO of_read_audit (at, request_id, principal, tool, object_type, \
+             condition_api_names, effective_roles, sql_sha256, row_count, elapsed_ms, \
+             def_version, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)",
+        )
+        .bind(at)
+        .bind(&row.request_id)
+        .bind(&row.metadata.principal)
+        .bind(&row.metadata.tool)
+        .bind(&row.metadata.object_type)
+        .bind(sqlx::types::Json(&row.metadata.condition_api_names))
+        .bind(sqlx::types::Json(&row.metadata.effective_roles))
         .bind(&row.sql_sha256)
         .bind(row.row_count)
         .bind(row.elapsed_ms)

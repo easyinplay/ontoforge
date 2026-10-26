@@ -2496,14 +2496,7 @@ pub async fn action_batch_migration_constraints_match_contract(h: &Harness) {
 // Expansion
 // ---------------------------------------------------------------------------------------------
 
-pub async fn audit_batch_retention_parity(h: &Harness) {
-    let audit = h.store().read_audit();
-    assert!(
-        audit.health().available,
-        "both backends must accept read audits"
-    );
-
-    let table = h.sys_table("of_read_audit");
+async fn seed_audit_retention(h: &Harness, table: &str) {
     let old = (chrono::Utc::now() - chrono::Duration::days(31)).to_rfc3339();
     let recent = (chrono::Utc::now() - chrono::Duration::days(29)).to_rfc3339();
     for (request_id, at) in [("old-retention", old), ("recent-retention", recent)] {
@@ -2512,6 +2505,32 @@ pub async fn audit_batch_retention_parity(h: &Harness) {
         );
         h.try_exec(&insert).await.expect("seed retention boundary");
     }
+}
+
+async fn assert_pg_audit_schema(h: &Harness) {
+    if let Harness::Pg(pg) = h {
+        assert!(
+            pg.tables(&pg.schema_sys)
+                .await
+                .contains(&"of_read_audit".to_owned())
+        );
+        assert!(
+            !pg.tables(&pg.schema_edit)
+                .await
+                .contains(&"of_read_audit".to_owned())
+        );
+    }
+}
+
+pub async fn audit_batch_retention_parity(h: &Harness) {
+    let audit = h.store().read_audit();
+    assert!(
+        audit.health().available,
+        "both backends must accept read audits"
+    );
+
+    let table = h.sys_table("of_read_audit");
+    seed_audit_retention(h, &table).await;
 
     for n in 0..2 {
         let mut guard = audit
@@ -2594,18 +2613,7 @@ pub async fn audit_batch_retention_parity(h: &Harness) {
             .await
             .is_err()
     );
-    if let Harness::Pg(pg) = h {
-        assert!(
-            pg.tables(&pg.schema_sys)
-                .await
-                .contains(&"of_read_audit".to_owned())
-        );
-        assert!(
-            !pg.tables(&pg.schema_edit)
-                .await
-                .contains(&"of_read_audit".to_owned())
-        );
-    }
+    assert_pg_audit_schema(h).await;
 }
 
 macro_rules! conformance_case {
