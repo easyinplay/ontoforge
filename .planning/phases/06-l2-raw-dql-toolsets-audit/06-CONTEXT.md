@@ -1,7 +1,7 @@
 # Phase 6: L2 Raw DQL, Toolsets & Audit - Context
 
 **Gathered:** 2026-10-26
-**Status:** Ready for research and engineering review
+**Status:** Ready for research and planning; P2 engineering review and Trino 483 probe recorded
 **Source:** GSD phase context from accepted ADRs, existing code, Trino 483 probe, and Grok second opinion; no new user product decision
 
 <domain>
@@ -24,7 +24,7 @@
 - **D-05:** Phase 6 复用已有 `reload` 与 `scope plan|apply` CLI 管理边界。定义先 validate/lint，失败不切换；role/scope 仍受计划哈希、定义锁及事务性 `of_admin_audit` 保护；请求开始固定 `Arc<ActiveDefinition>` 快照。新增远程管理 API 和 MCP 工具不在本 phase，Phase 7 外壳复用库接口。
 
 ### 验收范围
-- **D-06:** spike 2 的历史 104 条仅以 Markdown 描述保留，临时 harness 已删除。必须将可还原原文和需重新编写的等价用例分别标记，固定机器可执行 corpus，在真实 Trino 483 对 Display 与拒绝路径复验；不得把新造样例声称为旧原文。现有 483 容器没有 ACL，能验证语法/执行，不能作为 L2 权限自检通过的证据；ACL 验收需独立受限配置。
+- **D-06:** spike 2 的历史 104 条仅以 Markdown 描述保留，原始 SQL 恢复 0 条。`06-SPIKE-483.md` 已对 29 条新构造等价样例复验，尚有 75 个历史 ID 未覆盖；`G11` 的 ROW 类型和 `G16` 的 OFFSET/LIMIT 虽 Display AST 往返相等，却在 Trino 483 执行失败。必须固定机器可执行 corpus，区分原文与新写样例，对实际生产 AST 白名单、Display、拒绝零发送及 Trino 483 行为复验，不能将此 spike 当成最终安全验收。现有 483 容器没有 ACL，ACL 验收需独立受限配置。
 
 ### Planner Discretion
 
@@ -41,6 +41,7 @@
 - `.planning/adr/0019-mcp-toolsets-and-l2-tools.md`：L2 工具名、结果上限、REST/MCP Phase 7 边界。
 - `.planning/adr/0017-engine-and-trino-connection.md`：sqlparser 只校验 L2 输入，已有 printer 的信任边界。
 - `.planning/research/spike-02-sqlparser-l2.md`：104 条历史语料、Display 差异、DoS 风险和复验待办。
+- `06-SPIKE-483.md`：29 条等价用例、Trino 483 实测和未覆盖清单；`06-ENG-REVIEW.md`：基于现有代码的工程复审与验收矩阵。
 - `docs/designs/trino-engine-sql-tiers.md` §4-6、Eng Review D11/D14/D15/D21/OV2/OV3：已完成 `/plan-eng-review` 的跨层架构合同；具体代码接线仍需 Phase 6 独立审查。
 - `.planning/phases/03-edit-store-scope-model/03-CONTEXT.md`：现有 reload、scope apply 与 admin audit 的 Phase 3 合同。
 

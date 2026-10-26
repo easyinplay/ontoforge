@@ -8,7 +8,7 @@
 
 - [x] P0：从 Phase 5 已完成提交建立 `gsd/phase-06-l2-toolsets-audit` 本地分支；保留既有未跟踪内容。
 - [x] P1：核对 ADR-0016/0017/0018/0019、spike 2、Trino 483 环境与已有 auth/engine/query/storage/CLI 入口；产出 `06-CONTEXT.md` 与 findings。旧语料非机器可执行，复验列入 P2 的前置检查。
-- [ ] P2：跨 L2 权限、SQL AST、审计 fail-closed 与 reload 的工程审查；按现有 gate 能力执行 gstack `plan-eng-review`，不得把替代审查写成正式 gate 通过。
+- [x] P2：跨 L2 权限、SQL AST、审计 fail-closed 与 reload 的工程审查；`06-ENG-REVIEW.md` 为基于现有代码的独立复审，不冒充新的正式 gstack gate。`06-SPIKE-483.md` 记录 29 条新构造语料及 Trino 483 复验，未覆盖的 75 个历史 ID 与真实 ACL 验收留在 P3/P4。
 - [ ] P3：GSD plan-phase 研究并拆成可执行 PLAN；同步具体文件路径、依赖顺序、TDD RED/GREEN 和真实 Trino/PostgreSQL 验收；独立 checker 通过后更新本计划与 progress。
 - [ ] P4：GSD execute-phase 依 wave 落实；核心 AST、安全自检、审计队列和管理通道按 TDD 实施，代码所有权以各 PLAN 为准。
 - [ ] P5：GSD verify-work 与目标验证、代码审查、匹配 SHA 的 CI；通过后由 GSD 更新 ROADMAP/STATE/REQUIREMENTS。正式关键模块 PR gate 单独记录。
@@ -21,4 +21,4 @@
 
 ## Next Step
 
-完成 P2：对 L2 受控入口、自检、读审计和管理边界做针对性工程审查，重建/复验 spike 2 语料；随后进入 GSD plan-phase。
+执行 P3：GSD research 先评估 SQL Display 语义缺口、固定 corpus、真实 Trino ACL、PG/SQLite 审计方案，再生成 PLAN 并经独立 checker 验证。
