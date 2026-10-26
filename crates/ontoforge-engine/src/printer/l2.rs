@@ -5,9 +5,9 @@ use std::ops::ControlFlow;
 use std::thread;
 
 use sqlparser::ast::{
-    DataType, Distinct, Expr, Fetch, GroupByExpr, LimitClause, ObjectName, OffsetRows, Query,
-    Select, SelectFlavor, SetExpr, SetQuantifier, Statement, TableFactor, Visit, VisitMut, Visitor,
-    VisitorMut,
+    BinaryOperator, DataType, Distinct, Expr, Fetch, GroupByExpr, LimitClause, ObjectName,
+    OffsetRows, Query, Select, SelectFlavor, SetExpr, SetQuantifier, Statement, TableFactor, Visit,
+    VisitMut, Visitor, VisitorMut,
 };
 use sqlparser::dialect::GenericDialect;
 use sqlparser::parser::Parser;
@@ -266,6 +266,23 @@ impl Visitor for Validator<'_> {
             Expr::Cast {
                 data_type, format, ..
             } => format.is_none() && !matches!(data_type, DataType::Custom(..)),
+            Expr::BinaryOp { op, .. } => matches!(
+                op,
+                BinaryOperator::Plus
+                    | BinaryOperator::Minus
+                    | BinaryOperator::Multiply
+                    | BinaryOperator::Divide
+                    | BinaryOperator::Modulo
+                    | BinaryOperator::StringConcat
+                    | BinaryOperator::Gt
+                    | BinaryOperator::Lt
+                    | BinaryOperator::GtEq
+                    | BinaryOperator::LtEq
+                    | BinaryOperator::Eq
+                    | BinaryOperator::NotEq
+                    | BinaryOperator::And
+                    | BinaryOperator::Or
+            ),
             Expr::Identifier(_)
             | Expr::CompoundIdentifier(_)
             | Expr::CompoundFieldAccess { .. }
@@ -280,7 +297,6 @@ impl Visitor for Validator<'_> {
             | Expr::InList { .. }
             | Expr::InSubquery { .. }
             | Expr::Between { .. }
-            | Expr::BinaryOp { .. }
             | Expr::Like { .. }
             | Expr::UnaryOp { .. }
             | Expr::Nested(_)

@@ -3,9 +3,9 @@ use std::collections::BTreeSet;
 use ontoforge_engine::printer::l2::{L2Error, L2Policy, validate_l2};
 use ontoforge_engine::trino::{Auth, TrinoConnection, TrinoEngine};
 use ontoforge_engine::{Engine, QueryContext};
+use serde::Deserialize;
 use std::time::Duration;
 use wiremock::MockServer;
-use serde::Deserialize;
 
 fn policy() -> L2Policy {
     L2Policy {
@@ -180,7 +180,11 @@ fn corpus() -> Vec<CorpusCase> {
 #[test]
 fn l2_corpus_has_104_unique_constructed_equivalents() {
     let cases = corpus();
-    assert_eq!(cases.len(), 104, "every historical ID has a fixed equivalent");
+    assert_eq!(
+        cases.len(),
+        104,
+        "every historical ID has a fixed equivalent"
+    );
     let ids: BTreeSet<_> = cases.iter().map(|c| c.id.as_str()).collect();
     assert_eq!(ids.len(), 104, "duplicate ID");
     for n in 1..=48 {
@@ -189,7 +193,11 @@ fn l2_corpus_has_104_unique_constructed_equivalents() {
     for n in 1..=56 {
         assert!(ids.contains(format!("B{n:02}").as_str()));
     }
-    assert!(cases.iter().all(|c| c.provenance == "constructed-equivalent"));
+    assert!(
+        cases
+            .iter()
+            .all(|c| c.provenance == "constructed-equivalent")
+    );
     assert!(cases.iter().all(|c| !c.reason.is_empty()));
 }
 
@@ -205,8 +213,83 @@ fn l2_corpus_each_case_runs_production_gate() {
             Err(L2Error::Unsupported) => "unsupported",
         };
         if actual != case.expected {
-            mismatches.push(format!("{}: expected {}, got {} ({})", case.id, case.expected, actual, case.reason));
+            mismatches.push(format!(
+                "{}: expected {}, got {} ({})",
+                case.id, case.expected, actual, case.reason
+            ));
         }
     }
     assert!(mismatches.is_empty(), "{}", mismatches.join("\n"));
+}
+
+#[test]
+fn l2_corpus_g11_rejects_lossy_row_type() {
+    let case = corpus().into_iter().find(|c| c.id == "G11").expect("G11");
+    assert_eq!(validate_l2(&case.sql, &policy()), Err(L2Error::Unsupported));
+}
+
+#[test]
+fn l2_corpus_g16_prints_trino_offset_fetch() {
+    let case = corpus().into_iter().find(|c| c.id == "G16").expect("G16");
+    let sql = validate_l2(&case.sql, &policy()).expect("bounded G16");
+    assert!(
+        sql.as_str()
+            .ends_with("OFFSET 10 ROWS FETCH FIRST 5 ROWS ONLY"),
+        "{sql}"
+    );
+    assert!(!sql.as_str().contains("LIMIT 5"), "{sql}");
+}
+
+#[tokio::test]
+async fn l2_corpus_b53_posts_only_validated_display() {
+    let case = corpus().into_iter().find(|c| c.id == "B53").expect("B53");
+    let sql = validate_l2(&case.sql, &policy()).expect("comment removed");
+    assert_eq!(sql.as_str(), "SELECT 1 FROM hive.sales.orders LIMIT 101");
+
+    let server = MockServer::start().await;
+    let engine = TrinoEngine::new(TrinoConnection {
+        url: reqwest::Url::parse(&server.uri()).expect("URL"),
+        user: "test".to_owned(),
+        auth: Auth::None,
+        ca_pem: None,
+        connect_timeout: Duration::from_secs(1),
+        max_page_bytes: 4096,
+        extra_origins: Vec::new(),
+    })
+    .expect("engine");
+    let _ = engine
+        .execute(&sql, &QueryContext::new("probe".to_owned(), vec![]))
+        .await;
+    let requests = server.received_requests().await.expect("requests");
+    assert_eq!(requests.len(), 1);
+    assert_eq!(requests[0].body, sql.as_str().as_bytes());
+}
+
+#[tokio::test]
+async fn l2_corpus_rejections_send_no_post() {
+    let server = MockServer::start().await;
+    let engine = TrinoEngine::new(TrinoConnection {
+        url: reqwest::Url::parse(&server.uri()).expect("URL"),
+        user: "test".to_owned(),
+        auth: Auth::None,
+        ca_pem: None,
+        connect_timeout: Duration::from_secs(1),
+        max_page_bytes: 4096,
+        extra_origins: Vec::new(),
+    })
+    .expect("engine");
+    for case in corpus().into_iter().filter(|c| c.expected != "allow") {
+        if let Ok(sql) = validate_l2(&case.sql, &policy()) {
+            let _ = engine
+                .execute(&sql, &QueryContext::new(case.id.clone(), vec![]))
+                .await;
+        }
+    }
+    assert!(
+        server
+            .received_requests()
+            .await
+            .expect("requests")
+            .is_empty()
+    );
 }
