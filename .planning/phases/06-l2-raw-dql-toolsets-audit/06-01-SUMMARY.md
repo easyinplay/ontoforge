@@ -36,7 +36,7 @@ key-decisions:
   - "EditStore owns the audit worker; QueryService keeps its existing public fields."
   - "Asynchronous audit acceptance precedes result release but is not a durability acknowledgement."
   - "Persistent SQLite sink failure closes admission and returns an error from shutdown."
-requirements-completed: [AUDIT-01]
+requirements-completed: []
 coverage:
   - id: D1
     description: SQLite pk reads record success, denial, source error and cancellation without result data or raw SQL

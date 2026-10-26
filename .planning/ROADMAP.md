@@ -245,7 +245,7 @@ Plans:
   4. 所有级别的读取写入元数据审计（主体、工具、对象类型、apiName 级条件、生效 role、SQL 哈希、行数、耗时、request_id），不含结果数据；审计积压时读请求返回 `AuditUnavailable`
   5. role / scope 只能经管理通道或 L3 修改并审计；定义 reload 先 validate / lint，失败不切换；每个请求固定使用开始时的定义版本
 
-**Plans**: 0/9 executed（planned 2026-10-26；详: `.planning/phases/06-l2-raw-dql-toolsets-audit/`）
+**Plans**: 1/9 executed（`06-01` completed 2026-10-26；详: `.planning/phases/06-l2-raw-dql-toolsets-audit/`）
 **Details**: `.planning/phases/06-l2-raw-dql-toolsets-audit/`
 
 ### Phase 7: REST & MCP Shell

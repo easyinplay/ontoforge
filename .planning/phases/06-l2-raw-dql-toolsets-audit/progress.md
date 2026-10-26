@@ -6,3 +6,4 @@
 - 2026-10-26：GSD researcher 完成 `06-RESEARCH.md`；验证策略 `06-VALIDATION.md` 为 draft（不冒称测试已通过）；pattern mapper 完成 `06-PATTERNS.md`，候选路径 24 组。spec-less edge probe 对五个 requirement 返回 11 项 unresolved，其中 3 项 unclassified，交给 planner 显式处理。P3 下一节点为 PLAN 和 checker。
 - 2026-10-26：P3 9 个 PLAN/18 个任务、五个 wave，checker 从 3 blocker/2 warning 收敛至 `VERIFICATION PASSED`；`SCOPE-07` 请求版本固定已归 Phase 6 并在 `06-09` 认领。GSD decision coverage 6/6，22 条任务验证命令的 failure-direction probe 0 blocker/0 warning；未执行 Phase 6 业务测试。下一步 P4 Wave 1。
 - 2026-10-26：P4 Wave 1 预检。GSD 配置禁用 worktree，因此两个独立计划按 `06-01` 后 `06-03` 串行执行；`06-01` 改为 Rust integration RED 测试路径并通过 plan-structure。尚未有 Phase 6 业务实现或 RED/GREEN 结果。
+- 2026-10-26：`06-01` 已按两轮 RED/GREEN 提交（`0981150`/`a531947`、`8faa2c9`/`9820399`），`b2f0831` 提交 SUMMARY。`cargo test -p ontoforge-query --locked -j 2` 通过，审计测试 9/9；六项外部后端测试仍忽略。只完成 SQLite pk 审计切片，AUDIT-01 全范围待 PG 和其余读入口；下一步 `06-03`。`state advance-plan` 无法解析旧的 `Current Plan: Not started`，已按磁盘 1/9 SUMMARY 手工修复状态指针。

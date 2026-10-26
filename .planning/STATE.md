@@ -2,9 +2,9 @@
 gsd_state_version: "1.0"
 current_phase: 6
 current_phase_name: L2 Raw DQL, Toolsets & Audit
-current_plan: Not started
+current_plan: 2
 status: executing
-stopped_at: Phase 06 plans verified; Wave 1 next
+stopped_at: Phase 06 06-01 complete; 06-03 next
 last_updated: "2026-10-26T05:54:24.122Z"
 last_activity: 2026-10-26
 last_activity_desc: Phase 06 plans verified (9 plans, 5 waves)
@@ -13,7 +13,7 @@ progress:
   total_phases: 7
   completed_phases: 5
   total_plans: 70
-  completed_plans: 61
+  completed_plans: 62
   percent: 71
 ---
 
@@ -28,11 +28,11 @@ See: .planning/PROJECT.md (updated 2026-10-23)
 
 ## Current Position
 
-Phase: 6 (L2 Raw DQL, Toolsets & Audit) — READY TO EXECUTE
-Current Plan: Not started
+Phase: 6 (L2 Raw DQL, Toolsets & Audit) — EXECUTING
+Current Plan: 2
 Total Plans in Phase: 9
-Status: Ready to execute
-Last activity: 2026-10-26 — Phase 06 planning checker passed, Wave 1 next
+Status: Executing Wave 1
+Last activity: 2026-10-26 — 06-01 SQLite pk audit summarized; 06-03 next
 
 Progress: [███████░░░] 71%
 
@@ -65,5 +65,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-10-26T04:21:28.815Z
-Stopped at: Phase 06 plans verified; Wave 1 next
+Stopped at: Phase 06 06-01 complete; 06-03 next
 Resume file: .planning/phases/06-l2-raw-dql-toolsets-audit/task_plan.md
