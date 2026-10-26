@@ -5,3 +5,4 @@
 - 2026-10-26：P2 独立工程复审完成，`06-ENG-REVIEW.md` 列出受控 SQL 入口、真实 Trino ACL、全读路径审计、PG/SQLite 持久化四项 PLAN 阻断项。`06-SPIKE-483.md` 记录 29 条新构造等价用例（21 条单语句且 Display AST 往返相等、7 条解析失败、1 条多语句），14 次 Trino 483 HTTP 请求（10 FINISHED、4 FAILED）；0 条历史原文恢复、75 个 ID 未覆盖。无 ACL 容器不能证明权限安全。下一步 P3 research、PLAN 和 checker，尚未写 Phase 6 业务代码。
 - 2026-10-26：GSD researcher 完成 `06-RESEARCH.md`；验证策略 `06-VALIDATION.md` 为 draft（不冒称测试已通过）；pattern mapper 完成 `06-PATTERNS.md`，候选路径 24 组。spec-less edge probe 对五个 requirement 返回 11 项 unresolved，其中 3 项 unclassified，交给 planner 显式处理。P3 下一节点为 PLAN 和 checker。
 - 2026-10-26：P3 9 个 PLAN/18 个任务、五个 wave，checker 从 3 blocker/2 warning 收敛至 `VERIFICATION PASSED`；`SCOPE-07` 请求版本固定已归 Phase 6 并在 `06-09` 认领。GSD decision coverage 6/6，22 条任务验证命令的 failure-direction probe 0 blocker/0 warning；未执行 Phase 6 业务测试。下一步 P4 Wave 1。
+- 2026-10-26：P4 Wave 1 预检。GSD 配置禁用 worktree，因此两个独立计划按 `06-01` 后 `06-03` 串行执行；`06-01` 改为 Rust integration RED 测试路径并通过 plan-structure。尚未有 Phase 6 业务实现或 RED/GREEN 结果。

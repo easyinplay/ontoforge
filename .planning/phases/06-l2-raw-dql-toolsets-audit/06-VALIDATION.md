@@ -35,12 +35,15 @@ created: "2026-10-26"
 | 待 PLAN 指派 | 待定 | 待定 | L2-01..03 | 待定 | 104-ID 固定语料、AST 拒绝零 POST、Display body、行数/字节上限 | unit + Trino 483 | `cargo test -p ontoforge-engine --locked l2_` | 待 Wave 0 | pending |
 | 待 PLAN 指派 | 待定 | 待定 | L2-04 | 待定 | 真实 ACL 拒绝、另一主体活跃 query 隔离、失败时 L2 disabled | Trino 483 integration | `cargo test -p ontoforge-engine --test trino_l2_acl_it --locked -- --ignored` | 待 Wave 0 | pending |
 | 待 PLAN 指派 | 待定 | 待定 | AUDIT-01 | 待定 | 双后端持久化、保留期、队满/sink 失败/取消 fail-closed | unit + SQLite/PG conformance | `cargo test -p ontoforge-storage --test conformance_sqlite --locked audit_` | 待 Wave 0 | pending |
-| 待 PLAN 指派 | 待定 | 待定 | AUDIT-01 | 待定 | pk/list/set/searchAround/aggregate 与六个 L2 入口均受审计门禁保护 | unit + fault injection | `cargo test -p ontoforge-query --locked audit_` | 待 Wave 0 | pending |
+| 06-01-01 | 01 | 1 | AUDIT-01 | T-06-01/02 | pk 成功、拒绝、源错误、取消及故障时无结果释放 | SQLite integration | `cargo test -p ontoforge-query --test audit_pk --locked audit_pk_` | 待 Wave 0 | pending |
+| 06-01-02 | 01 | 1 | AUDIT-01 | T-06-01/02 | worker 积压、退出、恢复与 drain | SQLite fault injection | `cargo test -p ontoforge-query --test audit_pk --locked audit_worker_` | 待 Wave 0 | pending |
+| 待后续 wave 对齐 | 05-09 | 2-5 | AUDIT-01 | 各 PLAN | list/set/searchAround/aggregate 与六个 L2 入口均受审计门禁保护 | integration + fault injection | 各 `06-*-PLAN.md` 的 `<automated>` | 待 Wave 0 | pending |
 | 待 PLAN 指派 | 待定 | 待定 | SC-5 | 待定 | reload lint 失败不切换、scope hash 错误不写、快照版本一致 | regression | PLAN 指定现有 CLI/storage/query 测试命令 | 已有测试，增量待定 | pending |
 
 ## Wave 0 Requirements
 
 - [ ] 将 104 个历史 ID 全部映射到仓库内机器可执行 fixture，标明 `constructed-equivalent` 与已知不支持原因；目前原文恢复 0 条，29 条等价探针尚在临时目录。
+- [ ] `crates/ontoforge-query/tests/audit_pk.rs` 为 Wave 1 RED 路径；避免 Rust `src/lib.rs` 内联测试无法被 GSD RED commit 路径门禁识别。
 - [ ] 独立受限 Trino 483 ACL fixture 与 `trino_l2_acl_it` target，CI 确认确实执行。
 - [ ] 审计 PG/SQLite migration、conformance 和故障注入用例的 RED 测试骨架。
 - [ ] PLAN 写清每项具体路径、命令、测试发现数和先决服务。
