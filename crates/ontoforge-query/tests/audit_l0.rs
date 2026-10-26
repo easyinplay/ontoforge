@@ -20,6 +20,8 @@ use ontoforge_engine::{
 use ontoforge_expr::{Attrs, Pred};
 use ontoforge_query::QueryError;
 use ontoforge_query::ast::PageSpec;
+use ontoforge_query::ast::{AggregateMeasure, AggregateRequest};
+use ontoforge_query::aggregate::{AggregateCapabilities, AggregateLimits};
 use ontoforge_query::compile::{CompileLimits, ValidatedQuery};
 use ontoforge_query::{ExecutionLimits, ObjectSet, QueryRequest, QueryService, TokenCodec};
 use ontoforge_schema::ir::{ObjectTypeName, ProfileName, PropertyName};
@@ -245,6 +247,119 @@ async fn audit_list_type_filter_set_and_search_around_record_once() {
         assert!(!audit[index].get::<String, _>("request_id").is_empty());
         assert!(audit[index].get::<i64, _>("elapsed_ms") >= 0);
     }
+}
+
+fn aggregate_request() -> AggregateRequest {
+    AggregateRequest {
+        set: ObjectSet::Type { object_type: name("Flight") },
+        group_by: vec![],
+        measures: vec![
+            AggregateMeasure::Count { property: None },
+            AggregateMeasure::Sum { property: prop("delayMinutes") },
+        ],
+    }
+}
+
+#[tokio::test]
+async fn audit_aggregate_partial_and_fallback_each_record_once() {
+    let f = fixture(None).await;
+    let tokens = TokenCodec::new(b"l0-audit-test-key".to_vec()).unwrap();
+    let service = QueryService {
+        principal: &f.principal, scope: &f.scope, active: Arc::clone(&f.active),
+        engine: &f.engine, store: &f.store, limits: ExecutionLimits::phase4_default(), tokens: &tokens,
+    };
+    let mut fallback = AggregateCapabilities::all_supported();
+    fallback.sum_integer = false;
+    for (index, capabilities) in [AggregateCapabilities::all_supported(), fallback].into_iter().enumerate() {
+        let result = service.execute_aggregate(aggregate_request(), capabilities, AggregateLimits::phase4_default()).await.unwrap();
+        assert_eq!(result.buckets.len(), 1);
+        let audit = rows(&f.path, index + 1).await;
+        assert_eq!(audit.len(), index + 1, "aggregate inner list must not double audit");
+        assert_eq!(audit[index].get::<String, _>("tool"), "query.aggregate");
+        assert_eq!(audit[index].get::<String, _>("status"), "success");
+        assert_eq!(audit[index].get::<i64, _>("row_count"), 1);
+        assert_eq!(audit[index].get::<String, _>("sql_sha256").len(), 64);
+        assert_eq!(audit[index].get::<i64, _>("def_version"), f.active.def_version);
+    }
+}
+
+#[tokio::test]
+async fn audit_aggregate_unavailable_keeps_error_identity_and_no_result() {
+    let f = fixture(None).await;
+    f.store.read_audit().shutdown().await.unwrap();
+    let tokens = TokenCodec::new(b"l0-audit-test-key".to_vec()).unwrap();
+    let service = QueryService {
+        principal: &f.principal, scope: &f.scope, active: Arc::clone(&f.active),
+        engine: &f.engine, store: &f.store, limits: ExecutionLimits::phase4_default(), tokens: &tokens,
+    };
+    let error = service.execute_aggregate(aggregate_request(), AggregateCapabilities::all_supported(), AggregateLimits::phase4_default()).await.unwrap_err();
+    assert_eq!(format!("{error:?}"), "AuditUnavailable");
+    assert_eq!(serde_json::to_value(error).unwrap(), json!("AuditUnavailable"));
+}
+
+#[tokio::test]
+async fn audit_aggregate_source_error_and_truncation_record_status() {
+    let f = fixture(None).await;
+    let tokens = TokenCodec::new(b"l0-audit-test-key".to_vec()).unwrap();
+    for truncated in [false, true] {
+        let engine = FaultEngine { truncated, started: Notify::new() };
+        let service = QueryService {
+            principal: &f.principal, scope: &f.scope, active: Arc::clone(&f.active),
+            engine: &engine, store: &f.store, limits: ExecutionLimits::phase4_default(), tokens: &tokens,
+        };
+        let _ = service.execute_aggregate(aggregate_request(), AggregateCapabilities::all_supported(), AggregateLimits::phase4_default()).await.unwrap_err();
+    }
+    let audit = rows(&f.path, 2).await;
+    assert_eq!(audit.len(), 2);
+    assert_eq!(audit.iter().map(|row| row.get::<String, _>("status")).collect::<Vec<_>>(), ["source_error", "denied"]);
+}
+
+#[tokio::test]
+async fn audit_aggregate_cancellation_records_event() {
+    let f = Arc::new(fixture(Some(ReadAuditSettings {
+        capacity: 1, batch_size: 1, ..ReadAuditSettings::default()
+    })).await);
+    let engine = Arc::new(BlockingEngine { started: Notify::new() });
+    let task = {
+        let f = Arc::clone(&f);
+        let engine = Arc::clone(&engine);
+        tokio::spawn(async move {
+            let tokens = TokenCodec::new(b"l0-audit-test-key".to_vec()).unwrap();
+            QueryService {
+                principal: &f.principal, scope: &f.scope, active: Arc::clone(&f.active),
+                engine: &*engine, store: &f.store, limits: ExecutionLimits::phase4_default(), tokens: &tokens,
+            }.execute_aggregate(aggregate_request(), AggregateCapabilities::all_supported(), AggregateLimits::phase4_default()).await
+        })
+    };
+    tokio::time::timeout(Duration::from_secs(3), engine.started.notified()).await.unwrap();
+    task.abort();
+    assert!(task.await.unwrap_err().is_cancelled());
+    let audit = rows(&f.path, 1).await;
+    assert_eq!(audit.len(), 1);
+    assert_eq!(audit[0].get::<String, _>("status"), "cancelled");
+    assert_eq!(audit[0].get::<i64, _>("row_count"), 0);
+}
+
+#[tokio::test]
+async fn audit_aggregate_sink_failure_closes_gate_without_result() {
+    let f = fixture(Some(ReadAuditSettings {
+        capacity: 1, batch_size: 1, flush_interval: Duration::from_millis(10),
+        max_pending_age: Duration::from_millis(250), ..ReadAuditSettings::default()
+    })).await;
+    let pool = sqlx::SqlitePool::connect_with(ontoforge_storage::store::sqlite_connect_options(&f.path)).await.unwrap();
+    sqlx::query("ALTER TABLE of_read_audit RENAME TO audit_hold").execute(&pool).await.unwrap();
+    let tokens = TokenCodec::new(b"l0-audit-test-key".to_vec()).unwrap();
+    let reader = QueryService {
+        principal: &f.principal, scope: &f.scope, active: Arc::clone(&f.active),
+        engine: &f.engine, store: &f.store, limits: ExecutionLimits::phase4_default(), tokens: &tokens,
+    };
+    let _ = reader.execute_aggregate(aggregate_request(), AggregateCapabilities::all_supported(), AggregateLimits::phase4_default()).await;
+    tokio::time::timeout(Duration::from_secs(2), async {
+        while f.store.read_audit().health().available { tokio::time::sleep(Duration::from_millis(10)).await; }
+    }).await.unwrap();
+    let error = reader.execute_aggregate(aggregate_request(), AggregateCapabilities::all_supported(), AggregateLimits::phase4_default()).await.unwrap_err();
+    assert_eq!(format!("{error:?}"), "AuditUnavailable");
+    sqlx::query("ALTER TABLE audit_hold RENAME TO of_read_audit").execute(&pool).await.unwrap();
 }
 
 struct FaultEngine {
