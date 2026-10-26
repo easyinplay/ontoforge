@@ -19,6 +19,7 @@ use secrecy::SecretString;
 use serde::Deserialize;
 use toml::de::{DeTable, DeValue};
 
+use crate::trino::l2_health::L2AclConfig;
 use crate::trino::{Auth, TrinoConnection, TrinoEngine, is_valid_client_tag};
 use crate::{
     DEFAULT_MAX_BYTES, DEFAULT_MAX_PAGE_BYTES, DEFAULT_MAX_ROWS, DEFAULT_QUERY_TIMEOUT_MS,
@@ -82,6 +83,9 @@ pub struct TrinoConfig {
     #[serde(default = "default_client_tags")]
     pub client_tags: Vec<String>,
     pub identities: Identities,
+    /// Deployment-owned Trino ACL declaration and probe fixtures. Absent means L2 disabled.
+    #[serde(default)]
+    pub l2_acl: Option<L2AclConfig>,
 }
 
 fn default_connect_timeout_ms() -> u64 {
@@ -537,6 +541,15 @@ impl<'a> Checker<'a> {
         if let Some(store) = &cfg.store {
             self.check_store(store, &mut errors);
         }
+        if let (Some(acl), Some(edit_catalog)) = (
+            cfg.trino.as_ref().and_then(|trino| trino.l2_acl.as_ref()),
+            cfg.store.as_ref().and_then(|store| store.trino.as_ref()),
+        ) && acl.edit.catalog != edit_catalog.catalog
+        {
+            errors.push(ConfigError::new(
+                "L2 ACL edit probe must use the configured edit-store catalog",
+            ));
+        }
         if let Some(auth) = &cfg.auth {
             self.check_auth(auth, &mut errors);
         }
@@ -686,6 +699,11 @@ impl<'a> Checker<'a> {
         self.check_identity("ontology", &trino.identities.ontology, https, errors);
         if let Some(l2) = &trino.identities.l2 {
             self.check_identity("l2", l2, https, errors);
+            if l2.user == trino.identities.ontology.user {
+                errors.push(ConfigError::new(
+                    "ontology and l2 identities must use different users",
+                ));
+            }
         }
     }
 
@@ -1073,6 +1091,16 @@ pub fn build_trino_engines(
     env: EnvLookup,
 ) -> Result<TrinoEngines, Vec<ConfigError>> {
     let mut errors = Vec::new();
+    if cfg
+        .identities
+        .l2
+        .as_ref()
+        .is_some_and(|l2| l2.user == cfg.identities.ontology.user)
+    {
+        errors.push(ConfigError::new(
+            "ontology and l2 identities must use different users",
+        ));
+    }
     let url =
         Url::parse(&cfg.url).map_err(|_| vec![ConfigError::new("`url` is not a valid URL")])?;
     let mut extra_origins = Vec::new();
@@ -1104,11 +1132,9 @@ pub fn build_trino_engines(
         env,
     };
     let ontology = build_engine(&shared, "ontology", &cfg.identities.ontology);
-    let l2 = cfg
-        .identities
-        .l2
-        .as_ref()
-        .map(|identity| build_engine(&shared, "l2", identity));
+    let l2 = cfg.identities.l2.as_ref().map(|identity| {
+        build_engine(&shared, "l2", identity).map(|engine| engine.into_l2(cfg.l2_acl.clone()))
+    });
 
     let mut built_l2 = None;
     match l2 {

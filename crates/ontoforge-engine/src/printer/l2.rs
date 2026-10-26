@@ -4,6 +4,7 @@ use std::collections::BTreeSet;
 use std::ops::ControlFlow;
 use std::thread;
 
+use serde::Deserialize;
 use sqlparser::ast::{
     BinaryOperator, DataType, Distinct, Expr, Fetch, GroupByExpr, LimitClause, ObjectName,
     OffsetRows, Query, Select, SelectFlavor, SetExpr, SetQuantifier, Statement, TableFactor, Visit,
@@ -34,6 +35,51 @@ pub enum L2Error {
     Denied,
     #[error("unsupported or invalid L2 SQL")]
     Unsupported,
+}
+
+/// A deployment-owned, three-part relation used only by ACL health probes.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ProbeTable {
+    pub catalog: String,
+    pub schema: String,
+    pub table: String,
+}
+
+fn probe_identifier(value: &str) -> Result<String, L2Error> {
+    if value.is_empty()
+        || value.len() > 128
+        || !value
+            .bytes()
+            .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == b'_')
+    {
+        return Err(L2Error::Unsupported);
+    }
+    Ok(format!("\"{value}\""))
+}
+
+/// This bypasses the user's allow-list intentionally: Trino's own ACL must deny negative probes.
+pub(crate) fn acl_table_probe(table: &ProbeTable) -> Result<PrintedSql, L2Error> {
+    Ok(PrintedSql::new(format!(
+        "SELECT 1 FROM {}.{}.{} LIMIT 1",
+        probe_identifier(&table.catalog)?,
+        probe_identifier(&table.schema)?,
+        probe_identifier(&table.table)?,
+    )))
+}
+
+pub(crate) fn acl_query_probe(query_id: &str) -> Result<PrintedSql, L2Error> {
+    if query_id.is_empty()
+        || query_id.len() > 128
+        || !query_id
+            .bytes()
+            .all(|c| c.is_ascii_alphanumeric() || c == b'_')
+    {
+        return Err(L2Error::Unsupported);
+    }
+    Ok(PrintedSql::new(format!(
+        "SELECT query_id FROM system.runtime.queries WHERE query_id = '{query_id}'"
+    )))
 }
 
 /// Validates one SQL statement, returning only its normalized, bounded Display text.

@@ -24,6 +24,9 @@ mod classify;
 mod client;
 mod decode;
 mod headers;
+pub mod l2_health;
+
+use self::l2_health::{L2AclConfig, L2Health, L2HealthStatus};
 
 /// How a service identity authenticates.
 pub enum Auth {
@@ -51,6 +54,7 @@ pub struct TrinoEngine {
     http: Client,
     conn: Box<TrinoConnection>,
     statement_url: Url,
+    l2_health: Option<Box<L2Health>>,
 }
 
 impl TrinoEngine {
@@ -82,7 +86,27 @@ impl TrinoEngine {
             http,
             conn: Box::new(conn),
             statement_url,
+            l2_health: None,
         })
+    }
+
+    pub(crate) fn into_l2(mut self, config: Option<L2AclConfig>) -> Self {
+        self.l2_health = Some(Box::new(L2Health::new(config)));
+        self
+    }
+
+    /// None for ordinary Trino engines; L2 is disabled until an ACL recheck passes.
+    pub fn l2_status(&self) -> Option<L2HealthStatus> {
+        self.l2_health.as_ref().map(|health| health.status())
+    }
+
+    /// Attest the configured ACL against a known, still-active query of another identity.
+    pub async fn recheck_l2_acl(
+        &self,
+        ontology: &TrinoEngine,
+        other_query_id: &str,
+    ) -> L2HealthStatus {
+        l2_health::recheck(self, ontology, other_query_id).await
     }
 
     fn request(
@@ -202,6 +226,39 @@ fn same_origin(a: &Url, b: &Url) -> bool {
 }
 
 impl TrinoEngine {
+    async fn execute_unchecked(
+        &self,
+        sql: &PrintedSql,
+        ctx: &QueryContext,
+    ) -> Result<QueryOutput, EngineError> {
+        // Keep cancellation active for internal ACL probes as well as public requests.
+        let mut guard = QueryGuard::new();
+        match tokio::time::timeout(ctx.timeout, self.run(sql, ctx, &mut guard)).await {
+            Err(_elapsed) => {
+                guard.cancel_now().await;
+                Err(EngineError::Timeout {
+                    after_ms: u64::try_from(ctx.timeout.as_millis()).unwrap_or(u64::MAX),
+                })
+            }
+            Ok(Ok(output)) => {
+                if output.truncated {
+                    guard.cancel_now().await;
+                } else {
+                    guard.finish();
+                }
+                Ok(output)
+            }
+            Ok(Err(error @ EngineError::Query { .. })) => {
+                guard.finish();
+                Err(error)
+            }
+            Ok(Err(error)) => {
+                guard.cancel_now().await;
+                Err(error)
+            }
+        }
+    }
+
     /// The statement protocol: submit, then follow `nextUri` until the last page, a limit or
     /// an error. `guard` always knows the `DELETE` for the newest `nextUri`.
     async fn run(
@@ -352,35 +409,17 @@ impl Engine for TrinoEngine {
         sql: &PrintedSql,
         ctx: &QueryContext,
     ) -> Result<QueryOutput, EngineError> {
-        // Dropped on every exit, including the caller dropping this future: an unfinished
-        // guard cancels the query on the coordinator.
-        let mut guard = QueryGuard::new();
-        match tokio::time::timeout(ctx.timeout, self.run(sql, ctx, &mut guard)).await {
-            Err(_elapsed) => {
-                guard.cancel_now().await;
-                Err(EngineError::Timeout {
-                    after_ms: u64::try_from(ctx.timeout.as_millis()).unwrap_or(u64::MAX),
-                })
-            }
-            Ok(Ok(output)) => {
-                if output.truncated {
-                    // The rest of the result is not wanted.
-                    guard.cancel_now().await;
-                } else {
-                    guard.finish();
-                }
-                Ok(output)
-            }
-            // The server itself reported the failure: the query is over there.
-            Ok(Err(error @ EngineError::Query { .. })) => {
-                guard.finish();
-                Err(error)
-            }
-            Ok(Err(error)) => {
-                guard.cancel_now().await;
-                Err(error)
-            }
+        if self
+            .l2_health
+            .as_ref()
+            .is_some_and(|health| health.status() != L2HealthStatus::Enabled)
+        {
+            return Err(EngineError::Unavailable {
+                retryable: false,
+                reason: "L2 ACL is not verified".to_owned(),
+            });
         }
+        self.execute_unchecked(sql, ctx).await
     }
 
     async fn describe_tables(
