@@ -21,6 +21,7 @@ use ontoforge_storage::commit::{
     LinkOp, ObjectOp, Receipt, RowState, SystemActor,
 };
 use ontoforge_storage::log::{EditOp, EntryKind, ReplayError, replay};
+use ontoforge_storage::read_audit::{ReadAuditMetadata, ReadAuditStatus};
 use ontoforge_storage::reload::{ReloadOptions, reload};
 use ontoforge_storage::store::{Backend, EditStore};
 use ontoforge_storage::value::PropertyValue;
@@ -2495,6 +2496,118 @@ pub async fn action_batch_migration_constraints_match_contract(h: &Harness) {
 // Expansion
 // ---------------------------------------------------------------------------------------------
 
+pub async fn audit_batch_retention_parity(h: &Harness) {
+    let audit = h.store().read_audit();
+    assert!(
+        audit.health().available,
+        "both backends must accept read audits"
+    );
+
+    let table = h.sys_table("of_read_audit");
+    let old = (chrono::Utc::now() - chrono::Duration::days(31)).to_rfc3339();
+    let recent = (chrono::Utc::now() - chrono::Duration::days(29)).to_rfc3339();
+    for (request_id, at) in [("old-retention", old), ("recent-retention", recent)] {
+        let insert = format!(
+            "INSERT INTO {table} (at, request_id, principal, tool, object_type, condition_api_names, effective_roles, sql_sha256, row_count, elapsed_ms, def_version, status) VALUES ('{at}', '{request_id}', 'fixture', 'read', NULL, '[]', '[]', 'no-sql', 0, 0, 1, 'success')"
+        );
+        h.try_exec(&insert).await.expect("seed retention boundary");
+    }
+
+    for n in 0..2 {
+        let mut guard = audit
+            .reserve(ReadAuditMetadata {
+                principal: format!("reader-{n}"),
+                tool: "pk".to_owned(),
+                object_type: Some("Gate".to_owned()),
+                condition_api_names: vec!["Gate".to_owned()],
+                effective_roles: vec!["viewer".to_owned()],
+                def_version: 7,
+            })
+            .expect("reserve audit capacity");
+        guard.observe_sql("SELECT secret_marker FROM private_table");
+        guard
+            .finish(ReadAuditStatus::Success, n + 1)
+            .expect("accept audit");
+    }
+    audit.shutdown().await.expect("drain audit batch");
+
+    let rows = h
+        .rows(
+            Tables::Sys,
+            "of_read_audit",
+            &[
+                "request_id",
+                "principal",
+                "tool",
+                "object_type",
+                "condition_api_names",
+                "effective_roles",
+                "sql_sha256",
+                "row_count",
+                "def_version",
+                "status",
+            ],
+            None,
+        )
+        .await;
+    assert_eq!(
+        rows.len(),
+        3,
+        "old audit deleted; recent and batch retained"
+    );
+    assert!(
+        rows.iter()
+            .any(|row| row[0].as_deref() == Some("recent-retention"))
+    );
+    assert!(
+        !rows
+            .iter()
+            .any(|row| row[0].as_deref() == Some("old-retention"))
+    );
+    for n in 0..2 {
+        let row = rows
+            .iter()
+            .find(|row| row[1].as_deref() == Some(&format!("reader-{n}")))
+            .expect("batch row");
+        assert_eq!(row[2].as_deref(), Some("pk"));
+        assert_eq!(row[3].as_deref(), Some("Gate"));
+        assert_eq!(
+            serde_json::from_str::<Value>(row[4].as_deref().unwrap()).unwrap(),
+            json!(["Gate"])
+        );
+        assert_eq!(
+            serde_json::from_str::<Value>(row[5].as_deref().unwrap()).unwrap(),
+            json!(["viewer"])
+        );
+        assert_eq!(row[6].as_deref().unwrap().len(), 64);
+        assert_eq!(row[7].as_deref(), Some(if n == 0 { "1" } else { "2" }));
+        assert_eq!(row[8].as_deref(), Some("7"));
+        assert_eq!(row[9].as_deref(), Some("success"));
+    }
+    assert!(
+        h.try_exec(&format!("SELECT raw_sql FROM {table} LIMIT 0"))
+            .await
+            .is_err()
+    );
+    assert!(
+        h.try_exec(&format!("SELECT result_data FROM {table} LIMIT 0"))
+            .await
+            .is_err()
+    );
+    if let Harness::Pg(pg) = h {
+        assert!(
+            pg.tables(&pg.schema_sys)
+                .await
+                .contains(&"of_read_audit".to_owned())
+        );
+        assert!(
+            !pg.tables(&pg.schema_edit)
+                .await
+                .contains(&"of_read_audit".to_owned())
+        );
+    }
+}
+
 macro_rules! conformance_case {
     ($factory:path, $name:ident $(, $attr:meta)?) => {
         #[tokio::test(flavor = "multi_thread")]
@@ -2510,6 +2623,7 @@ macro_rules! conformance_case {
 /// second argument is an attribute for every test (`ignore = ".."` for PostgreSQL).
 macro_rules! all_cases {
     ($factory:path $(, $attr:meta)?) => {
+        $crate::conformance::conformance_case!($factory, audit_batch_retention_parity $(, $attr)?);
         #[cfg(feature = "test-support")]
         $crate::conformance::conformance_case!($factory, action_atomic_after_log_failure $(, $attr)?);
         #[cfg(feature = "test-support")]
