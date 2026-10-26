@@ -25,12 +25,12 @@ secrecy.workspace = true
 csv.workspace = true
 chrono-tz.workspace = true
 futures-util.workspace = true
+sqlparser = { workspace = true, features = ["visitor"] }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 wiremock.workspace = true
 proptest.workspace = true
-sqlparser.workspace = true
 insta.workspace = true
 tempfile.workspace = true
 walkdir.workspace = true

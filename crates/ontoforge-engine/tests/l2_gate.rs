@@ -1,6 +1,10 @@
 use std::collections::BTreeSet;
 
 use ontoforge_engine::printer::l2::{L2Error, L2Policy, validate_l2};
+use ontoforge_engine::trino::{Auth, TrinoConnection, TrinoEngine};
+use ontoforge_engine::{Engine, QueryContext};
+use std::time::Duration;
+use wiremock::MockServer;
 
 fn policy() -> L2Policy {
     L2Policy {
@@ -30,8 +34,11 @@ fn l2_gate_rejects_unauthorized_relation() {
 
 #[test]
 fn l2_gate_preserves_offset_when_capping() {
-    let sql = validate_l2("SELECT id FROM hive.sales.orders ORDER BY id OFFSET 10", &policy())
-        .expect("bounded offset query");
+    let sql = validate_l2(
+        "SELECT id FROM hive.sales.orders ORDER BY id OFFSET 10",
+        &policy(),
+    )
+    .expect("bounded offset query");
     assert!(sql.as_str().contains("OFFSET 10 ROWS"), "{sql}");
     assert!(sql.as_str().contains("FETCH FIRST 101 ROWS ONLY"), "{sql}");
 }
@@ -43,7 +50,10 @@ fn l2_gate_handles_cte_join_and_subquery() {
         &policy(),
     )
     .expect("all physical relations allowed");
-    assert!(sql.as_str().contains("FROM q JOIN hive.sales.shipments"), "{sql}");
+    assert!(
+        sql.as_str().contains("FROM q JOIN hive.sales.shipments"),
+        "{sql}"
+    );
 }
 
 #[test]
@@ -102,8 +112,52 @@ fn l2_gate_bounds_input_and_rejects_malformed_or_dynamic_limits() {
         "SELECT id FROM hive.sales.orders FETCH FIRST 10 PERCENT ROWS ONLY",
         "SELECT id FROM hive.sales.orders FETCH FIRST 10 ROWS WITH TIES",
     ] {
-        assert_eq!(validate_l2(raw, &policy()), Err(L2Error::Unsupported), "{raw}");
+        assert_eq!(
+            validate_l2(raw, &policy()),
+            Err(L2Error::Unsupported),
+            "{raw}"
+        );
     }
     let long = format!("SELECT '{}'", "a".repeat(32 * 1024));
     assert_eq!(validate_l2(&long, &policy()), Err(L2Error::Unsupported));
+}
+
+#[test]
+fn l2_gate_bounded_parser_stack_handles_deep_or_long_input() {
+    let long = format!(
+        "SELECT {} FROM hive.sales.orders",
+        "1 + ".repeat(2_500) + "1"
+    );
+    let result = validate_l2(&long, &policy());
+    assert!(result.is_ok() || result == Err(L2Error::Unsupported));
+    let deep = format!("SELECT {}1{}", "(".repeat(80), ")".repeat(80));
+    assert_eq!(validate_l2(&deep, &policy()), Err(L2Error::Unsupported));
+}
+
+#[tokio::test]
+async fn l2_gate_rejection_cannot_send_trino_post() {
+    let server = MockServer::start().await;
+    let engine = TrinoEngine::new(TrinoConnection {
+        url: reqwest::Url::parse(&server.uri()).expect("URL"),
+        user: "test".to_owned(),
+        auth: Auth::None,
+        ca_pem: None,
+        connect_timeout: Duration::from_secs(1),
+        max_page_bytes: 4096,
+        extra_origins: Vec::new(),
+    })
+    .expect("engine");
+    let gate = validate_l2("SELECT * FROM edit.s.secret", &policy());
+    if let Ok(sql) = gate {
+        let _ = engine
+            .execute(&sql, &QueryContext::new("probe".to_owned(), vec![]))
+            .await;
+    }
+    assert!(
+        server
+            .received_requests()
+            .await
+            .expect("requests")
+            .is_empty()
+    );
 }
