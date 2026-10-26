@@ -246,7 +246,7 @@ Plans:
   5. role / scope 只能经管理通道或 L3 修改并审计；定义 reload 先 validate / lint，失败不切换；每个请求固定使用开始时的定义版本
 
 **Plans**: TBD
-**Details**: `.planning/phases/06-l2-toolsets-audit/`
+**Details**: `.planning/phases/06-l2-raw-dql-toolsets-audit/`
 
 ### Phase 7: REST & MCP Shell
 
