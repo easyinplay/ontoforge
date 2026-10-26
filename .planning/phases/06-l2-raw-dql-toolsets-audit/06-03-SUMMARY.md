@@ -32,7 +32,7 @@ key-files:
 key-decisions:
   - "未知表达式与二元运算符拒绝；GenericDialect 将 G08 箭头解析为 BinaryOp::Arrow。"
   - "G11 ROW 类型 Display 有损，拒绝；G16 OFFSET/LIMIT 经 AST 改写且 Trino 483 实测后放行。"
-requirements-completed: [L2-02, L2-03]
+requirements-completed: []
 coverage:
   - id: D1
     description: "L2 AST、关系授权及 Display-only gate"

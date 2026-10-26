@@ -31,7 +31,7 @@
     {
       "number": "6",
       "name": "L2 Raw DQL, Toolsets & Audit",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "number": "7",
@@ -44,5 +44,5 @@
     "label": "Advance to the next step",
     "reason": "Phase 6 of 7 · 71% · executing"
   },
-  "updated_at": "2026-10-26T05:54:24.176Z"
+  "updated_at": "2026-10-26T07:34:09.381Z"
 }
