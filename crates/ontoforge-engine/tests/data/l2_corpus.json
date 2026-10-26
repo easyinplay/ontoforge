@@ -1,0 +1,3 @@
+[
+  {"id":"G01","historical":"G","provenance":"constructed-equivalent","sql":"SELECT id FROM hive.sales.orders","expected":"allow","reason":"three-part authorized relation"}
+]

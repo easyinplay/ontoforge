@@ -5,6 +5,7 @@ use ontoforge_engine::trino::{Auth, TrinoConnection, TrinoEngine};
 use ontoforge_engine::{Engine, QueryContext};
 use std::time::Duration;
 use wiremock::MockServer;
+use serde::Deserialize;
 
 fn policy() -> L2Policy {
     L2Policy {
@@ -160,4 +161,48 @@ async fn l2_gate_rejection_cannot_send_trino_post() {
             .expect("requests")
             .is_empty()
     );
+}
+
+#[derive(Deserialize)]
+struct CorpusCase {
+    id: String,
+    historical: String,
+    provenance: String,
+    sql: String,
+    expected: String,
+    reason: String,
+}
+
+fn corpus() -> Vec<CorpusCase> {
+    serde_json::from_str(include_str!("data/l2_corpus.json")).expect("valid corpus fixture")
+}
+
+#[test]
+fn l2_corpus_has_104_unique_constructed_equivalents() {
+    let cases = corpus();
+    assert_eq!(cases.len(), 104, "every historical ID has a fixed equivalent");
+    let ids: BTreeSet<_> = cases.iter().map(|c| c.id.as_str()).collect();
+    assert_eq!(ids.len(), 104, "duplicate ID");
+    for n in 1..=48 {
+        assert!(ids.contains(format!("G{n:02}").as_str()));
+    }
+    for n in 1..=56 {
+        assert!(ids.contains(format!("B{n:02}").as_str()));
+    }
+    assert!(cases.iter().all(|c| c.provenance == "constructed-equivalent"));
+    assert!(cases.iter().all(|c| !c.reason.is_empty()));
+}
+
+#[test]
+fn l2_corpus_each_case_runs_production_gate() {
+    for case in corpus() {
+        assert!(matches!(case.historical.as_str(), "G" | "B"), "{}", case.id);
+        let result = validate_l2(&case.sql, &policy());
+        let actual = match result {
+            Ok(_) => "allow",
+            Err(L2Error::Denied) => "deny",
+            Err(L2Error::Unsupported) => "unsupported",
+        };
+        assert_eq!(actual, case.expected, "{}: {}", case.id, case.reason);
+    }
 }
