@@ -7,6 +7,7 @@ use ontoforge_engine::{QueryContext, Value as EngineValue};
 use ontoforge_schema::ir::{Backing, SourceBinding};
 use ontoforge_schema::ir::{BaseType, ObjectType, PropertyDef, PropertyName};
 use ontoforge_storage::query_read::{MAX_EDIT_READ, ObjectEdit};
+use ontoforge_storage::read_audit::ReadAuditStatus;
 use ontoforge_storage::value::PropertyValue;
 use serde::Serialize;
 use serde_json::Value;
@@ -121,6 +122,8 @@ pub enum AggregateError {
     Source,
     #[error("aggregate edit store unavailable")]
     Store,
+    #[error("read audit unavailable")]
+    AuditUnavailable,
     #[error("unsupported numeric value")]
     UnsupportedNumericValue,
 }
@@ -131,6 +134,7 @@ impl From<crate::QueryError> for AggregateError {
             crate::QueryError::Source => Self::Source,
             crate::QueryError::UnsupportedNumericValue => Self::UnsupportedNumericValue,
             crate::QueryError::Store => Self::Store,
+            crate::QueryError::AuditUnavailable => Self::AuditUnavailable,
             crate::QueryError::CostExceeded | crate::QueryError::WorkBudgetExceeded => {
                 Self::AggregateCostExceeded
             }
@@ -779,6 +783,7 @@ impl<E: Engine> QueryService<'_, E> {
         budget.charge_backend_calls(1)?;
         let sql =
             print_select(select, self.engine.dialect()).map_err(|_| AggregateError::Source)?;
+        budget.observe_sql(sql.as_str());
         let mut ctx = QueryContext::new("l0-aggregate".to_owned(), Vec::new());
         ctx.max_rows = limits
             .max_groups
@@ -875,6 +880,37 @@ impl<E: Engine> QueryService<'_, E> {
         capabilities: AggregateCapabilities,
         limits: AggregateLimits,
     ) -> Result<AggregateResult, AggregateError> {
+        let audit = self
+            .store
+            .read_audit()
+            .reserve(self.audit_metadata("query.aggregate", &request.set))
+            .map_err(|_| AggregateError::AuditUnavailable)?;
+        let mut budget = WorkBudget::with_audit(self.limits, audit);
+        let result = self
+            .execute_aggregate_inner(request, capabilities, limits, &mut budget)
+            .await;
+        let (status, count) = match &result {
+            Ok(value) => (ReadAuditStatus::Success, value.buckets.len()),
+            Err(AggregateError::Source | AggregateError::Store) => {
+                (ReadAuditStatus::SourceError, 0)
+            }
+            Err(_) => (ReadAuditStatus::Denied, 0),
+        };
+        budget.finish_audit(status, count)?;
+        result
+    }
+
+    #[allow(
+        clippy::too_many_lines,
+        reason = "keeps the bounded aggregate execution paths together"
+    )]
+    async fn execute_aggregate_inner(
+        &self,
+        request: AggregateRequest,
+        capabilities: AggregateCapabilities,
+        limits: AggregateLimits,
+        budget: &mut WorkBudget,
+    ) -> Result<AggregateResult, AggregateError> {
         AggregateLimits::try_new(
             limits.max_groups,
             limits.max_buckets,
@@ -906,7 +942,6 @@ impl<E: Engine> QueryService<'_, E> {
             .collect::<BTreeSet<_>>()
             .into_iter()
             .collect();
-        let mut budget = WorkBudget::new(self.limits);
         if request.group_by.is_empty()
             && capabilities.min_max
             && request.measures.iter().all(|measure| {
@@ -916,7 +951,7 @@ impl<E: Engine> QueryService<'_, E> {
                 )
             })
         {
-            return self.execute_minmax_topn(&request, scope, &mut budget).await;
+            return self.execute_minmax_topn(&request, scope, budget).await;
         }
         if ty.backing == Backing::Source {
             let profile = self
@@ -941,13 +976,7 @@ impl<E: Engine> QueryService<'_, E> {
             )? {
                 return self
                     .execute_aggregate_partial(
-                        &request,
-                        &partial,
-                        ty,
-                        scope,
-                        binding,
-                        limits,
-                        &mut budget,
+                        &request, &partial, ty, scope, binding, limits, budget,
                     )
                     .await;
             }
@@ -969,7 +998,7 @@ impl<E: Engine> QueryService<'_, E> {
                 scope,
                 CompileLimits::default(),
             )?;
-            let page = self.execute_aggregate_page(&query, &mut budget).await?;
+            let page = self.execute_aggregate_page(&query, budget).await?;
             if page.truncated {
                 return Err(AggregateError::AggregateCostExceeded);
             }
