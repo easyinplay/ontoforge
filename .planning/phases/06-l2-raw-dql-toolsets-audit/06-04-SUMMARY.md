@@ -34,7 +34,7 @@ key-files:
 key-decisions:
   - "仅 ACL 显式声明且独立身份、正反对象和活跃 query 探针均通过时启用 L2。"
   - "复检失败、超时或超过 60 秒未复检即禁用 L2。"
-requirements-completed: [L2-03, L2-04]
+requirements-completed: []
 coverage:
   - id: D1
     description: "默认禁用、精确权限错误和活跃 query 隔离的库级健康门禁"
