@@ -235,7 +235,7 @@ Plans:
 **Goal**: 受信主体可以在 allow-list 内执行只读 Trino SQL，且只有在 Trino 侧权限可证明安全时才开放；所有级别的读取都留下元数据审计；定义与授权的变更只经部署方与管理通道
 **Mode:** mvp
 **Depends on**: Phase 5
-**Requirements**: L2-01, L2-02, L2-03, L2-04, AUDIT-01
+**Requirements**: L2-01, L2-02, L2-03, L2-04, AUDIT-01, SCOPE-07
 **Spike**: 进入前在 Trino 483 上复验 spike 2 语料；决策见 ADR-0018、ADR-0019
 **Success Criteria** (what must be TRUE):
 
@@ -245,7 +245,7 @@ Plans:
   4. 所有级别的读取写入元数据审计（主体、工具、对象类型、apiName 级条件、生效 role、SQL 哈希、行数、耗时、request_id），不含结果数据；审计积压时读请求返回 `AuditUnavailable`
   5. role / scope 只能经管理通道或 L3 修改并审计；定义 reload 先 validate / lint，失败不切换；每个请求固定使用开始时的定义版本
 
-**Plans**: TBD
+**Plans**: 0/9 executed（planned 2026-10-26；详: `.planning/phases/06-l2-raw-dql-toolsets-audit/`）
 **Details**: `.planning/phases/06-l2-raw-dql-toolsets-audit/`
 
 ### Phase 7: REST & MCP Shell
@@ -278,5 +278,5 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7（纵切片
 | 3. Edit Store & Scope Model | 23/23 | Complete    | 2026-10-22 |
 | 4. Scoped L0 Read | 7/7 | Complete    | 2026-10-23 |
 | 5. Online Action | 7/7 | Complete    | 2026-10-26 |
-| 6. L2 Raw DQL, Toolsets & Audit | 0/TBD | Not started | - |
+| 6. L2 Raw DQL, Toolsets & Audit | 0/9 | Planned | - |
 | 7. REST & MCP Shell | 0/TBD | Not started | - |

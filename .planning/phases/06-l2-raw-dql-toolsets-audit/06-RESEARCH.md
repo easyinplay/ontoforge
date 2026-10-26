@@ -152,11 +152,11 @@ Windows `cargo test --workspace --locked` 仍为基线，真实 PG/Trino ignored
 
 本仓库没有磁盘上的 `AGENTS.md`；本会话由用户提供的 AGENTS.md 约束有效：GSD `.planning/` 维持阶段记忆，`planning-with-files` 的 `task_plan.md`/`progress.md`/`findings.md` 为持久计划；核心安全/数据逻辑 TDD RED-GREEN-REFACTOR；子任务验收需证据；Phase 6 先 research/PLAN/checker 后 execute；状态与 ROADMAP 只写摘要指针；默认中文；不得把 gstack 独立复审冒充正式 gate。[VERIFIED: user-supplied AGENTS.md; `06-ENG-REVIEW.md` header]
 
-## Open Questions / Planning Decisions
+## Planning Decisions (Resolved)
 
-- 配置字段、队列容量、批量周期与保留期单位属 `06-CONTEXT.md` Planner Discretion。PLAN 应选明确的正值范围并用失败注入证明约 1 秒承诺；这是工程参数，不需新增产品决定。[VERIFIED: `06-CONTEXT.md` Planner Discretion; ADR-0016]
-- 历史 `G11` 被标 G，但已锁定拒绝有损 ROW 类型；PLAN 的 corpus 预期应记录 `known-unsupported` 而非伪称原始 G 成功。`G25/G29/G30/G37` 的可用性误拒也要说明；不能用未覆盖或改判隐藏 ROADMAP SC-1 的文字差异。[VERIFIED: `.planning/research/spike-02-sqlparser-l2.md:158-180`; `06-CONTEXT.md` D-06]
-- 自检用到的受限 Trino 配置必须在计划中明确文件所有权和启动命令。现有 483 容器仅挂载 catalog 配置、无 ACL。[VERIFIED: `ci/query-services.sh:27-46`; `06-SPIKE-483.md`]
+- **RESOLVED (06-01):** 审计默认容量 1024、batch 最大 128、flush 250 ms、待写最老时长上限 1000 ms、保留期 30 天。PLAN 限定容量 1..=65536、batch 1..=capacity、flush 1..=1000 ms、待写上限介于 flush 和 1000 ms、保留期 1..=3650 天；故障注入检验健康与丢失窗口，不宣称异步受理即持久化。[VERIFIED: `06-01-PLAN.md` Task 1/2; `06-CONTEXT.md` Planner Discretion; ADR-0016]
+- **RESOLVED (06-03/06-08):** `G11` 在 corpus 标 `known-unsupported` 并拒绝有损 ROW 类型；`G16` 仅经受控改写和 Trino 483 实测后放行。`G25/G29/G30/G37` 标明可用性偏差，104 个 ID 均标 `constructed-equivalent`，原文恢复仍为 0；不能把变更预期当作历史原文复现。[VERIFIED: `06-03-PLAN.md` Task 2; `06-08-PLAN.md` Task 1; `06-SPIKE-483.md`]
+- **RESOLVED (06-04/06-08):** `06-04` 拥有 `ci/trino/l2/` ACL fixture 与 `ci/query-services.sh trino-l2` 模式，先启动 `127.0.0.1:58081` 的独立受限 Trino 483 并确认 ready，再运行 ACL 集成测试；`06-08` 将相同启动和测试接入 CI。现有 `127.0.0.1:58080` 无 ACL 容器不作为授权证据。[VERIFIED: `06-04-PLAN.md` Task 2; `06-08-PLAN.md` Task 1]
 
 ## Sources
 
