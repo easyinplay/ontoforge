@@ -2616,6 +2616,53 @@ pub async fn audit_batch_retention_parity(h: &Harness) {
     assert_pg_audit_schema(h).await;
 }
 
+fn audit_metadata(principal: &str) -> ReadAuditMetadata {
+    ReadAuditMetadata {
+        principal: principal.to_owned(),
+        tool: "pk".to_owned(),
+        object_type: Some("Gate".to_owned()),
+        condition_api_names: vec!["Gate".to_owned()],
+        effective_roles: vec!["viewer".to_owned()],
+        def_version: 7,
+    }
+}
+
+pub async fn audit_sink_failure_rejects_inflight_finish(h: &Harness) {
+    let audit = h.store().read_audit();
+    let inflight = audit.reserve(audit_metadata("inflight")).expect("reserve");
+    let first = audit.reserve(audit_metadata("first")).expect("reserve");
+    let table = h.sys_table("of_read_audit");
+    let held = h.sys_table("of_read_audit_hold");
+    h.try_exec(&format!("ALTER TABLE {table} RENAME TO of_read_audit_hold"))
+        .await
+        .expect("interrupt sink");
+    first
+        .finish(ReadAuditStatus::Success, 1)
+        .expect("accept first");
+    tokio::time::timeout(std::time::Duration::from_secs(2), async {
+        while audit.health().available {
+            tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+        }
+    })
+    .await
+    .expect("sink reports unhealthy");
+    assert!(
+        inflight.finish(ReadAuditStatus::Success, 1).is_err(),
+        "an in-flight read must fail closed once its sink is unavailable"
+    );
+    h.try_exec(&format!("ALTER TABLE {held} RENAME TO of_read_audit"))
+        .await
+        .expect("restore sink");
+    audit
+        .shutdown()
+        .await
+        .expect("recover and drain first record");
+    let rows = h
+        .rows(Tables::Sys, "of_read_audit", &["principal"], None)
+        .await;
+    assert_eq!(rows, vec![vec![Some("first".to_owned())]]);
+}
+
 macro_rules! conformance_case {
     ($factory:path, $name:ident $(, $attr:meta)?) => {
         #[tokio::test(flavor = "multi_thread")]
@@ -2632,6 +2679,7 @@ macro_rules! conformance_case {
 macro_rules! all_cases {
     ($factory:path $(, $attr:meta)?) => {
         $crate::conformance::conformance_case!($factory, audit_batch_retention_parity $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, audit_sink_failure_rejects_inflight_finish $(, $attr)?);
         #[cfg(feature = "test-support")]
         $crate::conformance::conformance_case!($factory, action_atomic_after_log_failure $(, $attr)?);
         #[cfg(feature = "test-support")]
