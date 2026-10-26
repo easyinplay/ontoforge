@@ -1,0 +1,30 @@
+{
+  "catalogs": [
+    { "user": "ontology", "catalog": ".*", "allow": "all" },
+    { "user": "l2", "catalog": "demo", "allow": "read-only" },
+    { "user": "l2", "catalog": "system", "allow": "all" },
+    { "catalog": ".*", "allow": "none" }
+  ],
+  "schemas": [
+    { "user": "ontology", "owner": true },
+    { "user": "l2", "catalog": "demo", "schema": "tiny", "owner": false },
+    { "owner": false }
+  ],
+  "tables": [
+    { "user": "ontology", "privileges": ["SELECT"] },
+    { "user": "l2", "catalog": "demo", "schema": "tiny", "table": "nation", "privileges": ["SELECT"] },
+    { "user": "l2", "catalog": "system", "schema": "runtime", "table": "queries", "privileges": ["SELECT"] },
+    { "privileges": [] }
+  ],
+  "queries": [
+    { "user": "ontology", "allow": ["execute", "view", "kill"] },
+    { "user": "l2", "allow": ["execute"] },
+    { "user": "l2", "queryOwner": "l2", "allow": ["view"] },
+    { "allow": [] }
+  ],
+  "system_information": [
+    { "user": "ontology", "allow": ["read"] },
+    { "user": "l2", "allow": [] },
+    { "allow": [] }
+  ]
+}

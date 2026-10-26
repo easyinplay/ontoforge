@@ -43,6 +43,7 @@ pub(super) struct L2Health {
     config: Option<L2AclConfig>,
     status: Arc<Mutex<(L2HealthStatus, Instant)>>,
     recheck_lock: tokio::sync::Mutex<()>,
+    pub(super) admission: tokio::sync::RwLock<()>,
 }
 
 impl L2Health {
@@ -59,6 +60,7 @@ impl L2Health {
                 Instant::now(),
             ))),
             recheck_lock: tokio::sync::Mutex::new(()),
+            admission: tokio::sync::RwLock::new(()),
         }
     }
 
@@ -118,7 +120,7 @@ fn failure(error: &EngineError, otherwise: L2DisableReason) -> L2DisableReason {
 }
 
 fn confirmed(output: &QueryOutput) -> bool {
-    !output.truncated && output.rows.len() <= 1
+    !output.truncated && output.rows.len() == 1
 }
 
 /// The negative probes are never filtered by the application allow-list. The ontology identity
@@ -134,6 +136,7 @@ pub(super) async fn recheck(
         };
     };
     let _recheck = health.recheck_lock.lock().await;
+    let _admission = health.admission.write().await;
     health.disable(L2DisableReason::NotVerified);
     let Some(config) = &health.config else {
         return health.disable(L2DisableReason::NotConfigured);

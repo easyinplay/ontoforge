@@ -409,6 +409,11 @@ impl Engine for TrinoEngine {
         sql: &PrintedSql,
         ctx: &QueryContext,
     ) -> Result<QueryOutput, EngineError> {
+        let _admission = if let Some(health) = &self.l2_health {
+            Some(health.admission.read().await)
+        } else {
+            None
+        };
         if self
             .l2_health
             .as_ref()
