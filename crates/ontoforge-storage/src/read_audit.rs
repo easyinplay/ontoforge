@@ -255,6 +255,9 @@ impl ReadAuditGuard {
         let Some(permit) = self.permit.take() else {
             return Ok(());
         };
+        if !self.state.health().available {
+            return Err(AuditUnavailable);
+        }
         let record = Record {
             at: self.at.clone(),
             request_id: self.request_id.clone(),

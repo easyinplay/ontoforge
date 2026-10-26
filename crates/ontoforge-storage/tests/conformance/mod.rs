@@ -2663,6 +2663,100 @@ pub async fn audit_sink_failure_rejects_inflight_finish(h: &Harness) {
     assert_eq!(rows, vec![vec![Some("first".to_owned())]]);
 }
 
+async fn reject_audit_insert(h: &Harness, table: &str) {
+    let sql = match h {
+        Harness::Sqlite(_) => format!(
+            "CREATE TRIGGER of_read_audit_reject BEFORE INSERT ON {table} WHEN NEW.status = 'denied' BEGIN SELECT RAISE(ABORT, 'audit fault'); END"
+        ),
+        Harness::Pg(pg) => {
+            let function = format!(
+                "CREATE FUNCTION \"{}\".of_read_audit_reject() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.status = 'denied' THEN RAISE EXCEPTION 'audit fault'; END IF; RETURN NEW; END $$",
+                pg.schema_sys
+            );
+            h.try_exec(&function)
+                .await
+                .expect("create rejection function");
+            format!(
+                "CREATE TRIGGER of_read_audit_reject BEFORE INSERT ON {table} FOR EACH ROW EXECUTE FUNCTION \"{}\".of_read_audit_reject()",
+                pg.schema_sys
+            )
+        }
+    };
+    h.try_exec(&sql).await.expect("create rejection trigger");
+}
+
+async fn reject_audit_cleanup(h: &Harness, table: &str) {
+    let sql = match h {
+        Harness::Sqlite(_) => format!(
+            "CREATE TRIGGER of_read_audit_cleanup_reject BEFORE DELETE ON {table} WHEN OLD.request_id = 'old-retention' BEGIN SELECT RAISE(ABORT, 'audit cleanup fault'); END"
+        ),
+        Harness::Pg(pg) => {
+            let function = format!(
+                "CREATE FUNCTION \"{}\".of_read_audit_cleanup_reject() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF OLD.request_id = 'old-retention' THEN RAISE EXCEPTION 'audit cleanup fault'; END IF; RETURN OLD; END $$",
+                pg.schema_sys
+            );
+            h.try_exec(&function)
+                .await
+                .expect("create cleanup function");
+            format!(
+                "CREATE TRIGGER of_read_audit_cleanup_reject BEFORE DELETE ON {table} FOR EACH ROW EXECUTE FUNCTION \"{}\".of_read_audit_cleanup_reject()",
+                pg.schema_sys
+            )
+        }
+    };
+    h.try_exec(&sql).await.expect("create cleanup trigger");
+}
+
+pub async fn audit_batch_rejection_is_atomic(h: &Harness) {
+    let audit = h.store().read_audit();
+    let table = h.sys_table("of_read_audit");
+    reject_audit_insert(h, &table).await;
+    for (principal, status) in [
+        ("first", ReadAuditStatus::Success),
+        ("second", ReadAuditStatus::Denied),
+    ] {
+        audit
+            .reserve(audit_metadata(principal))
+            .expect("reserve")
+            .finish(status, 1)
+            .expect("enqueue");
+    }
+    let drain = tokio::time::timeout(std::time::Duration::from_secs(4), audit.shutdown())
+        .await
+        .expect("bounded drain");
+    assert!(drain.is_err(), "rejected batch must fail closed");
+    assert!(!audit.health().available);
+    assert!(audit.reserve(audit_metadata("after-failure")).is_err());
+    assert!(
+        h.rows(Tables::Sys, "of_read_audit", &["principal"], None)
+            .await
+            .is_empty()
+    );
+}
+
+pub async fn audit_cleanup_rejection_rolls_back_batch(h: &Harness) {
+    let audit = h.store().read_audit();
+    let table = h.sys_table("of_read_audit");
+    seed_audit_retention(h, &table).await;
+    reject_audit_cleanup(h, &table).await;
+    audit
+        .reserve(audit_metadata("new"))
+        .expect("reserve")
+        .finish(ReadAuditStatus::Success, 1)
+        .expect("enqueue");
+    let drain = tokio::time::timeout(std::time::Duration::from_secs(4), audit.shutdown())
+        .await
+        .expect("bounded drain");
+    assert!(drain.is_err(), "cleanup failure must fail closed");
+    assert!(!audit.health().available);
+    assert!(audit.reserve(audit_metadata("after-failure")).is_err());
+    let rows = h
+        .rows(Tables::Sys, "of_read_audit", &["request_id"], None)
+        .await;
+    assert_eq!(rows.len(), 2, "cleanup and insert must roll back together");
+    assert!(!rows.iter().any(|row| row[0].as_deref() == Some("new")));
+}
+
 macro_rules! conformance_case {
     ($factory:path, $name:ident $(, $attr:meta)?) => {
         #[tokio::test(flavor = "multi_thread")]
@@ -2680,6 +2774,8 @@ macro_rules! all_cases {
     ($factory:path $(, $attr:meta)?) => {
         $crate::conformance::conformance_case!($factory, audit_batch_retention_parity $(, $attr)?);
         $crate::conformance::conformance_case!($factory, audit_sink_failure_rejects_inflight_finish $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, audit_batch_rejection_is_atomic $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, audit_cleanup_rejection_rolls_back_batch $(, $attr)?);
         #[cfg(feature = "test-support")]
         $crate::conformance::conformance_case!($factory, action_atomic_after_log_failure $(, $attr)?);
         #[cfg(feature = "test-support")]
