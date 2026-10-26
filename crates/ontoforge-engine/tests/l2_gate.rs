@@ -195,6 +195,7 @@ fn l2_corpus_has_104_unique_constructed_equivalents() {
 
 #[test]
 fn l2_corpus_each_case_runs_production_gate() {
+    let mut mismatches = Vec::new();
     for case in corpus() {
         assert!(matches!(case.historical.as_str(), "G" | "B"), "{}", case.id);
         let result = validate_l2(&case.sql, &policy());
@@ -203,6 +204,9 @@ fn l2_corpus_each_case_runs_production_gate() {
             Err(L2Error::Denied) => "deny",
             Err(L2Error::Unsupported) => "unsupported",
         };
-        assert_eq!(actual, case.expected, "{}: {}", case.id, case.reason);
+        if actual != case.expected {
+            mismatches.push(format!("{}: expected {}, got {} ({})", case.id, case.expected, actual, case.reason));
+        }
     }
+    assert!(mismatches.is_empty(), "{}", mismatches.join("\n"));
 }
