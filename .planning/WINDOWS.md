@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 6
+open_count: 7
 waived_count: 0
 fixed_count: 4
-total_count: 10
-last_updated: 2026-10-23T13:36:20.358Z
+total_count: 11
+last_updated: 2026-10-26T06:51:40.852Z
 ---
 
 # Broken Windows Ledger
@@ -25,6 +25,7 @@ last_updated: 2026-10-23T13:36:20.358Z
 | 8 | 05 | stub | crates/ontoforge-action/src/version.rs | 47 | source-backed token 在 05-03 无 source sampler，统一 VersionConflict；05-06 接入真实 source snapshot 与往返验收 | fixed |  | 2026-10-23T10:01:46.213Z | 2026-10-23T13:36:20.358Z |
 | 9 | 05 | deviation | crates/ontoforge-action/tests/trino_action_it.rs |  | Task 2 真实集成断言首次有效运行即通过，缺少独立行为 RED。 | open |  | 2026-10-23T13:34:50.748Z |  |
 | 10 | 05 | deviation | .planning/phases/05-online-action/deferred-items.md |  | 默认 feature 组合的 cargo check/clippy 因现有配置问题失败，已用 embedded-pg 验证计划代码。 | open |  | 2026-10-23T13:34:51.389Z |  |
+| 11 | 06 | stub | crates/ontoforge-storage/src/read_audit.rs | 166 | PostgreSQL worker explicitly fails closed until 06-02 provides its system table and sink | open |  | 2026-10-26T06:51:40.852Z |  |
 
 ````json
 [
@@ -149,6 +150,19 @@ last_updated: 2026-10-23T13:36:20.358Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-10-23T13:34:51.389Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 11,
+    "kind": "stub",
+    "phase": "06",
+    "file": "crates/ontoforge-storage/src/read_audit.rs",
+    "line": 166,
+    "description": "PostgreSQL worker explicitly fails closed until 06-02 provides its system table and sink",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-26T06:51:40.852Z",
     "resolved_at": null,
     "milestone": null
   }
