@@ -55,6 +55,14 @@ pub struct L2Result {
 }
 
 impl L2Service<'_> {
+    pub async fn list_catalogs(&self) -> Result<L2Result, L2Error> {
+        Err(L2Error::InvalidSql)
+    }
+
+    pub async fn list_schemas(&self, _catalog: &str) -> Result<L2Result, L2Error> {
+        Err(L2Error::InvalidSql)
+    }
+
     pub async fn execute_query(&self, sql: &str) -> Result<L2Result, L2Error> {
         self.run(sql, false).await
     }
