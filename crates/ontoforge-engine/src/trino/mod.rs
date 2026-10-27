@@ -58,6 +58,22 @@ pub struct TrinoEngine {
 }
 
 impl TrinoEngine {
+    /// Narrow metadata entry points retain the L2 admission check in `execute`.
+    pub async fn list_l2_catalogs(&self, ctx: &QueryContext) -> Result<QueryOutput, EngineError> {
+        self.execute(&crate::printer::l2::list_l2_catalogs(), ctx)
+            .await
+    }
+
+    pub async fn list_l2_schemas(
+        &self,
+        catalog: &str,
+        ctx: &QueryContext,
+    ) -> Result<QueryOutput, EngineError> {
+        let sql = crate::printer::l2::list_l2_schemas(catalog)
+            .map_err(|_| EngineError::Config("invalid metadata catalog".to_owned()))?;
+        self.execute(&sql, ctx).await
+    }
+
     /// Checks the transport rules (E2) and builds the HTTP client. Every construction path
     /// goes through here, so credentials cannot be sent in the clear and an extra origin
     /// cannot downgrade the scheme, however the connection was assembled.

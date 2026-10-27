@@ -14,6 +14,7 @@ use sqlparser::dialect::GenericDialect;
 use sqlparser::parser::Parser;
 use thiserror::Error;
 
+use super::escape::quote_ident;
 use super::{Dialect, PrintedSql, print_explain_distributed_sql};
 
 const MAX_SQL_BYTES: usize = 32 * 1024;
@@ -103,6 +104,16 @@ pub fn validate_l2(raw: &str, policy: &L2Policy) -> Result<PrintedSql, L2Error> 
 /// Only a validated SQL value can be wrapped for a distributed EXPLAIN.
 pub fn explain_l2(sql: &PrintedSql) -> PrintedSql {
     print_explain_distributed_sql(sql, Dialect::Trino).expect("Trino EXPLAIN is printable")
+}
+
+/// Metadata commands cannot accept caller-supplied SQL fragments.
+pub fn list_l2_catalogs() -> PrintedSql {
+    PrintedSql::new("SHOW CATALOGS".to_owned())
+}
+
+pub fn list_l2_schemas(catalog: &str) -> Result<PrintedSql, L2Error> {
+    let catalog = quote_ident(catalog).map_err(|_| L2Error::Unsupported)?;
+    Ok(PrintedSql::new(format!("SHOW SCHEMAS FROM {catalog}")))
 }
 
 fn validate_on_parser_stack(raw: &str, policy: &L2Policy) -> Result<PrintedSql, L2Error> {
