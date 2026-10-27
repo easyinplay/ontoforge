@@ -47,6 +47,15 @@ jobs:
       - name: Clippy with the embedded-pg feature
         run: cargo clippy -p ontoforge-storage --features embedded-pg --all-targets --locked -- -D warnings
       - run: cargo test --workspace --locked
+      - name: L2 104-ID corpus and Display gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          output=$(cargo test -p ontoforge-engine --test l2_gate --locked l2_corpus_ -- --list)
+          count=$(printf '%s\n' "$output" | awk '/: test$/ { n++ } END { print n+0 }')
+          echo "l2_corpus: $count tests discovered at ${GITHUB_SHA}"
+          if [ "$count" -eq 0 ]; then echo "::error::l2_corpus discovered zero tests"; exit 1; fi
+          cargo test -p ontoforge-engine --test l2_gate --locked l2_corpus_ -- --nocapture
       - name: Action SQLite, outbox and write-entry corpus
         run: cargo test -p ontoforge-action --locked -- --nocapture
 
@@ -118,6 +127,20 @@ jobs:
             sleep 2
           done
           echo "Trino is ready after ${SECONDS} s"
+      - name: Start independent L2 ACL Trino 483 and loose control
+        run: bash ci/query-services.sh trino-l2
+      - name: L2 ACL and corpus behavior (Trino 483)
+        shell: bash
+        env:
+          ONTOFORGE_TRINO_L2_URL: http://127.0.0.1:58081
+          ONTOFORGE_TRINO_L2_LOOSE_URL: http://127.0.0.1:58082
+        run: |
+          set -euo pipefail
+          output=$(cargo test -p ontoforge-engine --test trino_l2_acl_it --locked -- --ignored --list)
+          count=$(printf '%s\n' "$output" | awk '/: test$/ { n++ } END { print n+0 }')
+          echo "trino_l2_acl_it: $count ignored tests discovered at ${GITHUB_SHA}"
+          if [ "$count" -eq 0 ]; then echo "::error::trino_l2_acl_it discovered zero tests"; exit 1; fi
+          cargo test -p ontoforge-engine --test trino_l2_acl_it --locked -- --ignored --nocapture
       - name: Engine integration tests
         env:
           ONTOFORGE_TRINO_URL: http://localhost:8080
@@ -171,6 +194,7 @@ jobs:
           set -euo pipefail
           targets=(
             "ontoforge-engine trino_it"
+            "ontoforge-engine trino_l2_acl_it"
             "ontoforge cli_trino_it"
             "ontoforge-storage conformance_pg"
             "ontoforge-storage reload_pg"
@@ -215,6 +239,9 @@ jobs:
       - name: Trino logs
         if: failure()
         run: docker logs trino 2>&1 || true
+      - name: L2 ACL Trino logs
+        if: failure()
+        run: docker logs ontoforge-trino-l2 2>&1 || true
       - name: PostgreSQL logs
         if: failure()
         run: docker logs postgres 2>&1 || true

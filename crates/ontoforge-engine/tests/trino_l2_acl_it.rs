@@ -2,10 +2,21 @@
 
 use camino::Utf8Path;
 use ontoforge_engine::config::{build_trino_engines, parse_server_config};
+use ontoforge_engine::printer::l2::{L2Error, L2Policy, validate_l2};
 use ontoforge_engine::trino::l2_health::L2HealthStatus;
+use ontoforge_engine::{Engine, QueryContext};
 use reqwest::Client;
+use serde::Deserialize;
 use serde_json::Value;
+use std::collections::BTreeSet;
 use std::time::Duration;
+
+#[derive(Deserialize)]
+struct CorpusCase {
+    id: String,
+    sql: String,
+    expected: String,
+}
 
 fn endpoint() -> String {
     std::env::var("ONTOFORGE_TRINO_L2_URL").unwrap_or_else(|_| "http://127.0.0.1:58081".to_owned())
@@ -191,17 +202,40 @@ async fn trino_l2_acl_hides_known_active_other_query_and_attests_engine() {
         .expect("trino");
     let env = |_: &str| None;
     let engines = build_trino_engines(&cfg, Utf8Path::new("."), &env).expect("engines");
-    let status = engines
-        .l2
-        .expect("L2 identity")
-        .recheck_l2_acl(&engines.ontology, &query_id)
-        .await;
+    let l2 = engines.l2.expect("L2 identity");
+    let status = l2.recheck_l2_acl(&engines.ontology, &query_id).await;
     let _ = client.delete(cancel_url).send().await;
     assert_eq!(
         status,
         L2HealthStatus::Enabled,
         "known other query {query_id} must be invisible"
     );
+
+    let policy = L2Policy {
+        raw_allowed: true,
+        catalogs: BTreeSet::from(["demo".to_owned()]),
+        schemas: BTreeSet::from(["demo.tiny".to_owned()]),
+        edit_catalog: "editstore".to_owned(),
+        max_rows: 100,
+    };
+    let cases: Vec<CorpusCase> =
+        serde_json::from_str(include_str!("data/l2_corpus.json")).expect("104-ID corpus");
+    assert_eq!(cases.len(), 104);
+    for id in ["G11", "G16", "G17"] {
+        let case = cases.iter().find(|case| case.id == id).expect("corpus ID");
+        if id == "G11" {
+            assert_eq!(case.expected, "unsupported");
+            assert_eq!(validate_l2(&case.sql, &policy), Err(L2Error::Unsupported));
+            continue;
+        }
+        assert_eq!(case.expected, "allow");
+        let sql = validate_l2(&case.sql, &policy).expect("validated Display SQL");
+        let output = l2
+            .execute(&sql, &QueryContext::new(id.to_owned(), vec![]))
+            .await
+            .unwrap_or_else(|error| panic!("{id} failed on Trino 483: {error}"));
+        assert_eq!(output.rows.len(), if id == "G16" { 0 } else { 1 }, "{id}");
+    }
 }
 
 #[tokio::test]
