@@ -59,8 +59,8 @@ impl L2Service<'_> {
         self.run(sql, false).await
     }
 
-    pub async fn explain_query(&self, _sql: &str) -> Result<L2Result, L2Error> {
-        Err(L2Error::InvalidSql)
+    pub async fn explain_query(&self, sql: &str) -> Result<L2Result, L2Error> {
+        self.run(sql, true).await
     }
 
     async fn run(&self, sql: &str, explain: bool) -> Result<L2Result, L2Error> {
