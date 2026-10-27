@@ -100,6 +100,10 @@ async fn audit_rows(path: &Utf8PathBuf, expected: usize) -> Vec<sqlx::sqlite::Sq
 }
 
 #[tokio::test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "single controlled L0 concurrency scenario"
+)]
 async fn l0_inflight_reload_and_scope_apply_keep_request_snapshot() {
     let loaded = load_dir(Utf8Path::new(AVIATION));
     assert!(loaded.diagnostics.is_empty(), "{:#?}", loaded.diagnostics);
@@ -317,6 +321,10 @@ async fn attest_l2(server: &MockServer, ontology: &TrinoEngine, l2: &TrinoEngine
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+#[allow(
+    clippy::too_many_lines,
+    reason = "single controlled L2 concurrency scenario"
+)]
 async fn l2_inflight_reload_and_scope_apply_keep_request_snapshot() {
     let server = MockServer::start().await;
     let config = l2_config(&server.uri());

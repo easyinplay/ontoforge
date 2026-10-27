@@ -6,5 +6,5 @@
   "targetFile": "crates/ontoforge-query/tests/definition_snapshot.rs",
   "expected": "in-flight L2 audit records original effective_roles [\"dispatcher\"]",
   "actual": "temporary mutation drops effective_roles from in-flight audit",
-  "semanticAssessment": "Controlled uncommitted mutation of L2 audit metadata; target assertion should fail on old request effective_roles. Source will be restored before GREEN."
+  "semanticAssessment": "Controlled uncommitted mutation of L2 audit metadata; target assertion failed on old request effective_roles (actual [], expected dispatcher). Source restored before GREEN."
 }
