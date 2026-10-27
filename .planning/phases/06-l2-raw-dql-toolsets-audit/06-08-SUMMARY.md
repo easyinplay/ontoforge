@@ -87,6 +87,7 @@ CI 接入独立受限 Trino 483、宽松规则对照、104-ID corpus 和 Postgre
 - `conformance_pg audit_ --features embedded-pg --ignored --list` 发现 5 项，实际 PostgreSQL 5/5 通过；SQLite audit 4/4，query `audit_pk` 9/9、`audit_l0` 9/9（另 1 项按原设计需外部 PG，普通运行 ignored）。
 - 最终 `cargo test --workspace --locked -- --test-threads=1` 通过：116 个结果组、1231 passed、98 ignored、0 failed（约 3 分钟，Windows）。`cargo clippy --workspace --all-targets --locked -- -D warnings`、`cargo fmt --all --check`、`git diff --check` 通过。
 - 远端 GitHub Actions 尚未运行，本机在 Docker Trino 483 和 embedded PostgreSQL 上执行了 CI 对应的目标。需求完成状态仍为 pending，待 Phase 6 verify 与 PR/推送后的远端 GitHub SHA 运行证据对账。
+- 本轮启动的 `ontoforge-trino-l2`、`ontoforge-trino-l2-loose` 和生成的临时 catalog 已清理；原有 Phase 5 Trino/PostgreSQL 与 Casdoor 容器保持运行。
 
 ## TDD
 
