@@ -30,20 +30,35 @@ async fn assert_corpus_on_verified_l2(l2: &TrinoEngine) {
     let cases: Vec<CorpusCase> =
         serde_json::from_str(include_str!("data/l2_corpus.json")).expect("104-ID corpus");
     assert_eq!(cases.len(), 104);
-    for id in ["G11", "G16", "G17"] {
+    let rejected = cases.iter().find(|case| case.id == "G11").expect("G11");
+    assert_eq!(rejected.expected, "unsupported");
+    assert_eq!(
+        validate_l2(&rejected.sql, &policy),
+        Err(L2Error::Unsupported)
+    );
+
+    for (id, expected_rows) in [
+        ("G04", 3),
+        ("G12", 1),
+        ("G16", 0),
+        ("G17", 1),
+        ("G24", 1),
+        ("G26", 1),
+        ("G28", 1),
+        ("G31", 1),
+        ("G34", 1),
+        ("G35", 1),
+        ("G40", 1),
+    ] {
         let case = cases.iter().find(|case| case.id == id).expect("corpus ID");
-        if id == "G11" {
-            assert_eq!(case.expected, "unsupported");
-            assert_eq!(validate_l2(&case.sql, &policy), Err(L2Error::Unsupported));
-            continue;
-        }
         assert_eq!(case.expected, "allow");
         let sql = validate_l2(&case.sql, &policy).expect("validated Display SQL");
         let output = l2
             .execute(&sql, &QueryContext::new(id.to_owned(), vec![]))
             .await
             .unwrap_or_else(|error| panic!("{id} failed on Trino 483: {error}"));
-        assert_eq!(output.rows.len(), usize::from(id != "G16"), "{id}");
+        assert_eq!(output.rows.len(), expected_rows, "{id}");
+        println!("{id}: FINISHED, {expected_rows} row(s)");
     }
 }
 
