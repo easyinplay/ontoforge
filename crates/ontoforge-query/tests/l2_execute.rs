@@ -377,6 +377,64 @@ async fn l2_execute_sqlite_v5_audit_upgrade_preserves_rows() {
 }
 
 #[tokio::test]
+async fn l2_execute_byte_cap_truncates_without_releasing_partial_row() {
+    let server = MockServer::start().await;
+    let mut f = fixture(&server).await;
+    attest(&server, &f.ontology, &f.l2).await;
+    f.config.max_bytes = 1;
+    answer(
+        &server,
+        "l2",
+        "SELECT nationkey FROM demo.tiny.nation",
+        data(json!([[1]])),
+    )
+    .await;
+    let result = f
+        .service()
+        .execute_query("SELECT nationkey FROM demo.tiny.nation")
+        .await
+        .unwrap();
+    assert!(result.output.truncated);
+    assert!(result.output.rows.is_empty());
+    assert!(result.narrowing_hint.is_some());
+    let rows = audit_rows(&f.path, 1).await;
+    assert_eq!(rows[0].get::<String, _>("status"), "truncated");
+    assert_eq!(rows[0].get::<i64, _>("row_count"), 0);
+}
+
+#[tokio::test]
+async fn l2_execute_timeout_is_audited_without_result() {
+    let server = MockServer::start().await;
+    let mut f = fixture(&server).await;
+    attest(&server, &f.ontology, &f.l2).await;
+    f.config.query_timeout_ms = 30;
+    Mock::given(method("POST"))
+        .and(path("/v1/statement"))
+        .and(header("x-trino-user", "l2"))
+        .and(body_string_contains(
+            "SELECT nationkey FROM demo.tiny.nation",
+        ))
+        .respond_with(
+            ResponseTemplate::new(200)
+                .set_delay(Duration::from_millis(250))
+                .set_body_json(data(json!([[1]]))),
+        )
+        .mount(&server)
+        .await;
+    assert!(matches!(
+        f.service()
+            .execute_query("SELECT nationkey FROM demo.tiny.nation")
+            .await,
+        Err(L2Error::Source(
+            ontoforge_engine::EngineError::Timeout { .. }
+        ))
+    ));
+    let rows = audit_rows(&f.path, 1).await;
+    assert_eq!(rows[0].get::<String, _>("status"), "source_error");
+    assert_eq!(rows[0].get::<i64, _>("row_count"), 0);
+}
+
+#[tokio::test]
 async fn l2_explain_requires_attestation_and_submits_only_validated_display() {
     let server = MockServer::start().await;
     let f = fixture(&server).await;
