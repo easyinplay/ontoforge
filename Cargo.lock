@@ -2138,6 +2138,7 @@ dependencies = [
  "tempfile",
  "thiserror",
  "tokio",
+ "wiremock",
 ]
 
 [[package]]

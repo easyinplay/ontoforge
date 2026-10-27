@@ -1,0 +1,11 @@
+{
+  "command": "RUSTC_BOOTSTRAP=1 cargo test -p ontoforge-query --test l2_execute --locked l2_execute_only_submits_display_sql_after_attestation_and_audits_result -- -Z unstable-options --format junit --color never",
+  "exitCode": 101,
+  "output": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"test\" package=\"test\" id=\"0\" errors=\"0\" failures=\"1\" tests=\"1\" skipped=\"0\" ><testcase classname=\"integration\" name=\"l2_execute_only_submits_display_sql_after_attestation_and_audits_result\" time=\"0\"><failure type=\"assert\"/><system-out><![CDATA[]]>&#xA;<![CDATA[thread 'l2_execute_only_submits_display_sql_after_attestation_and_audits_result' (62480) panicked at crates\\ontoforge-query\\tests\\l2_execute.rs:136:5:]]>&#xA;<![CDATA[assertion failed: matches!(f.service().execute_query(sql).await, Err(L2Error::Disabled))]]>&#xA;<![CDATA[note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace]]>&#xA;<![CDATA[]]></system-out></testcase><system-out/><system-err/></testsuite></testsuites>\n",
+  "targetTest": "l2_execute_only_submits_display_sql_after_attestation_and_audits_result",
+  "targetFile": "crates/ontoforge-query/tests/l2_execute.rs",
+  "expected": "unverified L2 must return Disabled before posting SQL",
+  "actual": "stub returned InvalidSql, causing disabled assertion failure",
+  "runStartedAt": "2026-10-27T16:32:36.520Z",
+  "semanticAssessment": "The target test executed and failed at the planned Disabled assertion, before any Trino request."
+}

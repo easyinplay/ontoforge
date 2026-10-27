@@ -29,3 +29,4 @@ tempfile.workspace = true
 sqlx.workspace = true
 proptest.workspace = true
 secrecy.workspace = true
+wiremock.workspace = true
