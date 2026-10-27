@@ -3,6 +3,7 @@
 use camino::Utf8Path;
 use ontoforge_engine::config::{build_trino_engines, parse_server_config};
 use ontoforge_engine::printer::l2::{L2Error, L2Policy, validate_l2};
+use ontoforge_engine::trino::TrinoEngine;
 use ontoforge_engine::trino::l2_health::L2HealthStatus;
 use ontoforge_engine::{Engine, QueryContext};
 use reqwest::Client;
@@ -16,6 +17,34 @@ struct CorpusCase {
     id: String,
     sql: String,
     expected: String,
+}
+
+async fn assert_corpus_on_verified_l2(l2: &TrinoEngine) {
+    let policy = L2Policy {
+        raw_allowed: true,
+        catalogs: BTreeSet::from(["demo".to_owned()]),
+        schemas: BTreeSet::from(["demo.tiny".to_owned()]),
+        edit_catalog: "editstore".to_owned(),
+        max_rows: 100,
+    };
+    let cases: Vec<CorpusCase> =
+        serde_json::from_str(include_str!("data/l2_corpus.json")).expect("104-ID corpus");
+    assert_eq!(cases.len(), 104);
+    for id in ["G11", "G16", "G17"] {
+        let case = cases.iter().find(|case| case.id == id).expect("corpus ID");
+        if id == "G11" {
+            assert_eq!(case.expected, "unsupported");
+            assert_eq!(validate_l2(&case.sql, &policy), Err(L2Error::Unsupported));
+            continue;
+        }
+        assert_eq!(case.expected, "allow");
+        let sql = validate_l2(&case.sql, &policy).expect("validated Display SQL");
+        let output = l2
+            .execute(&sql, &QueryContext::new(id.to_owned(), vec![]))
+            .await
+            .unwrap_or_else(|error| panic!("{id} failed on Trino 483: {error}"));
+        assert_eq!(output.rows.len(), usize::from(id != "G16"), "{id}");
+    }
 }
 
 fn endpoint() -> String {
@@ -211,31 +240,7 @@ async fn trino_l2_acl_hides_known_active_other_query_and_attests_engine() {
         "known other query {query_id} must be invisible"
     );
 
-    let policy = L2Policy {
-        raw_allowed: true,
-        catalogs: BTreeSet::from(["demo".to_owned()]),
-        schemas: BTreeSet::from(["demo.tiny".to_owned()]),
-        edit_catalog: "editstore".to_owned(),
-        max_rows: 100,
-    };
-    let cases: Vec<CorpusCase> =
-        serde_json::from_str(include_str!("data/l2_corpus.json")).expect("104-ID corpus");
-    assert_eq!(cases.len(), 104);
-    for id in ["G11", "G16", "G17"] {
-        let case = cases.iter().find(|case| case.id == id).expect("corpus ID");
-        if id == "G11" {
-            assert_eq!(case.expected, "unsupported");
-            assert_eq!(validate_l2(&case.sql, &policy), Err(L2Error::Unsupported));
-            continue;
-        }
-        assert_eq!(case.expected, "allow");
-        let sql = validate_l2(&case.sql, &policy).expect("validated Display SQL");
-        let output = l2
-            .execute(&sql, &QueryContext::new(id.to_owned(), vec![]))
-            .await
-            .unwrap_or_else(|error| panic!("{id} failed on Trino 483: {error}"));
-        assert_eq!(output.rows.len(), if id == "G16" { 0 } else { 1 }, "{id}");
-    }
+    assert_corpus_on_verified_l2(&l2).await;
 }
 
 #[tokio::test]
