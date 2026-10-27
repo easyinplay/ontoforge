@@ -277,6 +277,9 @@ fn reload_reports_role_breakage() {
         1,
         "no definition version was recorded"
     );
+    assert_eq!(scalar(&db, "SELECT count(*) FROM of_role"), 3);
+    assert_eq!(scalar(&db, "SELECT count(*) FROM of_role_binding"), 3);
+    assert_eq!(scalar(&db, "SELECT count(*) FROM of_admin_audit"), 1);
     assert_eq!(
         scalar(
             &db,
