@@ -61,3 +61,19 @@ created: "2026-10-26"
 - [ ] 反馈延迟已实测，最终将 frontmatter 标成 `nyquist_compliant: true`。
 
 **Approval:** pending
+
+## 06-08 实施后证据（2026-10-28）
+
+本地代码 SHA `ea695ed480d56744835bf69d505e5531eef61314`；远端 GitHub Actions 尚未触发。完整命令、偏差与失败历史详见 `06-08-SUMMARY.md`。
+
+| 门禁 | 发现数 | 本地实际结果 |
+| --- | ---: | --- |
+| 独立受限/宽松对照 Trino 483 `trino_l2_acl_it --ignored` | 3 | 3 passed，约 3 秒；G16/G17 Display 通过受限身份执行，G11 被拒绝 |
+| 104-ID corpus `l2_corpus_` | 6 | 6 passed；104 个 constructed-equivalent ID 分类覆盖 |
+| PostgreSQL `conformance_pg audit_ --features embedded-pg --ignored` | 5 | 5 passed，约 10 秒 |
+| SQLite `conformance_sqlite audit_` | 4 | 4 passed |
+| query `audit_pk`、`audit_l0` | 9、10 | 9、9 passed；后者另 1 项需外部 PG，普通运行 ignored |
+| engine `l2_gate` | 16 | 16 passed |
+| Windows workspace `--test-threads=1` | 116 个结果组 | 1231 passed，98 ignored，0 failed |
+
+`cargo fmt --all --check`、`cargo clippy --workspace --all-targets --locked -- -D warnings`、`git diff --check` 通过。默认并行 workspace 的两次失败和稳定方案详见 SUMMARY；单线程方式仍有慢机器墙钟风险，见 `deferred-items.md`。本文件的 phase-level sign-off 保持 pending，待 `$gsd-verify-work 06` 与远端 CI 证据对账。
