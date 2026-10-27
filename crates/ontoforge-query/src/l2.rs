@@ -59,6 +59,10 @@ impl L2Service<'_> {
         self.run(sql, false).await
     }
 
+    pub async fn explain_query(&self, _sql: &str) -> Result<L2Result, L2Error> {
+        Err(L2Error::InvalidSql)
+    }
+
     async fn run(&self, sql: &str, explain: bool) -> Result<L2Result, L2Error> {
         let mut audit = self
             .store

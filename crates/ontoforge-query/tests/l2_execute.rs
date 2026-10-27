@@ -375,3 +375,97 @@ async fn l2_execute_sqlite_v5_audit_upgrade_preserves_rows() {
             .unwrap();
     assert_eq!(new, (2, "truncated".to_owned()));
 }
+
+#[tokio::test]
+async fn l2_explain_requires_attestation_and_submits_only_validated_display() {
+    let server = MockServer::start().await;
+    let f = fixture(&server).await;
+    let sql = "SELECT /* raw comment */ nationkey FROM demo.tiny.nation";
+    assert!(matches!(f.service().explain_query(sql).await, Err(L2Error::Disabled)));
+    assert!(server.received_requests().await.unwrap().is_empty());
+    attest(&server, &f.ontology, &f.l2).await;
+    let before = server.received_requests().await.unwrap().len();
+    answer(&server, "l2", "EXPLAIN (TYPE DISTRIBUTED) SELECT nationkey FROM demo.tiny.nation", data(json!([[1]]))).await;
+    let result = f.service().explain_query(sql).await.unwrap();
+    assert_eq!(result.output.rows.len(), 1);
+    let requests = server.received_requests().await.unwrap();
+    assert_eq!(requests.len(), before + 1);
+    let body = String::from_utf8(requests.last().unwrap().body.clone()).unwrap();
+    assert_eq!(body, "EXPLAIN (TYPE DISTRIBUTED) SELECT nationkey FROM demo.tiny.nation LIMIT 3");
+    let rows = audit_rows(&f.path, 2).await;
+    assert_eq!(rows[0].get::<String, _>("status"), "denied");
+    assert_eq!(rows[1].get::<String, _>("status"), "success");
+    assert_eq!(rows[1].get::<String, _>("tool"), "explain_query");
+    assert_eq!(rows[1].get::<i64, _>("row_count"), 1);
+}
+
+#[tokio::test]
+async fn l2_explain_invalid_and_unauthorized_sql_never_posts() {
+    let server = MockServer::start().await;
+    let mut f = fixture(&server).await;
+    attest(&server, &f.ontology, &f.l2).await;
+    let before = server.received_requests().await.unwrap().len();
+    f.scope.sql_levels.clear();
+    assert!(matches!(f.service().explain_query("SELECT 1 FROM demo.tiny.nation").await, Err(L2Error::Denied)));
+    f.scope.sql_levels.insert(SqlLevel::Raw);
+    assert!(matches!(f.service().explain_query("SELECT * FROM outside.tiny.nation").await, Err(L2Error::Denied)));
+    for sql in ["DELETE FROM demo.tiny.nation", "EXPLAIN ANALYZE SELECT * FROM demo.tiny.nation"] {
+        assert!(matches!(f.service().explain_query(sql).await, Err(L2Error::InvalidSql)), "{sql}");
+    }
+    assert_eq!(server.received_requests().await.unwrap().len(), before);
+    let rows = audit_rows(&f.path, 4).await;
+    assert!(rows.iter().all(|row| row.get::<String, _>("status") == "denied"));
+}
+
+#[tokio::test]
+async fn l2_explain_truncation_source_error_and_audit_fault() {
+    let server = MockServer::start().await;
+    let f = fixture(&server).await;
+    attest(&server, &f.ontology, &f.l2).await;
+    answer(&server, "l2", "EXPLAIN (TYPE DISTRIBUTED) SELECT nationkey FROM demo.tiny.nation", data(json!([[1], [2], [3]]))).await;
+    let result = f.service().explain_query("SELECT nationkey FROM demo.tiny.nation").await.unwrap();
+    assert_eq!(result.output.rows.len(), 2);
+    assert!(result.output.truncated);
+    assert!(result.narrowing_hint.is_some());
+    let rows = audit_rows(&f.path, 1).await;
+    assert_eq!(rows[0].get::<String, _>("status"), "truncated");
+    f.store.read_audit().shutdown().await.unwrap();
+    let before = server.received_requests().await.unwrap().len();
+    assert!(matches!(f.service().explain_query("SELECT nationkey FROM demo.tiny.nation").await, Err(L2Error::AuditUnavailable)));
+    assert_eq!(server.received_requests().await.unwrap().len(), before);
+
+    let other_server = MockServer::start().await;
+    let other = fixture(&other_server).await;
+    attest(&other_server, &other.ontology, &other.l2).await;
+    answer(&other_server, "l2", "EXPLAIN (TYPE DISTRIBUTED) SELECT nationkey FROM demo.tiny.nation", json!({"id":"q1", "error":{"errorName":"INTERNAL_ERROR","message":"sensitive"}, "stats":{"state":"FAILED"}})).await;
+    assert!(matches!(other.service().explain_query("SELECT nationkey FROM demo.tiny.nation").await, Err(L2Error::Source(_))));
+    let rows = audit_rows(&other.path, 1).await;
+    assert_eq!(rows[0].get::<String, _>("status"), "source_error");
+}
+
+#[tokio::test]
+async fn l2_explain_inflight_cancellation_records_event() {
+    let server = MockServer::start().await;
+    let f = Arc::new(fixture(&server).await);
+    attest(&server, &f.ontology, &f.l2).await;
+    let started = Arc::new(Notify::new());
+    let signal = Arc::clone(&started);
+    Mock::given(method("POST"))
+        .and(path("/v1/statement"))
+        .and(header("x-trino-user", "l2"))
+        .and(body_string_contains("EXPLAIN (TYPE DISTRIBUTED) SELECT nationkey FROM demo.tiny.nation"))
+        .respond_with(move |_: &wiremock::Request| {
+            signal.notify_one();
+            ResponseTemplate::new(200).set_delay(Duration::from_secs(10)).set_body_json(data(json!([[1]])))
+        })
+        .mount(&server).await;
+    let worker = {
+        let f = Arc::clone(&f);
+        tokio::spawn(async move { f.service().explain_query("SELECT nationkey FROM demo.tiny.nation").await })
+    };
+    tokio::time::timeout(Duration::from_secs(3), started.notified()).await.unwrap();
+    worker.abort();
+    assert!(worker.await.unwrap_err().is_cancelled());
+    let rows = audit_rows(&f.path, 1).await;
+    assert_eq!(rows[0].get::<String, _>("status"), "cancelled");
+}
