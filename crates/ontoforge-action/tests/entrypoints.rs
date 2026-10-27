@@ -67,7 +67,7 @@ fn rust_files(dir: &Path, files: &mut Vec<PathBuf>) {
 }
 
 #[test]
-fn production_mutation_callers_are_action_and_audited_import() {
+fn production_mutation_callers_are_action_import_and_read_audit() {
     let crates = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .expect("crates root");
@@ -116,6 +116,7 @@ fn production_mutation_callers_are_action_and_audited_import() {
             1,
         ),
         ("ontoforge-storage/src/import.rs:commit".to_owned(), 1),
+        ("ontoforge-storage/src/read_audit.rs:commit".to_owned(), 2),
     ]);
     let counts: BTreeMap<_, _> = callers
         .iter()

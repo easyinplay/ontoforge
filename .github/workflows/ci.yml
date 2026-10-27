@@ -46,7 +46,7 @@ jobs:
       # so that it cannot rot unnoticed (plan 03-20).
       - name: Clippy with the embedded-pg feature
         run: cargo clippy -p ontoforge-storage --features embedded-pg --all-targets --locked -- -D warnings
-      - run: cargo test --workspace --locked
+      - run: cargo test --workspace --locked -- --test-threads=1
       - name: L2 104-ID corpus and Display gate
         shell: bash
         run: |
@@ -94,6 +94,16 @@ jobs:
           --test conformance_pg --test reload_pg --test scope_store
           --test migrate_pg --test history_masking --test import
           -- --ignored
+      - name: Read audit conformance (PostgreSQL)
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${ONTOFORGE_PG_URL:?PostgreSQL service must set ONTOFORGE_PG_URL}"
+          output=$(cargo test -p ontoforge-storage --test conformance_pg --locked audit_ -- --ignored --list)
+          count=$(printf '%s\n' "$output" | awk '/audit_.*: test$/ { n++ } END { print n+0 }')
+          echo "postgres-audit: $count ignored tests discovered at ${GITHUB_SHA}"
+          if [ "$count" -eq 0 ]; then echo "::error::postgres-audit discovered zero tests"; exit 1; fi
+          cargo test -p ontoforge-storage --test conformance_pg --locked audit_ -- --ignored --nocapture
       - name: Action atomicity, races, idempotency and webhook delivery (PostgreSQL)
         shell: bash
         run: |
