@@ -29,7 +29,7 @@ key-files:
 key-decisions:
   - "CI 对受限 Trino 与 PG audit 先计数后执行，不接受零发现。"
   - "Windows workspace 测试使用单线程 libtest，以免 16 MiB 测试与 1 秒审计期限竞争。"
-requirements-completed: [L2-01, L2-02, L2-03, L2-04, AUDIT-01]
+requirements-completed: []
 coverage:
   - id: D1
     description: "独立受限 Trino 483 的 ACL、自检、G11 拒绝和 G16/G17 Display 真执行"
@@ -86,7 +86,7 @@ CI 接入独立受限 Trino 483、宽松规则对照、104-ID corpus 和 Postgre
 - 实测代码 HEAD `ea695ed480d56744835bf69d505e5531eef61314`；受限 Trino ACL `--ignored --list` 发现 3 项、`--ignored --nocapture` 3/3 通过；corpus `l2_corpus_` 发现 6 项、6/6 通过，完整 `l2_gate` 16/16 通过。Trino 483 的 G16 返回 0 行、G17 返回 1 行；越界 catalog 返回 `PERMISSION_DENIED`。
 - `conformance_pg audit_ --features embedded-pg --ignored --list` 发现 5 项，实际 PostgreSQL 5/5 通过；SQLite audit 4/4，query `audit_pk` 9/9、`audit_l0` 9/9（另 1 项按原设计需外部 PG，普通运行 ignored）。
 - 最终 `cargo test --workspace --locked -- --test-threads=1` 通过：116 个结果组、1231 passed、98 ignored、0 failed（约 3 分钟，Windows）。`cargo clippy --workspace --all-targets --locked -- -D warnings`、`cargo fmt --all --check`、`git diff --check` 通过。
-- 未触发 GitHub Actions 远端 workflow；本机在 Docker Trino 483 和 embedded PostgreSQL 上执行了 CI 对应的目标。远端 GitHub SHA 的执行状态仍需在 PR/推送后核对。
+- 远端 GitHub Actions 尚未运行，本机在 Docker Trino 483 和 embedded PostgreSQL 上执行了 CI 对应的目标。需求完成状态仍为 pending，待 Phase 6 verify 与 PR/推送后的远端 GitHub SHA 运行证据对账。
 
 ## TDD
 
