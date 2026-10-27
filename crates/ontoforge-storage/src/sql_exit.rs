@@ -24,6 +24,15 @@ pub(crate) type Built = (String, SqlxValues);
 
 const BEGIN_IMMEDIATE: &str = "BEGIN IMMEDIATE";
 
+pub(crate) const READ_AUDIT_DELETE_SQLITE: &str = "DELETE FROM of_read_audit WHERE at < ?";
+pub(crate) const READ_AUDIT_DELETE_POSTGRES: &str = "DELETE FROM of_read_audit WHERE at < $1";
+pub(crate) const READ_AUDIT_INSERT_SQLITE: &str = "INSERT INTO of_read_audit (at, request_id, principal, tool, object_type, \
+     condition_api_names, effective_roles, sql_sha256, row_count, elapsed_ms, \
+     def_version, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+pub(crate) const READ_AUDIT_INSERT_POSTGRES: &str = "INSERT INTO of_read_audit (at, request_id, principal, tool, object_type, \
+     condition_api_names, effective_roles, sql_sha256, row_count, elapsed_ms, \
+     def_version, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)";
+
 /// The one-row table `of_def_state` that says which definition version is active. A commit reads
 /// it `FOR SHARE` (the fence), a switch updates it.
 pub(crate) const STATE_TABLE: &str = "of_def_state";

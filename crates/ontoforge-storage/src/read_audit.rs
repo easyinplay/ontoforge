@@ -369,33 +369,29 @@ async fn write_sqlite(pool: &SqlitePool, retention: Duration, batch: &[Queued]) 
     let mut tx = pool.begin().await.map_err(|_| ())?;
     let cutoff = (Utc::now() - chrono::Duration::from_std(retention).map_err(|_| ())?)
         .to_rfc3339_opts(SecondsFormat::Millis, true);
-    sqlx::query("DELETE FROM of_read_audit WHERE at < ?")
+    sqlx::query(crate::sql_exit::READ_AUDIT_DELETE_SQLITE)
         .bind(cutoff)
         .execute(&mut *tx)
         .await
         .map_err(|_| ())?;
     for item in batch {
         let row = &item.record;
-        sqlx::query(
-            "INSERT INTO of_read_audit (at, request_id, principal, tool, object_type, \
-             condition_api_names, effective_roles, sql_sha256, row_count, elapsed_ms, \
-             def_version, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        )
-        .bind(&row.at)
-        .bind(&row.request_id)
-        .bind(&row.metadata.principal)
-        .bind(&row.metadata.tool)
-        .bind(&row.metadata.object_type)
-        .bind(serde_json::to_string(&row.metadata.condition_api_names).map_err(|_| ())?)
-        .bind(serde_json::to_string(&row.metadata.effective_roles).map_err(|_| ())?)
-        .bind(&row.sql_sha256)
-        .bind(row.row_count)
-        .bind(row.elapsed_ms)
-        .bind(row.metadata.def_version)
-        .bind(row.status.as_str())
-        .execute(&mut *tx)
-        .await
-        .map_err(|_| ())?;
+        sqlx::query(crate::sql_exit::READ_AUDIT_INSERT_SQLITE)
+            .bind(&row.at)
+            .bind(&row.request_id)
+            .bind(&row.metadata.principal)
+            .bind(&row.metadata.tool)
+            .bind(&row.metadata.object_type)
+            .bind(serde_json::to_string(&row.metadata.condition_api_names).map_err(|_| ())?)
+            .bind(serde_json::to_string(&row.metadata.effective_roles).map_err(|_| ())?)
+            .bind(&row.sql_sha256)
+            .bind(row.row_count)
+            .bind(row.elapsed_ms)
+            .bind(row.metadata.def_version)
+            .bind(row.status.as_str())
+            .execute(&mut *tx)
+            .await
+            .map_err(|_| ())?;
     }
     tx.commit().await.map_err(|_| ())
 }
@@ -403,7 +399,7 @@ async fn write_sqlite(pool: &SqlitePool, retention: Duration, batch: &[Queued]) 
 async fn write_postgres(pool: &PgPool, retention: Duration, batch: &[Queued]) -> Result<(), ()> {
     let cutoff = Utc::now() - chrono::Duration::from_std(retention).map_err(|_| ())?;
     let mut tx = pool.begin().await.map_err(|_| ())?;
-    sqlx::query("DELETE FROM of_read_audit WHERE at < $1")
+    sqlx::query(crate::sql_exit::READ_AUDIT_DELETE_POSTGRES)
         .bind(cutoff)
         .execute(&mut *tx)
         .await
@@ -411,26 +407,22 @@ async fn write_postgres(pool: &PgPool, retention: Duration, batch: &[Queued]) ->
     for item in batch {
         let row = &item.record;
         let at = chrono::DateTime::parse_from_rfc3339(&row.at).map_err(|_| ())?;
-        sqlx::query(
-            "INSERT INTO of_read_audit (at, request_id, principal, tool, object_type, \
-             condition_api_names, effective_roles, sql_sha256, row_count, elapsed_ms, \
-             def_version, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)",
-        )
-        .bind(at)
-        .bind(&row.request_id)
-        .bind(&row.metadata.principal)
-        .bind(&row.metadata.tool)
-        .bind(&row.metadata.object_type)
-        .bind(sqlx::types::Json(&row.metadata.condition_api_names))
-        .bind(sqlx::types::Json(&row.metadata.effective_roles))
-        .bind(&row.sql_sha256)
-        .bind(row.row_count)
-        .bind(row.elapsed_ms)
-        .bind(row.metadata.def_version)
-        .bind(row.status.as_str())
-        .execute(&mut *tx)
-        .await
-        .map_err(|_| ())?;
+        sqlx::query(crate::sql_exit::READ_AUDIT_INSERT_POSTGRES)
+            .bind(at)
+            .bind(&row.request_id)
+            .bind(&row.metadata.principal)
+            .bind(&row.metadata.tool)
+            .bind(&row.metadata.object_type)
+            .bind(sqlx::types::Json(&row.metadata.condition_api_names))
+            .bind(sqlx::types::Json(&row.metadata.effective_roles))
+            .bind(&row.sql_sha256)
+            .bind(row.row_count)
+            .bind(row.elapsed_ms)
+            .bind(row.metadata.def_version)
+            .bind(row.status.as_str())
+            .execute(&mut *tx)
+            .await
+            .map_err(|_| ())?;
     }
     tx.commit().await.map_err(|_| ())
 }
