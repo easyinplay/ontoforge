@@ -90,6 +90,7 @@ scope 管理事务失败整体回滚；L0/L2 在途读取跨越 scope apply 和 
 - Task 1：临时将 `scope_apply` 审计失败路径改为 commit，目标断言观察 role 数为 3、期望 0；`06-09-RED-task1-junit.json` 经 GSD 判为 `RED_EVIDENCE_OK`，随后恢复生产源码。测试通过后提交回归测试。
 - Task 2：临时使 L2 审计丢弃 `effective_roles`；目标断言实际 `[]`、期望 `["dispatcher"]`，`06-09-RED-task2-junit.json` 经 GSD 判为 `RED_EVIDENCE_OK`。恢复源码后两项并发测试通过。
 - 本计划是已有行为的回归探针，没有生产修复，也没有 `feat(06-09)` 提交。按 GSD 的 TDD commit-pattern 检查会标记缺少 GREEN 类型提交；实际 GREEN 测试已通过，不应通过空提交伪造生产变更。
+- 2026-10-28 门禁对账：`06-09-PLAN.md` 的文件清单仅含 `tests/`，执行期规则将 test-only task 排除在生产 GREEN 提交要求之外。将 PLAN frontmatter 从 `type: tdd` 显式更正为 `type: execute`，保留两个任务的 `tdd="true"`、RED mutation 证据和实际 GREEN 测试，不修改生产源码或伪造 `feat` 提交。
 
 ## Deviations from Plan
 

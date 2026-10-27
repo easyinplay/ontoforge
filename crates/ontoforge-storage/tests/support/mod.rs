@@ -382,6 +382,7 @@ pub async fn write_gates_across_a_switch(
     use std::sync::atomic::Ordering;
     let mut stats = WriterStats::default();
     let mut after_switch = 0;
+    let mut after_switch_attempts = 0;
     let mut i = 0_usize;
     loop {
         let version = store
@@ -389,19 +390,32 @@ pub async fn write_gates_across_a_switch(
             .await
             .expect("a definition is loaded")
             .def_version;
-        match store
+        let committed = match store
             .commit(gate_name_commit(version, &format!("{tag}{i}"), "North"))
             .await
         {
-            Ok(_) => stats.committed += 1,
-            Err(ontoforge_storage::commit::EditError::DefinitionStale { .. }) => stats.stale += 1,
+            Ok(_) => {
+                stats.committed += 1;
+                true
+            }
+            Err(ontoforge_storage::commit::EditError::DefinitionStale { .. }) => {
+                stats.stale += 1;
+                false
+            }
             Err(other) => panic!("a commit may only succeed or be stale, got {other:?}"),
-        }
+        };
         i += 1;
         if switched.load(Ordering::SeqCst) {
-            after_switch += 1;
-            if after_switch >= 10 {
-                return stats;
+            after_switch_attempts += 1;
+            assert!(
+                after_switch_attempts <= 100,
+                "writer never made ten commits after switch: {stats:?}"
+            );
+            if committed {
+                after_switch += 1;
+                if after_switch >= 10 {
+                    return stats;
+                }
             }
         }
         tokio::task::yield_now().await;
