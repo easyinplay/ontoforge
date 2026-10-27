@@ -3,18 +3,18 @@ gsd_state_version: "1.0"
 current_phase: 6
 current_phase_name: L2 Raw DQL, Toolsets & Audit
 current_plan: 8
-status: executing
+status: verifying
 last_gate_trip: 06-04/task1
-stopped_at: Completed 06-09-PLAN.md; 06-08 next
+stopped_at: Completed 06-08-PLAN.md; Phase 6 verify next
 last_updated: "2026-10-28"
 last_activity: 2026-10-28
-last_activity_desc: Phase 06 06-09 complete; 06-08 next
-state_head: 6045e22
+last_activity_desc: Phase 06 9/9 plans executed; verification next
+state_head: 22eec31
 progress:
   total_phases: 7
   completed_phases: 5
   total_plans: 70
-  completed_plans: 69
+  completed_plans: 70
   percent: 71
 ---
 
@@ -32,8 +32,8 @@ See: .planning/PROJECT.md (updated 2026-10-23)
 Phase: 6 (L2 Raw DQL, Toolsets & Audit) — EXECUTING
 Current Plan: 8
 Total Plans in Phase: 9
-Status: Executing Wave 5
-Last activity: 2026-10-28 — `06-09` snapshot regression summarized; `06-08` next
+Status: Verifying Phase 6
+Last activity: 2026-10-28 — `06-08` service gate summarized; 9/9 plans executed
 
 Progress: [███████░░░] 71%
 
@@ -66,5 +66,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-10-28
-Stopped at: Completed 06-09-PLAN.md; 06-08 next
+Stopped at: Completed 06-08-PLAN.md; Phase 6 verify next
 Resume file: .planning/phases/06-l2-raw-dql-toolsets-audit/task_plan.md
