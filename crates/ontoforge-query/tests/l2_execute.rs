@@ -33,7 +33,7 @@ fn config(url: &str) -> TrinoConfig {
     .unwrap().trino.unwrap()
 }
 
-fn data(rows: Value) -> Value {
+fn data(rows: &Value) -> Value {
     json!({"id":"q1", "columns":[{"name":"nationkey","type":"integer"}], "data":rows, "stats":{"state":"FINISHED"}})
 }
 
@@ -53,11 +53,11 @@ async fn attest(server: &MockServer, ontology: &TrinoEngine, l2: &TrinoEngine) {
             server,
             "ontology",
             &format!("\"{catalog}\"."),
-            data(json!([[1]])),
+            data(&json!([[1]])),
         )
         .await;
     }
-    answer(server, "l2", "\"demo\".", data(json!([[1]]))).await;
+    answer(server, "l2", "\"demo\".", data(&json!([[1]]))).await;
     for catalog in ["outside", "editstore"] {
         answer(server, "l2", &format!("\"{catalog}\"."), json!({"id":"q1", "error":{"errorName":"PERMISSION_DENIED","message":"denied"}, "stats":{"state":"FAILED"}})).await;
     }
@@ -175,7 +175,7 @@ async fn l2_execute_only_submits_display_sql_after_attestation_and_audits_result
         &server,
         "l2",
         "SELECT nationkey FROM demo.tiny.nation",
-        data(json!([[1]])),
+        data(&json!([[1]])),
     )
     .await;
     let result = f
@@ -256,7 +256,7 @@ async fn l2_execute_truncation_returns_narrowing_hint_and_audit_status() {
         &server,
         "l2",
         "SELECT nationkey FROM demo.tiny.nation",
-        data(json!([[1], [2], [3]])),
+        data(&json!([[1], [2], [3]])),
     )
     .await;
     let result = f
@@ -321,7 +321,7 @@ async fn l2_execute_inflight_cancellation_records_event() {
             signal.notify_one();
             ResponseTemplate::new(200)
                 .set_delay(Duration::from_secs(10))
-                .set_body_json(data(json!([[1]])))
+                .set_body_json(data(&json!([[1]])))
         })
         .mount(&server)
         .await;
@@ -386,7 +386,7 @@ async fn l2_execute_byte_cap_truncates_without_releasing_partial_row() {
         &server,
         "l2",
         "SELECT nationkey FROM demo.tiny.nation",
-        data(json!([[1]])),
+        data(&json!([[1]])),
     )
     .await;
     let result = f
@@ -417,7 +417,7 @@ async fn l2_execute_timeout_is_audited_without_result() {
         .respond_with(
             ResponseTemplate::new(200)
                 .set_delay(Duration::from_millis(250))
-                .set_body_json(data(json!([[1]]))),
+                .set_body_json(data(&json!([[1]]))),
         )
         .mount(&server)
         .await;
@@ -450,7 +450,7 @@ async fn l2_explain_requires_attestation_and_submits_only_validated_display() {
         &server,
         "l2",
         "EXPLAIN (TYPE DISTRIBUTED) SELECT nationkey FROM demo.tiny.nation",
-        data(json!([[1]])),
+        data(&json!([[1]])),
     )
     .await;
     let result = f.service().explain_query(sql).await.unwrap();
@@ -518,7 +518,7 @@ async fn l2_explain_truncation_source_error_and_audit_fault() {
         &server,
         "l2",
         "EXPLAIN (TYPE DISTRIBUTED) SELECT nationkey FROM demo.tiny.nation",
-        data(json!([[1], [2], [3]])),
+        data(&json!([[1], [2], [3]])),
     )
     .await;
     let result = f
@@ -573,7 +573,7 @@ async fn l2_explain_inflight_cancellation_records_event() {
             signal.notify_one();
             ResponseTemplate::new(200)
                 .set_delay(Duration::from_secs(10))
-                .set_body_json(data(json!([[1]])))
+                .set_body_json(data(&json!([[1]])))
         })
         .mount(&server)
         .await;

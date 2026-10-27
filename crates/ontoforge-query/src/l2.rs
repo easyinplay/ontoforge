@@ -136,10 +136,10 @@ impl L2Service<'_> {
             .config
             .query_context(audit.request_id().to_owned(), vec![]);
         let output = self.engine.execute(&printed, &ctx).await.map_err(|error| {
-            if self.engine.l2_status() != Some(L2HealthStatus::Enabled) {
-                L2Error::Disabled
-            } else {
+            if self.engine.l2_status() == Some(L2HealthStatus::Enabled) {
                 L2Error::Source(error)
+            } else {
+                L2Error::Disabled
             }
         })?;
         let narrowing_hint = output
