@@ -314,6 +314,43 @@ async fn stale_plan_hash_rejected() {
     assert_eq!(count(&f.t, "of_admin_audit").await, 1);
 }
 
+#[tokio::test]
+async fn audit_insert_failure_rolls_back_scope_and_indexes() {
+    let f = fixture().await;
+    let plan = f
+        .t
+        .store
+        .scope_plan(&f.scope, &f.props)
+        .await
+        .expect("plan");
+    let pool = f.t.side_pool().await;
+    sqlx::query(
+        "CREATE TRIGGER reject_admin_audit BEFORE INSERT ON of_admin_audit BEGIN SELECT RAISE(ABORT, 'audit unavailable'); END",
+    )
+    .execute(&pool)
+    .await
+    .expect("failure injection");
+
+    let error = f
+        .t
+        .store
+        .scope_apply(&f.scope, &f.props, &plan.hash, ACTOR)
+        .await
+        .expect_err("audit insertion must fail the whole apply");
+    assert!(error.to_string().contains("audit unavailable"), "{error}");
+    assert_eq!(count(&f.t, "of_role").await, 0);
+    assert_eq!(count(&f.t, "of_role_binding").await, 0);
+    assert_eq!(count(&f.t, "of_admin_audit").await, 0);
+    let index_count: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM sqlite_master WHERE type = 'index' AND name = 'of_ix_of_obj_flight_departure_airport_code'",
+    )
+    .fetch_one(&pool)
+    .await
+    .expect("index lookup");
+    assert_eq!(index_count, 0, "index DDL must roll back with scope");
+    assert_eq!(f.t.store.load_scope().await.expect("scope"), ScopeSet::default());
+}
+
 const ROLES_A: &str = r#"kind: Role
 apiName: alpha
 objectTypes:
