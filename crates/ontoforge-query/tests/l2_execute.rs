@@ -19,6 +19,7 @@ use serde_json::{Value, json};
 use sqlx::Row;
 use wiremock::matchers::{body_string_contains, header, method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
+use tokio::sync::Notify;
 
 const AVIATION: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../examples/ontologies/aviation");
 
@@ -155,4 +156,90 @@ async fn l2_execute_only_submits_display_sql_after_attestation_and_audits_result
     assert_eq!(rows[1].get::<String, _>("effective_roles"), "[]");
     assert_eq!(rows[1].get::<String, _>("sql_sha256").len(), 64);
     assert!(!rows[1].get::<String, _>("request_id").is_empty());
+}
+
+#[tokio::test]
+async fn l2_execute_rejections_are_audited_without_post() {
+    let server = MockServer::start().await;
+    let mut f = fixture(&server).await;
+    attest(&server, &f.ontology, &f.l2).await;
+    let before = server.received_requests().await.unwrap().len();
+    f.scope.sql_levels.clear();
+    assert!(matches!(f.service().execute_query("SELECT 1 FROM demo.tiny.nation").await, Err(L2Error::Denied)));
+    f.scope.sql_levels.insert(SqlLevel::Raw);
+    for sql in [
+        "SELECT * FROM outside.tiny.nation",
+        "SELECT * FROM editstore.tiny.nation",
+        "SELECT * FROM system.runtime.queries",
+    ] {
+        assert!(matches!(f.service().execute_query(sql).await, Err(L2Error::Denied)), "{sql}");
+    }
+    assert!(matches!(f.service().execute_query("INSERT INTO demo.tiny.nation VALUES (1)").await, Err(L2Error::InvalidSql)));
+    assert_eq!(server.received_requests().await.unwrap().len(), before, "denials must not submit SQL");
+    let rows = audit_rows(&f.path, 5).await;
+    assert_eq!(rows.len(), 5);
+    assert!(rows.iter().all(|row| row.get::<String, _>("status") == "denied"));
+}
+
+#[tokio::test]
+async fn l2_execute_truncation_returns_narrowing_hint_and_audit_status() {
+    let server = MockServer::start().await;
+    let f = fixture(&server).await;
+    attest(&server, &f.ontology, &f.l2).await;
+    answer(&server, "l2", "SELECT nationkey FROM demo.tiny.nation", data(json!([[1], [2], [3]]))).await;
+    let result = f.service().execute_query("SELECT nationkey FROM demo.tiny.nation").await.unwrap();
+    assert_eq!(result.output.rows.len(), 2);
+    assert!(result.output.truncated);
+    assert!(result.narrowing_hint.is_some(), "arbitrary SQL has no safe keyset cursor");
+    let rows = audit_rows(&f.path, 1).await;
+    assert_eq!(rows[0].get::<String, _>("status"), "truncated");
+    assert_eq!(rows[0].get::<i64, _>("row_count"), 2);
+}
+
+#[tokio::test]
+async fn l2_execute_source_error_and_audit_failure_never_release_rows() {
+    let server = MockServer::start().await;
+    let f = fixture(&server).await;
+    attest(&server, &f.ontology, &f.l2).await;
+    answer(&server, "l2", "SELECT nationkey FROM demo.tiny.nation", json!({"id":"q1", "error":{"errorName":"INTERNAL_ERROR","message":"sensitive source details"}, "stats":{"state":"FAILED"}})).await;
+    assert!(matches!(f.service().execute_query("SELECT nationkey FROM demo.tiny.nation").await, Err(L2Error::Source(_))));
+    let rows = audit_rows(&f.path, 1).await;
+    assert_eq!(rows[0].get::<String, _>("status"), "source_error");
+    let before = server.received_requests().await.unwrap().len();
+    f.store.read_audit().shutdown().await.unwrap();
+    assert!(matches!(f.service().execute_query("SELECT nationkey FROM demo.tiny.nation").await, Err(L2Error::AuditUnavailable)));
+    assert_eq!(server.received_requests().await.unwrap().len(), before, "audit failure must prevent the POST");
+}
+
+#[tokio::test]
+async fn l2_execute_inflight_cancellation_records_event() {
+    let server = MockServer::start().await;
+    let f = Arc::new(fixture(&server).await);
+    attest(&server, &f.ontology, &f.l2).await;
+    let started = Arc::new(Notify::new());
+    let signal = Arc::clone(&started);
+    Mock::given(method("POST"))
+        .and(path("/v1/statement"))
+        .and(header("x-trino-user", "l2"))
+        .and(body_string_contains("SELECT nationkey FROM demo.tiny.nation"))
+        .respond_with(move |_: &wiremock::Request| {
+            signal.notify_one();
+            ResponseTemplate::new(200)
+                .set_delay(Duration::from_secs(10))
+                .set_body_json(data(json!([[1]])))
+        })
+        .mount(&server)
+        .await;
+    let worker = {
+        let f = Arc::clone(&f);
+        tokio::spawn(async move {
+            f.service().execute_query("SELECT nationkey FROM demo.tiny.nation").await
+        })
+    };
+    tokio::time::timeout(Duration::from_secs(3), started.notified()).await.unwrap();
+    worker.abort();
+    assert!(worker.await.unwrap_err().is_cancelled());
+    let rows = audit_rows(&f.path, 1).await;
+    assert_eq!(rows[0].get::<String, _>("status"), "cancelled");
+    assert_eq!(rows[0].get::<i64, _>("row_count"), 0);
 }
