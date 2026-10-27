@@ -318,3 +318,53 @@ async fn l2_catalog_cancelled_inflight_audits_once() {
     assert_eq!(rows[0].get::<String, _>("status"), "cancelled");
     assert_eq!(rows[0].get::<String, _>("tool"), "list_catalogs");
 }
+
+#[tokio::test]
+async fn l2_table_lists_only_granted_tables_and_describes_columns() {
+    let server = MockServer::start().await;
+    let f = fixture(&server).await;
+    assert!(matches!(f.service().list_tables("demo", "tiny").await, Err(L2Error::Disabled)));
+    assert!(server.received_requests().await.unwrap().is_empty());
+    attest(&server, &f.ontology, &f.l2).await;
+    answer(&server, "l2", "SHOW TABLES FROM \"demo\".\"tiny\"", data(&json!([["zeta"], ["nation"], ["alpha"]]))).await;
+    answer(&server, "l2", "information_schema", json!({
+        "id":"q1", "columns":[
+            {"name":"table_schema", "type":"varchar"}, {"name":"table_name", "type":"varchar"},
+            {"name":"column_name", "type":"varchar"}, {"name":"data_type", "type":"varchar"},
+            {"name":"is_nullable", "type":"varchar"}
+        ], "data":[["tiny", "nation", "nationkey", "integer", "NO"], ["tiny", "nation", "name", "varchar", "YES"]],
+        "stats":{"state":"FINISHED"}
+    })).await;
+    let before = server.received_requests().await.unwrap().len();
+    let tables = f.service().list_tables("demo", "tiny").await.unwrap();
+    assert_eq!(tables.output.rows, vec![
+        vec![Value::String("alpha".into())], vec![Value::String("nation".into())], vec![Value::String("zeta".into())]
+    ]);
+    let schema = f.service().get_table_schema("demo", "tiny", "nation").await.unwrap();
+    assert_eq!(schema.output.rows, vec![
+        vec![Value::String("nationkey".into()), Value::String("integer".into()), Value::Boolean(false)],
+        vec![Value::String("name".into()), Value::String("varchar".into()), Value::Boolean(true)]
+    ]);
+    assert_eq!(server.received_requests().await.unwrap().len(), before + 2);
+    let audit = audit_rows(&f.path, 3).await;
+    assert_eq!(audit.iter().map(|r| r.get::<String, _>("tool")).collect::<Vec<_>>(), ["list_tables", "list_tables", "get_table_schema"]);
+    assert_eq!(audit[0].get::<String, _>("status"), "denied");
+    assert!(audit.iter().skip(1).all(|r| r.get::<String, _>("status") == "success"));
+}
+
+#[tokio::test]
+async fn l2_table_denials_never_post_or_reflect_input() {
+    let server = MockServer::start().await;
+    let mut f = fixture(&server).await;
+    attest(&server, &f.ontology, &f.l2).await;
+    let before = server.received_requests().await.unwrap().len();
+    for (catalog, schema) in [("outside", "tiny"), ("editstore", "tiny"), ("system", "runtime"), ("demo", "other"), ("demo\"; DROP TABLE x; --", "tiny")] {
+        assert!(matches!(f.service().list_tables(catalog, schema).await, Err(L2Error::Denied)));
+        assert!(matches!(f.service().get_table_schema(catalog, schema, "nation").await, Err(L2Error::Denied)));
+    }
+    f.scope.sql_levels.clear();
+    assert!(matches!(f.service().list_tables("demo", "tiny").await, Err(L2Error::Denied)));
+    assert_eq!(server.received_requests().await.unwrap().len(), before);
+    let audit = audit_rows(&f.path, 11).await;
+    assert!(audit.iter().all(|r| r.get::<String, _>("status") == "denied"));
+}

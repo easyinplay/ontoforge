@@ -63,6 +63,19 @@ impl L2Service<'_> {
         self.discover("list_schemas", Some(catalog)).await
     }
 
+    pub async fn list_tables(&self, _catalog: &str, _schema: &str) -> Result<L2Result, L2Error> {
+        Err(L2Error::InvalidSql)
+    }
+
+    pub async fn get_table_schema(
+        &self,
+        _catalog: &str,
+        _schema: &str,
+        _table: &str,
+    ) -> Result<L2Result, L2Error> {
+        Err(L2Error::InvalidSql)
+    }
+
     async fn discover(&self, tool: &str, catalog: Option<&str>) -> Result<L2Result, L2Error> {
         let mut audit = self
             .store
