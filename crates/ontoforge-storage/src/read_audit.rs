@@ -60,6 +60,7 @@ pub struct AuditUnavailable;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ReadAuditStatus {
     Success,
+    Truncated,
     Denied,
     SourceError,
     Cancelled,
@@ -69,6 +70,7 @@ impl ReadAuditStatus {
     fn as_str(self) -> &'static str {
         match self {
             Self::Success => "success",
+            Self::Truncated => "truncated",
             Self::Denied => "denied",
             Self::SourceError => "source_error",
             Self::Cancelled => "cancelled",
@@ -235,6 +237,10 @@ pub struct ReadAuditGuard {
 }
 
 impl ReadAuditGuard {
+    pub fn request_id(&self) -> &str {
+        &self.request_id
+    }
+
     pub fn observe_sql(&mut self, sql: &str) {
         self.sql_sha256 = format!("{:x}", Sha256::digest(sql.as_bytes()));
     }
