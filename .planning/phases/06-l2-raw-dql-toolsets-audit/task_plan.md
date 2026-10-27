@@ -10,7 +10,7 @@
 - [x] P1：核对 ADR-0016/0017/0018/0019、spike 2、Trino 483 环境与已有 auth/engine/query/storage/CLI 入口；产出 `06-CONTEXT.md` 与 findings。旧语料非机器可执行，复验列入 P2 的前置检查。
 - [x] P2：跨 L2 权限、SQL AST、审计 fail-closed 与 reload 的工程审查；`06-ENG-REVIEW.md` 为基于现有代码的独立复审，不冒充新的正式 gstack gate。`06-SPIKE-483.md` 记录 29 条新构造语料及 Trino 483 复验，未覆盖的 75 个历史 ID 与真实 ACL 验收留在 P3/P4。
 - [x] P3：GSD research、pattern map 和 9 个可执行 PLAN 已落盘；独立 checker 第三轮 `VERIFICATION PASSED`，六个 requirement ID 与六项 CONTEXT 决策全覆盖。规划通过不等于实施测试通过。
-- [ ] P4：GSD execute-phase 依 wave 落实；`06-01` 至 `06-05` 已完成（详各 SUMMARY），其余 4 个 PLAN 待执行。核心 AST、安全自检、审计队列和管理通道按 TDD 实施，代码所有权以各 PLAN 为准。
+- [ ] P4：GSD execute-phase 依 wave 落实；`06-01` 至 `06-06` 已完成（详各 SUMMARY），其余 3 个 PLAN 待执行。核心 AST、安全自检、审计队列和管理通道按 TDD 实施，代码所有权以各 PLAN 为准。
 - [ ] P5：GSD verify-work 与目标验证、代码审查、匹配 SHA 的 CI；通过后由 GSD 更新 ROADMAP/STATE/REQUIREMENTS。正式关键模块 PR gate 单独记录。
 
 ## Acceptance
@@ -33,4 +33,4 @@
 
 ## Next Step
 
-执行 P4 Wave 3 的 `06-06` L2 execute/explain 库操作；先按 PLAN 完成 TDD RED/GREEN 与验收，再进入 Wave 4。
+执行 P4 Wave 4 的 `06-07` 元数据发现工具，验收后依序执行 `06-09` 管理边界与请求快照回归。
