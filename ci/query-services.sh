@@ -58,6 +58,7 @@ case "${1:-}" in
     for catalog in demo outside editstore; do
       printf 'connector.name=tpch\n' > "$catalog_dir/$catalog.properties"
     done
+    printf 'connector.name=memory\n' > "$catalog_dir/hive.properties"
     chmod 755 "$catalog_dir"
     chmod 644 "$catalog_dir"/*.properties
     node -e 'const fs=require("fs"); const r=JSON.parse(fs.readFileSync(process.argv[1])); r.catalogs.unshift({user:"l2",catalog:"outside",allow:"read-only"}); r.tables.unshift({user:"l2",catalog:"outside",schema:"tiny",table:"nation",privileges:["SELECT"]}); fs.writeFileSync(process.argv[2],JSON.stringify(r));' "$root/ci/trino/l2/rules.json" "$catalog_dir/loose-rules.json"
@@ -90,6 +91,11 @@ case "${1:-}" in
             exit 1
           fi
         done
+        if ! docker exec -i ontoforge-trino-l2 trino --user ontology --file /dev/stdin < "$root/ci/trino/l2/seed.sql" >/dev/null; then
+          cleanup_l2
+          echo 'Trino L2 hive.sales fixture seed failed' >&2
+          exit 1
+        fi
         MSYS_NO_PATHCONV=1 docker run -d --name ontoforge-trino-l2-loose \
           -p 127.0.0.1:58082:8080 \
           -v "$mount_catalog:/etc/trino/catalog:ro" \
@@ -99,6 +105,11 @@ case "${1:-}" in
           trinodb/trino:483@sha256:db58cc93e593a2706553745f276bb119c9810e69918be56ecde088ba7ccb0534
         for control_attempt in {1..60}; do
           if curl -fsS --max-time 2 http://127.0.0.1:58082/v1/info 2>/dev/null | node -e 'let s="";process.stdin.on("data",c=>s+=c).on("end",()=>{try{const d=JSON.parse(s);process.exit(d.nodeVersion?.version==="483"&&d.starting===false?0:1)}catch{process.exit(1)}})' 2>/dev/null; then
+            if ! docker exec -i ontoforge-trino-l2-loose trino --user ontology --file /dev/stdin < "$root/ci/trino/l2/seed.sql" >/dev/null; then
+              cleanup_l2
+              echo 'Trino L2 loose hive.sales fixture seed failed' >&2
+              exit 1
+            fi
             exit 0
           fi
           sleep 2

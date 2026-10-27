@@ -22,8 +22,8 @@ struct CorpusCase {
 async fn assert_corpus_on_verified_l2(l2: &TrinoEngine) {
     let policy = L2Policy {
         raw_allowed: true,
-        catalogs: BTreeSet::from(["demo".to_owned()]),
-        schemas: BTreeSet::from(["demo.tiny".to_owned()]),
+        catalogs: BTreeSet::from(["demo".to_owned(), "hive".to_owned()]),
+        schemas: BTreeSet::from(["demo.tiny".to_owned(), "hive.sales".to_owned()]),
         edit_catalog: "editstore".to_owned(),
         max_rows: 100,
     };
@@ -37,29 +37,46 @@ async fn assert_corpus_on_verified_l2(l2: &TrinoEngine) {
         Err(L2Error::Unsupported)
     );
 
-    for (id, expected_rows) in [
-        ("G04", 3),
-        ("G12", 1),
-        ("G16", 0),
-        ("G17", 1),
-        ("G24", 1),
-        ("G26", 1),
-        ("G28", 1),
-        ("G31", 1),
-        ("G34", 1),
-        ("G35", 1),
-        ("G40", 1),
-    ] {
-        let case = cases.iter().find(|case| case.id == id).expect("corpus ID");
-        assert_eq!(case.expected, "allow");
+    let allowed: Vec<_> = cases
+        .iter()
+        .filter(|case| case.expected == "allow")
+        .collect();
+    assert_eq!(allowed.len(), 32);
+    let mut failures = Vec::new();
+    for case in allowed {
+        let id = case.id.as_str();
         let sql = validate_l2(&case.sql, &policy).expect("validated Display SQL");
-        let output = l2
+        if id == "B53" {
+            assert_eq!(sql.as_str(), "SELECT 1 FROM hive.sales.orders LIMIT 101");
+        }
+        let output = match l2
             .execute(&sql, &QueryContext::new(id.to_owned(), vec![]))
             .await
-            .unwrap_or_else(|error| panic!("{id} failed on Trino 483: {error}"));
-        assert_eq!(output.rows.len(), expected_rows, "{id}");
-        println!("{id}: FINISHED, {expected_rows} row(s)");
+        {
+            Ok(output) => output,
+            Err(error) => {
+                failures.push(format!("{id}: {error}"));
+                continue;
+            }
+        };
+        let expected_rows = match id {
+            "G04" => 3,
+            "G16" | "G22" => 0,
+            "G18" => 2,
+            _ => 1,
+        };
+        println!("{id}: FINISHED, {} row(s)", output.rows.len());
+        if output.rows.len() != expected_rows {
+            failures.push(format!(
+                "{id}: expected {expected_rows} rows, got {}",
+                output.rows.len()
+            ));
+        }
     }
+    assert!(
+        failures.is_empty(),
+        "Trino 483 corpus failures: {failures:#?}"
+    );
 }
 
 fn endpoint() -> String {
