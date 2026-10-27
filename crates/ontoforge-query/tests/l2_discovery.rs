@@ -17,6 +17,7 @@ use ontoforge_schema::load_dir;
 use ontoforge_storage::reload::{ReloadOptions, reload};
 use ontoforge_storage::store::{ActiveDefinition, BackendSettings, EditStore, StoreSettings};
 use serde_json::{Value as Json, json};
+use sha2::{Digest, Sha256};
 use sqlx::Row;
 use tokio::sync::Notify;
 use wiremock::matchers::{body_string_contains, header, method, path};
@@ -39,11 +40,17 @@ fn data(rows: &Json) -> Json {
 }
 
 async fn answer(server: &MockServer, user: &str, needle: &str, response: Json) {
+    let priority = if needle.starts_with("SHOW") || needle == "information_schema" {
+        1
+    } else {
+        5
+    };
     Mock::given(method("POST"))
         .and(path("/v1/statement"))
         .and(header("x-trino-user", user))
         .and(body_string_contains(needle))
         .respond_with(ResponseTemplate::new(200).set_body_json(response))
+        .with_priority(priority)
         .mount(server)
         .await;
 }
@@ -323,10 +330,19 @@ async fn l2_catalog_cancelled_inflight_audits_once() {
 async fn l2_table_lists_only_granted_tables_and_describes_columns() {
     let server = MockServer::start().await;
     let f = fixture(&server).await;
-    assert!(matches!(f.service().list_tables("demo", "tiny").await, Err(L2Error::Disabled)));
+    assert!(matches!(
+        f.service().list_tables("demo", "tiny").await,
+        Err(L2Error::Disabled)
+    ));
     assert!(server.received_requests().await.unwrap().is_empty());
     attest(&server, &f.ontology, &f.l2).await;
-    answer(&server, "l2", "SHOW TABLES FROM \"demo\".\"tiny\"", data(&json!([["zeta"], ["nation"], ["alpha"]]))).await;
+    answer(
+        &server,
+        "l2",
+        "SHOW TABLES FROM \"demo\".\"tiny\"",
+        data(&json!([["zeta"], ["nation"], ["alpha"]])),
+    )
+    .await;
     answer(&server, "l2", "information_schema", json!({
         "id":"q1", "columns":[
             {"name":"table_schema", "type":"varchar"}, {"name":"table_name", "type":"varchar"},
@@ -337,19 +353,50 @@ async fn l2_table_lists_only_granted_tables_and_describes_columns() {
     })).await;
     let before = server.received_requests().await.unwrap().len();
     let tables = f.service().list_tables("demo", "tiny").await.unwrap();
-    assert_eq!(tables.output.rows, vec![
-        vec![Value::String("alpha".into())], vec![Value::String("nation".into())], vec![Value::String("zeta".into())]
-    ]);
-    let schema = f.service().get_table_schema("demo", "tiny", "nation").await.unwrap();
-    assert_eq!(schema.output.rows, vec![
-        vec![Value::String("nationkey".into()), Value::String("integer".into()), Value::Boolean(false)],
-        vec![Value::String("name".into()), Value::String("varchar".into()), Value::Boolean(true)]
-    ]);
+    assert_eq!(
+        tables.output.rows,
+        vec![
+            vec![Value::String("alpha".into())],
+            vec![Value::String("nation".into())],
+            vec![Value::String("zeta".into())]
+        ]
+    );
+    let schema = f
+        .service()
+        .get_table_schema("demo", "tiny", "nation")
+        .await
+        .unwrap();
+    assert_eq!(
+        schema.output.rows,
+        vec![
+            vec![
+                Value::String("nationkey".into()),
+                Value::String("integer".into()),
+                Value::Boolean(false)
+            ],
+            vec![
+                Value::String("name".into()),
+                Value::String("varchar".into()),
+                Value::Boolean(true)
+            ]
+        ]
+    );
     assert_eq!(server.received_requests().await.unwrap().len(), before + 2);
     let audit = audit_rows(&f.path, 3).await;
-    assert_eq!(audit.iter().map(|r| r.get::<String, _>("tool")).collect::<Vec<_>>(), ["list_tables", "list_tables", "get_table_schema"]);
+    assert_eq!(
+        audit
+            .iter()
+            .map(|r| r.get::<String, _>("tool"))
+            .collect::<Vec<_>>(),
+        ["list_tables", "list_tables", "get_table_schema"]
+    );
     assert_eq!(audit[0].get::<String, _>("status"), "denied");
-    assert!(audit.iter().skip(1).all(|r| r.get::<String, _>("status") == "success"));
+    assert!(
+        audit
+            .iter()
+            .skip(1)
+            .all(|r| r.get::<String, _>("status") == "success")
+    );
 }
 
 #[tokio::test]
@@ -358,13 +405,154 @@ async fn l2_table_denials_never_post_or_reflect_input() {
     let mut f = fixture(&server).await;
     attest(&server, &f.ontology, &f.l2).await;
     let before = server.received_requests().await.unwrap().len();
-    for (catalog, schema) in [("outside", "tiny"), ("editstore", "tiny"), ("system", "runtime"), ("demo", "other"), ("demo\"; DROP TABLE x; --", "tiny")] {
-        assert!(matches!(f.service().list_tables(catalog, schema).await, Err(L2Error::Denied)));
-        assert!(matches!(f.service().get_table_schema(catalog, schema, "nation").await, Err(L2Error::Denied)));
+    for (catalog, schema) in [
+        ("outside", "tiny"),
+        ("editstore", "tiny"),
+        ("system", "runtime"),
+        ("demo", "other"),
+        ("demo\"; DROP TABLE x; --", "tiny"),
+    ] {
+        assert!(matches!(
+            f.service().list_tables(catalog, schema).await,
+            Err(L2Error::Denied)
+        ));
+        assert!(matches!(
+            f.service()
+                .get_table_schema(catalog, schema, "nation")
+                .await,
+            Err(L2Error::Denied)
+        ));
     }
     f.scope.sql_levels.clear();
-    assert!(matches!(f.service().list_tables("demo", "tiny").await, Err(L2Error::Denied)));
+    assert!(matches!(
+        f.service().list_tables("demo", "tiny").await,
+        Err(L2Error::Denied)
+    ));
     assert_eq!(server.received_requests().await.unwrap().len(), before);
     let audit = audit_rows(&f.path, 11).await;
-    assert!(audit.iter().all(|r| r.get::<String, _>("status") == "denied"));
+    assert!(
+        audit
+            .iter()
+            .all(|r| r.get::<String, _>("status") == "denied")
+    );
+}
+
+#[tokio::test]
+async fn l2_table_truncation_source_error_and_audit_failure() {
+    let server = MockServer::start().await;
+    let mut f = fixture(&server).await;
+    attest(&server, &f.ontology, &f.l2).await;
+    f.config.max_rows = 1;
+    answer(
+        &server,
+        "l2",
+        "SHOW TABLES FROM \"demo\".\"tiny\"",
+        data(&json!([["nation"], ["region"]])),
+    )
+    .await;
+    let tables = f.service().list_tables("demo", "tiny").await.unwrap();
+    assert_eq!(tables.output.rows.len(), 1);
+    assert!(tables.output.truncated);
+    assert_eq!(
+        audit_rows(&f.path, 1).await[0].get::<String, _>("status"),
+        "truncated"
+    );
+
+    answer(&server, "l2", "information_schema", json!({"id":"q1", "error":{"errorName":"INTERNAL_ERROR", "message":"source failed"}, "stats":{"state":"FAILED"}})).await;
+    assert!(matches!(
+        f.service().get_table_schema("demo", "tiny", "nation").await,
+        Err(L2Error::Source(_))
+    ));
+    assert_eq!(
+        audit_rows(&f.path, 2).await[1].get::<String, _>("status"),
+        "source_error"
+    );
+    let before = server.received_requests().await.unwrap().len();
+    f.store.read_audit().shutdown().await.unwrap();
+    assert!(matches!(
+        f.service().list_tables("demo", "tiny").await,
+        Err(L2Error::AuditUnavailable)
+    ));
+    assert_eq!(server.received_requests().await.unwrap().len(), before);
+}
+
+#[tokio::test]
+async fn l2_table_schema_cancellation_and_quoted_name() {
+    let server = MockServer::start().await;
+    let f = Arc::new(fixture(&server).await);
+    attest(&server, &f.ontology, &f.l2).await;
+    let started = Arc::new(Notify::new());
+    let signal = Arc::clone(&started);
+    Mock::given(method("POST"))
+        .and(path("/v1/statement"))
+        .and(header("x-trino-user", "l2"))
+        .and(body_string_contains("information_schema"))
+        .respond_with(move |_: &wiremock::Request| {
+            signal.notify_one();
+            ResponseTemplate::new(200)
+                .set_delay(Duration::from_secs(10))
+                .set_body_json(data(&json!([])))
+        })
+        .with_priority(1)
+        .mount(&server)
+        .await;
+    let worker = {
+        let f = Arc::clone(&f);
+        tokio::spawn(async move {
+            f.service()
+                .get_table_schema("demo", "tiny", "nation' OR 1=1 --")
+                .await
+        })
+    };
+    tokio::time::timeout(Duration::from_secs(3), started.notified())
+        .await
+        .unwrap();
+    let requests = server.received_requests().await.unwrap();
+    let body = String::from_utf8(requests.last().unwrap().body.clone()).unwrap();
+    assert!(
+        body.contains("'nation'' or 1=1 --'"),
+        "identifier must be a quoted SQL literal: {body}"
+    );
+    worker.abort();
+    assert!(worker.await.unwrap_err().is_cancelled());
+    let rows = audit_rows(&f.path, 1).await;
+    assert_eq!(rows[0].get::<String, _>("tool"), "get_table_schema");
+    assert_eq!(rows[0].get::<String, _>("status"), "cancelled");
+}
+
+#[tokio::test]
+async fn l2_table_schema_field_limit_is_truncated_and_audited() {
+    let server = MockServer::start().await;
+    let mut f = fixture(&server).await;
+    attest(&server, &f.ontology, &f.l2).await;
+    f.config.max_rows = 1;
+    answer(&server, "l2", "information_schema", json!({
+        "id":"q1", "columns":[
+            {"name":"table_schema", "type":"varchar"}, {"name":"table_name", "type":"varchar"},
+            {"name":"column_name", "type":"varchar"}, {"name":"data_type", "type":"varchar"},
+            {"name":"is_nullable", "type":"varchar"}
+        ], "data":[["tiny", "nation", "nationkey", "integer", "NO"], ["tiny", "nation", "name", "varchar", "YES"]],
+        "stats":{"state":"FINISHED"}
+    })).await;
+    let page = f
+        .service()
+        .get_table_schema("demo", "tiny", "nation")
+        .await
+        .unwrap();
+    assert_eq!(page.output.rows.len(), 1);
+    assert!(page.output.truncated);
+    assert!(page.narrowing_hint.is_some());
+    let rows = audit_rows(&f.path, 1).await;
+    assert_eq!(rows[0].get::<String, _>("status"), "truncated");
+    assert_eq!(rows[0].get::<i64, _>("row_count"), 1);
+    let sql = TrinoEngine::l2_table_description_sql(&ontoforge_engine::TableRef {
+        catalog: "demo".into(),
+        schema: "tiny".into(),
+        table: "nation".into(),
+    })
+    .unwrap();
+    assert_eq!(
+        rows[0].get::<String, _>("sql_sha256"),
+        format!("{:x}", Sha256::digest(sql.as_str().as_bytes()))
+    );
 }

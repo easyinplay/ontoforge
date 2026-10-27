@@ -8,7 +8,7 @@ use ontoforge_engine::config::TrinoConfig;
 use ontoforge_engine::printer::l2::{self, L2Error as SqlError, L2Policy, validate_l2};
 use ontoforge_engine::trino::TrinoEngine;
 use ontoforge_engine::trino::l2_health::L2HealthStatus;
-use ontoforge_engine::{Column, Engine, EngineError, PhysicalType, QueryOutput, Value};
+use ontoforge_engine::{Column, Engine, EngineError, PhysicalType, QueryOutput, TableRef, Value};
 use ontoforge_schema::ir::SqlLevel;
 use ontoforge_storage::read_audit::{ReadAuditGuard, ReadAuditMetadata, ReadAuditStatus};
 use ontoforge_storage::store::{ActiveDefinition, EditStore};
@@ -54,35 +54,55 @@ pub struct L2Result {
     pub narrowing_hint: Option<&'static str>,
 }
 
+#[derive(Clone, Copy)]
+enum Discovery<'a> {
+    Catalogs,
+    Schemas(&'a str),
+    Tables(&'a str, &'a str),
+    TableSchema(&'a str, &'a str, &'a str),
+}
+
+impl Discovery<'_> {
+    fn tool(self) -> &'static str {
+        match self {
+            Self::Catalogs => "list_catalogs",
+            Self::Schemas(_) => "list_schemas",
+            Self::Tables(_, _) => "list_tables",
+            Self::TableSchema(_, _, _) => "get_table_schema",
+        }
+    }
+}
+
 impl L2Service<'_> {
     pub async fn list_catalogs(&self) -> Result<L2Result, L2Error> {
-        self.discover("list_catalogs", None).await
+        self.discover(Discovery::Catalogs).await
     }
 
     pub async fn list_schemas(&self, catalog: &str) -> Result<L2Result, L2Error> {
-        self.discover("list_schemas", Some(catalog)).await
+        self.discover(Discovery::Schemas(catalog)).await
     }
 
-    pub async fn list_tables(&self, _catalog: &str, _schema: &str) -> Result<L2Result, L2Error> {
-        Err(L2Error::InvalidSql)
+    pub async fn list_tables(&self, catalog: &str, schema: &str) -> Result<L2Result, L2Error> {
+        self.discover(Discovery::Tables(catalog, schema)).await
     }
 
     pub async fn get_table_schema(
         &self,
-        _catalog: &str,
-        _schema: &str,
-        _table: &str,
+        catalog: &str,
+        schema: &str,
+        table: &str,
     ) -> Result<L2Result, L2Error> {
-        Err(L2Error::InvalidSql)
+        self.discover(Discovery::TableSchema(catalog, schema, table))
+            .await
     }
 
-    async fn discover(&self, tool: &str, catalog: Option<&str>) -> Result<L2Result, L2Error> {
+    async fn discover(&self, request: Discovery<'_>) -> Result<L2Result, L2Error> {
         let mut audit = self
             .store
             .read_audit()
             .reserve(ReadAuditMetadata {
                 principal: self.principal.id.to_string(),
-                tool: tool.to_owned(),
+                tool: request.tool().to_owned(),
                 object_type: None,
                 condition_api_names: vec![],
                 effective_roles: self
@@ -94,7 +114,7 @@ impl L2Service<'_> {
                 def_version: self.active.def_version,
             })
             .map_err(|_| L2Error::AuditUnavailable)?;
-        let result = self.discover_checked(catalog, &mut audit).await;
+        let result = self.discover_checked(request, &mut audit).await;
         let (status, rows) = match &result {
             Ok(page) if page.output.truncated => {
                 (ReadAuditStatus::Truncated, page.output.rows.len())
@@ -112,7 +132,7 @@ impl L2Service<'_> {
 
     async fn discover_checked(
         &self,
-        catalog: Option<&str>,
+        request: Discovery<'_>,
         audit: &mut ReadAuditGuard,
     ) -> Result<L2Result, L2Error> {
         if self.engine.l2_status() != Some(L2HealthStatus::Enabled) || self.config.l2_acl.is_none()
@@ -129,41 +149,15 @@ impl L2Service<'_> {
             .expect("checked ACL")
             .edit
             .catalog;
-        let allowed_catalog = |name: &str| {
-            !name.eq_ignore_ascii_case("system")
-                && !name.eq_ignore_ascii_case(edit)
-                && (self
-                    .scope
-                    .l2_catalogs
-                    .iter()
-                    .any(|c| c.eq_ignore_ascii_case(name))
-                    || self.scope.l2_schemas.iter().any(|s| {
-                        s.split_once('.')
-                            .is_some_and(|(c, _)| c.eq_ignore_ascii_case(name))
-                    }))
-        };
-        let allowed_schema = |name: &str, schema: &str| {
-            allowed_catalog(name)
-                && !schema.eq_ignore_ascii_case("system")
-                && !schema.eq_ignore_ascii_case("information_schema")
-                && (self
-                    .scope
-                    .l2_catalogs
-                    .iter()
-                    .any(|c| c.eq_ignore_ascii_case(name))
-                    || self
-                        .scope
-                        .l2_schemas
-                        .iter()
-                        .any(|s| s.eq_ignore_ascii_case(&format!("{name}.{schema}"))))
-        };
+        let allowed_catalog = |name: &str| self.allowed_catalog(name, edit);
+        let allowed_schema = |name: &str, schema: &str| self.allowed_schema(name, schema, edit);
         let mut ctx = self
             .config
             .query_context(audit.request_id().to_owned(), vec![]);
         ctx.max_rows = ctx.max_rows.max(4096);
         ctx.max_bytes = ctx.max_bytes.max(1024 * 1024);
-        let output = match catalog {
-            None => {
+        match request {
+            Discovery::Catalogs => {
                 if !self.scope.l2_catalogs.iter().any(|c| allowed_catalog(c))
                     && !self
                         .scope
@@ -175,33 +169,107 @@ impl L2Service<'_> {
                 }
                 let sql = l2::list_l2_catalogs();
                 audit.observe_sql(sql.as_str());
-                self.engine.list_l2_catalogs(&ctx).await
+                let output = self
+                    .engine
+                    .list_l2_catalogs(&ctx)
+                    .await
+                    .map_err(|e| self.discovery_error(e))?;
+                self.filter_discovery(output, allowed_catalog)
             }
-            Some(name) => {
+            Discovery::Schemas(name) => {
                 if !allowed_catalog(name) {
                     return Err(L2Error::Denied);
                 }
                 let sql = l2::list_l2_schemas(name).map_err(|_| L2Error::Denied)?;
                 audit.observe_sql(sql.as_str());
-                self.engine.list_l2_schemas(name, &ctx).await
+                let output = self
+                    .engine
+                    .list_l2_schemas(name, &ctx)
+                    .await
+                    .map_err(|e| self.discovery_error(e))?;
+                self.filter_discovery(output, |schema| allowed_schema(name, schema))
             }
-        };
-        let output = output.map_err(|e| {
-            if self.engine.l2_status() == Some(L2HealthStatus::Enabled) {
-                L2Error::Source(e)
-            } else {
-                L2Error::Disabled
+            Discovery::Tables(name, schema) => {
+                if !allowed_schema(name, schema) {
+                    return Err(L2Error::Denied);
+                }
+                let sql = l2::list_l2_tables(name, schema).map_err(|_| L2Error::Denied)?;
+                audit.observe_sql(sql.as_str());
+                let output = self
+                    .engine
+                    .list_l2_tables(name, schema, &ctx)
+                    .await
+                    .map_err(|e| self.discovery_error(e))?;
+                self.filter_discovery(output, |table| !table.contains('$'))
             }
-        })?;
-        self.filter_discovery(output, catalog, allowed_catalog, allowed_schema)
+            Discovery::TableSchema(name, schema, table) => {
+                if !allowed_schema(name, schema)
+                    || table.is_empty()
+                    || table.contains('$')
+                    || table.contains('\0')
+                {
+                    return Err(L2Error::Denied);
+                }
+                let target = TableRef {
+                    catalog: name.to_owned(),
+                    schema: schema.to_owned(),
+                    table: table.to_owned(),
+                };
+                let sql =
+                    TrinoEngine::l2_table_description_sql(&target).map_err(L2Error::Source)?;
+                audit.observe_sql(sql.as_str());
+                let columns = self
+                    .engine
+                    .describe_tables(std::slice::from_ref(&target), &ctx)
+                    .await
+                    .map_err(|e| self.discovery_error(e))?;
+                self.describe_result(columns.get(&target).map_or(&[], Vec::as_slice))
+            }
+        }
+    }
+
+    fn allowed_catalog(&self, name: &str, edit: &str) -> bool {
+        !name.eq_ignore_ascii_case("system")
+            && !name.eq_ignore_ascii_case(edit)
+            && (self
+                .scope
+                .l2_catalogs
+                .iter()
+                .any(|c| c.eq_ignore_ascii_case(name))
+                || self.scope.l2_schemas.iter().any(|s| {
+                    s.split_once('.')
+                        .is_some_and(|(c, _)| c.eq_ignore_ascii_case(name))
+                }))
+    }
+
+    fn allowed_schema(&self, name: &str, schema: &str, edit: &str) -> bool {
+        self.allowed_catalog(name, edit)
+            && !schema.eq_ignore_ascii_case("system")
+            && !schema.eq_ignore_ascii_case("information_schema")
+            && (self
+                .scope
+                .l2_catalogs
+                .iter()
+                .any(|c| c.eq_ignore_ascii_case(name))
+                || self
+                    .scope
+                    .l2_schemas
+                    .iter()
+                    .any(|s| s.eq_ignore_ascii_case(&format!("{name}.{schema}"))))
+    }
+
+    fn discovery_error(&self, error: EngineError) -> L2Error {
+        if self.engine.l2_status() == Some(L2HealthStatus::Enabled) {
+            L2Error::Source(error)
+        } else {
+            L2Error::Disabled
+        }
     }
 
     fn filter_discovery(
         &self,
         output: QueryOutput,
-        catalog: Option<&str>,
-        allowed_catalog: impl Fn(&str) -> bool,
-        allowed_schema: impl Fn(&str, &str) -> bool,
+        allowed: impl Fn(&str) -> bool,
     ) -> Result<L2Result, L2Error> {
         let mut names = Vec::new();
         for row in output.rows {
@@ -210,10 +278,7 @@ impl L2Service<'_> {
                     "metadata row has unexpected shape".to_owned(),
                 )));
             };
-            if match catalog {
-                Some(c) => allowed_schema(c, name),
-                None => allowed_catalog(name),
-            } {
+            if allowed(name) {
                 names.push(name.clone());
             }
         }
@@ -240,6 +305,56 @@ impl L2Service<'_> {
                     name: "name".to_owned(),
                     physical: PhysicalType::Varchar { length: None },
                 }],
+                rows,
+                truncated,
+            },
+            narrowing_hint: truncated
+                .then_some("Refine the metadata request to narrow the result."),
+        })
+    }
+
+    fn describe_result(
+        &self,
+        columns: &[ontoforge_engine::PhysicalColumn],
+    ) -> Result<L2Result, L2Error> {
+        let mut rows = Vec::new();
+        let mut bytes = 0usize;
+        let mut truncated = false;
+        for column in columns {
+            let kind = column.physical.render();
+            let next = serde_json::to_string(&[&column.name, &kind])
+                .map_err(|e| L2Error::Source(EngineError::Protocol(e.to_string())))?
+                .len()
+                + 6;
+            if rows.len() >= self.config.max_rows
+                || bytes.saturating_add(next) > self.config.max_bytes
+            {
+                truncated = true;
+                break;
+            }
+            bytes += next;
+            rows.push(vec![
+                Value::String(column.name.clone()),
+                Value::String(kind),
+                Value::Boolean(column.nullable),
+            ]);
+        }
+        Ok(L2Result {
+            output: QueryOutput {
+                columns: vec![
+                    Column {
+                        name: "name".to_owned(),
+                        physical: PhysicalType::Varchar { length: None },
+                    },
+                    Column {
+                        name: "type".to_owned(),
+                        physical: PhysicalType::Varchar { length: None },
+                    },
+                    Column {
+                        name: "nullable".to_owned(),
+                        physical: PhysicalType::Boolean,
+                    },
+                ],
                 rows,
                 truncated,
             },

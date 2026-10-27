@@ -74,6 +74,26 @@ impl TrinoEngine {
         self.execute(&sql, ctx).await
     }
 
+    pub async fn list_l2_tables(
+        &self,
+        catalog: &str,
+        schema: &str,
+        ctx: &QueryContext,
+    ) -> Result<QueryOutput, EngineError> {
+        let sql = crate::printer::l2::list_l2_tables(catalog, schema)
+            .map_err(|_| EngineError::Config("invalid metadata schema".to_owned()))?;
+        self.execute(&sql, ctx).await
+    }
+
+    /// The same typed description statement that `describe_tables` executes for one table.
+    pub fn l2_table_description_sql(table: &TableRef) -> Result<PrintedSql, EngineError> {
+        print_select(
+            &columns_query(table.catalog.clone(), std::slice::from_ref(table)),
+            Dialect::Trino,
+        )
+        .map_err(EngineError::Print)
+    }
+
     /// Checks the transport rules (E2) and builds the HTTP client. Every construction path
     /// goes through here, so credentials cannot be sent in the clear and an extra origin
     /// cannot downgrade the scheme, however the connection was assembled.
@@ -457,10 +477,14 @@ impl Engine for TrinoEngine {
                 first.catalog, other.catalog
             )));
         }
-        let sql = print_select(
-            &columns_query(first.catalog.clone(), tables),
-            Dialect::Trino,
-        )?;
+        let sql = if tables.len() == 1 {
+            Self::l2_table_description_sql(first)?
+        } else {
+            print_select(
+                &columns_query(first.catalog.clone(), tables),
+                Dialect::Trino,
+            )?
+        };
         let output = match self.execute(&sql, ctx).await {
             Ok(output) => output,
             // A catalog or schema that does not exist has no tables.

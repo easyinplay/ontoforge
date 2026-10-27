@@ -116,6 +116,14 @@ pub fn list_l2_schemas(catalog: &str) -> Result<PrintedSql, L2Error> {
     Ok(PrintedSql::new(format!("SHOW SCHEMAS FROM {catalog}")))
 }
 
+pub fn list_l2_tables(catalog: &str, schema: &str) -> Result<PrintedSql, L2Error> {
+    let catalog = quote_ident(catalog).map_err(|_| L2Error::Unsupported)?;
+    let schema = quote_ident(schema).map_err(|_| L2Error::Unsupported)?;
+    Ok(PrintedSql::new(format!(
+        "SHOW TABLES FROM {catalog}.{schema}"
+    )))
+}
+
 fn validate_on_parser_stack(raw: &str, policy: &L2Policy) -> Result<PrintedSql, L2Error> {
     let mut statements =
         Parser::parse_sql(&GenericDialect {}, raw).map_err(|_| L2Error::Unsupported)?;
