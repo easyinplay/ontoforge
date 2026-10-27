@@ -2627,6 +2627,38 @@ fn audit_metadata(principal: &str) -> ReadAuditMetadata {
     }
 }
 
+pub async fn audit_shutdown_drains_inflight_guard(h: &Harness) {
+    let audit = h.store().read_audit();
+    let guard = audit
+        .reserve(audit_metadata("inflight-shutdown"))
+        .expect("reserve before shutdown");
+    let (drain, ()) = tokio::time::timeout(std::time::Duration::from_secs(4), async {
+        tokio::join! {
+            biased;
+            audit.shutdown(),
+            async {
+                assert!(!audit.health().available, "shutdown stops new admissions");
+                assert!(audit.reserve(audit_metadata("late")).is_err());
+                guard.finish(ReadAuditStatus::Success, 1)
+                    .expect("accepted guard still reaches the sink");
+            }
+        }
+    })
+    .await
+    .expect("shutdown waits for the in-flight guard");
+    drain.expect("drain accepted audit");
+    let rows = h
+        .rows(Tables::Sys, "of_read_audit", &["principal", "status"], None)
+        .await;
+    assert_eq!(
+        rows,
+        vec![vec![
+            Some("inflight-shutdown".to_owned()),
+            Some("success".to_owned())
+        ]]
+    );
+}
+
 pub async fn audit_sink_failure_rejects_inflight_finish(h: &Harness) {
     let audit = h.store().read_audit();
     let inflight = audit.reserve(audit_metadata("inflight")).expect("reserve");
@@ -2773,6 +2805,7 @@ macro_rules! conformance_case {
 macro_rules! all_cases {
     ($factory:path $(, $attr:meta)?) => {
         $crate::conformance::conformance_case!($factory, audit_batch_retention_parity $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, audit_shutdown_drains_inflight_guard $(, $attr)?);
         $crate::conformance::conformance_case!($factory, audit_sink_failure_rejects_inflight_finish $(, $attr)?);
         $crate::conformance::conformance_case!($factory, audit_batch_rejection_is_atomic $(, $attr)?);
         $crate::conformance::conformance_case!($factory, audit_cleanup_rejection_rolls_back_batch $(, $attr)?);
