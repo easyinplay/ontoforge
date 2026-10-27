@@ -95,6 +95,7 @@ pub struct ReadAuditHealth {
 }
 
 struct State {
+    accepting: AtomicBool,
     available: AtomicBool,
     slots: Arc<Semaphore>,
     pending: Mutex<BTreeMap<u64, Instant>>,
@@ -103,15 +104,24 @@ struct State {
 }
 
 impl State {
+    fn sink_healthy(&self, oldest: Option<Duration>) -> bool {
+        self.available.load(Ordering::Acquire)
+            && oldest.is_none_or(|age| age <= self.max_pending_age)
+    }
+
     fn health(&self) -> ReadAuditHealth {
         let pending = self.pending.lock().unwrap();
         let oldest = pending.values().min().map(Instant::elapsed);
         ReadAuditHealth {
-            available: self.available.load(Ordering::Acquire)
-                && oldest.is_none_or(|age| age <= self.max_pending_age),
+            available: self.accepting.load(Ordering::Acquire) && self.sink_healthy(oldest),
             pending: pending.len(),
             oldest_pending: oldest,
         }
+    }
+
+    fn can_enqueue(&self) -> bool {
+        let pending = self.pending.lock().unwrap();
+        self.sink_healthy(pending.values().min().map(Instant::elapsed))
     }
 
     fn forget(&self, id: u64) {
@@ -158,6 +168,7 @@ pub struct ReadAudit {
 impl ReadAudit {
     pub(crate) fn start(db: &Db, settings: ReadAuditSettings) -> Self {
         let state = Arc::new(State {
+            accepting: AtomicBool::new(true),
             available: AtomicBool::new(true),
             slots: Arc::new(Semaphore::new(settings.capacity)),
             pending: Mutex::new(BTreeMap::new()),
@@ -214,7 +225,7 @@ impl ReadAudit {
 
     /// Stop admitting reads, then wait for all accepted rows to reach the durable sink.
     pub async fn shutdown(&self) -> Result<(), AuditUnavailable> {
-        self.state.available.store(false, Ordering::Release);
+        self.state.accepting.store(false, Ordering::Release);
         self.sender.lock().unwrap().take();
         let Some(handle) = self.worker.lock().await.take() else {
             return Ok(());
@@ -261,7 +272,7 @@ impl ReadAuditGuard {
         let Some(permit) = self.permit.take() else {
             return Ok(());
         };
-        if !self.state.health().available {
+        if !self.state.can_enqueue() {
             return Err(AuditUnavailable);
         }
         let record = Record {
