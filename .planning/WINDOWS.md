@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 7
+open_count: 10
 waived_count: 0
 fixed_count: 4
-total_count: 11
-last_updated: 2026-10-26T06:51:40.852Z
+total_count: 14
+last_updated: 2026-10-27T19:13:52.718Z
 ---
 
 # Broken Windows Ledger
@@ -26,6 +26,9 @@ last_updated: 2026-10-26T06:51:40.852Z
 | 9 | 05 | deviation | crates/ontoforge-action/tests/trino_action_it.rs |  | Task 2 真实集成断言首次有效运行即通过，缺少独立行为 RED。 | open |  | 2026-10-23T13:34:50.748Z |  |
 | 10 | 05 | deviation | .planning/phases/05-online-action/deferred-items.md |  | 默认 feature 组合的 cargo check/clippy 因现有配置问题失败，已用 embedded-pg 验证计划代码。 | open |  | 2026-10-23T13:34:51.389Z |  |
 | 11 | 06 | stub | crates/ontoforge-storage/src/read_audit.rs | 166 | PostgreSQL worker explicitly fails closed until 06-02 provides its system table and sink | open |  | 2026-10-26T06:51:40.852Z |  |
+| 12 | 06 | skipped-test | crates/ontoforge-storage/tests/scope_store.rs |  | pg_audit_is_append_only_and_login_is_recorded: requires ONTOFORGE_PG_URL or embedded-pg feature | open |  | 2026-10-27T19:13:33.710Z |  |
+| 13 | 06 | skipped-test | crates/ontoforge-storage/tests/scope_store.rs |  | pg_concurrent_scope_apply_serializes: requires ONTOFORGE_PG_URL or embedded-pg feature | open |  | 2026-10-27T19:13:44.675Z |  |
+| 14 | 06 | skipped-test | crates/ontoforge-storage/tests/scope_store.rs |  | pg_scope_apply: requires ONTOFORGE_PG_URL or embedded-pg feature | open |  | 2026-10-27T19:13:52.718Z |  |
 
 ````json
 [
@@ -163,6 +166,45 @@ last_updated: 2026-10-26T06:51:40.852Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-10-26T06:51:40.852Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 12,
+    "kind": "skipped-test",
+    "phase": "06",
+    "file": "crates/ontoforge-storage/tests/scope_store.rs",
+    "line": null,
+    "description": "pg_audit_is_append_only_and_login_is_recorded: requires ONTOFORGE_PG_URL or embedded-pg feature",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-27T19:13:33.710Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 13,
+    "kind": "skipped-test",
+    "phase": "06",
+    "file": "crates/ontoforge-storage/tests/scope_store.rs",
+    "line": null,
+    "description": "pg_concurrent_scope_apply_serializes: requires ONTOFORGE_PG_URL or embedded-pg feature",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-27T19:13:44.675Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 14,
+    "kind": "skipped-test",
+    "phase": "06",
+    "file": "crates/ontoforge-storage/tests/scope_store.rs",
+    "line": null,
+    "description": "pg_scope_apply: requires ONTOFORGE_PG_URL or embedded-pg feature",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-27T19:13:52.718Z",
     "resolved_at": null,
     "milestone": null
   }
