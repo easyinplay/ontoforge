@@ -33,4 +33,4 @@
 
 ## Next Step
 
-执行 P5 Phase 6 verify-work、需求覆盖和代码审查；远端 CI 尚未触发，按 SUMMARY 的当前 SHA 与本地服务证据核对。
+P5 审查复验：CR-01 与 WR-02 已关闭，security 18/18、`threats_open: 0`；受限 Trino 483 的 32 条 allow 均 FINISHED，历史原文未恢复。当前工作树的 workspace 单线程测试、全量 Clippy、格式与 diff 检查均退出 0。`06-09` test-only 分类显式更正，GSD TDD 门禁 7/7、`block: false`。下一步补 WR-01 的生产启动/周期 attestation，Phase 7 接 HTTP `/health` 并保留阻断验收；远端 CI 尚未触发，需求维持 Pending，不生成 passed VERIFICATION。

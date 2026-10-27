@@ -1,5 +1,23 @@
 # Phase 6 findings
 
+- 2026-10-28：Windows 完整 workspace 首轮 `reload_racing_commits_never_lets_an_old_write_through` 在 `WriterStats { committed: 9, stale: 1 }` 失败。共用 helper 把切换后的 stale 拒绝算作 10 次尝试之一，断言却要求至少 10 次成功提交；单独复跑通过，属于测试时序误报。helper 改为累计 10 次成功提交并设 100 次尝试上限，目标连续 6 次及完整 workspace 均通过。只改测试稳定性，无生产逻辑变化，新的 TDD RED/GREEN 不适用。
+
+- 2026-10-28：`06-09` 的两个任务只修改 `tests/`，GSD 执行期 `execute-mvp-tdd.md` 明确豁免 test-only task 的生产 RED/GREEN 提交门禁；阶段 `tdd.review-checkpoint` 仅看 PLAN `type: tdd`，错误要求不存在的 `feat(06-09)`。显式将 PLAN 类型更正为 `execute`，保留 task 级 `tdd="true"`、两份 `RED_EVIDENCE_OK` 和 GREEN 测试记录；该更正不代表跳过测试，门禁需重跑确认。
+
+- 2026-10-28：独立受限 Trino 483 的 memory `hive.sales` fixture 初测让 32 条 allow 全部真实发送，30 条 FINISHED；G38 的 integer `listagg` 为 `TYPE_MISMATCH`，B51 未引用同形异字标识符为 `SYNTAX_ERROR`。两条均为 reconstructed/constructed-equivalent，不是已恢复的历史原文。为实现可执行等价验收，改为显式字符串 cast 与引用标识符，保留 G38 ordered aggregate / B51 同形异字 relation 的意图，并重跑真实 Trino。此任务只修测试 fixture，无生产实现变更，TDD RED/GREEN 不适用；初次真实错误作为探针证据保留。
+
+- 2026-10-28：运行 `cargo test -p ontoforge-engine --test trino_l2_acl_it --locked -- --ignored --nocapture`，3/3 通过；11 条无表 allow 语料经 `validate_l2` 的 Display SQL 发送到独立受限 Trino 483，逐条 FINISHED。其余 21 条需要真实 `hive.sales` 表；拟在两台现有 ACL 容器各使用隔离 memory catalog 和小型 seed，仍保留 outside/editstore 负探针。G38 数值 `id` 与 `listagg` 类型可能冲突，必须记录实际错误而非预设通过。
+
+- 2026-10-28：WR-01：ROADMAP Phase 6 SC-3 写明启动自检和 `/health` 告警，但 `ontoforge-server` 外壳属于 Phase 7；库级 `recheck_l2_acl` 目前只在测试调用，Enabled 60 秒后过期。Grok 建议分离库级 attestation 与 HTTP 暴露，但其 Stale/last-known 建议须服从 ADR fail-closed，不可自行放松。WR-02：32 条 allow constructed-equivalent 中 11 条无物理表依赖，其余 21 条引用 `hive.sales`；独立 ACL fixture 只有 demo/outside/editstore TPCH，不能把 11 条通过等同 32/32。先真实探测再决定合同修订或补 fixture。
+
+- 2026-10-28：CR-01 的 `ReadAudit::shutdown()` 修复让新 `reserve()` fail-closed，同时保留已准入 guard 的 sender 入队直至 worker drain；`State::can_enqueue()` 仍以 sink health 与 pending age 拒绝持续故障。新增 SQLite/PG 共用测试，在关闭异步等待期间 `finish()` 后断言持久行可见。RED/GREEN 提交 `0d3d0bf`/`5fd876d`，审查报告尚未重签。
+
+- 2026-10-28：`06-REVIEW.md` CR-01 与 `06-SECURITY.md` T-06-01 均确认 shutdown 在持有 guard 的读仍在途时将 `available` 置 false，guard 的 `enqueue` 因此丢记录且 shutdown 仍可能成功。最小修复须区分 admission 与 sink 健康，保持 sink 故障/超时 fail-closed，并等待所有已准入 sender 完成后 flush；新增 SQLite/PG 共用回归，先 RED 后 GREEN。WR-01 属启动/周期接线范围疑问，WR-02 是 Trino corpus 实测覆盖缺口，分别复核。
+
+- 2026-10-28：`06-09-PLAN.md` 标记 `type: tdd`，两个任务仅修改 `tests/`，实际没有生产修复。GSD `tdd.review-checkpoint` 对整个 TDD PLAN 要求 `test(06-09)` 后跟 `feat(06-09)`，因此误将 test-only regression 的真实 mutation RED/GREEN 判为缺 GREEN。Grok 第二意见建议保留证据与阻断，显式修门禁或留痕豁免；拒绝空 `feat` 提交和静默回改 PLAN 分类。待独立审计后提交具体选择。
+
+- 2026-10-28：GSD verification.status 返回 missing、route: execute-phase；已有 SUMMARY 的 wave 不会重做。审查完成及 verifier 核对前维持需求 Pending，远端 GitHub Actions 证据尚缺。
+
 - 2026-10-26：ROADMAP Phase 6 范围为 L2-01..04、AUDIT-01 和五条 Success Criteria；spike 2 要在 Trino 483 上复验。ADR-0018/0019 与 `docs/designs/trino-engine-sql-tiers.md` 已锁定双 Trino 身份、SQL AST 白名单、只读权限自检、全级别读审计、管理通道边界。规划前需核对旧语料是否与当前 `sqlparser` 及 Trino 483 一致。
 - 2026-10-26：GSD `init.phase-op 6` 的 expected_phase_dir 为 `.planning/phases/06-l2-raw-dql-toolsets-audit/`；ROADMAP 的 `**Details**` 原指向较短的 `06-l2-toolsets-audit/`，现已修正。
 - 2026-10-26：代码调查：auth 已有 `sql:raw`/L2 allow-list，engine 已能建独立 L2 Trino 身份，但 `PrintedSql` 私有构造阻止原始 Display SQL 直接执行；L2 校验器、启动自检、读审计表/队列和 `AuditUnavailable` 均尚无。QueryService 的 pk/list/aggregate 是公开读入口，server/api 仍为占位。现有 `reload` 先 lint，`scope apply` 锁内复算计划哈希并写 `of_admin_audit`，可复用，不能把 CLI 环境用户名当远程认证主体。

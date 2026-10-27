@@ -1,5 +1,19 @@
 # Phase 6 progress
 
+- 2026-10-28：代码提交 `106a5aa` 的 reload 测试 helper 修正后，`cargo test --workspace --locked -j 2 -- --test-threads=1` 退出 0；`cargo clippy --workspace --all-targets --locked -j 2 -- -D warnings`、`cargo fmt --all -- --check`、`git diff --check` 退出 0。首次 workspace 运行的 `reload_racing_commits_never_lets_an_old_write_through` 以 9 committed/1 stale 触发测试计数误报；目标单独复跑通过，修正后连续 6 次和完整 workspace 通过。`06-09` test-only PLAN 类型显式更正并留痕，`tdd-review-checkpoint 06` 返回 7/7、`block: false`。WR-01 生产启动/周期复检与 Phase 7 `/health` 边界仍开放；远端 CI 尚未运行，不生成 passed VERIFICATION。
+
+- 2026-10-28：WR-02 的 11 条无表 allow 样例（G04/G12/G16/G17/G24/G26/G28/G31/G34/G35/G40）在受限 Trino 483 均 FINISHED，实际行数 3/1/0/1/1/1/1/1/1/1/1；ACL target 3/3。剩余 21 条引用 `hive.sales`，进入 fixture 先失败的集成测试。
+
+- 2026-10-28：CR-01 复审关闭（Critical 0、Warning 2），security 18/18 威胁关闭、`threats_open: 0`；validation 仍为 draft，待 WR-01/WR-02。Grok 第二意见建议 Phase 6 做库级 attestation、Phase 7 接 HTTP `/health`，并默认争取 32/32 allow 语料真执行；主会话先核实 11 条无表样例和其余 21 条 fixture 成本，未改需求合同。
+
+- 2026-10-28：CR-01 按 TDD 修复：`0d3d0bf` 的共用 conformance 测试在旧实现在途 `finish()` 失败，JUnit/GSD 为 `RED_EVIDENCE_OK`；`5fd876d` 拆分 accepting 与 sink health。SQLite audit 5/5、真实 PG audit 6/6、query worker 5/5，storage Clippy/格式通过。security/validation/review 的旧报告尚待复核，不提前关闭威胁与需求。
+
+- 2026-10-28：GSD code review 产出 `06-REVIEW.md`（Critical 1、Warning 2），security 18 项中 T-06-01 high 开放；Nyquist validation 18/18 任务有自动化映射但 3 个 gap 未签收。先修 CR-01，再复审和复验。修复设计：拆分 admission 与 sink health，关闭时不接受新读，已准入 guard 仍可排空；TDD RED 覆盖 reserve/shutdown/finish/落库。
+
+- 2026-10-28：`tdd.review-checkpoint 06` 返回 `block: true`，8 个 TDD PLAN 中 `06-09` 缺少 `feat(06-09)` GREEN 提交。该计划只有测试增量，RED 由两份 mutation 证据证明，恢复源码后的测试 GREEN 已通过；未伪造生产提交。GSD phase verifier 暂按门禁合同阻断，先做独立 validation/security/code review。
+
+- 2026-10-28：GSD 验证状态为 missing，9/9 SUMMARY 齐备；代码审查仍在运行。P5 继续执行 verification gates，远端 CI 尚未运行。
+
 - 2026-10-26：Phase 5 的 GSD verification passed、UAT 18/18，分支从 `7bc2cdf` 建立。Phase 6 工作计划已按 ROADMAP/REQUIREMENTS 创建；尚未写业务代码。当前处于 P1 合同与既有资产调查。
 - 2026-10-26：P1 已读取 ADR-0016/0017/0018/0019、spike 2、Phase 3-5 context，完成 auth/engine/query/storage/CLI 只读勘查与 Trino 483 环境探针；Grok 第二意见已归档取舍。`06-CONTEXT.md` 沉淀合同与接线点，`06-DISCUSSION-LOG.md` 仅记录取舍，不作为 planner 输入。下一步针对性工程审查和语料复验。
 - 2026-10-26：P2 独立工程复审完成，`06-ENG-REVIEW.md` 列出受控 SQL 入口、真实 Trino ACL、全读路径审计、PG/SQLite 持久化四项 PLAN 阻断项。`06-SPIKE-483.md` 记录 29 条新构造等价用例（21 条单语句且 Display AST 往返相等、7 条解析失败、1 条多语句），14 次 Trino 483 HTTP 请求（10 FINISHED、4 FAILED）；0 条历史原文恢复、75 个 ID 未覆盖。无 ACL 容器不能证明权限安全。下一步 P3 research、PLAN 和 checker，尚未写 Phase 6 业务代码。
