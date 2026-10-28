@@ -20,7 +20,12 @@ struct Fixture {
     submissions: AtomicUsize,
     cancel_status: AtomicU16,
     foreign_uri: Mutex<Option<String>>,
+    origin: Mutex<String>,
     delayed: AtomicBool,
+    observations: AtomicUsize,
+    unknown: AtomicBool,
+    finish_after_visibility: AtomicBool,
+    l2_observed: AtomicBool,
 }
 
 impl Respond for Fixture {
@@ -53,18 +58,31 @@ impl Respond for Fixture {
                     .expect("uri")
                     .clone()
                     .unwrap_or_else(|| {
-                        format!("http://{}/v1/statement/{id}", request.url.authority())
+                        format!("{}/v1/statement/{id}", self.origin.lock().expect("origin"))
                     });
-                json!({"id":id,"stats":{"state":if request.method == "POST" {"QUEUED"} else {"RUNNING"}},"nextUri":next})
+                json!({"id":id,"stats":{"state":if self.unknown.load(Ordering::SeqCst) {"UNKNOWN"} else if request.method == "POST" {"QUEUED"} else {"RUNNING"}},"nextUri":next})
             }
         } else if sql.contains("system.runtime.queries") {
+            self.observations.fetch_add(1, Ordering::SeqCst);
+            if user == "l2" {
+                self.l2_observed.store(true, Ordering::SeqCst);
+            }
             let id = sql.split('\'').nth(1).expect("query ID");
             let rows = if self.absent.load(Ordering::SeqCst)
                 || (user == "l2" && !self.leak.load(Ordering::SeqCst))
             {
                 json!([])
             } else {
-                json!([[id, "RUNNING"]])
+                json!([[
+                    id,
+                    if self.finish_after_visibility.load(Ordering::SeqCst)
+                        && self.l2_observed.load(Ordering::SeqCst)
+                    {
+                        "FINISHED"
+                    } else {
+                        "RUNNING"
+                    }
+                ]])
             };
             json!({"columns":[{"name":"query_id","type":"varchar"},{"name":"state","type":"varchar"}],"data":rows})
         } else if user == "l2"
@@ -120,6 +138,7 @@ fn options() -> L2MonitorOptions {
 async fn fixture() -> (MockServer, Arc<Fixture>) {
     let server = MockServer::start().await;
     let fixture = Arc::new(Fixture::default());
+    *fixture.origin.lock().expect("origin") = server.uri();
     Mock::given(|_: &Request| true)
         .respond_with(SharedFixture(fixture.clone()))
         .mount(&server)
@@ -206,12 +225,16 @@ async fn monitor_missing_or_unsafe_probe_never_submits() {
 
 #[tokio::test]
 async fn monitor_finished_missing_and_leaked_query_disable() {
-    for kind in 0..3 {
+    for kind in 0..5 {
         let (server, fixture) = fixture().await;
         match kind {
             0 => fixture.finished.store(true, Ordering::SeqCst),
             1 => fixture.absent.store(true, Ordering::SeqCst),
-            _ => fixture.leak.store(true, Ordering::SeqCst),
+            2 => fixture.leak.store(true, Ordering::SeqCst),
+            3 => fixture.unknown.store(true, Ordering::SeqCst),
+            _ => fixture
+                .finish_after_visibility
+                .store(true, Ordering::SeqCst),
         }
         let (l2, ontology) = engines(&server.uri(), Some(PROBE));
         let monitor = l2
@@ -248,7 +271,11 @@ async fn monitor_cancel_failure_disables_but_404_is_cleanup_success() {
                 }
             })
         );
-        monitor.shutdown().await.expect("shutdown");
+        if code == 404 {
+            monitor.shutdown().await.expect("shutdown");
+        } else {
+            assert!(monitor.shutdown().await.is_err());
+        }
     }
 }
 
@@ -431,6 +458,81 @@ async fn monitor_cross_coordinator_is_invalid_before_network() {
             .await
             .expect("requests")
             .is_empty()
+    );
+    monitor.shutdown().await.expect("shutdown");
+}
+
+#[tokio::test]
+async fn monitor_shutdown_during_periodic_check_cannot_reenable() {
+    let (server, fixture) = fixture().await;
+    let (l2, ontology) = engines(&server.uri(), Some(PROBE));
+    let monitor = l2
+        .clone()
+        .start_l2_acl_monitor_with_options(ontology, options())
+        .await
+        .expect("monitor");
+    fixture.delayed.store(true, Ordering::SeqCst);
+    tokio::time::timeout(Duration::from_secs(2), async {
+        while fixture.observations.load(Ordering::SeqCst) < 4 {
+            tokio::time::sleep(Duration::from_millis(5)).await;
+        }
+    })
+    .await
+    .expect("periodic check entered visibility observation");
+    monitor
+        .shutdown()
+        .await
+        .expect("shutdown cancels active probe");
+    tokio::time::sleep(Duration::from_millis(450)).await;
+    assert_eq!(
+        l2.l2_status(),
+        Some(L2HealthStatus::Disabled {
+            reason: L2DisableReason::Stopped
+        })
+    );
+    assert_eq!(fixture.deletes.load(Ordering::SeqCst), 2);
+}
+
+#[tokio::test]
+async fn monitor_deadline_includes_waiting_for_recheck_lock() {
+    let (server, fixture) = fixture().await;
+    let (l2, ontology) = engines(&server.uri(), Some(PROBE));
+    fixture.delayed.store(true, Ordering::SeqCst);
+    let manual_l2 = l2.clone();
+    let manual_ontology = ontology.clone();
+    let manual =
+        tokio::spawn(async move { manual_l2.recheck_l2_acl(&manual_ontology, "manual_1").await });
+    tokio::time::timeout(Duration::from_secs(1), async {
+        while fixture.observations.load(Ordering::SeqCst) == 0 {
+            tokio::time::sleep(Duration::from_millis(5)).await;
+        }
+    })
+    .await
+    .expect("manual recheck holds lock");
+    let opts = L2MonitorOptions {
+        interval: Duration::from_secs(30),
+        check_timeout: Duration::from_millis(50),
+    };
+    let monitor = tokio::time::timeout(
+        Duration::from_millis(250),
+        l2.clone().start_l2_acl_monitor_with_options(ontology, opts),
+    )
+    .await
+    .expect("lock wait bounded")
+    .expect("monitor");
+    assert_eq!(
+        l2.l2_status(),
+        Some(L2HealthStatus::Disabled {
+            reason: L2DisableReason::TimedOut
+        })
+    );
+    manual.await.expect("manual join");
+    assert_eq!(
+        l2.l2_status(),
+        Some(L2HealthStatus::Disabled {
+            reason: L2DisableReason::TimedOut
+        }),
+        "older manual success must not overwrite newer timeout"
     );
     monitor.shutdown().await.expect("shutdown");
 }

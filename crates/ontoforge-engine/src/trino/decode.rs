@@ -9,6 +9,10 @@ use crate::value::{Column, PhysicalType, Value};
 #[serde(rename_all = "camelCase")]
 pub(super) struct QueryResults {
     #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub stats: Option<WireStats>,
+    #[serde(default)]
     pub next_uri: Option<String>,
     #[serde(default)]
     pub columns: Option<Vec<WireColumn>>,
@@ -18,6 +22,12 @@ pub(super) struct QueryResults {
     pub data: Option<Vec<Box<serde_json::value::RawValue>>>,
     #[serde(default)]
     pub error: Option<WireError>,
+}
+
+#[derive(Debug, Deserialize)]
+pub(super) struct WireStats {
+    #[serde(default)]
+    pub state: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]

@@ -1,47 +1,332 @@
 //! Explicit lifecycle for deployment-owned L2 ACL attestation.
 
-use std::sync::Arc;
+use std::collections::BTreeSet;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+use reqwest::{Method, RequestBuilder};
+use tokio::task::JoinHandle;
+
 use super::TrinoEngine;
-use crate::EngineError;
+use super::l2_health::{self, L2DisableReason, L2HealthStatus};
+use crate::printer::l2::{L2Policy, acl_query_probe, validate_l2};
+use crate::{EngineError, PrintedSql, QueryContext};
 
 #[derive(Debug, Clone, Copy)]
 pub struct L2MonitorOptions {
+    /// Must be nonzero and at most 30 seconds, below the 60 second attestation TTL.
     pub interval: Duration,
     pub check_timeout: Duration,
 }
 
 impl Default for L2MonitorOptions {
     fn default() -> Self {
-        Self { interval: Duration::from_secs(30), check_timeout: Duration::from_secs(20) }
+        Self {
+            interval: Duration::from_secs(30),
+            check_timeout: Duration::from_secs(20),
+        }
     }
 }
 
 pub struct L2AclMonitor {
     l2: Arc<TrinoEngine>,
     generation: u64,
+    pending: Arc<PendingProbe>,
+    task: Option<JoinHandle<()>>,
 }
 
 impl L2AclMonitor {
-    pub async fn shutdown(self) -> Result<(), EngineError> {
-        Ok(())
+    /// Immediately disables admission, joins the monitor and awaits bounded cleanup.
+    pub async fn shutdown(mut self) -> Result<(), EngineError> {
+        self.stop();
+        if let Some(task) = self.task.take() {
+            let _ = task.await;
+        }
+        self.pending
+            .cancel()
+            .await
+            .map_err(|_| EngineError::Unavailable {
+                reason: "L2 probe cleanup failed".to_owned(),
+                retryable: true,
+            })
+    }
+
+    fn stop(&self) {
+        if let Some(health) = &self.l2.l2_health {
+            health.stop(self.generation);
+        }
+        if let Some(task) = &self.task {
+            task.abort();
+        }
     }
 }
 
 impl Drop for L2AclMonitor {
     fn drop(&mut self) {
-        if let Some(health)=&self.l2.l2_health { health.stop(self.generation); }
+        self.stop();
+        let pending = self.pending.clone();
+        if let Ok(runtime) = tokio::runtime::Handle::try_current() {
+            runtime.spawn(async move {
+                let _ = pending.cancel().await;
+            });
+        }
     }
 }
 
 impl TrinoEngine {
-    pub async fn start_l2_acl_monitor(self: Arc<Self>, ontology: Arc<Self>) -> Result<L2AclMonitor, EngineError> {
-        self.start_l2_acl_monitor_with_options(ontology,L2MonitorOptions::default()).await
+    /// Awaits the first attestation and returns the lease required to keep L2 enabled.
+    /// Transient attestation failures return a disabled monitor that retries each interval.
+    /// The host must retain this handle and call `shutdown` during graceful shutdown.
+    /// A dropped startup future or handle disables L2 and cancels the active probe.
+    ///
+    /// ```ignore
+    /// let ontology = Arc::new(engines.ontology);
+    /// let l2 = Arc::new(engines.l2.expect("configured L2"));
+    /// let monitor = l2.clone().start_l2_acl_monitor(ontology).await?;
+    /// // Serve requests using these same engine instances.
+    /// monitor.shutdown().await?;
+    /// ```
+    pub async fn start_l2_acl_monitor(
+        self: Arc<Self>,
+        ontology: Arc<Self>,
+    ) -> Result<L2AclMonitor, EngineError> {
+        self.start_l2_acl_monitor_with_options(ontology, L2MonitorOptions::default())
+            .await
     }
 
-    pub async fn start_l2_acl_monitor_with_options(self: Arc<Self>, _ontology: Arc<Self>, _options:L2MonitorOptions) -> Result<L2AclMonitor, EngineError> {
-        let generation=self.l2_health.as_ref().ok_or_else(||EngineError::Config("not an L2 engine".to_owned()))?.register_monitor()?;
-        Ok(L2AclMonitor{l2:self,generation})
+    pub async fn start_l2_acl_monitor_with_options(
+        self: Arc<Self>,
+        ontology: Arc<Self>,
+        options: L2MonitorOptions,
+    ) -> Result<L2AclMonitor, EngineError> {
+        if options.interval.is_zero()
+            || options.interval > Duration::from_secs(30)
+            || options.check_timeout.is_zero()
+            || options.check_timeout > Duration::from_secs(20)
+        {
+            return Err(EngineError::Config(
+                "invalid L2 ACL monitor bounds".to_owned(),
+            ));
+        }
+        let generation = self
+            .l2_health
+            .as_ref()
+            .ok_or_else(|| EngineError::Config("not an L2 engine".to_owned()))?
+            .register_monitor()?;
+        let pending = Arc::new(PendingProbe::default());
+        // Construct the lease before the first await so startup cancellation runs Drop.
+        let mut monitor = L2AclMonitor {
+            l2: self.clone(),
+            generation,
+            pending: pending.clone(),
+            task: None,
+        };
+        run_cycle(&self, &ontology, generation, &pending, options).await;
+        monitor.task = Some(tokio::spawn(async move {
+            let _exit = MonitorExit {
+                l2: self.clone(),
+                generation,
+            };
+            loop {
+                tokio::time::sleep(options.interval).await;
+                run_cycle(&self, &ontology, generation, &pending, options).await;
+            }
+        }));
+        Ok(monitor)
+    }
+}
+
+struct MonitorExit {
+    l2: Arc<TrinoEngine>,
+    generation: u64,
+}
+impl Drop for MonitorExit {
+    fn drop(&mut self) {
+        if let Some(health) = &self.l2.l2_health {
+            health.stop(self.generation);
+        }
+    }
+}
+
+#[derive(Default)]
+struct PendingProbe {
+    delete: Mutex<Option<RequestBuilder>>,
+    last_id: Mutex<Option<String>>,
+}
+
+impl PendingProbe {
+    async fn cancel(&self) -> Result<(), L2DisableReason> {
+        let delete = self
+            .delete
+            .lock()
+            .map_err(|_| L2DisableReason::CleanupFailed)?
+            .as_ref()
+            .map(|request| request.try_clone().ok_or(L2DisableReason::CleanupFailed))
+            .transpose()?;
+        let Some(delete) = delete else {
+            return Ok(());
+        };
+        match tokio::time::timeout(Duration::from_secs(2), delete.send()).await {
+            Ok(Ok(response))
+                if response.status().is_success() || response.status().as_u16() == 404 =>
+            {
+                self.delete
+                    .lock()
+                    .map_err(|_| L2DisableReason::CleanupFailed)?
+                    .take();
+                Ok(())
+            }
+            _ => Err(L2DisableReason::CleanupFailed),
+        }
+    }
+}
+
+async fn run_cycle(
+    l2: &TrinoEngine,
+    ontology: &TrinoEngine,
+    generation: u64,
+    pending: &PendingProbe,
+    options: L2MonitorOptions,
+) {
+    let Some(health) = &l2.l2_health else {
+        return;
+    };
+    let Some(ticket) = health.begin(Some(generation)) else {
+        return;
+    };
+    // The deadline starts before either lock; emergency cancellation has its own 2s bound.
+    let result = tokio::time::timeout(options.check_timeout, async {
+        let _serial = health.recheck_lock.lock().await;
+        let _admission = health.admission.write().await;
+        let checks = async {
+            pending.cancel().await?;
+            let sql = probe_sql(l2, ontology)?;
+            let query_id = start_probe(ontology, &sql, pending).await?;
+            l2_health::run_checks(l2, ontology, &query_id).await
+        }
+        .await;
+        let cleanup = pending.cancel().await;
+        let status = match cleanup.and(checks) {
+            Ok(()) => L2HealthStatus::Enabled,
+            Err(reason) => L2HealthStatus::Disabled { reason },
+        };
+        health.complete(ticket, status);
+    })
+    .await;
+    if result.is_err() {
+        let reason = match pending.cancel().await {
+            Ok(()) => L2DisableReason::TimedOut,
+            Err(reason) => reason,
+        };
+        health.complete(ticket, L2HealthStatus::Disabled { reason });
+    }
+}
+
+fn probe_sql(l2: &TrinoEngine, ontology: &TrinoEngine) -> Result<PrintedSql, L2DisableReason> {
+    if l2.conn.user == ontology.conn.user
+        || l2.statement_url != ontology.statement_url
+        || ontology.l2_health.is_some()
+    {
+        return Err(L2DisableReason::InvalidProbe);
+    }
+    let config = l2
+        .l2_health
+        .as_ref()
+        .and_then(|health| health.config.as_ref())
+        .ok_or(L2DisableReason::NotConfigured)?;
+    let raw = config
+        .active_query_sql
+        .as_deref()
+        .ok_or(L2DisableReason::NotConfigured)?;
+    validate_l2(
+        raw,
+        &L2Policy {
+            raw_allowed: true,
+            catalogs: BTreeSet::from([config.allowed.catalog.clone()]),
+            schemas: BTreeSet::new(),
+            edit_catalog: config.edit.catalog.clone(),
+            max_rows: 1,
+        },
+    )
+    .map_err(|_| L2DisableReason::InvalidProbe)
+}
+
+async fn start_probe(
+    ontology: &TrinoEngine,
+    sql: &PrintedSql,
+    pending: &PendingProbe,
+) -> Result<String, L2DisableReason> {
+    let ctx = QueryContext {
+        timeout: Duration::from_secs(20),
+        trace_token: "ontoforge-l2-active-probe".to_owned(),
+        ..l2_health::probe_context()
+    };
+    // Only this deployment-owned probe needs a queued-time limit in addition to execution.
+    let mut page = super::client::send(
+        || {
+            let mut request =
+                ontology.request(Method::POST, ontology.statement_url.clone(), &ctx, false)?;
+            request = request.header(
+                "X-Trino-Session",
+                "query_max_execution_time=25s,query_max_run_time=25s",
+            );
+            Ok(request.body(sql.as_str().to_owned()))
+        },
+        true,
+        ontology.conn.max_page_bytes,
+    )
+    .await
+    .map_err(|e| l2_health::failure(&e, L2DisableReason::OtherQueryUnconfirmed))?;
+    let mut query_id = None;
+    loop {
+        let next = page
+            .next_uri
+            .as_deref()
+            .map(|uri| ontology.checked_next_uri(uri))
+            .transpose()
+            .map_err(|_| L2DisableReason::InvalidProbe)?;
+        if let Some(next) = &next {
+            let delete = ontology
+                .request(Method::DELETE, next.clone(), &ctx, false)
+                .map_err(|_| L2DisableReason::InvalidProbe)?;
+            *pending
+                .delete
+                .lock()
+                .map_err(|_| L2DisableReason::CleanupFailed)? = Some(delete);
+        }
+        let id = page
+            .id
+            .as_deref()
+            .ok_or(L2DisableReason::OtherQueryUnconfirmed)?;
+        acl_query_probe(id).map_err(|_| L2DisableReason::InvalidProbe)?;
+        if let Some(expected) = &query_id {
+            if expected != id {
+                return Err(L2DisableReason::OtherQueryUnconfirmed);
+            }
+        } else {
+            let mut last = pending
+                .last_id
+                .lock()
+                .map_err(|_| L2DisableReason::OtherQueryUnconfirmed)?;
+            if last.as_deref() == Some(id) {
+                return Err(L2DisableReason::OtherQueryUnconfirmed);
+            }
+            *last = Some(id.to_owned());
+            query_id = Some(id.to_owned());
+        }
+        let state = page.stats.as_ref().and_then(|stats| stats.state.as_deref());
+        let next = next.ok_or(L2DisableReason::OtherQueryUnconfirmed)?;
+        match state {
+            Some("RUNNING") => return query_id.ok_or(L2DisableReason::OtherQueryUnconfirmed),
+            Some("QUEUED" | "WAITING_FOR_RESOURCES" | "DISPATCHING" | "PLANNING" | "STARTING") => {}
+            _ => return Err(L2DisableReason::OtherQueryUnconfirmed),
+        }
+        page = super::client::send(
+            || ontology.request(Method::GET, next.clone(), &ctx, false),
+            false,
+            ontology.conn.max_page_bytes,
+        )
+        .await
+        .map_err(|e| l2_health::failure(&e, L2DisableReason::OtherQueryUnconfirmed))?;
     }
 }

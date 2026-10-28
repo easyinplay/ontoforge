@@ -10,6 +10,7 @@ use reqwest::Client;
 use serde::Deserialize;
 use serde_json::Value;
 use std::collections::BTreeSet;
+use std::sync::Arc;
 use std::time::Duration;
 
 #[derive(Deserialize)]
@@ -310,4 +311,92 @@ async fn trino_l2_acl_loosened_rule_fails_closed() {
             reason: ontoforge_engine::trino::l2_health::L2DisableReason::NegativeProbeFailed,
         }
     );
+}
+
+fn monitor_engines(url: &str, sql: &str) -> (Arc<TrinoEngine>, Arc<TrinoEngine>) {
+    let mut cfg = parse_server_config(&acl_config(url))
+        .expect("config")
+        .trino
+        .expect("trino");
+    cfg.l2_acl.as_mut().expect("ACL").active_query_sql = Some(sql.to_owned());
+    let engines = build_trino_engines(&cfg, Utf8Path::new("."), &|_: &str| None).expect("engines");
+    (
+        Arc::new(engines.l2.expect("l2")),
+        Arc::new(engines.ontology),
+    )
+}
+
+#[tokio::test]
+#[ignore = "requires independent Trino 483"]
+async fn trino_l2_monitor_startup_cancels_real_active_probe() {
+    let url = endpoint();
+    let client = Client::new();
+    assert_version(&client, &url).await;
+    let (l2, ontology) = monitor_engines(&url, "SELECT count(*) FROM demo.sf100000.orders");
+    let monitor = l2
+        .clone()
+        .start_l2_acl_monitor(ontology)
+        .await
+        .expect("monitor");
+    assert_eq!(l2.l2_status(), Some(L2HealthStatus::Enabled));
+    let active_sql = "SELECT query_id FROM system.runtime.queries WHERE state = 'RUNNING' AND query LIKE 'SELECT count(*) FROM demo.sf100000.orders%'";
+    tokio::time::timeout(Duration::from_secs(3), async {
+        loop {
+            let active = query(&client, &url, "ontology", active_sql).await;
+            assert!(
+                active.get("error").is_none(),
+                "runtime observation: {active}"
+            );
+            if active["data"].as_array().is_none_or(|rows| rows.is_empty()) {
+                break;
+            }
+            tokio::time::sleep(Duration::from_millis(20)).await;
+        }
+    })
+    .await
+    .expect("active probe cancelled before monitor admission");
+    monitor.shutdown().await.expect("shutdown");
+    assert_eq!(
+        l2.l2_status(),
+        Some(L2HealthStatus::Disabled {
+            reason: ontoforge_engine::trino::l2_health::L2DisableReason::Stopped
+        })
+    );
+}
+
+#[tokio::test]
+#[ignore = "requires independent Trino 483"]
+async fn trino_l2_monitor_short_query_does_not_prove_active_isolation() {
+    let url = endpoint();
+    let (l2, ontology) = monitor_engines(&url, "SELECT 1");
+    let monitor = l2
+        .clone()
+        .start_l2_acl_monitor(ontology)
+        .await
+        .expect("monitor");
+    assert!(
+        matches!(l2.l2_status(), Some(L2HealthStatus::Disabled { .. })),
+        "a finished short query cannot attest isolation"
+    );
+    monitor.shutdown().await.expect("shutdown");
+}
+
+#[tokio::test]
+#[ignore = "requires independent Trino 483 loose ACL control"]
+async fn trino_l2_monitor_loose_acl_fails_closed() {
+    let url = std::env::var("ONTOFORGE_TRINO_L2_LOOSE_URL")
+        .unwrap_or_else(|_| "http://127.0.0.1:58082".to_owned());
+    let (l2, ontology) = monitor_engines(&url, "SELECT count(*) FROM demo.sf100000.orders");
+    let monitor = l2
+        .clone()
+        .start_l2_acl_monitor(ontology)
+        .await
+        .expect("monitor");
+    assert_eq!(
+        l2.l2_status(),
+        Some(L2HealthStatus::Disabled {
+            reason: ontoforge_engine::trino::l2_health::L2DisableReason::NegativeProbeFailed
+        })
+    );
+    monitor.shutdown().await.expect("shutdown");
 }
