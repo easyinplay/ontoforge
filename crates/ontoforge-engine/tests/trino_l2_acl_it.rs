@@ -350,7 +350,7 @@ async fn trino_l2_monitor_startup_cancels_real_active_probe() {
                 active.get("error").is_none(),
                 "runtime observation: {active}"
             );
-            if active["data"].as_array().is_none_or(|rows| rows.is_empty()) {
+            if active["data"].as_array().is_none_or(Vec::is_empty) {
                 break;
             }
             tokio::time::sleep(Duration::from_millis(20)).await;
