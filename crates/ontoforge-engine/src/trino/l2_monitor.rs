@@ -45,6 +45,7 @@ impl L2AclMonitor {
         self.pending
             .cancel(Some(self.generation))
             .await
+            .and_then(|()| self.pending.confirm_cleared_through(self.generation))
             .map_err(|_| EngineError::Unavailable {
                 reason: "L2 probe cleanup failed".to_owned(),
                 retryable: true,
@@ -170,6 +171,21 @@ struct PendingDelete {
 }
 
 impl PendingProbe {
+    fn confirm_cleared_through(&self, generation: u64) -> Result<(), L2DisableReason> {
+        if self
+            .state
+            .lock()
+            .map_err(|_| L2DisableReason::CleanupFailed)?
+            .delete
+            .as_ref()
+            .is_some_and(|delete| delete.generation <= generation)
+        {
+            Err(L2DisableReason::CleanupFailed)
+        } else {
+            Ok(())
+        }
+    }
+
     fn record(&self, generation: u64, request: RequestBuilder) -> Result<(), L2DisableReason> {
         let mut state = self
             .state
@@ -227,6 +243,64 @@ impl PendingProbe {
             }
             _ => Err(L2DisableReason::CleanupFailed),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use wiremock::matchers::{method, path};
+    use wiremock::{Mock, MockServer, ResponseTemplate};
+
+    #[tokio::test]
+    async fn old_cleanup_response_and_owner_cannot_clear_or_cancel_new_probe() {
+        let server = MockServer::start().await;
+        Mock::given(method("DELETE"))
+            .and(path("/old"))
+            .respond_with(ResponseTemplate::new(204).set_delay(Duration::from_millis(150)))
+            .mount(&server)
+            .await;
+        Mock::given(method("DELETE"))
+            .and(path("/new"))
+            .respond_with(ResponseTemplate::new(204))
+            .mount(&server)
+            .await;
+        let pending = Arc::new(PendingProbe::default());
+        let client = reqwest::Client::new();
+        pending
+            .record(1, client.delete(format!("{}/old", server.uri())))
+            .expect("old");
+        let old_pending = pending.clone();
+        let old = tokio::spawn(async move { old_pending.cancel(Some(1)).await });
+        tokio::time::timeout(Duration::from_secs(1), async {
+            while server
+                .received_requests()
+                .await
+                .expect("requests")
+                .is_empty()
+            {
+                tokio::time::sleep(Duration::from_millis(5)).await;
+            }
+        })
+        .await
+        .expect("old DELETE in flight");
+        pending
+            .record(2, client.delete(format!("{}/new", server.uri())))
+            .expect("new");
+        old.await.expect("old join").expect("old cleanup");
+        assert!(
+            pending.confirm_cleared_through(2).is_err(),
+            "old response must preserve the new token"
+        );
+        pending.cancel(Some(1)).await.expect("old owner ignored");
+        assert_eq!(
+            server.received_requests().await.expect("requests").len(),
+            1,
+            "old Drop must not DELETE the new probe"
+        );
+        pending.cancel(Some(2)).await.expect("new cleanup");
+        pending.confirm_cleared_through(2).expect("cleared");
+        assert_eq!(server.received_requests().await.expect("requests").len(), 2);
     }
 }
 
