@@ -241,7 +241,7 @@ Plans:
 
   1. L2 执行器只接受 SELECT / WITH，拒绝 `TABLE()` 表函数、`CALL`、`EXECUTE`、多语句与会话 / 事务语句，执行时发送重序列化后的 SQL；spike 2 语料全部按预期放行或拒绝
   2. allow-list 外 catalog、edit store catalog 与 `system` 元数据表全部被拒绝
-  3. 启动自检无法证明 L2 身份受限（含只能看到自己的 `system.runtime.queries`）时 L2 被禁用并在 `/health` 告警
+  3. 库级启动及周期自检无法证明 L2 身份受限（含只能看到自己的 `system.runtime.queries`）时 L2 被禁用，暴露可供服务读取的禁用原因；HTTP `/health` 告警由 Phase 7 验收（ADR-0028）
   4. 所有级别的读取写入元数据审计（主体、工具、对象类型、apiName 级条件、生效 role、SQL 哈希、行数、耗时、request_id），不含结果数据；审计积压时读请求返回 `AuditUnavailable`
   5. role / scope 只能经管理通道或 L3 修改并审计；定义 reload 先 validate / lint，失败不切换；每个请求固定使用开始时的定义版本
 
@@ -254,7 +254,7 @@ Plans:
 **Goal**: 应用经 REST（OpenAPI 3.1、Rust / TS client），agent 经 MCP（按主体过滤的 toolset）使用全部能力；`ontoforge serve --dev` 单二进制在本机跑通端到端演示，并发布三平台二进制
 **Mode:** mvp
 **Depends on**: Phase 6
-**Requirements**: API-01, API-02, API-03, API-04, API-05, MCP-01, MCP-02, MCP-03, MCP-04, MCP-05, MCP-06, MCP-07, MCP-08, DX-01, DX-02, DX-04
+**Requirements**: API-01, API-02, API-03, API-04, API-05, MCP-01, MCP-02, MCP-03, MCP-04, MCP-05, MCP-06, MCP-07, MCP-08, DX-01, DX-02, DX-04, L2-04（服务接线与 `/health`）
 **Spike**: 进入前验证 `rmcp` 动态 tool 列表
 **Success Criteria** (what must be TRUE):
 
@@ -263,6 +263,7 @@ Plans:
   3. 每个 action type 自动暴露为 MCP 工具（含 validate-only）；6 个 L2 工具与 mcp-trino 名称参数一致，结果按 allow-list 过滤
   4. 同一身份经 MCP 与 REST 得到相同授权结果，写入同样记入 edit log
   5. `ontoforge serve --dev`（SQLite 替身 + dev token）在 Windows 本机零外部依赖跑通示例 ontology 的查询 → Action → 历史演示；release workflow 发布 Linux / macOS / Windows 二进制
+  6. 服务启动并维持 Phase 6 的 L2 ACL attestation；无法证明或证明过期时 L2 禁用，`/health` 告警并暴露脱敏原因，覆盖失败和恢复的端到端测试（ADR-0028）
 
 **Plans**: TBD
 **Details**: `.planning/phases/07-rest-mcp-shell/`

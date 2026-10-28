@@ -11,6 +11,7 @@
 - [x] P2：跨 L2 权限、SQL AST、审计 fail-closed 与 reload 的工程审查；`06-ENG-REVIEW.md` 为基于现有代码的独立复审，不冒充新的正式 gstack gate。`06-SPIKE-483.md` 记录 29 条新构造语料及 Trino 483 复验，未覆盖的 75 个历史 ID 与真实 ACL 验收留在 P3/P4。
 - [x] P3：GSD research、pattern map 和 9 个可执行 PLAN 已落盘；独立 checker 第三轮 `VERIFICATION PASSED`，六个 requirement ID 与六项 CONTEXT 决策全覆盖。规划通过不等于实施测试通过。
 - [x] P4：GSD execute-phase 依 wave 落实；9 个 PLAN 均有 SUMMARY（详各 SUMMARY）。核心 AST、安全自检、审计队列和管理通道按 TDD 实施，代码所有权以各 PLAN 为准。
+- [ ] P4b：WR-01 库级启动与周期 ACL attestation。先确定生产活跃 query 探针来源，再补 GSD gap PLAN，按 TDD 验证失败、过期、恢复与真实 Trino 483 负向 ACL；Phase 7 的服务及 `/health` 接线由 ADR-0028 另行验收。
 - [ ] P5：GSD verify-work 与目标验证、代码审查、匹配 SHA 的 CI；通过后由 GSD 更新 ROADMAP/STATE/REQUIREMENTS。正式关键模块 PR gate 单独记录。
 
 ## Acceptance
@@ -33,4 +34,4 @@
 
 ## Next Step
 
-P5 审查复验：CR-01 与 WR-02 已关闭，security 18/18、`threats_open: 0`；受限 Trino 483 的 32 条 allow 均 FINISHED，历史原文未恢复。当前工作树的 workspace 单线程测试、全量 Clippy、格式与 diff 检查均退出 0。`06-09` test-only 分类显式更正，GSD TDD 门禁 7/7、`block: false`。下一步补 WR-01 的生产启动/周期 attestation，Phase 7 接 HTTP `/health` 并保留阻断验收；远端 CI 尚未触发，需求维持 Pending，不生成 passed VERIFICATION。
+方案 A 已记录为 ADR-0028。P4b 的活跃 query 来源仍待确定：CI 的 TPCH 大表不能充当生产通用探针，暂停 `SELECT 1` 也不能证明活跃。确定后补 gap PLAN 并按 TDD 实施；Phase 7 服务接线及 `/health` 保留阻断验收。P5 的本地 workspace、Clippy、格式及 GSD TDD 门禁已通过；WR-01、远端 CI 和 Phase 6 verification 仍 Pending。

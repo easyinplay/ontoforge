@@ -1,5 +1,7 @@
 # Phase 6 progress
 
+- 2026-10-28：用户选方案 A。ADR-0028、ROADMAP 和 REQUIREMENTS 已明确 Phase 6 库级 attestation 与 Phase 7 服务 `/health` 的验收边界；P4b 新增 WR-01 gap。Grok 第二意见和代码勘查确认生产活跃 query 探针来源尚未确定，待此选择后补 PLAN、TDD 与真实 Trino 483 复验，L2-04 保持 Pending。
+
 - 2026-10-28：代码提交 `106a5aa` 的 reload 测试 helper 修正后，`cargo test --workspace --locked -j 2 -- --test-threads=1` 退出 0；`cargo clippy --workspace --all-targets --locked -j 2 -- -D warnings`、`cargo fmt --all -- --check`、`git diff --check` 退出 0。首次 workspace 运行的 `reload_racing_commits_never_lets_an_old_write_through` 以 9 committed/1 stale 触发测试计数误报；目标单独复跑通过，修正后连续 6 次和完整 workspace 通过。`06-09` test-only PLAN 类型显式更正并留痕，`tdd-review-checkpoint 06` 返回 7/7、`block: false`。WR-01 生产启动/周期复检与 Phase 7 `/health` 边界仍开放；远端 CI 尚未运行，不生成 passed VERIFICATION。
 
 - 2026-10-28：WR-02 的 11 条无表 allow 样例（G04/G12/G16/G17/G24/G26/G28/G31/G34/G35/G40）在受限 Trino 483 均 FINISHED，实际行数 3/1/0/1/1/1/1/1/1/1/1；ACL target 3/3。剩余 21 条引用 `hive.sales`，进入 fixture 先失败的集成测试。

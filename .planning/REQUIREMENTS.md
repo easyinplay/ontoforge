@@ -239,7 +239,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | L2-01 | Phase 6 | Pending |
 | L2-02 | Phase 6 | Pending |
 | L2-03 | Phase 6 | Pending |
-| L2-04 | Phase 6 | Pending |
+| L2-04 | Phase 6（库级启动与周期 attestation、fail-closed 状态）+ Phase 7（服务生命周期接线及 `/health` 告警，ADR-0028） | Pending |
 | AUDIT-01 | Phase 6 | Pending |
 | API-01 | Phase 7 | Pending |
 | API-02 | Phase 7 | Pending |
