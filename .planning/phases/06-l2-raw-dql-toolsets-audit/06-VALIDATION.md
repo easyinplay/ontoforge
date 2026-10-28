@@ -1,15 +1,15 @@
 ---
 phase: "06"
 slug: "l2-raw-dql-toolsets-audit"
-status: draft
-nyquist_compliant: false
+status: validated
+nyquist_compliant: true
 wave_0_complete: true
 created: "2026-10-26"
 ---
 
 # Phase 6 Validation Strategy
 
-本文件映射 11 个 PLAN 的 21 个任务到自动化测试。原覆盖证据保留；正式 `06-PR-REVIEW.md` 新增 shutdown 并发/取消重试 CR-01，`06-11` 行为测试与实际运行证据待补，覆盖状态回 draft。服务生命周期及 HTTP `/health` 由 Phase 7 验收（ADR-0028）。本文件仅签收自动化覆盖，TDD 门禁、Phase 6 目标验收与远端 CI 状态单独裁定。
+本文件映射 11 个 PLAN 的 21 个任务到自动化测试。正式 PR review 的 shutdown 并发/取消重试 CR-01 已由 `06-11` 的双后端行为测试补齐，独立增量覆盖审计确认无缺口。服务生命周期及 HTTP `/health` 由 Phase 7 验收（ADR-0028）。本文件签收自动化覆盖；最终目标验收及 `2c9eee6` CI run `40682870456` 的成功证据见 `06-VERIFICATION.md`，本地 PR 门禁见 `06-PR-REVIEW.md`。下方按提交和日期保留历史结果。
 
 ## Test Infrastructure
 
@@ -32,7 +32,7 @@ created: "2026-10-26"
 
 | Task | Requirement | Automated target | Local evidence |
 | --- | --- | --- | --- |
-| `06-11` T1 | AUDIT-01 | 共享 `conformance/mod.rs#audit_shutdown_`、storage worker unit | Pending：并发关闭、取消重试、成功/失败缓存与 JoinError；详 `06-11-PLAN.md` |
+| `06-11` T1 | AUDIT-01 | 共享 `conformance/mod.rs#audit_`、storage `audit_shutdown_join_error_is_sticky` unit | SQLite 8/8、真实 PG 9/9、JoinError 1/1，四项真实行为 RED 均 `RED_EVIDENCE_OK`；详 `06-11-SUMMARY.md` 与 `06-11-GREEN-{sqlite,pg,join-error}.log` |
 | `06-01` T1 | AUDIT-01 | `ontoforge-query/tests/audit_pk.rs#audit_pk_` | 4 passed；`06-01-SUMMARY.md` |
 | `06-01` T2 | AUDIT-01 | `ontoforge-query/tests/audit_pk.rs#audit_worker_`、`ontoforge-storage/tests/conformance/mod.rs#audit_shutdown_drains_inflight_guard` | 原 5 passed；新增双后端在途 shutdown 测试通过，CR-01 closed |
 | `06-02` T1 | AUDIT-01 | `ontoforge-storage/tests/conformance_{sqlite,pg}.rs#audit_` | SQLite 5/5、真实 PG 6/6（含新增在途 shutdown）；原基线见 `06-02-SUMMARY.md` |
@@ -70,7 +70,8 @@ created: "2026-10-26"
 
 | Review | Requirement | Status | Missing automated proof |
 | --- | --- | --- | --- |
-| CR-01 | AUDIT-01 | CLOSED | `0d3d0bf` 新增 `conformance/mod.rs#audit_shutdown_drains_inflight_guard`；`5fd876d` 分离 admission 与 sink 健康。SQLite 5/5、真实 PG 6/6，均覆盖在途 guard 与并发 shutdown 后持久行可见；sink 失败仍 fail-closed。 |
+| CR-01 (06-REVIEW) | AUDIT-01 | CLOSED | `0d3d0bf` 新增 `conformance/mod.rs#audit_shutdown_drains_inflight_guard`；`5fd876d` 分离 admission 与 sink 健康。SQLite 5/5、真实 PG 6/6，均覆盖单次 shutdown 等待在途 guard 后持久行可见；sink 失败仍 fail-closed。 |
+| CR-01 (06-PR-REVIEW) | AUDIT-01 | AUTOMATED COVERAGE CLOSED | `0bb29a3` RED、`7813e7f` GREEN：两个关闭调用均等待、取消后重试仍等待、成功/sink 错误/JoinError 终态保留，实际查询持久行。SQLite 8/8、PG 9/9、JoinError 1/1；正式 review 与新 CI 另行签收。 |
 | WR-01 | L2-04 | CLOSED (library) | `06-10-SUMMARY.md` 的生命周期、真实活跃性和清理测试通过，独立增量复审 `06-10-REVIEW.md` clean。Phase 7 服务与 `/health` 仍按 ADR-0028 阻断验收，L2-04 整体 Pending。 |
 | WR-02 | L2-02, L2-03 | CLOSED | `d8ed219`、`bc43cbe` 使 32 条 allow constructed-equivalent 均经 `validate_l2` 的 Display SQL 发送至受限 Trino 483，32/32 FINISHED 并核对行数；104-ID 分类 6/6，拒绝仍为零 POST。原文恢复仍为 0 条。 |
 
@@ -78,13 +79,13 @@ created: "2026-10-26"
 
 ## Validation Sign-Off
 
-- [x] 20/20 任务有 `<automated>` 命令且通过；`06-10` 目标 GREEN 和真实 ACL 已通过，最终 workspace/Clippy/fmt 通过，Phase 7 接线独立验收。
+- [x] 21/21 任务有 `<automated>` 命令且通过；`06-11` 关闭重试覆盖增量审计通过，Phase 7 接线独立验收。
 - [x] 每任务有自动化反馈，没有三个连续任务无验证。
 - [x] Wave 0 fixture 和 target 已就位。
 - [x] 命令无 watch mode；本地真实 Trino ACL 3/3、PG audit 6/6，发现数均大于 0。
 - [x] 反馈耗时见各 SUMMARY；静态覆盖增量审计无新 BLOCKER，最终测试及 Clippy/fmt 通过。
 
-**Approval:** 库级自动化覆盖通过。最终 `e81127f` 的 workspace 为 1251 passed、103 ignored、0 failed，Clippy/fmt 通过；TDD 门禁漏读诊断、远端 CI 与 Phase 6 目标验收独立对账。此签收不代表 L2-04 整体完成。
+**Approval:** 库级自动化覆盖通过。旧 `e81127f` 全量基线保留；新增 `7813e7f` 的 focused GREEN、Clippy/fmt 及原始 GSD TDD gate 9/9 已通过。`2c9eee6` CI run `40682870456` 仍在执行，正式 review 与目标复签独立对账。此签收不代表 L2-04 整体完成。
 
 ## 06-08 实施后证据（2026-10-28）
 

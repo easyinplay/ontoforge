@@ -12,8 +12,8 @@
 - [x] P3：GSD research、pattern map 和 9 个可执行 PLAN 已落盘；独立 checker 第三轮 `VERIFICATION PASSED`，六个 requirement ID 与六项 CONTEXT 决策全覆盖。规划通过不等于实施测试通过。
 - [x] P4：GSD execute-phase 依 wave 落实；9 个 PLAN 均有 SUMMARY（详各 SUMMARY）。核心 AST、安全自检、审计队列和管理通道按 TDD 实施，代码所有权以各 PLAN 为准。
 - [x] P4b：WR-01 库级启动与周期 ACL attestation。用户已选部署方配置有界 probe SQL，`06-10-SUMMARY.md` 记录失败、过期、恢复、真实 Trino 483 负向 ACL 及最终 workspace/Clippy/fmt；Phase 7 的服务及 `/health` 接线由 ADR-0028 另行验收。
-- [ ] P5：原 21/21 及 `20fd0005` CI 证据保留；正式 PR review 新增 CR-01，须完成 P4c 后增量复签，不将旧 CI 当作新实现证据。
-- [ ] P4c：`06-11-PLAN.md` 修复 audit shutdown 的并发、取消后重试和失败结果保留；双后端 TDD、增量 review 与新 SHA CI 通过后再关闭阶段。
+- [x] P4c：`06-11-SUMMARY.md` 记录 shutdown 并发、取消后重试和终态缓存的 TDD 修复；SQLite 8/8、真实 PG 9/9、JoinError 1/1，独立覆盖核验完整，本地 PR review 无开放 BLOCKER/WARNING。
+- [x] P5：`2c9eee6` 的 CI run `40682870456` 三个必需 job 全部 success，verifier 增量复签 22/22；正式证据见 `06-VERIFICATION.md`，本地 PR review 见 `06-PR-REVIEW.md`。旧 CI 仅保留为历史证据。
 
 ## Acceptance
 
@@ -35,4 +35,4 @@
 
 ## Next Step
 
-先执行 `06-11-PLAN.md`：旧实现的 shutdown 并发/取消重试会提前成功，须先取得行为 RED 再修复，审查和新 SHA CI 通过后增量复签。旧 21/21 及 `20fd0005` CI 作为历史证据保留。Phase 7 未启动，L2-04/SCOPE-07 整体 Pending，不执行合并；Phase 1–5 历史 fingerprint staleness 留给 milestone audit。
+进入 Phase 7 discuss，等待用户选择 MCP stdio 运行方式后记录上下文；后续澄清 `serve --dev` 重启的数据保留，工程审查裁定 `/health` 部分降级合同。L2-04/SCOPE-07 整体 Pending，PR #7 不合并；Phase 1–5 历史 fingerprint staleness 留给 milestone audit。

@@ -1,5 +1,15 @@
 # Phase 6 progress
 
+- 2026-10-28：最终 CI run `40682870456` 在 `2c9eee6` 全部通过，verifier 核对三份原始 job 日志后裁定 22/22。AUDIT-01 关闭，L2-04/SCOPE-07 整体仍 Pending；下一步 Phase 7 discuss 等待 stdio 运行方式选择。CI 证明范围止于该 SHA，后续仅文档提交不冒充已获同次 CI；PR #7 不合并。
+
+- 2026-10-28：恢复会话后重新核对 `40682870456` 的 headSha 为 `2c9eee6461a412ead8f998c7fa038acaa458b2f9`；Ubuntu/integration 已 success，Windows workspace 尚在运行。P4c 实施与本地 review 已完成，P5 最终 CI/复签继续等待；Phase 7 stdio 的运行方式仍待用户选择，未写入 accepted 决策。
+
+- 2026-10-28：正式 gstack 本地 PR review 在 `2c9eee6` 签署 0 open BLOCKER/WARNING，`7813e7f` 修复的 CR-01 closed；外部 CLI unavailable 明确留痕。新 CI run `40682870456` 执行中，verifier 正做增量证据核验并等待结果，未关闭 Phase 6。
+
+- 2026-10-28：`06-11` GREEN 提交 `7813e7f`：主会话亲读 SQLite 8/8、真实 PG 9/9、JoinError 1/1、storage Clippy 成功日志；fmt/diff 通过。原始 GSD TDD gate 为 9/9、0 violations、block:false。最终 PR review、新 SHA CI 和增量目标验证仍 Pending，不进入 Phase 7。
+
+- 2026-10-28：`06-11` RED 已真实复现：SQLite audit 5 passed/3 expected failed，PG 17.11 audit 6 passed/3 expected failed，JoinError 单元 0 passed/1 expected failed；对应 JUnit classifier 均 `RED_EVIDENCE_OK`。GREEN 正在执行，尚未签收修复。
+
 - 2026-10-28：正式 gstack PR review `06-PR-REVIEW.md` 新增 CR-01 BLOCKER：shutdown 提前 take handle，导致并发/取消后重试提前 Ok 且丢失 worker 错误。Phase 6 重开 gap closure，AUDIT-01 回 Pending；新增 06-11 TDD 计划，旧 21/21 与 CI 证据保留历史范围。Phase 7 未启动。
 
 - 2026-10-28：verifier 直接核验 HEAD `20fd0005` 对应 CI run `40675450974` 的 metadata/job 原始日志，PG audit 与 ACL 各6/6、32条FINISHED、Ubuntu/Windows workspace及corpus成功，H3关闭，目标验证 `passed`、21/21。详 `06-VERIFICATION.md`；正式PR review仍Pending，Phase7未启动，L2-04/SCOPE-07整体Pending，Phase1–5历史fingerprint staleness留给milestone audit。

@@ -19,10 +19,10 @@ ontoforge 是一个用 Rust 实现、可自托管的开源 Ontology 操作层，
 - ✓ scoped L0 读取（QUERY-01..10）：Rust 编排 source/edit 叠加、行列授权与单表 Trino 查询 — Phase 4，详 `.planning/phases/04-scoped-l0-read/`
 - online Action（ACTION-01..12）：鉴权、并发令牌、主体作用域幂等与 webhook outbox；详 `.planning/phases/05-online-action/05-VERIFICATION.md`。
 - L2 Raw DQL（L2-01..03）；详 `.planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md`。
+- 读取元数据审计及 fail-closed（AUDIT-01）；详 `.planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md`。
 
 ### Active
 
-- [ ] 读审计关闭的并发与取消重试修复（AUDIT-01）；详 `.planning/phases/06-l2-raw-dql-toolsets-audit/06-11-PLAN.md`
 - [ ] L2 ACL 服务生命周期与 `/health` 告警、agent MCP 管理边界（L2-04、SCOPE-07） — Phase 7，ADR-0028
 - [ ] REST（OpenAPI 3.1 + Rust / TS client）与 MCP（toolset 分层）两个出口；`serve --dev` 单二进制演示 — ADR-0019
 

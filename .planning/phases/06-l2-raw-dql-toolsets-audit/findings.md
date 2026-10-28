@@ -1,5 +1,15 @@
 # Phase 6 findings
 
+- 2026-10-28：关闭时实际调用 `roadmap.update-plan-progress 6` 和 `state.patch`。前者正确完成 checkbox/date 与 11/11 计数，但保留旧自由文本 status/Plans 并插入重复 PLAN 清单；后者返回 Progress updated，但磁盘仍为旧 71%/5 completed phases。按用户三层文档纪律做限定文档修正：概览仅留验收指针，STATE 从已验收阶段推导为 6/7、86%，不为旧 fingerprint 重开 Phase 1–5，也不修改 GSD 安装。Phase 7 Requirements 补显式 SCOPE-07 指针，与 REQUIREMENTS 既有跨阶段映射一致，未新增需求。
+
+- 2026-10-28：会话恢复时 `verification.status 6` 返回 `phase_dir_not_found`，该 owner 接受 phase 目录而非编号；改传 `.planning/phases/06-l2-raw-dql-toolsets-audit` 后读得有效状态。最终 CI 与增量复签证据由 `06-VERIFICATION.md` 持有。阶段关闭通过 `roadmap.update-plan-progress` 及限定状态更新实现，避免 `phase.complete` 自动完成跨阶段 L2-04/SCOPE-07。本轮只修改文档，无业务代码，跳过新 TDD；用 diff、owner 状态和需求映射一致性验证。
+
+- 2026-10-28：正式 gstack 本地 PR review 已完成，`06-PR-REVIEW.md` 对 `2c9eee6` 的 45 文件范围、6 specialist 与 Red Team 结果为 0 open BLOCKER/WARNING，PR CR-01 在 `7813e7f` 关闭。两条规范 review/adversarial log 已由 reviewer 写入并回读，外部 Codex 401 按非阻塞 unavailable/informational 记录，不宣称跨模型通过。主会话已委派 verifier 增量检查并等待 CI run `40682870456`，最终目标验收尚未签收。
+
+- 2026-10-28：`06-11` 独立增量覆盖审计确认四项自动化合同齐全，四份 RED evidence 重新分类均通过；SQLite 8/8、PG 9/9、JoinError 1/1，JoinError 由 abort worker 产生，不冒称另测 panic。借用等待与终态缓存无进一步有价值简化。VALIDATION 仅恢复覆盖签收；新 CI run `40682870456` 对应 `2c9eee6`，仍在执行，目标复签未完成。
+
+- 2026-10-28：Phase 7 部署预查再次咨询 Grok，进程在 55 秒超时退出，但 stdout 返回了建议正文，按未正常结束的第二意见参考，不当作通过信号。其建议 stdio 认证桥接同一服务、dev 数据默认持久化、部分 L2 降级以健康正文表达。仅 stdio 使用方式已提前向用户发出可选澄清，未写入锁定决策；health HTTP 状态仍需结合实际运维与工程审查，不采纳“所有非 200 都会触发重启”的泛化推断。Phase 7 仍未启动。
+
 - 2026-10-28：Phase 7 只读预查已完成，尚未启动该阶段。技术栈、DTO、toolset、生命周期合同见 ADR-0007/0009/0019/0028，无需重新决定。后续 discuss 须确认 stdio 是独立 runtime 还是连接既有服务，以及 `serve --dev` 重启的数据保留；`/health` 部分降级 HTTP 状态可先交工程审查。server/api/client 仍为占位，CLI 无 serve；来源为只读 contract scout，无实现或新决策。
 
 - 2026-10-28：正式 PR review 的 CR-01 已由主会话亲读 `read_audit.rs:230-233` 确认：在 await 前 take JoinHandle，使并发/取消重试走 None=>Ok。候选 A 为锁内借用 Running handle 并缓存 Finished(Result)，候选 B 为额外 shared future/watch worker owner；选择 A 保留现 API、依赖和关闭合同，避免增加通知机制。Grok 有界无工具咨询 55 秒后 ETIMEDOUT/SIGTERM、输出空，未取得第二意见。按既有修复授权继续，核心并发修复强制 TDD；ralph-loop 本机不可用，使用明确验收循环，不声称执行该工具。跳过新战略澄清，因为这是已知根因的现有合同修复。

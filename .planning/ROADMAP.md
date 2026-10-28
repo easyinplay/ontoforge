@@ -16,7 +16,7 @@ Phase 1 定死 IR 契约。2026-10-16 起 Phase 2–7 按 `docs/designs/trino-en
 - [x] **Phase 3: Edit Store & Scope Model** - 按 type 强类型 edit store、DDL diff / migrate / reload 加固、edit log；用户 / 组 / 角色、CEL 行谓词（SQL 编译 + Rust 单行求值） (completed 2026-10-22)
 - [x] **Phase 4: Scoped L0 Read** - Rust 编排叠加读：pk 读、列表、聚合分解、searchAround、keyset 分页、HMAC 版本令牌 (completed 2026-10-23)
 - [x] **Phase 5: Online Action** - Action 鉴权管线 ①-⑨、并发令牌、`command_id`、webhook outbox (completed 2026-10-26)
-- [ ] **Phase 6: L2 Raw DQL, Toolsets & Audit** - PR review 审计关闭缺口修复中；详: `.planning/phases/06-l2-raw-dql-toolsets-audit/06-PR-REVIEW.md`
+- [x] **Phase 6: L2 Raw DQL, Toolsets & Audit** - L2、toolsets 与读审计已验收；详: `.planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md` (completed 2026-10-28)
 - [ ] **Phase 7: REST & MCP Shell** - REST + OpenAPI + clients、MCP toolset（core / full / sql:raw）、`serve --dev`、release
 
 ## Phase Details
@@ -245,7 +245,7 @@ Plans:
   4. 所有级别的读取写入元数据审计（主体、工具、对象类型、apiName 级条件、生效 role、SQL 哈希、行数、耗时、request_id），不含结果数据；审计积压时读请求返回 `AuditUnavailable`
   5. role / scope 只能经管理通道或 L3 修改并审计；定义 reload 先 validate / lint，失败不切换；每个请求固定使用开始时的定义版本
 
-**Plans**: 10/11 summarized，PR review CR-01 待 `06-11` 关闭；详: `.planning/phases/06-l2-raw-dql-toolsets-audit/06-PR-REVIEW.md`
+**Plans**: 11/11 complete，2026-10-28；详: `.planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md`
 
 **Details**: `.planning/phases/06-l2-raw-dql-toolsets-audit/`
 
@@ -254,7 +254,7 @@ Plans:
 **Goal**: 应用经 REST（OpenAPI 3.1、Rust / TS client），agent 经 MCP（按主体过滤的 toolset）使用全部能力；`ontoforge serve --dev` 单二进制在本机跑通端到端演示，并发布三平台二进制
 **Mode:** mvp
 **Depends on**: Phase 6
-**Requirements**: API-01, API-02, API-03, API-04, API-05, MCP-01, MCP-02, MCP-03, MCP-04, MCP-05, MCP-06, MCP-07, MCP-08, DX-01, DX-02, DX-04, L2-04（服务接线与 `/health`）
+**Requirements**: API-01, API-02, API-03, API-04, API-05, MCP-01, MCP-02, MCP-03, MCP-04, MCP-05, MCP-06, MCP-07, MCP-08, DX-01, DX-02, DX-04, L2-04（服务接线与 `/health`）, SCOPE-07（MCP 管理工具限制）
 **Spike**: 进入前验证 `rmcp` 动态 tool 列表
 **Success Criteria** (what must be TRUE):
 
@@ -280,5 +280,5 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7（纵切片
 | 3. Edit Store & Scope Model | 23/23 | Complete    | 2026-10-22 |
 | 4. Scoped L0 Read | 7/7 | Complete    | 2026-10-23 |
 | 5. Online Action | 7/7 | Complete    | 2026-10-26 |
-| 6. L2 Raw DQL, Toolsets & Audit | 10/11 | PR review gap closure | - |
+| 6. L2 Raw DQL, Toolsets & Audit | 11/11 | Complete | 2026-10-28 |
 | 7. REST & MCP Shell | 0/TBD | Not started | - |

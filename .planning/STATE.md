@@ -3,39 +3,39 @@ gsd_state_version: "1.0"
 current_phase: 6
 current_phase_name: L2 Raw DQL, Toolsets & Audit
 current_plan: 11
-status: gap_closure
-last_gate_trip: null
-stopped_at: Phase 6 PR CR-01 audit shutdown gap; 06-11 TDD next
-last_updated: "2026-10-28"
+status: completed
+stopped_at: Phase 6 已完成；Phase 7 stdio 运行方式待确认
+last_updated: "2026-10-28T12:15:19.355Z"
 last_activity: 2026-10-28
-last_activity_desc: Formal PR review found audit shutdown cancellation/concurrency gap
-state_head: 20fd0005
+state_head: 2c9eee6461a412ead8f998c7fa038acaa458b2f9
 progress:
   total_phases: 7
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 72
-  completed_plans: 71
-  percent: 71
+  completed_plans: 72
+  percent: 86
+last_gate_trip: null
+last_activity_desc: Phase 6 验收 22/22；CI 40682870456 在 2c9eee6 全部通过
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-10-23)
+See: .planning/PROJECT.md (updated 2026-10-28)
 
 **Core value:** 定义一次 ontology，应用和 agent 就能通过 REST 与 MCP 对同一份对象图做受控读写：写入一律经 Action 校验与授权，每次写入都可审计。
-**Current focus:** Phase 6 — L2 Raw DQL, Toolsets & Audit
+**Current focus:** Phase 7 运行方式讨论，等待 stdio 选择
 
 ## Current Position
 
-Phase: 6 (L2 Raw DQL, Toolsets & Audit): GAP CLOSURE
+Phase: 6 (L2 Raw DQL, Toolsets & Audit): COMPLETE
 Current Plan: 11
 Total Plans in Phase: 11
-Status: PR review CR-01 open; previous 21/21 evidence retained; Phase 7 not started
-Last activity: 2026-10-28: 审计关闭并发与取消重试缺口，详 Phase 6 `06-PR-REVIEW.md`
+Status: complete
+Last activity: 2026-10-28: Phase 6 验收 22/22；CI 40682870456 在 2c9eee6 全部通过
 
-Progress: 71%
+Progress: 86%
 
 ## Performance Metrics
 
@@ -56,7 +56,8 @@ None yet.
 - [Ops]: 测试凭据待轮换（`ontoforge_trino_ro`、postgres），测试 catalog `ontoforge_pg` 待删除
 - [Phase 2]: 非阻塞安全 observations 待后续 phase 跟进（详: `phases/02-source-binding-engine/02-SECURITY.md` Observations）
 - [Phase 5]: 生产 webhook 联调与正式 gstack gate 待发布/PR 前完成；GSD 关闭警告详见 `phases/05-online-action/deferred-items.md`
-- [Phase 6]: 正式 PR review CR-01 开放，修复计划 `06-11-PLAN.md`；既有 CI 只证明 `20fd0005`。Phase 1–5 历史 fingerprint staleness 待 milestone audit 复核。
+- [Phase 6]: 本地 PR review、CI 与增量复签通过；外部 Codex 审查不可用。Phase 1–5 历史 fingerprint staleness 待 milestone audit 复核，详 Phase 6 VERIFICATION。
+- [Phase 7]: stdio 运行方式待用户选择；L2-04/SCOPE-07 跨阶段验收仍 Pending；PR #7 不合并。
 
 ## Deferred Items
 
@@ -67,5 +68,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-10-28
-Stopped at: Phase 6 PR CR-01 audit shutdown gap; 06-11 TDD next
+Stopped at: Phase 6 已完成；Phase 7 stdio 运行方式待确认
 Resume file: .planning/phases/06-l2-raw-dql-toolsets-audit/task_plan.md
