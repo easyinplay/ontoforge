@@ -12,7 +12,7 @@ provides:
   - Explicit bounded L2 ACL monitor startup, periodic attestation and shutdown
   - Owner-only enable with cross-generation pending cleanup obligations
   - Stateful query-ID lifecycle regression and real Trino 483 evidence
-affects: [07-auth-service, L2-03, L2-04]
+affects: [07-rest-mcp-shell, L2-03, L2-04]
 tech-stack:
   added: []
   patterns: [monitor lease, generation and epoch tickets, token-checked serial cleanup]
@@ -43,11 +43,12 @@ plan_head_before: cbbf87e64df1d715889260befe592a3db2df45c8
 plan_head_after: 9738166f88d92e720b32f4de65a5a803e6e6dbc8
 duration: 37min
 completed: 2026-10-28
-status: pending_verification
+status: completed
 final_gates:
-  workspace: parent-running
-  clippy: parent-pending
-  fmt: parent-pending
+  workspace: passed-e81127f
+  clippy: passed-e81127f
+  fmt: passed-e81127f
+  tdd_review: passed-8-of-8-with-transient-read-risk
 coverage:
   - id: D1
     description: Bounded startup, fail-closed lifecycle and fresh attestation recovery
@@ -122,7 +123,8 @@ Phase 7 仍需将该 handle 接到服务启动、持有、优雅关闭和 HTTP `
 1. `cargo test -p ontoforge-engine --test l2_monitor --test l2_health --lib --locked -j 2 -- --nocapture`：unit 55/55、health 10/10、monitor 16/16，共 81 passed，0 failed。
 2. 最后测试断言后：`cargo test -p ontoforge-engine --lib old_cleanup_response_and_owner_cannot_clear_or_cancel_new_probe --locked -j 2 -- --nocapture`：1 passed，0 failed。
 3. `cargo test -p ontoforge-engine --test trino_l2_acl_it --locked -j 2 -- --ignored --nocapture`：真实 Trino 483 默认并行 6/6，8.60s。覆盖 restricted ACL、loose ACL fail-closed、short query 拒绝、startup 活跃 query 清理；既有 32 条 allow corpus 全部 FINISHED。
-4. `git diff --check` 无输出。workspace、Clippy、最终 fmt 由主会话接管，结果应在最终签收前补入此处。
+4. 主会话在 `80d053b` 执行 `cargo test --workspace --locked -j 2 -- --test-threads=1` 退出 0：117 个结果组、1251 passed、103 ignored、0 failed，编译/链接 27m57s。完整本地日志：`C:/Users/easyi/AppData/Local/Temp/ontoforge-phase06-10-workspace-final.log`。
+5. Clippy 暴露测试 fixture 风格问题后，`5988da8`/`e81127f` 仅修正测试表达、提取 mock helper 和移动 unit module，生产文本不变。执行器在 `e81127f` 运行 unit 55/55、monitor 16/16，完整 workspace Clippy `-D warnings` 退出 0（25.79s），fmt/diff 通过。主会话在该最终快照重跑完整 workspace 退出 0：117 个结果组、1251 passed、103 ignored、0 failed，编译/链接 29m55s；日志 `C:/Users/easyi/AppData/Local/Temp/ontoforge-phase06-10-workspace-accepted.log`。最终原始 TDD review 重跑 8/8、block:false（5.87s）；间歇 Git 漏读风险仍保留在 findings，不宣称 GSD 已根治。Phase 6 目标验证另行裁定。
 
 真实环境由主会话启动：restricted `127.0.0.1:58081`、loose `127.0.0.1:58082`，hive.sales fixture 已 seed。此 executor 没有清理服务，避免影响主会话后续验证。远端 CI 尚未执行。
 
@@ -140,6 +142,16 @@ Phase 7 仍需将该 handle 接到服务启动、持有、优雅关闭和 HTTP `
 10. `9738166` test：固定旧响应回归的在途交错前提。
 
 `commits` 通过 `.git/gsd-plan-head-before-06-10` 到 `plan_head_after` 的 `git rev-list --count` 实测为 10；文档收尾提交另计。actuals.tokens 为该区间实际 diff 82672 chars / 4 = 20668，不是模型 token 消耗。
+
+## Final Gate Follow-Ups
+
+原任务 ledger 保留上述 10 个提交。最终门禁额外暴露的测试表达及布局修正单列：
+
+- `80d053b`：wiremock HTTP 方法使用类型化常量，SQL 源码边界守卫不变。
+- `5988da8`：真实 ACL fixture 的冗余闭包改为等价方法引用。
+- `e81127f`：mock DELETE 响应抽取 helper、字符串赋值使用 `clone_into`、unit module 原样移到文件末尾；生产文本逐字核对一致。
+
+增量独立复审覆盖到 `e81127f`，开放发现 0，未增加 lint suppression；详 `06-10-REVIEW.md`。未为纯测试风格整理新增业务 TDD，原行为回归与完整 Clippy 作为验证。
 
 ## Deviations from Plan
 
@@ -164,4 +176,4 @@ Phase 7 仍需将该 handle 接到服务启动、持有、优雅关闭和 HTTP `
 
 ## Self-Check: PASSED
 
-已确认新增 `l2_monitor.rs`、`tests/l2_monitor.rs` 和全部 5 组 RED 证据文件存在；上列 10 个提交均是当前 HEAD 的祖先。状态仅表示文件与提交自检通过，不替代尚待主会话返回的最终 workspace/Clippy/fmt gate。
+已确认新增 `l2_monitor.rs`、`tests/l2_monitor.rs` 和全部 5 组 RED 证据文件存在；上列 10 个提交均是当前 HEAD 的祖先。最终 workspace/Clippy/fmt 与 TDD review 已通过；本计划完成不替代 Phase 6 目标验证或 Phase 7 服务验收。

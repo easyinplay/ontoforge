@@ -1,15 +1,15 @@
 ---
 phase: "06"
 slug: "l2-raw-dql-toolsets-audit"
-status: draft
-nyquist_compliant: false
+status: validated
+nyquist_compliant: true
 wave_0_complete: true
 created: "2026-10-26"
 ---
 
 # Phase 6 Validation Strategy
 
-本文件映射 9 个 PLAN 的 18 个任务到自动化测试。代码审查提出的 CR-01 和 WR-02 已补充测试与实测，WR-01 的生产接线仍缺；Phase 6 目标验收与远端 GitHub Actions 运行状态由 `06-VERIFICATION.md` 和匹配 SHA 的 CI 记录单独裁定。
+本文件映射 10 个 PLAN 的 20 个任务到自动化测试。原 CR-01、WR-02 与 WR-01 库级缺口均已修复，增量复审见 `06-10-REVIEW.md`；`e81127f` 的 workspace/Clippy/fmt 均通过，静态覆盖增量审计无新 BLOCKER。服务生命周期及 HTTP `/health` 由 Phase 7 验收（ADR-0028）。本文件仅签收自动化覆盖，TDD 门禁、Phase 6 目标验收与远端 CI 状态单独裁定。
 
 ## Test Infrastructure
 
@@ -19,7 +19,7 @@ created: "2026-10-26"
 | Config file | `Cargo.toml`、`.github/workflows/ci.yml`、`ci/query-services.sh` |
 | Quick run command | 各 PLAN 任务的目标 `cargo test -p <crate> --locked <filter>` |
 | Full suite command | `cargo test --workspace --locked`，另执行真实 PostgreSQL 和受限 Trino 483 ignored targets |
-| Measured runtime | Windows workspace 单线程约 3 分钟；Trino ACL 约 3 秒，embedded PostgreSQL audit 约 10 秒（详 `06-08-SUMMARY.md`） |
+| Measured runtime | 最终 Windows workspace 编译/链接 29m55s，测试另需约 3 分钟；真实 Trino 6 项 8.60s；旧基线详 `06-08-SUMMARY.md` |
 
 ## Sampling Rate
 
@@ -38,7 +38,7 @@ created: "2026-10-26"
 | `06-02` T2 | AUDIT-01 | `ontoforge-storage/tests/conformance/mod.rs#audit_`、`ontoforge-storage/tests/conformance_pg.rs#audit_` | 双后端故障及在途 shutdown 测试通过；`0d3d0bf`、`5fd876d` |
 | `06-03` T1 | L2-02, L2-03 | `ontoforge-engine/tests/l2_gate.rs#l2_gate_` | 10/10；`06-03-SUMMARY.md` |
 | `06-03` T2 | L2-02, L2-03 | `ontoforge-engine/tests/l2_gate.rs#l2_corpus_` | 104-ID 等价语料 6/6；`06-03-SUMMARY.md` |
-| `06-04` T1 | L2-04 | `ontoforge-engine/tests/l2_health.rs#l2_health_` | 库级自检通过；生产启动/周期接线缺失，详 WR-01 |
+| `06-04` T1 | L2-04 | `ontoforge-engine/tests/l2_health.rs#l2_health_` | 库级自检通过；startup/periodic 库级缺口已由 `06-10` 补齐，服务接线归 Phase 7 |
 | `06-04` T2 | L2-03, L2-04 | `ontoforge-engine/tests/trino_l2_acl_it.rs#trino_l2_acl_` | 真实受限 Trino 483 3/3；`06-04-SUMMARY.md` |
 | `06-05` T1 | AUDIT-01 | `ontoforge-query/tests/audit_l0.rs#audit_list_` | list/set/searchAround 及 PG-only 通过；`06-05-SUMMARY.md` |
 | `06-05` T2 | AUDIT-01 | `ontoforge-query/tests/audit_l0.rs#audit_aggregate_` | 聚合/故障目标通过；`06-05-SUMMARY.md` |
@@ -50,6 +50,8 @@ created: "2026-10-26"
 | `06-08` T2 | AUDIT-01 | `ontoforge-storage/tests/conformance_pg.rs#audit_`、workspace | `06-08-SUMMARY.md` 基线 PG 5/5、workspace 1231 passed；补测 PG 6/6，当前本地 workspace 退出 0 |
 | `06-09` T1 | AUDIT-01, SCOPE-07 | `ontoforge/tests/cli_{reload,scope}.rs`、`ontoforge-storage/tests/scope_store.rs` | 8/8、8/8、12/12；`06-09-SUMMARY.md` |
 | `06-09` T2 | L2-01, SCOPE-07 | `ontoforge-query/tests/definition_snapshot.rs` | L0/L2 并发快照 2/2；`06-09-SUMMARY.md` |
+| `06-10` T1 | L2-03, L2-04 | `ontoforge-engine/tests/{l2_health,l2_monitor}.rs` | lib 55/55、health 10/10、monitor 16/16 GREEN；5 组有效 RED，详 `06-10-SUMMARY.md` |
+| `06-10` T2 | L2-03, L2-04 | `ontoforge-engine/tests/{l2_monitor,trino_l2_acl_it}.rs` | 真实受限/松 ACL 默认并行 6/6、32 条 allow 全部 FINISHED；最终 workspace 1251 passed/103 ignored/0 failed，Clippy/fmt 通过 |
 
 ## Wave 0 Requirements
 
@@ -57,7 +59,7 @@ created: "2026-10-26"
 - [x] `crates/ontoforge-query/tests/audit_pk.rs` 承载 Wave 1 RED/GREEN 测试。
 - [x] 独立受限 Trino 483 ACL fixture 与 `trino_l2_acl_it` target 已本地运行，CI 已接线。
 - [x] 审计 PG/SQLite migration、conformance 和故障注入测试已运行。
-- [x] 18 个任务各有自动化命令；发现数和运行结果详各 SUMMARY。
+- [x] 20 个任务各有自动化命令；原 18 个任务结果详各 SUMMARY，`06-10` 目标与真实测试结果见 `06-10-SUMMARY.md`。
 
 ## Manual-Only Verifications
 
@@ -68,20 +70,20 @@ created: "2026-10-26"
 | Review | Requirement | Status | Missing automated proof |
 | --- | --- | --- | --- |
 | CR-01 | AUDIT-01 | CLOSED | `0d3d0bf` 新增 `conformance/mod.rs#audit_shutdown_drains_inflight_guard`；`5fd876d` 分离 admission 与 sink 健康。SQLite 5/5、真实 PG 6/6，均覆盖在途 guard 与并发 shutdown 后持久行可见；sink 失败仍 fail-closed。 |
-| WR-01 | L2-04 | PARTIAL | `recheck_l2_acl` 仅测试调用；生产启动与小于 60 秒的复检调度及 `/health` 接线没有端到端目标。若 Phase 7 负责接线，须在其验收中保留阻断项；不能把库级单测等同生产接线。 |
+| WR-01 | L2-04 | CLOSED (library) | `06-10-SUMMARY.md` 的生命周期、真实活跃性和清理测试通过，独立增量复审 `06-10-REVIEW.md` clean。Phase 7 服务与 `/health` 仍按 ADR-0028 阻断验收，L2-04 整体 Pending。 |
 | WR-02 | L2-02, L2-03 | CLOSED | `d8ed219`、`bc43cbe` 使 32 条 allow constructed-equivalent 均经 `validate_l2` 的 Display SQL 发送至受限 Trino 483，32/32 FINISHED 并核对行数；104-ID 分类 6/6，拒绝仍为零 POST。原文恢复仍为 0 条。 |
 
-CR-01 与 WR-02 的复审见 `06-REVIEW.md`（Critical 0、Warning 1）。WR-01 保持开放。
+原三项发现均已关闭，详 `06-REVIEW-DISPOSITION.md`；增量五项发现也已关闭，详 `06-10-REVIEW.md`。Phase 6 总验收不由审查计数代替。
 
 ## Validation Sign-Off
 
-- [ ] 18/18 任务有 `<automated>` 命令；CR-01、WR-02 已补证，L2-04 仍有 WR-01 生产接线缺口。
+- [x] 20/20 任务有 `<automated>` 命令且通过；`06-10` 目标 GREEN 和真实 ACL 已通过，最终 workspace/Clippy/fmt 通过，Phase 7 接线独立验收。
 - [x] 每任务有自动化反馈，没有三个连续任务无验证。
 - [x] Wave 0 fixture 和 target 已就位。
 - [x] 命令无 watch mode；本地真实 Trino ACL 3/3、PG audit 6/6，发现数均大于 0。
-- [ ] 反馈耗时见 `06-08-SUMMARY.md`；gap 关闭后才能标记 `nyquist_compliant: true`。
+- [x] 反馈耗时见各 SUMMARY；静态覆盖增量审计无新 BLOCKER，最终测试及 Clippy/fmt 通过。
 
-**Approval:** WR-01 pending；本地完整 workspace 退出 0，远端 CI 与 Phase 6 目标验收待独立对账。
+**Approval:** 库级自动化覆盖通过。最终 `e81127f` 的 workspace 为 1251 passed、103 ignored、0 failed，Clippy/fmt 通过；TDD 门禁漏读诊断、远端 CI 与 Phase 6 目标验收独立对账。此签收不代表 L2-04 整体完成。
 
 ## 06-08 实施后证据（2026-10-28）
 
@@ -123,3 +125,11 @@ CR-01 与 WR-02 的复审见 `06-REVIEW.md`（Critical 0、Warning 1）。WR-01 
 | Resolved | 2 |
 | Gaps found | 1 |
 | Escalated | 1 |
+
+## Validation Audit 2026-10-28
+
+| Metric | Count |
+|---|---|
+| Gaps found | 0 |
+| Resolved | 3 |
+| Escalated | 0 |

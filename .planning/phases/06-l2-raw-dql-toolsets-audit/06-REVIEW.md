@@ -40,10 +40,10 @@ files_reviewed_list:
   - crates/ontoforge/tests/cli_reload.rs
 findings:
   critical: 0
-  warning: 1
+  warning: 0
   info: 0
-  total: 1
-status: issues_found
+  total: 0
+status: clean
 ---
 
 # Phase 6: Code Review Report
@@ -51,11 +51,11 @@ status: issues_found
 **Reviewed:** 2026-10-27T21:36:32Z
 **Depth:** deep
 **Files Reviewed:** 34
-**Status:** issues_found
+**Status:** clean
 
 ## Summary
 
-`CR-01` 已由 `0d3d0bf` / `5fd876d` 修复，SQLite 在途 guard 关闭测试通过。复审 `d8ed219` / `bc43cbe` 后，`WR-02` 已关闭：CI 的受限 Trino 483 测试现在执行 corpus 中全部 32 条 `allow` SQL，检查完成结果与行数；本地 `l2_corpus_each_case_runs_production_gate` 通过（1 passed）。父会话报告真实 Trino 测试 3/3 通过。`evaluation-scope` 原先返回 `degraded`（`no-task-commit-rows`）。当前仅剩 ACL 启动及周期复检接线 Warning。
+原 CR-01 与 WR-02 的关闭证据见各自修复提交和 `06-VALIDATION.md`。WR-01 的库级缺口由 `06-10` 补齐并经独立增量复审关闭，详 `06-10-REVIEW.md`；该增量报告拥有新发现、修复和最终快照证据。Phase 7 服务接线及 `/health` 按 ADR-0028 独立阻断验收。当前开放 findings 为 0，Phase 6 总验收与远端 CI 仍单独裁定。
 
 ## Narrative Findings (AI reviewer)
 
@@ -64,6 +64,8 @@ status: issues_found
 **File:** `crates/ontoforge-engine/src/trino/mod.rs:129-145`、`crates/ontoforge-engine/src/trino/l2_health.rs:62-75`
 **Issue:** `build_trino_engines` 构造的 L2 实例初始为 `NotVerified`；唯一能置为 `Enabled` 的 `recheck_l2_acl` 在仓库内仅由测试调用。即便外层调用一次，`status()` 也在 60 秒后返回 `Expired`；没有生产调度再次提供仍然活跃的其他身份 query ID。这保持 fail-closed，但当前库接入后 L2 默认不可用，并且单次自检后最多可用 60 秒。Phase 7 的外壳接线尚未实现，L2-04 的启动与周期行为仍依赖该工作。
 **Fix:** 在正式 L2 入口启用前接入启动 attestation，维护另一身份的可验证活跃 query，并按小于 60 秒的间隔复检；复检失败保持禁用，覆盖启动、过期、恢复的端到端测试。若此职责明确划归 Phase 7，在其验收中保留阻塞项。
+
+**Resolution:** 库级缺口已关闭，最终独立复审为 `06-10-REVIEW.md` 的 `9738166` 快照；API、配置、TDD 和真实默认并行 Trino 证据见 `06-10-SUMMARY.md`。服务生命周期与 HTTP 告警由 ADR-0028、Phase 7 SC6 保留阻断，L2-04 整体仍 Pending。本段保留原始发现作为历史，不代表当前开放问题。
 
 ---
 

@@ -1,5 +1,31 @@
 # Phase 6 findings
 
+- 2026-10-28：空闲下漏读后的完整真实 gate 追踪：24 个 Git 调用全部 exit 0、error/signal null、stderr 空，耗时 41–348ms；06-01 三调用 47/43/329ms、log stdout 446 bytes。完整模块 gate 8/8，随后同环境原始 CLI 5.87s、8/8、block:false。没有捕获此前真实失败，因此只确认错误归类机制，不能认定真实根因已查明。更新 Grok 咨询在 55 秒边界 `ETIMEDOUT`、stdout/stderr 空，未返回第二意见；已按本轮两次复验上限停止调查，无安装/配置/历史修改。以最新原始门禁通过继续 Phase 6 verifier，保留工具间歇漏读风险。
+
+- 2026-10-28：只读核对 GSD `phase.cjs:3771-3814`，`phase.complete` 会按本阶段 ROADMAP Requirements 无条件将 Pending/In Progress 改为 Complete，不解析跨 Phase 合同。若 Phase 6 verifier 通过，收尾仍须依 ADR-0028 及 REQUIREMENTS 的既有 Phase 7 归属保留 L2-04、SCOPE-07 整体 Pending，不修改需求合同或 GSD 安装；正式总验收仍由 VERIFICATION 裁定。
+
+- 2026-10-28：Clippy 逐目标检查在首次错误后中止，因此首轮仅显露一项不代表完整 lint 只有一项。第二轮确认 `tests/l2_monitor.rs` 的 responder 长度及 4 处 assigning_clones、`src/trino/l2_monitor.rs` 的 items_after_test_module。仅拆分 fixture helper、替换等价赋值并移动 unit module，跳过新的业务 TDD；必须跑原 monitor unit/integration 与全量 Clippy，不通过 suppress lint 掩盖问题。
+
+- 2026-10-28：最终 Clippy 的唯一错误是 `trino_l2_acl_it.rs:353` 测试轮询中的冗余闭包，改为 `Vec::is_empty`，不改变表达式语义或生产代码。该一行测试风格修正跳过新的业务 TDD；以受影响目标编译和完整 Clippy 验证，真实 Trino 证据仍指向原行为快照。
+
+- 2026-10-28：只读增量调查证明 GSD 错误归类机制：`shell-command-projection.cjs:592,622-627` 的 Git 子进程默认 10 秒 timeout；`gate-evaluation-scope.cjs:141-149,217-218` 转为 unresolvable/git-timeout/空 commits；`gate-tdd-review-checkpoint.cjs:86-88` 忽略 status/reason，并由依赖计划补给 GREEN（186-190），故仅 RED missing。仅内存注入 06-01 git log timeout 已精确复现，无文件改动。真实原命令重跑 7.14 秒、8/8、block:false；真实 trace 三次 Git 调用 216/43/335ms、stderr 空。未捕获此前失败子进程，不能确定资源竞争为根因。Grok 建议区分基础设施错误与缺提交，方向符合源码；其 Cargo RED 验证锁竞争假说不符合此门禁实际只读 Git 的调用链，未采纳，不运行其扩大测试建议。待 workspace/Clippy 结束后空闲复跑原命令，不改安装。
+
+- 2026-10-28：TDD 原始门禁在最终 workspace 编译期间再次返回 `06-01` RED missing（8 个 TDD PLAN、1 violation、block:true），此前同命令重跑曾通过，故不能将首次异常视为已解决。按 diagnosing-bugs 优先核查子进程 timeout/错误吞没，其次解析/缓存与路径上下文；只读调查及 Grok 第二意见进行中，不修改安装或绕过门禁。
+
+- 2026-10-28：最终 workspace 的 SQL 源码边界守卫失败，命中 `src/trino/l2_monitor.rs:258/263` 中 wiremock HTTP `"DELETE"` 字面量。守卫使用 SQL keyword 字符串扫描，最小修复是测试使用 `reqwest::Method::DELETE.as_str()`，保留守卫规则与生产行为。仅修正两行 fixture 表达，跳过新的业务 TDD；现有失败守卫与原 monitor unit 用作回归验证。
+
+- 2026-10-28：默认并行真实 Trino 测试结束后，`docker rm -f ontoforge-trino-l2 ontoforge-trino-l2-loose` 成功，原 58080/55432 及其他容器仍在。自动审批两次拒绝临时 fixture 的删除（含逐文件非递归方案，均仅返回 blocked by policy）；保留 `C:/Users/easyi/AppData/Local/Temp/trino-l2-catalog.UGBYEziV` 的 5 个已核验无链接配置文件，不再尝试绕过。容器删除与文件删除分别记录，不声称清理完全。
+
+- 2026-10-28：新增 `06-10` 后首次原始 `check tdd-review-checkpoint 06` 报 `06-01` RED missing。只读核实该 plan 的 5 个提交仍可达，默认与 1000 上限的 evaluation-scope 均完整返回 `0981150`/`8faa2c9` RED 与 `a531947` GREEN，排除取样上限和历史丢失；原命令重跑为 8/8、block:false。首次漏读的具体瞬态原因未证实，不宣称已根治 GSD 工具，也不改历史/关闭 TDD。Grok 无工具第二意见建议先提取实际 git 命令再改 scope；检查发现 resolver 先按 plan subject 过滤，默认上限 200，该 plan 仅 5 个提交，故未采纳其条件式扩大窗口建议。此调查只读，无工具安装或配置修改。
+
+- 2026-10-28：Grok 第二意见已返回，采纳 monitor owner-only enable 和跨 generation 的 pending 清理义务。同一 engine 的 pending 由共享状态持有，新 monitor 必须先清旧 probe；旧 DELETE 响应按捕获的 query/token 校验后才能清除对应 pending，旧 Drop 只作用于自身 generation。无 monitor 时保持 manual 兼容；注册期间 manual 成功不能写 Enabled，必须明确返回禁用状态。未采纳将 pending 持久化到数据库的扩展建议，进程退出由服务端 execution/run time 上限兜底。新增行为 RED 后再实现。stateful fixture 按 ID/owner/state 观测，成功 DELETE 终结查询，并覆盖 DELETE pending 时不可启用；真实 ACL suite 按 CI 默认并行复跑。
+
+- 2026-10-28：增量 review 确认跨 API 清理绕过：monitor DELETE=500 后为 CleanupFailed，但同 generation 的 manual recheck 可借另一 RUNNING ID 写 Enabled，未清理原 pending probe。按 cleanup-before-enable 合同必须修复。最小边界：无 monitor 时保留 manual；monitor 已注册期间 manual 只能诊断/禁用，不能从 disabled 启用，只有 owner cycle 清理成功后可启用。执行器先补回归 RED 再修复；Grok 第二意见查询中，不重复请求用户批准既定安全合同。
+
+- 2026-10-28：独立 plan checker 无 blocker，指出调度上限和锁等待 deadline 未写进 task action；已明确默认 30 秒周期/20 秒整体 cycle（包含 recheck/admission 等待）和锁竞争测试。主会话追加同 coordinator endpoint 前提，防止传入另一集群 ontology engine 产生无效隔离证据；正常 build_trino_engines 路径不受影响。
+
+- 2026-10-28：Grok 无工具第二意见复核生命周期：enable 与 shutdown 的资格检查/状态写入必须同锁；启动 future 取消须撤销任务；重复 monitor 需原子登记；过期检查独立于 loop 存活；manual 与 periodic 共用 recheck/admission 序列化。主会话采纳这些约束。其认为 DELETE 404 必须失败的建议未采纳：前后真实 RUNNING 已确立观测期间活跃，404 证明清理时已不存在；不以 404 代替活跃证据。探针清理 2xx/404 可以成功，其余失败关闭。
+
 - 2026-10-28：选项 1 已获用户批准。主会话 `superpowers:brainstorming` 复核现有 engine 后选显式 async startup + RAII monitor handle，避免同步构造函数隐式 spawn；约 30 秒复检，小于 60 秒有效期。每轮 fresh ontology query，隔离观测前后检查真实非终态（优先 RUNNING），有界只读 AST、服务端 run/execution 上限、客户端整体 deadline 与 origin 检查；失败/停止/取消失败不得 re-enable。核心安全逻辑执行 TDD，不豁免。既有阶段 scope 明确，跳过新战略 office-hours/CEO gate。ralph-loop 未安装，记录逐项验收而不声称执行。
 
 - 2026-10-28：用户选择方案 A，ADR-0028 将 Phase 6 库级启动/周期 ACL attestation 与 Phase 7 服务及 `/health` 告警分开验收，L2-04 整体保持 Pending。只读代码勘查确认 `recheck_l2_acl` 需调用者传入另一身份 query ID，`QueryResults` 未解析 `id`/`stats`，同步 `build_trino_engines` 不能隐式启动 Tokio monitor。Grok CLI 第二意见：生产没有通用长查询，暂停短 `SELECT 1` 的 `nextUri` 不构成活跃证据；优先部署方配置有界探针，每轮自产 ID、同轮检查、取消，失败维持禁用。是否新增此配置为实施前的开放决策。

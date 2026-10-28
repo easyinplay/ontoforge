@@ -1,5 +1,43 @@
 # Phase 6 progress
 
+- 2026-10-28：最终原始 TDD 门禁 5.87s、8/8、block:false；完整真实调用链追踪未复现失败，Grok 更新咨询超时，详 findings。`06-10` 计划签收 completed，VALIDATION 为 validated/nyquist_compliant；Phase 6 目标验证与远端 CI 仍 Pending，准备 dispatch GSD verifier。
+
+- 2026-10-28：最终 `e81127f` workspace 退出 0：117 个结果组、1251 passed、103 ignored、0 failed，编译/链接 29m55s，日志 `C:/Users/easyi/AppData/Local/Temp/ontoforge-phase06-10-workspace-accepted.log`。Clippy/fmt/diff 通过，Nyquist 覆盖按独立审计条件签收；无 Cargo 并发的原始 TDD gate 仍误报 06-01 RED missing，继续捕获真实 Git 调用，不进入 verifier 或下一 Phase。
+
+- 2026-10-28：`e81127f` 仅整理测试 fixture 与 unit module 位置，执行器逐字核对生产文本不变。unit 55/55、monitor 16/16，完整 workspace Clippy `-D warnings` 退出 0（25.79s）、fmt/diff 通过。执行器 Cargo 全部结束，主会话接管最终快照的单一 workspace 回归；独立窄复核待返回。
+
+- 2026-10-28：`5988da8` 修正后受影响 ACL target 编译通过、fmt 通过。Clippy 继续发现此前被中断遮住的 6 项测试整理问题：mock responder 115 行、4 处 assigning_clones、unit test module 之后仍有生产函数。委派执行器仅整理测试结构/表达，完成后重新回归，不放宽 lint 门禁。
+
+- 2026-10-28：最终 Clippy 退出 101，仅报 `trino_l2_acl_it.rs:353` 的 `redundant_closure_for_method_calls`。改用 `Vec::is_empty` 后定向编译测试目标并重跑 Clippy；不将首次 Clippy 记作通过，workspace 的 `80d053b` 通过证据保留其快照。
+
+- 2026-10-28：`80d053b` 的最终 workspace 退出 0，117 个结果组、1251 passed、103 ignored、0 failed；SQL 边界守卫与旧清理响应在途 unit 均通过。编译/链接 27m57s，完整日志位于 `C:/Users/easyi/AppData/Local/Temp/ontoforge-phase06-10-workspace-final.log`。Clippy 正在串行执行，最终 GSD 目标验证尚未开始。
+
+- 2026-10-28：`cargo fmt --all -- --check`、`git diff --check` 通过。GSD 漏读调查发现 timeout 被当作缺提交的机制，原门禁真实复跑 8/8、block:false；当次失败未捕获，详 findings。最终 workspace 仍在链接，Clippy 及空闲门禁复验待执行。
+
+- 2026-10-28：HTTP matcher 两行修正已提交 `80d053b`，SQL 边界守卫 1/1 通过，独立增量复核无新发现。当前唯一 workspace 全量重跑进行中。TDD 原始门禁再次漏读 `06-01` RED、`block:true`，尚未确认根因；只读调查与 Grok 第二意见进行中，不越过该门禁。
+
+- 2026-10-28：最终 workspace 首轮退出 101，`sql_text_only_from_printer` 将 `src/trino/l2_monitor.rs` 两处测试 HTTP `"DELETE"` 字面量识别为 SQL。先改为类型化 HTTP 方法常量并定向复验，再重跑 workspace/Clippy/fmt；本轮完整回归尚未通过。
+
+- 2026-10-28：`06-10-SUMMARY.md` 已提交 `a11760c`，限定与真实测试证据由该文件持有。增量复审 clean、安全 20/20 closed；当前唯一 workspace 回归在 feature union 重新编译/链接，最终 Clippy/fmt 待其结束。TDD 原始门禁重跑 8/8、block:false；首次瞬态漏读详 findings。临时容器已清理，5 个 fixture 文件删除被审批拒绝，详 findings。
+
+- 2026-10-28：CR-01/CR-02 首轮修复 `0cedb99` focused 25/25 GREEN；补核发现继承旧 pending 时 shutdown 错返 Ok，已提交 `8006851` 行为 RED，修正及精确 token/owner 回归进行中。executor 只负责 focused 与默认并行真实 Trino，主会话随后统一 workspace/Clippy，避免重复 engine/query 全量构建。`gh run list` 查当前分支返回空数组，尚无远端 CI 证据。
+
+- 2026-10-28：`97d3eef` 提交增量 review 的 CR-01/CR-02 行为 RED 与 stateful registry。两条回归分别实际返回 Enabled / Some(Enabled)，各 1 test/1 failure/0 errors，两份 JUnit classifier 为 RED_EVIDENCE_OK；生产修复进行中。宽 engine/query 构建因 feature union 全量链接耗时，执行器停止其自有进程后先完成 focused RED，后续再恢复相关回归。
+
+- 2026-10-28：恢复 `a7a161e` 实现快照，增量 review `06-10-REVIEW.md` 为 1 blocker/2 warning，尚未签收。executor 正补 manual 绕过与 monitor 重启的行为 RED/GREEN、stateful registry 和独占 SQL alias；共享 pending 跨 generation 的最新约束已落 PLAN/findings。所有 Cargo 仍由 executor 串行管理，目标及默认并行真实 ACL 复跑待报告。
+
+- 2026-10-28：真实 Trino 483 当前 6/6（8.07s），32 条 allow 全部 FINISHED；新增 startup 在 Enabled 前完成 DELETE 并确认长 query 不存在、短 SELECT 1 拒绝、松 ACL 为 NegativeProbeFailed。增量 review 的 CR-01 发现 manual 可绕过 monitor cleanup失败状态，正在追加 RED/GREEN 修复，故暂不签收 WR-01。
+
+- 2026-10-28：增强版目标 GREEN 为 health 10/10、monitor 12/12；新增 shutdown 在途周期检查、等锁 deadline/旧 manual 不能覆盖新 timeout、unknown/观测后 FINISHED 和取消重试。真实 Trino 6 项（原 3 项及 startup/short/loose）正在单线程运行，结果待签收；独立 review 同步进行。
+
+- 2026-10-28：executor 报告第一版目标 GREEN：health 10/10、monitor 10/10；正在加强清理中断后的 DELETE 可重试性，尚待复跑、真实 Trino 和相关回归。GSD code review/gstack 增量审查已并行启动，报告范围仅 `06-10`，不冒充正式 PR 已完成。
+
+- 2026-10-28：health GREEN 切片提交 `e1a45da`，独立只读复核未发现高置信 bug，覆盖 generation/check_epoch、锁等待 deadline、同 endpoint 与 RUNNING 前后观测。第二轮先提交默认禁用 API 骨架 `539c967`，再提交生命周期测试 `30ff079`；实际运行 startup 测试返回 NotVerified 而非 Enabled，行为 RED 已落 `06-10-RED-task2-junit.json`。monitor 实现继续，尚未签收。
+
+- 2026-10-28：`06-10` 首轮行为 RED 提交 `eb69016`：`l2_health_finished_query_cannot_attest_active_isolation` 在旧实现实际返回 Enabled，预期 OtherQueryUnconfirmed；JUnit classifier 返回 `RED_EVIDENCE_OK`。当前进入 GREEN，尚无本轮实现通过结论。真实 Trino 483 接受 execution/run time 双上限 header（短 SELECT 1 FINISHED，仅为 header 可用性探针）。
+
+- 2026-10-28：`06-10` PLAN structure valid，无 errors/warnings。`bash ci/query-services.sh trino-l2` 退出 0，独立受限/松 ACL Trino 483 在 58081/58082 就绪并 seed；既有 58080/55432 服务保留。subagent 开始 finished-query 行为 RED，尚未有 GREEN。本轮 Grok 第二意见已综合并回传执行器。
+
 - 2026-10-28：用户选择选项 1，部署方配置有界只读 probe SQL，保留真实活跃 query 合同。ADR-0028 已锁定；新增 `06-10-PLAN.md` 关闭 WR-01 库级生命周期缺口。当前设计与计划落盘，尚无本轮实现或 RED/GREEN 结果。
 
 - 2026-10-28：用户选方案 A。ADR-0028、ROADMAP 和 REQUIREMENTS 已明确 Phase 6 库级 attestation 与 Phase 7 服务 `/health` 的验收边界；P4b 新增 WR-01 gap。Grok 第二意见和代码勘查确认生产活跃 query 探针来源尚未确定，待此选择后补 PLAN、TDD 与真实 Trino 483 复验，L2-04 保持 Pending。
