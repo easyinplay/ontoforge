@@ -1,5 +1,7 @@
 # Phase 6 findings
 
+- 2026-10-28：首版正式 verifier 核对最终 workspace 原始日志（1251 passed、103 ignored、0 failed），5 个命名行为测试通过；外部 PG/Trino 历史通过目前仅见 SUMMARY，缺可亲读原始日志，不能替代证据。Temp 的 `ontoforge-phase06-10-clippy-final-fixed.log` 实际记录历史 items_after_test_module 失败，不能当最终绿。按原合同补日志，不改代码或放宽验收；纯证据复验不新增业务 TDD。当前分支无 tracking，CI 普通 push 仅 main，PR/workflow_dispatch 可触发；远端实际运行仍待验收。
+
 - 2026-10-28：首轮 GSD verifier 在前置检查停止，未读实现/未跑技术测试：Phase 6 已为 `Mode: mvp`，Goal 却不符合中央 User Story 正则，实际 user-story.validate=false。读取 gsd-mvp-phase 工作流确认其完整转换流程用于规划且需 active-phase force/交互，本轮不重开已执行计划；仅将既有获批 Goal 加上中央校验器要求的 As a/I want to/so that 固定句式，保留原语义、五条 SC、Mode、需求及 ADR-0028。Grok 该次前置咨询未返回，不能当第二意见通过。规范化后先实际校验，再重新委派技术验证。
 
 - 2026-10-28：空闲下漏读后的完整真实 gate 追踪：24 个 Git 调用全部 exit 0、error/signal null、stderr 空，耗时 41–348ms；06-01 三调用 47/43/329ms、log stdout 446 bytes。完整模块 gate 8/8，随后同环境原始 CLI 5.87s、8/8、block:false。没有捕获此前真实失败，因此只确认错误归类机制，不能认定真实根因已查明。更新 Grok 咨询在 55 秒边界 `ETIMEDOUT`、stdout/stderr 空，未返回第二意见；已按本轮两次复验上限停止调查，无安装/配置/历史修改。以最新原始门禁通过继续 Phase 6 verifier，保留工具间歇漏读风险。

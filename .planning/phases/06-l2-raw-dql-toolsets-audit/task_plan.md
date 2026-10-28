@@ -34,4 +34,4 @@
 
 ## Next Step
 
-执行 GSD Phase 6 目标验证。`e81127f` 的 workspace/Clippy/fmt 与最终原始 TDD 门禁全部通过，库级 WR-01 与增量审查已关闭；远端 CI 尚无运行，Phase 6 verification 仍 Pending；Phase 7 服务接线及 `/health` 保留阻断验收。GSD 间歇 Git 漏读尚未根治，见 findings。
+正式目标验证为 `human_needed`、16/21（详 `06-VERIFICATION.md`）。自动补齐 H1 真实 PostgreSQL 六项审计测试、H2 真实 Trino 483 六项 ACL 测试的原始日志，并保存最终 Clippy 可核验证据；H3 当前 SHA 的远端 CI 仍待运行。报告更新须由 verifier 重新签署 fingerprint。Phase 7 服务接线及 `/health` 保留阻断验收，L2-04/SCOPE-07 整体 Pending。GSD 间歇 Git 漏读尚未根治，见 findings。

@@ -5,10 +5,10 @@ current_phase_name: L2 Raw DQL, Toolsets & Audit
 current_plan: 10
 status: verifying
 last_gate_trip: null
-stopped_at: Phase 6 goal verification after final local gates
+stopped_at: Phase 6 human_needed; supplement H1/H2 evidence and H3 remote CI
 last_updated: "2026-10-28"
 last_activity: 2026-10-28
-last_activity_desc: Phase 06 all 10 plans signed off; local gates passed; goal verification pending
+last_activity_desc: Phase 06 goal verification human_needed 16/21; external execution evidence pending
 state_head: e81127f
 progress:
   total_phases: 7
@@ -32,8 +32,8 @@ See: .planning/PROJECT.md (updated 2026-10-23)
 Phase: 6 (L2 Raw DQL, Toolsets & Audit) — VERIFYING
 Current Plan: 10
 Total Plans in Phase: 10
-Status: Local gates passed; Phase 6 goal verification pending
-Last activity: 2026-10-28: 全量回归 1251 passed，Clippy/fmt/TDD 门禁通过，详 Phase 6 `progress.md`
+Status: Goal verification human_needed (16/21); H1/H2 evidence and H3 CI pending
+Last activity: 2026-10-28: 正式报告见 Phase 6 `06-VERIFICATION.md`，自动补证据进度见 `progress.md`
 
 Progress: [███████░░░] 71%
 
@@ -66,5 +66,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-10-28
-Stopped at: Phase 6 goal verification after final local gates
+Stopped at: Phase 6 human_needed; supplement H1/H2 evidence and H3 remote CI
 Resume file: .planning/phases/06-l2-raw-dql-toolsets-audit/task_plan.md
