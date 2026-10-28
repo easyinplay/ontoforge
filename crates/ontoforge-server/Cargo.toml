@@ -14,3 +14,23 @@ ontoforge-action = { path = "../ontoforge-action" }
 ontoforge-auth = { path = "../ontoforge-auth" }
 ontoforge-api = { path = "../ontoforge-api" }
 ontoforge-query = { path = "../ontoforge-query" }
+ontoforge-storage = { path = "../ontoforge-storage" }
+ontoforge-engine = { path = "../ontoforge-engine" }
+ontoforge-schema = { path = "../ontoforge-schema" }
+axum.workspace = true
+rmcp.workspace = true
+utoipa.workspace = true
+utoipa-axum.workspace = true
+tokio-util.workspace = true
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "signal", "net", "io-std"] }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+camino.workspace = true
+ulid.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+reqwest = { workspace = true, features = ["json"] }
+sqlx.workspace = true
+jsonwebtoken.workspace = true

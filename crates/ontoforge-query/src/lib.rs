@@ -54,6 +54,12 @@ pub struct QueryPage {
     pub truncated: bool,
 }
 
+/// A query result and the identifier assigned by its audit reservation, when available.
+pub struct QueryExecution {
+    pub request_id: Option<String>,
+    pub result: Result<QueryPage, QueryError>,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ListPage {
@@ -239,6 +245,13 @@ pub struct QueryService<'a, E: Engine> {
 }
 
 impl<E: Engine> QueryService<'_, E> {
+    pub async fn execute_audited(&self, request: QueryRequest) -> QueryExecution {
+        QueryExecution {
+            request_id: None,
+            result: self.execute(request).await,
+        }
+    }
+
     pub async fn execute(&self, request: QueryRequest) -> Result<QueryPage, QueryError> {
         let object_type = request.set.object_type();
         let mut audit = self

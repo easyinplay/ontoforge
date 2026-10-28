@@ -1,0 +1,8 @@
+{
+  "command": "cargo test -p ontoforge-query --test audit_pk --locked audit_pk_execution_ -- --nocapture",
+  "exitCode": 101,
+  "runStartedAt": "2026-10-28T23:41:36.3139025Z",
+  "runFinishedAt": "2026-10-28T23:43:18.3032947Z",
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07-rest-mcp-shell\\07-01-evidence\\task1-query-cargo-red.log",
+  "cwd": "D:\\DataSpellProjects\\ontoforge"
+}

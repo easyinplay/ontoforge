@@ -47,6 +47,11 @@ sea-query-sqlx = { version = "0.9.1", default-features = false, features = ["sql
 jsonwebtoken = { version = "11.1.0", default-features = false, features = ["aws_lc_rs"] }
 getrandom = "0.4.3"
 postgresql_embedded = { version = "0.21.0", default-features = false, features = ["tokio", "theseus", "tls-rustls-aws-lc-rs"] }
+axum = "=0.8.9"
+rmcp = { version = "=3.8.0", default-features = false, features = ["server", "client", "transport-io", "transport-streamable-http-server", "transport-streamable-http-client-reqwest", "reqwest"] }
+utoipa = { version = "=6.0.0", features = ["axum_extras"] }
+utoipa-axum = "=0.3.0"
+tokio-util = { version = "0.7.20", features = ["rt"] }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

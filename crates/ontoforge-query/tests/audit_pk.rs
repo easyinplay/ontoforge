@@ -274,6 +274,99 @@ async fn audit_pk_success_records_one_metadata_row() {
 }
 
 #[tokio::test]
+async fn audit_pk_execution_returns_durable_id_for_success_and_denial() {
+    let f = fixture(None).await;
+    let tokens = TokenCodec::new(b"audit-test-key".to_vec()).unwrap();
+    let service = QueryService {
+        principal: &f.principal, scope: &f.scope, active: Arc::clone(&f.active),
+        engine: &NeverEngine, store: &f.store, limits: ExecutionLimits::phase4_default(), tokens: &tokens,
+    };
+    let success = service.execute_audited(request("Airport", "BER", "name")).await;
+    assert!(success.result.is_ok());
+    assert!(success.request_id.is_some(), "successful query must return its audit guard ID");
+    let denied = service.execute_audited(request("Airport", "MISSING", "name")).await;
+    assert!(matches!(denied.result, Err(QueryError::NotFound)));
+    assert!(denied.request_id.is_some(), "denied query must retain its reserved audit ID");
+    f.store.read_audit().shutdown().await.unwrap();
+    let rows = audit_rows(&f.path, 2).await;
+    for (execution, status) in [(success, "success"), (denied, "denied")] {
+        let id = execution.request_id.unwrap();
+        let row = rows.iter().find(|row| row.get::<String, _>("request_id") == id).unwrap();
+        assert_eq!(row.get::<String, _>("status"), status);
+    }
+}
+
+#[tokio::test]
+async fn audit_pk_execution_reserve_failure_has_no_audit_id() {
+    let f = fixture(None).await;
+    f.store.read_audit().shutdown().await.unwrap();
+    let tokens = TokenCodec::new(b"audit-test-key".to_vec()).unwrap();
+    let execution = QueryService {
+        principal: &f.principal, scope: &f.scope, active: Arc::clone(&f.active),
+        engine: &NeverEngine, store: &f.store, limits: ExecutionLimits::phase4_default(), tokens: &tokens,
+    }.execute_audited(request("Airport", "BER", "name")).await;
+    assert!(matches!(execution.result, Err(QueryError::AuditUnavailable)));
+    assert!(execution.request_id.is_none());
+}
+
+struct ReleasedErrorEngine {
+    entered: Notify,
+    release: Notify,
+}
+
+impl Engine for ReleasedErrorEngine {
+    fn dialect(&self) -> Dialect { Dialect::Sqlite }
+    async fn execute(&self, _: &PrintedSql, _: &QueryContext) -> Result<QueryOutput, EngineError> {
+        self.entered.notify_one();
+        self.release.notified().await;
+        Err(EngineError::Config("source failed".to_owned()))
+    }
+    async fn describe_tables(&self, _: &[TableRef], _: &QueryContext) -> Result<BTreeMap<TableRef, Vec<ontoforge_engine::PhysicalColumn>>, EngineError> {
+        Ok(BTreeMap::new())
+    }
+    async fn status(&self) -> EngineStatus { EngineStatus::Available }
+}
+
+#[tokio::test]
+async fn audit_pk_execution_finish_failure_retains_reserved_id() {
+    let f = Arc::new(fixture(Some(ReadAuditSettings {
+        capacity: 4, batch_size: 1, flush_interval: Duration::from_millis(10),
+        ..ReadAuditSettings::default()
+    })).await);
+    let engine = Arc::new(ReleasedErrorEngine { entered: Notify::new(), release: Notify::new() });
+    let task = {
+        let f = Arc::clone(&f);
+        let engine = Arc::clone(&engine);
+        tokio::spawn(async move {
+            let tokens = TokenCodec::new(b"audit-test-key".to_vec()).unwrap();
+            QueryService {
+                principal: &f.principal, scope: &f.scope, active: Arc::clone(&f.active),
+                engine: &*engine, store: &f.store, limits: ExecutionLimits::phase4_default(), tokens: &tokens,
+            }.execute_audited(request("Flight", "F-1001", "status")).await
+        })
+    };
+    tokio::time::timeout(Duration::from_secs(3), engine.entered.notified()).await.unwrap();
+    let pool = sqlx::SqlitePool::connect_with(ontoforge_storage::store::sqlite_connect_options(&f.path)).await.unwrap();
+    sqlx::query("DROP TABLE of_read_audit").execute(&pool).await.unwrap();
+    let tokens = TokenCodec::new(b"audit-test-key".to_vec()).unwrap();
+    QueryService {
+        principal: &f.principal, scope: &f.scope, active: Arc::clone(&f.active),
+        engine: &NeverEngine, store: &f.store, limits: ExecutionLimits::phase4_default(), tokens: &tokens,
+    }.execute(request("Airport", "BER", "name")).await.unwrap();
+    tokio::time::timeout(Duration::from_secs(3), async {
+        while f.store.read_audit().health().available {
+            tokio::time::sleep(Duration::from_millis(5)).await;
+        }
+    }).await.unwrap();
+    engine.release.notify_one();
+    let execution = task.await.unwrap();
+    assert!(matches!(execution.result, Err(QueryError::AuditUnavailable)));
+    assert!(execution.request_id.is_some(), "finish failure must retain the audit guard ID");
+    assert!(f.store.read_audit().shutdown().await.is_err());
+    pool.close().await;
+}
+
+#[tokio::test]
 async fn audit_pk_denied_before_source_and_source_failure_have_distinct_statuses() {
     let f = fixture(None).await;
     let tokens = TokenCodec::new(b"audit-test-key".to_vec()).unwrap();

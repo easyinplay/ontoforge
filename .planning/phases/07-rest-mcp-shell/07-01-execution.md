@@ -20,7 +20,7 @@
 
 ## 进度
 
-- [ ] 01-1 RED、机器判定、test commit
+- [x] 01-1 RED、机器判定（test commit 即将提交）
 - [ ] 01-1 GREEN、tracer feedback、feat commit
 - [ ] 01-2 RED、机器判定、test commit
 - [ ] 01-2 GREEN、feat commit
@@ -46,3 +46,14 @@
 - 本 executor 仅新增本 `07-01-execution.md`，未修改九个实现路径。
 - 未创建 SUMMARY；没有生产提交，不构成 production commit 后缺 SUMMARY 的中间状态。
 - 下一步：主会话核对并批准 request_id 窄入口及所有权后，重新 dispatch 01-1。
+
+## 恢复 (2026-10-29)
+
+- 已读取更新 PLAN，主会话批准 `execute_audited -> QueryExecution` 窄接口与额外四个文件所有权，原阻塞解除。当前 base 为 `bdd9ad1`。
+- 主会话已完成 bounded brainstorming；不重复审批接口。取消沿用 guard Drop，reserve 失败 ID 为 None，finish 错误保留 guard ID。
+- cargo-nextest 0.9.150 独立工具提供真实 JUnit，先读取帮助并核验配置，RED 报告与 Cargo 日志分开保存，原样输入 GSD classifier。
+- 当前执行恢复至 01-1：先最小可编译宿主接口和真实 listener 测试；空 Router 是暂未实现的 production skeleton，不伪造成完整功能。
+- 首次编译用 `cargo test -p ontoforge-server --lib tracer_ --no-run` 完成，2m53s，无编译/fixture错误。
+- 指定 Cargo tracer RED：3 executed / 3 failed，退出101；nextest同目标JUnit退出100。GSD verdict `RED_EVIDENCE_OK`，report_errors=[]，目标断言为实际HTTP404而预期200。另两个目标在404/401和source barrier断言失败，均由尚未接线路由解释。
+- Query RED：3 executed / 1 passed / 2 failed，成功与finish错误未返回guard ID；reserve失败None本来已满足，不将此GREEN宣称为RED。对应真实JUnit经机器门验证；保留完整原始报告、绝对路径及起止时间。
+- nextest官方配置页 `https://nexte.st/docs/machine-readable/junit/` 实际HTTP200，核验配置键。最初误用 `/docs/reporting/junit/` 返回404，已改正，没有改变测试报告。

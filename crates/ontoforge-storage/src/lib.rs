@@ -26,6 +26,18 @@ pub mod value;
 /// Cargo package name of this crate.
 pub const CRATE_NAME: &str = env!("CARGO_PKG_NAME");
 
+/// The complete metadata captured for one request, with no live transaction.
+pub struct RequestSnapshot {
+    pub active: std::sync::Arc<store::ActiveDefinition>,
+    pub scope: ontoforge_schema::ir::ScopeSet,
+}
+
+impl store::EditStore {
+    pub async fn request_snapshot(&self) -> Result<RequestSnapshot, error::StoreError> {
+        Err(error::StoreError::Config("request snapshots are not implemented".to_owned()))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::CRATE_NAME;
