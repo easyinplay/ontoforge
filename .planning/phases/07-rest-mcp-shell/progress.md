@@ -1,5 +1,11 @@
 # Phase 7 progress
 
+- 2026-10-29：P2 完成，第二轮独立 checker 返回 VERIFICATION PASSED、issues=[]。最终 16 PLAN / 32 task / 12 wave；需求 18/18、决策 3/3、plan:post 21/21，40 条命令探针无 blocker/warning。报告见 `reviews/07-PLAN-CHECK-R2.md`。P3 尚未启动，业务/真实服务/release 测试仍 pending，auto_advance=false，PR #7 不合并。
+
+- 2026-10-29：第一轮独立计划审查完成，0 blocker / 2 warning / 1 info，详 `reviews/07-PLAN-CHECK.md`；已进入修订，尚未通过计划门。39 条 verify command probes 无 blocker/warning，3/3 CONTEXT 决策覆盖通过；这不是业务测试通过。
+
+- 2026-10-29：15 份执行 PLAN 草稿已落盘；planner 正在做最终依赖/符号/验证映射自检，独立 checker 尚未运行。额外 typed explain 计划补齐 ADR-0019 的既有四格式合同，Grok 第二意见取舍见 findings。当前仍为 planning，不标 Ready to execute。
+
 - 2026-10-29：研究完成，独立 rmcp workspace 的 4 unit + 1 真实 stdio 子进程测试通过，证据见 `07-RESEARCH.md` 与 `spikes/rmcp-shell/final.log`。业务接线、PG races、TS/OpenAPI、真实 Trino health、dev 与三平台发行尚待实施验收；进入 pattern mapping 与正式 PLAN/checker，P2 尚未完成。
 
 - 2026-10-28：四节工程设计审查完成，`07-TEST-MATRIX.md` 的 10 组验收与故障分支图已落盘。scout 核查与 Grok 正常退出的第二意见已交叉检查，保留 fence/replay/现有历史结构。进入 P2 的研究/规划部分，尚无实现或测试通过结论。

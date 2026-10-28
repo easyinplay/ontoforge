@@ -251,7 +251,7 @@ Plans:
 
 ### Phase 7: REST & MCP Shell
 
-**Goal**: 应用经 REST（OpenAPI 3.1、Rust / TS client），agent 经 MCP（按主体过滤的 toolset）使用全部能力；`ontoforge serve --dev` 单二进制在本机跑通端到端演示，并发布三平台二进制
+**Goal**: As a 应用开发者与 agent 使用者, I want to 经 REST（OpenAPI 3.1、Rust / TS client）和 MCP（按主体过滤的 toolset）使用全部能力，以 `ontoforge serve --dev` 单二进制在本机跑通端到端演示，并通过 release workflow 发布 Linux / macOS / Windows 二进制, so that 应用与 agent 能按相同授权使用并验证完整平台能力。
 **Mode:** mvp
 **Depends on**: Phase 6
 **Requirements**: API-01, API-02, API-03, API-04, API-05, MCP-01, MCP-02, MCP-03, MCP-04, MCP-05, MCP-06, MCP-07, MCP-08, DX-01, DX-02, DX-04, L2-04（服务接线与 `/health`）, SCOPE-07（MCP 管理工具限制）
@@ -265,7 +265,7 @@ Plans:
   5. `ontoforge serve --dev`（SQLite 替身 + dev token）在 Windows 本机零外部依赖跑通示例 ontology 的查询 → Action → 历史演示；release workflow 发布 Linux / macOS / Windows 二进制
   6. 服务启动并维持 Phase 6 的 L2 ACL attestation；无法证明或证明过期时 L2 禁用，`/health` 告警并暴露脱敏原因，覆盖失败和恢复的端到端测试（ADR-0028）
 
-**Plans**: TBD
+**Plans**: 0/16 executed；planning passed，2026-10-29；详: `.planning/phases/07-rest-mcp-shell/task_plan.md`
 **Details**: `.planning/phases/07-rest-mcp-shell/`
 
 ## Progress
@@ -281,4 +281,4 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7（纵切片
 | 4. Scoped L0 Read | 7/7 | Complete    | 2026-10-23 |
 | 5. Online Action | 7/7 | Complete    | 2026-10-26 |
 | 6. L2 Raw DQL, Toolsets & Audit | 11/11 | Complete | 2026-10-28 |
-| 7. REST & MCP Shell | 0/TBD | Not started | - |
+| 7. REST & MCP Shell | 0/16 | Ready to execute | - |

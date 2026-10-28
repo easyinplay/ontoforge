@@ -1,0 +1,28 @@
+{
+  "requirements": {
+    "total": 18,
+    "covered": 18,
+    "missing": []
+  },
+  "decisions": {
+    "passed": true,
+    "skipped": false,
+    "total": 3,
+    "covered": 3,
+    "uncovered": [],
+    "message": "All trackable CONTEXT.md decisions are covered by plans."
+  },
+  "postPlanning": {
+    "block": false,
+    "passed": true,
+    "enabled": true,
+    "table": "## Post-Planning Gap Analysis\n\n| Source | Item | Status |\n|--------|------|--------|\n| REQUIREMENTS.md | API-01 | ✓ Covered |\n| REQUIREMENTS.md | API-02 | ✓ Covered |\n| REQUIREMENTS.md | API-03 | ✓ Covered |\n| REQUIREMENTS.md | API-04 | ✓ Covered |\n| REQUIREMENTS.md | API-05 | ✓ Covered |\n| REQUIREMENTS.md | DX-01 | ✓ Covered |\n| REQUIREMENTS.md | DX-02 | ✓ Covered |\n| REQUIREMENTS.md | DX-04 | ✓ Covered |\n| REQUIREMENTS.md | L2-04 | ✓ Covered |\n| REQUIREMENTS.md | MCP-01 | ✓ Covered |\n| REQUIREMENTS.md | MCP-02 | ✓ Covered |\n| REQUIREMENTS.md | MCP-03 | ✓ Covered |\n| REQUIREMENTS.md | MCP-04 | ✓ Covered |\n| REQUIREMENTS.md | MCP-05 | ✓ Covered |\n| REQUIREMENTS.md | MCP-06 | ✓ Covered |\n| REQUIREMENTS.md | MCP-07 | ✓ Covered |\n| REQUIREMENTS.md | MCP-08 | ✓ Covered |\n| REQUIREMENTS.md | SCOPE-07 | ✓ Covered |\n| CONTEXT.md | D-01 | ✓ Covered |\n| CONTEXT.md | D-02 | ✓ Covered |\n| CONTEXT.md | D-03 | ✓ Covered |\n\n✓ All 21 items covered by plans\n",
+    "summary": "✓ All 21 items covered by plans",
+    "counts": {
+      "total": 21,
+      "covered": 21,
+      "uncovered": 0
+    },
+    "message": "## Post-Planning Gap Analysis\n\n| Source | Item | Status |\n|--------|------|--------|\n| REQUIREMENTS.md | API-01 | ✓ Covered |\n| REQUIREMENTS.md | API-02 | ✓ Covered |\n| REQUIREMENTS.md | API-03 | ✓ Covered |\n| REQUIREMENTS.md | API-04 | ✓ Covered |\n| REQUIREMENTS.md | API-05 | ✓ Covered |\n| REQUIREMENTS.md | DX-01 | ✓ Covered |\n| REQUIREMENTS.md | DX-02 | ✓ Covered |\n| REQUIREMENTS.md | DX-04 | ✓ Covered |\n| REQUIREMENTS.md | L2-04 | ✓ Covered |\n| REQUIREMENTS.md | MCP-01 | ✓ Covered |\n| REQUIREMENTS.md | MCP-02 | ✓ Covered |\n| REQUIREMENTS.md | MCP-03 | ✓ Covered |\n| REQUIREMENTS.md | MCP-04 | ✓ Covered |\n| REQUIREMENTS.md | MCP-05 | ✓ Covered |\n| REQUIREMENTS.md | MCP-06 | ✓ Covered |\n| REQUIREMENTS.md | MCP-07 | ✓ Covered |\n| REQUIREMENTS.md | MCP-08 | ✓ Covered |\n| REQUIREMENTS.md | SCOPE-07 | ✓ Covered |\n| CONTEXT.md | D-01 | ✓ Covered |\n| CONTEXT.md | D-02 | ✓ Covered |\n| CONTEXT.md | D-03 | ✓ Covered |\n\n✓ All 21 items covered by plans\n"
+  }
+}

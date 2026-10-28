@@ -37,3 +37,15 @@
 - 探查时尝试的 `query/src/budget.rs`、`query/src/limits.rs`、`action/src/types.rs`、`action/tests/versioned_submission.rs` 不存在；已改用 `rg --files` 获取实际布局，未据此断言功能缺失。
 - scout 追加核查已返回：`begin_definition_tx` 与 scope_apply 共享 advisory lock，PG 普通 begin 不保证多次 SELECT 快照；最小方案是短事务复用该锁读取定义和完整 ScopeSet。Action/history 需最小 snapshot-aware 入口，旧 wrapper 保留。
 - 原 `0002_edit_log.sql` / LogRecord 已存 def_version，idempotency 测试明确允许定义变化后回放原 receipt；monitor 没有 storage audit handle。Grok 对这三点的扩展建议已排除，未修改既有合同。
+
+## 规划中的 L2 参数差距与第二意见
+
+- 2026-10-29：planner 发现 ADR-0019 / `ref-mcp-trino.md` §2、§6.1 已要求 `explain_query(query,format?)` 的 `LOGICAL|DISTRIBUTED|VALIDATE|IO`，但当前 `L2Service::explain_query(sql)` 仅调用 `run(sql,true)`。主会话亲读两处，确认是已有范围差距；通过独立兼容扩展计划覆盖，不以 adapter 拒绝合法参数缩减范围。
+- Grok session 87503：55 秒超时，ETIMEDOUT / SIGTERM，无正文；session 78659：exit 0，无 signal/error。第二意见支持 typed ExplainType 和兼容 wrapper，共用 AST、授权、attestation、审计和限制管线，避免 MCP adapter 自行拼 SQL。
+- 采用的测试提醒：默认 wrapper 回归、非法 format 拒绝、四 format 安全门禁、DDL/DML/注释注入拒绝、超时/取消/并发一致。其建议新增 audit format 字段没有当前需求依据，不采纳；VALIDATE/IO 执行语义属于目标 Trino 的实测问题，不要求用户以偏好裁决。没有新增用户决策。
+
+## 计划审查与文档边界
+
+- 第一轮独立审查真相源为 `reviews/07-PLAN-CHECK.md`；完整确定性输入为 `reviews/plan-probes.json`。修订包括所有 warning 和有实际测试依赖影响的 info，不把严重度分类替代工程修复。
+- 修正 orchestrator 输入：ROADMAP Phase 7 已持久设置 `Mode: mvp`，应按该模式审查；首次 planner prompt 的 false 不覆盖已存模式。保留既有范围，只补足用户故事和纵向切片表达。
+- 按项目三层文档纪律，完成规划时 wave 依赖和跨切约束保存在 T2 PLAN/task_plan，不将 GSD 13c 的完整 wave 注释内联 ROADMAP；T1 仅更新计划数量、状态与 phase 指针。
