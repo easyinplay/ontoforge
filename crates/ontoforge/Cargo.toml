@@ -24,6 +24,7 @@ ontoforge-engine = { path = "../ontoforge-engine" }
 ontoforge-auth = { path = "../ontoforge-auth" }
 ontoforge-storage = { path = "../ontoforge-storage" }
 ontoforge-action = { path = "../ontoforge-action" }
+ontoforge-server = { path = "../ontoforge-server" }
 clap.workspace = true
 miette.workspace = true
 serde.workspace = true

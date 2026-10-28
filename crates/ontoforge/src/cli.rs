@@ -48,6 +48,17 @@ pub struct WebhookWorkerArgs {
 }
 
 #[derive(Debug, Args)]
+pub struct ServeArgs {
+    #[arg(long, value_name = "FILE")]
+    pub server_config: Utf8PathBuf,
+    #[arg(long, default_value = "127.0.0.1:8080")]
+    pub bind: std::net::SocketAddr,
+    /// Explicitly accept development tokens using the configured key file.
+    #[arg(long)]
+    pub dev: bool,
+}
+
+#[derive(Debug, Args)]
 pub struct SchemaArgs {
     #[command(subcommand)]
     pub command: SchemaCommand,

@@ -22,7 +22,9 @@
 
 - [x] 01-1 RED、机器判定、test commit `7897e39`
 - [x] 01-1 GREEN（tracer 3/3、query audit 12/12）；feat commit 后执行 feedback gate
-- [ ] 01-2 RED、机器判定、test commit
+- [x] 01-1 feedback 再跑指定 tracer：3 passed，commit `5df9f2a`
+- [x] 01-2 RED：Cargo 2 executed / 2 failed，nextest 原生 JUnit 同样 2 failed；`RED_EVIDENCE_OK`
+- [ ] 01-2 test commit
 - [ ] 01-2 GREEN、feat commit
 - [ ] workspace/fmt/clippy/TLS
 - [ ] SUMMARY 自检与提交
@@ -59,3 +61,4 @@
 - nextest官方配置页 `https://nexte.st/docs/machine-readable/junit/` 实际HTTP200，核验配置键。最初误用 `/docs/reporting/junit/` 返回404，已改正，没有改变测试报告。
 - 01-1 GREEN：共享定义锁中读取definition/scope，显式commit后编译scope；Query保留原execute wrapper，execute_audited复制guard ID。HTTP仅投影ObjectRow并返回同ID，未认证/注入在读取前拒绝。
 - 指定tracer命令3 passed/0 failed，query audit全文件12 passed/0 failed。取消、reserve、finish、durable重开、source Pending/reload合同均有实际测试覆盖。
+- 01-2 RED 的失败分别为有效 `serve` 参数未注册、真实 listener 未启动，均命中目标行为断言。没有编译或 fixture 错误。报告 `task2-nextest-red.json` 包含原样 JUnit；下一步提交 RED 后实现。

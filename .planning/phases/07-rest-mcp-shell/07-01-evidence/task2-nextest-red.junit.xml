@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="nextest-run" tests="2" skipped="0" failures="2" errors="0" uuid="5b869ec0-6af3-4f74-89fe-72b8ec98724d" timestamp="2026-10-29T07:55:10.867+08:00" time="2.141">
+    <testsuite name="ontoforge" tests="2" skipped="0" errors="0" failures="2">
+        <testcase name="serve::tests::serve_args_validate_config_and_address" classname="ontoforge" timestamp="2026-10-29T07:55:10.868+08:00" time="0.022">
+            <failure message="thread &apos;serve::tests::serve_args_validate_config_and_address&apos; (7128) panicked at crates\ontoforge\src\serve.test.rs:118:5" type="test failure with exit code 101">thread &apos;serve::tests::serve_args_validate_config_and_address&apos; (7128) panicked at crates\ontoforge\src\serve.test.rs:118:5:
+valid serve args must dispatch to the HTTP host
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace</failure>
+            <system-out>
+running 1 test
+test serve::tests::serve_args_validate_config_and_address ... FAILED
+
+failures:
+
+failures:
+    serve::tests::serve_args_validate_config_and_address
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 13 filtered out; finished in 0.00s
+
+</system-out>
+            <system-err>
+thread &apos;serve::tests::serve_args_validate_config_and_address&apos; (7128) panicked at crates\ontoforge\src\serve.test.rs:118:5:
+valid serve args must dispatch to the HTTP host
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+</system-err>
+        </testcase>
+        <testcase name="serve::tests::serve_real_listener_auth_and_shutdown" classname="ontoforge" timestamp="2026-10-29T07:55:10.868+08:00" time="2.140">
+            <failure message="thread &apos;serve::tests::serve_real_listener_auth_and_shutdown&apos; (9548) panicked at crates\ontoforge\src\serve.test.rs:147:5" type="test failure with exit code 101">thread &apos;serve::tests::serve_real_listener_auth_and_shutdown&apos; (9548) panicked at crates\ontoforge\src\serve.test.rs:147:5:
+serve must start a real authenticated listener
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace</failure>
+            <system-out>
+running 1 test
+test serve::tests::serve_real_listener_auth_and_shutdown ... FAILED
+
+failures:
+
+failures:
+    serve::tests::serve_real_listener_auth_and_shutdown
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 13 filtered out; finished in 2.12s
+
+</system-out>
+            <system-err>
+thread &apos;serve::tests::serve_real_listener_auth_and_shutdown&apos; (9548) panicked at crates\ontoforge\src\serve.test.rs:147:5:
+serve must start a real authenticated listener
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+</system-err>
+        </testcase>
+    </testsuite>
+</testsuites>

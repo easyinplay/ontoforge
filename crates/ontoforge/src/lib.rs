@@ -12,6 +12,7 @@ pub mod pipeline;
 pub mod reload;
 pub mod render;
 pub mod scope;
+pub mod serve;
 pub mod webhook_worker;
 
 use camino::Utf8Path;
