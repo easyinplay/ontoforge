@@ -14,7 +14,7 @@
 
 ## Ownership
 
-主会话拥有共享计划和阶段讨论文档；每份 PLAN 的 files_modified 由单一执行 lane 负责，同 wave 无文件交集。业务实施尚未启动。
+主会话拥有共享计划、STATE、ROADMAP、REQUIREMENTS；每份 PLAN 的 files_modified 由单一 executor 负责。workflow.use_worktrees=false，所有 PLAN 顺序执行。
 
 ## Acceptance
 
@@ -22,7 +22,7 @@
 
 ## Next Step
 
-下一步为 `$gsd-execute-phase 7`，从 `07-01-PLAN.md` 的真实认证读取 tracer 开始。当前 auto_advance=false，尚未启动执行。32 个 task 的验收映射见 `07-VALIDATION.md`，需求与边界映射见 `07-EDGE-COVERAGE.md`，最终计划审查见 `reviews/07-PLAN-CHECK-R2.md`。
+P3 执行中：启动 `07-01-PLAN.md` 的真实认证读取 tracer，验收其两个 task 和 wave regression 后再刷新依赖进入 07-02。auto_advance=false，仅执行用户指定 Phase 7。32 个 task 的验收映射见 `07-VALIDATION.md`，需求与边界映射见 `07-EDGE-COVERAGE.md`，最终计划审查见 `reviews/07-PLAN-CHECK-R2.md`。
 
 ## Execution Order
 

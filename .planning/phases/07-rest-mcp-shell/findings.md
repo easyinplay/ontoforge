@@ -1,5 +1,14 @@
 # Phase 7 findings
 
+## 07-01 执行前接口核查与第二意见
+
+- `QueryService::execute` 自行 reserve guard，`QueryPage` 不含 ID，宿主原接口无法取得 durable audit 的 request_id。executor 在 RED 前返回 checkpoint，未写业务实现或生产提交。锁定的最小兼容合同见 07-01-PLAN 执行前修订；这是既有追踪要求的 bounded 技术修正，已按 brainstorming 在主会话核对方案，无新增产品决策。
+- Grok 第一轮 55 秒 ETIMEDOUT/SIGTERM，无正文；第二轮 exit 0，支持返回 guard ID、旧 wrapper 兼容、reserve 失败 None、保留取消 Drop。建议 Option<Ulid> 未采用：现有公共 guard/storage 使用 String，额外类型转换没有本次需求依据。审计 ID 与 transport ID 语义须区分，不能凭 None 假造持久审计。
+- Grok 提醒自研 libtest 文本解析受输出变化/测试打印影响，优先成熟 reporter。实测本机 stable libtest 的 --format=junit 拒绝，cargo-nextest 原未安装。已从官方 get.nexte.st/0.9/windows 下载独立工具到系统 TEMP 的 ontoforge-phase07-nextest，不修改项目依赖或全局 PATH。cargo-nextest 0.9.150 (d225b1daf)，Authenticode Status=Valid，Signer=SignPath Foundation。恢复 executor 后使用原生 JUnit，不新增解析器、不修改全局 GSD。
+- Rust RED commit gate 通过实际的 tracer.test.rs / serve.test.rs 测试模块满足现有 *.test.* 识别规则，cargo --lib 验收不变；不扩大 gate 到普通源码。后续 list/aggregate 的审计关联须在执行前复核。
+
+- 2026-10-29 执行入口：沿用批准的 Phase、CONTEXT 与工程审查，跳过战略审查和重复 brainstorming。07-01 核心认证/snapshot/audit 强制 superpowers TDD；Rust inline test 的 GSD pathspec 存在已知识别缺口，必须保留真实 Cargo 行为 RED、机器证据与 test/feat 提交，不能用编译失败或伪造报告绕过。Warp/ralph-loop 仍不可用，使用 PowerShell，不声称其 completion-promise。旧 resolver model ID 不在当前平台支持列表，executor 继承当前模型并采用 resolver 的 high effort。
+
 - 2026-10-29：研究已完成，rmcp 3.8.0 / axum 0.8.9 独立 spike 5 passed、0 failed，主会话已读取最终日志。现代无 session 协议、旧 session 主体绑定、取消与 EOF 均有 spike 证据；正式业务验收边界见 `07-RESEARCH.md`，不把 spike 代替阶段完成。
 - 2026-10-29：plan:pre UI gate 返回 frontend=false、block=false；本阶段是服务外壳与平台 clients，不含产品 UI 或 LLM 推理，跳过 UI/AI 设计生成。仅规划文档同步，本次跳过新增业务 TDD；执行 PLAN 继续要求适用任务 Red-Green-Refactor。ralph-loop 未安装，不能声称运行；实际终端为 PowerShell。
 
