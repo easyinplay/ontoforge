@@ -1,5 +1,9 @@
 # Phase 6 progress
 
+- 2026-10-28：正式 gstack PR review `06-PR-REVIEW.md` 新增 CR-01 BLOCKER：shutdown 提前 take handle，导致并发/取消后重试提前 Ok 且丢失 worker 错误。Phase 6 重开 gap closure，AUDIT-01 回 Pending；新增 06-11 TDD 计划，旧 21/21 与 CI 证据保留历史范围。Phase 7 未启动。
+
+- 2026-10-28：verifier 直接核验 HEAD `20fd0005` 对应 CI run `40675450974` 的 metadata/job 原始日志，PG audit 与 ACL 各6/6、32条FINISHED、Ubuntu/Windows workspace及corpus成功，H3关闭，目标验证 `passed`、21/21。详 `06-VERIFICATION.md`；正式PR review仍Pending，Phase7未启动，L2-04/SCOPE-07整体Pending，Phase1–5历史fingerprint staleness留给milestone audit。
+
 - 2026-10-28：提交 `4cc6d0c` 修正两项测试后，本地 `cargo test --workspace --locked -- --test-threads=1` 退出 0；security target 23/23，`cap_counts_final_masked_row_and_version` 的审计排空等待验证通过。外部 PG/Trino ignored 仍以既有原始日志为证，H3 必须等待新 SHA 的远端 CI。
 - 2026-10-28：新 CI run `40672929568` 的 integration 全部通过；两平台只在 Clippy 的 `too_many_lines` 测试 lint 失败。下一步仅补局部 lint allow，随后重新运行 Clippy 与远端 CI。
 - 2026-10-28：PR #7 的 CI run `40666569928` 已结束。integration 在 `reload_pg` 首测发现系统表期望遗漏 `of_read_audit`；Ubuntu/Windows workspace 在 `security::cap_counts_final_masked_row_and_version` 收到 `AuditUnavailable`。Grok 建议先原样/串行窄跑区分时序，当前不改 CI 并发策略、不关闭 H3。下一步由 worker 做最小测试修正与顺序复验，完成后再触发新 CI。

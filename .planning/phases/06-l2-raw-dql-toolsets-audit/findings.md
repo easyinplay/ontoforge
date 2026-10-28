@@ -1,5 +1,11 @@
 # Phase 6 findings
 
+- 2026-10-28：Phase 7 只读预查已完成，尚未启动该阶段。技术栈、DTO、toolset、生命周期合同见 ADR-0007/0009/0019/0028，无需重新决定。后续 discuss 须确认 stdio 是独立 runtime 还是连接既有服务，以及 `serve --dev` 重启的数据保留；`/health` 部分降级 HTTP 状态可先交工程审查。server/api/client 仍为占位，CLI 无 serve；来源为只读 contract scout，无实现或新决策。
+
+- 2026-10-28：正式 PR review 的 CR-01 已由主会话亲读 `read_audit.rs:230-233` 确认：在 await 前 take JoinHandle，使并发/取消重试走 None=>Ok。候选 A 为锁内借用 Running handle 并缓存 Finished(Result)，候选 B 为额外 shared future/watch worker owner；选择 A 保留现 API、依赖和关闭合同，避免增加通知机制。Grok 有界无工具咨询 55 秒后 ETIMEDOUT/SIGTERM、输出空，未取得第二意见。按既有修复授权继续，核心并发修复强制 TDD；ralph-loop 本机不可用，使用明确验收循环，不声称执行该工具。跳过新战略澄清，因为这是已知根因的现有合同修复。
+
+- 2026-10-28：CI run `40675450974` 的 `headSha` 为 `20fd0005bc93707d2363231f36b4d5ec43da06fb`，integration、Ubuntu 和 Windows 均 success；isolated-query-bench 按 pull_request 条件 skipped。GSD verifier 已复签 `passed`、21/21，运行证据由 `06-VERIFICATION.md` 持有。按跨阶段合同仅关闭 L2-01/02/03、AUDIT-01；L2-04/SCOPE-07 整体 Pending。后续纯文档提交不声称已获该 SHA 的 CI 证明。正式 PR review 尚在运行，不能将 CI 通过当作该 gate 已完成。
+
 - 2026-10-28：为关键模块 PR 门禁尝试运行 `codex review --base origin/gsd/phase-05-online-action`，服务端过载后断流，未产生可用 review 结论；本地 `gsd-code-reviewer` 亦在时间盒内未落盘报告，故不记为 clean。既有 `06-REVIEW.md`、`06-10-REVIEW.md` 和独立验证仍无开放实现 finding。按 Grok 第二意见，下一步仅 push 分支并创建 draft PR 触发 H3 CI，不执行合并；待 CI 与正式 review 均完成后再决定关闭阶段。
 
 - 2026-10-28：就 H3 的远端执行路线再次有界咨询 Grok（仅已核实配置事实，无文件/命令工具）。55 秒后 `ETIMEDOUT`、`SIGTERM`、stdout/stderr 空，未取得第二意见，不作为路线批准。当前 phase6 分支远端不存在；CI push 仅 main，PR 可触发，workflow_dispatch 要求 isolated benchmark 并附带该 job。先完成可自主复验的本地证据与报告，不降低 CI 合同。

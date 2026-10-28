@@ -87,9 +87,9 @@
 
 ### L2 与审计
 
-- [ ] **L2-01**: 被授予 `sql:raw` 的主体可以执行只读 Trino DQL 并列举 allow-list 内的 catalog / schema / 表
-- [ ] **L2-02**: L2 SQL 经 AST 白名单校验（只允许 SELECT / WITH，拒绝表函数、CALL、EXECUTE、多语句、会话与事务语句），执行时发送重序列化后的 SQL
-- [ ] **L2-03**: L2 只能访问 catalog / schema allow-list，硬排除 edit store catalog 与 `system` 元数据表
+- [x] **L2-01**: 被授予 `sql:raw` 的主体可以执行只读 Trino DQL 并列举 allow-list 内的 catalog / schema / 表
+- [x] **L2-02**: L2 SQL 经 AST 白名单校验（只允许 SELECT / WITH，拒绝表函数、CALL、EXECUTE、多语句、会话与事务语句），执行时发送重序列化后的 SQL
+- [x] **L2-03**: L2 只能访问 catalog / schema allow-list，硬排除 edit store catalog 与 `system` 元数据表
 - [ ] **L2-04**: 启动自检无法证明 L2 身份在 Trino 侧受限时禁用 L2 并告警（fail-closed）
 - [ ] **AUDIT-01**: 所有级别的读取记录元数据审计（不含结果数据），异步落库，积压或持续失败时读请求 fail-closed；保留期可配
 
@@ -236,9 +236,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ACTION-10 | Phase 5 | Complete |
 | ACTION-11 | Phase 5 | Complete |
 | ACTION-12 | Phase 5 | Complete |
-| L2-01 | Phase 6 | Pending |
-| L2-02 | Phase 6 | Pending |
-| L2-03 | Phase 6 | Pending |
+| L2-01 | Phase 6 | Complete |
+| L2-02 | Phase 6 | Complete |
+| L2-03 | Phase 6 | Complete |
 | L2-04 | Phase 6（库级启动与周期 attestation、fail-closed 状态）+ Phase 7（服务生命周期接线及 `/health` 告警，ADR-0028） | Pending |
 | AUDIT-01 | Phase 6 | Pending |
 | API-01 | Phase 7 | Pending |
@@ -266,4 +266,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-10-15*
-*Last updated: 2026-10-19 after Phase 2*
+*Last updated: 2026-10-28 after Phase 6 verification; evidence: `.planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md`*

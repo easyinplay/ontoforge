@@ -1,15 +1,15 @@
 ---
 phase: "06"
 slug: "l2-raw-dql-toolsets-audit"
-status: validated
-nyquist_compliant: true
+status: draft
+nyquist_compliant: false
 wave_0_complete: true
 created: "2026-10-26"
 ---
 
 # Phase 6 Validation Strategy
 
-本文件映射 10 个 PLAN 的 20 个任务到自动化测试。原 CR-01、WR-02 与 WR-01 库级缺口均已修复，增量复审见 `06-10-REVIEW.md`；`e81127f` 的 workspace/Clippy/fmt 均通过，静态覆盖增量审计无新 BLOCKER。服务生命周期及 HTTP `/health` 由 Phase 7 验收（ADR-0028）。本文件仅签收自动化覆盖，TDD 门禁、Phase 6 目标验收与远端 CI 状态单独裁定。
+本文件映射 11 个 PLAN 的 21 个任务到自动化测试。原覆盖证据保留；正式 `06-PR-REVIEW.md` 新增 shutdown 并发/取消重试 CR-01，`06-11` 行为测试与实际运行证据待补，覆盖状态回 draft。服务生命周期及 HTTP `/health` 由 Phase 7 验收（ADR-0028）。本文件仅签收自动化覆盖，TDD 门禁、Phase 6 目标验收与远端 CI 状态单独裁定。
 
 ## Test Infrastructure
 
@@ -32,6 +32,7 @@ created: "2026-10-26"
 
 | Task | Requirement | Automated target | Local evidence |
 | --- | --- | --- | --- |
+| `06-11` T1 | AUDIT-01 | 共享 `conformance/mod.rs#audit_shutdown_`、storage worker unit | Pending：并发关闭、取消重试、成功/失败缓存与 JoinError；详 `06-11-PLAN.md` |
 | `06-01` T1 | AUDIT-01 | `ontoforge-query/tests/audit_pk.rs#audit_pk_` | 4 passed；`06-01-SUMMARY.md` |
 | `06-01` T2 | AUDIT-01 | `ontoforge-query/tests/audit_pk.rs#audit_worker_`、`ontoforge-storage/tests/conformance/mod.rs#audit_shutdown_drains_inflight_guard` | 原 5 passed；新增双后端在途 shutdown 测试通过，CR-01 closed |
 | `06-02` T1 | AUDIT-01 | `ontoforge-storage/tests/conformance_{sqlite,pg}.rs#audit_` | SQLite 5/5、真实 PG 6/6（含新增在途 shutdown）；原基线见 `06-02-SUMMARY.md` |

@@ -2,18 +2,18 @@
 gsd_state_version: "1.0"
 current_phase: 6
 current_phase_name: L2 Raw DQL, Toolsets & Audit
-current_plan: 10
-status: verifying
+current_plan: 11
+status: gap_closure
 last_gate_trip: null
-stopped_at: Phase 6 human_needed 19/21; H3 remote CI pending
+stopped_at: Phase 6 PR CR-01 audit shutdown gap; 06-11 TDD next
 last_updated: "2026-10-28"
 last_activity: 2026-10-28
-last_activity_desc: Phase 06 human_needed 19/21; PG Trino and Clippy verified; remote CI pending
-state_head: e81127f
+last_activity_desc: Formal PR review found audit shutdown cancellation/concurrency gap
+state_head: 20fd0005
 progress:
   total_phases: 7
   completed_phases: 5
-  total_plans: 71
+  total_plans: 72
   completed_plans: 71
   percent: 71
 ---
@@ -29,13 +29,13 @@ See: .planning/PROJECT.md (updated 2026-10-23)
 
 ## Current Position
 
-Phase: 6 (L2 Raw DQL, Toolsets & Audit) — VERIFYING
-Current Plan: 10
-Total Plans in Phase: 10
-Status: Goal verification human_needed (19/21); only H3 remote CI pending
-Last activity: 2026-10-28: PG/Trino/Clippy 原始证据已复签，详 Phase 6 `06-VERIFICATION.md`
+Phase: 6 (L2 Raw DQL, Toolsets & Audit): GAP CLOSURE
+Current Plan: 11
+Total Plans in Phase: 11
+Status: PR review CR-01 open; previous 21/21 evidence retained; Phase 7 not started
+Last activity: 2026-10-28: 审计关闭并发与取消重试缺口，详 Phase 6 `06-PR-REVIEW.md`
 
-Progress: [███████░░░] 71%
+Progress: 71%
 
 ## Performance Metrics
 
@@ -56,6 +56,7 @@ None yet.
 - [Ops]: 测试凭据待轮换（`ontoforge_trino_ro`、postgres），测试 catalog `ontoforge_pg` 待删除
 - [Phase 2]: 非阻塞安全 observations 待后续 phase 跟进（详: `phases/02-source-binding-engine/02-SECURITY.md` Observations）
 - [Phase 5]: 生产 webhook 联调与正式 gstack gate 待发布/PR 前完成；GSD 关闭警告详见 `phases/05-online-action/deferred-items.md`
+- [Phase 6]: 正式 PR review CR-01 开放，修复计划 `06-11-PLAN.md`；既有 CI 只证明 `20fd0005`。Phase 1–5 历史 fingerprint staleness 待 milestone audit 复核。
 
 ## Deferred Items
 
@@ -66,5 +67,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-10-28
-Stopped at: Phase 6 human_needed 19/21; H3 remote CI pending
+Stopped at: Phase 6 PR CR-01 audit shutdown gap; 06-11 TDD next
 Resume file: .planning/phases/06-l2-raw-dql-toolsets-audit/task_plan.md

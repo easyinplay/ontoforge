@@ -12,7 +12,8 @@
 - [x] P3：GSD research、pattern map 和 9 个可执行 PLAN 已落盘；独立 checker 第三轮 `VERIFICATION PASSED`，六个 requirement ID 与六项 CONTEXT 决策全覆盖。规划通过不等于实施测试通过。
 - [x] P4：GSD execute-phase 依 wave 落实；9 个 PLAN 均有 SUMMARY（详各 SUMMARY）。核心 AST、安全自检、审计队列和管理通道按 TDD 实施，代码所有权以各 PLAN 为准。
 - [x] P4b：WR-01 库级启动与周期 ACL attestation。用户已选部署方配置有界 probe SQL，`06-10-SUMMARY.md` 记录失败、过期、恢复、真实 Trino 483 负向 ACL 及最终 workspace/Clippy/fmt；Phase 7 的服务及 `/health` 接线由 ADR-0028 另行验收。
-- [ ] P5：GSD verify-work 与目标验证、代码审查、匹配 SHA 的 CI；通过后由 GSD 更新 ROADMAP/STATE/REQUIREMENTS。正式关键模块 PR gate 单独记录。当前 CI 已暴露 `of_read_audit` 期望遗漏与 workspace 审计时序失败，需先完成窄范围修正/复验。
+- [ ] P5：原 21/21 及 `20fd0005` CI 证据保留；正式 PR review 新增 CR-01，须完成 P4c 后增量复签，不将旧 CI 当作新实现证据。
+- [ ] P4c：`06-11-PLAN.md` 修复 audit shutdown 的并发、取消后重试和失败结果保留；双后端 TDD、增量 review 与新 SHA CI 通过后再关闭阶段。
 
 ## Acceptance
 
@@ -34,4 +35,4 @@
 
 ## Next Step
 
-正式目标验证已增量复签为 `human_needed`、19/21（详 `06-VERIFICATION.md`）。H1/H2 与最终 Clippy 已凭提交 `ecb9883` 的原始日志核验，仅剩 H3 当前交付 SHA 的远端 CI。Codex/gstack 新一轮 review 因服务过载中断，未记为 clean；先 push 当前分支并创建 draft PR 触发 `pull_request` CI，不执行合并。远端通过且正式 review 完成后需由 verifier 再签署，才能关闭 Phase 6。Phase 7 服务接线及 `/health` 保留阻断验收，L2-04/SCOPE-07 整体 Pending。GSD 间歇 Git 漏读尚未根治，见 findings。
+先执行 `06-11-PLAN.md`：旧实现的 shutdown 并发/取消重试会提前成功，须先取得行为 RED 再修复，审查和新 SHA CI 通过后增量复签。旧 21/21 及 `20fd0005` CI 作为历史证据保留。Phase 7 未启动，L2-04/SCOPE-07 整体 Pending，不执行合并；Phase 1–5 历史 fingerprint staleness 留给 milestone audit。

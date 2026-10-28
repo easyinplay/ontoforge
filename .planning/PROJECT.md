@@ -17,12 +17,13 @@ ontoforge 是一个用 Rust 实现、可自托管的开源 Ontology 操作层，
 - ✓ 数据源绑定与 Trino 连接（BIND-01..03、ENGINE-01..05）：`SourceBinding` 文件与必填 `backing`、类型契约 lint、`validate --online` / `--check-pk`、自写 Trino client、自有 SQL printer、SQLite 替身、Linux CI Trino + PG 与 nightly Iceberg；ontoforge 只带连接能力，不打包 Trino（ADR-0015、ADR-0017、ADR-0021） — Phase 2
 - ✓ edit store、edit log 与 scope 模型（SCOPE-01..06 等） — Phase 3，详 `.planning/phases/03-edit-store-scope-model/`
 - ✓ scoped L0 读取（QUERY-01..10）：Rust 编排 source/edit 叠加、行列授权与单表 Trino 查询 — Phase 4，详 `.planning/phases/04-scoped-l0-read/`
+- online Action（ACTION-01..12）：鉴权、并发令牌、主体作用域幂等与 webhook outbox；详 `.planning/phases/05-online-action/05-VERIFICATION.md`。
+- L2 Raw DQL（L2-01..03）；详 `.planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md`。
 
 ### Active
 
-- [ ] Action 鉴权管线 — ADR-0018，Phase 5
-- [ ] online Action：并发令牌、`command_id`、webhook outbox
-- [ ] L2 Raw DQL（AST 白名单 + Trino 侧权限自检）与全级别读审计
+- [ ] 读审计关闭的并发与取消重试修复（AUDIT-01）；详 `.planning/phases/06-l2-raw-dql-toolsets-audit/06-11-PLAN.md`
+- [ ] L2 ACL 服务生命周期与 `/health` 告警、agent MCP 管理边界（L2-04、SCOPE-07） — Phase 7，ADR-0028
 - [ ] REST（OpenAPI 3.1 + Rust / TS client）与 MCP（toolset 分层）两个出口；`serve --dev` 单二进制演示 — ADR-0019
 
 需求编号与 phase 映射见 `.planning/REQUIREMENTS.md`；方向依据 `docs/designs/trino-engine-sql-tiers.md`。
@@ -91,4 +92,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-10-23 after Phase 4*
+*Last updated: 2026-10-28 after Phase 6 verification*

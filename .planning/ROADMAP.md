@@ -16,7 +16,7 @@ Phase 1 定死 IR 契约。2026-10-16 起 Phase 2–7 按 `docs/designs/trino-en
 - [x] **Phase 3: Edit Store & Scope Model** - 按 type 强类型 edit store、DDL diff / migrate / reload 加固、edit log；用户 / 组 / 角色、CEL 行谓词（SQL 编译 + Rust 单行求值） (completed 2026-10-22)
 - [x] **Phase 4: Scoped L0 Read** - Rust 编排叠加读：pk 读、列表、聚合分解、searchAround、keyset 分页、HMAC 版本令牌 (completed 2026-10-23)
 - [x] **Phase 5: Online Action** - Action 鉴权管线 ①-⑨、并发令牌、`command_id`、webhook outbox (completed 2026-10-26)
-- [ ] **Phase 6: L2 Raw DQL, Toolsets & Audit** - L2 AST 白名单与自检、读审计、定义 reload 门禁与 role 管理通道
+- [ ] **Phase 6: L2 Raw DQL, Toolsets & Audit** - PR review 审计关闭缺口修复中；详: `.planning/phases/06-l2-raw-dql-toolsets-audit/06-PR-REVIEW.md`
 - [ ] **Phase 7: REST & MCP Shell** - REST + OpenAPI + clients、MCP toolset（core / full / sql:raw）、`serve --dev`、release
 
 ## Phase Details
@@ -245,7 +245,7 @@ Plans:
   4. 所有级别的读取写入元数据审计（主体、工具、对象类型、apiName 级条件、生效 role、SQL 哈希、行数、耗时、request_id），不含结果数据；审计积压时读请求返回 `AuditUnavailable`
   5. role / scope 只能经管理通道或 L3 修改并审计；定义 reload 先 validate / lint，失败不切换；每个请求固定使用开始时的定义版本
 
-**Plans**: 10/10 summarized，本地门禁通过，Phase verification pending（详: `.planning/phases/06-l2-raw-dql-toolsets-audit/`）
+**Plans**: 10/11 summarized，PR review CR-01 待 `06-11` 关闭；详: `.planning/phases/06-l2-raw-dql-toolsets-audit/06-PR-REVIEW.md`
 
 **Details**: `.planning/phases/06-l2-raw-dql-toolsets-audit/`
 
@@ -280,5 +280,5 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7（纵切片
 | 3. Edit Store & Scope Model | 23/23 | Complete    | 2026-10-22 |
 | 4. Scoped L0 Read | 7/7 | Complete    | 2026-10-23 |
 | 5. Online Action | 7/7 | Complete    | 2026-10-26 |
-| 6. L2 Raw DQL, Toolsets & Audit | 10/10 | Local gates passed; verification pending | - |
+| 6. L2 Raw DQL, Toolsets & Audit | 10/11 | PR review gap closure | - |
 | 7. REST & MCP Shell | 0/TBD | Not started | - |
