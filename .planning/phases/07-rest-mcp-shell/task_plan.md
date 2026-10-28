@@ -22,7 +22,7 @@
 
 ## Next Step
 
-四节工程设计审查已完成，见 `07-ENG-REVIEW.md`；验收规划见 `07-TEST-MATRIX.md`。下一步用 GSD plan-phase 开展研究与 rmcp spike，再由独立 planner/checker 生成和检查 PLAN。P2 尚未完成，完整范围保留。
+四节工程设计审查、研究与 rmcp spike 已完成，见 `07-ENG-REVIEW.md`、`07-RESEARCH.md`；验收规划见 `07-TEST-MATRIX.md`。下一步由 pattern mapper、独立 planner/checker 生成和检查 PLAN，更新验证映射。P2 尚未完成，完整范围保留。
 
 ## Errors Encountered
 

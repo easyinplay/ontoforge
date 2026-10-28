@@ -1,5 +1,7 @@
 # Phase 7 progress
 
+- 2026-10-29：研究完成，独立 rmcp workspace 的 4 unit + 1 真实 stdio 子进程测试通过，证据见 `07-RESEARCH.md` 与 `spikes/rmcp-shell/final.log`。业务接线、PG races、TS/OpenAPI、真实 Trino health、dev 与三平台发行尚待实施验收；进入 pattern mapping 与正式 PLAN/checker，P2 尚未完成。
+
 - 2026-10-28：四节工程设计审查完成，`07-TEST-MATRIX.md` 的 10 组验收与故障分支图已落盘。scout 核查与 Grok 正常退出的第二意见已交叉检查，保留 fence/replay/现有历史结构。进入 P2 的研究/规划部分，尚无实现或测试通过结论。
 
 - 2026-10-28：用户接受工程审查 D1 选项 1，健康契约已记录在 CONTEXT D-03；恢复后续工程审查，不再等待该问题。

@@ -1,0 +1,27 @@
+   Compiling ontoforge-rmcp-shell-spike v0.0.0 (D:\DataSpellProjects\ontoforge\.planning\phases\07-rest-mcp-shell\spikes\rmcp-shell)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 14.64s
+     Running unittests src\lib.rs (.planning/phases/07-rest-mcp-shell/spikes/rmcp-shell/target\debug\deps\ontoforge_rmcp_shell_spike-a267057fc6b06e8b.exe)
+
+running 4 tests
+test tests::modern_requests_use_per_request_principal_without_session ... FAILED
+test tests::http_cancel_notification_stops_running_handler_and_shutdown_is_bounded ... ok
+test tests::dynamic_tools_are_principal_scoped_and_schema_is_runtime_data ... ok
+test tests::direct_unlisted_tool_and_cross_principal_session_are_denied ... ok
+
+failures:
+
+---- tests::modern_requests_use_per_request_principal_without_session stdout ----
+
+thread 'tests::modern_requests_use_per_request_principal_without_session' (32996) panicked at src\lib.rs:219:9:
+assertion `left == right` failed: {"error":{"code":-32020,"message":"missing required Mcp-Method header"},"id":8,"jsonrpc":"2.0"}
+  left: 400
+ right: 200
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    tests::modern_requests_use_per_request_principal_without_session
+
+test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `--lib`
