@@ -25,6 +25,7 @@ mod client;
 mod decode;
 mod headers;
 pub mod l2_health;
+pub mod l2_monitor;
 
 use self::l2_health::{L2AclConfig, L2Health, L2HealthStatus};
 
