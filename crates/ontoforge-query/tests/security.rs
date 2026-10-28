@@ -1764,6 +1764,10 @@ async fn cursor_multikey_null_pages_have_no_duplicates_or_omissions() {
 }
 
 #[tokio::test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "the test keeps the final-row cap and audit timing assertions together"
+)]
 async fn cap_counts_final_masked_row_and_version() {
     let f = fixture().await;
     let active = f.store.active_definition().await.unwrap();
