@@ -43,7 +43,7 @@ impl L2AclMonitor {
             let _ = task.await;
         }
         self.pending
-            .cancel()
+            .cancel(Some(self.generation))
             .await
             .map_err(|_| EngineError::Unavailable {
                 reason: "L2 probe cleanup failed".to_owned(),
@@ -65,9 +65,10 @@ impl Drop for L2AclMonitor {
     fn drop(&mut self) {
         self.stop();
         let pending = self.pending.clone();
+        let generation = self.generation;
         if let Ok(runtime) = tokio::runtime::Handle::try_current() {
             runtime.spawn(async move {
-                let _ = pending.cancel().await;
+                let _ = pending.cancel(Some(generation)).await;
             });
         }
     }
@@ -108,12 +109,12 @@ impl TrinoEngine {
                 "invalid L2 ACL monitor bounds".to_owned(),
             ));
         }
-        let generation = self
+        let health = self
             .l2_health
             .as_ref()
-            .ok_or_else(|| EngineError::Config("not an L2 engine".to_owned()))?
-            .register_monitor()?;
-        let pending = Arc::new(PendingProbe::default());
+            .ok_or_else(|| EngineError::Config("not an L2 engine".to_owned()))?;
+        let generation = health.register_monitor()?;
+        let pending = health.pending.clone();
         // Construct the lease before the first await so startup cancellation runs Drop.
         let mut monitor = L2AclMonitor {
             l2: self.clone(),
@@ -148,32 +149,80 @@ impl Drop for MonitorExit {
     }
 }
 
-#[derive(Default)]
-struct PendingProbe {
-    delete: Mutex<Option<RequestBuilder>>,
+#[derive(Debug, Default)]
+pub(super) struct PendingProbe {
+    state: Mutex<PendingState>,
+    cancellation: tokio::sync::Mutex<()>,
     last_id: Mutex<Option<String>>,
 }
 
+#[derive(Debug, Default)]
+struct PendingState {
+    next_token: u64,
+    delete: Option<PendingDelete>,
+}
+
+#[derive(Debug)]
+struct PendingDelete {
+    token: u64,
+    generation: u64,
+    request: RequestBuilder,
+}
+
 impl PendingProbe {
-    async fn cancel(&self) -> Result<(), L2DisableReason> {
+    fn record(&self, generation: u64, request: RequestBuilder) -> Result<(), L2DisableReason> {
+        let mut state = self
+            .state
+            .lock()
+            .map_err(|_| L2DisableReason::CleanupFailed)?;
+        state.next_token = state.next_token.wrapping_add(1);
+        state.delete = Some(PendingDelete {
+            token: state.next_token,
+            generation,
+            request,
+        });
+        Ok(())
+    }
+
+    async fn cancel(&self, owner: Option<u64>) -> Result<(), L2DisableReason> {
+        tokio::time::timeout(Duration::from_secs(2), self.cancel_inner(owner))
+            .await
+            .map_err(|_| L2DisableReason::CleanupFailed)?
+    }
+
+    async fn cancel_inner(&self, owner: Option<u64>) -> Result<(), L2DisableReason> {
+        let _serial = self.cancellation.lock().await;
         let delete = self
-            .delete
+            .state
             .lock()
             .map_err(|_| L2DisableReason::CleanupFailed)?
+            .delete
             .as_ref()
-            .map(|request| request.try_clone().ok_or(L2DisableReason::CleanupFailed))
+            .filter(|delete| owner.is_none_or(|owner| owner == delete.generation))
+            .map(|delete| {
+                delete
+                    .request
+                    .try_clone()
+                    .map(|request| (delete.token, request))
+                    .ok_or(L2DisableReason::CleanupFailed)
+            })
             .transpose()?;
-        let Some(delete) = delete else {
+        let Some((token, delete)) = delete else {
             return Ok(());
         };
-        match tokio::time::timeout(Duration::from_secs(2), delete.send()).await {
-            Ok(Ok(response))
-                if response.status().is_success() || response.status().as_u16() == 404 =>
-            {
-                self.delete
+        match delete.send().await {
+            Ok(response) if response.status().is_success() || response.status().as_u16() == 404 => {
+                let mut state = self
+                    .state
                     .lock()
-                    .map_err(|_| L2DisableReason::CleanupFailed)?
-                    .take();
+                    .map_err(|_| L2DisableReason::CleanupFailed)?;
+                if state
+                    .delete
+                    .as_ref()
+                    .is_some_and(|delete| delete.token == token)
+                {
+                    state.delete = None;
+                }
                 Ok(())
             }
             _ => Err(L2DisableReason::CleanupFailed),
@@ -199,13 +248,13 @@ async fn run_cycle(
         let _serial = health.recheck_lock.lock().await;
         let _admission = health.admission.write().await;
         let checks = async {
-            pending.cancel().await?;
+            pending.cancel(None).await?;
             let sql = probe_sql(l2, ontology)?;
-            let query_id = start_probe(ontology, &sql, pending).await?;
+            let query_id = start_probe(ontology, &sql, pending, generation).await?;
             l2_health::run_checks(l2, ontology, &query_id).await
         }
         .await;
-        let cleanup = pending.cancel().await;
+        let cleanup = pending.cancel(Some(generation)).await;
         let status = match cleanup.and(checks) {
             Ok(()) => L2HealthStatus::Enabled,
             Err(reason) => L2HealthStatus::Disabled { reason },
@@ -214,7 +263,7 @@ async fn run_cycle(
     })
     .await;
     if result.is_err() {
-        let reason = match pending.cancel().await {
+        let reason = match pending.cancel(Some(generation)).await {
             Ok(()) => L2DisableReason::TimedOut,
             Err(reason) => reason,
         };
@@ -255,6 +304,7 @@ async fn start_probe(
     ontology: &TrinoEngine,
     sql: &PrintedSql,
     pending: &PendingProbe,
+    generation: u64,
 ) -> Result<String, L2DisableReason> {
     let ctx = QueryContext {
         timeout: Duration::from_secs(20),
@@ -289,10 +339,7 @@ async fn start_probe(
             let delete = ontology
                 .request(Method::DELETE, next.clone(), &ctx, false)
                 .map_err(|_| L2DisableReason::InvalidProbe)?;
-            *pending
-                .delete
-                .lock()
-                .map_err(|_| L2DisableReason::CleanupFailed)? = Some(delete);
+            pending.record(generation, delete)?;
         }
         let id = page
             .id

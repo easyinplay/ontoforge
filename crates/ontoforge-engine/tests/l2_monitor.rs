@@ -628,6 +628,13 @@ async fn monitor_cleanup_failure_cannot_be_bypassed_by_manual_recheck() {
         "manual diagnosis must not bypass the monitor owner's failed cleanup, got {status:?}"
     );
     assert!(monitor.shutdown().await.is_err());
+    assert_eq!(
+        l2.recheck_l2_acl(&ontology, "external_active_1").await,
+        L2HealthStatus::Disabled {
+            reason: L2DisableReason::Stopped
+        },
+        "failed shutdown must not release the cleanup obligation to manual success"
+    );
 }
 
 #[tokio::test]

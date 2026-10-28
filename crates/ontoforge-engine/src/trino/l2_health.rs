@@ -1,6 +1,6 @@
 //! Fail-closed ACL attestation for the dedicated L2 identity.
 
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 use serde::Deserialize;
@@ -49,6 +49,14 @@ pub(super) struct L2Health {
     state: Mutex<HealthState>,
     pub(super) recheck_lock: tokio::sync::Mutex<()>,
     pub(super) admission: tokio::sync::RwLock<()>,
+    pub(super) pending: Arc<super::l2_monitor::PendingProbe>,
+}
+
+#[derive(Clone, Copy)]
+pub(super) struct CheckTicket {
+    generation: u64,
+    epoch: u64,
+    monitor_owner: bool,
 }
 
 #[derive(Debug)]
@@ -80,6 +88,7 @@ impl L2Health {
             }),
             recheck_lock: tokio::sync::Mutex::new(()),
             admission: tokio::sync::RwLock::new(()),
+            pending: Arc::default(),
         }
     }
 
@@ -102,10 +111,15 @@ impl L2Health {
         )
     }
 
-    pub(super) fn complete(&self, ticket: (u64, u64), status: L2HealthStatus) -> L2HealthStatus {
+    pub(super) fn complete(&self, ticket: CheckTicket, status: L2HealthStatus) -> L2HealthStatus {
         match self.state.lock() {
             Ok(mut current) => {
-                if (current.generation, current.check_epoch) == ticket && !current.stopped {
+                if (current.generation, current.check_epoch) == (ticket.generation, ticket.epoch)
+                    && !current.stopped
+                    && !(status == L2HealthStatus::Enabled
+                        && current.monitoring
+                        && !ticket.monitor_owner)
+                {
                     current.status = status;
                     current.checked_at = Instant::now();
                 }
@@ -117,16 +131,22 @@ impl L2Health {
         }
     }
 
-    pub(super) fn begin(&self, owner: Option<u64>) -> Option<(u64, u64)> {
+    pub(super) fn begin(&self, owner: Option<u64>) -> Option<CheckTicket> {
         let mut current = self.state.lock().ok()?;
         if current.stopped || owner.is_some_and(|owner| owner != current.generation) {
             return None;
         }
         current.check_epoch = current.check_epoch.wrapping_add(1);
-        current.status = L2HealthStatus::Disabled {
-            reason: L2DisableReason::NotVerified,
-        };
-        Some((current.generation, current.check_epoch))
+        if owner.is_some() || current.status == L2HealthStatus::Enabled {
+            current.status = L2HealthStatus::Disabled {
+                reason: L2DisableReason::NotVerified,
+            };
+        }
+        Some(CheckTicket {
+            generation: current.generation,
+            epoch: current.check_epoch,
+            monitor_owner: owner.is_some(),
+        })
     }
 
     pub(super) fn register_monitor(&self) -> Result<u64, EngineError> {
@@ -316,7 +336,7 @@ mod tests {
     #[test]
     fn l2_health_expired_attestation_is_disabled() {
         let health = L2Health::new(None);
-        health.complete((0, 0), L2HealthStatus::Enabled);
+        health.complete(health.begin(None).expect("ticket"), L2HealthStatus::Enabled);
         health.state.lock().expect("status lock").checked_at = Instant::now()
             .checked_sub(Duration::from_secs(61))
             .expect("clock supports sixty seconds");
