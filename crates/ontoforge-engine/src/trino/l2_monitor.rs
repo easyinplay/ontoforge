@@ -255,12 +255,12 @@ mod tests {
     #[tokio::test]
     async fn old_cleanup_response_and_owner_cannot_clear_or_cancel_new_probe() {
         let server = MockServer::start().await;
-        Mock::given(method("DELETE"))
+        Mock::given(method(reqwest::Method::DELETE.as_str()))
             .and(path("/old"))
             .respond_with(ResponseTemplate::new(204).set_delay(Duration::from_millis(150)))
             .mount(&server)
             .await;
-        Mock::given(method("DELETE"))
+        Mock::given(method(reqwest::Method::DELETE.as_str()))
             .and(path("/new"))
             .respond_with(ResponseTemplate::new(204))
             .mount(&server)
