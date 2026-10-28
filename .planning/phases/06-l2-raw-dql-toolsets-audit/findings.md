@@ -1,5 +1,7 @@
 # Phase 6 findings
 
+- 2026-10-28：选项 1 已获用户批准。主会话 `superpowers:brainstorming` 复核现有 engine 后选显式 async startup + RAII monitor handle，避免同步构造函数隐式 spawn；约 30 秒复检，小于 60 秒有效期。每轮 fresh ontology query，隔离观测前后检查真实非终态（优先 RUNNING），有界只读 AST、服务端 run/execution 上限、客户端整体 deadline 与 origin 检查；失败/停止/取消失败不得 re-enable。核心安全逻辑执行 TDD，不豁免。既有阶段 scope 明确，跳过新战略 office-hours/CEO gate。ralph-loop 未安装，记录逐项验收而不声称执行。
+
 - 2026-10-28：用户选择方案 A，ADR-0028 将 Phase 6 库级启动/周期 ACL attestation 与 Phase 7 服务及 `/health` 告警分开验收，L2-04 整体保持 Pending。只读代码勘查确认 `recheck_l2_acl` 需调用者传入另一身份 query ID，`QueryResults` 未解析 `id`/`stats`，同步 `build_trino_engines` 不能隐式启动 Tokio monitor。Grok CLI 第二意见：生产没有通用长查询，暂停短 `SELECT 1` 的 `nextUri` 不构成活跃证据；优先部署方配置有界探针，每轮自产 ID、同轮检查、取消，失败维持禁用。是否新增此配置为实施前的开放决策。
 
 - 2026-10-28：Windows 完整 workspace 首轮 `reload_racing_commits_never_lets_an_old_write_through` 在 `WriterStats { committed: 9, stale: 1 }` 失败。共用 helper 把切换后的 stale 拒绝算作 10 次尝试之一，断言却要求至少 10 次成功提交；单独复跑通过，属于测试时序误报。helper 改为累计 10 次成功提交并设 100 次尝试上限，目标连续 6 次及完整 workspace 均通过。只改测试稳定性，无生产逻辑变化，新的 TDD RED/GREEN 不适用。

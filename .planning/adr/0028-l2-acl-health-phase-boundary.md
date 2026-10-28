@@ -9,9 +9,9 @@ Phase 6 交付库级 L2 ACL 启动与周期 attestation、fail-closed 状态及�
 
 成功证明超过现有 60 秒期限、探针失败或身份可见性无法证明时 L2 仍禁用；不采用 last-known-good 放行。Phase 6 不把库级状态单测冒充 HTTP 告警证据。
 
-## Open implementation decision
+## Probe Source
 
-每次自检须证明 ontology 身份的已知 query 在观测期间活跃且 L2 身份不可见。CI 的 TPCH 大表不是生产通用探针。部署方提供有界探针 SQL 与库级生命周期，或改变活跃性合同，需在实施前分别验证并明确选择；任何证据不足保持禁用。Grok 第二意见倾向前者，建议服务端运行上限、同周期验证、取消和故障分类。
+2026-10-28 用户选择选项 1：部署方提供有界只读探针 SQL，保留真实活跃 query 合同。每轮由 ontology 身份提交新 query，同周期确认活跃状态及 L2 不可见；配置缺失、过早结束、未知状态、超时或取消失败均禁用。服务端 execution/run time 上限覆盖执行及排队时间；客户端取消仅发送到验证过的 origin。CI 的 TPCH 大表仅为测试配置，不硬编码到生产。Grok 第二意见作为设计输入，真实 Trino 483 测试作为协议证据。
 
 ## References
 
