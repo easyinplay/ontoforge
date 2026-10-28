@@ -7,7 +7,7 @@
 ## Tasks
 
 - [x] P0：确认 Phase 6 的 owner 状态为 passed，保留 PR #7 不合并约束。
-- [ ] P1：完成 GSD discuss。用户已确认的决策保存于 `07-DISCUSS-CHECKPOINT.json`，尚待 dev 数据保留方式答复；完成后蒸馏为 `07-CONTEXT.md`。
+- [x] P1：完成 GSD discuss。用户决策见 `07-CONTEXT.md`，备选项审计见 `07-DISCUSSION-LOG.md`；已消费临时检查点。
 - [ ] P2：工程审查服务生命周期、stdio 桥接与健康契约，完成 rmcp 动态工具列表 spike；形成研究与可执行 PLAN。
 - [ ] P3：按 PLAN 实施，核心授权、状态与数据逻辑强制 TDD，实施交给 subagent。
 - [ ] P4：验证 REST/MCP 授权一致性、dev 演示、真实 L2 生命周期与健康、三平台 release 构建；通过正式审查和 GSD 验收后关闭阶段。
@@ -22,4 +22,9 @@
 
 ## Next Step
 
-等待用户选择 serve --dev 重启后默认保留或重置数据，然后完成讨论并准备工程审查。
+plan-eng-review Step 0 已完成，详 `07-ENG-REVIEW.md`。当前等待 D1：仅 L2 失败时 `/health` 的 HTTP 语义；收到后继续 Architecture，再逐节完成 Code Quality、Tests、Performance。用户已批准完整范围，保留 client 与 release。
+
+## Errors Encountered
+
+- Grok session 91385 在 55 秒上限返回 ETIMEDOUT / SIGTERM；部分正文仅作第二意见，未当作完整审查。
+- `C:/Users/easyi/.codex/rules/web-search.md` 不存在；已找到并读取 `C:/Users/easyi/.claude/rules/web-search.md`。

@@ -3,11 +3,11 @@ gsd_state_version: "1.0"
 current_phase: 7
 current_phase_name: REST & MCP Shell
 current_plan: Not started
-status: discussing
-stopped_at: Phase 7 stdio 方式已确定；dev 数据保留待确认
-last_updated: "2026-10-28T14:53:00.068Z"
-last_activity: "2026-10-28: Phase 7 stdio 决策已保存；等待 dev 数据保留选择"
-state_head: c9f823cf7b0cf01a382a3e3c21c912887bdabb94
+status: planning
+stopped_at: Phase 7 工程审查 D1：等待 L2 降级时 /health HTTP 语义选择
+last_updated: "2026-10-28T15:09:28.321Z"
+last_activity: "2026-10-28: Phase 7 讨论完成，工程审查进行中"
+state_head: 1576a152d92a3c8d8b9b5e4b8999950216c9bc21
 progress:
   total_phases: 7
   completed_phases: 6
@@ -15,7 +15,7 @@ progress:
   completed_plans: 72
   percent: 86
 last_gate_trip: null
-last_activity_desc: Phase 7 stdio 决策已保存；dev 数据保留待确认
+last_activity_desc: Phase 7 讨论完成；工程审查进行中
 ---
 
 # Project State
@@ -25,15 +25,15 @@ last_activity_desc: Phase 7 stdio 决策已保存；dev 数据保留待确认
 See: .planning/PROJECT.md (updated 2026-10-28)
 
 **Core value:** 定义一次 ontology，应用和 agent 就能通过 REST 与 MCP 对同一份对象图做受控读写：写入一律经 Action 校验与授权，每次写入都可审计。
-**Current focus:** Phase 7 讨论；stdio 方式已确定，dev 数据保留待确认
+**Current focus:** Phase 7 工程审查，详: phases/07-rest-mcp-shell/task_plan.md
 
 ## Current Position
 
 Phase: 7 (REST & MCP Shell)
 Current Plan: Not started
 Total Plans in Phase: 0
-Status: Discussing
-Last activity: 2026-10-28: Phase 7 stdio 决策已保存；等待 dev 数据保留选择
+Status: Planning (engineering review)
+Last activity: 2026-10-28: Phase 7 讨论完成，工程审查进行中
 
 Progress: [█████████░] 86%
 
@@ -45,7 +45,7 @@ Progress: [█████████░] 86%
 
 ### Decisions
 
-决策真相源为 `.planning/adr/`；Phase 1-6 的实施证据见各自 `SUMMARY.md`、`VERIFICATION.md` 和 git 历史。Phase 7 讨论检查点为 `phases/07-rest-mcp-shell/07-DISCUSS-CHECKPOINT.json`，工作顺序见同目录的 `task_plan.md`。
+决策真相源为 `.planning/adr/`；Phase 1-6 的实施证据见各自 `SUMMARY.md`、`VERIFICATION.md` 和 git 历史。Phase 7 运行方式见 `phases/07-rest-mcp-shell/07-CONTEXT.md`，工作顺序见同目录的 `task_plan.md`。
 
 ### Pending Todos
 
@@ -57,7 +57,7 @@ None yet.
 - [Phase 2]: 非阻塞安全 observations 待后续 phase 跟进（详: `phases/02-source-binding-engine/02-SECURITY.md` Observations）
 - [Phase 5]: 生产 webhook 联调与正式 gstack gate 待发布/PR 前完成；GSD 关闭警告详见 `phases/05-online-action/deferred-items.md`
 - [Phase 6]: 本地 PR review、CI 与增量复签通过；外部 Codex 审查不可用。Phase 1–5 历史 fingerprint staleness 待 milestone audit 复核，详 Phase 6 VERIFICATION。
-- [Phase 7]: dev 数据保留方式待用户选择；L2-04/SCOPE-07 跨阶段验收仍 Pending；PR #7 不合并。
+- [Phase 7]: 工程审查与 PLAN 未完成；L2-04/SCOPE-07 跨阶段验收仍 Pending；PR #7 不合并。
 
 ## Deferred Items
 
@@ -67,6 +67,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-28T14:52:57.941Z
-Stopped at: Phase 7 stdio 方式已确定；dev 数据保留待确认
-Resume file: .planning/phases/07-rest-mcp-shell/07-DISCUSS-CHECKPOINT.json
+Last session: 2026-10-28T15:09:25.940Z
+Stopped at: Phase 7 工程审查 D1：等待 L2 降级时 /health HTTP 语义选择
+Resume file: .planning/phases/07-rest-mcp-shell/07-ENG-REVIEW.md
