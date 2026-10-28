@@ -1,5 +1,7 @@
 # Phase 6 progress
 
+- 2026-10-28：PR #7 的 CI run `40666569928` 已结束。integration 在 `reload_pg` 首测发现系统表期望遗漏 `of_read_audit`；Ubuntu/Windows workspace 在 `security::cap_counts_final_masked_row_and_version` 收到 `AuditUnavailable`。Grok 建议先原样/串行窄跑区分时序，当前不改 CI 并发策略、不关闭 H3。下一步由 worker 做最小测试修正与顺序复验，完成后再触发新 CI。
+
 - 2026-10-28：Codex/gstack review 新一轮因服务过载中断，未取得新结论；不将其标为 clean。Grok 建议 push 分支并创建 draft PR 触发 `pull_request` CI，workflow_dispatch 仅作备用；此动作只为 H3 证据，不含合并授权。
 
 - 2026-10-28：verifier 独立复核新日志 hash、index/disk 字节、二进制来源和源码等价后，H1/H2 关闭；正式报告增量复签为 `human_needed`、19/21，owner status exit 0。只剩 H3 当前 SHA 的远端 CI 两条 truth。Phase 6 未关闭，Phase 7 未启动，L2-04/SCOPE-07 整体 Pending；正式 PR gate 未执行。
