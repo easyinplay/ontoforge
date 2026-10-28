@@ -47,34 +47,38 @@ impl Fixture {
             },
         );
     }
+
+    fn cancel_response(&self, request: &Request) -> ResponseTemplate {
+        self.deletes.fetch_add(1, Ordering::SeqCst);
+        let id = request.url.path().rsplit('/').next().expect("query path");
+        let status = if self
+            .cancel_blocked_id
+            .lock()
+            .expect("blocked ID")
+            .as_deref()
+            == Some(id)
+        {
+            500
+        } else {
+            self.cancel_status.load(Ordering::SeqCst)
+        };
+        let status = if status == 0 { 204 } else { status };
+        if (200..300).contains(&status) || status == 404 {
+            self.queries.lock().expect("queries").remove(id);
+        }
+        let response = ResponseTemplate::new(status);
+        if self.cancel_delayed.load(Ordering::SeqCst) {
+            response.set_delay(Duration::from_millis(400))
+        } else {
+            response
+        }
+    }
 }
 
 impl Respond for Fixture {
     fn respond(&self, request: &Request) -> ResponseTemplate {
         if request.method == "DELETE" {
-            self.deletes.fetch_add(1, Ordering::SeqCst);
-            let id = request.url.path().rsplit('/').next().expect("query path");
-            let status = if self
-                .cancel_blocked_id
-                .lock()
-                .expect("blocked ID")
-                .as_deref()
-                == Some(id)
-            {
-                500
-            } else {
-                self.cancel_status.load(Ordering::SeqCst)
-            };
-            let status = if status == 0 { 204 } else { status };
-            if (200..300).contains(&status) || status == 404 {
-                self.queries.lock().expect("queries").remove(id);
-            }
-            let response = ResponseTemplate::new(status);
-            return if self.cancel_delayed.load(Ordering::SeqCst) {
-                response.set_delay(Duration::from_millis(400))
-            } else {
-                response
-            };
+            return self.cancel_response(request);
         }
         let sql = String::from_utf8_lossy(&request.body);
         let user = request
@@ -109,13 +113,13 @@ impl Respond for Fixture {
                 return ResponseTemplate::new(404);
             };
             if self.finished.load(Ordering::SeqCst) {
-                query.state = "FINISHED".to_owned();
+                "FINISHED".clone_into(&mut query.state);
                 json!({"id":id,"stats":{"state":"FINISHED"}})
             } else {
                 if self.unknown.load(Ordering::SeqCst) {
-                    query.state = "UNKNOWN".to_owned();
+                    "UNKNOWN".clone_into(&mut query.state);
                 } else if request.method == "GET" {
-                    query.state = "RUNNING".to_owned();
+                    "RUNNING".clone_into(&mut query.state);
                 }
                 let next = self
                     .foreign_uri
@@ -139,7 +143,7 @@ impl Respond for Fixture {
                     if self.finish_after_visibility.load(Ordering::SeqCst)
                         && self.l2_observed.load(Ordering::SeqCst)
                     {
-                        query.state = "FINISHED".to_owned();
+                        "FINISHED".clone_into(&mut query.state);
                     }
                     if self.absent.load(Ordering::SeqCst)
                         || (query.owner != user && !self.leak.load(Ordering::SeqCst))
