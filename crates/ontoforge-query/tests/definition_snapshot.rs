@@ -312,7 +312,7 @@ async fn attest_l2(server: &MockServer, ontology: &TrinoEngine, l2: &TrinoEngine
     for catalog in ["outside", "editstore"] {
         l2_reply(server, "l2", &format!("\"{catalog}\"."), denied.clone()).await;
     }
-    l2_reply(server, "ontology", "other_1", json!({"id":"probe", "columns":[{"name":"query_id","type":"varchar"}], "data":[["other_1"]], "stats":{"state":"FINISHED"}})).await;
+    l2_reply(server, "ontology", "other_1", json!({"id":"probe", "columns":[{"name":"query_id","type":"varchar"},{"name":"state","type":"varchar"}], "data":[["other_1","RUNNING"]], "stats":{"state":"FINISHED"}})).await;
     l2_reply(server, "l2", "other_1", json!({"id":"probe", "columns":[{"name":"query_id","type":"varchar"}], "data":[], "stats":{"state":"FINISHED"}})).await;
     assert_eq!(
         l2.recheck_l2_acl(ontology, "other_1").await,

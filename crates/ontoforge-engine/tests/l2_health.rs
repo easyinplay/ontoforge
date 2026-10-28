@@ -116,7 +116,7 @@ async fn setup_probes(server: &MockServer, negative_error: Option<&str>, leak: b
         server,
         "ontology",
         "other_1",
-        rows(&json!([["other_1"]]), "varchar"),
+        json!({"columns":[{"name":"query_id","type":"varchar"},{"name":"state","type":"varchar"}],"data":[["other_1","RUNNING"]]}),
     )
     .await;
     answer(
@@ -173,13 +173,56 @@ async fn l2_health_finished_query_cannot_attest_active_isolation() {
         .with_priority(1)
         .mount(&server)
         .await;
-    let cfg = parse_server_config(&attested_config(&server.uri())).expect("config").trino.expect("trino");
+    let cfg = parse_server_config(&attested_config(&server.uri()))
+        .expect("config")
+        .trino
+        .expect("trino");
     let engines = build_trino_engines(&cfg, Utf8Path::new("."), &|_: &str| None).expect("engines");
     let l2 = engines.l2.expect("L2");
     assert_eq!(
         l2.recheck_l2_acl(&engines.ontology, "other_1").await,
-        L2HealthStatus::Disabled { reason: L2DisableReason::OtherQueryUnconfirmed },
+        L2HealthStatus::Disabled {
+            reason: L2DisableReason::OtherQueryUnconfirmed
+        },
         "a retained finished query ID is not active-query evidence"
+    );
+}
+
+#[tokio::test]
+async fn l2_health_rejects_other_coordinator_without_network() {
+    let first = MockServer::start().await;
+    let second = MockServer::start().await;
+    let build = |url: &str| {
+        let cfg = parse_server_config(&attested_config(url))
+            .expect("config")
+            .trino
+            .expect("trino");
+        build_trino_engines(&cfg, Utf8Path::new("."), &|_: &str| None).expect("engines")
+    };
+    let left = build(&first.uri());
+    let right = build(&second.uri());
+    assert_eq!(
+        left.l2
+            .expect("l2")
+            .recheck_l2_acl(&right.ontology, "other_1")
+            .await,
+        L2HealthStatus::Disabled {
+            reason: L2DisableReason::InvalidProbe
+        }
+    );
+    assert!(
+        first
+            .received_requests()
+            .await
+            .expect("requests")
+            .is_empty()
+    );
+    assert!(
+        second
+            .received_requests()
+            .await
+            .expect("requests")
+            .is_empty()
     );
 }
 

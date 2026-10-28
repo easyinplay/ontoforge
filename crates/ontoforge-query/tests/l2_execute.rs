@@ -61,7 +61,7 @@ async fn attest(server: &MockServer, ontology: &TrinoEngine, l2: &TrinoEngine) {
     for catalog in ["outside", "editstore"] {
         answer(server, "l2", &format!("\"{catalog}\"."), json!({"id":"q1", "error":{"errorName":"PERMISSION_DENIED","message":"denied"}, "stats":{"state":"FAILED"}})).await;
     }
-    answer(server, "ontology", "other_1", json!({"id":"q1", "columns":[{"name":"query_id","type":"varchar"}], "data":[["other_1"]], "stats":{"state":"FINISHED"}})).await;
+    answer(server, "ontology", "other_1", json!({"id":"q1", "columns":[{"name":"query_id","type":"varchar"},{"name":"state","type":"varchar"}], "data":[["other_1","RUNNING"]], "stats":{"state":"FINISHED"}})).await;
     answer(server, "l2", "other_1", json!({"id":"q1", "columns":[{"name":"query_id","type":"varchar"}], "data":[], "stats":{"state":"FINISHED"}})).await;
     assert_eq!(
         l2.recheck_l2_acl(ontology, "other_1").await,

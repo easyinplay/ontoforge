@@ -79,7 +79,7 @@ pub(crate) fn acl_query_probe(query_id: &str) -> Result<PrintedSql, L2Error> {
         return Err(L2Error::Unsupported);
     }
     Ok(PrintedSql::new(format!(
-        "SELECT query_id FROM system.runtime.queries WHERE query_id = '{query_id}'"
+        "SELECT query_id, state FROM system.runtime.queries WHERE query_id = '{query_id}'"
     )))
 }
 
