@@ -284,6 +284,10 @@ mod tests {
         })
         .await
         .expect("old DELETE in flight");
+        assert!(
+            !old.is_finished(),
+            "old response must still be pending before replacing token"
+        );
         pending
             .record(2, client.delete(format!("{}/new", server.uri())))
             .expect("new");
