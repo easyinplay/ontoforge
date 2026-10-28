@@ -1,5 +1,7 @@
 # Phase 6 progress
 
+- 2026-10-28：verifier 独立复核新日志 hash、index/disk 字节、二进制来源和源码等价后，H1/H2 关闭；正式报告增量复签为 `human_needed`、19/21，owner status exit 0。只剩 H3 当前 SHA 的远端 CI 两条 truth。Phase 6 未关闭，Phase 7 未启动，L2-04/SCOPE-07 整体 Pending；正式 PR gate 未执行。
+
 - 2026-10-28：H1/H2 自动复验原始日志已补齐并由主会话亲读：真实 PG 17.11 audit_ 6/6（1.62s）；真实 Trino 483 默认并行 6/6（9.91s）、32 条 allow FINISHED；workspace Clippy exit 0（9.84s）。日志与二进制 hash 见 `06-EXTERNAL-EVIDENCE.md` 和 `.evidence/`。源码到 e81127f 无差异；待 verifier 重新签署，H3 远端 CI 未运行。
 
 - 2026-10-28：正式 GSD goal verification 已落盘，owner `verification.status` 为 `human_needed`、16/21，未发现新增实现 BLOCKER。H1 为真实 PG 审计与故障路径原始证据，H2 为真实 Trino 483 ACL/活跃性/清理/Display 原始证据，H3 为当前 SHA 的远端 CI。主会话接管自动补齐 H1/H2 与最终 Clippy 日志；Phase 6 保持 verifying，Phase 7 未启动。详 `06-VERIFICATION.md`。

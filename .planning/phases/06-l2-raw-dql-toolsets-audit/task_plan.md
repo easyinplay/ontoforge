@@ -34,4 +34,4 @@
 
 ## Next Step
 
-正式目标验证为 `human_needed`、16/21（详 `06-VERIFICATION.md`）。自动补齐 H1 真实 PostgreSQL 六项审计测试、H2 真实 Trino 483 六项 ACL 测试的原始日志，并保存最终 Clippy 可核验证据；H3 当前 SHA 的远端 CI 仍待运行。报告更新须由 verifier 重新签署 fingerprint。Phase 7 服务接线及 `/health` 保留阻断验收，L2-04/SCOPE-07 整体 Pending。GSD 间歇 Git 漏读尚未根治，见 findings。
+正式目标验证已增量复签为 `human_needed`、19/21（详 `06-VERIFICATION.md`）。H1/H2 与最终 Clippy 已凭提交 `ecb9883` 的原始日志核验，仅剩 H3 当前交付 SHA 的远端 CI。当前分支尚未发布，CI 普通 push 仅 main；可发布分支后手动 workflow_dispatch（会附带 isolated benchmark），或经正式 PR gate 建立 PR 触发。远端通过后需由 verifier 再签署，才能关闭 Phase 6。Phase 7 服务接线及 `/health` 保留阻断验收，L2-04/SCOPE-07 整体 Pending。GSD 间歇 Git 漏读尚未根治，见 findings。
