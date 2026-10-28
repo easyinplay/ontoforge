@@ -697,3 +697,31 @@ async fn monitor_cannot_enable_before_delete_response_succeeds() {
     assert_eq!(l2.l2_status(), Some(L2HealthStatus::Enabled));
     monitor.shutdown().await.expect("shutdown");
 }
+
+#[tokio::test]
+async fn monitor_shutdown_reports_inherited_cleanup_failure() {
+    let (server, fixture) = fixture().await;
+    fixture.cancel_status.store(500, Ordering::SeqCst);
+    let (l2, ontology) = engines(&server.uri(), Some(PROBE));
+    let first = l2
+        .clone()
+        .start_l2_acl_monitor(ontology.clone())
+        .await
+        .expect("first");
+    drop(first);
+    let second = l2
+        .clone()
+        .start_l2_acl_monitor(ontology.clone())
+        .await
+        .expect("second");
+    assert!(
+        second.shutdown().await.is_err(),
+        "shutdown must report inherited unresolved cleanup"
+    );
+    assert_eq!(
+        l2.recheck_l2_acl(&ontology, "active_1").await,
+        L2HealthStatus::Disabled {
+            reason: L2DisableReason::Stopped
+        }
+    );
+}
