@@ -1,5 +1,7 @@
 # Phase 6 findings
 
+- 2026-10-28：为关键模块 PR 门禁尝试运行 `codex review --base origin/gsd/phase-05-online-action`，服务端过载后断流，未产生可用 review 结论；本地 `gsd-code-reviewer` 亦在时间盒内未落盘报告，故不记为 clean。既有 `06-REVIEW.md`、`06-10-REVIEW.md` 和独立验证仍无开放实现 finding。按 Grok 第二意见，下一步仅 push 分支并创建 draft PR 触发 H3 CI，不执行合并；待 CI 与正式 review 均完成后再决定关闭阶段。
+
 - 2026-10-28：就 H3 的远端执行路线再次有界咨询 Grok（仅已核实配置事实，无文件/命令工具）。55 秒后 `ETIMEDOUT`、`SIGTERM`、stdout/stderr 空，未取得第二意见，不作为路线批准。当前 phase6 分支远端不存在；CI push 仅 main，PR 可触发，workflow_dispatch 要求 isolated benchmark 并附带该 job。先完成可自主复验的本地证据与报告，不降低 CI 合同。
 
 - 2026-10-28：首版正式 verifier 核对最终 workspace 原始日志（1251 passed、103 ignored、0 failed），5 个命名行为测试通过；外部 PG/Trino 历史通过目前仅见 SUMMARY，缺可亲读原始日志，不能替代证据。Temp 的 `ontoforge-phase06-10-clippy-final-fixed.log` 实际记录历史 items_after_test_module 失败，不能当最终绿。按原合同补日志，不改代码或放宽验收；纯证据复验不新增业务 TDD。当前分支无 tracking，CI 普通 push 仅 main，PR/workflow_dispatch 可触发；远端实际运行仍待验收。

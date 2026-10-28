@@ -34,4 +34,4 @@
 
 ## Next Step
 
-正式目标验证已增量复签为 `human_needed`、19/21（详 `06-VERIFICATION.md`）。H1/H2 与最终 Clippy 已凭提交 `ecb9883` 的原始日志核验，仅剩 H3 当前交付 SHA 的远端 CI。当前分支尚未发布，CI 普通 push 仅 main；可发布分支后手动 workflow_dispatch（会附带 isolated benchmark），或经正式 PR gate 建立 PR 触发。远端通过后需由 verifier 再签署，才能关闭 Phase 6。Phase 7 服务接线及 `/health` 保留阻断验收，L2-04/SCOPE-07 整体 Pending。GSD 间歇 Git 漏读尚未根治，见 findings。
+正式目标验证已增量复签为 `human_needed`、19/21（详 `06-VERIFICATION.md`）。H1/H2 与最终 Clippy 已凭提交 `ecb9883` 的原始日志核验，仅剩 H3 当前交付 SHA 的远端 CI。Codex/gstack 新一轮 review 因服务过载中断，未记为 clean；先 push 当前分支并创建 draft PR 触发 `pull_request` CI，不执行合并。远端通过且正式 review 完成后需由 verifier 再签署，才能关闭 Phase 6。Phase 7 服务接线及 `/health` 保留阻断验收，L2-04/SCOPE-07 整体 Pending。GSD 间歇 Git 漏读尚未根治，见 findings。
