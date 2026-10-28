@@ -1,0 +1,39 @@
+   Compiling ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 29s
+     Running tests\conformance_sqlite.rs (target\debug\deps\conformance_sqlite-e34aafe42af27302.exe)
+
+running 8 tests
+
+thread 'audit_concurrent_shutdown_waits_for_durability' (15444) panicked at crates\ontoforge-storage\tests\conformance\mod.rs:2668:9:
+shutdown must wait for the accepted in-flight guard
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'audit_cancelled_shutdown_retry_waits_for_durability' (52228) panicked at crates\ontoforge-storage\tests\conformance\mod.rs:2668:9:
+shutdown must wait for the accepted in-flight guard
+test audit_concurrent_shutdown_waits_for_durability ... FAILED
+test audit_cancelled_shutdown_retry_waits_for_durability ... FAILED
+test audit_shutdown_drains_inflight_guard ... ok
+test audit_batch_retention_parity ... ok
+test audit_sink_failure_rejects_inflight_finish ... ok
+read audit sink did not recover before the pending age limit
+
+thread 'audit_shutdown_failure_is_sticky' (51948) panicked at crates\ontoforge-storage\tests\conformance\mod.rs:2828:5:
+assertion `left == right` failed: repeat shutdown must preserve the worker failure
+  left: Ok(())
+ right: Err(AuditUnavailable)
+read audit sink did not recover before the pending age limit
+test audit_shutdown_failure_is_sticky ... FAILED
+test audit_batch_rejection_is_atomic ... ok
+read audit sink did not recover before the pending age limit
+test audit_cleanup_rejection_rolls_back_batch ... ok
+
+failures:
+
+failures:
+    audit_cancelled_shutdown_retry_waits_for_durability
+    audit_concurrent_shutdown_waits_for_durability
+    audit_shutdown_failure_is_sticky
+
+test result: FAILED. 5 passed; 3 failed; 0 ignored; 0 measured; 35 filtered out; finished in 1.15s
+
+error: test failed, to rerun pass `-p ontoforge-storage --test conformance_sqlite`

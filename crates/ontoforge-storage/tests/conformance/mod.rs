@@ -10,6 +10,8 @@
 )]
 
 use std::collections::BTreeMap;
+use std::future::Future;
+use std::pin::Pin;
 use std::sync::Arc;
 
 use ontoforge_schema::ir::{LinkTypeName, ObjectTypeName, PropertyName};
@@ -21,7 +23,7 @@ use ontoforge_storage::commit::{
     LinkOp, ObjectOp, Receipt, RowState, SystemActor,
 };
 use ontoforge_storage::log::{EditOp, EntryKind, ReplayError, replay};
-use ontoforge_storage::read_audit::{ReadAuditMetadata, ReadAuditStatus};
+use ontoforge_storage::read_audit::{AuditUnavailable, ReadAuditMetadata, ReadAuditStatus};
 use ontoforge_storage::reload::{ReloadOptions, reload};
 use ontoforge_storage::store::{Backend, EditStore};
 use ontoforge_storage::value::PropertyValue;
@@ -2659,6 +2661,80 @@ pub async fn audit_shutdown_drains_inflight_guard(h: &Harness) {
     );
 }
 
+async fn assert_audit_shutdown_pending(
+    mut shutdown: Pin<&mut impl Future<Output = Result<(), AuditUnavailable>>>,
+) {
+    std::future::poll_fn(|cx| {
+        assert!(
+            shutdown.as_mut().poll(cx).is_pending(),
+            "shutdown must wait for the accepted in-flight guard"
+        );
+        std::task::Poll::Ready(())
+    })
+    .await;
+}
+
+async fn assert_audit_principal(h: &Harness, principal: &str) {
+    assert_eq!(
+        h.rows(Tables::Sys, "of_read_audit", &["principal"], None)
+            .await,
+        vec![vec![Some(principal.to_owned())]]
+    );
+}
+
+pub async fn audit_concurrent_shutdown_waits_for_durability(h: &Harness) {
+    let audit = h.store().read_audit();
+    let guard = audit
+        .reserve(audit_metadata("concurrent"))
+        .expect("reserve");
+    let first = audit.shutdown();
+    tokio::pin!(first);
+    assert_audit_shutdown_pending(first.as_mut()).await;
+    let second = audit.shutdown();
+    tokio::pin!(second);
+    assert_audit_shutdown_pending(second.as_mut()).await;
+    assert!(
+        h.rows(Tables::Sys, "of_read_audit", &["principal"], None)
+            .await
+            .is_empty()
+    );
+    guard.finish(ReadAuditStatus::Success, 1).expect("enqueue");
+    tokio::time::timeout(std::time::Duration::from_secs(4), async {
+        let (first, second) = tokio::join!(first, second);
+        first.expect("first drain");
+        second.expect("concurrent drain");
+    })
+    .await
+    .expect("bounded concurrent drain");
+    assert_audit_principal(h, "concurrent").await;
+    audit.shutdown().await.expect("repeat successful drain");
+}
+
+pub async fn audit_cancelled_shutdown_retry_waits_for_durability(h: &Harness) {
+    let audit = h.store().read_audit();
+    let guard = audit.reserve(audit_metadata("cancelled")).expect("reserve");
+    {
+        let first = audit.shutdown();
+        tokio::pin!(first);
+        assert_audit_shutdown_pending(first.as_mut()).await;
+    }
+    let retry = audit.shutdown();
+    tokio::pin!(retry);
+    assert_audit_shutdown_pending(retry.as_mut()).await;
+    assert!(
+        h.rows(Tables::Sys, "of_read_audit", &["principal"], None)
+            .await
+            .is_empty()
+    );
+    guard.finish(ReadAuditStatus::Success, 1).expect("enqueue");
+    tokio::time::timeout(std::time::Duration::from_secs(4), retry)
+        .await
+        .expect("bounded retry")
+        .expect("retry drains accepted guard");
+    assert_audit_principal(h, "cancelled").await;
+    audit.shutdown().await.expect("repeat successful drain");
+}
+
 pub async fn audit_sink_failure_rejects_inflight_finish(h: &Harness) {
     let audit = h.store().read_audit();
     let inflight = audit.reserve(audit_metadata("inflight")).expect("reserve");
@@ -2739,6 +2815,30 @@ async fn reject_audit_cleanup(h: &Harness, table: &str) {
     h.try_exec(&sql).await.expect("create cleanup trigger");
 }
 
+pub async fn audit_shutdown_failure_is_sticky(h: &Harness) {
+    let audit = h.store().read_audit();
+    reject_audit_insert(h, &h.sys_table("of_read_audit")).await;
+    audit
+        .reserve(audit_metadata("rejected"))
+        .expect("reserve")
+        .finish(ReadAuditStatus::Denied, 1)
+        .expect("enqueue");
+    let first = tokio::time::timeout(std::time::Duration::from_secs(4), audit.shutdown())
+        .await
+        .expect("bounded failed drain");
+    assert_eq!(first, Err(AuditUnavailable));
+    assert_eq!(
+        audit.shutdown().await,
+        Err(AuditUnavailable),
+        "repeat shutdown must preserve the worker failure"
+    );
+    assert!(
+        h.rows(Tables::Sys, "of_read_audit", &["principal"], None)
+            .await
+            .is_empty()
+    );
+}
+
 pub async fn audit_batch_rejection_is_atomic(h: &Harness) {
     let audit = h.store().read_audit();
     let table = h.sys_table("of_read_audit");
@@ -2806,6 +2906,9 @@ macro_rules! all_cases {
     ($factory:path $(, $attr:meta)?) => {
         $crate::conformance::conformance_case!($factory, audit_batch_retention_parity $(, $attr)?);
         $crate::conformance::conformance_case!($factory, audit_shutdown_drains_inflight_guard $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, audit_concurrent_shutdown_waits_for_durability $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, audit_cancelled_shutdown_retry_waits_for_durability $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, audit_shutdown_failure_is_sticky $(, $attr)?);
         $crate::conformance::conformance_case!($factory, audit_sink_failure_rejects_inflight_finish $(, $attr)?);
         $crate::conformance::conformance_case!($factory, audit_batch_rejection_is_atomic $(, $attr)?);
         $crate::conformance::conformance_case!($factory, audit_cleanup_rejection_rolls_back_batch $(, $attr)?);

@@ -437,3 +437,21 @@ async fn write_postgres(pool: &PgPool, retention: Duration, batch: &[Queued]) ->
     }
     tx.commit().await.map_err(|_| ())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn audit_shutdown_join_error_is_sticky() {
+        let pool = SqlitePool::connect_lazy("sqlite::memory:").expect("lazy pool");
+        let audit = ReadAudit::start(&Db::Sqlite(pool), ReadAuditSettings::default());
+        audit.worker.lock().await.as_ref().expect("worker").abort();
+        assert_eq!(audit.shutdown().await, Err(AuditUnavailable));
+        assert_eq!(
+            audit.shutdown().await,
+            Err(AuditUnavailable),
+            "repeat shutdown must preserve the worker join failure"
+        );
+    }
+}
