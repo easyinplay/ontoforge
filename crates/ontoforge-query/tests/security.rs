@@ -1824,6 +1824,14 @@ async fn cap_counts_final_masked_row_and_version() {
     assert!(visible.has_more);
     assert!(visible.cursor.is_none());
 
+    tokio::time::timeout(Duration::from_secs(3), async {
+        while f.store.read_audit().health().pending != 0 {
+            tokio::time::sleep(Duration::from_millis(5)).await;
+        }
+    })
+    .await
+    .expect("the first audit row reaches the sink before the second large read");
+
     scope
         .types
         .get_mut(&name("Flight"))
