@@ -158,11 +158,16 @@ enum SinkPool {
     Postgres(PgPool),
 }
 
+enum Worker {
+    Running(JoinHandle<Result<(), AuditUnavailable>>),
+    Finished(Result<(), AuditUnavailable>),
+}
+
 /// One store owns one worker. Dropping the store closes the channel and drains accepted rows.
 pub struct ReadAudit {
     state: Arc<State>,
     sender: Mutex<Option<mpsc::Sender<Queued>>>,
-    worker: tokio::sync::Mutex<Option<JoinHandle<Result<(), AuditUnavailable>>>>,
+    worker: tokio::sync::Mutex<Worker>,
 }
 
 impl ReadAudit {
@@ -186,7 +191,7 @@ impl ReadAudit {
         Self {
             state,
             sender: Mutex::new(Some(sender)),
-            worker: tokio::sync::Mutex::new(Some(handle)),
+            worker: tokio::sync::Mutex::new(Worker::Running(handle)),
         }
     }
 
@@ -227,10 +232,14 @@ impl ReadAudit {
     pub async fn shutdown(&self) -> Result<(), AuditUnavailable> {
         self.state.accepting.store(false, Ordering::Release);
         self.sender.lock().unwrap().take();
-        let Some(handle) = self.worker.lock().await.take() else {
-            return Ok(());
+        let mut worker = self.worker.lock().await;
+        let result = match &mut *worker {
+            // Borrowing keeps the handle available if this shutdown future is cancelled.
+            Worker::Running(handle) => handle.await.unwrap_or(Err(AuditUnavailable)),
+            Worker::Finished(result) => return *result,
         };
-        handle.await.map_err(|_| AuditUnavailable)?
+        *worker = Worker::Finished(result);
+        result
     }
 }
 
@@ -446,7 +455,13 @@ mod tests {
     async fn audit_shutdown_join_error_is_sticky() {
         let pool = SqlitePool::connect_lazy("sqlite::memory:").expect("lazy pool");
         let audit = ReadAudit::start(&Db::Sqlite(pool), ReadAuditSettings::default());
-        audit.worker.lock().await.as_ref().expect("worker").abort();
+        {
+            let worker = audit.worker.lock().await;
+            let Worker::Running(handle) = &*worker else {
+                panic!("worker already finished");
+            };
+            handle.abort();
+        }
         assert_eq!(audit.shutdown().await, Err(AuditUnavailable));
         assert_eq!(
             audit.shutdown().await,
