@@ -1,0 +1,15 @@
+   Compiling ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+   Compiling ontoforge-query v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-query)
+   Compiling ontoforge-action v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-action)
+   Compiling ontoforge-api v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-api)
+   Compiling ontoforge-server v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-server)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 04s
+     Running unittests src\lib.rs (target\debug\deps\ontoforge_server-5e423006a07df808.exe)
+
+running 3 tests
+test tracer_tests::tracer_unauthenticated_and_forged_context_are_denied ... ok
+test tracer_tests::tracer_authenticated_pk_is_durable_after_shutdown ... ok
+test tracer_tests::tracer_snapshot_releases_lock_before_source ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.16s
+

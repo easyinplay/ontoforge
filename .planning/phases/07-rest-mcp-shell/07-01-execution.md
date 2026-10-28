@@ -20,8 +20,8 @@
 
 ## 进度
 
-- [x] 01-1 RED、机器判定（test commit 即将提交）
-- [ ] 01-1 GREEN、tracer feedback、feat commit
+- [x] 01-1 RED、机器判定、test commit `7897e39`
+- [x] 01-1 GREEN（tracer 3/3、query audit 12/12）；feat commit 后执行 feedback gate
 - [ ] 01-2 RED、机器判定、test commit
 - [ ] 01-2 GREEN、feat commit
 - [ ] workspace/fmt/clippy/TLS
@@ -57,3 +57,5 @@
 - 指定 Cargo tracer RED：3 executed / 3 failed，退出101；nextest同目标JUnit退出100。GSD verdict `RED_EVIDENCE_OK`，report_errors=[]，目标断言为实际HTTP404而预期200。另两个目标在404/401和source barrier断言失败，均由尚未接线路由解释。
 - Query RED：3 executed / 1 passed / 2 failed，成功与finish错误未返回guard ID；reserve失败None本来已满足，不将此GREEN宣称为RED。对应真实JUnit经机器门验证；保留完整原始报告、绝对路径及起止时间。
 - nextest官方配置页 `https://nexte.st/docs/machine-readable/junit/` 实际HTTP200，核验配置键。最初误用 `/docs/reporting/junit/` 返回404，已改正，没有改变测试报告。
+- 01-1 GREEN：共享定义锁中读取definition/scope，显式commit后编译scope；Query保留原execute wrapper，execute_audited复制guard ID。HTTP仅投影ObjectRow并返回同ID，未认证/注入在读取前拒绝。
+- 指定tracer命令3 passed/0 failed，query audit全文件12 passed/0 failed。取消、reserve、finish、durable重开、source Pending/reload合同均有实际测试覆盖。

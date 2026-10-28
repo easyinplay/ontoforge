@@ -245,48 +245,49 @@ pub struct QueryService<'a, E: Engine> {
 }
 
 impl<E: Engine> QueryService<'_, E> {
-    pub async fn execute_audited(&self, request: QueryRequest) -> QueryExecution {
-        QueryExecution {
-            request_id: None,
-            result: self.execute(request).await,
-        }
+    pub async fn execute(&self, request: QueryRequest) -> Result<QueryPage, QueryError> {
+        self.execute_audited(request).await.result
     }
 
-    pub async fn execute(&self, request: QueryRequest) -> Result<QueryPage, QueryError> {
+    pub async fn execute_audited(&self, request: QueryRequest) -> QueryExecution {
         let object_type = request.set.object_type();
-        let mut audit = self
-            .store
-            .read_audit()
-            .reserve(ReadAuditMetadata {
-                principal: self.principal.id.to_string(),
-                tool: "query.pk".to_owned(),
-                object_type: Some(object_type.as_str().to_owned()),
-                condition_api_names: self
-                    .active
-                    .ontology
-                    .object_types
-                    .get(object_type)
-                    .map(|ty| vec![ty.primary_key.as_str().to_owned()])
-                    .unwrap_or_default(),
-                effective_roles: self
-                    .scope
-                    .roles
-                    .iter()
-                    .map(|role| role.as_str().to_owned())
-                    .collect(),
-                def_version: self.active.def_version,
-            })
-            .map_err(|_| QueryError::AuditUnavailable)?;
+        let audit = self.store.read_audit().reserve(ReadAuditMetadata {
+            principal: self.principal.id.to_string(),
+            tool: "query.pk".to_owned(),
+            object_type: Some(object_type.as_str().to_owned()),
+            condition_api_names: self
+                .active
+                .ontology
+                .object_types
+                .get(object_type)
+                .map(|ty| vec![ty.primary_key.as_str().to_owned()])
+                .unwrap_or_default(),
+            effective_roles: self
+                .scope
+                .roles
+                .iter()
+                .map(|role| role.as_str().to_owned())
+                .collect(),
+            def_version: self.active.def_version,
+        });
+        let Ok(mut audit) = audit else {
+            return QueryExecution {
+                request_id: None,
+                result: Err(QueryError::AuditUnavailable),
+            };
+        };
+        let request_id = Some(audit.request_id().to_owned());
         let result = self.execute_pk(request, &mut audit).await;
         let (status, count) = match &result {
             Ok(page) => (ReadAuditStatus::Success, page.rows.len()),
             Err(QueryError::Source | QueryError::Store) => (ReadAuditStatus::SourceError, 0),
             Err(_) => (ReadAuditStatus::Denied, 0),
         };
-        audit
+        let result = audit
             .finish(status, count)
-            .map_err(|_| QueryError::AuditUnavailable)?;
-        result
+            .map_err(|_| QueryError::AuditUnavailable)
+            .and(result);
+        QueryExecution { request_id, result }
     }
 
     async fn execute_pk(

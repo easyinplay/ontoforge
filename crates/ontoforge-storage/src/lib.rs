@@ -34,7 +34,28 @@ pub struct RequestSnapshot {
 
 impl store::EditStore {
     pub async fn request_snapshot(&self) -> Result<RequestSnapshot, error::StoreError> {
-        Err(error::StoreError::Config("request snapshots are not implemented".to_owned()))
+        let mut tx = reload::begin_definition_tx(self).await?;
+        let snapshot = async {
+            let active = sql_exit::read_active_definition_in(&mut tx)
+                .await?
+                .ok_or_else(|| error::StoreError::Config("no active definition".to_owned()))?;
+            let scope = scope_store::load_scope_in(&mut tx).await?;
+            Ok(RequestSnapshot {
+                active: std::sync::Arc::new(active),
+                scope,
+            })
+        }
+        .await;
+        match snapshot {
+            Ok(snapshot) => {
+                sql_exit::commit(tx).await?;
+                Ok(snapshot)
+            }
+            Err(error) => {
+                sql_exit::rollback(tx).await;
+                Err(error)
+            }
+        }
     }
 }
 
