@@ -1,5 +1,7 @@
 # Phase 6 progress
 
+- 2026-10-28：H1/H2 自动复验原始日志已补齐并由主会话亲读：真实 PG 17.11 audit_ 6/6（1.62s）；真实 Trino 483 默认并行 6/6（9.91s）、32 条 allow FINISHED；workspace Clippy exit 0（9.84s）。日志与二进制 hash 见 `06-EXTERNAL-EVIDENCE.md` 和 `.evidence/`。源码到 e81127f 无差异；待 verifier 重新签署，H3 远端 CI 未运行。
+
 - 2026-10-28：正式 GSD goal verification 已落盘，owner `verification.status` 为 `human_needed`、16/21，未发现新增实现 BLOCKER。H1 为真实 PG 审计与故障路径原始证据，H2 为真实 Trino 483 ACL/活跃性/清理/Display 原始证据，H3 为当前 SHA 的远端 CI。主会话接管自动补齐 H1/H2 与最终 Clippy 日志；Phase 6 保持 verifying，Phase 7 未启动。详 `06-VERIFICATION.md`。
 
 - 2026-10-28：GSD verifier 首轮仅发现 MVP Goal 格式不符合 User Story 并已终止，尚无技术验证报告。按现有获批范围规范化 Goal 的固定句式，中央校验通过后重新委派，不将此轮计作技术验收。
