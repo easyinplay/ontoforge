@@ -160,6 +160,30 @@ async fn l2_health_requires_exact_denial_and_known_query_isolation() {
 }
 
 #[tokio::test]
+async fn l2_health_finished_query_cannot_attest_active_isolation() {
+    let server = MockServer::start().await;
+    setup_probes(&server, Some("PERMISSION_DENIED"), false).await;
+    Mock::given(method("POST"))
+        .and(header("x-trino-user", "ontology"))
+        .and(body_string_contains("state"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+            "columns":[{"name":"query_id","type":"varchar"},{"name":"state","type":"varchar"}],
+            "data":[["other_1","FINISHED"]]
+        })))
+        .with_priority(1)
+        .mount(&server)
+        .await;
+    let cfg = parse_server_config(&attested_config(&server.uri())).expect("config").trino.expect("trino");
+    let engines = build_trino_engines(&cfg, Utf8Path::new("."), &|_: &str| None).expect("engines");
+    let l2 = engines.l2.expect("L2");
+    assert_eq!(
+        l2.recheck_l2_acl(&engines.ontology, "other_1").await,
+        L2HealthStatus::Disabled { reason: L2DisableReason::OtherQueryUnconfirmed },
+        "a retained finished query ID is not active-query evidence"
+    );
+}
+
+#[tokio::test]
 async fn l2_health_loose_acl_and_non_permission_error_fail_closed() {
     for name in [None, Some("SYNTAX_ERROR"), Some("CATALOG_NOT_FOUND")] {
         let server = MockServer::start().await;
