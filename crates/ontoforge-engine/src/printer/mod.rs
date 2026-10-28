@@ -8,6 +8,7 @@ pub mod ast;
 mod call;
 mod dialect;
 mod escape;
+pub mod l2;
 pub(crate) mod sqlite_ddl;
 
 use std::fmt;

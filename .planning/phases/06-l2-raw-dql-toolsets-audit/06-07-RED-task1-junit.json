@@ -1,0 +1,10 @@
+{
+  "command": "RUSTC_BOOTSTRAP=1 cargo test -p ontoforge-query --test l2_discovery --locked l2_catalog_filters_and_audits_catalogs_and_schemas -- -Z unstable-options --format junit --color never",
+  "exitCode": 101,
+  "output": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"test\" package=\"test\" id=\"0\" errors=\"0\" failures=\"1\" tests=\"1\" skipped=\"0\" ><testcase classname=\"integration\" name=\"l2_catalog_filters_and_audits_catalogs_and_schemas\" time=\"0\"><failure type=\"assert\"/><system-out><![CDATA[]]>&#xA;<![CDATA[thread 'l2_catalog_filters_and_audits_catalogs_and_schemas' (27600) panicked at crates\\ontoforge-query\\tests\\l2_discovery.rs:115:5:]]>&#xA;<![CDATA[assertion failed: matches!(f.service().list_catalogs().await, Err(L2Error::Disabled))]]>&#xA;<![CDATA[note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace]]>&#xA;<![CDATA[]]></system-out></testcase><system-out/><system-err/></testsuite></testsuites>\n",
+  "targetTest": "l2_catalog_filters_and_audits_catalogs_and_schemas",
+  "targetFile": "crates/ontoforge-query/tests/l2_discovery.rs",
+  "expected": "ACL unverified returns Disabled without Trino POST",
+  "actual": "stub returned InvalidSql at Disabled assertion",
+  "semanticAssessment": "The target test executed and failed at its planned Disabled assertion before any Trino request."
+}

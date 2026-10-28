@@ -14,6 +14,78 @@ conformance::all_cases!(
     ignore = "needs ONTOFORGE_PG_URL or --features embedded-pg"
 );
 
+#[tokio::test(flavor = "multi_thread")]
+#[ignore = "needs ONTOFORGE_PG_URL or --features embedded-pg"]
+async fn audit_pg_connection_interruption_recovers() {
+    use ontoforge_storage::read_audit::{ReadAuditMetadata, ReadAuditStatus};
+
+    let pg = support::pg_store().await;
+    let table = format!("\"{}\".\"of_read_audit\"", pg.schema_sys);
+    let mut lock = pg.side().begin().await.expect("lock transaction");
+    sqlx::query(sqlx::AssertSqlSafe(format!(
+        "LOCK TABLE {table} IN ACCESS EXCLUSIVE MODE"
+    )))
+    .execute(&mut *lock)
+    .await
+    .expect("hold audit table");
+
+    pg.store
+        .read_audit()
+        .reserve(ReadAuditMetadata {
+            principal: "interrupted".to_owned(),
+            tool: "pk".to_owned(),
+            object_type: None,
+            condition_api_names: vec![],
+            effective_roles: vec![],
+            def_version: 1,
+        })
+        .expect("reserve")
+        .finish(ReadAuditStatus::Success, 1)
+        .expect("enqueue");
+
+    let pid = tokio::time::timeout(std::time::Duration::from_secs(3), async {
+        loop {
+            let pid: Option<i32> = sqlx::query_scalar(
+                "SELECT a.pid FROM pg_stat_activity a JOIN pg_locks l ON l.pid = a.pid \
+                 WHERE NOT l.granted AND l.relation = to_regclass($1) \
+                 AND a.query LIKE 'DELETE FROM of_read_audit%' LIMIT 1",
+            )
+            .bind(&table)
+            .fetch_optional(pg.side())
+            .await
+            .expect("find blocked audit connection");
+            if let Some(pid) = pid {
+                break pid;
+            }
+            tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+        }
+    })
+    .await
+    .expect("audit worker reached database");
+    let terminated: bool = sqlx::query_scalar("SELECT pg_terminate_backend($1)")
+        .bind(pid)
+        .fetch_one(pg.side())
+        .await
+        .expect("terminate audit connection");
+    assert!(terminated);
+    lock.rollback().await.expect("release table");
+
+    tokio::time::timeout(
+        std::time::Duration::from_secs(3),
+        pg.store.read_audit().shutdown(),
+    )
+    .await
+    .expect("bounded drain")
+    .expect("retry interrupted transaction");
+    let count: i64 = sqlx::query_scalar(sqlx::AssertSqlSafe(format!(
+        "SELECT count(*) FROM {table} WHERE principal = 'interrupted'"
+    )))
+    .fetch_one(pg.side())
+    .await
+    .expect("read durable audit");
+    assert_eq!(count, 1);
+}
+
 /// `open_postgres` pins the session settings that the text read-back of `date`, `numeric` and
 /// float arrays depends on (WR-A03). The database below has defaults that disagree with the
 /// pinned values, so the `SHOW`s read what the store's own connection options really produce.

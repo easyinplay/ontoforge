@@ -72,24 +72,24 @@
 
 ### Action
 
-- [ ] **ACTION-01**: 客户端提交 action 时，参数按类型、required 与约束校验，失败时返回逐参数的错误
-- [ ] **ACTION-02**: action 的 rules 在单个事务内执行，生成 create / modify / delete object 与 add / remove link 的 edits
-- [ ] **ACTION-03**: submission criteria 不满足时 action 被拒绝并返回配置的失败信息；criteria 只在调用者的遮蔽视图上求值
-- [ ] **ACTION-04**: 客户端可以用 validate-only 模式提交 action，只得到校验结果，不产生写入
-- [ ] **ACTION-05**: 客户端可以批量提交同一 action，全部成功或全部回滚
-- [ ] **ACTION-06**: action 成功后返回标准化的 edits 摘要（新增 / 修改 / 删除的对象与 link）
-- [ ] **ACTION-07**: 对象只能经 action（或可审计的导入）写入，没有其他写入途径
-- [ ] **ACTION-08**: 写字段必须在调用者对该行的可见列内且非系统字段；写后状态（含 link 两端与 release）必须对调用者可见，否则 `ScopeDenied`，错误不泄露对象状态
-- [ ] **ACTION-09**: 客户端可附带读取时的 `_version` 令牌，不一致返回 `VersionConflict`；edit 读集在事务内按稳定顺序加锁
-- [ ] **ACTION-10**: `command_id` 以主体为作用域幂等：重放前重新鉴权，同键异参报 `CommandIdReused`，响应丢失后可凭同键查询结果
-- [ ] **ACTION-11**: 提交成功后经事务性 outbox 向下游 webhook 至少投递一次带 `event_id` 的事件
-- [ ] **ACTION-12**: Action 只在目标或读集需要 Trino 时依赖 Trino；本次 Action 从 source 读取并观测到重复 pk 时返回 `AmbiguousObject` 且拒绝写入；无需 source 内容的已编辑对象可在 Trino 不可用时执行
+- [x] **ACTION-01**: 客户端提交 action 时，参数按类型、required 与约束校验，失败时返回逐参数的错误
+- [x] **ACTION-02**: action 的 rules 在单个事务内执行，生成 create / modify / delete object 与 add / remove link 的 edits
+- [x] **ACTION-03**: submission criteria 不满足时 action 被拒绝并返回配置的失败信息；criteria 只在调用者的遮蔽视图上求值
+- [x] **ACTION-04**: 客户端可以用 validate-only 模式提交 action，只得到校验结果，不产生写入
+- [x] **ACTION-05**: 客户端可以批量提交同一 action，全部成功或全部回滚
+- [x] **ACTION-06**: action 成功后返回标准化的 edits 摘要（新增 / 修改 / 删除的对象与 link）
+- [x] **ACTION-07**: 对象只能经 action（或可审计的导入）写入，没有其他写入途径
+- [x] **ACTION-08**: 写字段必须在调用者对该行的可见列内且非系统字段；写后状态（含 link 两端与 release）必须对调用者可见，否则 `ScopeDenied`，错误不泄露对象状态
+- [x] **ACTION-09**: 客户端可附带读取时的 `_version` 令牌，不一致返回 `VersionConflict`；edit 读集在事务内按稳定顺序加锁
+- [x] **ACTION-10**: `command_id` 以主体为作用域幂等：重放前重新鉴权，同键异参报 `CommandIdReused`，响应丢失后可凭同键查询结果
+- [x] **ACTION-11**: 提交成功后经事务性 outbox 向下游 webhook 至少投递一次带 `event_id` 的事件
+- [x] **ACTION-12**: Action 只在目标或读集需要 Trino 时依赖 Trino；本次 Action 从 source 读取并观测到重复 pk 时返回 `AmbiguousObject` 且拒绝写入；无需 source 内容的已编辑对象可在 Trino 不可用时执行
 
 ### L2 与审计
 
-- [ ] **L2-01**: 被授予 `sql:raw` 的主体可以执行只读 Trino DQL 并列举 allow-list 内的 catalog / schema / 表
-- [ ] **L2-02**: L2 SQL 经 AST 白名单校验（只允许 SELECT / WITH，拒绝表函数、CALL、EXECUTE、多语句、会话与事务语句），执行时发送重序列化后的 SQL
-- [ ] **L2-03**: L2 只能访问 catalog / schema allow-list，硬排除 edit store catalog 与 `system` 元数据表
+- [x] **L2-01**: 被授予 `sql:raw` 的主体可以执行只读 Trino DQL 并列举 allow-list 内的 catalog / schema / 表
+- [x] **L2-02**: L2 SQL 经 AST 白名单校验（只允许 SELECT / WITH，拒绝表函数、CALL、EXECUTE、多语句、会话与事务语句），执行时发送重序列化后的 SQL
+- [x] **L2-03**: L2 只能访问 catalog / schema allow-list，硬排除 edit store catalog 与 `system` 元数据表
 - [ ] **L2-04**: 启动自检无法证明 L2 身份在 Trino 侧受限时禁用 L2 并告警（fail-closed）
 - [ ] **AUDIT-01**: 所有级别的读取记录元数据审计（不含结果数据），异步落库，积压或持续失败时读请求 fail-closed；保留期可配
 
@@ -224,22 +224,22 @@ Which phases cover which requirements. Updated during roadmap creation.
 | QUERY-08 | Phase 4 | Complete |
 | QUERY-09 | Phase 4 | Complete |
 | QUERY-10 | Phase 4 | Complete |
-| ACTION-01 | Phase 5 | Pending |
-| ACTION-02 | Phase 5 | Pending |
-| ACTION-03 | Phase 5 | Pending |
-| ACTION-04 | Phase 5 | Pending |
-| ACTION-05 | Phase 5 | Pending |
-| ACTION-06 | Phase 5 | Pending |
-| ACTION-07 | Phase 5 | Pending |
-| ACTION-08 | Phase 5 | Pending |
-| ACTION-09 | Phase 5 | Pending |
-| ACTION-10 | Phase 5 | Pending |
-| ACTION-11 | Phase 5 | Pending |
-| ACTION-12 | Phase 5 | Pending |
-| L2-01 | Phase 6 | Pending |
-| L2-02 | Phase 6 | Pending |
-| L2-03 | Phase 6 | Pending |
-| L2-04 | Phase 6 | Pending |
+| ACTION-01 | Phase 5 | Complete |
+| ACTION-02 | Phase 5 | Complete |
+| ACTION-03 | Phase 5 | Complete |
+| ACTION-04 | Phase 5 | Complete |
+| ACTION-05 | Phase 5 | Complete |
+| ACTION-06 | Phase 5 | Complete |
+| ACTION-07 | Phase 5 | Complete |
+| ACTION-08 | Phase 5 | Complete |
+| ACTION-09 | Phase 5 | Complete |
+| ACTION-10 | Phase 5 | Complete |
+| ACTION-11 | Phase 5 | Complete |
+| ACTION-12 | Phase 5 | Complete |
+| L2-01 | Phase 6 | Complete |
+| L2-02 | Phase 6 | Complete |
+| L2-03 | Phase 6 | Complete |
+| L2-04 | Phase 6（库级启动与周期 attestation、fail-closed 状态）+ Phase 7（服务生命周期接线及 `/health` 告警，ADR-0028） | Pending |
 | AUDIT-01 | Phase 6 | Pending |
 | API-01 | Phase 7 | Pending |
 | API-02 | Phase 7 | Pending |
@@ -266,4 +266,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-10-15*
-*Last updated: 2026-10-19 after Phase 2*
+*Last updated: 2026-10-28 after Phase 6 verification; evidence: `.planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md`*

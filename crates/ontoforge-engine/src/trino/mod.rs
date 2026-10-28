@@ -24,6 +24,10 @@ mod classify;
 mod client;
 mod decode;
 mod headers;
+pub mod l2_health;
+pub mod l2_monitor;
+
+use self::l2_health::{L2AclConfig, L2Health, L2HealthStatus};
 
 /// How a service identity authenticates.
 pub enum Auth {
@@ -51,9 +55,46 @@ pub struct TrinoEngine {
     http: Client,
     conn: Box<TrinoConnection>,
     statement_url: Url,
+    l2_health: Option<Box<L2Health>>,
 }
 
 impl TrinoEngine {
+    /// Narrow metadata entry points retain the L2 admission check in `execute`.
+    pub async fn list_l2_catalogs(&self, ctx: &QueryContext) -> Result<QueryOutput, EngineError> {
+        self.execute(&crate::printer::l2::list_l2_catalogs(), ctx)
+            .await
+    }
+
+    pub async fn list_l2_schemas(
+        &self,
+        catalog: &str,
+        ctx: &QueryContext,
+    ) -> Result<QueryOutput, EngineError> {
+        let sql = crate::printer::l2::list_l2_schemas(catalog)
+            .map_err(|_| EngineError::Config("invalid metadata catalog".to_owned()))?;
+        self.execute(&sql, ctx).await
+    }
+
+    pub async fn list_l2_tables(
+        &self,
+        catalog: &str,
+        schema: &str,
+        ctx: &QueryContext,
+    ) -> Result<QueryOutput, EngineError> {
+        let sql = crate::printer::l2::list_l2_tables(catalog, schema)
+            .map_err(|_| EngineError::Config("invalid metadata schema".to_owned()))?;
+        self.execute(&sql, ctx).await
+    }
+
+    /// The same typed description statement that `describe_tables` executes for one table.
+    pub fn l2_table_description_sql(table: &TableRef) -> Result<PrintedSql, EngineError> {
+        print_select(
+            &columns_query(table.catalog.clone(), std::slice::from_ref(table)),
+            Dialect::Trino,
+        )
+        .map_err(EngineError::Print)
+    }
+
     /// Checks the transport rules (E2) and builds the HTTP client. Every construction path
     /// goes through here, so credentials cannot be sent in the clear and an extra origin
     /// cannot downgrade the scheme, however the connection was assembled.
@@ -82,7 +123,27 @@ impl TrinoEngine {
             http,
             conn: Box::new(conn),
             statement_url,
+            l2_health: None,
         })
+    }
+
+    pub(crate) fn into_l2(mut self, config: Option<L2AclConfig>) -> Self {
+        self.l2_health = Some(Box::new(L2Health::new(config)));
+        self
+    }
+
+    /// None for ordinary Trino engines; L2 is disabled until an ACL recheck passes.
+    pub fn l2_status(&self) -> Option<L2HealthStatus> {
+        self.l2_health.as_ref().map(|health| health.status())
+    }
+
+    /// Attest the configured ACL against a known, still-active query of another identity.
+    pub async fn recheck_l2_acl(
+        &self,
+        ontology: &TrinoEngine,
+        other_query_id: &str,
+    ) -> L2HealthStatus {
+        l2_health::recheck(self, ontology, other_query_id).await
     }
 
     fn request(
@@ -202,6 +263,39 @@ fn same_origin(a: &Url, b: &Url) -> bool {
 }
 
 impl TrinoEngine {
+    async fn execute_unchecked(
+        &self,
+        sql: &PrintedSql,
+        ctx: &QueryContext,
+    ) -> Result<QueryOutput, EngineError> {
+        // Keep cancellation active for internal ACL probes as well as public requests.
+        let mut guard = QueryGuard::new();
+        match tokio::time::timeout(ctx.timeout, self.run(sql, ctx, &mut guard)).await {
+            Err(_elapsed) => {
+                guard.cancel_now().await;
+                Err(EngineError::Timeout {
+                    after_ms: u64::try_from(ctx.timeout.as_millis()).unwrap_or(u64::MAX),
+                })
+            }
+            Ok(Ok(output)) => {
+                if output.truncated {
+                    guard.cancel_now().await;
+                } else {
+                    guard.finish();
+                }
+                Ok(output)
+            }
+            Ok(Err(error @ EngineError::Query { .. })) => {
+                guard.finish();
+                Err(error)
+            }
+            Ok(Err(error)) => {
+                guard.cancel_now().await;
+                Err(error)
+            }
+        }
+    }
+
     /// The statement protocol: submit, then follow `nextUri` until the last page, a limit or
     /// an error. `guard` always knows the `DELETE` for the newest `nextUri`.
     async fn run(
@@ -352,35 +446,22 @@ impl Engine for TrinoEngine {
         sql: &PrintedSql,
         ctx: &QueryContext,
     ) -> Result<QueryOutput, EngineError> {
-        // Dropped on every exit, including the caller dropping this future: an unfinished
-        // guard cancels the query on the coordinator.
-        let mut guard = QueryGuard::new();
-        match tokio::time::timeout(ctx.timeout, self.run(sql, ctx, &mut guard)).await {
-            Err(_elapsed) => {
-                guard.cancel_now().await;
-                Err(EngineError::Timeout {
-                    after_ms: u64::try_from(ctx.timeout.as_millis()).unwrap_or(u64::MAX),
-                })
-            }
-            Ok(Ok(output)) => {
-                if output.truncated {
-                    // The rest of the result is not wanted.
-                    guard.cancel_now().await;
-                } else {
-                    guard.finish();
-                }
-                Ok(output)
-            }
-            // The server itself reported the failure: the query is over there.
-            Ok(Err(error @ EngineError::Query { .. })) => {
-                guard.finish();
-                Err(error)
-            }
-            Ok(Err(error)) => {
-                guard.cancel_now().await;
-                Err(error)
-            }
+        let _admission = if let Some(health) = &self.l2_health {
+            Some(health.admission.read().await)
+        } else {
+            None
+        };
+        if self
+            .l2_health
+            .as_ref()
+            .is_some_and(|health| health.status() != L2HealthStatus::Enabled)
+        {
+            return Err(EngineError::Unavailable {
+                retryable: false,
+                reason: "L2 ACL is not verified".to_owned(),
+            });
         }
+        self.execute_unchecked(sql, ctx).await
     }
 
     async fn describe_tables(
@@ -397,10 +478,14 @@ impl Engine for TrinoEngine {
                 first.catalog, other.catalog
             )));
         }
-        let sql = print_select(
-            &columns_query(first.catalog.clone(), tables),
-            Dialect::Trino,
-        )?;
+        let sql = if tables.len() == 1 {
+            Self::l2_table_description_sql(first)?
+        } else {
+            print_select(
+                &columns_query(first.catalog.clone(), tables),
+                Dialect::Trino,
+            )?
+        };
         let output = match self.execute(&sql, ctx).await {
             Ok(output) => output,
             // A catalog or schema that does not exist has no tables.

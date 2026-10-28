@@ -1,18 +1,14 @@
 ---
-status: testing
+status: complete
 phase: 05-online-action
 source: [05-01-SUMMARY.md, 05-02-SUMMARY.md, 05-03-SUMMARY.md, 05-04-SUMMARY.md, 05-05-SUMMARY.md, 05-06-SUMMARY.md, 05-07-SUMMARY.md]
 started: 2026-10-23T23:35:23+08:00
-updated: 2026-10-23T23:35:23+08:00
+updated: 2026-10-26T03:18:49.319Z
 ---
 
 ## Current Test
 
-number: 18
-name: Phase 5 自动验收总体确认
-expected: |
-  Action 的参数、授权、原子写入、并发与幂等、按需 Trino、release、webhook 恢复及写入口约束均符合下面 17 项自动测试证据；没有未报告的实际使用偏差。
-awaiting: user response
+[testing complete]
 
 ## Tests
 
@@ -120,14 +116,15 @@ coverage_id: ACTION-CI-GATES
 
 ### 18. Phase 5 自动验收总体确认
 expected: 上述 Action 行为与实际使用预期一致，没有未报告的偏差。
-result: [pending]
+result: pass
+source: user
 
 ## Summary
 
 total: 18
-passed: 17
+passed: 18
 issues: 0
-pending: 1
+pending: 0
 skipped: 0
 blocked: 0
 

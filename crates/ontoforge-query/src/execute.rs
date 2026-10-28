@@ -8,6 +8,7 @@ use ontoforge_engine::printer::print_select;
 use ontoforge_engine::{Engine, QueryContext, QueryOutput};
 use ontoforge_schema::ir::{Backing, ObjectType, PropertyName, SourceBinding};
 use ontoforge_storage::query_read::{EditScanCursor, EditScanPage, MAX_EDIT_READ, ObjectEdit};
+use ontoforge_storage::read_audit::{ReadAuditGuard, ReadAuditMetadata, ReadAuditStatus};
 use ontoforge_storage::value::PropertyValue;
 use serde_json::Value;
 
@@ -331,6 +332,7 @@ pub(crate) fn raw_backfill_select(
 
 pub struct WorkBudget {
     limits: ExecutionLimits,
+    audit: Option<ReadAuditGuard>,
     backend_calls: usize,
     raw_candidates: usize,
     backfill_keys: usize,
@@ -341,11 +343,36 @@ impl WorkBudget {
     pub fn new(limits: ExecutionLimits) -> Self {
         Self {
             limits,
+            audit: None,
             backend_calls: 0,
             raw_candidates: 0,
             backfill_keys: 0,
             decoded_bytes: 0,
         }
+    }
+
+    pub(crate) fn with_audit(limits: ExecutionLimits, audit: ReadAuditGuard) -> Self {
+        let mut budget = Self::new(limits);
+        budget.audit = Some(audit);
+        budget
+    }
+
+    pub(crate) fn observe_sql(&mut self, sql: &str) {
+        if let Some(audit) = &mut self.audit {
+            audit.observe_sql(sql);
+        }
+    }
+
+    pub(crate) fn finish_audit(
+        &mut self,
+        status: ReadAuditStatus,
+        rows: usize,
+    ) -> Result<(), QueryError> {
+        self.audit
+            .take()
+            .expect("public read has an audit reservation")
+            .finish(status, rows)
+            .map_err(|_| QueryError::AuditUnavailable)
     }
 
     pub fn charge_backend_calls(&mut self, count: usize) -> Result<(), QueryError> {
@@ -389,29 +416,132 @@ fn charge(current: &mut usize, count: usize, limit: usize) -> Result<(), QueryEr
     Ok(())
 }
 
+fn collect_conditions(
+    set: &crate::ast::ObjectSet,
+    ontology: &ontoforge_schema::ir::Ontology,
+    names: &mut Vec<String>,
+) {
+    use crate::ast::ObjectSet;
+    match set {
+        ObjectSet::Pk { object_type, .. } => {
+            if let Some(ty) = ontology.object_types.get(object_type) {
+                push_condition(names, ty.primary_key.as_str());
+            }
+        }
+        ObjectSet::Where { predicate, .. } => collect_predicate(predicate, names),
+        ObjectSet::Search { property, .. } => push_condition(names, property.as_str()),
+        ObjectSet::Union { sets, .. } | ObjectSet::Intersect { sets, .. } => {
+            for child in sets {
+                collect_conditions(child, ontology, names);
+            }
+        }
+        ObjectSet::Subtract { left, right, .. } => {
+            collect_conditions(left, ontology, names);
+            collect_conditions(right, ontology, names);
+        }
+        ObjectSet::SearchAround { base, link, .. } => {
+            collect_conditions(base, ontology, names);
+            push_condition(names, link.as_str());
+        }
+        ObjectSet::Type { .. } => {}
+    }
+}
+
+fn collect_predicate(predicate: &crate::ast::WhereClause, names: &mut Vec<String>) {
+    use crate::ast::WhereClause;
+    match predicate {
+        WhereClause::Eq { property, .. }
+        | WhereClause::Gt { property, .. }
+        | WhereClause::Gte { property, .. }
+        | WhereClause::Lt { property, .. }
+        | WhereClause::Lte { property, .. }
+        | WhereClause::IsNull { property }
+        | WhereClause::In { property, .. }
+        | WhereClause::StartsWith { property, .. }
+        | WhereClause::ContainsAnyTerm { property, .. }
+        | WhereClause::ContainsAllTerms { property, .. } => {
+            push_condition(names, property.as_str());
+        }
+        WhereClause::And { clauses } | WhereClause::Or { clauses } => {
+            for clause in clauses {
+                collect_predicate(clause, names);
+            }
+        }
+        WhereClause::Not { clause } => collect_predicate(clause, names),
+    }
+}
+
+fn push_condition(names: &mut Vec<String>, name: &str) {
+    if !names.iter().any(|existing| existing == name) {
+        names.push(name.to_owned());
+    }
+}
+
 impl<E: Engine> QueryService<'_, E> {
+    pub(crate) fn audit_metadata(
+        &self,
+        tool: &str,
+        set: &crate::ast::ObjectSet,
+    ) -> ReadAuditMetadata {
+        let mut conditions = Vec::new();
+        collect_conditions(set, &self.active.ontology, &mut conditions);
+        ReadAuditMetadata {
+            principal: self.principal.id.to_string(),
+            tool: tool.to_owned(),
+            object_type: Some(set.object_type().as_str().to_owned()),
+            condition_api_names: conditions,
+            effective_roles: self
+                .scope
+                .roles
+                .iter()
+                .map(|role| role.as_str().to_owned())
+                .collect(),
+            def_version: self.active.def_version,
+        }
+    }
+
     /// Returns a non-snapshot keyset page. Concurrent edits may move rows between requests.
     #[allow(
         clippy::too_many_lines,
         reason = "keeps the bounded source and edit state machine together"
     )]
     pub async fn execute_list(&self, query: &ValidatedQuery) -> Result<ListPage, QueryError> {
-        let mut budget = WorkBudget::new(self.limits);
+        let audit = self
+            .store
+            .read_audit()
+            .reserve(self.audit_metadata("query.list", &query.request.set))
+            .map_err(|_| QueryError::AuditUnavailable)?;
+        let mut budget = WorkBudget::with_audit(self.limits, audit);
+        let result = self.execute_list_with_budget(query, &mut budget).await;
+        let (status, count) = match &result {
+            Ok(page) => (ReadAuditStatus::Success, page.rows.len()),
+            Err(QueryError::Source | QueryError::Store) => (ReadAuditStatus::SourceError, 0),
+            Err(_) => (ReadAuditStatus::Denied, 0),
+        };
+        budget.finish_audit(status, count)?;
+        result
+    }
+
+    async fn execute_list_with_budget(
+        &self,
+        query: &ValidatedQuery,
+        budget: &mut WorkBudget,
+    ) -> Result<ListPage, QueryError> {
         if matches!(
             query.request.set,
             crate::ast::ObjectSet::Union { .. }
                 | crate::ast::ObjectSet::Intersect { .. }
                 | crate::ast::ObjectSet::Subtract { .. }
         ) {
-            return self.execute_set_list(query, &mut budget).await;
+            return self.execute_set_list(query, budget).await;
         }
         if matches!(
             query.request.set,
             crate::ast::ObjectSet::SearchAround { .. }
         ) {
-            return self.execute_search_around(query, &mut budget).await;
+            return self.execute_search_around(query, budget).await;
         }
-        self.execute_list_internal(query, &mut budget, None).await
+        self.execute_list_internal(query, budget, None).await
     }
 
     #[allow(
@@ -592,6 +722,7 @@ impl<E: Engine> QueryService<'_, E> {
             budget.charge_backend_calls(2)?;
             let sql = print_select(&plan.select, self.engine.dialect())
                 .map_err(|_| QueryError::Source)?;
+            budget.observe_sql(sql.as_str());
             let mut ctx = QueryContext::new("l0-list".to_owned(), Vec::new());
             ctx.max_rows = SOURCE_WINDOW + 1;
             let (source_result, edit_result) = join_initial_candidates(
@@ -739,6 +870,7 @@ impl<E: Engine> QueryService<'_, E> {
     ) -> Result<Vec<SourceRow>, QueryError> {
         budget.charge_backend_calls(1)?;
         let sql = print_select(select, self.engine.dialect()).map_err(|_| QueryError::Source)?;
+        budget.observe_sql(sql.as_str());
         let mut ctx = QueryContext::new("l0-list".to_owned(), Vec::new());
         ctx.max_rows = limit + 1;
         let output = self

@@ -1,7 +1,7 @@
 ---
 phase: 05-online-action
-verified: 2026-10-23T18:23:24Z
-status: human_needed
+verified: 2026-10-26T03:44:25Z
+status: passed
 score: 5/5 must-haves verified
 behavior_unverified: 0
 overrides_applied: 0
@@ -20,19 +20,14 @@ re_verification:
   additional_checks:
     - "d4517e0 outbox 单条 claim、慢响应完成后计时与 batch limit：SQLite 11/11，embedded-pg 2/2"
     - "CI run 40000699036 在 ac711db 上四 job success；Action PG ignored 与 Trino Action 非零发现且运行通过"
-human_verification:
-  - test: "确认真实部署中的 worker 常驻及下游接收"
-    expected: "服务管理器重启退出的 webhook-worker；真实下游收到带稳定 event_id 的通知。"
-    why_human: "进程级 wiremock 与 CI 证明代码行为，无法证明真实部署配置或外部接收。"
-  - test: "完成 05-UAT.md 第 18 项总确认"
-    expected: "用户确认 Phase 5 真实使用没有未报告的偏差。"
-    why_human: "当前 UAT frontmatter 仍为 awaiting: user response。"
+    - "UAT 18/18 passed；WSL systemd worker SIGKILL 后自动重启、503 后 204，同 event_id 最终送达"
+human_verification: []
 ---
 
 # Phase 5: Online Action Verification
 
 **Phase Goal:** As a caller with Action permission, I want to modify the object graph through scoped online Actions, so that each change is atomic, auditable, safe to retry, and notifies downstream systems.
-**Status:** human_needed. 五条 ROADMAP 行为合同已有代码、测试与远端 CI 证据；真实部署和 UAT 仍待确认。
+**Status:** passed. 五条 ROADMAP 行为合同已有代码、测试、远端 CI 与 WSL 运维探针证据；UAT 18/18 通过。真实生产接收端尚未部署，联调列为 Phase 7 release 前提。
 **Re-verification:** 上次 1/5、四项 gap，本次 5/5、无代码 gap。
 
 ## User Flow Coverage
@@ -42,7 +37,7 @@ human_verification:
 | 授权调用 | 参数逐项报错，criteria 与 scope 遮蔽生效 | params/criteria/guard 及新增后别名 source criteria 测试通过 | VERIFIED |
 | 原子写入 | PG 同事务提交 edit、log、command、outbox，失败回滚 | commit_action_guarded_inner、独立运行的 PG 故障矩阵 | VERIFIED |
 | 读取与重试 | Query 可见新值，CAS、令牌、command_id 正确 | PG race、幂等及新增后 item 令牌测试通过 | VERIFIED |
-| 通知下游 | 运行中的 worker 投递 event_id，失败重试、重启恢复 | 独立 CLI 进程调用 poll_at；三个进程级测试通过 | VERIFIED (部署待确认) |
+| 通知下游 | 运行中的 worker 投递 event_id，失败重试、重启恢复 | CLI 三项进程级测试；WSL systemd 服务 SIGKILL 后重启、503 后重试送达临时 receiver | VERIFIED (生产部署待联调) |
 
 ## Observable Truths
 
@@ -52,7 +47,7 @@ human_verification:
 | 2 | 写列、criteria、post-state、link/release scope | VERIFIED | source::prepare 对每别名算 required/release 后仅 guard read 去重；later_alias_criterion_samples_shared_source_key、later_alias_release_samples_shared_source_key 均通过。 |
 | 3 | 同 pk CAS、过期令牌、command_id 重放 | VERIFIED | 先前 PG race/幂等目标通过；later_item_token_samples_shared_source_key 通过。 |
 | 4 | Trino 按需，已编辑目标可离线 | VERIFIED | source::prepare 仅在缺 source 等条件成立时采样；先前真实 Trino duplicate/offline 两项通过；本轮别名测试证实后续需求仍触发一次采样。 |
-| 5 | 提交后下一次读取可见，webhook 至少一次 | VERIFIED | 先前 Action 后 Query overlay 验证；CLI worker 三测试确认 HTTP event_id、503 retry、重启恢复。d4517e0 的 SQLite outbox 11/11、embedded-pg outbox 2/2 独立通过，覆盖慢响应后的重试时间、逐条 claim 与 lease fencing。 |
+| 5 | 提交后下一次读取可见，webhook 至少一次 | VERIFIED | 先前 Action 后 Query overlay 验证；CLI worker 三测试确认 HTTP event_id、503 retry、重启恢复。d4517e0 的 SQLite outbox 11/11、embedded-pg outbox 2/2 独立通过，覆盖慢响应后的重试时间、逐条 claim 与 lease fencing。WSL systemd 探针证实服务重启和临时接收端 503 -> 204；该探针直接插入隔离 outbox，Action 写入由 CI 单独验证。 |
 
 **Score:** 5/5 truths verified；behavior_unverified: 0。
 
@@ -81,7 +76,7 @@ read_pk_source 的 SQL 固定 LIMIT 2，Action 专用 QueryContext.max_rows=3 �
 | ACTION-07 | SATISFIED within repository | production 写入入口扫描仅允许 Action 与 audited import；无法约束仓库外自建 host。 |
 | ACTION-08..09 | SATISFIED | scope/link/release 与令牌测试，新增同 RowKey 后别名三目标通过。 |
 | ACTION-10 | SATISFIED | SQLite/PG 幂等、失权和响应丢失重试目标已运行。 |
-| ACTION-11 | SATISFIED in code and CI | CLI 常驻 worker 发送、重试、重启恢复；CI run 40000699036 的 PG webhook 2/2 与 Trino Action 4/4 通过。真实部署前提见 WEBHOOK-WORKER.md。 |
+| ACTION-11 | SATISFIED in development | CLI 常驻 worker 发送、重试、重启恢复；CI run 40000699036 的 PG webhook 2/2 与 Trino Action 4/4 通过。WSL 临时 receiver 503 -> 204 且 event_id 稳定；真实部署前提见 WEBHOOK-WORKER.md。 |
 | ACTION-12 | SATISFIED | 真实 Trino duplicate/offline 目标先前通过；后别名按需采样本轮通过。 |
 
 ## Behavioral Spot Checks
@@ -95,21 +90,20 @@ read_pk_source 的 SQL 固定 LIMIT 2，Action 专用 QueryContext.max_rows=3 �
 | cargo test -p ontoforge-action --features embedded-pg --test outbox_pg --locked -j 2 -- --ignored | 2 passed, 0 failed；真实本地 PostgreSQL |
 | 先前八条目标，包括真实 PG/Trino 故障、竞态、duplicate/offline | 各 1 passed；详见前次复验记录，本轮未重复运行。 |
 | GitHub Actions ci run 40000699036 (code SHA ac711db) | integration: conformance_pg 36/36, reload_pg 11/11；Action PG atomicity 5/5、same-pk 4/4、idempotency 6/6、webhook 2/2；Trino Action 4/4；四 job success。 |
+| WSL Ubuntu-26.04 P5g 运维探针 | systemd worker SIGKILL 后 PID 432 -> 444，NRestarts 0 -> 1；同一 event_id 的 503、204 两次请求；隔离 outbox attempt_count=1、delivered_at 已写入。原始证据 `%TEMP%\ontoforge-p5g\`；临时 unit 已停止并移除。 |
 
 ## Anti-Patterns And Gates
 
-d4517e0 的失败 503 在 HTTP 完成后起算退避；同轮 due cutoff 固定，防止立即重试；逐条 claim 避免后续事件 lease 在前一个慢请求期间耗尽。f57e7f4 将 TRUNCATE 测试的联合表补齐引用 of_edit_log 的 Action 表；ac711db 将新增系统表纳入 reload_pg 清单，均仅调整测试预期。CI run 40000699036 的 headSha 为已验证代码提交 ac711db，integration、Windows、Ubuntu、isolated-query-bench 四 job 全为 success；integration 日志证实 ignored discovery 非零且全部执行通过。正式 gstack gate 与 05-UAT.md 总体确认尚无通过证据，不计入通过。
+d4517e0 的失败 503 在 HTTP 完成后起算退避；同轮 due cutoff 固定，防止立即重试；逐条 claim 避免后续事件 lease 在前一个慢请求期间耗尽。f57e7f4 将 TRUNCATE 测试的联合表补齐引用 of_edit_log 的 Action 表；ac711db 将新增系统表纳入 reload_pg 清单，均仅调整测试预期。CI run 40000699036 的 headSha 为已验证代码提交 ac711db，integration、Windows、Ubuntu、isolated-query-bench 四 job 全为 success；integration 日志证实 ignored discovery 非零且全部执行通过。UAT 第 18 项用户确认符合，05-UAT.md 为 18/18。正式 gstack gate 未通过，不计入本次通过；关键模块 PR 前仍须执行 `/review`。
 
-## Human Verification Required
+## Release Verification Pending
 
-1. 在真实部署确认服务管理器维持 webhook-worker，进程重启后真实下游收到稳定 event_id；CI 和 wiremock 不证明部署配置。
-2. 完成 05-UAT.md 第 18 项总体确认；当前仍为 awaiting: user response。
+Phase 7 release 前，以实际配置、真实数据库和真实下游确认服务管理器维持 webhook-worker，进程重启后收到稳定 event_id。WSL 的隔离 receiver 不证明生产配置或外部接收。
 
 ## Gaps Summary
 
-四项旧 gap 已关闭或重新判定合同范围，远端 CI 已在代码提交 ac711db 通过。无可复现的代码 blocker；真实部署、UAT 和正式 gstack gate 尚未确认。
+四项旧 gap 已关闭或重新判定合同范围，远端 CI 已在代码提交 ac711db 通过；UAT 18/18，WSL 运维探针 PASS。无可复现的 Phase 5 开发合同 blocker；真实生产部署和正式 gstack gate 尚未完成，按上述发布与 PR 边界追踪。
 
 ---
 
-_Verified: 2026-10-23T18:23:24Z_
-_Verifier: gsd-verifier; no commit._
+_Goal verification: gsd-verifier, 2026-10-23T18:23:24Z. Human/WSL follow-up: primary session, 2026-10-26T03:44:25Z._

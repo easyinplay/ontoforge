@@ -1,0 +1,13 @@
+{
+  "command": "target/debug/deps/l2_monitor-cd662f87f457d9e9.exe monitor_shutdown_reports_inherited_cleanup_failure -Z unstable-options --format junit (RUSTC_BOOTSTRAP=1)",
+  "exitCode": 101,
+  "output": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"test\" package=\"test\" id=\"0\" errors=\"0\" failures=\"1\" tests=\"1\" skipped=\"0\" ><testcase classname=\"integration\" name=\"monitor_shutdown_reports_inherited_cleanup_failure\" time=\"0\"><failure type=\"assert\"/><system-out><![CDATA[]]>&#xA;<![CDATA[thread 'monitor_shutdown_reports_inherited_cleanup_failure' (28064) panicked at crates\\ontoforge-engine\\tests\\l2_monitor.rs:709:5:]]>&#xA;<![CDATA[shutdown must report inherited unresolved cleanup]]>&#xA;<![CDATA[note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace]]>&#xA;<![CDATA[]]></system-out></testcase><system-out/><system-err/></testsuite></testsuites>",
+  "targetTest": "monitor_shutdown_reports_inherited_cleanup_failure",
+  "targetFile": "crates/ontoforge-engine/tests/l2_monitor.rs",
+  "expected": "Shutdown reports inherited unresolved cleanup",
+  "actual": "Ok(())",
+  "reportPath": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-10-RED-CR03.xml",
+  "runStartedAt": "2026-10-28T01:01:32.3311161Z",
+  "reportModifiedAt": "2026-10-28T01:01:32.3634081Z",
+  "semanticAssessment": "Named compiled behavior regression reached the intended shutdown error assertion."
+}

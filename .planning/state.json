@@ -26,12 +26,12 @@
     {
       "number": "5",
       "name": "Online Action",
-      "status": "in_progress"
+      "status": "complete"
     },
     {
       "number": "6",
       "name": "L2 Raw DQL, Toolsets & Audit",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "number": "7",
@@ -41,8 +41,8 @@
   ],
   "next": {
     "command": "$gsd-progress --next",
-    "label": "Advance to the next step (verify)",
-    "reason": "Phase 5 of 7 · 57% · ready to verify"
+    "label": "Advance to the next step",
+    "reason": "Phase 6 of 7 · 71% · executing"
   },
-  "updated_at": "2026-10-23T15:29:21.971Z"
+  "updated_at": "2026-10-26T07:34:09.381Z"
 }

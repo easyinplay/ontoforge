@@ -15,8 +15,8 @@ Phase 1 定死 IR 契约。2026-10-16 起 Phase 2–7 按 `docs/designs/trino-en
 - [x] **Phase 2: Source Binding & Engine** - IR 数据源绑定与类型契约，`ontoforge-engine`（自写 Trino client、自有 SQL printer、SQLite 替身），`validate --online` 与 drift 校验 (completed 2026-10-19)
 - [x] **Phase 3: Edit Store & Scope Model** - 按 type 强类型 edit store、DDL diff / migrate / reload 加固、edit log；用户 / 组 / 角色、CEL 行谓词（SQL 编译 + Rust 单行求值） (completed 2026-10-22)
 - [x] **Phase 4: Scoped L0 Read** - Rust 编排叠加读：pk 读、列表、聚合分解、searchAround、keyset 分页、HMAC 版本令牌 (completed 2026-10-23)
-- [ ] **Phase 5: Online Action** - Action 鉴权管线 ①-⑨、并发令牌、`command_id`、webhook outbox
-- [ ] **Phase 6: L2 Raw DQL, Toolsets & Audit** - L2 AST 白名单与自检、读审计、定义 reload 门禁与 role 管理通道
+- [x] **Phase 5: Online Action** - Action 鉴权管线 ①-⑨、并发令牌、`command_id`、webhook outbox (completed 2026-10-26)
+- [ ] **Phase 6: L2 Raw DQL, Toolsets & Audit** - PR review 审计关闭缺口修复中；详: `.planning/phases/06-l2-raw-dql-toolsets-audit/06-PR-REVIEW.md`
 - [ ] **Phase 7: REST & MCP Shell** - REST + OpenAPI + clients、MCP toolset（core / full / sql:raw）、`serve --dev`、release
 
 ## Phase Details
@@ -227,33 +227,34 @@ Plans:
   4. 目标或读集需要 Trino 时 Trino 不可用返回 `EngineUnavailable`；只涉及已编辑对象的 Action 照常执行
   5. 提交后下一次读取可见；下游 webhook 至少收到一次带 `event_id` 的事件
 
-**Plans**: 7/7 executed（verification pending；详: `.planning/phases/05-online-action/`）
+**Plans**: 7/7 executed（verified 2026-10-26；详: `.planning/phases/05-online-action/`）
 **Details**: `.planning/phases/05-online-action/`
 
 ### Phase 6: L2 Raw DQL, Toolsets & Audit
 
-**Goal**: 受信主体可以在 allow-list 内执行只读 Trino SQL，且只有在 Trino 侧权限可证明安全时才开放；所有级别的读取都留下元数据审计；定义与授权的变更只经部署方与管理通道
+**Goal**: As a 受信主体, I want to 在 allow-list 内执行仅在 Trino 侧权限可证明安全时才开放的只读 Trino SQL, so that 所有级别的读取都留下元数据审计且定义与授权的变更只经部署方与管理通道.
 **Mode:** mvp
 **Depends on**: Phase 5
-**Requirements**: L2-01, L2-02, L2-03, L2-04, AUDIT-01
+**Requirements**: L2-01, L2-02, L2-03, L2-04, AUDIT-01, SCOPE-07
 **Spike**: 进入前在 Trino 483 上复验 spike 2 语料；决策见 ADR-0018、ADR-0019
 **Success Criteria** (what must be TRUE):
 
   1. L2 执行器只接受 SELECT / WITH，拒绝 `TABLE()` 表函数、`CALL`、`EXECUTE`、多语句与会话 / 事务语句，执行时发送重序列化后的 SQL；spike 2 语料全部按预期放行或拒绝
   2. allow-list 外 catalog、edit store catalog 与 `system` 元数据表全部被拒绝
-  3. 启动自检无法证明 L2 身份受限（含只能看到自己的 `system.runtime.queries`）时 L2 被禁用并在 `/health` 告警
+  3. 库级启动及周期自检无法证明 L2 身份受限（含只能看到自己的 `system.runtime.queries`）时 L2 被禁用，暴露可供服务读取的禁用原因；HTTP `/health` 告警由 Phase 7 验收（ADR-0028）
   4. 所有级别的读取写入元数据审计（主体、工具、对象类型、apiName 级条件、生效 role、SQL 哈希、行数、耗时、request_id），不含结果数据；审计积压时读请求返回 `AuditUnavailable`
   5. role / scope 只能经管理通道或 L3 修改并审计；定义 reload 先 validate / lint，失败不切换；每个请求固定使用开始时的定义版本
 
-**Plans**: TBD
-**Details**: `.planning/phases/06-l2-toolsets-audit/`
+**Plans**: 10/11 summarized，PR review CR-01 待 `06-11` 关闭；详: `.planning/phases/06-l2-raw-dql-toolsets-audit/06-PR-REVIEW.md`
+
+**Details**: `.planning/phases/06-l2-raw-dql-toolsets-audit/`
 
 ### Phase 7: REST & MCP Shell
 
 **Goal**: 应用经 REST（OpenAPI 3.1、Rust / TS client），agent 经 MCP（按主体过滤的 toolset）使用全部能力；`ontoforge serve --dev` 单二进制在本机跑通端到端演示，并发布三平台二进制
 **Mode:** mvp
 **Depends on**: Phase 6
-**Requirements**: API-01, API-02, API-03, API-04, API-05, MCP-01, MCP-02, MCP-03, MCP-04, MCP-05, MCP-06, MCP-07, MCP-08, DX-01, DX-02, DX-04
+**Requirements**: API-01, API-02, API-03, API-04, API-05, MCP-01, MCP-02, MCP-03, MCP-04, MCP-05, MCP-06, MCP-07, MCP-08, DX-01, DX-02, DX-04, L2-04（服务接线与 `/health`）
 **Spike**: 进入前验证 `rmcp` 动态 tool 列表
 **Success Criteria** (what must be TRUE):
 
@@ -262,6 +263,7 @@ Plans:
   3. 每个 action type 自动暴露为 MCP 工具（含 validate-only）；6 个 L2 工具与 mcp-trino 名称参数一致，结果按 allow-list 过滤
   4. 同一身份经 MCP 与 REST 得到相同授权结果，写入同样记入 edit log
   5. `ontoforge serve --dev`（SQLite 替身 + dev token）在 Windows 本机零外部依赖跑通示例 ontology 的查询 → Action → 历史演示；release workflow 发布 Linux / macOS / Windows 二进制
+  6. 服务启动并维持 Phase 6 的 L2 ACL attestation；无法证明或证明过期时 L2 禁用，`/health` 告警并暴露脱敏原因，覆盖失败和恢复的端到端测试（ADR-0028）
 
 **Plans**: TBD
 **Details**: `.planning/phases/07-rest-mcp-shell/`
@@ -277,6 +279,6 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7（纵切片
 | 2. Source Binding & Engine | 10/10 | Complete    | 2026-10-19 |
 | 3. Edit Store & Scope Model | 23/23 | Complete    | 2026-10-22 |
 | 4. Scoped L0 Read | 7/7 | Complete    | 2026-10-23 |
-| 5. Online Action | 7/7 | Verification pending | - |
-| 6. L2 Raw DQL, Toolsets & Audit | 0/TBD | Not started | - |
+| 5. Online Action | 7/7 | Complete    | 2026-10-26 |
+| 6. L2 Raw DQL, Toolsets & Audit | 10/11 | PR review gap closure | - |
 | 7. REST & MCP Shell | 0/TBD | Not started | - |

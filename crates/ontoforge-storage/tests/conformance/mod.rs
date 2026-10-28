@@ -10,6 +10,8 @@
 )]
 
 use std::collections::BTreeMap;
+use std::future::Future;
+use std::pin::Pin;
 use std::sync::Arc;
 
 use ontoforge_schema::ir::{LinkTypeName, ObjectTypeName, PropertyName};
@@ -21,6 +23,7 @@ use ontoforge_storage::commit::{
     LinkOp, ObjectOp, Receipt, RowState, SystemActor,
 };
 use ontoforge_storage::log::{EditOp, EntryKind, ReplayError, replay};
+use ontoforge_storage::read_audit::{AuditUnavailable, ReadAuditMetadata, ReadAuditStatus};
 use ontoforge_storage::reload::{ReloadOptions, reload};
 use ontoforge_storage::store::{Backend, EditStore};
 use ontoforge_storage::value::PropertyValue;
@@ -2495,6 +2498,397 @@ pub async fn action_batch_migration_constraints_match_contract(h: &Harness) {
 // Expansion
 // ---------------------------------------------------------------------------------------------
 
+async fn seed_audit_retention(h: &Harness, table: &str) {
+    let old = (chrono::Utc::now() - chrono::Duration::days(31)).to_rfc3339();
+    let recent = (chrono::Utc::now() - chrono::Duration::days(29)).to_rfc3339();
+    for (request_id, at) in [("old-retention", old), ("recent-retention", recent)] {
+        let insert = format!(
+            "INSERT INTO {table} (at, request_id, principal, tool, object_type, condition_api_names, effective_roles, sql_sha256, row_count, elapsed_ms, def_version, status) VALUES ('{at}', '{request_id}', 'fixture', 'read', NULL, '[]', '[]', 'no-sql', 0, 0, 1, 'success')"
+        );
+        h.try_exec(&insert).await.expect("seed retention boundary");
+    }
+}
+
+async fn assert_pg_audit_schema(h: &Harness) {
+    if let Harness::Pg(pg) = h {
+        assert!(
+            pg.tables(&pg.schema_sys)
+                .await
+                .contains(&"of_read_audit".to_owned())
+        );
+        assert!(
+            !pg.tables(&pg.schema_edit)
+                .await
+                .contains(&"of_read_audit".to_owned())
+        );
+    }
+}
+
+pub async fn audit_batch_retention_parity(h: &Harness) {
+    let audit = h.store().read_audit();
+    assert!(
+        audit.health().available,
+        "both backends must accept read audits"
+    );
+
+    let table = h.sys_table("of_read_audit");
+    seed_audit_retention(h, &table).await;
+
+    for n in 0..2 {
+        let mut guard = audit
+            .reserve(ReadAuditMetadata {
+                principal: format!("reader-{n}"),
+                tool: "pk".to_owned(),
+                object_type: Some("Gate".to_owned()),
+                condition_api_names: vec!["Gate".to_owned()],
+                effective_roles: vec!["viewer".to_owned()],
+                def_version: 7,
+            })
+            .expect("reserve audit capacity");
+        guard.observe_sql("SELECT secret_marker FROM private_table");
+        guard
+            .finish(ReadAuditStatus::Success, n + 1)
+            .expect("accept audit");
+    }
+    audit.shutdown().await.expect("drain audit batch");
+
+    let rows = h
+        .rows(
+            Tables::Sys,
+            "of_read_audit",
+            &[
+                "request_id",
+                "principal",
+                "tool",
+                "object_type",
+                "condition_api_names",
+                "effective_roles",
+                "sql_sha256",
+                "row_count",
+                "def_version",
+                "status",
+            ],
+            None,
+        )
+        .await;
+    assert_eq!(
+        rows.len(),
+        3,
+        "old audit deleted; recent and batch retained"
+    );
+    assert!(
+        rows.iter()
+            .any(|row| row[0].as_deref() == Some("recent-retention"))
+    );
+    assert!(
+        !rows
+            .iter()
+            .any(|row| row[0].as_deref() == Some("old-retention"))
+    );
+    for n in 0..2 {
+        let row = rows
+            .iter()
+            .find(|row| row[1].as_deref() == Some(&format!("reader-{n}")))
+            .expect("batch row");
+        assert_eq!(row[2].as_deref(), Some("pk"));
+        assert_eq!(row[3].as_deref(), Some("Gate"));
+        assert_eq!(
+            serde_json::from_str::<Value>(row[4].as_deref().unwrap()).unwrap(),
+            json!(["Gate"])
+        );
+        assert_eq!(
+            serde_json::from_str::<Value>(row[5].as_deref().unwrap()).unwrap(),
+            json!(["viewer"])
+        );
+        assert_eq!(row[6].as_deref().unwrap().len(), 64);
+        assert_eq!(row[7].as_deref(), Some(if n == 0 { "1" } else { "2" }));
+        assert_eq!(row[8].as_deref(), Some("7"));
+        assert_eq!(row[9].as_deref(), Some("success"));
+    }
+    assert!(
+        h.try_exec(&format!("SELECT raw_sql FROM {table} LIMIT 0"))
+            .await
+            .is_err()
+    );
+    assert!(
+        h.try_exec(&format!("SELECT result_data FROM {table} LIMIT 0"))
+            .await
+            .is_err()
+    );
+    assert_pg_audit_schema(h).await;
+}
+
+fn audit_metadata(principal: &str) -> ReadAuditMetadata {
+    ReadAuditMetadata {
+        principal: principal.to_owned(),
+        tool: "pk".to_owned(),
+        object_type: Some("Gate".to_owned()),
+        condition_api_names: vec!["Gate".to_owned()],
+        effective_roles: vec!["viewer".to_owned()],
+        def_version: 7,
+    }
+}
+
+pub async fn audit_shutdown_drains_inflight_guard(h: &Harness) {
+    let audit = h.store().read_audit();
+    let guard = audit
+        .reserve(audit_metadata("inflight-shutdown"))
+        .expect("reserve before shutdown");
+    let (drain, ()) = tokio::time::timeout(std::time::Duration::from_secs(4), async {
+        tokio::join! {
+            biased;
+            audit.shutdown(),
+            async {
+                assert!(!audit.health().available, "shutdown stops new admissions");
+                assert!(audit.reserve(audit_metadata("late")).is_err());
+                guard.finish(ReadAuditStatus::Success, 1)
+                    .expect("accepted guard still reaches the sink");
+            }
+        }
+    })
+    .await
+    .expect("shutdown waits for the in-flight guard");
+    drain.expect("drain accepted audit");
+    let rows = h
+        .rows(Tables::Sys, "of_read_audit", &["principal", "status"], None)
+        .await;
+    assert_eq!(
+        rows,
+        vec![vec![
+            Some("inflight-shutdown".to_owned()),
+            Some("success".to_owned())
+        ]]
+    );
+}
+
+async fn assert_audit_shutdown_pending(
+    mut shutdown: Pin<&mut impl Future<Output = Result<(), AuditUnavailable>>>,
+) {
+    std::future::poll_fn(|cx| {
+        assert!(
+            shutdown.as_mut().poll(cx).is_pending(),
+            "shutdown must wait for the accepted in-flight guard"
+        );
+        std::task::Poll::Ready(())
+    })
+    .await;
+}
+
+async fn assert_audit_principal(h: &Harness, principal: &str) {
+    assert_eq!(
+        h.rows(Tables::Sys, "of_read_audit", &["principal"], None)
+            .await,
+        vec![vec![Some(principal.to_owned())]]
+    );
+}
+
+pub async fn audit_concurrent_shutdown_waits_for_durability(h: &Harness) {
+    let audit = h.store().read_audit();
+    let guard = audit
+        .reserve(audit_metadata("concurrent"))
+        .expect("reserve");
+    let first = audit.shutdown();
+    tokio::pin!(first);
+    assert_audit_shutdown_pending(first.as_mut()).await;
+    let second = audit.shutdown();
+    tokio::pin!(second);
+    assert_audit_shutdown_pending(second.as_mut()).await;
+    assert!(
+        h.rows(Tables::Sys, "of_read_audit", &["principal"], None)
+            .await
+            .is_empty()
+    );
+    guard.finish(ReadAuditStatus::Success, 1).expect("enqueue");
+    tokio::time::timeout(std::time::Duration::from_secs(4), async {
+        let (first, second) = tokio::join!(first, second);
+        first.expect("first drain");
+        second.expect("concurrent drain");
+    })
+    .await
+    .expect("bounded concurrent drain");
+    assert_audit_principal(h, "concurrent").await;
+    audit.shutdown().await.expect("repeat successful drain");
+}
+
+pub async fn audit_cancelled_shutdown_retry_waits_for_durability(h: &Harness) {
+    let audit = h.store().read_audit();
+    let guard = audit.reserve(audit_metadata("cancelled")).expect("reserve");
+    {
+        let first = audit.shutdown();
+        tokio::pin!(first);
+        assert_audit_shutdown_pending(first.as_mut()).await;
+    }
+    let retry = audit.shutdown();
+    tokio::pin!(retry);
+    assert_audit_shutdown_pending(retry.as_mut()).await;
+    assert!(
+        h.rows(Tables::Sys, "of_read_audit", &["principal"], None)
+            .await
+            .is_empty()
+    );
+    guard.finish(ReadAuditStatus::Success, 1).expect("enqueue");
+    tokio::time::timeout(std::time::Duration::from_secs(4), retry)
+        .await
+        .expect("bounded retry")
+        .expect("retry drains accepted guard");
+    assert_audit_principal(h, "cancelled").await;
+    audit.shutdown().await.expect("repeat successful drain");
+}
+
+pub async fn audit_sink_failure_rejects_inflight_finish(h: &Harness) {
+    let audit = h.store().read_audit();
+    let inflight = audit.reserve(audit_metadata("inflight")).expect("reserve");
+    let first = audit.reserve(audit_metadata("first")).expect("reserve");
+    let table = h.sys_table("of_read_audit");
+    let held = h.sys_table("of_read_audit_hold");
+    h.try_exec(&format!("ALTER TABLE {table} RENAME TO of_read_audit_hold"))
+        .await
+        .expect("interrupt sink");
+    first
+        .finish(ReadAuditStatus::Success, 1)
+        .expect("accept first");
+    tokio::time::timeout(std::time::Duration::from_secs(2), async {
+        while audit.health().available {
+            tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+        }
+    })
+    .await
+    .expect("sink reports unhealthy");
+    assert!(
+        inflight.finish(ReadAuditStatus::Success, 1).is_err(),
+        "an in-flight read must fail closed once its sink is unavailable"
+    );
+    h.try_exec(&format!("ALTER TABLE {held} RENAME TO of_read_audit"))
+        .await
+        .expect("restore sink");
+    audit
+        .shutdown()
+        .await
+        .expect("recover and drain first record");
+    let rows = h
+        .rows(Tables::Sys, "of_read_audit", &["principal"], None)
+        .await;
+    assert_eq!(rows, vec![vec![Some("first".to_owned())]]);
+}
+
+async fn reject_audit_insert(h: &Harness, table: &str) {
+    let sql = match h {
+        Harness::Sqlite(_) => format!(
+            "CREATE TRIGGER of_read_audit_reject BEFORE INSERT ON {table} WHEN NEW.status = 'denied' BEGIN SELECT RAISE(ABORT, 'audit fault'); END"
+        ),
+        Harness::Pg(pg) => {
+            let function = format!(
+                "CREATE FUNCTION \"{}\".of_read_audit_reject() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.status = 'denied' THEN RAISE EXCEPTION 'audit fault'; END IF; RETURN NEW; END $$",
+                pg.schema_sys
+            );
+            h.try_exec(&function)
+                .await
+                .expect("create rejection function");
+            format!(
+                "CREATE TRIGGER of_read_audit_reject BEFORE INSERT ON {table} FOR EACH ROW EXECUTE FUNCTION \"{}\".of_read_audit_reject()",
+                pg.schema_sys
+            )
+        }
+    };
+    h.try_exec(&sql).await.expect("create rejection trigger");
+}
+
+async fn reject_audit_cleanup(h: &Harness, table: &str) {
+    let sql = match h {
+        Harness::Sqlite(_) => format!(
+            "CREATE TRIGGER of_read_audit_cleanup_reject BEFORE DELETE ON {table} WHEN OLD.request_id = 'old-retention' BEGIN SELECT RAISE(ABORT, 'audit cleanup fault'); END"
+        ),
+        Harness::Pg(pg) => {
+            let function = format!(
+                "CREATE FUNCTION \"{}\".of_read_audit_cleanup_reject() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF OLD.request_id = 'old-retention' THEN RAISE EXCEPTION 'audit cleanup fault'; END IF; RETURN OLD; END $$",
+                pg.schema_sys
+            );
+            h.try_exec(&function)
+                .await
+                .expect("create cleanup function");
+            format!(
+                "CREATE TRIGGER of_read_audit_cleanup_reject BEFORE DELETE ON {table} FOR EACH ROW EXECUTE FUNCTION \"{}\".of_read_audit_cleanup_reject()",
+                pg.schema_sys
+            )
+        }
+    };
+    h.try_exec(&sql).await.expect("create cleanup trigger");
+}
+
+pub async fn audit_shutdown_failure_is_sticky(h: &Harness) {
+    let audit = h.store().read_audit();
+    reject_audit_insert(h, &h.sys_table("of_read_audit")).await;
+    audit
+        .reserve(audit_metadata("rejected"))
+        .expect("reserve")
+        .finish(ReadAuditStatus::Denied, 1)
+        .expect("enqueue");
+    let first = tokio::time::timeout(std::time::Duration::from_secs(4), audit.shutdown())
+        .await
+        .expect("bounded failed drain");
+    assert_eq!(first, Err(AuditUnavailable));
+    assert_eq!(
+        audit.shutdown().await,
+        Err(AuditUnavailable),
+        "repeat shutdown must preserve the worker failure"
+    );
+    assert!(
+        h.rows(Tables::Sys, "of_read_audit", &["principal"], None)
+            .await
+            .is_empty()
+    );
+}
+
+pub async fn audit_batch_rejection_is_atomic(h: &Harness) {
+    let audit = h.store().read_audit();
+    let table = h.sys_table("of_read_audit");
+    reject_audit_insert(h, &table).await;
+    for (principal, status) in [
+        ("first", ReadAuditStatus::Success),
+        ("second", ReadAuditStatus::Denied),
+    ] {
+        audit
+            .reserve(audit_metadata(principal))
+            .expect("reserve")
+            .finish(status, 1)
+            .expect("enqueue");
+    }
+    let drain = tokio::time::timeout(std::time::Duration::from_secs(4), audit.shutdown())
+        .await
+        .expect("bounded drain");
+    assert!(drain.is_err(), "rejected batch must fail closed");
+    assert!(!audit.health().available);
+    assert!(audit.reserve(audit_metadata("after-failure")).is_err());
+    assert!(
+        h.rows(Tables::Sys, "of_read_audit", &["principal"], None)
+            .await
+            .is_empty()
+    );
+}
+
+pub async fn audit_cleanup_rejection_rolls_back_batch(h: &Harness) {
+    let audit = h.store().read_audit();
+    let table = h.sys_table("of_read_audit");
+    seed_audit_retention(h, &table).await;
+    reject_audit_cleanup(h, &table).await;
+    audit
+        .reserve(audit_metadata("new"))
+        .expect("reserve")
+        .finish(ReadAuditStatus::Success, 1)
+        .expect("enqueue");
+    let drain = tokio::time::timeout(std::time::Duration::from_secs(4), audit.shutdown())
+        .await
+        .expect("bounded drain");
+    assert!(drain.is_err(), "cleanup failure must fail closed");
+    assert!(!audit.health().available);
+    assert!(audit.reserve(audit_metadata("after-failure")).is_err());
+    let rows = h
+        .rows(Tables::Sys, "of_read_audit", &["request_id"], None)
+        .await;
+    assert_eq!(rows.len(), 2, "cleanup and insert must roll back together");
+    assert!(!rows.iter().any(|row| row[0].as_deref() == Some("new")));
+}
+
 macro_rules! conformance_case {
     ($factory:path, $name:ident $(, $attr:meta)?) => {
         #[tokio::test(flavor = "multi_thread")]
@@ -2510,6 +2904,14 @@ macro_rules! conformance_case {
 /// second argument is an attribute for every test (`ignore = ".."` for PostgreSQL).
 macro_rules! all_cases {
     ($factory:path $(, $attr:meta)?) => {
+        $crate::conformance::conformance_case!($factory, audit_batch_retention_parity $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, audit_shutdown_drains_inflight_guard $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, audit_concurrent_shutdown_waits_for_durability $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, audit_cancelled_shutdown_retry_waits_for_durability $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, audit_shutdown_failure_is_sticky $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, audit_sink_failure_rejects_inflight_finish $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, audit_batch_rejection_is_atomic $(, $attr)?);
+        $crate::conformance::conformance_case!($factory, audit_cleanup_rejection_rolls_back_batch $(, $attr)?);
         #[cfg(feature = "test-support")]
         $crate::conformance::conformance_case!($factory, action_atomic_after_log_failure $(, $attr)?);
         #[cfg(feature = "test-support")]

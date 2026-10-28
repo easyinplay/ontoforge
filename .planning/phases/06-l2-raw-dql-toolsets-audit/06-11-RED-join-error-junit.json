@@ -1,0 +1,13 @@
+{
+  "command": "target/debug/deps/ontoforge_storage-eb801a59b105838d.exe read_audit::tests::audit_shutdown_join_error_is_sticky --exact -Z unstable-options --format junit",
+  "exitCode": 101,
+  "output": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"test\" package=\"test\" id=\"0\" errors=\"0\" failures=\"1\" tests=\"1\" skipped=\"0\" ><testcase classname=\"read_audit::tests\" name=\"audit_shutdown_join_error_is_sticky\" time=\"0\"><failure type=\"assert\"/><system-out><![CDATA[]]>&#xA;<![CDATA[thread 'read_audit::tests::audit_shutdown_join_error_is_sticky' (63156) panicked at crates\\ontoforge-storage\\src\\read_audit.rs:451:9:]]>&#xA;<![CDATA[assertion `left == right` failed: repeat shutdown must preserve the worker join failure]]>&#xA;<![CDATA[  left: Ok(())]]>&#xA;<![CDATA[ right: Err(AuditUnavailable)]]>&#xA;<![CDATA[note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace]]>&#xA;<![CDATA[]]></system-out></testcase><system-out/><system-err/></testsuite></testsuites>\n",
+  "targetTest": "read_audit::tests#audit_shutdown_join_error_is_sticky",
+  "targetFile": "crates/ontoforge-storage/src/read_audit.rs",
+  "expected": "Repeated shutdown returns Err after worker JoinError",
+  "actual": "Repeated shutdown returned Ok after first shutdown returned Err",
+  "reportPath": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-join-error.xml",
+  "runStartedAt": "2026-10-28T11:38:17.654Z",
+  "reportModifiedAt": "2026-10-28T11:38:17.680Z",
+  "semanticAssessment": "Compiled named regression reached repeated shutdown assertion after actual worker abort; no setup or compilation failure."
+}

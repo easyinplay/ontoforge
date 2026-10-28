@@ -24,6 +24,7 @@ use tokio::sync::RwLock;
 use crate::error::StoreError;
 use crate::naming;
 use crate::physical::PhysicalSchema;
+use crate::read_audit::{ReadAudit, ReadAuditSettings};
 use crate::sql_exit;
 
 /// Connection options of the SQLite edit store at `path`.
@@ -177,6 +178,7 @@ pub struct EditStore {
     pub(crate) db: Db,
     pub(crate) settings: StoreSettings,
     pub(crate) active: RwLock<Option<Arc<ActiveDefinition>>>,
+    read_audit: ReadAudit,
 }
 
 impl EditStore {
@@ -184,6 +186,15 @@ impl EditStore {
     ///
     /// For SQLite, a missing directory of the database file is created first.
     pub async fn open(settings: StoreSettings) -> Result<Self, StoreError> {
+        Self::open_with_read_audit(settings, ReadAuditSettings::default()).await
+    }
+
+    /// Opens a store with explicit read audit limits. Invalid limits fail before connecting.
+    pub async fn open_with_read_audit(
+        settings: StoreSettings,
+        audit_settings: ReadAuditSettings,
+    ) -> Result<Self, StoreError> {
+        audit_settings.validate()?;
         let db = match &settings.backend {
             BackendSettings::Sqlite { path } => {
                 if let Some(parent) = path.parent().filter(|p| !p.as_str().is_empty()) {
@@ -212,11 +223,18 @@ impl EditStore {
             } => open_postgres(url, schema_edit, schema_sys).await?,
         };
         let active = sql_exit::read_active_definition(&db).await?;
+        let read_audit = ReadAudit::start(&db, audit_settings);
         Ok(Self {
             db,
             settings,
             active: RwLock::new(active.map(Arc::new)),
+            read_audit,
         })
+    }
+
+    /// The audit permit gate shared by public read entry points.
+    pub fn read_audit(&self) -> &ReadAudit {
+        &self.read_audit
     }
 
     pub fn backend(&self) -> Backend {

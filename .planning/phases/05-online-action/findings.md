@@ -1,5 +1,9 @@
 # Phase 5 findings
 
+- 2026-10-26：P5g WSL 探针结果 PASS，`result.json`、`requests.jsonl` 与 `journal.log` 相互吻合：临时 receiver 503 -> 204、`systemd` SIGKILL 后重启 worker、两次相同 `event_id`、outbox 最终 delivered。事件直接插入隔离 SQLite outbox，因而只证明 worker 运维恢复和传输，不单独证明 Action 写入；Action 原子写入已有 `ac711db` 对应 CI run `40000699036` 的真实 PostgreSQL/Trino 证据。用户尚未部署生产服务，真实下游与实际配置需在 Phase 7 release 前联调。正式 gstack `plan-eng-review`/`review` 未通过，关键模块 PR 前必须补跑；独立工程审查和代码审查的 clean 结论不冒充正式 gate。
+
+- 2026-10-26：用户明确回复 UAT 第 18 项“符合”，同时说明真实部署尚未进行，授权在 WSL 中验证。WSL Ubuntu-26.04 初次启动卡住；只终止该原先 stopped 的发行版后重启成功，PID 1 为 systemd 且状态 running。当前 WSL 无 cargo/sqlite3，需准备隔离测试环境。P5g 为运维集成验证，不修改业务代码，跳过代码级 TDD；通过可复现的服务重启、失败重试和接收端 event_id 证据验收，不能代替真实生产部署。
+
 - 2026-10-24：`f57e7f4` 的远端 CI run `39999716926` 已使 PostgreSQL conformance 36/36 通过，但同一 integration 步骤的 `reload_pg` 10/11：`first_reload_on_pg_puts_edit_tables_in_edit_schema` 精确系统表预期漏了 `of_action_command` 和 `of_webhook_outbox`。代码中两表属于 Phase 5 migration 的 sys schema，故这是测试列表陈旧，不是运行时 schema 错误；当前失败截断了 Action/Trino 后续步骤。
 
 - 2026-10-24：远端 `ci.yml` run `39997950852` 匹配 `e8c5e41`，integration 的 PostgreSQL conformance 35/36，通过的前两个单表 TRUNCATE 已验证 append-only trigger；三表 TRUNCATE 因 Phase 5 新增 `of_action_command`、`of_webhook_outbox` 对 `of_edit_log` 的 FK 先报 `0A000`，未达到预期 trigger `23000`。Grok 只读第二意见建议补齐依赖表或 `CASCADE`，不改 migration、不接受 `0A000` 作为 trigger 证据；本轮选显式表名。`isolated-query-bench` 通过，其余 job 当时仍运行。

@@ -1,0 +1,9 @@
+   Compiling ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 10.15s
+     Running unittests src\lib.rs (target\debug\deps\ontoforge_storage-eb801a59b105838d.exe)
+
+running 1 test
+test read_audit::tests::audit_shutdown_join_error_is_sticky ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 48 filtered out; finished in 0.00s
+

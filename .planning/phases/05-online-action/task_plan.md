@@ -12,13 +12,14 @@
 - [ ] P2b：正式 gstack `plan-eng-review` gate；当前因 `AskUserQuestion` 不可用而阻塞，不能记为通过；关键模块 PR 前回补，并同时运行 `/review`。Phase 5 的一次性替代治理为 `05-ENG-REVIEW.md` E1-E7 + GSD plan-checker PASSED；不推广到后续 Phase。
 - [x] P3：GSD plan-phase 研究、生成 7 份 `05-*-PLAN.md`，由独立 checker 核对 ACTION-01..12 与 RED/GREEN、真实 PG/Trino 和失败回滚验收；更新 `task_plan.md`、`progress.md`、`05-VALIDATION.md`；依赖 P2a。验收：checker `VERIFICATION PASSED`、7/7 决策覆盖、36 条 verify 命令无探针告警。
 - [x] P4：按 GSD execute-phase 的 7 个 wave 执行 `crates/ontoforge-action/`、`crates/ontoforge-query/`、`crates/ontoforge-storage/` 及宿主/CI 接线；逐子任务 TDD 与测试证据写入各 SUMMARY；依赖 P3。具体文件所有权见 `05-01..07-PLAN.md`。
-- [ ] P5：GSD verify-work、phase-level verification、安全复审及匹配代码 SHA 的 CI 验收；更新 ROADMAP/STATE 的完成指针；依赖 P4。
+- [x] P5：GSD verify-work、phase-level verification、独立代码复审及匹配代码 SHA 的 CI 验收；ROADMAP/STATE 已由 GSD 迁移至 Phase 6。正式 gstack gate 与生产联调按 deferred-items.md 追踪；依赖 P4。
 - [x] P5a：关闭 `05-VERIFICATION.md` 的 source 多别名和 Query row budget 缺口。所有权：`crates/ontoforge-action/src/source.rs`、`tests/source.rs`；`crates/ontoforge-query/src/lib.rs`、`tests/pk_read.rs`，以及共享 helper 的最小调用点。针对性 RED/GREEN、Action source 11/11、Query crate 全量、workspace 组合回归与 Clippy 已通过。
 - [x] P5b：关闭 webhook 生产驱动缺口。所有权：`crates/ontoforge/src/{cli,lib,webhook_worker}.rs`、`crates/ontoforge-engine/src/config.rs`、对应 CLI/配置集成测试及两个 Cargo.toml 的最小依赖。独立常驻 `ontoforge webhook-worker --server-config` 读取可信 `[webhook]` 设置并复用 EditStore；真实 CLI 测试覆盖投递、503 重试、进程重启恢复；Ctrl+C 退出尚未自动化测试。提交 `31f7c49`。
-- [ ] P5c：05-02 PLAN 的 `src/execute.rs` 假指针已校正到实际 `src/lib.rs`；复跑独立 verification、GSD UAT 与关键审查，远端 CI 和正式 gstack gate 分开记录。
+- [x] P5c：05-02 PLAN 的 `src/execute.rs` 假指针已校正到实际 `src/lib.rs`；独立 verification 5/5、GSD UAT 18/18、匹配代码 SHA 的远端 CI 已通过。独立代码审查 clean；正式 gstack gate 在关键模块 PR 前仍需执行。
 - [x] P5d：关闭新代码复审的 outbox 时间 WARNING。`d4517e0` 先取得两项有效 RED，再逐条 claim、完成时计时；SQLite outbox 11/11、真实 PG outbox 2/2、局部 Clippy/fmt/diff check 通过，独立代码复审 clean。
 - [x] P5e：修复远端 `ci.yml` run `39997950852` 的 PostgreSQL conformance 回归。`append_only_rejects_truncate_on_pg` 的联合 TRUNCATE 显式补齐两个外键引用表，保留 `23000` trigger 断言；真实 PostgreSQL 36/36 与最终远端 CI `40000699036` 通过。所有权：`crates/ontoforge-storage/tests/conformance/mod.rs`；未更改 migration。
 - [x] P5f：修复远端 `ci.yml` run `39999716926` 的 PostgreSQL reload 精确系统表断言。预期列表补充 Phase 5 的两张系统表；真实 PostgreSQL `reload_pg` 11/11 与最终远端 CI `40000699036` 通过。所有权：`crates/ontoforge-storage/tests/reload_pg.rs`；未更改生产 schema。
+- [x] P5g：在 WSL Ubuntu-26.04 用临时本地接收端和 `systemd` 管理 `ontoforge webhook-worker`：503 后重试、SIGKILL 后自动重启、同一 `event_id` 最终 204；隔离数据库已记录送达。临时 unit 已停止并移除，真实生产部署未验证；不改生产代码。
 
 ## Acceptance
 
@@ -28,4 +29,4 @@
 
 ## Next Step
 
-匹配代码 SHA `ac711db` 的远端 CI 已通过；刷新 GSD verification 后等待 `05-UAT.md` 第 18 项与真实部署确认。正式 gstack gate 尚未完成，不更新 REQUIREMENTS 完成勾选。
+Phase 5 开发合同由 GSD 标记完成；下一步规划 Phase 6。Phase 7 release 前完成真实下游联调，关键模块 PR 前完成正式 gstack `/review`。

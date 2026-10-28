@@ -100,6 +100,7 @@ async fn first_reload_on_pg_puts_edit_tables_in_edit_schema() {
             "of_role",
             "of_role_binding",
             "of_user",
+            "of_read_audit",
             "of_webhook_outbox"
         ]),
         "system tables only"
