@@ -232,7 +232,7 @@ Plans:
 
 ### Phase 6: L2 Raw DQL, Toolsets & Audit
 
-**Goal**: 受信主体可以在 allow-list 内执行只读 Trino SQL，且只有在 Trino 侧权限可证明安全时才开放；所有级别的读取都留下元数据审计；定义与授权的变更只经部署方与管理通道
+**Goal**: As a 受信主体, I want to 在 allow-list 内执行仅在 Trino 侧权限可证明安全时才开放的只读 Trino SQL, so that 所有级别的读取都留下元数据审计且定义与授权的变更只经部署方与管理通道.
 **Mode:** mvp
 **Depends on**: Phase 5
 **Requirements**: L2-01, L2-02, L2-03, L2-04, AUDIT-01, SCOPE-07
