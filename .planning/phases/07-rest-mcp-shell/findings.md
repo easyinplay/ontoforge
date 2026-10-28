@@ -1,14 +1,14 @@
 # Phase 7 findings
 
 - 2026-10-28：两项用户决策已蒸馏到 `07-CONTEXT.md`，完整选项见 `07-DISCUSSION-LOG.md`，不重复询问。ADR-0007/0009/0019/0028 已固定框架、DTO、toolset 和 ACL 生命周期边界。
-- Grok 上轮有界咨询超时，但返回了建议正文，仅作为部分第二意见：建议 stdio 认证桥接同一服务、dev 数据默认持久化、部分 L2 降级在健康正文表达。来源为 Phase 6 findings 的 Phase 7 预查条目。health HTTP 状态尚未接受；不采纳“所有非 200 都会触发重启”的泛化推断。
+- Grok 上轮有界咨询超时，但返回了建议正文，仅作为部分第二意见：建议 stdio 认证桥接同一服务、dev 数据默认持久化、部分 L2 降级在健康正文表达。来源为 Phase 6 findings 的 Phase 7 预查条目。health HTTP 状态现已由用户接受，见 CONTEXT D-03；不采纳“所有非 200 都会触发重启”的泛化推断。
 - 本轮仅记录讨论和状态，不修改业务实现，按项目判据跳过新 TDD；以 JSON 解析、git diff --check 和 Phase 6 verification.status 验证。ralph-loop 本机此前确认不可用，本轮未运行或声称运行该工具。
 - 跳过 office-hours/plan-ceo-review：本轮延续已获批 milestone 的既定 Phase 7 范围，不涉及新产品方向。Phase 层 discuss 正在进行，复杂架构在 P2 进入 plan-eng-review；实现前按任务判据判断 brainstorming。
 
 ## Open Decisions
 
 - 用户已确认两项运行方式，产品讨论无剩余问题。剩余项均为工程审查事项。
-- 工程审查：HTTP /health 的部分 L2 降级状态码、服务 shutdown 顺序、桥接认证与断连行为。均须服从既有 fail-closed、审计与权限合同。
+- 工程审查 D1 已接受。继续核对服务 shutdown、桥接认证与断连、定义快照；均须服从既有 fail-closed、审计与权限合同。
 
 ## 只读勘查与第二意见
 
@@ -18,4 +18,19 @@
 - gstack preamble 已执行：显式 checkpoint、无 push、telemetry off。检测到工具更新，本阶段不引入无关全局工具升级。项目规则优先：已有范围已批准，继续完整范围，不重复要求批准 SDK/release。
 - 已通过 planning-with-files resolver 显式选择 `.planning/phases/07-rest-mcp-shell`，不会恢复其他 phase 的同名计划。
 - Context7 primary-source 查询确认 axum graceful shutdown / extensions 与 rmcp 动态列表入口；详情见 `07-ENG-REVIEW.md`。尚未执行 rmcp 编译 spike，也未选定依赖版本。
-- 工程审查 Step 0 已完成。D1 健康状态选项通过 request_user_input_async 发出；Architecture 尚未完成，后续三节尚未进入，不宣称 gate passed。
+- 用户于 2026-10-28 选择 D1 的 `1`；四节工程设计审查现已完成，详 ENG-REVIEW。研究 spike、PLAN 和实现验收仍未完成。
+
+## Grok 第二轮有界咨询
+
+- 2026-10-28 session 41414：exit 0，无 signal/error，单轮、禁用工具/subagent/web。与上轮超时区分，本轮收到完整正文。
+- 有效提醒：两个独立读语句不能保证 definition/scope 一致；保留 Action 的提交 fence，不自动重试写；在等待 Action 完成前不得取消其依赖的 source read。
+- 不采纳的建议：把 replay 绑定原定义会改变 ADR-0018 的当前授权合同；新增 history 版本列前需注意现有 edit log header 已写入 def_version（`commit.rs` 的 `NewRecord`）。history 的问题是请求内读取一致性，并非已证实缺少持久版本。
+- 不采纳的简化：仅增加宿主 joined SELECT，仍不能消除 Action/history 内部后续读取定义的入口；是否需要新增最小 snapshot-aware 入口须由源码核查确定。
+- 需要核验而非直接接受：Grok 担心 L2 monitor 在 audit flush 后继续产生日志，现有 monitor 位于 engine crate，未查到它依赖 storage read_audit。不能据此改变关闭顺序。
+
+## 本轮检查边界
+
+- 仅更新决策/审查和计划文档，尚不新增业务测试；核心实现继续要求 TDD。
+- 探查时尝试的 `query/src/budget.rs`、`query/src/limits.rs`、`action/src/types.rs`、`action/tests/versioned_submission.rs` 不存在；已改用 `rg --files` 获取实际布局，未据此断言功能缺失。
+- scout 追加核查已返回：`begin_definition_tx` 与 scope_apply 共享 advisory lock，PG 普通 begin 不保证多次 SELECT 快照；最小方案是短事务复用该锁读取定义和完整 ScopeSet。Action/history 需最小 snapshot-aware 入口，旧 wrapper 保留。
+- 原 `0002_edit_log.sql` / LogRecord 已存 def_version，idempotency 测试明确允许定义变化后回放原 receipt；monitor 没有 storage audit handle。Grok 对这三点的扩展建议已排除，未修改既有合同。

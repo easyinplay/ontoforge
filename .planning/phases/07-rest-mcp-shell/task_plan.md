@@ -22,10 +22,11 @@
 
 ## Next Step
 
-plan-eng-review Step 0 已完成，详 `07-ENG-REVIEW.md`。当前等待 D1：仅 L2 失败时 `/health` 的 HTTP 语义；收到后继续 Architecture，再逐节完成 Code Quality、Tests、Performance。用户已批准完整范围，保留 client 与 release。
+四节工程设计审查已完成，见 `07-ENG-REVIEW.md`；验收规划见 `07-TEST-MATRIX.md`。下一步用 GSD plan-phase 开展研究与 rmcp spike，再由独立 planner/checker 生成和检查 PLAN。P2 尚未完成，完整范围保留。
 
 ## Errors Encountered
 
 - Grok session 91385 在 55 秒上限返回 ETIMEDOUT / SIGTERM；部分正文仅作第二意见，未当作完整审查。
 - `C:/Users/easyi/.codex/rules/web-search.md` 不存在；已找到并读取 `C:/Users/easyi/.claude/rules/web-search.md`。
 - GSD query commit 跳过已删除的检查点路径；通过显式 git add -u 单独记录删除，避免旧检查点留在仓库。
+- `07-TEST-PLAN.md` 被 GSD 按 `*-PLAN.md` 误计为执行计划，已改名 `07-TEST-MATRIX.md` 并同步指针；没有把测试规划文件当作可执行 PLAN。

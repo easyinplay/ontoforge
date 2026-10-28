@@ -1,5 +1,9 @@
 # Phase 7 progress
 
+- 2026-10-28：四节工程设计审查完成，`07-TEST-MATRIX.md` 的 10 组验收与故障分支图已落盘。scout 核查与 Grok 正常退出的第二意见已交叉检查，保留 fence/replay/现有历史结构。进入 P2 的研究/规划部分，尚无实现或测试通过结论。
+
+- 2026-10-28：用户接受工程审查 D1 选项 1，健康契约已记录在 CONTEXT D-03；恢复后续工程审查，不再等待该问题。
+
 - 2026-10-28：工程审查 Step 0 已完成并保存 `07-ENG-REVIEW.md`；已查 primary-source 文档，D1 HTTP 健康语义待答复。Code Quality/Tests/Performance 尚未进入，未运行 Cargo 或修改实现。
 
 - 2026-10-28：P1 完成，CONTEXT 与 DISCUSSION-LOG 已落盘，临时检查点已消费。startup scout 已返回；Grok 部分第二意见已记录为超时结果。P2 工程审查进行中，尚无实施代码或执行 PLAN。
