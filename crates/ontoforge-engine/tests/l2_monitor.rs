@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::sync::atomic::{AtomicBool, AtomicU16, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -26,14 +27,54 @@ struct Fixture {
     unknown: AtomicBool,
     finish_after_visibility: AtomicBool,
     l2_observed: AtomicBool,
+    queries: Mutex<BTreeMap<String, QueryRecord>>,
+    cancel_delayed: AtomicBool,
+    cancel_blocked_id: Mutex<Option<String>>,
+}
+
+struct QueryRecord {
+    owner: String,
+    state: String,
+}
+
+impl Fixture {
+    fn seed(&self, id: &str) {
+        self.queries.lock().expect("queries").insert(
+            id.to_owned(),
+            QueryRecord {
+                owner: "ontology".to_owned(),
+                state: "RUNNING".to_owned(),
+            },
+        );
+    }
 }
 
 impl Respond for Fixture {
     fn respond(&self, request: &Request) -> ResponseTemplate {
         if request.method == "DELETE" {
             self.deletes.fetch_add(1, Ordering::SeqCst);
-            let status = self.cancel_status.load(Ordering::SeqCst);
-            return ResponseTemplate::new(if status == 0 { 204 } else { status });
+            let id = request.url.path().rsplit('/').next().expect("query path");
+            let status = if self
+                .cancel_blocked_id
+                .lock()
+                .expect("blocked ID")
+                .as_deref()
+                == Some(id)
+            {
+                500
+            } else {
+                self.cancel_status.load(Ordering::SeqCst)
+            };
+            let status = if status == 0 { 204 } else { status };
+            if (200..300).contains(&status) || status == 404 {
+                self.queries.lock().expect("queries").remove(id);
+            }
+            let response = ResponseTemplate::new(status);
+            return if self.cancel_delayed.load(Ordering::SeqCst) {
+                response.set_delay(Duration::from_millis(400))
+            } else {
+                response
+            };
         }
         let sql = String::from_utf8_lossy(&request.body);
         let user = request
@@ -43,15 +84,39 @@ impl Respond for Fixture {
             .to_str()
             .expect("user");
         let response = if request.method == "GET" || sql.contains("count(*)") {
-            let number = if request.method == "POST" {
-                self.submissions.fetch_add(1, Ordering::SeqCst) + 1
+            let id = if request.method == "POST" {
+                let number = self.submissions.fetch_add(1, Ordering::SeqCst) + 1;
+                let id = format!("active_{number}");
+                self.queries.lock().expect("queries").insert(
+                    id.clone(),
+                    QueryRecord {
+                        owner: user.to_owned(),
+                        state: "QUEUED".to_owned(),
+                    },
+                );
+                id
             } else {
-                self.submissions.load(Ordering::SeqCst)
+                request
+                    .url
+                    .path()
+                    .rsplit('/')
+                    .next()
+                    .expect("query path")
+                    .to_owned()
             };
-            let id = format!("active_{number}");
+            let mut queries = self.queries.lock().expect("queries");
+            let Some(query) = queries.get_mut(&id) else {
+                return ResponseTemplate::new(404);
+            };
             if self.finished.load(Ordering::SeqCst) {
+                query.state = "FINISHED".to_owned();
                 json!({"id":id,"stats":{"state":"FINISHED"}})
             } else {
+                if self.unknown.load(Ordering::SeqCst) {
+                    query.state = "UNKNOWN".to_owned();
+                } else if request.method == "GET" {
+                    query.state = "RUNNING".to_owned();
+                }
                 let next = self
                     .foreign_uri
                     .lock()
@@ -60,7 +125,7 @@ impl Respond for Fixture {
                     .unwrap_or_else(|| {
                         format!("{}/v1/statement/{id}", self.origin.lock().expect("origin"))
                     });
-                json!({"id":id,"stats":{"state":if self.unknown.load(Ordering::SeqCst) {"UNKNOWN"} else if request.method == "POST" {"QUEUED"} else {"RUNNING"}},"nextUri":next})
+                json!({"id":id,"stats":{"state":query.state},"nextUri":next})
             }
         } else if sql.contains("system.runtime.queries") {
             self.observations.fetch_add(1, Ordering::SeqCst);
@@ -68,21 +133,23 @@ impl Respond for Fixture {
                 self.l2_observed.store(true, Ordering::SeqCst);
             }
             let id = sql.split('\'').nth(1).expect("query ID");
-            let rows = if self.absent.load(Ordering::SeqCst)
-                || (user == "l2" && !self.leak.load(Ordering::SeqCst))
-            {
-                json!([])
-            } else {
-                json!([[
-                    id,
+            let mut queries = self.queries.lock().expect("queries");
+            let rows = match queries.get_mut(id) {
+                Some(query) => {
                     if self.finish_after_visibility.load(Ordering::SeqCst)
                         && self.l2_observed.load(Ordering::SeqCst)
                     {
-                        "FINISHED"
-                    } else {
-                        "RUNNING"
+                        query.state = "FINISHED".to_owned();
                     }
-                ]])
+                    if self.absent.load(Ordering::SeqCst)
+                        || (query.owner != user && !self.leak.load(Ordering::SeqCst))
+                    {
+                        json!([])
+                    } else {
+                        json!([[id, query.state]])
+                    }
+                }
+                None => json!([]),
             };
             json!({"columns":[{"name":"query_id","type":"varchar"},{"name":"state","type":"varchar"}],"data":rows})
         } else if user == "l2"
@@ -496,6 +563,7 @@ async fn monitor_shutdown_during_periodic_check_cannot_reenable() {
 #[tokio::test]
 async fn monitor_deadline_includes_waiting_for_recheck_lock() {
     let (server, fixture) = fixture().await;
+    fixture.seed("manual_1");
     let (l2, ontology) = engines(&server.uri(), Some(PROBE));
     fixture.delayed.store(true, Ordering::SeqCst);
     let manual_l2 = l2.clone();
@@ -534,5 +602,91 @@ async fn monitor_deadline_includes_waiting_for_recheck_lock() {
         }),
         "older manual success must not overwrite newer timeout"
     );
+    monitor.shutdown().await.expect("shutdown");
+}
+
+#[tokio::test]
+async fn monitor_cleanup_failure_cannot_be_bypassed_by_manual_recheck() {
+    let (server, fixture) = fixture().await;
+    fixture.seed("external_active_1");
+    fixture.cancel_status.store(500, Ordering::SeqCst);
+    let (l2, ontology) = engines(&server.uri(), Some(PROBE));
+    let monitor = l2
+        .clone()
+        .start_l2_acl_monitor(ontology.clone())
+        .await
+        .expect("monitor");
+    assert_eq!(
+        l2.l2_status(),
+        Some(L2HealthStatus::Disabled {
+            reason: L2DisableReason::CleanupFailed
+        })
+    );
+    let status = l2.recheck_l2_acl(&ontology, "external_active_1").await;
+    assert!(
+        matches!(status, L2HealthStatus::Disabled { .. }),
+        "manual diagnosis must not bypass the monitor owner's failed cleanup, got {status:?}"
+    );
+    assert!(monitor.shutdown().await.is_err());
+}
+
+#[tokio::test]
+async fn monitor_restart_must_clean_previous_generation_before_enabling() {
+    let (server, fixture) = fixture().await;
+    fixture.cancel_status.store(500, Ordering::SeqCst);
+    let (l2, ontology) = engines(&server.uri(), Some(PROBE));
+    let first = l2
+        .clone()
+        .start_l2_acl_monitor(ontology.clone())
+        .await
+        .expect("first");
+    assert_eq!(fixture.submissions.load(Ordering::SeqCst), 1);
+    drop(first);
+    *fixture.cancel_blocked_id.lock().expect("blocked ID") = Some("active_1".to_owned());
+    fixture.cancel_status.store(0, Ordering::SeqCst);
+    let second = l2
+        .clone()
+        .start_l2_acl_monitor_with_options(ontology, options())
+        .await
+        .expect("second");
+    assert_eq!(
+        l2.l2_status(),
+        Some(L2HealthStatus::Disabled {
+            reason: L2DisableReason::CleanupFailed
+        }),
+        "new generation must not forget the previous live probe"
+    );
+    assert_eq!(
+        fixture.submissions.load(Ordering::SeqCst),
+        1,
+        "no new probe before prior cleanup"
+    );
+    *fixture.cancel_blocked_id.lock().expect("blocked ID") = None;
+    wait_status(&l2, L2HealthStatus::Enabled).await;
+    assert!(fixture.queries.lock().expect("queries").is_empty());
+    second.shutdown().await.expect("shutdown");
+}
+
+#[tokio::test]
+async fn monitor_cannot_enable_before_delete_response_succeeds() {
+    let (server, fixture) = fixture().await;
+    fixture.cancel_delayed.store(true, Ordering::SeqCst);
+    let (l2, ontology) = engines(&server.uri(), Some(PROBE));
+    let starting_l2 = l2.clone();
+    let starting = tokio::spawn(async move { starting_l2.start_l2_acl_monitor(ontology).await });
+    tokio::time::timeout(Duration::from_secs(2), async {
+        while fixture.deletes.load(Ordering::SeqCst) == 0 {
+            tokio::time::sleep(Duration::from_millis(5)).await;
+        }
+    })
+    .await
+    .expect("DELETE sent");
+    assert!(
+        matches!(l2.l2_status(), Some(L2HealthStatus::Disabled { .. })),
+        "a submitted DELETE is not successful cleanup"
+    );
+    assert!(!starting.is_finished());
+    let monitor = starting.await.expect("join").expect("monitor");
+    assert_eq!(l2.l2_status(), Some(L2HealthStatus::Enabled));
     monitor.shutdown().await.expect("shutdown");
 }

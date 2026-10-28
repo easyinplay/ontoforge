@@ -332,14 +332,17 @@ async fn trino_l2_monitor_startup_cancels_real_active_probe() {
     let url = endpoint();
     let client = Client::new();
     assert_version(&client, &url).await;
-    let (l2, ontology) = monitor_engines(&url, "SELECT count(*) FROM demo.sf100000.orders");
+    let (l2, ontology) = monitor_engines(
+        &url,
+        "SELECT count(*) AS monitor_startup_probe FROM demo.sf100000.orders",
+    );
     let monitor = l2
         .clone()
         .start_l2_acl_monitor(ontology)
         .await
         .expect("monitor");
     assert_eq!(l2.l2_status(), Some(L2HealthStatus::Enabled));
-    let active_sql = "SELECT query_id FROM system.runtime.queries WHERE state = 'RUNNING' AND query LIKE 'SELECT count(*) FROM demo.sf100000.orders%'";
+    let active_sql = "SELECT query_id FROM system.runtime.queries WHERE state = 'RUNNING' AND query LIKE 'SELECT count(*) AS monitor_startup_probe FROM demo.sf100000.orders%'";
     tokio::time::timeout(Duration::from_secs(3), async {
         loop {
             let active = query(&client, &url, "ontology", active_sql).await;
