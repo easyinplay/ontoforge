@@ -37,15 +37,24 @@ fn mcp_l2_all_six_names_parameters_and_allowlist() {
         .iter()
         .find(|tool| tool.name == "execute_query")
         .expect("execute_query tool");
-    assert_eq!(execute.input_schema["required"], serde_json::json!(["query"]));
-    assert_eq!(execute.input_schema["properties"]["query"]["type"], "string");
+    assert_eq!(
+        execute.input_schema["required"],
+        serde_json::json!(["query"])
+    );
+    assert_eq!(
+        execute.input_schema["properties"]["query"]["type"],
+        "string"
+    );
 
     let explain = catalog
         .all()
         .iter()
         .find(|tool| tool.name == "explain_query")
         .expect("explain_query tool");
-    assert_eq!(explain.input_schema["required"], serde_json::json!(["query"]));
+    assert_eq!(
+        explain.input_schema["required"],
+        serde_json::json!(["query"])
+    );
     assert_eq!(
         explain.input_schema["properties"]["format"]["enum"],
         serde_json::json!(["LOGICAL", "DISTRIBUTED", "VALIDATE", "IO"])
@@ -56,7 +65,11 @@ fn mcp_l2_all_six_names_parameters_and_allowlist() {
 fn mcp_l2_gate_expiry_revoke_and_audit() {
     let allowed = raw_scope();
     assert!(allowed.toolsets.contains(&Toolset::SqlRaw));
-    assert!(allowed.sql_levels.contains(&ontoforge_schema::ir::SqlLevel::Raw));
+    assert!(
+        allowed
+            .sql_levels
+            .contains(&ontoforge_schema::ir::SqlLevel::Raw)
+    );
 
     let revoked = PrincipalScope::default();
     let catalog = ToolCatalog::for_scope(&revoked);

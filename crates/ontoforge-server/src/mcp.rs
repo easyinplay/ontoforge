@@ -27,6 +27,9 @@ use crate::mcp_actions::ActionToolSchema;
 use crate::mcp_catalog::{self, ToolCatalog};
 use crate::{ServerHost, ServerLimits};
 
+#[path = "mcp_l2.rs"]
+pub mod mcp_l2;
+
 #[derive(Clone)]
 pub struct OntologyMcpHandler<E> {
     pub host: Arc<ServerHost<E>>,
@@ -61,6 +64,67 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
     fn catalog(ctx: &context::RequestContext) -> ToolCatalog {
         ToolCatalog::for_scope(&ctx.scope)
             .with_actions(&ctx.scope, ctx.active.ontology.action_types.values())
+    }
+
+    async fn call_l2(
+        &self,
+        name: &str,
+        args: &Map<String, Value>,
+        ctx: &context::RequestContext,
+    ) -> Result<Value, String> {
+        let tools = mcp_l2::McpL2Tools {
+            principal: &ctx.principal,
+            scope: &ctx.scope,
+            active: Arc::clone(&ctx.active),
+            engine: &*self.host.engine,
+            store: &self.host.store,
+            limits: self.limits,
+        };
+        match name {
+            mcp_catalog::EXECUTE_QUERY_TOOL => tools
+                .execute_query(
+                    args.get("query")
+                        .and_then(Value::as_str)
+                        .ok_or_else(|| "query is required".to_owned())?,
+                )
+                .await
+                .map_err(|error| error.to_string()),
+            mcp_catalog::EXPLAIN_QUERY_TOOL => tools
+                .explain_query(
+                    args.get("query")
+                        .and_then(Value::as_str)
+                        .ok_or_else(|| "query is required".to_owned())?,
+                    args.get("format").and_then(Value::as_str),
+                )
+                .await
+                .map_err(|error| error.to_string()),
+            mcp_catalog::LIST_CATALOGS_TOOL => tools
+                .list_catalogs()
+                .await
+                .map_err(|error| error.to_string()),
+            mcp_catalog::LIST_SCHEMAS_TOOL => tools
+                .list_schemas(args.get("catalog").and_then(Value::as_str))
+                .await
+                .map_err(|error| error.to_string()),
+            mcp_catalog::LIST_TABLES_TOOL => tools
+                .list_tables(
+                    args.get("catalog").and_then(Value::as_str),
+                    args.get("schema").and_then(Value::as_str),
+                )
+                .await
+                .map_err(|error| error.to_string()),
+            mcp_catalog::GET_TABLE_SCHEMA_TOOL => tools
+                .get_table_schema(
+                    args.get("table")
+                        .and_then(Value::as_str)
+                        .ok_or_else(|| "table is required".to_owned())?,
+                    args.get("catalog").and_then(Value::as_str),
+                    args.get("schema").and_then(Value::as_str),
+                )
+                .await
+                .map_err(|error| error.to_string()),
+            _ => Err("tool unavailable".to_owned()),
+        }
     }
 
     #[expect(
@@ -356,6 +420,21 @@ impl<E: Engine + Send + Sync + 'static> ServerHandler for OntologyMcpHandler<E> 
             return Err(ErrorData::invalid_request("tool unavailable", None));
         };
         let args = request.arguments.unwrap_or_default();
+        if matches!(
+            tool_name.as_str(),
+            mcp_catalog::EXECUTE_QUERY_TOOL
+                | mcp_catalog::EXPLAIN_QUERY_TOOL
+                | mcp_catalog::LIST_CATALOGS_TOOL
+                | mcp_catalog::LIST_SCHEMAS_TOOL
+                | mcp_catalog::LIST_TABLES_TOOL
+                | mcp_catalog::GET_TABLE_SCHEMA_TOOL
+        ) {
+            let result = self
+                .call_l2(&tool_name, &args, &ctx)
+                .await
+                .map_err(|error| ErrorData::invalid_params(error, None))?;
+            return Ok(CallToolResult::structured(result).into());
+        }
         if tool_name.starts_with("action_") {
             let action_name = tool_name.trim_start_matches("action_");
             let action = ctx

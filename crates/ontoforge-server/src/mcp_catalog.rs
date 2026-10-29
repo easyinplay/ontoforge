@@ -13,6 +13,12 @@ pub const OBJECT_SET_TOOL: &str = "object_set";
 pub const SEARCH_AROUND_TOOL: &str = "searchAround";
 pub const AGGREGATE_TOOL: &str = "aggregate";
 pub const HISTORY_TOOL: &str = "history";
+pub const EXECUTE_QUERY_TOOL: &str = "execute_query";
+pub const LIST_CATALOGS_TOOL: &str = "list_catalogs";
+pub const LIST_SCHEMAS_TOOL: &str = "list_schemas";
+pub const LIST_TABLES_TOOL: &str = "list_tables";
+pub const GET_TABLE_SCHEMA_TOOL: &str = "get_table_schema";
+pub const EXPLAIN_QUERY_TOOL: &str = "explain_query";
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ToolPage {
@@ -41,6 +47,16 @@ impl ToolCatalog {
         }
         if scope.toolsets.contains(&Toolset::Full) {
             names.extend([AGGREGATE_TOOL, HISTORY_TOOL]);
+        }
+        if scope.toolsets.contains(&Toolset::SqlRaw) {
+            names.extend([
+                EXECUTE_QUERY_TOOL,
+                EXPLAIN_QUERY_TOOL,
+                GET_TABLE_SCHEMA_TOOL,
+                LIST_CATALOGS_TOOL,
+                LIST_SCHEMAS_TOOL,
+                LIST_TABLES_TOOL,
+            ]);
         }
         let tools = names.into_iter().map(static_tool).collect();
         Self { tools }
@@ -101,6 +117,35 @@ fn static_tool(name: &str) -> Tool {
         QUERY_TOOL | OBJECT_SET_TOOL | SEARCH_AROUND_TOOL | AGGREGATE_TOOL => {
             json!({"type":"object","required":["request"],"properties":{"request":{"type":"object"}},"additionalProperties":false})
         }
+        EXECUTE_QUERY_TOOL => json!({
+            "type":"object",
+            "required":["query"],
+            "properties":{"query":{"type":"string"}},
+            "additionalProperties":false
+        }),
+        LIST_CATALOGS_TOOL => json!({"type":"object","additionalProperties":false}),
+        LIST_SCHEMAS_TOOL => json!({
+            "type":"object",
+            "properties":{"catalog":{"type":"string"}},
+            "additionalProperties":false
+        }),
+        LIST_TABLES_TOOL => json!({
+            "type":"object",
+            "properties":{"catalog":{"type":"string"},"schema":{"type":"string"}},
+            "additionalProperties":false
+        }),
+        GET_TABLE_SCHEMA_TOOL => json!({
+            "type":"object",
+            "required":["table"],
+            "properties":{"table":{"type":"string"},"catalog":{"type":"string"},"schema":{"type":"string"}},
+            "additionalProperties":false
+        }),
+        EXPLAIN_QUERY_TOOL => json!({
+            "type":"object",
+            "required":["query"],
+            "properties":{"query":{"type":"string"},"format":{"type":"string","enum":["LOGICAL","DISTRIBUTED","VALIDATE","IO"],"default":"DISTRIBUTED"}},
+            "additionalProperties":false
+        }),
         HISTORY_TOOL => {
             json!({"type":"object","required":["objectType","pk"],"properties":{"objectType":{"type":"string"},"pk":{},"limit":{"type":"integer","minimum":1},"beforeSeq":{"type":"integer"}},"additionalProperties":false})
         }
