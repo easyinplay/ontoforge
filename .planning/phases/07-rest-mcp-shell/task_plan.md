@@ -22,7 +22,7 @@
 
 ## Next Step
 
-P3 执行中：有效完成07-01至07-05，共5/16；07-05 SUMMARY `88abdd7` Self-Check PASSED，OpenAPI snapshot 4/4、静态导出1/1、fmt通过。OpenAPI版本严格3.1.0，checked-in `docs/openapi.json` 与 render 字节一致，`serve --export-openapi` 无配置/store/listener即可确定性导出。下一步唯一ready为07-06 health/shutdown；auto_advance=false，用户授权范围仍为Phase 7全部剩余11份PLAN。
+P3 执行中：有效完成07-01至07-06、07-15，共7/16。07-06 SUMMARY `49d5215` Self-Check PASSED：health 4/4、CLI shutdown 8/8；07-15 SUMMARY `4f77441` Self-Check PASSED：engine/query typed EXPLAIN、qualified identifier、L2 service 15/15、Clippy通过。下一波唯一ready为07-07、07-10、07-11，三者文件边界独立，将并行执行；auto_advance=false，用户授权范围仍为Phase 7全部剩余9份PLAN。
 
 ## 07-05 Execution
 
