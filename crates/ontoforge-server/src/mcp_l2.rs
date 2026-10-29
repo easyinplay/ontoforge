@@ -22,6 +22,8 @@ pub enum McpL2Error {
     Unavailable,
     #[error("invalid L2 request: {0}")]
     Invalid(String),
+    #[error("missing trusted L2 context: {0}")]
+    MissingContext(String),
     #[error("L2 source failed: {0}")]
     Source(String),
     #[error("read audit unavailable")]
@@ -290,9 +292,7 @@ impl<'a, E: Engine + Sync> McpL2Tools<'a, E> {
 }
 
 fn missing_context(component: &str) -> McpL2Error {
-    McpL2Error::Invalid(format!(
-        "trusted L2 qualification context is missing: {component}"
-    ))
+    McpL2Error::MissingContext(component.to_owned())
 }
 
 fn table_name_error(error: L2TableNameError) -> McpL2Error {
