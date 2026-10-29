@@ -92,6 +92,36 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
             limits: self.limits,
         };
         match name {
+            mcp_catalog::DESCRIBE_TOOL => {
+                let object_types = ctx
+                    .active
+                    .ontology
+                    .object_types
+                    .iter()
+                    .filter(|(name, ty)| !ty.hidden && ctx.scope.types.contains_key(*name))
+                    .map(|(name, ty)| {
+                        let scope = &ctx.scope.types[name];
+                        json!({
+                            "apiName": name,
+                            "displayName": ty.display_name,
+                            "description": ty.description,
+                            "primaryKey": ty.primary_key,
+                            "properties": ty.properties.iter().filter(|(property, _)| scope.columns.contains_key(*property)).map(|(property, definition)| json!({"apiName": property, "type": format!("{:?}", definition.base_type), "required": definition.required, "displayName": definition.display_name, "description": definition.description})).collect::<Vec<_>>()
+                        })
+                    })
+                    .collect::<Vec<_>>();
+                let actions = ctx
+                    .active
+                    .ontology
+                    .action_types
+                    .values()
+                    .filter(|action| ctx.scope.actions.contains(&action.api_name))
+                    .map(|action| json!({"apiName": action.api_name, "displayName": action.display_name, "description": action.description}))
+                    .collect::<Vec<_>>();
+                Ok(
+                    json!({"apiName": ctx.active.ontology.api_name, "description": ctx.active.ontology.description, "defVersion": ctx.active.def_version, "objectTypes": object_types, "actions": actions}),
+                )
+            }
             mcp_catalog::GET_OBJECT_TOOL => {
                 let pk = args
                     .get("pk")
