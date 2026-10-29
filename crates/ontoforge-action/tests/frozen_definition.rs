@@ -1,11 +1,18 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use ontoforge_action::{ActionItem, ActionLimits, ActionOutcome, ActionRequest, ActionService};
-use ontoforge_auth::{Principal, PrincipalId, scope::{PrincipalScope, TypeScope}};
+use ontoforge_auth::{
+    Principal, PrincipalId,
+    scope::{PrincipalScope, TypeScope},
+};
 use ontoforge_expr::{Attrs, Pred};
 use ontoforge_query::TokenCodec;
 use ontoforge_schema::load_from_memory;
-use ontoforge_storage::{commit::{Actor, Commit, Edit, ObjectOp}, reload::{ReloadOptions, reload}, value::PropertyValue};
+use ontoforge_storage::{
+    commit::{Actor, Commit, Edit, ObjectOp},
+    reload::{ReloadOptions, reload},
+    value::PropertyValue,
+};
 
 #[path = "../../ontoforge-storage/tests/support/mod.rs"]
 mod support;
@@ -73,13 +80,27 @@ async fn fixture() -> Fixture {
         .await
         .unwrap();
     let mut scope = PrincipalScope::default();
-    scope.actions.insert("renameGate".to_owned().try_into().unwrap());
-    scope.types.insert("Gate".to_owned().try_into().unwrap(), TypeScope {
-        row: Pred::Const(true),
-        columns: ["code", "name"].into_iter().map(|name| (name.to_owned().try_into().unwrap(), Pred::Const(true))).collect(),
-    });
+    scope
+        .actions
+        .insert("renameGate".to_owned().try_into().unwrap());
+    scope.types.insert(
+        "Gate".to_owned().try_into().unwrap(),
+        TypeScope {
+            row: Pred::Const(true),
+            columns: ["code", "name"]
+                .into_iter()
+                .map(|name| (name.to_owned().try_into().unwrap(), Pred::Const(true)))
+                .collect(),
+        },
+    );
     let active = (*db.store.active_definition().await.unwrap()).clone();
-    Fixture { db, principal, scope, active, tokens: TokenCodec::new(b"frozen-definition".to_vec()).unwrap() }
+    Fixture {
+        db,
+        principal,
+        scope,
+        active,
+        tokens: TokenCodec::new(b"frozen-definition".to_vec()).unwrap(),
+    }
 }
 
 fn request(id: &str, validate_only: bool) -> ActionRequest {
@@ -87,7 +108,8 @@ fn request(id: &str, validate_only: bool) -> ActionRequest {
         action: "renameGate".to_owned(),
         command_id: (!validate_only).then(|| id.to_owned()),
         items: vec![ActionItem {
-            params: serde_json::from_value(serde_json::json!({"gate": "A1", "name": "New"})).unwrap(),
+            params: serde_json::from_value(serde_json::json!({"gate": "A1", "name": "New"}))
+                .unwrap(),
             expected_versions: BTreeMap::new(),
         }],
         validate_only,
@@ -95,48 +117,131 @@ fn request(id: &str, validate_only: bool) -> ActionRequest {
 }
 
 fn receipt(outcome: ActionOutcome) -> ontoforge_action::ActionReceipt {
-    let ActionOutcome::Committed(receipt) = outcome else { panic!("expected committed") };
+    let ActionOutcome::Committed(receipt) = outcome else {
+        panic!("expected committed")
+    };
     receipt
 }
 
 #[tokio::test]
 async fn frozen_action_stale_and_validate_keep_fence_cas_guard() {
     let f = fixture().await;
-    let service = ActionService::new(&f.db.store, ActionLimits::new(8, 8, 65536).unwrap(), &f.tokens);
+    let service = ActionService::new(
+        &f.db.store,
+        ActionLimits::new(8, 8, 65536).unwrap(),
+        &f.tokens,
+    );
     let mut changed = f.active.ontology.clone();
     changed.description = Some("new definition".to_owned());
-    reload(&f.db.store, &changed, &ReloadOptions::default()).await.unwrap();
-    let error = service.execute_with_snapshot(&f.principal, &f.scope, &f.active, request("stale", false)).await.unwrap_err();
-    assert!(matches!(error, ontoforge_action::ActionError::Commit(ontoforge_storage::commit::ActionCommitError::Edit(ontoforge_storage::commit::EditError::DefinitionStale { .. }))));
+    reload(&f.db.store, &changed, &ReloadOptions::default())
+        .await
+        .unwrap();
+    let error = service
+        .execute_with_snapshot(&f.principal, &f.scope, &f.active, request("stale", false))
+        .await
+        .unwrap_err();
+    assert!(matches!(
+        error,
+        ontoforge_action::ActionError::Commit(ontoforge_storage::commit::ActionCommitError::Edit(
+            ontoforge_storage::commit::EditError::DefinitionStale { .. }
+        ))
+    ));
     let pool = f.db.side_pool().await;
-    let edits: i64 = sqlx::query_scalar("SELECT count(*) FROM of_edit_log").fetch_one(&pool).await.unwrap();
+    let edits: i64 = sqlx::query_scalar("SELECT count(*) FROM of_edit_log")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
     assert_eq!(edits, 1, "only the seed edit exists");
-    let dry = service.execute_with_snapshot(&f.principal, &f.scope, &f.active, request("dry", true)).await.unwrap_err();
-    assert!(matches!(dry, ontoforge_action::ActionError::Commit(ontoforge_storage::commit::ActionCommitError::Edit(ontoforge_storage::commit::EditError::DefinitionStale { .. }))));
+    let dry = service
+        .execute_with_snapshot(&f.principal, &f.scope, &f.active, request("dry", true))
+        .await
+        .unwrap_err();
+    assert!(matches!(
+        dry,
+        ontoforge_action::ActionError::Commit(ontoforge_storage::commit::ActionCommitError::Edit(
+            ontoforge_storage::commit::EditError::DefinitionStale { .. }
+        ))
+    ));
 }
 
 #[tokio::test]
 async fn frozen_replay_uses_current_grant_keeps_original_receipt() {
     let f = fixture().await;
-    let service = ActionService::new(&f.db.store, ActionLimits::new(8, 8, 65536).unwrap(), &f.tokens);
-    let original = receipt(service.execute(&f.principal, &f.scope, f.active.def_version, request("replay", false)).await.unwrap());
+    let service = ActionService::new(
+        &f.db.store,
+        ActionLimits::new(8, 8, 65536).unwrap(),
+        &f.tokens,
+    );
+    let original = receipt(
+        service
+            .execute(
+                &f.principal,
+                &f.scope,
+                f.active.def_version,
+                request("replay", false),
+            )
+            .await
+            .unwrap(),
+    );
     let mut changed = f.active.ontology.clone();
     changed.description = Some("reloaded".to_owned());
-    reload(&f.db.store, &changed, &ReloadOptions::default()).await.unwrap();
-    let current = f.db.store.current_action_definition().await.unwrap().unwrap();
-    let replay = service.get_command_result_with_snapshot(&f.principal, &f.scope, &current, "renameGate", "replay").await.unwrap().unwrap();
+    reload(&f.db.store, &changed, &ReloadOptions::default())
+        .await
+        .unwrap();
+    let current =
+        f.db.store
+            .current_action_definition()
+            .await
+            .unwrap()
+            .unwrap();
+    let replay = service
+        .get_command_result_with_snapshot(&f.principal, &f.scope, &current, "renameGate", "replay")
+        .await
+        .unwrap()
+        .unwrap();
     assert_eq!(replay, original);
-    assert!(service.get_command_result_with_snapshot(&f.principal, &PrincipalScope::default(), &current, "renameGate", "replay").await.is_err());
+    assert!(
+        service
+            .get_command_result_with_snapshot(
+                &f.principal,
+                &PrincipalScope::default(),
+                &current,
+                "renameGate",
+                "replay"
+            )
+            .await
+            .is_err()
+    );
 }
 
 #[tokio::test]
 async fn replay_across_clock_and_definition_change_keeps_winner_time() {
     let f = fixture().await;
-    let service = ActionService::new(&f.db.store, ActionLimits::new(8, 8, 65536).unwrap(), &f.tokens);
-    let first = receipt(service.execute_with_snapshot(&f.principal, &f.scope, &f.active, request("clock", false)).await.unwrap());
+    let service = ActionService::new(
+        &f.db.store,
+        ActionLimits::new(8, 8, 65536).unwrap(),
+        &f.tokens,
+    );
+    let first = receipt(
+        service
+            .execute_with_snapshot(&f.principal, &f.scope, &f.active, request("clock", false))
+            .await
+            .unwrap(),
+    );
     let changed = f.active.ontology.clone();
-    reload(&f.db.store, &changed, &ReloadOptions::default()).await.unwrap();
-    let current = f.db.store.current_action_definition().await.unwrap().unwrap();
-    let replay = service.get_command_result_with_snapshot(&f.principal, &f.scope, &current, "renameGate", "clock").await.unwrap().unwrap();
+    reload(&f.db.store, &changed, &ReloadOptions::default())
+        .await
+        .unwrap();
+    let current =
+        f.db.store
+            .current_action_definition()
+            .await
+            .unwrap()
+            .unwrap();
+    let replay = service
+        .get_command_result_with_snapshot(&f.principal, &f.scope, &current, "renameGate", "clock")
+        .await
+        .unwrap()
+        .unwrap();
     assert_eq!(replay, first);
 }

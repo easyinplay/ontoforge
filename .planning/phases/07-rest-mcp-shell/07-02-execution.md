@@ -23,7 +23,11 @@
 | Task 2 RED | new frozen tests, then specified regressions | Initial compile fixture syntax failure; after correction behavior tests exposed history visibility ordering regression. |
 | Task 2 GREEN | `cargo test -p ontoforge-action --test frozen_definition --test idempotency --locked -- --nocapture` | frozen 3 passed; idempotency 9 passed; 0 ignored. |
 | Task 2 GREEN | `cargo test -p ontoforge-storage --test frozen_history --test history_masking --locked -- --nocapture` | frozen 1 passed; history masking 12 passed, 1 PG ignored by existing contract. |
-| Final | fmt/clippy/TLS/workspace regression | pending |
+| Final | `cargo fmt --all -- --check` | passed |
+| Final | `cargo clippy --workspace --all-targets --locked -- -D warnings` | passed |
+| Final | `cargo clippy -p ontoforge-storage --features embedded-pg --all-targets --locked -- -D warnings` | passed |
+| Final | `cargo tree --workspace --locked --features ontoforge-storage/embedded-pg -e normal,build,dev -i native-tls` | exit 101 because `native-tls` package ID was absent; TLS gate passed (no native-tls dependency). |
+| Final | `cargo test --workspace --locked -- --test-threads=1` | exit 0; all executed tests passed; environment-gated PG/Trino/private tests remained ignored. |
 
 ## Notes
 

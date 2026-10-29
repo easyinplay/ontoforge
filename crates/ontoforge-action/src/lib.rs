@@ -189,14 +189,8 @@ impl<'a, E: Engine> ActionService<'a, E> {
             .current_action_definition()
             .await?
             .ok_or(ActionError::ScopeDenied)?;
-        self.get_command_result_with_snapshot(
-            principal,
-            scope,
-            &active,
-            action_name,
-            command_id,
-        )
-        .await
+        self.get_command_result_with_snapshot(principal, scope, &active, action_name, command_id)
+            .await
     }
 
     /// Returns a command result using the definition captured at request admission.
@@ -250,8 +244,15 @@ impl<'a, E: Engine> ActionService<'a, E> {
         active: &ActiveDefinition,
         request: ActionRequest,
     ) -> Result<ActionOutcome, ActionError> {
-        self.execute_inner(principal, scope, active, active.def_version, request, ready(()))
-            .await
+        self.execute_inner(
+            principal,
+            scope,
+            active,
+            active.def_version,
+            request,
+            ready(()),
+        )
+        .await
     }
 
     /// Synchronizes integration races after preparation and before the write transaction.
@@ -329,7 +330,7 @@ impl<'a, E: Engine> ActionService<'a, E> {
         let prepared = prepare_edits(
             self.store,
             self.engine,
-            &active,
+            active,
             action,
             principal,
             scope,
@@ -376,7 +377,7 @@ impl<'a, E: Engine> ActionService<'a, E> {
             validate_only: request.validate_only,
         };
         let authorization = criteria::Authorization {
-            active: &active,
+            active,
             action,
             principal,
             scope,
