@@ -84,20 +84,19 @@ impl<E: Engine + Send + Sync + 'static> ServerHost<E> {
 
 #[cfg(test)]
 mod tests {
-    use super::{CRATE_NAME, REST_ROUTE_PATHS};
+    use super::CRATE_NAME;
     #[test]
     fn crate_name_has_ontoforge_prefix() {
         assert!(CRATE_NAME.starts_with("ontoforge-"));
     }
-    #[test]
-    fn rest_metadata_and_all_l0_operations() {
-        assert_eq!(REST_ROUTE_PATHS.len(), 4);
-        assert!(REST_ROUTE_PATHS.contains(&"/api/ontology"));
-        assert!(REST_ROUTE_PATHS.contains(&"/api/query"));
-        assert!(REST_ROUTE_PATHS.contains(&"/api/aggregate"));
-        assert!(REST_ROUTE_PATHS.contains(&"/api/objects/{object_type}/{pk}"));
-    }
 }
+
+#[cfg(test)]
+extern crate self as ontoforge_server;
+
+#[cfg(test)]
+#[path = "../tests/unit/rest.test.rs"]
+mod rest_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/tracer.test.rs"]

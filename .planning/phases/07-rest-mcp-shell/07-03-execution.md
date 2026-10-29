@@ -1,5 +1,19 @@
 # Phase 07 Plan 03 执行台账
 
+## 2026-10-29 验收修复
+
+- 基线：`0a84fee3d9a69bd1777f35f2f580a5ddc1efb1b1`，`gsd/phase-07-rest-mcp-shell`，根目录已核验。
+- 既有 complete 记录不构成验收：路由字符串测试、helper 测试、编译错误 RED 均无效。下方历史记录保留用于追溯。
+- 当前：03-1 真实 listener/Query/store fixture 与三个指定测试编写中；03-2 待真实行为 RED。
+- 已读取 GSD 执行/TDD、planning-with-files 与 superpowers TDD 规则；本执行者只维护本台账和证据，不写主会话状态文件。
+- `AGENTS.md`/`RTK.md` 不存在于项目根，遵循派发中提供的规则。无 `.codegraph/`，无需 CodeGraph。
+- Warp 与 `ralph-loop` 未暴露，不声称使用。未触发新功能战略讨论；原 PLAN 已锁定范围，新增 API 灰区向主会话回流。
+- 待主会话决策：list/aggregate audit ID 不返回调用方，HTTP request_id 与 audit ID 对齐需最小 Query API 扩展。
+- 主会话已批准 A 型兼容 audited wrappers（`9279dae`）；新增 query 文件所有权按最新 PLAN。
+- 03-1：三个真实 REST 测试初轮通过，证明既有操作/排序/snapshot 行为；不为这些 GREEN 行为制造 RED。
+- 03-1 修复 RED：`rest-audit-red.json` 原生 nextest JUnit，实际 HTTP query ID 未匹配 durable query.list audit ID。测试执行至预期断言，非编译/fixture 失败。
+- 03-1 追加边界：实际 9 MiB 对象产生短页、`truncated=true`、`hasMore=true`，后续通过 cursor 延续读取。
+
 ## 范围
 
 - Task 03-1：扩展真实 REST 元数据和完整 L0 查询
