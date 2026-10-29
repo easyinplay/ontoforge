@@ -177,7 +177,7 @@ async fn frozen_history_keeps_request_definition_and_current_scope() {
     let new_ty = "NewGate".to_owned().try_into().unwrap();
     req.type_name = &new_ty;
     assert!(matches!(
-        db.store.history_with_snapshot(&req, &active).await,
+        external.history_with_snapshot(&req, &active).await,
         Err(HistoryError::NotFound)
     ));
     assert_eq!(
