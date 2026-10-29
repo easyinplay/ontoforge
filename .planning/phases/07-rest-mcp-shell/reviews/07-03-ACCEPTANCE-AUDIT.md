@@ -4,7 +4,7 @@
 - 范围：真实 REST 测试与 `d31cf91` audited wrappers，只读核查；本审查未运行测试。
 - 结论：1 项验收缺口；所查查询路径未发现可证明的 production bug。03-2 observed/deadline 改动仍在施工，不属于本轮通过结论。
 
-## 待修复
+## 首轮发现
 
 - `07-03-PLAN.md:136` 要求 metadata 提供引擎脱敏状态。`ontoforge-api/src/dto.rs:188` Metadata 与 `ontoforge-server/src/rest.rs:98` ontology 响应没有字段，`tests/unit/rest.test.rs:19` 无断言。补稳定逻辑状态 DTO，仅可用/不可用，不暴露 `EngineStatus::Unavailable.reason`；真实 listener 断言状态及敏感 reason 不泄漏。
 
@@ -29,3 +29,15 @@
 - 批准PK仅改REST为既有400 COST_EXCEEDED；Query审计仍记其原bounded结果success/0，不将HTTP状态强加为Query审计状态。此边界需在测试和SUMMARY明确。
 - metadata状态及reason sentinel已在源码补齐，等待最新REST GREEN。
 - partial-body停滞本轮未见真实HTTP用例，不计为已实测；middleware timer/to_bytes覆盖源码路径。
+
+## 93fad96 收口
+
+三项发现均resolved，所查生产/测试文件与该commit无差异；本轮只读，无重复测试执行。
+
+| 发现 | 修复与实际GREEN证据 |
+|------|--------------------|
+| metadata | rest.rs:107、dto.rs:201仅available/unavailable；rest.test.rs:21真实响应含状态且无reason sentinel；rest-final.log指定测试通过。 |
+| 405 | lib.rs:137/error.rs:73统一fallback；http_contract.test.rs:92保留POST和GET,HEAD的Allow，共用断言校验header/body ID，Engine/audit零准入；http-final.log通过。 |
+| PK截断 | rest.rs:181映400 COST_EXCEEDED；http_contract.test.rs:288以真实响应测byte，再测等值成功/少一byte拒绝及原success/0审计；http-final.log对应测试通过。 |
+
+rest-final/http-final各3 passed、0 failed、0 ignored，JSON exitCode0。此收口不构成workspace门禁通过结论；workspace与all-features clippy须分别记录。
