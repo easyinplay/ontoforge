@@ -25,8 +25,8 @@
 - [x] 01-1 feedback 再跑指定 tracer：3 passed，commit `5df9f2a`
 - [x] 01-2 RED：Cargo 2 executed / 2 failed，nextest 原生 JUnit 同样 2 failed；`RED_EVIDENCE_OK`
 - [x] 01-2 test commit `1df4a16`
-- [x] 01-2 GREEN：serve_ 4/4；配置回归 35/35；等待原子 feat commit
-- [ ] workspace/fmt/clippy/TLS
+- [x] 01-2 GREEN：serve_ 4/4；配置回归 35/35；feat commit `2e1a698`
+- [x] workspace/fmt/clippy/TLS
 - [ ] SUMMARY 自检与提交
 
 ## 发现
@@ -84,3 +84,22 @@
 - GREEN 使用 `QueryConfig::load_signing_key`，沿既有 `read_limited` 的 64 KiB 上限读取原始 bytes，至少 32 bytes；错误不含内容或路径。CLI 在 auth/engine/listener 前读取，不隐式创建/旋转，不复用 dev key。doc 与示例只含 key reference。
 - 指定 serve_ 4 passed / 0 failed；server_config 全 35 passed；最终 tracer 3 passed；fmt check exit 0。真实同 key 重启后 `VersionTokenCodec::verify` 通过，错误 key 拒绝，替换 auth key 不改变 query token。query audit 最终回归正在编译。
 - query audit 最终 12 passed / 0 failed，Task 01-2 目标验收已满足。GREEN 原子提交后执行整体 gates。证据脚本补建零输出命令的空日志，使 fmt 的 logPath 指向真实文件；重复 fmt check 仍 exit 0。
+- 整体 gates：workspace `cargo test --workspace --locked -- --test-threads=1` 在统一编译全部测试目标，保留原始日志；尚未宣称通过。两个 TLS tree 目标均 exit 101，原文为 package ID 不存在，符合 CI 的否定断言。未触碰实际 PostgreSQL/Trino 或 release/npm。
+- 首轮 workspace 退出 101：Action production caller guard 将两个 src 下的独立测试模块中的 fixture commit 识别为 production caller。无业务目标失败，未修改 allow-list。
+- 主会话已核查并在 `137ffd1` 批准机械布局修复：两个模块移到 `tests/unit/`，原 src 文件删除，仍由 cfg(test)+path 加载为原名 lib unit tests。避免 Cargo 自动发现 tests 根的 integration target；无新业务行为，不另造 RED。
+- 当前先复验原 production caller guard，再执行移动后的两个指定 --lib 命令与 workspace 及剩余 gates。保留首次失败的原始证据。
+
+## 整体验证恢复 (2026-10-29)
+
+- 两个测试文件机械移动前后的 Git blob 完全一致；测试名、fixture 与断言未变。`entrypoints.rs` 和 production caller allow-list 未修改。
+- `final-production-guard`：原失败的 production mutation caller guard 实际执行 1 passed / 0 failed。
+- workspace clippy 首次报告本 task `serve.rs` 的局部 lint；改为 `BTreeMap::new()` 与 if-let/let-else 后，`final-clippy-pass` exit 0。保留两个失败 clippy 的原始日志，不以文件名中的 green 代替真实退出码。
+- `final-clippy-embedded`：`cargo clippy -p ontoforge-storage --features embedded-pg --all-targets --locked -- -D warnings` exit 0。
+- `final-action-check`：`cargo check -p ontoforge-action --locked` exit 0。
+- `final-tracer-relocated`：移动后指定 `--lib tracer_` 实际 3 passed / 0 failed / 0 ignored。
+- `final-serve-relocated`：移动后指定 `--lib serve_` 实际 4 passed / 0 failed / 0 ignored。
+- `final-fmt-relocated`：`cargo fmt --all --check` exit 0。
+- `final-workspace-tests-rerun`：完整 workspace 命令 exit 0，117 个 result 记录累计 1266 passed / 0 failed / 106 ignored；包括 2 个通过的 compile-fail doc-tests 与 1 个既有 ignored doc-test。外部 PostgreSQL/Trino/私有 fixture 的 ignored 没有计为通过。
+- 完整重跑起止 `2026-10-29T00:40:47.5273483Z` 至 `2026-10-29T00:47:51.3490337Z`，编译 2m50s。首次失败和最终通过日志均保留。
+- stub 扫描未发现本 slice 的未接线功能或 TODO/FIXME；读取 key 文件与认证端点均在批准 PLAN 的信任边界内，未引入未登记的额外安全边界。
+- 本 plan 的自动验收全部执行。真实外部服务、完整进程生命周期矩阵与 dev seed/reset 仍归后续 plan，不声称当前已经运行。共享 STATE/ROADMAP/REQUIREMENTS/PWF 由主会话同步。

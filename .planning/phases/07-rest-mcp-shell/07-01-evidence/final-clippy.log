@@ -1,0 +1,91 @@
+    Checking schemars v1.2.3
+    Checking tokio-util v0.7.20
+    Checking tower v0.5.3
+    Checking antlr4rust v0.6.0
+    Checking sse-stream v0.2.6
+    Checking utoipa v6.0.0
+   Compiling matchit v0.8.4
+   Compiling reqwest-tracing v0.7.1
+    Checking cel v0.15.0
+    Checking ontoforge-schema v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-schema)
+    Checking tower-http v0.6.11
+    Checking h2 v0.4.20
+    Checking hyper v1.12.0
+    Checking hyper-util v0.1.21
+    Checking hyper-rustls v0.27.10
+    Checking wiremock v0.6.5
+    Checking axum v0.8.9
+    Checking ontoforge-expr v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-expr)
+    Checking reqwest v0.13.5
+    Checking ontoforge-engine v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-engine)
+    Checking rmcp v3.8.0
+    Checking reqwest-middleware v0.5.2
+    Checking reqwest-retry v0.9.1
+    Checking postgresql_archive v0.21.0
+    Checking utoipa-axum v0.3.0
+   Compiling postgresql_embedded v0.21.0
+    Checking ontoforge-auth v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-auth)
+    Checking ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+    Checking ontoforge-query v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-query)
+    Checking ontoforge-action v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-action)
+    Checking ontoforge-api v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-api)
+    Checking ontoforge-client v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-client)
+    Checking ontoforge-server v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-server)
+    Checking ontoforge v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge)
+error: calling `BTreeMap::default()` is more clear than this expression
+  --> crates\ontoforge\src\serve.rs:68:26
+   |
+68 |         principal_attrs: Default::default(),
+   |                          ^^^^^^^^^^^^^^^^^^ help: try: `BTreeMap::default()`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#default_trait_access
+   = note: `-D clippy::default-trait-access` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::default_trait_access)]`
+
+error: you seem to be trying to use `match` for destructuring a single pattern. Consider using `if let`
+   --> crates\ontoforge\src\serve.rs:95:25
+    |
+ 95 |           Some(config) => match build_trino_engines(&config, dir, &|name| std::env::var(name).ok()) {
+    |  _________________________^
+ 96 | |             Ok(engines) => AnyEngine::Trino(engines.ontology),
+ 97 | |             Err(_) => {
+ 98 | |                 eprintln!("cannot initialize configured query engine");
+...   |
+101 | |         },
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#single_match_else
+    = note: `-D clippy::single-match-else` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::single_match_else)]`
+help: try
+    |
+ 95 ~         Some(config) => if let Ok(engines) = build_trino_engines(&config, dir, &|name| std::env::var(name).ok()) { AnyEngine::Trino(engines.ontology) } else {
+ 96 +             eprintln!("cannot initialize configured query engine");
+ 97 +             return 1;
+ 98 ~         },
+    |
+
+error: you seem to be trying to use `match` for destructuring a single pattern. Consider using `if let`
+   --> crates\ontoforge\src\serve.rs:102:17
+    |
+102 |           None => match SqliteEngine::in_memory().await {
+    |  _________________^
+103 | |             Ok(engine) => AnyEngine::Sqlite(engine),
+104 | |             Err(_) => {
+105 | |                 eprintln!("cannot initialize query engine");
+...   |
+108 | |         },
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#single_match_else
+help: try
+    |
+102 ~         None => if let Ok(engine) = SqliteEngine::in_memory().await { AnyEngine::Sqlite(engine) } else {
+103 +             eprintln!("cannot initialize query engine");
+104 +             return 3;
+105 ~         },
+    |
+
+error: could not compile `ontoforge` (lib) due to 3 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `ontoforge` (lib test) due to 3 previous errors

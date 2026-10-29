@@ -1,27 +1,25 @@
 # HTTP API
 
-`ontoforge serve --server-config FILE --bind 127.0.0.1:8080` starts the authenticated
-HTTP host. The current endpoint is `GET /api/objects/{object_type}/{pk}`. Send the
-access token in `Authorization: Bearer TOKEN`. Development tokens are accepted only
-when the host is explicitly started with `--dev` and `[auth.dev] key_file` is configured.
+`ontoforge serve --server-config FILE --bind 127.0.0.1:8080` 启动认证 HTTP 宿主。
+当前端点是 `GET /api/objects/{object_type}/{pk}`，access token 通过
+`Authorization: Bearer TOKEN` 发送。只有显式指定 `--dev`，且配置了
+`[auth.dev] key_file`，宿主才接受开发 token。
 
-## Persistent Query Signing Key
+## 持久查询签名密钥
 
-The host requires a trusted file reference in the server configuration:
+宿主要求服务配置提供可信文件引用：
 
 ```toml
 [query]
 signing_key_file = "keys/query-signing.key"
 ```
 
-The path is relative to the configuration file. The file contains raw bytes, from
-32 bytes through 64 KiB. Bytes are not decoded as text or trimmed. Keep this key
-independent of OIDC credentials and the development authentication key. A missing,
-unreadable, short or oversized file prevents the host from listening. Other CLI
-commands continue to accept configurations without `[query]`.
+路径相对配置文件解析。文件保存 32 bytes 至 64 KiB 的原始字节，不解码为文本，
+不移除换行。该 key 独立于 OIDC 凭据和开发认证 key。文件缺失、不可读、过短或
+过大时，宿主不会启动监听。其他 CLI 命令仍接受不含 `[query]` 的配置。
 
-Generate a key once in a private directory, outside version control. For the checked-in
-development configuration, run this PowerShell snippet from the repository root:
+在版本控制之外的私有目录中一次生成 key。使用仓库中的开发配置时，从仓库根目录
+运行以下 PowerShell 命令：
 
 ```powershell
 $directory = [System.IO.Path]::GetFullPath('target/ontoforge-dev')
@@ -36,24 +34,19 @@ try {
 }
 ```
 
-`CreateNew` refuses to overwrite an existing key. Restrict the directory ACL to the
-service account; on Unix, use a private directory and mode `0600` for the file.
-The command prints no key bytes. Do not place the key in TOML, command-line arguments,
-HTTP requests or logs.
+`CreateNew` 拒绝覆盖已有 key。将目录 ACL 限制为服务账户可访问；Unix 上使用
+私有目录，并将文件权限设为 `0600`。命令不打印 key 字节。不要把 key 写入 TOML、
+命令行参数、HTTP 请求或日志。
 
-Reuse the same file on normal restarts so existing `_version` tokens remain verifiable.
-Changing the file invalidates tokens signed by the previous key. The host does not
-create or rotate this key. Automatic development initialization is owned by plan `07-12`.
+正常重启复用同一文件，已有 `_version` token 才能继续验证。替换文件会使旧 key
+签发的 token 失效。宿主不创建或轮换该 key。开发环境自动初始化由计划 `07-12` 交付。
 
-## Reads And Shutdown
+## 读取与关闭
 
-Responses contain the logical object row, including its `_version`. `x-request-id`
-matches the durable read audit ID after the query has reserved an audit entry.
-Authentication and early validation errors use a server-generated transport ID.
-Errors contain `code`, `apiName` and `request_id`. Client-supplied principal, roles,
-scope and limits are rejected.
+响应包含逻辑对象行及其 `_version`。查询预留审计项后，`x-request-id` 与持久读取
+审计 ID 一致。认证与早期校验错误使用服务端生成的 transport ID。错误包含
+`code`、`apiName`、`request_id`。客户端提供的 principal、roles、scope、limits 会被拒绝。
 
-Ctrl+C stops accepting connections, allows active requests to finish and explicitly
-drains the read audit. Listener and audit drain failures return a nonzero exit code.
-Prepare the definition, scope and persistent edit store with the existing CLI commands
-before starting this host. Full development seeding and reset are part of plan `07-12`.
+Ctrl+C 停止接收新连接，等待活跃请求结束，并显式 drain 读取审计。监听和 audit drain
+失败返回非零退出码。启动前使用既有 CLI 命令准备 definition、scope 和持久 edit store。
+完整开发数据 seed 与 reset 属于计划 `07-12`。

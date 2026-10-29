@@ -1,5 +1,6 @@
 //! The HTTP host command and its injectable shutdown boundary.
 
+use std::collections::BTreeMap;
 use std::future::Future;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -65,7 +66,7 @@ pub async fn run_with_shutdown(
     };
     let auth_config = server.config.auth.unwrap_or_else(|| AuthConfig {
         oidc: Vec::new(),
-        principal_attrs: Default::default(),
+        principal_attrs: BTreeMap::new(),
         dev: None,
     });
     let Ok(mut auth) = Authenticator::from_config(&auth_config, dir) else {
@@ -91,21 +92,19 @@ pub async fn run_with_shutdown(
             &auth_config.principal_attrs,
         ));
     }
-    let engine = match server.config.trino {
-        Some(config) => match build_trino_engines(&config, dir, &|name| std::env::var(name).ok()) {
-            Ok(engines) => AnyEngine::Trino(engines.ontology),
-            Err(_) => {
-                eprintln!("cannot initialize configured query engine");
-                return 1;
-            }
-        },
-        None => match SqliteEngine::in_memory().await {
-            Ok(engine) => AnyEngine::Sqlite(engine),
-            Err(_) => {
-                eprintln!("cannot initialize query engine");
-                return 3;
-            }
-        },
+    let engine = if let Some(config) = server.config.trino {
+        let Ok(engines) = build_trino_engines(&config, dir, &|name| std::env::var(name).ok())
+        else {
+            eprintln!("cannot initialize configured query engine");
+            return 1;
+        };
+        AnyEngine::Trino(engines.ontology)
+    } else {
+        let Ok(engine) = SqliteEngine::in_memory().await else {
+            eprintln!("cannot initialize query engine");
+            return 3;
+        };
+        AnyEngine::Sqlite(engine)
     };
     let Ok(listener) = tokio::net::TcpListener::bind(args.bind).await else {
         eprintln!("cannot bind HTTP listener");
@@ -138,5 +137,5 @@ pub async fn run_with_shutdown(
 }
 
 #[cfg(test)]
-#[path = "serve.test.rs"]
+#[path = "../tests/unit/serve.test.rs"]
 mod tests;

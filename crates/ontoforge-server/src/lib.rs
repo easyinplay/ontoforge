@@ -257,5 +257,5 @@ mod tests {
 }
 
 #[cfg(test)]
-#[path = "tracer.test.rs"]
+#[path = "../tests/unit/tracer.test.rs"]
 mod tracer_tests;

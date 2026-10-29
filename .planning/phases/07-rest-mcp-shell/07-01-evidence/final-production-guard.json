@@ -1,0 +1,8 @@
+{
+  "command": "cargo test -p ontoforge-action --test entrypoints --locked production_mutation_callers_are_action_import_and_read_audit -- --nocapture",
+  "exitCode": 0,
+  "runStartedAt": "2026-10-29T00:31:11.7691546Z",
+  "runFinishedAt": "2026-10-29T00:33:16.0608565Z",
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07-rest-mcp-shell\\07-01-evidence\\final-production-guard.log",
+  "cwd": "D:\\DataSpellProjects\\ontoforge"
+}

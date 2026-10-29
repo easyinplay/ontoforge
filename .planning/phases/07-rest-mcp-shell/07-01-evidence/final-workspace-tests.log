@@ -1,0 +1,341 @@
+   Compiling schemars v1.2.3
+   Compiling tokio-util v0.7.20
+   Compiling tower v0.5.3
+   Compiling antlr4rust v0.6.0
+   Compiling utoipa v6.0.0
+   Compiling cel v0.15.0
+   Compiling ontoforge-schema v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-schema)
+   Compiling tower-http v0.6.11
+   Compiling h2 v0.4.20
+   Compiling hyper v1.12.0
+   Compiling hyper-util v0.1.21
+   Compiling ontoforge-expr v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-expr)
+   Compiling hyper-rustls v0.27.10
+   Compiling wiremock v0.6.5
+   Compiling axum v0.8.9
+   Compiling reqwest v0.13.5
+   Compiling ontoforge-engine v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-engine)
+   Compiling rmcp v3.8.0
+   Compiling reqwest-middleware v0.5.2
+   Compiling reqwest-retry v0.9.1
+   Compiling reqwest-tracing v0.7.1
+   Compiling postgresql_archive v0.21.0
+   Compiling utoipa-axum v0.3.0
+   Compiling postgresql_embedded v0.21.0
+   Compiling ontoforge-auth v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-auth)
+   Compiling ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+   Compiling ontoforge-query v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-query)
+   Compiling ontoforge-action v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-action)
+   Compiling ontoforge-api v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-api)
+   Compiling ontoforge-client v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-client)
+   Compiling ontoforge-server v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-server)
+   Compiling ontoforge v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12m 46s
+     Running unittests src\lib.rs (target\debug\deps\ontoforge-2deed3883734598e.exe)
+
+running 16 tests
+test online::tests::query_context_uses_defaults_and_timeout_flag ... ok
+test online::tests::trino_context_sends_the_configured_client_tags ... ok
+test online::tests::trino_context_takes_the_configured_limits ... ok
+test reload::tests::a_postgres_store_read_by_trino_on_a_trino_profile_is_probed ... ok
+test reload::tests::nothing_to_wait_for_without_trino_in_front_of_postgres ... ok
+test reload::tests::the_default_profile_of_the_manifest_decides_without_an_option ... ok
+test render::tests::carriage_return_and_bidi_controls_are_replaced ... ok
+test render::tests::exit_codes ... ok
+test render::tests::file_name_cannot_drive_the_terminal ... ok
+test render::tests::located_diagnostic_without_source_names_the_place ... ok
+test render::tests::multibyte_text_is_untouched ... ok
+test render::tests::sanitize_preserves_byte_length_and_strips_escapes ... ok
+test serve::tests::serve_args_validate_config_and_address ... ok
+test serve::tests::serve_query_key_rejects_missing_short_and_oversized_files_before_listen ... ok
+test serve::tests::serve_query_key_survives_restart_and_is_independent_of_auth ... ok
+test serve::tests::serve_real_listener_auth_and_shutdown ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 15.79s
+
+     Running unittests src\main.rs (target\debug\deps\ontoforge-e81878cf55b314e4.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\cli.rs (target\debug\deps\cli-7878db1231c9fd7a.exe)
+
+running 8 tests
+test aviation_is_clean_under_dev ... ok
+test json_output_has_exactly_the_documented_fields_and_no_ansi ... ok
+test missing_manifest_is_reported_as_v14 ... ok
+test profile_precedence ... ok
+test validate_aviation_succeeds_silently ... ok
+test validate_human_output_for_unknown_field ... ok
+test validate_summary_names_the_profile ... ok
+test validate_unknown_field_points_at_the_misspelled_key ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.93s
+
+     Running tests\cli_check_pk.rs (target\debug\deps\cli_check_pk-617ef7b5ba8612bd.exe)
+
+running 8 tests
+test check_pk_clean_on_aviation ... ok
+test check_pk_engine_failure_keeps_earlier_findings ... ok
+test check_pk_on_trino ... ok
+test check_pk_reports_duplicates ... ok
+test check_pk_reports_null_keys ... ok
+test check_pk_skips_mismatched_bindings ... ok
+test check_pk_without_flag_runs_no_scan ... ok
+test exit_code_table ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.35s
+
+     Running tests\cli_dev_token.rs (target\debug\deps\cli_dev_token-888e32b15e827e95.exe)
+
+running 12 tests
+test attr_values_of_the_wrong_type_are_rejected ... ok
+test empty_groups_value_means_no_groups ... ok
+test example_config_dev_token_works_from_a_fresh_tree ... ok
+test groups_are_trimmed_and_deduplicated ... ok
+test issues_token_verifiable_by_dev_verifier ... ok
+test key_file_flag_wins_and_the_key_is_reused ... ok
+test missing_server_config_is_a_v20_diagnostic ... ok
+test no_key_file_anywhere_fails ... ok
+test rejected_arguments_leave_no_key_file_behind ... ok
+test scalar_attrs_are_converted_by_declared_type ... ok
+test ttl_bounds ... ok
+test undeclared_attr_is_rejected ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.76s
+
+     Running tests\cli_import.rs (target\debug\deps\cli_import-9a441056adafd216.exe)
+
+running 8 tests
+test a_directory_that_was_not_reloaded_is_flagged ... ok
+test command_line_mistakes_are_reported ... ok
+test existing_objects_block_create_only ... ok
+test imports_airports_csv ... ok
+test imports_airports_json ... ok
+test json_output_reports_the_result ... ok
+test link_import_and_partial_failure ... ok
+test source_backed_type_is_rejected ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.96s
+
+     Running tests\cli_lint.rs (target\debug\deps\cli_lint-be9ae9d3e69bf84c.exe)
+
+running 17 tests
+test config_error_level_fails ... ok
+test config_flag_overrides_root_file ... ok
+test config_info_level_never_fails ... ok
+test config_off_disables_rule ... ok
+test e08_human ... ok
+test e14_can_be_disabled ... ok
+test e14_human ... ok
+test lint_aviation_is_clean ... ok
+test lint_error_rule_exits_1 ... ok
+test lint_honors_the_profile_flag_and_variable ... ok
+test lint_json_has_no_ansi ... ok
+test lint_skips_rules_when_validation_fails ... ok
+test lint_summary_counts_by_severity ... ok
+test missing_config_flag_path_fails ... ok
+test unknown_rule_id_in_config_fails ... ok
+test validate_codes_cannot_be_turned_off_by_config ... ok
+test warning_only_exit_codes ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.90s
+
+     Running tests\cli_migrate.rs (target\debug\deps\cli_migrate-e9e90b71b94c5c27.exe)
+
+running 10 tests
+test apply_requires_plan_hash ... ok
+test apply_with_a_wrong_hash_exits_1 ... ok
+test bad_rename_declarations ... ok
+test drop_archived_plan_and_apply ... ok
+test migrate_before_any_reload_is_refused ... ok
+test migrate_plan_then_apply ... ok
+test migrate_refuses_a_change_that_breaks_an_applied_role ... ok
+test plan_and_apply_are_exclusive_and_one_is_required ... ok
+test plan_json_output ... ok
+test rename_declaration_moves_the_column ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.01s
+
+     Running tests\cli_online.rs (target\debug\deps\cli_online-9d86468861e297f2.exe)
+
+running 12 tests
+test aviation_fixture_data ... ok
+test aviation_json_fixtures_match_yaml_fixtures ... ok
+test float_and_double_properties_are_clean ... ok
+test offline_validate_unchanged ... ok
+test online_aviation_is_clean ... ok
+test online_binding_without_fixture_is_v20 ... ok
+test online_missing_column_human ... ok
+test online_missing_explicit_column ... ok
+test online_missing_implicit_column ... ok
+test online_without_profile_says_so ... ok
+test timeout_requires_online ... ok
+test zero_timeout_is_a_usage_error ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.59s
+
+     Running tests\cli_online_trino.rs (target\debug\deps\cli_online_trino-0ed8ee97a9610a44.exe)
+
+running 15 tests
+test check_pk_requires_online ... ok
+test config_errors_are_v20_with_location ... ok
+test ignored_fixture_info_passes_deny_warnings ... ok
+test one_catalog_query_error_is_v19_others_checked ... ok
+test rejected_plaintext_secret_never_printed ... ok
+test secret_never_printed ... ok
+test sqlite_profile_uses_fixtures ... ok
+test timed_out_query_is_cancelled_before_exit ... ok
+test timeout_flag_is_sent ... ok
+test trino_missing_table ... ok
+test trino_profile_clean ... ok
+test trino_profile_missing_column ... ok
+test trino_type_mismatch ... ok
+test trino_unavailable_exits_3 ... ok
+test unauthorized_exits_3 ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 22.97s
+
+     Running tests\cli_reload.rs (target\debug\deps\cli_reload-96fbf13f391b8a7b.exe)
+
+running 8 tests
+test dry_run_prints_ddl_only ... ok
+test example_config_reload_works_from_a_fresh_tree ... ok
+test invalid_definitions_never_open_store ... ok
+test json_output ... ok
+test missing_store_section ... ok
+test reload_creates_tables ... ok
+test reload_reports_role_breakage ... ok
+test store_unavailable ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.31s
+
+     Running tests\cli_schema.rs (target\debug\deps\cli_schema-0fee84cc1905c444.exe)
+
+running 4 tests
+test aviation_still_validates_with_modelines ... ok
+test schema_export_creates_missing_dir ... ok
+test schema_export_reports_io_failure ... ok
+test schema_export_writes_committed_files ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+     Running tests\cli_scope.rs (target\debug\deps\cli_scope-0baf647716675b25.exe)
+
+running 8 tests
+test invalid_scope_writes_nothing ... ok
+test json_plan_is_camel_case ... ok
+test missing_store_section_is_a_configuration_error ... ok
+test ontology_differing_from_the_active_definition_is_refused ... ok
+test plan_lists_removals_and_a_stale_hash_is_refused ... ok
+test plan_then_apply_aviation_scope ... ok
+test scope_before_reload_asks_for_reload ... ok
+test unusable_store_exits_3 ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.77s
+
+     Running tests\cli_trino_it.rs (target\debug\deps\cli_trino_it-19c256b5c5309762.exe)
+
+running 3 tests
+test check_pk_finds_duplicate_and_null_keys_on_ci_trino ... ignored, needs ONTOFORGE_TRINO_URL (Linux CI)
+test missing_env_panics ... ok
+test validate_online_against_ci_trino ... ignored, needs ONTOFORGE_TRINO_URL (Linux CI)
+
+test result: ok. 1 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\cli_webhook_worker.rs (target\debug\deps\cli_webhook_worker-6284d7968ab17f6b.exe)
+
+running 3 tests
+test committed_action_is_delivered_by_running_cli_worker ... ok
+test restarted_cli_worker_recovers_failed_delivery ... ok
+test running_cli_worker_retries_after_http_failure ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.55s
+
+     Running tests\invalid_examples.rs (target\debug\deps\invalid_examples-1354e10c2d13a756.exe)
+
+running 1 test
+test invalid_examples_produce_their_code_and_a_stable_snapshot ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+
+     Running tests\private_fixtures.rs (target\debug\deps\private_fixtures-1b19821870b1c6a4.exe)
+
+running 3 tests
+test a_set_needs_ontology_and_server_config ... ok
+test missing_env_panics ... ok
+test private_fixtures_validate_online ... ignored, needs ONTOFORGE_PRIVATE_FIXTURES
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (target\debug\deps\ontoforge_action-569ec70738512332.exe)
+
+running 4 tests
+test fingerprint::tests::recursive_keys_are_canonical_but_arrays_keep_order ... ok
+test tests::canonical_request_hash_ignores_object_key_insertion_order ... ok
+test tests::crate_name_has_ontoforge_prefix ... ok
+test tests::tracer_commits_one_action_batch ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.64s
+
+     Running tests\action.rs (target\debug\deps\action-619633699b0b06ee.exe)
+
+running 6 tests
+test action_batch_schema_exists ... ok
+test action_request_wire_cannot_override_host_limits ... ok
+test batch_all_rule_kinds_expand_in_declared_order ... ok
+test batch_ordinal_and_same_pk_order_are_stable ... ok
+test params_report_all_errors ... ok
+test validate_only_runs_full_pipeline_without_writes ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.94s
+
+     Running tests\action_pg.rs (target\debug\deps\action_pg-bac48727831cd4f7.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\entrypoints.rs (target\debug\deps\entrypoints-c750f198a01af9bc.exe)
+
+running 4 tests
+test action_request_rejects_privileged_write_fields ... ok
+test import_log_has_reserved_identity_and_source_digest ... ok
+test production_mutation_callers_are_action_import_and_read_audit ... FAILED
+test source_guard_recognizes_split_and_ufcs_calls ... ok
+
+failures:
+
+---- production_mutation_callers_are_action_import_and_read_audit stdout ----
+
+thread 'production_mutation_callers_are_action_import_and_read_audit' (47744) panicked at crates\ontoforge-action\tests\entrypoints.rs:125:5:
+assertion `left == right` failed: unexpected production write callers: {
+    "ontoforge-action/src/lib.rs:commit_action_guarded": [
+        "ontoforge-action/src/lib.rs:353: .store",
+    ],
+    "ontoforge-server/src/tracer.test.rs:commit": [
+        "ontoforge-server/src/tracer.test.rs:96: store",
+    ],
+    "ontoforge-storage/src/import.rs:commit": [
+        "ontoforge-storage/src/import.rs:1360: match store.commit(commit).await {",
+    ],
+    "ontoforge-storage/src/read_audit.rs:commit": [
+        "ontoforge-storage/src/read_audit.rs:416: tx.commit().await.map_err(|_| ())",
+        "ontoforge-storage/src/read_audit.rs:447: tx.commit().await.map_err(|_| ())",
+    ],
+    "ontoforge/src/serve.test.rs:commit": [
+        "ontoforge/src/serve.test.rs:86: store",
+    ],
+}
+  left: {"ontoforge-action/src/lib.rs:commit_action_guarded": 1, "ontoforge-server/src/tracer.test.rs:commit": 1, "ontoforge-storage/src/import.rs:commit": 1, "ontoforge-storage/src/read_audit.rs:commit": 2, "ontoforge/src/serve.test.rs:commit": 1}
+ right: {"ontoforge-action/src/lib.rs:commit_action_guarded": 1, "ontoforge-storage/src/import.rs:commit": 1, "ontoforge-storage/src/read_audit.rs:commit": 2}
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    production_mutation_callers_are_action_import_and_read_audit
+
+test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.02s
+
+error: test failed, to rerun pass `-p ontoforge-action --test entrypoints`
