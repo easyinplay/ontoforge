@@ -4,15 +4,15 @@ current_phase: 7
 current_phase_name: REST & MCP Shell
 current_plan: 16
 status: executing
-stopped_at: Completed 07-rest-mcp-shell-16-PLAN.md
-last_updated: "2026-10-29T17:12:19.504Z"
+stopped_at: Completed 07-rest-mcp-shell-09-PLAN.md
+last_updated: "2026-10-29T17:53:47.841Z"
 last_activity: "2026-10-30: 07-08 accepted; 07-16 ready"
-state_head: 785207d50cd877c7003db2c67b3db93ef443319a
+state_head: f89e5b52fd48b65207675916451542d80aba8984
 progress:
   total_phases: 7
   completed_phases: 6
   total_plans: 88
-  completed_plans: 83
+  completed_plans: 84
   percent: 86
 last_gate_trip: null
 last_activity_desc: Phase 7 有效完成10/16，MCP L2/session transport验收通过，07-16 ready，07-11等待TS版本决策
@@ -48,6 +48,7 @@ Progress: [█████████░] 86%
 | Phase 07 P10 | 65m | 2 tasks | 5 files |
 | Phase 07 P08 | 38m | 2 tasks | 6 files |
 | Phase 07-rest-mcp-shell P16 | 43m | 2 tasks | 5 files |
+| Phase 07 P09 | 70 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -62,6 +63,8 @@ Progress: [█████████░] 86%
 - [Phase 07]: Legacy MCP session owners are bounded TTL entries and every tool request reauthenticates the principal
 - [Phase 07-rest-mcp-shell]: Serve MCP defaults通过手写clap适配器解析，保持既有ServeArgs字面量兼容
 - [Phase 07-rest-mcp-shell]: MCP qualified table解析使用07-15 typed resolver，缺上下文以MissingContext在发送前拒绝
+- [Phase 07]: stdio 通过 rmcp serve_client 与 serve_server 桥接既有 /mcp，共用 host 状态，不创建第二 store/engine/DB
+- [Phase 07]: stdio transport 禁止 redirect 与 expired-session 自动 reinit，token 仅来自 env/token-file 并脱敏错误
 
 ### Pending Todos
 
@@ -83,6 +86,6 @@ Progress: [█████████░] 86%
 
 ## Session Continuity
 
-Last session: 2026-10-29T17:12:18.442Z
-Stopped at: Completed 07-rest-mcp-shell-16-PLAN.md
+Last session: 2026-10-29T17:53:46.792Z
+Stopped at: Completed 07-rest-mcp-shell-09-PLAN.md
 Resume file: None
