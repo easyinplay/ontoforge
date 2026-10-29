@@ -4,6 +4,7 @@
 
 - 2026-10-29：Grok session 68211 正常 exit 0 返回第二意见，支持请求内 Engine adapter；已核查 Engine QueryContext 无 CancellationToken、Query 将 EngineError 映为 Source。采用类型分支记录 Timeout/Cancelled，REST 仅覆写对应 Source 响应，合同见 `07-03-PLAN.md`。
 - 不采纳第二意见中“无记录默认 cancelled”的泛化：正常 Source 仍须保留原映射；HTTP timer 显式区分 deadline，真实 drop 与持久审计验证取消，保留原 guard finish/Drop。
+- ID 暴露时机缺口：现有 audited 方法仅完成后返回 ID，deadline/drop 无法取得它。核查 `ReadAudit::reserve` 同步生成 ID，批准三种兼容 observed 入口在成功 reserve 后同步通知请求局部 ID 槽；不改 storage 信任边界或 QueryService struct。Grok session 46521 在55秒超时，返回实质意见支持 observer 与 exactly-once，但仅记为部分第二意见；其“增加字段必然跨请求共享”的推断不成立，未作为决策依据。
 
 - 2026-10-29 独立审查确认07-02 submit replay内部重读当前定义，违背snapshot；现有frozen_replay只测result lookup。SQLite race只是顺序读，PG用例吞错误无断言，fence/CAS/guard及history当前scope组合覆盖不足。修复清单唯一家为 `reviews/07-02-ACCEPTANCE-AUDIT.md`，保留原提交并撤销完成，不把默认workspace绿当作验收充分。
 
