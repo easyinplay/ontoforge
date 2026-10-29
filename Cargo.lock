@@ -2103,8 +2103,8 @@ dependencies = [
 name = "ontoforge-api"
 version = "0.1.0"
 dependencies = [
- "ontoforge-query",
- "ontoforge-schema",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

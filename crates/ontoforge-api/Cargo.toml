@@ -10,5 +10,5 @@ publish.workspace = true
 workspace = true
 
 [dependencies]
-ontoforge-schema = { path = "../ontoforge-schema" }
-ontoforge-query = { path = "../ontoforge-query" }
+serde.workspace = true
+serde_json.workspace = true
