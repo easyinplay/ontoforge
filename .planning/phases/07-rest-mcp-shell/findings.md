@@ -1,5 +1,7 @@
 # Phase 7 findings
 
+- 2026-10-29 `fbf5b9f` 的07-02最终代码经独立复签，原5项resolved，报告commit `16adf6b`。all-features Clippy `workspace-clippy-passed.json` exit0，WINDOWS#16已fixed；workspace回归仍pending，不据此新增完成计数。
+
 - 2026-10-29 07-04只读预查发现HTTP deadline/drop与已接受Action所有权未明确，已运行主会话brainstorming并形成可审阅选项，详 `reviews/07-04-PREFLIGHT.md`（proposed，待用户确认HTTP响应deadline语义）。Grok session25404有正文但55秒后exit1，只作部分第二意见；未修改07-04实现，07-02继续独立修复。
 
 - 2026-10-29 恢复收口：07-03 的验收与 wave 证据见 SUMMARY、wave-gates；有效完成2/16。本次只同步状态文档，跳过新增TDD；07-02沿既有批准合同修复，跳过重复战略/Phase/brainstorming，核心replay行为必须先真实RED。所有新灰区先返回主会话并取Grok第二意见。

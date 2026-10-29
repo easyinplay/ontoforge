@@ -8,7 +8,7 @@
 | `cargo build --workspace --locked` | 主会话 session 96476，exit 0，2m53s，`CARGO_BUILD_JOBS=2` |
 | `cargo test --workspace --locked -- --test-threads=1` | executor 原始证据 exit 0，1279 passed / 0 failed / 107 ignored；未重复运行 |
 | fmt / server all-features Clippy | exit 0；证据见 SUMMARY |
-| workspace all-features Clippy | 未通过，Action 三处 `large_futures` 已纳入 07-02 修复 |
+| workspace all-features Clippy | 07-03 当次未通过；后续修复收口见 WINDOWS#16 与 07-02 evidence，不改写原始日志 |
 | TLS 探针 | 无 native-tls / openssl-sys package ID，探针 exit 101；不伪称命令通过 |
 | `check verify.schema-drift 7 --raw` | exit 0，block=false、drift_detected=false |
 | `check verify.codebase-drift 7 --raw` | exit 0，skipped=true、reason=no-structure-md |
