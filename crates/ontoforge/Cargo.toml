@@ -25,6 +25,8 @@ ontoforge-auth = { path = "../ontoforge-auth" }
 ontoforge-storage = { path = "../ontoforge-storage" }
 ontoforge-action = { path = "../ontoforge-action" }
 ontoforge-server = { path = "../ontoforge-server" }
+reqwest.workspace = true
+rmcp.workspace = true
 clap.workspace = true
 miette.workspace = true
 serde.workspace = true

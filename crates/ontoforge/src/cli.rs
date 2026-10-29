@@ -40,6 +40,18 @@ pub enum Command {
     WebhookWorker(WebhookWorkerArgs),
     /// Run the authenticated HTTP server.
     Serve(ServeArgs),
+    /// Bridge stdio JSON-RPC to an already-running authenticated HTTP MCP service.
+    Mcp(McpArgs),
+}
+
+#[derive(Debug, Args)]
+pub struct McpArgs {
+    /// Existing MCP endpoint, normally `http://127.0.0.1:8080/mcp`.
+    #[arg(long, default_value = "http://127.0.0.1:8080/mcp")]
+    pub server_url: String,
+    /// Read the bearer token from this file; otherwise use `ONTOFORGE_TOKEN`.
+    #[arg(long, value_name = "FILE")]
+    pub token_file: Option<Utf8PathBuf>,
 }
 
 #[derive(Debug, Args)]

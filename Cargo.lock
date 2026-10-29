@@ -2053,6 +2053,8 @@ dependencies = [
  "ontoforge-schema",
  "ontoforge-server",
  "ontoforge-storage",
+ "reqwest",
+ "rmcp",
  "serde",
  "serde_json",
  "sqlx",

@@ -34,6 +34,7 @@ pub fn run(cli: Cli) -> u8 {
         Command::DevToken(args) => dev_token::run(&args),
         Command::WebhookWorker(args) => webhook_worker::run(&args),
         Command::Serve(args) => serve::run(&args),
+        Command::Mcp(args) => mcp::run(&args),
         Command::Schema(args) => match args.command {
             SchemaCommand::Export { out_dir } => export_schemas(&out_dir),
         },
