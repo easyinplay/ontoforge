@@ -54,6 +54,13 @@
 - 2026-10-29 执行入口：沿用批准的 Phase、CONTEXT 与工程审查，跳过战略审查和重复 brainstorming。07-01 核心认证/snapshot/audit 强制 superpowers TDD；Rust inline test 的 GSD pathspec 存在已知识别缺口，必须保留真实 Cargo 行为 RED、机器证据与 test/feat 提交，不能用编译失败或伪造报告绕过。Warp/ralph-loop 仍不可用，使用 PowerShell，不声称其 completion-promise。旧 resolver model ID 不在当前平台支持列表，executor 继承当前模型并采用 resolver 的 high effort。
 
 - 2026-10-29：研究已完成，rmcp 3.8.0 / axum 0.8.9 独立 spike 5 passed、0 failed，主会话已读取最终日志。现代无 session 协议、旧 session 主体绑定、取消与 EOF 均有 spike 证据；正式业务验收边界见 `07-RESEARCH.md`，不把 spike 代替阶段完成。
+
+## 07-08 执行记录
+
+- 2026-10-29：初始化复核确认计划列出的 L2/transport 测试和两个生产模块不存在，不能把缺失文件当作既有实现；先以真实 Cargo 测试建立 RED，再补 `#[path]` 模块接线。
+- 2026-10-29：本执行环境未提供 Warp 或 `ralph-loop`，实际命令只使用 PowerShell、`cargo test`、`cargo fmt` 与 `apply_patch`。
+- 2026-10-30：`cargo test -p ontoforge-server --tests --locked -- --nocapture` 通过全部 server unit/integration tests；`cargo fmt --all -- --check` 通过。`cargo clippy -p ontoforge-server --all-targets --locked -- -D warnings` 只在计划外 `crates/ontoforge-api/src/openapi.rs:202,208` 的既有 `clippy::doc_markdown` 失败，按 scope boundary 未修复。
+- 2026-10-30：rmcp 旧 session 的认证失败通过 HTTP 200 + JSON-RPC error 传输，测试按 MCP 协议检查 body 中 `error`，不能把该路径误判为 HTTP 401；新 2026-07-28 请求缺 metadata 返回 client error。
 - 2026-10-29：plan:pre UI gate 返回 frontend=false、block=false；本阶段是服务外壳与平台 clients，不含产品 UI 或 LLM 推理，跳过 UI/AI 设计生成。仅规划文档同步，本次跳过新增业务 TDD；执行 PLAN 继续要求适用任务 Red-Green-Refactor。ralph-loop 未安装，不能声称运行；实际终端为 PowerShell。
 
 - 2026-10-28：两项用户决策已蒸馏到 `07-CONTEXT.md`，完整选项见 `07-DISCUSSION-LOG.md`，不重复询问。ADR-0007/0009/0019/0028 已固定框架、DTO、toolset 和 ACL 生命周期边界。

@@ -2,18 +2,18 @@
 gsd_state_version: "1.0"
 current_phase: 7
 current_phase_name: REST & MCP Shell
-current_plan: 8
+current_plan: 9
 status: executing
-stopped_at: Phase 7 wave 7 complete; 07-08 ready, 07-11 decision pending
-last_updated: "2026-10-29T23:50:00Z"
+stopped_at: Completed 07-08-PLAN.md
+last_updated: "2026-10-29T16:17:47.201Z"
 last_activity: "2026-10-29: 07-07 and 07-10 accepted; 07-08 ready"
-state_head: f96ebf8
+state_head: bfbf4f652fa348950687501b09f80d8e307d2ede
 progress:
   total_phases: 7
   completed_phases: 6
   total_plans: 88
-  completed_plans: 81
-  percent: 92
+  completed_plans: 82
+  percent: 86
 last_gate_trip: null
 last_activity_desc: Phase 7 有效完成9/16，MCP core/full与Rust client验收通过，07-08 ready，07-11等待TS版本决策
 ---
@@ -30,12 +30,12 @@ See: .planning/PROJECT.md (updated 2026-10-28)
 ## Current Position
 
 Phase: 7 (REST & MCP Shell) — EXECUTING
-Current Plan: 8
+Current Plan: 9
 Total Plans in Phase: 16
 Status: Ready to execute
 Last activity: 2026-10-29: 07-07 and 07-10 accepted; 07-08 ready
 
-Progress: [█████████░] 92%
+Progress: [█████████░] 86%
 
 ## Performance Metrics
 
@@ -46,6 +46,7 @@ Progress: [█████████░] 92%
 |------|----------|-------|-------|
 | Phase 07 P05 | 33m12s | 2 tasks | 7 files |
 | Phase 07 P10 | 65m | 2 tasks | 5 files |
+| Phase 07 P08 | 38m | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -56,6 +57,8 @@ Progress: [█████████░] 92%
 - [Phase 07]: serve --export-openapi 在无配置、store、listener 时直接导出确定性文档
 - [Phase 07]: Rust client手写轻量REST调用，生产依赖仅ontoforge-api/HTTP/serde/error，写入不自动重试
 - [Phase 07]: ClientError保留HTTP状态、code、apiName、request_id和完整ErrorEnvelope，command_id回放必须显式调用
+- [Phase 07]: MCP raw adapters reuse validate_l2 and typed ExplainType with audit and limits
+- [Phase 07]: Legacy MCP session owners are bounded TTL entries and every tool request reauthenticates the principal
 
 ### Pending Todos
 
@@ -77,6 +80,6 @@ Progress: [█████████░] 92%
 
 ## Session Continuity
 
-Last session: 2026-10-29T15:37:37.147Z
-Stopped at: Phase 7 wave 8 ready; 07-11 decision pending
+Last session: 2026-10-29T16:17:46.175Z
+Stopped at: Completed 07-08-PLAN.md
 Resume file: None

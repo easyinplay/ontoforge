@@ -6,6 +6,10 @@
 - 2026-10-29：wave 6 的07-06与07-15均完成。07-06 `49d5215`：health 4/4、CLI shutdown 8/8、fmt/check通过；真实Trino/全workspace deferred。07-15 `4f77441`：engine l2_explain 2/2、l2_gate 16/16、query l2_execute 15/15、Clippy/fmt通过。有效完成7/16，整体79/88、90%；07-07、07-10、07-11 ready。
 - 2026-10-29：wave 7 的07-07与07-10完成。07-07 `f96ebf8`：真实rmcp HTTP、mcp_contract 4/4、mcp_actions 4/4；07-10 `bfca4fa`：Rust client真实HTTP contract 5/5、fmt/check通过，Clippy受既有OpenAPI doc lint与client pedantic阻断并已记录。wave post schema无漂移，codebase无STRUCTURE跳过，UI无前端且scope degraded但不阻塞。有效完成9/16，整体81/88、92%；07-08 ready，07-11等待TS版本决策。
 
+- 2026-10-29：07-08 executor 初始化完成。`mcp_l2.rs`、`mcp_sessions.rs`、`tests/mcp_l2.rs`、`tests/mcp_transport.rs` 尚不存在，closest analog 为现有 `mcp.rs`、`mcp_catalog.rs`、`mcp_contract.rs` 与 `ontoforge-query::L2Service`。先新增非空 RED 测试入口，再实现；只修改 07-08 files_modified 及本计划证据。Warp/ralph-loop 未暴露，使用 PowerShell 与 `apply_patch`，不声称运行 completion-promise。
+
+- 2026-10-30：07-08 完成。Task 08-1 RED `df0614f` 后 GREEN `89b4a8b`，六个 `sql:raw` 工具 schema/dispatch、typed EXPLAIN、allow-list、limits、audit 接线通过 `mcp_l2` 2/2；Task 08-2 `bfbf4f6` 增加旧 session owner bind/check、TTL/容量回收和新协议 metadata 测试。server 全量 tests、`mcp_contract` 4/4、`mcp_actions` 4/4、`mcp_transport` 4/4、`mcp_l2` 2/2、fmt 全部通过；server Clippy 被计划外 `ontoforge-api/src/openapi.rs` 两个 `doc_markdown` 阻断，未修改无关文件。
+
 - 2026-10-29：07-02 SUMMARY `01808e9` 已核对Self-Check PASSED，独立最终复签 `87f9367`，原5项resolved。workspace 1279 passed/0 failed/107 ignored，最终test-only差异由定向history和all-features Clippy闭环，build exit0。wave post三项已实际执行，边界见 `07-02-wave-gates.md`。有效完成3/16，整体75/88、85%；唯一ready为07-04，已重呈A/B行为决策，等待答复后恢复，不默认选A。整项requirements继续Pending，PR #7保持不合并。
 - 2026-10-29：用户确认07-04方案A。预查状态改为accepted：正式Action由宿主跟踪，HTTP deadline/断连只结束响应等待，任务继续；超时返回504，客户端以同一`command_id`显式replay或GET receipt确认，禁止自动重试。已将该决策写入 `reviews/07-04-PREFLIGHT.md` 和 task_plan，启动07-04 executor；未提前计入完成数。
 - 2026-10-29：07-04完成，SUMMARY `a4b9576`，Self-Check PASSED。RED `3f0d10c`，GREEN `e936057`，安全/permit修复 `53203ac`，格式化 `fc05a61`。真实HTTP `http_actions` 2/2、`http_action_safety` 3/3；server unit+integration全通过，Clippy/fmt通过。wave post schema无漂移，codebase无STRUCTURE跳过，UI无前端且scope degraded但不阻塞。有效完成4/16，整体76/88、86%；唯一ready为07-05。

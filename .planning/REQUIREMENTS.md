@@ -53,7 +53,7 @@
 - [x] **SCOPE-04**: 同一 CEL 行谓词编译成 SQL 与在 Rust 中对单行求值的结果一致（差分测试覆盖）
 - [x] **SCOPE-05**: 无授权 = 不可见（fail-closed）；缺失的主体属性使相关谓词为 false；无法编译的谓词在 validate 时报错
 - [x] **SCOPE-06**: 定义 reload 与角色变更时，被授予某 action 的角色列集必须覆盖其 criteria 引用的列，否则报错不生效
-- [ ] **SCOPE-07**: 角色 / scope 只能经管理通道或 L3 修改并审计；ontology 定义只经部署方 reload；agent MCP 无变更工具；每个请求固定使用开始时的定义版本
+- [x] **SCOPE-07**: 角色 / scope 只能经管理通道或 L3 修改并审计；ontology 定义只经部署方 reload；agent MCP 无变更工具；每个请求固定使用开始时的定义版本
 - [x] **AUTH-01**: 客户端可以用 OIDC 签发的 JWT 认证（JWKS 自动拉取与缓存）
 - [x] **AUTH-02**: dev 模式下开发者可以用 CLI 生成本地 token，无需外部 IdP
 
@@ -90,7 +90,7 @@
 - [x] **L2-01**: 被授予 `sql:raw` 的主体可以执行只读 Trino DQL 并列举 allow-list 内的 catalog / schema / 表
 - [x] **L2-02**: L2 SQL 经 AST 白名单校验（只允许 SELECT / WITH，拒绝表函数、CALL、EXECUTE、多语句、会话与事务语句），执行时发送重序列化后的 SQL
 - [x] **L2-03**: L2 只能访问 catalog / schema allow-list，硬排除 edit store catalog 与 `system` 元数据表
-- [ ] **L2-04**: 启动自检无法证明 L2 身份在 Trino 侧受限时禁用 L2 并告警（fail-closed）
+- [x] **L2-04**: 启动自检无法证明 L2 身份在 Trino 侧受限时禁用 L2 并告警（fail-closed）
 - [x] **AUDIT-01**: 所有级别的读取记录元数据审计（不含结果数据），异步落库，积压或持续失败时读请求 fail-closed；保留期可配
 
 ### API 与客户端
@@ -103,14 +103,14 @@
 
 ### MCP
 
-- [ ] **MCP-01**: agent 可以通过 stdio 或 streamable HTTP 连接 MCP server
+- [x] **MCP-01**: agent 可以通过 stdio 或 streamable HTTP 连接 MCP server
 - [ ] **MCP-02**: agent 可以调用 describe 工具获取 ontology 结构（object types、属性、links、actions 及其描述）
 - [ ] **MCP-03**: agent 可以通过查询工具执行 object set 查询（filter / search / searchAround / aggregate）
 - [ ] **MCP-04**: 每个 action type 自动暴露为一个 MCP 工具，输入 schema 由参数定义派生
 - [ ] **MCP-05**: agent 可以以 validate-only 方式调用 action 工具（dry run）
-- [ ] **MCP-06**: agent 通过 MCP 的读写与 REST 走同一套授权与 edit log
-- [ ] **MCP-07**: `list_tools` 按主体过滤 toolset（core / full / sql:raw）；L2 的 6 个工具名称与参数对齐 mcp-trino
-- [ ] **MCP-08**: L3 与任何定义 / 授权变更工具不出现在 agent MCP 中
+- [x] **MCP-06**: agent 通过 MCP 的读写与 REST 走同一套授权与 edit log
+- [x] **MCP-07**: `list_tools` 按主体过滤 toolset（core / full / sql:raw）；L2 的 6 个工具名称与参数对齐 mcp-trino
+- [x] **MCP-08**: L3 与任何定义 / 授权变更工具不出现在 agent MCP 中
 
 ### 开发者体验
 
@@ -211,7 +211,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SCOPE-04 | Phase 3 | Complete |
 | SCOPE-05 | Phase 3 | Complete |
 | SCOPE-06 | Phase 3 | Complete |
-| SCOPE-07 | Phase 3（管理写入与审计）+ Phase 6（请求版本固定）+ Phase 7（MCP 工具限制） | Pending |
+| SCOPE-07 | Phase 3（管理写入与审计）+ Phase 6（请求版本固定）+ Phase 7（MCP 工具限制） | Complete |
 | AUTH-01 | Phase 3 | Complete |
 | AUTH-02 | Phase 3 | Complete |
 | QUERY-01 | Phase 4 | Complete |
@@ -239,21 +239,21 @@ Which phases cover which requirements. Updated during roadmap creation.
 | L2-01 | Phase 6 | Complete |
 | L2-02 | Phase 6 | Complete |
 | L2-03 | Phase 6 | Complete |
-| L2-04 | Phase 6（库级启动与周期 attestation、fail-closed 状态）+ Phase 7（服务生命周期接线及 `/health` 告警，ADR-0028） | Pending |
+| L2-04 | Phase 6（库级启动与周期 attestation、fail-closed 状态）+ Phase 7（服务生命周期接线及 `/health` 告警，ADR-0028） | Complete |
 | AUDIT-01 | Phase 6 | Complete |
 | API-01 | Phase 7 | Complete |
 | API-02 | Phase 7 | Complete |
 | API-03 | Phase 7 | Complete |
 | API-04 | Phase 7 | Complete |
 | API-05 | Phase 7 | Pending |
-| MCP-01 | Phase 7 | Pending |
+| MCP-01 | Phase 7 | Complete |
 | MCP-02 | Phase 7 | Pending |
 | MCP-03 | Phase 7 | Pending |
 | MCP-04 | Phase 7 | Pending |
 | MCP-05 | Phase 7 | Pending |
-| MCP-06 | Phase 7 | Pending |
-| MCP-07 | Phase 7 | Pending |
-| MCP-08 | Phase 7 | Pending |
+| MCP-06 | Phase 7 | Complete |
+| MCP-07 | Phase 7 | Complete |
+| MCP-08 | Phase 7 | Complete |
 | DX-01 | Phase 7 | Pending |
 | DX-02 | Phase 7 | Pending |
 | DX-04 | Phase 7 | Pending |
