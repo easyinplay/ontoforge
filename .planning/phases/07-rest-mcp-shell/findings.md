@@ -2,6 +2,8 @@
 
 ## 07-01 执行前接口核查与第二意见
 
+- 首轮 workspace 在 action/tests/entrypoints.rs 的 production_mutation_callers_are_action_import_and_read_audit 失败：guard递归src并只识别同文件cfg(test)块，将独立src测试文件fixture误判为生产写入。最小修复为机械移动到 tests/unit，再由cfg(test)/path加载；保持--lib、私有super访问与既有安全guard，不扩大production allow-list。两条旧src测试路径仅此明确允许删除，实际diff须确认rename与内容保留。
+
 - 01-2 signing key 核查：engine/config.rs 的 ServerConfig 无查询签名配置，只有 auth.dev.key_file；进程随机 key 会使已有版本 token 重启失效。Grok 本轮 exit0，推荐立即补可信持久文件配置。采用最小可选 query.signing_key_file 与 serve 必须加载；不采纳预加 key id 前缀，避免无需求的 wire 变更。具体合同落 07-01-PLAN，dev owner 接线指针落 07-12-PLAN。
 - 主会话初次定位尝试 crates/ontoforge-config/src 不存在，随后 rg --files 定位至 crates/ontoforge-engine/src/config.rs；dev.rs 尚为 07-12 待创建文件。没有依据缺失文件推断已实现。
 
