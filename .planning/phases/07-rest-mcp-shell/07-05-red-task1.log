@@ -1,0 +1,29 @@
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling serde_core v1.0.229
+   Compiling syn v3.0.9
+   Compiling serde v1.0.229
+   Compiling indexmap v2.14.2
+   Compiling serde_json v1.0.154
+   Compiling serde_derive v1.0.229
+   Compiling ontoforge-api v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-api)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.93s
+     Running tests\openapi_snapshot.rs (target\debug\deps\openapi_snapshot-d044e86108f70015.exe)
+
+running 3 tests
+
+thread 'openapi_31_all_operations_and_security' (31880) panicked at crates\ontoforge-api\tests\openapi_snapshot.rs:7:46:
+checked-in OpenAPI document: Os { code: 2, kind: NotFound, message: "系统找不到指定的文件。" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test wire_numbers_unicode_and_variant_names ... ok
+test openapi_recursive_nullable_required_and_unknown_fields ... ok
+test openapi_31_all_operations_and_security ... FAILED
+
+failures:
+
+failures:
+    openapi_31_all_operations_and_security
+
+test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p ontoforge-api --test openapi_snapshot`

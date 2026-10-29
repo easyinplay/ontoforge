@@ -2,17 +2,17 @@
 gsd_state_version: "1.0"
 current_phase: 7
 current_phase_name: REST & MCP Shell
-current_plan: 5
+current_plan: 6
 status: executing
-stopped_at: Phase 7 有效完成4/16，07-04 accepted，下一步07-05
-last_updated: "2026-10-29T13:30:00Z"
+stopped_at: Completed 07-05-PLAN.md
+last_updated: "2026-10-29T14:03:09.562Z"
 last_activity: "2026-10-29: 07-04 accepted; 07-05 ready"
-state_head: a4b9576
+state_head: 487073ba4c1ebfcdc0cbb6e09d3720fa49c264a0
 progress:
   total_phases: 7
   completed_phases: 6
   total_plans: 88
-  completed_plans: 76
+  completed_plans: 77
   percent: 86
 last_gate_trip: null
 last_activity_desc: Phase 7 有效完成4/16，07-04方案A与REST Action验收通过，07-05 ready
@@ -30,22 +30,29 @@ See: .planning/PROJECT.md (updated 2026-10-28)
 ## Current Position
 
 Phase: 7 (REST & MCP Shell) — EXECUTING
-Current Plan: 5
+Current Plan: 6
 Total Plans in Phase: 16
-Status: Executing
+Status: Ready to execute
 Last activity: 2026-10-29: 07-04 accepted; 07-05 ready
 
-Progress: [████████░░] 86%
+Progress: [█████████░] 86%
 
 ## Performance Metrics
 
 逐 plan 的耗时与文件数见各 `phases/*/NN-*-SUMMARY.md`。
+**Per-Plan Metrics:**
+
+| Plan | Duration | Tasks | Files |
+|------|----------|-------|-------|
+| Phase 07 P05 | 33m12s | 2 tasks | 7 files |
 
 ## Accumulated Context
 
 ### Decisions
 
 决策真相源为 `.planning/adr/`；Phase 1-6 的实施证据见各自 `SUMMARY.md`、`VERIFICATION.md` 和 git 历史。Phase 7 运行方式见 `phases/07-rest-mcp-shell/07-CONTEXT.md`，工作顺序见同目录的 `task_plan.md`。
+- [Phase 07]: OpenAPI 3.1.0 由静态平台 DTO 生成并以 checked-in JSON 做漂移门
+- [Phase 07]: serve --export-openapi 在无配置、store、listener 时直接导出确定性文档
 
 ### Pending Todos
 
@@ -67,6 +74,6 @@ Progress: [████████░░] 86%
 
 ## Session Continuity
 
-Last session: 2026-10-28T17:07:42.404Z
-Stopped at: Phase 7 07-05 ready
-Resume file: .planning/phases/07-rest-mcp-shell/task_plan.md
+Last session: 2026-10-29T14:03:07.109Z
+Stopped at: Completed 07-05-PLAN.md
+Resume file: None

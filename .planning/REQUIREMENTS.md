@@ -95,9 +95,9 @@
 
 ### API 与客户端
 
-- [ ] **API-01**: 服务暴露 REST API，覆盖 ontology 元数据、对象读取、object set 查询、action 提交与 edit 历史
-- [ ] **API-02**: 服务导出 OpenAPI 3.1 文档，并纳入快照测试
-- [ ] **API-03**: 错误响应统一为结构化错误码 + apiName 级描述 + request_id；L0 不含物理名
+- [x] **API-01**: 服务暴露 REST API，覆盖 ontology 元数据、对象读取、object set 查询、action 提交与 edit 历史
+- [x] **API-02**: 服务导出 OpenAPI 3.1 文档，并纳入快照测试
+- [x] **API-03**: 错误响应统一为结构化错误码 + apiName 级描述 + request_id；L0 不含物理名
 - [ ] **API-04**: Rust 开发者可以用 `ontoforge-client` 调用全部 REST 能力
 - [ ] **API-05**: TypeScript 开发者可以使用由 OpenAPI 生成的平台层 client 调用全部 REST 能力
 
@@ -241,9 +241,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | L2-03 | Phase 6 | Complete |
 | L2-04 | Phase 6（库级启动与周期 attestation、fail-closed 状态）+ Phase 7（服务生命周期接线及 `/health` 告警，ADR-0028） | Pending |
 | AUDIT-01 | Phase 6 | Complete |
-| API-01 | Phase 7 | Pending |
-| API-02 | Phase 7 | Pending |
-| API-03 | Phase 7 | Pending |
+| API-01 | Phase 7 | Complete |
+| API-02 | Phase 7 | Complete |
+| API-03 | Phase 7 | Complete |
 | API-04 | Phase 7 | Pending |
 | API-05 | Phase 7 | Pending |
 | MCP-01 | Phase 7 | Pending |

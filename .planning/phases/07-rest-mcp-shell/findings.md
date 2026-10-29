@@ -1,5 +1,8 @@
 # Phase 7 findings
 
+- 2026-10-29 07-05 execution started：TDD applies to both tasks because OpenAPI and export are externally observable wire behavior. `utoipa = 6.0.0` and `utoipa-axum = 0.3.0` are approved in `07-RESEARCH.md`; no new dependency legitimacy gate is needed. Warp and `ralph-loop` are unavailable, so execution uses PowerShell and Cargo directly.
+- 2026-10-29 07-05 RED/GREEN：Task 05-1 RED failed semantically on missing `docs/openapi.json` with 3 tests discovered; GREEN added recursive `ToSchema` with `no_recursion`, static 3.1.0 document, all REST paths/errors/security, and checked-in render equality. Task 05-2 RED failed semantically because `serve --export-openapi` was not accepted; GREEN added an early static export branch and verified 3 concurrent files plus explicit write failure. The first export test run spent 13m18s downloading/compiling the workspace; subsequent run was 18.75s.
+
 - 2026-10-29：07-02本地收口依据为 `07-02-SUMMARY.md`、最终独立复签与原始证据；此前pending描述是历史记录。共享进度现为3/16，完整requirements仍Pending，未将PLAN slice冒充Phase完成。本次仅同步文档，跳过新增TDD；最后一行同store history强化属于test-only characterization，以定向history通过和最终all-features Clippy验证。07-04的HTTP deadline行为仍proposed，不能把推荐A当作已批准。
 - 2026-10-29：用户确认07-04方案A。该决策仅解除行为阻塞，不代表实现或PLAN完成；executor必须验证宿主任务所有权、owned permit、504/显式receipt replay及正常退出等待，不能用Query取消语义替代Action领域结果。
 - 2026-10-29：07-04已按方案A完成并通过真实HTTP验收。新增最小越界修复 `history.rs + Sync` 与 `query::scope_scalar pub` 属Rule 3编译/可达性修复，已在SUMMARY Deviations记录；permit在响应完成后显式释放，避免既有concurrency回归。真实PG/Trino/private仍按07-13/14 deferred，不计ignored为passed。

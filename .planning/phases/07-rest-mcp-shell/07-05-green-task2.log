@@ -1,0 +1,10 @@
+   Compiling ontoforge v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 18.75s
+     Running unittests src\lib.rs (target\debug\deps\ontoforge-c02384feb0606b85.exe)
+
+running 1 test
+cannot write OpenAPI document: 系统找不到指定的路径。 (os error 3)
+test serve::tests::openapi_export_without_store_is_deterministic ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 16 filtered out; finished in 0.03s
+

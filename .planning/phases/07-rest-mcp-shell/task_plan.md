@@ -24,6 +24,21 @@
 
 P3 执行中：有效完成07-01至07-04，共4/16；07-04 SUMMARY `a4b9576` Self-Check PASSED，真实HTTP Action/history/result 2/2、安全重放并发3/3、server回归/Clippy/fmt通过。方案A已实现：宿主跟踪、owned permit、HTTP超时504后任务继续、同command_id显式查询/replay。下一步唯一ready为07-05 OpenAPI/wire合同；auto_advance=false，用户授权范围仍为Phase 7全部剩余12份PLAN。
 
+## 07-05 Execution
+
+- [x] 05-1 RED: add OpenAPI/serde contract tests and capture semantic failure (`e73623a`)
+- [x] 05-1 GREEN: add shared DTO schemas and OpenAPI document generation (`44cac2d`)
+- [x] 05-1 REFACTOR: rerun focused API contract tests and clean schema registration (`487073b`)
+- [x] 05-2 RED: add deterministic export tests for `serve --export-openapi` (`f5e547e`)
+- [x] 05-2 GREEN: add static export path and checked-in `docs/openapi.json` (`3fafb7f`)
+- [x] 05-2 REFACTOR: rerun export and API snapshot tests (`487073b`)
+
+Verification:
+
+- `cargo test -p ontoforge --lib --locked openapi_ -- --nocapture`: exit 0, 1 passed, 0 failed.
+- `cargo test -p ontoforge-api --test openapi_snapshot --locked -- --nocapture`: exit 0, 4 passed, 0 failed.
+- `cargo fmt --all -- --check`: exit 0 after formatting.
+
 ## Execution Order
 
 以下为 PLAN frontmatter 派生的 12 个 wave，详细依赖与跨切合同留在各 PLAN 中，不复制到 ROADMAP。

@@ -1,0 +1,12 @@
+   Compiling ontoforge-api v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-api)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.47s
+     Running tests\openapi_snapshot.rs (target\debug\deps\openapi_snapshot-53a8464c497da10b.exe)
+
+running 4 tests
+test wire_numbers_unicode_and_variant_names ... ok
+test openapi_recursive_nullable_required_and_unknown_fields ... ok
+test openapi_31_all_operations_and_security ... ok
+test checked_in_document_matches_static_render ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
