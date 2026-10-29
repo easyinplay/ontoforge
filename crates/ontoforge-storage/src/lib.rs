@@ -17,6 +17,7 @@ pub mod physical;
 pub mod query_read;
 pub mod read_audit;
 pub mod reload;
+pub mod request_snapshot;
 pub mod scope_store;
 mod sql_exit;
 pub mod state;
@@ -25,39 +26,6 @@ pub mod value;
 
 /// Cargo package name of this crate.
 pub const CRATE_NAME: &str = env!("CARGO_PKG_NAME");
-
-/// The complete metadata captured for one request, with no live transaction.
-pub struct RequestSnapshot {
-    pub active: std::sync::Arc<store::ActiveDefinition>,
-    pub scope: ontoforge_schema::ir::ScopeSet,
-}
-
-impl store::EditStore {
-    pub async fn request_snapshot(&self) -> Result<RequestSnapshot, error::StoreError> {
-        let mut tx = reload::begin_definition_tx(self).await?;
-        let snapshot = async {
-            let active = sql_exit::read_active_definition_in(&mut tx)
-                .await?
-                .ok_or_else(|| error::StoreError::Config("no active definition".to_owned()))?;
-            let scope = scope_store::load_scope_in(&mut tx).await?;
-            Ok(RequestSnapshot {
-                active: std::sync::Arc::new(active),
-                scope,
-            })
-        }
-        .await;
-        match snapshot {
-            Ok(snapshot) => {
-                sql_exit::commit(tx).await?;
-                Ok(snapshot)
-            }
-            Err(error) => {
-                sql_exit::rollback(tx).await;
-                Err(error)
-            }
-        }
-    }
-}
 
 #[cfg(test)]
 mod tests {
