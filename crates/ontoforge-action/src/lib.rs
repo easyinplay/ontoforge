@@ -184,6 +184,30 @@ impl<'a, E: Engine> ActionService<'a, E> {
         action_name: &str,
         command_id: &str,
     ) -> Result<Option<ActionReceipt>, ActionError> {
+        let active = self
+            .store
+            .current_action_definition()
+            .await?
+            .ok_or(ActionError::ScopeDenied)?;
+        self.get_command_result_with_snapshot(
+            principal,
+            scope,
+            &active,
+            action_name,
+            command_id,
+        )
+        .await
+    }
+
+    /// Returns a command result using the definition captured at request admission.
+    pub async fn get_command_result_with_snapshot(
+        &self,
+        principal: &Principal,
+        scope: &PrincipalScope,
+        active: &ActiveDefinition,
+        action_name: &str,
+        command_id: &str,
+    ) -> Result<Option<ActionReceipt>, ActionError> {
         let command = self
             .store
             .action_command(principal.id.as_str(), command_id)
@@ -192,11 +216,6 @@ impl<'a, E: Engine> ActionService<'a, E> {
             .to_owned()
             .try_into()
             .map_err(|_| ActionError::ScopeDenied)?;
-        let active = self
-            .store
-            .current_action_definition()
-            .await?
-            .ok_or(ActionError::ScopeDenied)?;
         if !scope.actions.contains(&action) || !active.ontology.action_types.contains_key(&action) {
             return Err(ActionError::ScopeDenied);
         }
@@ -214,7 +233,24 @@ impl<'a, E: Engine> ActionService<'a, E> {
         def_version: i64,
         request: ActionRequest,
     ) -> Result<ActionOutcome, ActionError> {
-        self.execute_inner(principal, scope, def_version, request, ready(()))
+        let active = self
+            .store
+            .current_action_definition()
+            .await?
+            .ok_or_else(|| ActionError::InvalidRequest("no active definition".to_owned()))?;
+        self.execute_inner(principal, scope, &active, def_version, request, ready(()))
+            .await
+    }
+
+    /// Executes an Action against the definition captured at request admission.
+    pub async fn execute_with_snapshot(
+        &self,
+        principal: &Principal,
+        scope: &PrincipalScope,
+        active: &ActiveDefinition,
+        request: ActionRequest,
+    ) -> Result<ActionOutcome, ActionError> {
+        self.execute_inner(principal, scope, active, active.def_version, request, ready(()))
             .await
     }
 
@@ -228,7 +264,12 @@ impl<'a, E: Engine> ActionService<'a, E> {
         request: ActionRequest,
         gate: F,
     ) -> Result<ActionOutcome, ActionError> {
-        self.execute_inner(principal, scope, def_version, request, gate)
+        let active = self
+            .store
+            .current_action_definition()
+            .await?
+            .ok_or_else(|| ActionError::InvalidRequest("no active definition".to_owned()))?;
+        self.execute_inner(principal, scope, &active, def_version, request, gate)
             .await
     }
 
@@ -240,7 +281,8 @@ impl<'a, E: Engine> ActionService<'a, E> {
         &self,
         principal: &Principal,
         scope: &PrincipalScope,
-        def_version: i64,
+        active: &ActiveDefinition,
+        commit_def_version: i64,
         request: ActionRequest,
         gate: F,
     ) -> Result<ActionOutcome, ActionError> {
@@ -253,11 +295,6 @@ impl<'a, E: Engine> ActionService<'a, E> {
         if !scope.actions.contains(&action_name) {
             return Err(ActionError::ScopeDenied);
         }
-        let active = self
-            .store
-            .current_action_definition()
-            .await?
-            .ok_or_else(|| ActionError::InvalidRequest("no active definition".to_owned()))?;
         let action = active
             .ontology
             .action_types
@@ -316,7 +353,7 @@ impl<'a, E: Engine> ActionService<'a, E> {
             commit: Commit {
                 actor: Actor::Principal(principal.id.as_str().to_owned()),
                 action: request.action,
-                def_version,
+                def_version: commit_def_version,
                 params: json!({ "items": request.items }),
                 edits: prepared.edits,
             },

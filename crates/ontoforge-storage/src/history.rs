@@ -108,10 +108,21 @@ impl EditStore {
         &self,
         req: &HistoryRequest<'_>,
     ) -> Result<Vec<HistoryEntry>, HistoryError> {
-        let visible = visible_columns(req)?;
+        // Preserve the existing short-circuit: invisible requests must not touch storage.
+        visible_columns(req)?;
         let active = self.active_definition().await.ok_or_else(|| {
             StoreError::Config("no definition is loaded; run reload first".to_owned())
         })?;
+        self.history_with_snapshot(req, &active).await
+    }
+
+    /// Reads history using the definition captured when the request was admitted.
+    pub async fn history_with_snapshot(
+        &self,
+        req: &HistoryRequest<'_>,
+        active: &crate::store::ActiveDefinition,
+    ) -> Result<Vec<HistoryEntry>, HistoryError> {
+        let visible = visible_columns(req)?;
         let ty = active
             .ontology
             .object_types
