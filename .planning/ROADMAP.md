@@ -271,16 +271,16 @@ Plans:
 - [x] 07-03-PLAN.md
 - [x] 07-04-PLAN.md
 - [x] 07-05-PLAN.md
-- [ ] 07-06-PLAN.md
+- [x] 07-06-PLAN.md
 - [ ] 07-07-PLAN.md
 - [ ] 07-08-PLAN.md
 - [ ] 07-09-PLAN.md
-- [ ] 07-10-PLAN.md
+- [x] 07-10-PLAN.md
 - [ ] 07-11-PLAN.md
 - [ ] 07-12-PLAN.md
 - [ ] 07-13-PLAN.md
 - [ ] 07-14-PLAN.md
-- [ ] 07-15-PLAN.md
+- [x] 07-15-PLAN.md
 - [ ] 07-16-PLAN.md
 
 **Details**: `.planning/phases/07-rest-mcp-shell/`
@@ -298,4 +298,4 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7（纵切片
 | 4. Scoped L0 Read | 7/7 | Complete    | 2026-10-23 |
 | 5. Online Action | 7/7 | Complete    | 2026-10-26 |
 | 6. L2 Raw DQL, Toolsets & Audit | 11/11 | Complete | 2026-10-28 |
-| 7. REST & MCP Shell | 7/16 | Executing | - |
+| 7. REST & MCP Shell | 8/16 | Executing | - |
