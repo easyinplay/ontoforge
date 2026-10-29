@@ -1,6 +1,7 @@
 # Phase 7 findings
 
 - 2026-10-29：07-02本地收口依据为 `07-02-SUMMARY.md`、最终独立复签与原始证据；此前pending描述是历史记录。共享进度现为3/16，完整requirements仍Pending，未将PLAN slice冒充Phase完成。本次仅同步文档，跳过新增TDD；最后一行同store history强化属于test-only characterization，以定向history通过和最终all-features Clippy验证。07-04的HTTP deadline行为仍proposed，不能把推荐A当作已批准。
+- 2026-10-29：用户确认07-04方案A。该决策仅解除行为阻塞，不代表实现或PLAN完成；executor必须验证宿主任务所有权、owned permit、504/显式receipt replay及正常退出等待，不能用Query取消语义替代Action领域结果。
 
 - 2026-10-29 `fbf5b9f` 的07-02最终代码经独立复签，原5项resolved，报告commit `16adf6b`。all-features Clippy `workspace-clippy-passed.json` exit0，WINDOWS#16已fixed；workspace回归仍pending，不据此新增完成计数。
 

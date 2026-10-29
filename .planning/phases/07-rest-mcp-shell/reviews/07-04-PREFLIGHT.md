@@ -1,6 +1,6 @@
 # 07-04 生命周期预查与待决项
 
-日期：2026-10-29。状态：proposed，尚未实施，07-02 修复不依赖本项。
+日期：2026-10-29。状态：accepted，方案 A 已由用户确认，尚未实施。
 
 ## 已查事实
 
@@ -11,6 +11,8 @@
 - 现有 Action test gate 不是 snapshot-aware；真实 HTTP 测试须使用可控 source Engine 或经核准的最小 test-support，不得用旧 wrapper 冒充固定 snapshot。
 
 ## 推荐方案 A
+
+用户决策：接受方案 A。正式 Action 进入宿主跟踪任务后，HTTP deadline 或客户端断连只结束响应等待，任务继续执行；超时响应为 `504`，客户端必须使用同一 `command_id` 显式 replay 或 GET receipt 确认结果。禁止自动重试。
 
 认证、body 解析、固定请求 snapshot 和基本请求检查完成后，正式提交转为宿主持有的受跟踪任务，任务接管当前请求的 owned semaphore permit。此处“接受”只表示开始领域执行，不承诺写入一定成功。领域授权、fence、CAS、guard 和事务继续决定结果。
 

@@ -22,7 +22,7 @@
 
 ## Next Step
 
-P3 执行中：有效完成 07-01、07-02、07-03，共3/16；验收证据见各 SUMMARY 与 wave-gates。07-02独立复签和本地门禁已通过，真实服务未跑项交07-13/14。唯一ready为07-04，先等待用户确认 `reviews/07-04-PREFLIGHT.md` 中HTTP deadline行为A/B，再同步PLAN并下放实现；不默认选择。auto_advance=false，用户授权范围仍为Phase 7全部剩余13份PLAN。
+P3 执行中：有效完成 07-01、07-02、07-03，共3/16；验收证据见各 SUMMARY 与 wave-gates。07-02独立复签和本地门禁已通过，真实服务未跑项交07-13/14。07-04已确认方案A：正式Action由宿主跟踪，HTTP超时返回504，任务继续，客户端用同一command_id显式查询/replay；当前启动07-04 executor。auto_advance=false，用户授权范围仍为Phase 7全部剩余13份PLAN。
 
 ## Execution Order
 
