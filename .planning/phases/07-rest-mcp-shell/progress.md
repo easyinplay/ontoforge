@@ -6,6 +6,7 @@
 - 2026-10-29：wave 6 的07-06与07-15均完成。07-06 `49d5215`：health 4/4、CLI shutdown 8/8、fmt/check通过；真实Trino/全workspace deferred。07-15 `4f77441`：engine l2_explain 2/2、l2_gate 16/16、query l2_execute 15/15、Clippy/fmt通过。有效完成7/16，整体79/88、90%；07-07、07-10、07-11 ready。
 - 2026-10-29：wave 7 的07-07与07-10完成。07-07 `f96ebf8`：真实rmcp HTTP、mcp_contract 4/4、mcp_actions 4/4；07-10 `bfca4fa`：Rust client真实HTTP contract 5/5、fmt/check通过，Clippy受既有OpenAPI doc lint与client pedantic阻断并已记录。wave post schema无漂移，codebase无STRUCTURE跳过，UI无前端且scope degraded但不阻塞。有效完成9/16，整体81/88、92%；07-08 ready，07-11等待TS版本决策。
 - 2026-10-30：07-08完成，SUMMARY `bfbf4f6` Self-Check PASSED。mcp_l2 2/2、mcp_contract 4/4、mcp_actions 4/4、mcp_transport legacy/new protocol与SessionOwners测试通过；full server Clippy仍受既有OpenAPI doc lint阻断。wave post schema无漂移，codebase无STRUCTURE跳过，UI无前端且scope degraded但不阻塞。有效完成10/16，整体82/88、93%；07-16 ready，07-11等待TS版本决策。
+- 2026-10-30：07-09完成，SUMMARY `af43eb6` Self-Check PASSED。bridge focused 2/2、stdio child-process 3/3、full ontoforge tests和fmt通过；双transport deadlock已修复，bridge不创建第二runtime/store。有效完成12/16，整体84/88、95%；07-12 ready，07-13等待07-11 TypeScript版本决策。
 
 - 2026-10-29：07-08 executor 初始化完成。`mcp_l2.rs`、`mcp_sessions.rs`、`tests/mcp_l2.rs`、`tests/mcp_transport.rs` 尚不存在，closest analog 为现有 `mcp.rs`、`mcp_catalog.rs`、`mcp_contract.rs` 与 `ontoforge-query::L2Service`。先新增非空 RED 测试入口，再实现；只修改 07-08 files_modified 及本计划证据。Warp/ralph-loop 未暴露，使用 PowerShell 与 `apply_patch`，不声称运行 completion-promise。
 
