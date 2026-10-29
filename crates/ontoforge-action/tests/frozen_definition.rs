@@ -5,8 +5,8 @@ use ontoforge_auth::{
     Principal, PrincipalId,
     scope::{PrincipalScope, TypeScope},
 };
-use ontoforge_expr::{Attrs, Pred};
-use ontoforge_query::TokenCodec;
+use ontoforge_expr::{Attrs, CmpOp, Operand, Pred, Scalar};
+use ontoforge_query::{TokenCodec, cursor::{VersionClaims, VersionTokenCodec}};
 use ontoforge_schema::load_from_memory;
 use ontoforge_storage::{
     commit::{Actor, Commit, Edit, ObjectOp},
@@ -123,6 +123,57 @@ fn receipt(outcome: ActionOutcome) -> ontoforge_action::ActionReceipt {
     receipt
 }
 
+#[derive(Debug, PartialEq)]
+struct BusinessState {
+    edits: Vec<(String, Option<String>, i64)>,
+    counts: (i64, i64, i64, i64),
+}
+
+async fn business_state(f: &Fixture) -> BusinessState {
+    let pool = f.db.side_pool().await;
+    let edits = sqlx::query_as("SELECT code, name, of_version FROM of_obj_gate ORDER BY code")
+        .fetch_all(&pool).await.unwrap();
+    let counts = sqlx::query_as("SELECT (SELECT count(*) FROM of_edit_log), (SELECT count(*) FROM of_edit_log_entry), (SELECT count(*) FROM of_action_command), (SELECT count(*) FROM of_webhook_outbox)")
+        .fetch_one(&pool).await.unwrap();
+    BusinessState { edits, counts }
+}
+
+async fn validate_success_cas_guard(f: &Fixture, service: &ActionService<'_>) {
+    let ty = "Gate".to_owned().try_into().unwrap();
+    let pk = PropertyValue::String("A1".to_owned());
+    let row = f.db.store.read_object_edit(&f.active, &ty, &pk).await.unwrap().unwrap();
+    let token = VersionTokenCodec::new(&f.tokens).sign(&VersionClaims {
+        principal: &f.principal, scope: &f.scope, object_type: &ty, pk: &pk,
+        def_version: f.active.def_version, source: None, edit: Some(&row.row),
+    }).unwrap();
+    let mut valid = request("dry-success", true);
+    valid.items[0].expected_versions.insert("gate".to_owned(), token);
+    let before = business_state(f).await;
+    assert_eq!(service.execute_with_snapshot(&f.principal, &f.scope, &f.active, valid.clone()).await.unwrap(), ActionOutcome::Validated);
+    assert_eq!(business_state(f).await, before, "successful validation writes no business state");
+
+    let mut guarded = f.scope.clone();
+    guarded.types.get_mut("Gate").unwrap().row = Pred::Cmp {
+        left: Operand::Column("name".to_owned().try_into().unwrap()),
+        op: CmpOp::Eq,
+        right: Operand::Lit(Scalar::String("Original".to_owned())),
+    };
+    let before = business_state(f).await;
+    assert!(matches!(service.execute_with_snapshot(&f.principal, &guarded, &f.active, request("dry-guard", true)).await, Err(ontoforge_action::ActionError::ScopeDenied)), "post-state visibility guard rejects New while Original is visible");
+    assert_eq!(business_state(f).await, before, "guard rejection writes no business state");
+
+    let external = f.db.reopen().await;
+    external.commit(Commit {
+        actor: Actor::Principal(f.principal.id.as_str().to_owned()),
+        action: "external edit".to_owned(), def_version: f.active.def_version,
+        params: serde_json::Value::Null,
+        edits: vec![Edit::Object { type_name: ty, pk, op: ObjectOp::Set(BTreeMap::from([("name".to_owned().try_into().unwrap(), PropertyValue::String("External".to_owned()))])) }],
+    }).await.unwrap();
+    let before = business_state(f).await;
+    assert!(matches!(service.execute_with_snapshot(&f.principal, &f.scope, &f.active, valid).await, Err(ontoforge_action::ActionError::VersionConflict)), "valid signed pre-edit token must fail CAS after external edit");
+    assert_eq!(business_state(f).await, before, "CAS rejection writes no business state");
+}
+
 #[tokio::test]
 async fn frozen_action_stale_and_validate_keep_fence_cas_guard() {
     let f = fixture().await;
@@ -131,11 +182,14 @@ async fn frozen_action_stale_and_validate_keep_fence_cas_guard() {
         ActionLimits::new(8, 8, 65536).unwrap(),
         &f.tokens,
     );
+    validate_success_cas_guard(&f, &service).await;
     let mut changed = f.active.ontology.clone();
     changed.description = Some("new definition".to_owned());
-    reload(&f.db.store, &changed, &ReloadOptions::default())
+    let external = f.db.reopen().await;
+    reload(&external, &changed, &ReloadOptions::default())
         .await
         .unwrap();
+    let before = business_state(&f).await;
     let error = service
         .execute_with_snapshot(&f.principal, &f.scope, &f.active, request("stale", false))
         .await
@@ -146,12 +200,8 @@ async fn frozen_action_stale_and_validate_keep_fence_cas_guard() {
             ontoforge_storage::commit::EditError::DefinitionStale { .. }
         ))
     ));
-    let pool = f.db.side_pool().await;
-    let edits: i64 = sqlx::query_scalar("SELECT count(*) FROM of_edit_log")
-        .fetch_one(&pool)
-        .await
-        .unwrap();
-    assert_eq!(edits, 1, "only the seed edit exists");
+    assert_eq!(business_state(&f).await, before, "stale submission writes no business state");
+    let before = business_state(&f).await;
     let dry = service
         .execute_with_snapshot(&f.principal, &f.scope, &f.active, request("dry", true))
         .await
@@ -162,6 +212,7 @@ async fn frozen_action_stale_and_validate_keep_fence_cas_guard() {
             ontoforge_storage::commit::EditError::DefinitionStale { .. }
         ))
     ));
+    assert_eq!(business_state(&f).await, before, "stale validation writes no business state");
 }
 
 #[tokio::test]
@@ -183,19 +234,20 @@ async fn frozen_replay_uses_current_grant_keeps_original_receipt() {
             .await
             .unwrap(),
     );
+    let admitted = f.db.store.request_snapshot().await.unwrap();
     let mut changed = f.active.ontology.clone();
-    changed.description = Some("reloaded".to_owned());
-    reload(&f.db.store, &changed, &ReloadOptions::default())
+    changed.action_types.clear();
+    let external = f.db.reopen().await;
+    reload(&external, &changed, &ReloadOptions::default())
         .await
         .unwrap();
-    let current =
-        f.db.store
-            .current_action_definition()
-            .await
-            .unwrap()
-            .unwrap();
+    let replayed = service
+        .execute_with_snapshot(&f.principal, &f.scope, &admitted.active, request("replay", false))
+        .await;
+    assert!(replayed.is_ok(), "admission snapshot replay must survive external Action removal: {replayed:?}");
+    assert_eq!(receipt(replayed.unwrap()), original);
     let replay = service
-        .get_command_result_with_snapshot(&f.principal, &f.scope, &current, "renameGate", "replay")
+        .get_command_result_with_snapshot(&f.principal, &f.scope, &admitted.active, "renameGate", "replay")
         .await
         .unwrap()
         .unwrap();
@@ -205,13 +257,19 @@ async fn frozen_replay_uses_current_grant_keeps_original_receipt() {
             .get_command_result_with_snapshot(
                 &f.principal,
                 &PrincipalScope::default(),
-                &current,
+                &admitted.active,
                 "renameGate",
                 "replay"
             )
             .await
             .is_err()
     );
+    let mut stranger = f.principal.clone();
+    stranger.id = PrincipalId::new("https://idp.example.com", "bob");
+    assert!(service.get_command_result_with_snapshot(&stranger, &f.scope, &admitted.active, "renameGate", "replay").await.unwrap().is_none());
+    assert!(matches!(service.execute_with_snapshot(&f.principal, &PrincipalScope::default(), &admitted.active, request("replay", false)).await, Err(ontoforge_action::ActionError::ScopeDenied)));
+    assert!(matches!(service.execute(&f.principal, &f.scope, admitted.active.def_version, request("replay", false)).await, Err(ontoforge_action::ActionError::ScopeDenied)));
+    assert!(matches!(service.get_command_result(&f.principal, &f.scope, "renameGate", "replay").await, Err(ontoforge_action::ActionError::ScopeDenied)));
 }
 
 #[tokio::test]
