@@ -57,7 +57,8 @@ key-decisions:
 patterns-established:
   - RequestSnapshot 复用 begin_definition_tx，锁内读 definition/scope，显式结束事务后返回
   - 认证和早期错误使用服务端 transport ID，不宣称存在 durable audit
-requirements-completed: [API-01, API-03, SCOPE-07]
+requirements-completed: []
+requirements-progressed: [API-01, API-03, SCOPE-07]
 coverage:
   - id: D1
     description: 真实认证 HTTP 读取返回与持久审计一致的 request_id
@@ -180,7 +181,7 @@ workspace 最终重跑为 `2026-10-29T00:40:47.5273483Z` 至 `2026-10-29T00:47:5
 
 - 后续 REST/MCP 可以复用宿主与 snapshot；list/aggregate 必须独立核查审计关联入口，不能把 pk 覆盖推广到全部读取。
 - 完整进程退出矩阵归 `07-06/09/12/13`；dev seed/reset 与独立 key 一次初始化归 `07-12`，远程真实服务与发布证据归 `07-13/14`。这些没有被标记为当前通过，也不构成本 plan 未运行的 automated 命令。
-- `requirements-completed` 按 PLAN 原样列出本 slice 的关联 ID，不表示整个 Phase 7 的 REST、MCP、client 或发布需求已经完成。共享 STATE、ROADMAP、REQUIREMENTS、task_plan、progress、findings 由主会话依据本 SUMMARY 更新。
+- `requirements-progressed` 记录本 slice 推进的关联 ID；整项需求未完成，因此 `requirements-completed` 为空。共享 STATE、ROADMAP、REQUIREMENTS、task_plan、progress、findings 由主会话依据本 SUMMARY 更新。
 - 本 executor 没有执行 merge、Release、npm publish 或变更 PR #7 的 Draft/OPEN 状态。
 
 ## Self-Check: PASSED

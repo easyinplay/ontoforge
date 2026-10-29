@@ -22,7 +22,7 @@
 
 ## Next Step
 
-P3 执行中：07-01 的 01-1 已通过；补足可信持久查询 key 后完成 01-2 GREEN、wave regression 和 SUMMARY，再刷新依赖进入 07-02。auto_advance=false，仅执行用户指定 Phase 7。32 个 task 的验收映射见 `07-VALIDATION.md`，需求与边界映射见 `07-EDGE-COVERAGE.md`，最终计划审查见 `reviews/07-PLAN-CHECK-R2.md`。
+P3 执行中：07-01 已完成，证据见 `07-01-SUMMARY.md` 与 `07-01-wave-gates.md`；下一步执行唯一 ready 的 `07-02-PLAN.md`。auto_advance=false，仅执行用户指定 Phase 7 的全部剩余 PLAN。32 个 task 的验收映射见 `07-VALIDATION.md`，需求与边界映射见 `07-EDGE-COVERAGE.md`，最终计划审查见 `reviews/07-PLAN-CHECK-R2.md`。
 
 ## Execution Order
 

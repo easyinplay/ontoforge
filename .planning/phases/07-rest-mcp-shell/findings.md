@@ -1,5 +1,7 @@
 # Phase 7 findings
 
+- 2026-10-29 wave 1 收尾：build/workspace 回归 exit 0；schema drift 不阻塞，codebase drift 无 STRUCTURE.md 跳过；UI gate 重试通过但 scope degraded（no-task-commit-rows），不能声称完整 UI scope 核验。当前只做文档同步，跳过新增 TDD；07-02 核心 snapshot/授权逻辑继续强制 TDD。沿用已批准合同，跳过重复战略审查与 brainstorming，新增灰区须返回主会话并先取 Grok 第二意见。
+
 ## 07-01 执行前接口核查与第二意见
 
 - 首轮 workspace 在 action/tests/entrypoints.rs 的 production_mutation_callers_are_action_import_and_read_audit 失败：guard递归src并只识别同文件cfg(test)块，将独立src测试文件fixture误判为生产写入。最小修复为机械移动到 tests/unit，再由cfg(test)/path加载；保持--lib、私有super访问与既有安全guard，不扩大production allow-list。两条旧src测试路径仅此明确允许删除，实际diff须确认rename与内容保留。
