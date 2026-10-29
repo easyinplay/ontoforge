@@ -114,8 +114,8 @@
 
 ### 开发者体验
 
-- [ ] **DX-01**: 开发者用一个二进制 `ontoforge serve --dev` 即可在本机（含 Windows）启动完整服务（SQLite 替身引擎 + dev token），无需 Trino
-- [ ] **DX-02**: 仓库附带至少一个示例 ontology，可完成查询、执行 action、查看历史的端到端演示
+- [x] **DX-01**: 开发者用一个二进制 `ontoforge serve --dev` 即可在本机（含 Windows）启动完整服务（SQLite 替身引擎 + dev token），无需 Trino
+- [x] **DX-02**: 仓库附带至少一个示例 ontology，可完成查询、执行 action、查看历史的端到端演示
 - [x] **DX-03**: Windows 本机 `cargo test` 不依赖 Docker 即可全部通过
 - [ ] **DX-04**: release workflow 发布 Linux / macOS / Windows 单二进制到 GitHub Releases
 
@@ -254,8 +254,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MCP-06 | Phase 7 | Complete |
 | MCP-07 | Phase 7 | Complete |
 | MCP-08 | Phase 7 | Complete |
-| DX-01 | Phase 7 | Pending |
-| DX-02 | Phase 7 | Pending |
+| DX-01 | Phase 7 | Complete |
+| DX-02 | Phase 7 | Complete |
 | DX-04 | Phase 7 | Pending |
 
 **Coverage:**

@@ -2,18 +2,18 @@
 gsd_state_version: "1.0"
 current_phase: 7
 current_phase_name: REST & MCP Shell
-current_plan: 12
+current_plan: 13
 status: executing
-stopped_at: Phase 7 07-09 accepted; 07-12 ready, 07-13 blocked by 07-11
-last_updated: "2026-10-30T02:00:00Z"
+stopped_at: Completed 07-12-PLAN.md
+last_updated: "2026-10-29T18:27:01.262Z"
 last_activity: "2026-10-30: 07-09 accepted; 07-12 ready"
-state_head: af43eb6
+state_head: 8efb9cb97f668926c1bf38a6c2edd6c6a2a1afee
 progress:
   total_phases: 7
   completed_phases: 6
   total_plans: 88
-  completed_plans: 84
-  percent: 95
+  completed_plans: 85
+  percent: 86
 last_gate_trip: null
 last_activity_desc: Phase 7 有效完成12/16，stdio bridge验收通过，07-12 ready，07-13等待07-11
 ---
@@ -30,12 +30,12 @@ See: .planning/PROJECT.md (updated 2026-10-28)
 ## Current Position
 
 Phase: 7 (REST & MCP Shell) — EXECUTING
-Current Plan: 12
+Current Plan: 13
 Total Plans in Phase: 16
 Status: Ready to execute
 Last activity: 2026-10-30: 07-09 accepted; 07-12 ready
 
-Progress: [██████████] 95%
+Progress: [█████████░] 86%
 
 ## Performance Metrics
 
@@ -49,6 +49,7 @@ Progress: [██████████] 95%
 | Phase 07 P08 | 38m | 2 tasks | 6 files |
 | Phase 07-rest-mcp-shell P16 | 43m | 2 tasks | 5 files |
 | Phase 07 P09 | 70 | 2 tasks | 7 files |
+| Phase 7 P12 | 28m | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -65,6 +66,8 @@ Progress: [██████████] 95%
 - [Phase 07-rest-mcp-shell]: MCP qualified table解析使用07-15 typed resolver，缺上下文以MissingContext在发送前拒绝
 - [Phase 07]: stdio 通过 rmcp serve_client 与 serve_server 桥接既有 /mcp，共用 host 状态，不创建第二 store/engine/DB
 - [Phase 07]: stdio transport 禁止 redirect 与 expired-session 自动 reinit，token 仅来自 env/token-file 并脱敏错误
+- [Phase 7]: serve --dev 使用 marker bounded persistent data dir and explicit reset
+- [Phase 7]: dev auth key and query signing key are independent persistent files
 
 ### Pending Todos
 
@@ -86,6 +89,6 @@ Progress: [██████████] 95%
 
 ## Session Continuity
 
-Last session: 2026-10-29T17:53:46.792Z
-Stopped at: Phase 7 07-09 accepted; 07-12 ready, 07-13 blocked by 07-11
+Last session: 2026-10-29T18:27:00.209Z
+Stopped at: Completed 07-12-PLAN.md
 Resume file: None
