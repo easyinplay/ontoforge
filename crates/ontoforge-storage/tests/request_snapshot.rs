@@ -38,11 +38,11 @@ fn aviation_scope() -> ontoforge_schema::ir::ScopeSet {
 async fn snapshot_sqlite_never_mixes_definition_roles_bindings() {
     let fixture = sqlite_store().await;
     let other = fixture.reopen().await;
-    metadata_contract(
+    Box::pin(metadata_contract(
         &fixture.store,
         &other,
         &LockSource::Sqlite(fixture.side_pool().await),
-    )
+    ))
     .await;
 }
 
@@ -160,7 +160,7 @@ async fn metadata_contract(store: &EditStore, other: &EditStore, locks: &LockSou
     let mut changed = ontology.clone();
     changed.description = Some("generation two".to_owned());
     let opts = ReloadOptions::default();
-    let during = race_snapshot(other, locks, reload(store, &changed, &opts)).await;
+    let during = Box::pin(race_snapshot(other, locks, reload(store, &changed, &opts))).await;
     assert!(matches!(during.active.def_version, 1 | 2));
     assert_eq!(during.scope, normalized);
     assert_eq!(
@@ -183,17 +183,17 @@ async fn metadata_contract(store: &EditStore, other: &EditStore, locks: &LockSou
     updated.bindings.values_mut().for_each(|binding| {
         binding.subjects = vec![ontoforge_schema::ir::Subject::User(
             "snapshot|new".to_owned(),
-        )]
+        )];
     });
     let plan = store
         .scope_plan(&updated, &props)
         .await
         .expect("new scope plan");
-    let during = race_snapshot(
+    let during = Box::pin(race_snapshot(
         other,
         locks,
         store.scope_apply(&updated, &props, &plan.hash, "snapshot-test"),
-    )
+    ))
     .await;
     let new_scope = ontoforge_storage::scope_store::normalize_scope(&updated);
     assert_eq!(during.active.def_version, 2);
@@ -210,11 +210,11 @@ async fn metadata_contract(store: &EditStore, other: &EditStore, locks: &LockSou
         .scope_plan(&revoked, &props)
         .await
         .expect("revoke plan");
-    let during = race_snapshot(
+    let during = Box::pin(race_snapshot(
         other,
         locks,
         store.scope_apply(&revoked, &props, &plan.hash, "snapshot-test"),
-    )
+    ))
     .await;
     assert_eq!(during.active.def_version, 2);
     assert!(during.scope == new_scope || during.scope == revoked);
@@ -265,13 +265,13 @@ async fn snapshot_pg_never_mixes_definition_roles_bindings() {
     );
     let fixture = pg_store().await;
     let other = fixture.open_another(Duration::from_secs(5)).await;
-    metadata_contract(
+    Box::pin(metadata_contract(
         &fixture.store,
         &other,
         &LockSource::Postgres(
             fixture.side().clone(),
             ontoforge_storage::store::definition_lock_key(&fixture.schema_edit),
         ),
-    )
+    ))
     .await;
 }

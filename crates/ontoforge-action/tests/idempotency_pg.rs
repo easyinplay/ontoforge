@@ -239,7 +239,8 @@ async fn pg_response_lost_retry_reads_completed_receipt() {
 #[ignore = "needs ONTOFORGE_PG_URL or --features embedded-pg"]
 async fn pg_same_key_same_params_has_one_winner_and_one_replay() {
     let f = fixture().await;
-    let (left, right) = race(&f, delete("same-key", "A1"), delete("same-key", "A1")).await;
+    let (left, right) =
+        Box::pin(race(&f, delete("same-key", "A1"), delete("same-key", "A1"))).await;
     let (Ok(ActionOutcome::Committed(first)), Ok(ActionOutcome::Committed(second))) = (left, right)
     else {
         panic!("same request must replay for loser")
@@ -254,7 +255,12 @@ async fn pg_same_key_same_params_has_one_winner_and_one_replay() {
 #[ignore = "needs ONTOFORGE_PG_URL or --features embedded-pg"]
 async fn pg_same_key_different_params_has_one_winner_and_one_reused() {
     let f = fixture().await;
-    let (left, right) = race(&f, delete("reused-key", "A1"), delete("reused-key", "B1")).await;
+    let (left, right) = Box::pin(race(
+        &f,
+        delete("reused-key", "A1"),
+        delete("reused-key", "B1"),
+    ))
+    .await;
     let results = [&left, &right];
     assert_eq!(
         results
@@ -395,11 +401,11 @@ async fn pg_expired_command_concurrent_replacement_has_one_new_winner() {
         .execute(f.pg.side())
         .await
         .unwrap();
-    let (left, right) = race(
+    let (left, right) = Box::pin(race(
         &f,
         rename("expired-race", "A1"),
         rename("expired-race", "A1"),
-    )
+    ))
     .await;
     let (Ok(ActionOutcome::Committed(first)), Ok(ActionOutcome::Committed(second))) = (left, right)
     else {

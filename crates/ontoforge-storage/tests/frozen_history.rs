@@ -9,7 +9,7 @@ use ontoforge_schema::load_from_memory;
 use ontoforge_storage::commit::{Actor, Commit, Edit, ObjectOp};
 use ontoforge_storage::history::{CallerKind, HistoryError, HistoryRequest};
 use ontoforge_storage::reload::{ReloadOptions, reload};
-use ontoforge_storage::store::ActiveDefinition;
+use ontoforge_storage::store::{ActiveDefinition, EditStore};
 use ontoforge_storage::value::PropertyValue;
 
 struct Row(BTreeMap<PropertyName, Scalar>);
@@ -20,8 +20,7 @@ impl RowValues for Row {
     }
 }
 
-#[tokio::test]
-async fn frozen_history_keeps_request_definition_and_current_scope() {
+async fn seeded() -> (support::TestStore, ActiveDefinition) {
     let db = support::sqlite_store().await;
     let loaded = load_from_memory(&[
         ("ontology.yaml", "apiName: demo\n"),
@@ -54,14 +53,18 @@ async fn frozen_history_keeps_request_definition_and_current_scope() {
         })
         .await
         .unwrap();
-    let active: ActiveDefinition = (*db.store.request_snapshot().await.unwrap().active).clone();
-    let external = db.reopen().await;
+    let active = (*db.store.request_snapshot().await.unwrap().active).clone();
+    (db, active)
+}
+
+async fn publish(external: &EditStore, active: &ActiveDefinition) -> i64 {
+    let ontology = active.ontology.clone();
     let mut changed = ontology.clone();
     changed.description = Some("externally published definition".to_owned());
     let mut added = changed.object_types.get("Gate").unwrap().clone();
     added.api_name = "NewGate".to_owned().try_into().unwrap();
     changed.object_types.insert(added.api_name.clone(), added);
-    let published = reload(&external, &changed, &ReloadOptions::default())
+    let published = reload(external, &changed, &ReloadOptions::default())
         .await
         .unwrap()
         .def_version
@@ -75,6 +78,39 @@ async fn frozen_history_keeps_request_definition_and_current_scope() {
         external.request_snapshot().await.unwrap().active.ontology,
         changed
     );
+    published
+}
+
+async fn seed_new_type(
+    external: &EditStore,
+    published: i64,
+    pk: &PropertyValue,
+    name: &PropertyName,
+) {
+    external
+        .commit(Commit {
+            actor: Actor::Principal("https://idp.example|tester".to_owned()),
+            action: "edit".to_owned(),
+            def_version: published,
+            params: serde_json::Value::Null,
+            edits: vec![Edit::Object {
+                type_name: "NewGate".to_owned().try_into().unwrap(),
+                pk: pk.clone(),
+                op: ObjectOp::Set(BTreeMap::from([(
+                    name.clone(),
+                    PropertyValue::String("Later".to_owned()),
+                )])),
+            }],
+        })
+        .await
+        .unwrap();
+}
+
+#[tokio::test]
+async fn frozen_history_keeps_request_definition_and_current_scope() {
+    let (db, active) = seeded().await;
+    let external = db.reopen().await;
+    let published = publish(&external, &active).await;
     let ty: ObjectTypeName = "Gate".to_owned().try_into().unwrap();
     let pk = PropertyValue::String("A1".to_owned());
     let name: PropertyName = "name".to_owned().try_into().unwrap();
@@ -86,25 +122,6 @@ async fn frozen_history_keeps_request_definition_and_current_scope() {
         row: Pred::Const(true),
         columns: BTreeMap::from([(name.clone(), Pred::Const(true))]),
     };
-    let entries = db
-        .store
-        .history_with_snapshot(
-            &HistoryRequest {
-                type_name: &ty,
-                pk: &pk,
-                scope: Some(&scope),
-                attrs: &Attrs::new(),
-                current_row: Some(&current),
-                caller: CallerKind::Ordinary,
-                limit: 20,
-                before_seq: None,
-            },
-            &active,
-        )
-        .await
-        .unwrap();
-    assert_eq!(entries.len(), 1);
-    assert_eq!(entries[0].values[&name], serde_json::json!("Visible"));
     let attrs = Attrs::new();
     let mut req = HistoryRequest {
         type_name: &ty,
@@ -116,6 +133,9 @@ async fn frozen_history_keeps_request_definition_and_current_scope() {
         limit: 20,
         before_seq: None,
     };
+    let entries = db.store.history_with_snapshot(&req, &active).await.unwrap();
+    assert_eq!(entries.len(), 1);
+    assert_eq!(entries[0].values[&name], serde_json::json!("Visible"));
     assert_eq!(
         external.history(&req).await.unwrap(),
         entries,
@@ -153,23 +173,7 @@ async fn frozen_history_keeps_request_definition_and_current_scope() {
     req.current_row = Some(&current);
 
     // A type published after admission distinguishes the captured definition from the current one.
-    external
-        .commit(Commit {
-            actor: Actor::Principal("https://idp.example|tester".to_owned()),
-            action: "edit".to_owned(),
-            def_version: published,
-            params: serde_json::Value::Null,
-            edits: vec![Edit::Object {
-                type_name: "NewGate".to_owned().try_into().unwrap(),
-                pk: pk.clone(),
-                op: ObjectOp::Set(BTreeMap::from([(
-                    name.clone(),
-                    PropertyValue::String("Later".to_owned()),
-                )])),
-            }],
-        })
-        .await
-        .unwrap();
+    seed_new_type(&external, published, &pk, &name).await;
     let new_ty = "NewGate".to_owned().try_into().unwrap();
     req.type_name = &new_ty;
     assert!(matches!(
@@ -180,5 +184,5 @@ async fn frozen_history_keeps_request_definition_and_current_scope() {
         external.history(&req).await.unwrap()[0].values[&name],
         serde_json::json!("Later")
     );
-    assert_eq!(active.def_version, version);
+    assert_eq!(active.def_version, 1);
 }

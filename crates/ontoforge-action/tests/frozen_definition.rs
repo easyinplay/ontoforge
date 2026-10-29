@@ -1,5 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
+use chrono::{TimeZone, Utc};
+
 use ontoforge_action::{ActionItem, ActionLimits, ActionOutcome, ActionRequest, ActionService};
 use ontoforge_auth::{
     Principal, PrincipalId,
@@ -355,21 +357,7 @@ async fn frozen_replay_uses_current_grant_keeps_original_receipt() {
             .await
             .is_err()
     );
-    let mut stranger = f.principal.clone();
-    stranger.id = PrincipalId::new("https://idp.example.com", "bob");
-    assert!(
-        service
-            .get_command_result_with_snapshot(
-                &stranger,
-                &f.scope,
-                &admitted.active,
-                "renameGate",
-                "replay"
-            )
-            .await
-            .unwrap()
-            .is_none()
-    );
+    assert_other_principal_cannot_lookup(&f, &service, &admitted.active).await;
     assert!(matches!(
         service
             .execute_with_snapshot(
@@ -400,34 +388,79 @@ async fn frozen_replay_uses_current_grant_keeps_original_receipt() {
     ));
 }
 
+async fn assert_other_principal_cannot_lookup(
+    f: &Fixture,
+    service: &ActionService<'_>,
+    active: &ontoforge_storage::store::ActiveDefinition,
+) {
+    let mut stranger = f.principal.clone();
+    stranger.id = PrincipalId::new("https://idp.example.com", "bob");
+    assert!(
+        service
+            .get_command_result_with_snapshot(&stranger, &f.scope, active, "renameGate", "replay")
+            .await
+            .unwrap()
+            .is_none()
+    );
+}
+
 #[tokio::test]
 async fn replay_across_clock_and_definition_change_keeps_winner_time() {
     let f = fixture().await;
+    let first_time = Utc.with_ymd_and_hms(2026, 10, 1, 0, 0, 0).unwrap();
+    let later = Utc.with_ymd_and_hms(2026, 10, 2, 0, 0, 0).unwrap();
     let service = ActionService::new(
         &f.db.store,
         ActionLimits::new(8, 8, 65536).unwrap(),
         &f.tokens,
-    );
+    )
+    .with_clock(move || first_time);
     let first = receipt(
         service
             .execute_with_snapshot(&f.principal, &f.scope, &f.active, request("clock", false))
             .await
             .unwrap(),
     );
-    let changed = f.active.ontology.clone();
-    reload(&f.db.store, &changed, &ReloadOptions::default())
-        .await
-        .unwrap();
+    assert_eq!(first.chosen_current_time, "2026-10-01T00:00:00.000Z");
+    let changed = load_from_memory(&[
+        ("ontology.yaml", "apiName: demo\n"),
+        (
+            "defs.yaml",
+            &DEFS.replace("default: Default", "default: Updated"),
+        ),
+    ]);
+    assert!(changed.diagnostics.is_empty(), "{:?}", changed.diagnostics);
+    let external = f.db.reopen().await;
+    reload(
+        &external,
+        &changed.ontology.unwrap(),
+        &ReloadOptions::default(),
+    )
+    .await
+    .unwrap();
     let current =
         f.db.store
             .current_action_definition()
             .await
             .unwrap()
             .unwrap();
+    assert_ne!(current.def_version, f.active.def_version);
+    let service = service.with_clock(move || later);
+    let before = business_state(&f).await;
+    assert_eq!(
+        receipt(
+            service
+                .execute_with_snapshot(&f.principal, &f.scope, &current, request("clock", false))
+                .await
+                .unwrap()
+        ),
+        first
+    );
     let replay = service
         .get_command_result_with_snapshot(&f.principal, &f.scope, &current, "renameGate", "clock")
         .await
         .unwrap()
         .unwrap();
     assert_eq!(replay, first);
+    assert_eq!(business_state(&f).await, before);
 }
