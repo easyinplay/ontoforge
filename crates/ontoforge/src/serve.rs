@@ -57,11 +57,31 @@ pub async fn run_with_shutdown(
             }
         };
     }
-    let Some(server_config) = &args.server_config else {
-        eprintln!("HTTP server needs --server-config unless --export-openapi is used");
+    let options = crate::cli::dev_options();
+    let mut dev_state = None;
+    let server_config = if let Some(path) = &args.server_config {
+        if options.reset {
+            eprintln!("--reset is only valid when --dev creates the default dev service");
+            return 1;
+        }
+        path.clone()
+    } else if args.dev {
+        match crate::dev::prepare(&options) {
+            Ok(state) => {
+                let path = state.config.clone();
+                dev_state = Some(state);
+                path
+            }
+            Err(error) => {
+                eprintln!("cannot prepare dev service: {error}");
+                return 1;
+            }
+        }
+    } else {
+        eprintln!("HTTP server needs --server-config unless --dev or --export-openapi is used");
         return 1;
     };
-    let Ok(server) = load_server(server_config) else {
+    let Ok(server) = load_server(&server_config) else {
         eprintln!("invalid server configuration for HTTP server");
         return 1;
     };
@@ -105,8 +125,29 @@ pub async fn run_with_shutdown(
             &auth_config.principal_attrs,
         ));
     }
+    let Ok(store) = EditStore::open(server.settings).await else {
+        eprintln!("cannot open HTTP server edit store");
+        return 3;
+    };
+    let store = Arc::new(store);
+    if let Some(state) = &dev_state {
+        if let Err(error) = crate::dev::seed_store(state, &store).await {
+            let _ = store.read_audit().shutdown().await;
+            eprintln!("cannot initialize dev store: {error}");
+            return 3;
+        }
+    }
     let mut l2_runtime = None;
-    let engine = if let Some(config) = server.config.trino.clone() {
+    let engine = if let Some(state) = &dev_state {
+        match crate::dev::build_engine(state).await {
+            Ok(engine) => engine,
+            Err(error) => {
+                let _ = store.read_audit().shutdown().await;
+                eprintln!("{error}");
+                return 3;
+            }
+        }
+    } else if let Some(config) = server.config.trino.clone() {
         let Ok(mut engines) = build_trino_engines(&config, dir, &|name| std::env::var(name).ok())
         else {
             eprintln!("cannot initialize configured query engine");
@@ -140,13 +181,9 @@ pub async fn run_with_shutdown(
     };
     let Ok(listener) = tokio::net::TcpListener::bind(args.bind).await else {
         eprintln!("cannot bind HTTP listener");
+        let _ = store.read_audit().shutdown().await;
         return 3;
     };
-    let Ok(store) = EditStore::open(server.settings).await else {
-        eprintln!("cannot open HTTP server edit store");
-        return 3;
-    };
-    let store = Arc::new(store);
     let host = ServerHost::new(
         Arc::clone(&store),
         Arc::new(engine),

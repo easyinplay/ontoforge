@@ -71,14 +71,24 @@ pub struct ServeArgs {
     pub export_openapi: Option<Utf8PathBuf>,
 }
 
+#[derive(Debug, Clone, Default)]
+pub(crate) struct DevCliOptions {
+    pub(crate) data_dir: Option<Utf8PathBuf>,
+    pub(crate) reset: bool,
+}
+
 #[derive(Debug, Args)]
 struct ServeArgsParser {
-    #[arg(long, value_name = "FILE", required_unless_present = "export_openapi")]
+    #[arg(long, value_name = "FILE")]
     server_config: Option<Utf8PathBuf>,
     #[arg(long, default_value = "127.0.0.1:8080")]
     bind: std::net::SocketAddr,
     #[arg(long)]
     dev: bool,
+    #[arg(long, value_name = "DIR")]
+    data_dir: Option<Utf8PathBuf>,
+    #[arg(long, requires = "dev")]
+    reset: bool,
     #[arg(long, value_name = "FILE", conflicts_with = "server_config")]
     export_openapi: Option<Utf8PathBuf>,
     #[arg(long, value_name = "CATALOG")]
@@ -91,9 +101,24 @@ static MCP_DEFAULTS: std::sync::OnceLock<
     std::sync::Mutex<ontoforge_engine::printer::l2::McpDefaults>,
 > = std::sync::OnceLock::new();
 
+static DEV_OPTIONS: std::sync::OnceLock<std::sync::Mutex<DevCliOptions>> =
+    std::sync::OnceLock::new();
+
 impl clap::FromArgMatches for ServeArgs {
     fn from_arg_matches(matches: &clap::ArgMatches) -> Result<Self, clap::Error> {
         let parsed = ServeArgsParser::from_arg_matches(matches)?;
+        if parsed.server_config.is_none() && parsed.export_openapi.is_none() && !parsed.dev {
+            return Err(clap::Error::raw(
+                clap::error::ErrorKind::MissingRequiredArgument,
+                "serve needs --server-config, --dev, or --export-openapi",
+            ));
+        }
+        if parsed.data_dir.is_some() && !parsed.dev {
+            return Err(clap::Error::raw(
+                clap::error::ErrorKind::ArgumentConflict,
+                "--data-dir requires --dev",
+            ));
+        }
         if let Ok(mut defaults) = MCP_DEFAULTS
             .get_or_init(|| {
                 std::sync::Mutex::new(ontoforge_engine::printer::l2::McpDefaults::default())
@@ -103,6 +128,15 @@ impl clap::FromArgMatches for ServeArgs {
             *defaults = ontoforge_engine::printer::l2::McpDefaults {
                 catalog: parsed.mcp_catalog,
                 schema: parsed.mcp_schema,
+            };
+        }
+        if let Ok(mut options) = DEV_OPTIONS
+            .get_or_init(|| std::sync::Mutex::new(DevCliOptions::default()))
+            .lock()
+        {
+            *options = DevCliOptions {
+                data_dir: parsed.data_dir,
+                reset: parsed.reset,
             };
         }
         Ok(Self {
@@ -136,6 +170,14 @@ pub(crate) fn mcp_defaults() -> ontoforge_engine::printer::l2::McpDefaults {
         )
         .lock()
         .map(|defaults| defaults.clone())
+        .unwrap_or_default()
+}
+
+pub(crate) fn dev_options() -> DevCliOptions {
+    DEV_OPTIONS
+        .get_or_init(|| std::sync::Mutex::new(DevCliOptions::default()))
+        .lock()
+        .map(|options| options.clone())
         .unwrap_or_default()
 }
 

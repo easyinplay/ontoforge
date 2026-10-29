@@ -36,6 +36,7 @@ anstream.workspace = true
 tokio = { workspace = true, features = ["signal"] }
 ulid.workspace = true
 chrono.workspace = true
+getrandom.workspace = true
 
 [dev-dependencies]
 ontoforge-query = { path = "../ontoforge-query" }

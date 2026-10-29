@@ -3,6 +3,8 @@
 use std::io::Write;
 
 pub mod cli;
+pub mod dev;
+pub mod dev_assets;
 pub mod dev_token;
 pub mod import;
 pub mod lint_cmd;
