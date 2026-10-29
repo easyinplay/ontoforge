@@ -22,7 +22,7 @@
 
 ## Next Step
 
-P3 执行中：有效完成 07-01；07-02 独立审查发现 replay 固定定义缺陷及测试缺口，07-03 真实 HTTP 验收也在修复。详两个 IMPLEMENTATION-RECORD 与 `reviews/07-02-ACCEPTANCE-AUDIT.md`。当前 executor 补齐 07-03 后，顺序修复 07-02，两个上游验收通过才恢复 07-04。auto_advance=false，仅执行用户指定 Phase 7 的全部剩余 PLAN。
+P3 执行中：有效完成 07-01、07-03，共 2/16；07-03 的真实 HTTP、独立审查与 workspace 回归证据见 `07-03-SUMMARY.md`，wave build exit 0。下一步修复 07-02 的 replay 固定定义与验收缺口，详 `reviews/07-02-ACCEPTANCE-AUDIT.md`，通过后恢复 07-04。auto_advance=false，仅执行用户指定 Phase 7 的全部剩余 PLAN。
 
 ## Execution Order
 

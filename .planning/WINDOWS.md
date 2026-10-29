@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 10
+open_count: 12
 waived_count: 0
 fixed_count: 4
-total_count: 14
-last_updated: 2026-10-27T19:13:52.718Z
+total_count: 16
+last_updated: 2026-10-29T04:32:02.063Z
 ---
 
 # Broken Windows Ledger
@@ -29,6 +29,8 @@ last_updated: 2026-10-27T19:13:52.718Z
 | 12 | 06 | skipped-test | crates/ontoforge-storage/tests/scope_store.rs |  | pg_audit_is_append_only_and_login_is_recorded: requires ONTOFORGE_PG_URL or embedded-pg feature | open |  | 2026-10-27T19:13:33.710Z |  |
 | 13 | 06 | skipped-test | crates/ontoforge-storage/tests/scope_store.rs |  | pg_concurrent_scope_apply_serializes: requires ONTOFORGE_PG_URL or embedded-pg feature | open |  | 2026-10-27T19:13:44.675Z |  |
 | 14 | 06 | skipped-test | crates/ontoforge-storage/tests/scope_store.rs |  | pg_scope_apply: requires ONTOFORGE_PG_URL or embedded-pg feature | open |  | 2026-10-27T19:13:52.718Z |  |
+| 15 | 07 | skipped-test | .planning/phases/07-rest-mcp-shell/07-03-SUMMARY.md |  | 07-03 workspace: 107 ignored (PG/Trino/private/p95/doctest); external-service evidence pending 07-13/14. Full names and reasons: 07-03-evidence/workspace-tests-jobs2.log. | open |  | 2026-10-29T04:32:00.805Z |  |
+| 16 | 07 | deviation | crates/ontoforge-action/tests/idempotency_pg.rs |  | 07-03 all-features Clippy: large_futures at lines 242/257/398 (16464 bytes); approved minimal Box::pin allocation fix in 07-02 PLAN if still present after replay repair. | open |  | 2026-10-29T04:32:02.063Z |  |
 
 ````json
 [
@@ -205,6 +207,32 @@ last_updated: 2026-10-27T19:13:52.718Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-10-27T19:13:52.718Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 15,
+    "kind": "skipped-test",
+    "phase": "07",
+    "file": ".planning/phases/07-rest-mcp-shell/07-03-SUMMARY.md",
+    "line": null,
+    "description": "07-03 workspace: 107 ignored (PG/Trino/private/p95/doctest); external-service evidence pending 07-13/14. Full names and reasons: 07-03-evidence/workspace-tests-jobs2.log.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-29T04:32:00.805Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 16,
+    "kind": "deviation",
+    "phase": "07",
+    "file": "crates/ontoforge-action/tests/idempotency_pg.rs",
+    "line": null,
+    "description": "07-03 all-features Clippy: large_futures at lines 242/257/398 (16464 bytes); approved minimal Box::pin allocation fix in 07-02 PLAN if still present after replay repair.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-29T04:32:02.063Z",
     "resolved_at": null,
     "milestone": null
   }

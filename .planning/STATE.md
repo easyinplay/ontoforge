@@ -2,20 +2,20 @@
 gsd_state_version: "1.0"
 current_phase: 7
 current_phase_name: REST & MCP Shell
-current_plan: 3
+current_plan: 2
 status: executing
-stopped_at: Phase 7 07-03 验收缺口修复中；07-04 暂停，详 phase task_plan
+stopped_at: Phase 7 07-03 验收修复通过；07-02 待修复，详 phase task_plan
 last_updated: "2026-10-29T03:37:08.334Z"
-last_activity: "2026-10-29: 07-03 acceptance gaps; 07-04 waiting"
-state_head: d31cf91e5ec5b2e7ed3d02f7110ee1622272fed7
+last_activity: "2026-10-29: 07-03 accepted; 07-02 repair next"
+state_head: 339bce8
 progress:
   total_phases: 7
   completed_phases: 6
   total_plans: 88
-  completed_plans: 73
-  percent: 83
+  completed_plans: 74
+  percent: 84
 last_gate_trip: null
-last_activity_desc: Phase 7 有效完成 1/16，顺序修复 07-03 与 07-02 验收
+last_activity_desc: Phase 7 有效完成 2/16，下一步修复 07-02 验收
 ---
 
 # Project State
@@ -30,12 +30,12 @@ See: .planning/PROJECT.md (updated 2026-10-28)
 ## Current Position
 
 Phase: 7 (REST & MCP Shell) — EXECUTING
-Current Plan: 3
+Current Plan: 2
 Total Plans in Phase: 16
 Status: Executing
-Last activity: 2026-10-29: 07-03 acceptance gaps; 07-04 waiting
+Last activity: 2026-10-29: 07-03 accepted; 07-02 repair next
 
-Progress: [████████░░] 83%
+Progress: [████████░░] 84%
 
 ## Performance Metrics
 
@@ -49,7 +49,7 @@ Progress: [████████░░] 83%
 
 ### Pending Todos
 
-补齐 `07-03-PLAN.md` 的真实 HTTP 验收，缺口见 `07-03-IMPLEMENTATION-RECORD.md`。
+修复 `07-02-PLAN.md` 的 replay 与验收缺口，详 `phases/07-rest-mcp-shell/reviews/07-02-ACCEPTANCE-AUDIT.md`。
 
 ### Blockers/Concerns
 
@@ -57,7 +57,7 @@ Progress: [████████░░] 83%
 - [Phase 2]: 非阻塞安全 observations 待后续 phase 跟进（详: `phases/02-source-binding-engine/02-SECURITY.md` Observations）
 - [Phase 5]: 生产 webhook 联调与正式 gstack gate 待发布/PR 前完成；GSD 关闭警告详见 `phases/05-online-action/deferred-items.md`
 - [Phase 6]: 本地 PR review、CI 与增量复签通过；外部 Codex 审查不可用。Phase 1–5 历史 fingerprint staleness 待 milestone audit 复核，详 Phase 6 VERIFICATION。
-- [Phase 7]: 有效完成 1/16；07-02/03 验收待修复，详 phase task_plan。真实服务与发行仍待实施，L2-04/SCOPE-07 Pending；PR #7 不合并。
+- [Phase 7]: 有效完成 2/16；07-02 验收待修复，详 phase task_plan。真实服务与发行仍待实施，L2-04/SCOPE-07 Pending；PR #7 不合并。
 
 ## Deferred Items
 
@@ -68,5 +68,5 @@ Progress: [████████░░] 83%
 ## Session Continuity
 
 Last session: 2026-10-28T17:07:42.404Z
-Stopped at: Phase 7 07-03 验收缺口修复中；07-04 暂停
+Stopped at: Phase 7 07-03 验收修复通过；07-02 待修复
 Resume file: .planning/phases/07-rest-mcp-shell/task_plan.md

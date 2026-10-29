@@ -1,5 +1,7 @@
 # Phase 7 findings
 
+- 2026-10-29 恢复收口：07-03 的验收与 wave 证据见 SUMMARY、wave-gates；有效完成2/16。本次只同步状态文档，跳过新增TDD；07-02沿既有批准合同修复，跳过重复战略/Phase/brainstorming，核心replay行为必须先真实RED。所有新灰区先返回主会话并取Grok第二意见。
+
 ## 真实服务前置预查
 
 - 2026-10-29：只读核查Docker/PG/Trino/WSL与native runner前置，详 `reviews/07-REAL-SERVICE-READINESS.md`。资源可用不等于真实服务验收通过；07-13/14执行时重新核对。
