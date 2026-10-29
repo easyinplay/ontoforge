@@ -1,0 +1,42 @@
+   Compiling ontoforge-api v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-api)
+   Compiling ontoforge-query v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-query)
+   Compiling ontoforge-action v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-action)
+   Compiling ontoforge-server v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-server)
+warning: unused import: `ExecutionLimits`
+  --> crates\ontoforge-server\src\rest.rs:12:23
+   |
+12 | use ontoforge_query::{ExecutionLimits, ObjectSet, QueryRequest, QueryService};
+   |                       ^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `ontoforge-server` (lib test) generated 1 warning (run `cargo fix --lib -p ontoforge-server --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 25.61s
+────────────
+ Nextest run ID b40dd2f8-a141-4cc6-bd53-e1e923500d0d with nextest profile: gsd
+    Starting 1 test across 1 binary (6 tests skipped)
+        FAIL [   0.333s] (1/1) ontoforge-server rest_tests::rest_metadata_and_all_l0_operations
+  stdout ───
+
+    running 1 test
+    test rest_tests::rest_metadata_and_all_l0_operations ... FAILED
+
+    failures:
+
+    failures:
+        rest_tests::rest_metadata_and_all_l0_operations
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.11s
+
+  stderr ───
+
+    thread 'rest_tests::rest_metadata_and_all_l0_operations' (28848) panicked at crates\ontoforge-server\src\..\tests\unit\rest.test.rs:21:5:
+    assertion `left == right` failed: metadata must expose a stable logical engine status
+      left: Null
+     right: "available"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.335s] 1 test run: 0 passed, 1 failed, 6 skipped
+        FAIL [   0.333s] (1/1) ontoforge-server rest_tests::rest_metadata_and_all_l0_operations
+error: test run failed

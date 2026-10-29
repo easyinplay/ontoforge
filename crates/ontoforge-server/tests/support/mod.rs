@@ -113,6 +113,7 @@ pub async fn fixture_airports(airports: &[(&str, &str, Option<&str>)]) -> Fixtur
         block: AtomicBool::new(false),
         fail: AtomicBool::new(false),
         failure: Mutex::new(None),
+        unavailable: AtomicBool::new(false),
         calls: AtomicUsize::new(0),
         entered: Notify::new(),
         release: Notify::new(),
@@ -297,6 +298,7 @@ pub struct ControlledEngine {
     pub block: AtomicBool,
     pub fail: AtomicBool,
     pub failure: Mutex<Option<EngineError>>,
+    pub unavailable: AtomicBool,
     pub calls: AtomicUsize,
     pub entered: Notify,
     pub release: Notify,
@@ -348,6 +350,8 @@ impl Engine for ControlledEngine {
         self.inner.describe_tables(tables, ctx).await
     }
     async fn status(&self) -> EngineStatus {
-        self.inner.status().await
+        if self.unavailable.load(Ordering::SeqCst) {
+            EngineStatus::Unavailable { reason: "physical_table SELECT secret_token=sentinel".to_owned() }
+        } else { self.inner.status().await }
     }
 }

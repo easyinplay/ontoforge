@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="nextest-run" tests="1" skipped="0" failures="1" errors="0" uuid="b40dd2f8-a141-4cc6-bd53-e1e923500d0d" timestamp="2026-10-29T11:44:08.225+08:00" time="0.335">
+    <testsuite name="ontoforge-server" tests="1" skipped="0" errors="0" failures="1">
+        <testcase name="rest_tests::rest_metadata_and_all_l0_operations" classname="ontoforge-server" timestamp="2026-10-29T11:44:08.226+08:00" time="0.333">
+            <failure message="thread &apos;rest_tests::rest_metadata_and_all_l0_operations&apos; (28848) panicked at crates\ontoforge-server\src\..\tests\unit\rest.test.rs:21:5" type="test failure with exit code 101">thread &apos;rest_tests::rest_metadata_and_all_l0_operations&apos; (28848) panicked at crates\ontoforge-server\src\..\tests\unit\rest.test.rs:21:5:
+assertion `left == right` failed: metadata must expose a stable logical engine status
+  left: Null
+ right: &quot;available&quot;
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace</failure>
+            <system-out>
+running 1 test
+test rest_tests::rest_metadata_and_all_l0_operations ... FAILED
+
+failures:
+
+failures:
+    rest_tests::rest_metadata_and_all_l0_operations
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.11s
+
+</system-out>
+            <system-err>
+thread &apos;rest_tests::rest_metadata_and_all_l0_operations&apos; (28848) panicked at crates\ontoforge-server\src\..\tests\unit\rest.test.rs:21:5:
+assertion `left == right` failed: metadata must expose a stable logical engine status
+  left: Null
+ right: &quot;available&quot;
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+</system-err>
+        </testcase>
+    </testsuite>
+</testsuites>
