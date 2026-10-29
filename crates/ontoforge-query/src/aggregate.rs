@@ -891,6 +891,17 @@ impl<E: Engine> QueryService<'_, E> {
         capabilities: AggregateCapabilities,
         limits: AggregateLimits,
     ) -> crate::QueryExecution<AggregateResult, AggregateError> {
+        self.execute_aggregate_audited_observed(request, capabilities, limits, |_| {})
+            .await
+    }
+
+    pub async fn execute_aggregate_audited_observed(
+        &self,
+        request: AggregateRequest,
+        capabilities: AggregateCapabilities,
+        limits: AggregateLimits,
+        on_reserved: impl FnOnce(&str) + Send,
+    ) -> crate::QueryExecution<AggregateResult, AggregateError> {
         let audit = self
             .store
             .read_audit()
@@ -902,6 +913,7 @@ impl<E: Engine> QueryService<'_, E> {
             };
         };
         let request_id = Some(audit.request_id().to_owned());
+        on_reserved(audit.request_id());
         let mut budget = WorkBudget::with_audit(self.limits, audit);
         let result = self
             .execute_aggregate_inner(request, capabilities, limits, &mut budget)

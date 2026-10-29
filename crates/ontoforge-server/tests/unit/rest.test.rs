@@ -18,11 +18,16 @@ async fn rest_metadata_and_all_l0_operations() {
     let f = fixture().await.start().await;
     let metadata = success(f.get("/api/ontology").await).await;
     assert_eq!(metadata["description"], "航空数据 UTF-8");
-    assert_eq!(metadata["engineStatus"], "available", "metadata must expose a stable logical engine status");
+    assert_eq!(
+        metadata["engineStatus"], "available",
+        "metadata must expose a stable logical engine status"
+    );
     f.engine.unavailable.store(true, Ordering::SeqCst);
     let degraded = success(f.get("/api/ontology").await).await;
     assert_eq!(degraded["engineStatus"], "unavailable");
-    for secret in ["physical_table", "SELECT", "secret_token", "sentinel"] { assert!(!degraded.to_string().contains(secret)); }
+    for secret in ["physical_table", "SELECT", "secret_token", "sentinel"] {
+        assert!(!degraded.to_string().contains(secret));
+    }
     f.engine.unavailable.store(false, Ordering::SeqCst);
     let names: Vec<_> = metadata["objectTypes"]
         .as_array()

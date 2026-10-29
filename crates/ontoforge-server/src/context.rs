@@ -1,13 +1,141 @@
+use std::collections::BTreeMap;
 use std::sync::Arc;
+use std::sync::Mutex;
+use std::time::Duration;
 
 use axum::http::{HeaderMap, StatusCode, header};
 use axum::response::Response;
 use ontoforge_auth::Principal;
 use ontoforge_auth::scope::{PrincipalScope, ScopeInputs, attr_types, compile_scope};
-use ontoforge_engine::Engine;
+use ontoforge_engine::{
+    Engine, EngineError, EngineStatus, PhysicalColumn, PrintedSql, QueryContext, QueryOutput,
+    TableRef,
+};
 use ontoforge_storage::store::ActiveDefinition;
 
 use crate::{ServerHost, error};
+
+#[derive(Clone)]
+pub struct RequestTrace {
+    id: Arc<Mutex<String>>,
+    fault: Arc<Mutex<Option<SourceFault>>>,
+}
+
+#[derive(Clone, Copy)]
+enum SourceFault {
+    Timeout,
+    Cancelled,
+}
+
+impl RequestTrace {
+    fn new() -> Self {
+        Self {
+            id: Arc::new(Mutex::new(ulid::Ulid::generate().to_string())),
+            fault: Arc::new(Mutex::new(None)),
+        }
+    }
+    pub fn reserved(&self, id: &str) {
+        id.clone_into(&mut self.id.lock().unwrap());
+    }
+    pub fn id(&self) -> String {
+        self.id.lock().unwrap().clone()
+    }
+    pub fn source_failure(&self, api_name: &str, id: &str) -> Option<Response> {
+        match *self.fault.lock().unwrap() {
+            Some(SourceFault::Timeout) => Some(error::wire(
+                StatusCode::GATEWAY_TIMEOUT,
+                "DEADLINE_EXCEEDED",
+                api_name,
+                id,
+            )),
+            Some(SourceFault::Cancelled) => Some(error::wire(
+                StatusCode::REQUEST_TIMEOUT,
+                "CANCELLED",
+                api_name,
+                id,
+            )),
+            None => None,
+        }
+    }
+}
+
+pub async fn admit(
+    axum::extract::State((slots, deadline)): axum::extract::State<(
+        Arc<tokio::sync::Semaphore>,
+        Duration,
+    )>,
+    mut request: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> Response {
+    let trace = RequestTrace::new();
+    let api_name = request
+        .uri()
+        .path()
+        .split('/')
+        .nth(2)
+        .unwrap_or("unknown")
+        .to_owned();
+    let Ok(_permit) = slots.try_acquire_owned() else {
+        return error::wire(
+            StatusCode::TOO_MANY_REQUESTS,
+            "CONCURRENCY_LIMIT",
+            &api_name,
+            &trace.id(),
+        );
+    };
+    request.extensions_mut().insert(trace.clone());
+    match tokio::time::timeout(deadline, next.run(request)).await {
+        Ok(response) => response,
+        Err(_) => error::wire(
+            StatusCode::GATEWAY_TIMEOUT,
+            "DEADLINE_EXCEEDED",
+            &api_name,
+            &trace.id(),
+        ),
+    }
+}
+
+pub struct ScopedEngine<'a, E> {
+    pub inner: &'a E,
+    pub trace: &'a RequestTrace,
+    pub limits: crate::ServerLimits,
+}
+
+impl<E: Engine + Sync> Engine for ScopedEngine<'_, E> {
+    fn dialect(&self) -> ontoforge_engine::Dialect {
+        self.inner.dialect()
+    }
+    async fn execute(
+        &self,
+        sql: &PrintedSql,
+        ctx: &QueryContext,
+    ) -> Result<QueryOutput, EngineError> {
+        let mut ctx = ctx.clone();
+        ctx.max_rows = ctx.max_rows.min(self.limits.execution.max_raw_candidates);
+        ctx.max_bytes = ctx.max_bytes.min(self.limits.execution.max_decoded_bytes);
+        ctx.timeout = ctx.timeout.min(self.limits.deadline);
+        let result = self.inner.execute(sql, &ctx).await;
+        let fault = match &result {
+            Err(EngineError::Timeout { .. }) => Some(SourceFault::Timeout),
+            Err(EngineError::Cancelled) => Some(SourceFault::Cancelled),
+            _ => None,
+        };
+        if let Some(fault) = fault {
+            *self.trace.fault.lock().unwrap() = Some(fault);
+        }
+        result
+    }
+    async fn describe_tables(
+        &self,
+        tables: &[TableRef],
+        ctx: &QueryContext,
+    ) -> Result<BTreeMap<TableRef, Vec<PhysicalColumn>>, EngineError> {
+        self.inner.describe_tables(tables, ctx).await
+    }
+    async fn status(&self) -> EngineStatus {
+        self.inner.status().await
+    }
+}
 
 pub struct RequestContext {
     pub principal: Principal,

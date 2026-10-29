@@ -295,7 +295,10 @@ async fn pk_budget_boundaries() {
         limits.execution.max_decoded_bytes = cap;
         let f = fixture().await.start_with_limits(limits).await;
         let response = f.get("/api/objects/Airport/BER").await;
-        let id = response.headers()["x-request-id"].to_str().unwrap().to_owned();
+        let id = response.headers()["x-request-id"]
+            .to_str()
+            .unwrap()
+            .to_owned();
         if succeeds {
             assert_eq!(success(response).await["pk"], "BER");
         } else {
@@ -306,6 +309,7 @@ async fn pk_budget_boundaries() {
         assert_eq!(audit.len(), 1);
         assert_eq!(audit[0]["request_id"], id);
         assert_eq!(audit[0]["row_count"], usize::from(succeeds));
+        assert_eq!(audit[0]["status"], "success");
     }
 }
 

@@ -2,6 +2,7 @@
 
 use std::future::Future;
 use std::sync::Arc;
+use std::time::Duration;
 
 use axum::Router;
 use ontoforge_auth::authn::Authenticator;
@@ -10,6 +11,7 @@ use ontoforge_engine::config::AuthConfig;
 use ontoforge_query::{QueryError, TokenCodec};
 use ontoforge_storage::store::EditStore;
 use tokio::net::TcpListener;
+use tokio::sync::Semaphore;
 
 pub mod context;
 pub mod error;
@@ -24,6 +26,49 @@ pub struct ServerHost<E> {
     pub tokens: TokenCodec,
 }
 
+#[derive(Debug, Clone, Copy)]
+pub struct ServerLimits {
+    pub max_body_bytes: usize,
+    pub max_concurrent_requests: usize,
+    pub deadline: Duration,
+    pub execution: ontoforge_query::ExecutionLimits,
+}
+
+impl Default for ServerLimits {
+    fn default() -> Self {
+        Self {
+            max_body_bytes: 1024 * 1024,
+            max_concurrent_requests: 32,
+            deadline: Duration::from_millis(ontoforge_engine::DEFAULT_QUERY_TIMEOUT_MS),
+            execution: ontoforge_query::ExecutionLimits::phase4_default(),
+        }
+    }
+}
+
+impl ServerLimits {
+    fn validate(self) -> Result<Self, HostError> {
+        let maximum = ontoforge_query::ExecutionLimits::phase4_default();
+        if self.max_body_bytes == 0
+            || self.max_body_bytes > 16 * 1024 * 1024
+            || self.max_concurrent_requests == 0
+            || self.max_concurrent_requests > 1024
+            || self.deadline.is_zero()
+            || self.deadline > Duration::from_secs(300)
+            || self.execution.max_backend_calls == 0
+            || self.execution.max_backend_calls > maximum.max_backend_calls
+            || self.execution.max_raw_candidates == 0
+            || self.execution.max_raw_candidates > maximum.max_raw_candidates
+            || self.execution.max_backfill_keys == 0
+            || self.execution.max_backfill_keys > maximum.max_backfill_keys
+            || self.execution.max_decoded_bytes == 0
+            || self.execution.max_decoded_bytes > maximum.max_decoded_bytes
+        {
+            return Err(HostError::Limits);
+        }
+        Ok(self)
+    }
+}
+
 pub const REST_ROUTE_PATHS: &[&str] = &[
     "/api/ontology",
     "/api/query",
@@ -35,6 +80,8 @@ pub const CRATE_NAME: &str = env!("CARGO_PKG_NAME");
 
 #[derive(Debug, thiserror::Error)]
 pub enum HostError {
+    #[error("invalid HTTP host limits")]
+    Limits,
     #[error("HTTP listener failed")]
     Listener,
     #[error("read audit drain failed")]
@@ -63,6 +110,21 @@ impl<E: Engine + Send + Sync + 'static> ServerHost<E> {
         listener: TcpListener,
         shutdown: impl Future<Output = ()> + Send + 'static,
     ) -> Result<(), HostError> {
+        self.serve_with_limits(listener, shutdown, ServerLimits::default())
+            .await
+    }
+
+    pub async fn serve_with_limits(
+        self: Arc<Self>,
+        listener: TcpListener,
+        shutdown: impl Future<Output = ()> + Send + 'static,
+        limits: ServerLimits,
+    ) -> Result<(), HostError> {
+        let limits = limits.validate()?;
+        let admission = (
+            Arc::new(Semaphore::new(limits.max_concurrent_requests)),
+            limits.deadline,
+        );
         let router = Router::new()
             .route("/api/ontology", axum::routing::get(rest::ontology::<E>))
             .route(
@@ -72,6 +134,12 @@ impl<E: Engine + Send + Sync + 'static> ServerHost<E> {
             .route("/api/query", axum::routing::post(rest::query::<E>))
             .route("/api/aggregate", axum::routing::post(rest::aggregate::<E>))
             .fallback(error::not_found)
+            .method_not_allowed_fallback(error::method_not_allowed)
+            .layer(axum::Extension(limits))
+            .layer(axum::middleware::from_fn_with_state(
+                admission,
+                context::admit,
+            ))
             .with_state(Arc::clone(&self));
         let served = axum::serve(listener, router)
             .with_graceful_shutdown(shutdown)

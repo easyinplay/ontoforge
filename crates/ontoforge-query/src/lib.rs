@@ -250,6 +250,14 @@ impl<E: Engine> QueryService<'_, E> {
     }
 
     pub async fn execute_audited(&self, request: QueryRequest) -> QueryExecution {
+        self.execute_audited_observed(request, |_| {}).await
+    }
+
+    pub async fn execute_audited_observed(
+        &self,
+        request: QueryRequest,
+        on_reserved: impl FnOnce(&str) + Send,
+    ) -> QueryExecution {
         let object_type = request.set.object_type();
         let audit = self.store.read_audit().reserve(ReadAuditMetadata {
             principal: self.principal.id.to_string(),
@@ -277,6 +285,7 @@ impl<E: Engine> QueryService<'_, E> {
             };
         };
         let request_id = Some(audit.request_id().to_owned());
+        on_reserved(audit.request_id());
         let result = self.execute_pk(request, &mut audit).await;
         let (status, count) = match &result {
             Ok(page) => (ReadAuditStatus::Success, page.rows.len()),

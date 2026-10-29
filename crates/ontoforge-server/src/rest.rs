@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use axum::body::{Body, to_bytes};
-use axum::extract::{Path, Request, State};
+use axum::extract::{Extension, Path, Request, State, rejection::PathRejection};
 use axum::http::StatusCode;
 use axum::response::Response;
 use ontoforge_api::dto as wire;
@@ -9,13 +9,11 @@ use ontoforge_engine::Engine;
 use ontoforge_query::aggregate::{AggregateCapabilities, AggregateLimits};
 use ontoforge_query::ast;
 use ontoforge_query::compile::{CompileLimits, ValidatedQuery};
-use ontoforge_query::{ExecutionLimits, ObjectSet, QueryRequest, QueryService};
+use ontoforge_query::{ObjectSet, QueryRequest, QueryService};
 use ontoforge_schema::ir::{ObjectTypeName, PropertyName};
 use serde_json::{Value, json};
 
-use crate::{ServerHost, context, error};
-
-const MAX_BODY: usize = 1024 * 1024;
+use crate::{ServerHost, ServerLimits, context, error};
 
 pub async fn ontology<E: Engine + Send + Sync + 'static>(
     State(host): State<Arc<ServerHost<E>>>,
@@ -105,16 +103,26 @@ pub async fn ontology<E: Engine + Send + Sync + 'static>(
             object_types,
             links,
             actions,
-            def_version: ctx.active.def_version
+            def_version: ctx.active.def_version,
+            engine_status: match host.engine.status().await {
+                ontoforge_engine::EngineStatus::Available => wire::EngineAvailability::Available,
+                ontoforge_engine::EngineStatus::Unavailable { .. } =>
+                    wire::EngineAvailability::Unavailable,
+            }
         }),
     )
 }
 
 pub async fn object<E: Engine + Send + Sync + 'static>(
     State(host): State<Arc<ServerHost<E>>>,
-    Path((api_name, pk_text)): Path<(String, String)>,
+    Extension(limits): Extension<ServerLimits>,
+    Extension(trace): Extension<context::RequestTrace>,
+    path: Result<Path<(String, String)>, PathRejection>,
     request: Request,
 ) -> Response {
+    let Ok(Path((api_name, pk_text))) = path else {
+        return error::json_rejection("objects", &ulid::Ulid::generate().to_string());
+    };
     let headers = request.headers().clone();
     let invalid = request.uri().query().is_some_and(|query| !query.is_empty())
         || to_bytes(request.into_body(), 1)
@@ -146,39 +154,59 @@ pub async fn object<E: Engine + Send + Sync + 'static>(
     let Ok(object_type) = ObjectTypeName::try_from(api_name.clone()) else {
         return error::wire(StatusCode::NOT_FOUND, "NOT_FOUND", &api_name, &request_id);
     };
+    let engine = context::ScopedEngine {
+        inner: &*host.engine,
+        trace: &trace,
+        limits,
+    };
     let execution = QueryService {
         principal: &ctx.principal,
         scope: &ctx.scope,
         active: Arc::clone(&ctx.active),
-        engine: &*host.engine,
+        engine: &engine,
         store: &host.store,
-        limits: ExecutionLimits::phase4_default(),
+        limits: limits.execution,
         tokens: &host.tokens,
     }
-    .execute_audited(QueryRequest {
-        set: ObjectSet::Pk { object_type, pk },
-        select: ty.properties.keys().cloned().collect(),
-    })
+    .execute_audited_observed(
+        QueryRequest {
+            set: ObjectSet::Pk { object_type, pk },
+            select: ty.properties.keys().cloned().collect(),
+        },
+        |id| trace.reserved(id),
+    )
     .await;
     let id = execution.request_id.as_deref().unwrap_or(&request_id);
     match execution.result {
+        Ok(page) if page.truncated => query_failure(
+            &ontoforge_query::QueryError::CostExceeded,
+            &trace,
+            &api_name,
+            id,
+        ),
         Ok(page) => page.rows.into_iter().next().map_or_else(
             || error::wire(StatusCode::NOT_FOUND, "NOT_FOUND", &api_name, id),
             |row| error::response(StatusCode::OK, id, json!(row)),
         ),
-        Err(e) => error::wire(error::query_status(&e), e.code(), &api_name, id),
+        Err(e) => query_failure(&e, &trace, &api_name, id),
     }
 }
 
 pub async fn query<E: Engine + Send + Sync + 'static>(
     State(host): State<Arc<ServerHost<E>>>,
+    Extension(limits): Extension<ServerLimits>,
+    Extension(trace): Extension<context::RequestTrace>,
     headers: axum::http::HeaderMap,
+    uri: axum::http::Uri,
     body: Body,
 ) -> Response {
-    let (ctx, request_id, body) = match body_context(&host, headers, body, "query").await {
+    let (ctx, request_id, body) = match body_context(&host, headers, body, "query", limits).await {
         Ok(value) => value,
         Err(response) => return response,
     };
+    if uri.query().is_some_and(|q| !q.is_empty()) {
+        return error::json_rejection("query", &request_id);
+    }
     let input: wire::QueryRequest = match serde_json::from_slice(&body) {
         Ok(value) => value,
         Err(_) => return error::json_rejection("query", &request_id),
@@ -237,33 +265,45 @@ pub async fn query<E: Engine + Send + Sync + 'static>(
         Ok(value) => value,
         Err(e) => return error::wire(error::query_status(&e), e.code(), "query", &request_id),
     };
+    let engine = context::ScopedEngine {
+        inner: &*host.engine,
+        trace: &trace,
+        limits,
+    };
     let result = QueryService {
         principal: &ctx.principal,
         scope: &ctx.scope,
         active: Arc::clone(&ctx.active),
-        engine: &*host.engine,
+        engine: &engine,
         store: &host.store,
-        limits: ExecutionLimits::phase4_default(),
+        limits: limits.execution,
         tokens: &host.tokens,
     }
-    .execute_list_audited(&validated)
+    .execute_list_audited_observed(&validated, |id| trace.reserved(id))
     .await;
     let request_id = result.request_id.as_deref().unwrap_or(&request_id);
     match result.result {
         Ok(value) => error::response(StatusCode::OK, request_id, json!(value)),
-        Err(e) => error::wire(error::query_status(&e), e.code(), "query", request_id),
+        Err(e) => query_failure(&e, &trace, "query", request_id),
     }
 }
 
 pub async fn aggregate<E: Engine + Send + Sync + 'static>(
     State(host): State<Arc<ServerHost<E>>>,
+    Extension(limits): Extension<ServerLimits>,
+    Extension(trace): Extension<context::RequestTrace>,
     headers: axum::http::HeaderMap,
+    uri: axum::http::Uri,
     body: Body,
 ) -> Response {
-    let (ctx, request_id, body) = match body_context(&host, headers, body, "aggregate").await {
-        Ok(value) => value,
-        Err(response) => return response,
-    };
+    let (ctx, request_id, body) =
+        match body_context(&host, headers, body, "aggregate", limits).await {
+            Ok(value) => value,
+            Err(response) => return response,
+        };
+    if uri.query().is_some_and(|q| !q.is_empty()) {
+        return error::json_rejection("aggregate", &request_id);
+    }
     let input: wire::AggregateRequest = match serde_json::from_slice(&body) {
         Ok(value) => value,
         Err(_) => return error::json_rejection("aggregate", &request_id),
@@ -302,16 +342,21 @@ pub async fn aggregate<E: Engine + Send + Sync + 'static>(
             &request_id,
         );
     };
+    let engine = context::ScopedEngine {
+        inner: &*host.engine,
+        trace: &trace,
+        limits,
+    };
     let result = QueryService {
         principal: &ctx.principal,
         scope: &ctx.scope,
         active: Arc::clone(&ctx.active),
-        engine: &*host.engine,
+        engine: &engine,
         store: &host.store,
-        limits: ExecutionLimits::phase4_default(),
+        limits: limits.execution,
         tokens: &host.tokens,
     }
-    .execute_aggregate_audited(
+    .execute_aggregate_audited_observed(
         ast::AggregateRequest {
             set,
             group_by,
@@ -319,17 +364,26 @@ pub async fn aggregate<E: Engine + Send + Sync + 'static>(
         },
         AggregateCapabilities::all_supported(),
         AggregateLimits::phase4_default(),
+        |id| trace.reserved(id),
     )
     .await;
     let request_id = result.request_id.as_deref().unwrap_or(&request_id);
     match result.result {
         Ok(value) => error::response(StatusCode::OK, request_id, json!(value)),
-        Err(e) => error::wire(
-            error::aggregate_status(&e),
-            error::aggregate_code(&e),
-            "aggregate",
-            request_id,
-        ),
+        Err(e) => {
+            if matches!(e, ontoforge_query::aggregate::AggregateError::Source)
+                && let Some(response) = trace.source_failure("aggregate", request_id)
+            {
+                response
+            } else {
+                error::wire(
+                    error::aggregate_status(&e),
+                    error::aggregate_code(&e),
+                    "aggregate",
+                    request_id,
+                )
+            }
+        }
     }
 }
 
@@ -338,9 +392,10 @@ async fn body_context<E: Engine + Send + Sync + 'static>(
     headers: axum::http::HeaderMap,
     body: Body,
     api_name: &str,
+    limits: ServerLimits,
 ) -> Result<(crate::context::RequestContext, String, Vec<u8>), Response> {
     let (ctx, request_id) = context::context_from_headers(host, headers, api_name).await?;
-    let body = to_bytes(body, MAX_BODY)
+    let body = to_bytes(body, limits.max_body_bytes)
         .await
         .map_err(|_| {
             error::wire(
@@ -352,6 +407,20 @@ async fn body_context<E: Engine + Send + Sync + 'static>(
         })?
         .to_vec();
     Ok((ctx, request_id, body))
+}
+
+fn query_failure(
+    error: &ontoforge_query::QueryError,
+    trace: &context::RequestTrace,
+    api_name: &str,
+    id: &str,
+) -> Response {
+    if matches!(error, ontoforge_query::QueryError::Source)
+        && let Some(response) = trace.source_failure(api_name, id)
+    {
+        return response;
+    }
+    error::wire(error::query_status(error), error.code(), api_name, id)
 }
 
 fn convert_set(input: wire::ObjectSet) -> Result<ObjectSet, ()> {

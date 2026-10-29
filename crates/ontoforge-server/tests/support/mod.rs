@@ -4,8 +4,8 @@
 )]
 
 use std::collections::BTreeMap;
-use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use camino::{Utf8Path, Utf8PathBuf};
@@ -29,7 +29,7 @@ use sqlx::Row;
 use tokio::net::TcpListener;
 use tokio::sync::{Notify, oneshot};
 
-use ontoforge_server::{HostError, ServerHost};
+use ontoforge_server::{HostError, ServerHost, ServerLimits};
 
 pub const AVIATION: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -204,12 +204,20 @@ pub struct Running {
 
 impl Fixture {
     pub async fn start(self) -> Running {
+        self.start_with_limits(ServerLimits::default()).await
+    }
+
+    pub async fn start_with_limits(self, limits: ServerLimits) -> Running {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
         let url = format!("http://{}", listener.local_addr().unwrap());
         let (stop, rx) = oneshot::channel();
-        let task = tokio::spawn(Arc::new(self.host).serve(listener, async {
-            let _ = rx.await;
-        }));
+        let task = tokio::spawn(Arc::new(self.host).serve_with_limits(
+            listener,
+            async {
+                let _ = rx.await;
+            },
+            limits,
+        ));
         Running {
             url,
             token: self.token,
@@ -351,7 +359,11 @@ impl Engine for ControlledEngine {
     }
     async fn status(&self) -> EngineStatus {
         if self.unavailable.load(Ordering::SeqCst) {
-            EngineStatus::Unavailable { reason: "physical_table SELECT secret_token=sentinel".to_owned() }
-        } else { self.inner.status().await }
+            EngineStatus::Unavailable {
+                reason: "physical_table SELECT secret_token=sentinel".to_owned(),
+            }
+        } else {
+            self.inner.status().await
+        }
     }
 }

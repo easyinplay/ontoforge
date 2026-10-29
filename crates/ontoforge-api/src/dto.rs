@@ -193,6 +193,14 @@ pub struct Metadata {
     pub links: Vec<LinkMetadata>,
     pub actions: Vec<ActionMetadata>,
     pub def_version: i64,
+    pub engine_status: EngineAvailability,
+}
+
+#[derive(Debug, Clone, Copy, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum EngineAvailability {
+    Available,
+    Unavailable,
 }
 
 #[derive(Debug, Clone, Serialize)]

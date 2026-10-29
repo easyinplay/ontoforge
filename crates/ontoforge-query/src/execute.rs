@@ -513,6 +513,14 @@ impl<E: Engine> QueryService<'_, E> {
         &self,
         query: &ValidatedQuery,
     ) -> crate::QueryExecution<ListPage> {
+        self.execute_list_audited_observed(query, |_| {}).await
+    }
+
+    pub async fn execute_list_audited_observed(
+        &self,
+        query: &ValidatedQuery,
+        on_reserved: impl FnOnce(&str) + Send,
+    ) -> crate::QueryExecution<ListPage> {
         let audit = self
             .store
             .read_audit()
@@ -524,6 +532,7 @@ impl<E: Engine> QueryService<'_, E> {
             };
         };
         let request_id = Some(audit.request_id().to_owned());
+        on_reserved(audit.request_id());
         let mut budget = WorkBudget::with_audit(self.limits, audit);
         let result = self.execute_list_with_budget(query, &mut budget).await;
         let (status, count) = match &result {

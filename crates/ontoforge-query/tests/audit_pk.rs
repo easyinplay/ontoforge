@@ -15,6 +15,9 @@ use ontoforge_auth::scope::{ScopeInputs, attr_types, compile_scope};
 use ontoforge_engine::printer::{Dialect, PrintedSql};
 use ontoforge_engine::{Engine, EngineError, EngineStatus, QueryContext, QueryOutput, TableRef};
 use ontoforge_expr::Attrs;
+use ontoforge_query::aggregate::{AggregateCapabilities, AggregateLimits};
+use ontoforge_query::ast::{AggregateMeasure, AggregateRequest, PageSpec};
+use ontoforge_query::compile::{CompileLimits, ValidatedQuery};
 use ontoforge_query::{
     ExecutionLimits, ObjectSet, QueryError, QueryRequest, QueryService, TokenCodec,
 };
@@ -198,6 +201,109 @@ fn request(object_type: &str, pk: &str, selected: &str) -> QueryRequest {
         },
         select: vec![prop(selected)],
     }
+}
+
+#[tokio::test]
+async fn audit_observed_wrappers_report_single_reservation_and_never_report_failed_reserve() {
+    let f = fixture(None).await;
+    let tokens = TokenCodec::new(b"audit-test-key".to_vec()).unwrap();
+    let service = QueryService {
+        principal: &f.principal,
+        scope: &f.scope,
+        active: Arc::clone(&f.active),
+        engine: &NeverEngine,
+        store: &f.store,
+        limits: ExecutionLimits::phase4_default(),
+        tokens: &tokens,
+    };
+    let query = ValidatedQuery::new(
+        QueryRequest {
+            set: ObjectSet::Type {
+                object_type: name("Airport"),
+            },
+            select: vec![prop("name")],
+        },
+        vec![],
+        PageSpec {
+            first: 10,
+            after: None,
+        },
+        &f.active.ontology,
+        &f.scope.types[&name("Airport")],
+        CompileLimits::default(),
+    )
+    .unwrap();
+    let aggregate = || AggregateRequest {
+        set: ObjectSet::Type {
+            object_type: name("Airport"),
+        },
+        group_by: vec![],
+        measures: vec![AggregateMeasure::Count { property: None }],
+    };
+    let calls = AtomicUsize::new(0);
+    let observed = std::sync::Mutex::new(Vec::new());
+    let observe = |id: &str| {
+        calls.fetch_add(1, Ordering::SeqCst);
+        observed.lock().unwrap().push(id.to_owned());
+    };
+    let pk = service
+        .execute_audited_observed(request("Airport", "BER", "name"), observe)
+        .await;
+    let list = service.execute_list_audited_observed(&query, observe).await;
+    let agg = service
+        .execute_aggregate_audited_observed(
+            aggregate(),
+            AggregateCapabilities::all_supported(),
+            AggregateLimits::phase4_default(),
+            observe,
+        )
+        .await;
+    assert_eq!(pk.result.unwrap().rows.len(), 1);
+    assert_eq!(list.result.unwrap().rows.len(), 1);
+    assert_eq!(
+        agg.result.unwrap().buckets[0].values,
+        json!([1]).as_array().unwrap().clone()
+    );
+    assert_eq!(calls.load(Ordering::SeqCst), 3);
+    assert_eq!(
+        *observed.lock().unwrap(),
+        vec![
+            pk.request_id.unwrap(),
+            list.request_id.unwrap(),
+            agg.request_id.unwrap()
+        ]
+    );
+    f.store.read_audit().shutdown().await.unwrap();
+    let rows = audit_rows(&f.path, 3).await;
+    assert_eq!(rows.len(), 3, "each wrapper must reserve only once");
+    assert!(
+        rows.iter()
+            .all(|r| r.get::<String, _>("status") == "success")
+    );
+    let pk = service
+        .execute_audited_observed(request("Airport", "BER", "name"), observe)
+        .await;
+    let list = service.execute_list_audited_observed(&query, observe).await;
+    let agg = service
+        .execute_aggregate_audited_observed(
+            aggregate(),
+            AggregateCapabilities::all_supported(),
+            AggregateLimits::phase4_default(),
+            observe,
+        )
+        .await;
+    assert!(matches!(pk.result, Err(QueryError::AuditUnavailable)));
+    assert!(matches!(list.result, Err(QueryError::AuditUnavailable)));
+    assert!(matches!(
+        agg.result,
+        Err(ontoforge_query::aggregate::AggregateError::AuditUnavailable)
+    ));
+    assert!(pk.request_id.is_none() && list.request_id.is_none() && agg.request_id.is_none());
+    assert_eq!(
+        calls.load(Ordering::SeqCst),
+        3,
+        "failed reservation cannot call observer"
+    );
 }
 
 async fn audit_rows(path: &Utf8PathBuf, count: usize) -> Vec<sqlx::sqlite::SqliteRow> {

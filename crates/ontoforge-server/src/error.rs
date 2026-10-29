@@ -69,3 +69,16 @@ pub async fn not_found(request: axum::extract::Request) -> Response {
         .unwrap_or("unknown");
     wire(StatusCode::NOT_FOUND, "NOT_FOUND", api_name, &request_id)
 }
+
+pub async fn method_not_allowed(
+    axum::extract::Extension(trace): axum::extract::Extension<crate::context::RequestTrace>,
+    request: axum::extract::Request,
+) -> Response {
+    let api_name = request.uri().path().split('/').nth(2).unwrap_or("unknown");
+    wire(
+        StatusCode::METHOD_NOT_ALLOWED,
+        "METHOD_NOT_ALLOWED",
+        api_name,
+        &trace.id(),
+    )
+}
