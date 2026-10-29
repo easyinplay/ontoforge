@@ -3,6 +3,7 @@
 ## 真实服务前置预查
 
 - 2026-10-29：只读核查Docker/PG/Trino/WSL与native runner前置，详 `reviews/07-REAL-SERVICE-READINESS.md`。资源可用不等于真实服务验收通过；07-13/14执行时重新核对。
+- 07-03重跑all-features clippy仍受Action idempotency_pg三个16464-byte race future阻塞。核查action_pg已有Box::pin(race(...))模式；纳入07-02 Action修复的最小门禁收尾，先看生产修复是否已消除lint，仍有才按既有模式调整测试分配。该纯测试future分配调整跳过新增TDD，因为不新增业务行为且保留全部断言；验证为all-features clippy，真实PG合同继续由07-13执行。
 
 ## 07-03 超时与取消补充决定
 
