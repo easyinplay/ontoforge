@@ -15,7 +15,10 @@ use tokio::sync::Semaphore;
 
 pub mod context;
 pub mod error;
+pub mod health;
+pub mod lifecycle;
 pub mod rest;
+pub mod state;
 pub use ontoforge_api as api;
 
 pub struct ServerHost<E> {
@@ -126,6 +129,7 @@ impl<E: Engine + Send + Sync + 'static> ServerHost<E> {
             limits.deadline,
         );
         let router = Router::new()
+            .route("/health", axum::routing::get(health::endpoint::<E>))
             .route("/api/ontology", axum::routing::get(rest::ontology::<E>))
             .route(
                 "/api/objects/{object_type}/{pk}",
@@ -156,10 +160,31 @@ impl<E: Engine + Send + Sync + 'static> ServerHost<E> {
         let served = axum::serve(listener, router)
             .with_graceful_shutdown(shutdown)
             .await;
-        context::wait_actions(&self).await;
-        let drained = self.store.read_audit().shutdown().await;
+        let lifecycle = lifecycle::ServerLifecycle::new(&self).shutdown().await;
         served.map_err(|_| HostError::Listener)?;
-        drained.map_err(|_| HostError::AuditDrain)
+        lifecycle.map_err(|error| match error {
+            lifecycle::LifecycleError::Audit | lifecycle::LifecycleError::Monitor(_) => {
+                HostError::AuditDrain
+            }
+        })
+    }
+
+    pub fn with_l2_status_provider<F>(self, provider: F) -> Self
+    where
+        F: Fn() -> Option<ontoforge_engine::trino::l2_health::L2HealthStatus>
+            + Send
+            + Sync
+            + 'static,
+    {
+        state::for_host(&self).set_l2_status_provider(provider);
+        self
+    }
+
+    pub fn install_l2_monitor(
+        &self,
+        monitor: ontoforge_engine::trino::l2_monitor::L2AclMonitor,
+    ) -> Result<(), ontoforge_engine::trino::l2_monitor::L2AclMonitor> {
+        state::for_host(self).install_monitor(monitor)
     }
 }
 

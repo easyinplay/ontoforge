@@ -4,6 +4,7 @@ mod support;
 use std::sync::Arc;
 use std::time::Duration;
 
+use ontoforge_engine::trino::l2_health::{L2DisableReason, L2HealthStatus};
 use ontoforge_server::{HostError, ServerHost};
 use reqwest::StatusCode;
 use support::fixture;
@@ -11,16 +12,17 @@ use tokio::sync::oneshot;
 
 async fn start<E: ontoforge_engine::Engine + Send + Sync + 'static>(
     host: ServerHost<E>,
-) -> (String, oneshot::Sender<()>, tokio::task::JoinHandle<Result<(), HostError>>) {
+) -> (
+    String,
+    oneshot::Sender<()>,
+    tokio::task::JoinHandle<Result<(), HostError>>,
+) {
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
     let url = format!("http://{}", listener.local_addr().unwrap());
     let (stop, rx) = oneshot::channel();
-    let task = tokio::spawn(Arc::new(host).serve(
-        listener,
-        async move {
-            let _ = rx.await;
-        },
-    ));
+    let task = tokio::spawn(Arc::new(host).serve(listener, async move {
+        let _ = rx.await;
+    }));
     tokio::time::timeout(Duration::from_secs(2), async {
         loop {
             if tokio::net::TcpStream::connect(url.strip_prefix("http://").unwrap())
@@ -52,7 +54,12 @@ async fn health_unconfigured_optional_l2_is_healthy() {
 #[tokio::test]
 async fn health_l2_failure_and_expiry_are_200_degraded() {
     let f = fixture().await;
-    let (url, stop, task) = start(f.host).await;
+    let host = f.host.with_l2_status_provider(|| {
+        Some(L2HealthStatus::Disabled {
+            reason: L2DisableReason::Expired,
+        })
+    });
+    let (url, stop, task) = start(host).await;
     let response = reqwest::get(format!("{url}/health")).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     let body: serde_json::Value = response.json().await.unwrap();
@@ -65,11 +72,15 @@ async fn health_l2_failure_and_expiry_are_200_degraded() {
 #[tokio::test]
 async fn health_core_failure_is_503_and_recovery_is_visible() {
     let f = fixture().await;
-    f.engine.unavailable.store(true, std::sync::atomic::Ordering::SeqCst);
+    f.engine
+        .unavailable
+        .store(true, std::sync::atomic::Ordering::SeqCst);
     let (url, stop, task) = start(f.host).await;
     let response = reqwest::get(format!("{url}/health")).await.unwrap();
     assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
-    f.engine.unavailable.store(false, std::sync::atomic::Ordering::SeqCst);
+    f.engine
+        .unavailable
+        .store(false, std::sync::atomic::Ordering::SeqCst);
     let response = reqwest::get(format!("{url}/health")).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     stop.send(()).unwrap();
