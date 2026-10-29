@@ -311,14 +311,6 @@ impl<'a, E: Engine> ActionService<'a, E> {
                 .await?
             && !command_expired(&command.expires_at, chosen_time)
         {
-            let current = self
-                .store
-                .current_action_definition()
-                .await?
-                .ok_or(ActionError::ScopeDenied)?;
-            if !current.ontology.action_types.contains_key(&action_name) {
-                return Err(ActionError::ScopeDenied);
-            }
             if command.action != request.action || command.request_hash != request_hash {
                 return Err(ActionCommitError::CommandIdReused.into());
             }
