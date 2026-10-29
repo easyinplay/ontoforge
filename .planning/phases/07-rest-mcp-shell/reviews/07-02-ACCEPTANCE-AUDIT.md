@@ -14,7 +14,7 @@
 
 ## 修复复验（2026-10-29）
 
-生产修复基线：`3c0fb76b385bc2db1dee48e0e425749109ab0540`；前置测试提交为 `930ee87`、`df8b748`。最终代码/测试复签 anchor：`fbf5b9fe3e0f4211ed378c6f5b68b2f4daabe02e`。本轮只读取源码、git diff 和既有原始日志，没有运行 Cargo，没有修改生产代码或测试；仅更新并按授权提交本报告。五项原发现对最终 anchor 均为 resolved；下表行号保留生产修复基线的证据定位。这不等于 PostgreSQL 运行验证或全量门禁通过。
+生产修复基线：`3c0fb76b385bc2db1dee48e0e425749109ab0540`；前置测试提交为 `930ee87`、`df8b748`。生产/全量回归 anchor：`fbf5b9fe3e0f4211ed378c6f5b68b2f4daabe02e`；最终代码/测试复签 anchor：`366bb4c5162762c697bbf7c61d649020e4448475`。本轮只读取源码、git diff 和既有原始日志，没有运行 Cargo，没有修改生产代码或测试；仅更新并按授权提交本报告。五项原发现对最终 anchor 均为 resolved；下表行号保留生产修复基线的证据定位。真实 PostgreSQL 执行和其他 finish gates 仍须各自证据，不能由本报告替代。
 
 | 原级别 | 状态 | 独立复验事实与源码指针 |
 |--------|------|--------------------------|
@@ -41,10 +41,20 @@ frozen_definition 另将跨主体断言移入 helper，并加强 clock/definitio
 
 最新 `action-final.log` / JSON 于 2026-10-29T04:46:42Z 结束，exitCode 0；frozen_definition 3 passed、idempotency 9 passed，均 0 ignored，覆盖上述强化后的 Action 测试。`workspace-clippy-passed.log` / JSON 于 2026-10-29T04:46:13Z 结束，命令为 `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`，exitCode 0。此前 initial/second/final/verified 的失败文件保留为过程证据，不当作最终通过。
 
-### 最终指纹补签
+### fbf5b9f 指纹补签
 
 最终提交 `fbf5b9fe3e0f4211ed378c6f5b68b2f4daabe02e` 的四个测试文件与本轮已审查的 helper/Box::pin/clock 整理一致。补签时 `git diff fbf5b9fe3e0f4211ed378c6f5b68b2f4daabe02e -- crates/ontoforge-action/src/lib.rs crates/ontoforge-action/tests/frozen_definition.rs crates/ontoforge-action/tests/idempotency_pg.rs crates/ontoforge-storage/tests/frozen_history.rs crates/ontoforge-storage/tests/request_snapshot.rs` 为空。history 独立 ontology clone、NewGate 对照、四类 validate 分支和旧 wrapper 拒绝断言均保留；helper/Box::pin 无断言退化，clock/definition 用例进一步加强。
 
 整理后 `storage-verified.log` / `storage-verified.json` 于 2026-10-29T04:47:28Z 结束，exitCode 0；frozen_history 1 passed/0 ignored、history_masking 12 passed/1 ignored、request_snapshot 2 passed/1 ignored，总计 15 passed/2 ignored。与 action-final 的 12 passed/0 ignored、workspace-clippy-passed 的 all-features exitCode 0 一并构成最终 anchor 的定向证据。
 
-workspace 回归仍由 executor 独占运行，本报告标为 pending。真实 PG 仍未运行。若最终 anchor 后出现生产业务改动，需对新基线复签；本报告不预签尚未出现的 diff 或日志。
+本次补签时 workspace 回归仍由 executor 独占运行，当时标为 pending；后续完整结果见下一节。真实 PG 仍未运行。若最终 anchor 后出现生产业务改动，需对新基线复签；本报告不预签尚未出现的 diff 或日志。
+
+### 366bb4c 最终补签与覆盖边界
+
+最终代码/测试 anchor：`366bb4c5162762c697bbf7c61d649020e4448475`；生产/全量回归 anchor：`fbf5b9fe3e0f4211ed378c6f5b68b2f4daabe02e`。已读取完整 commit patch，并确认两个 anchor 的 crates diff 仅为 `ontoforge-storage/tests/frozen_history.rs:180` 一行 `db.store.history_with_snapshot` 改为 `external.history_with_snapshot`。该行现在与后续 `external.history` 共用同一 store：同一当前缓存下旧 snapshot 拒绝 NewGate、当前 wrapper 成功，排除了旧 store 缓存导致假通过；所有断言和生产代码均未改变。补签时最终 anchor 与工作树 crates diff 为空。五项原发现继续全部 resolved，helper/Box::pin 检查结论保持。
+
+新增 `history-same-store.log` / `history-same-store.json` 于 2026-10-29T05:01:43Z 结束，命令为 `cargo test -p ontoforge-storage --test frozen_history --locked -- --nocapture`，指定 history 用例 1 passed/0 failed/0 ignored，exitCode 0，覆盖最终一行测试强化。
+
+此前 `workspace-tests.log` / `workspace-tests.json` 对生产/全量回归 anchor 执行 `cargo test --workspace --locked -- --test-threads=1`，于 2026-10-29T05:00:28Z 结束，exitCode 0。本轮直接读取原始日志并汇总 121 条 `test result`，得到 1279 passed/0 failed/107 ignored，与 `workspace-tests-totals.json` 一致。该全量结果发生在最终测试强化之前；不声称对 366bb4c 再跑了全量。生产代码没有变化，最终 test-only 差异由上述新定向运行覆盖。
+
+107 ignored 不计通过，真实 PG 等外部后端验收仍留给对应阶段。其他 finish gates 仍由 executor 独占进行中，本报告不宣称全部收尾门禁完成。本次补签未运行 Cargo，仅提交本审查报告。
