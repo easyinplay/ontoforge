@@ -22,7 +22,7 @@
 
 ## Next Step
 
-P3 执行中：有效完成 07-01、07-02、07-03，共3/16；验收证据见各 SUMMARY 与 wave-gates。07-02独立复签和本地门禁已通过，真实服务未跑项交07-13/14。07-04已确认方案A：正式Action由宿主跟踪，HTTP超时返回504，任务继续，客户端用同一command_id显式查询/replay；当前启动07-04 executor。auto_advance=false，用户授权范围仍为Phase 7全部剩余13份PLAN。
+P3 执行中：有效完成07-01至07-04，共4/16；07-04 SUMMARY `a4b9576` Self-Check PASSED，真实HTTP Action/history/result 2/2、安全重放并发3/3、server回归/Clippy/fmt通过。方案A已实现：宿主跟踪、owned permit、HTTP超时504后任务继续、同command_id显式查询/replay。下一步唯一ready为07-05 OpenAPI/wire合同；auto_advance=false，用户授权范围仍为Phase 7全部剩余12份PLAN。
 
 ## Execution Order
 

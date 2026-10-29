@@ -2,20 +2,20 @@
 gsd_state_version: "1.0"
 current_phase: 7
 current_phase_name: REST & MCP Shell
-current_plan: 4
+current_plan: 5
 status: executing
-stopped_at: Phase 7 有效完成3/16，07-04 HTTP deadline行为待用户选择，详 phase task_plan
-last_updated: "2026-10-29T05:13:12Z"
-last_activity: "2026-10-29: 07-02 accepted; 07-04 decision pending"
-state_head: 01808e9
+stopped_at: Phase 7 有效完成4/16，07-04 accepted，下一步07-05
+last_updated: "2026-10-29T13:30:00Z"
+last_activity: "2026-10-29: 07-04 accepted; 07-05 ready"
+state_head: a4b9576
 progress:
   total_phases: 7
   completed_phases: 6
   total_plans: 88
-  completed_plans: 75
-  percent: 85
+  completed_plans: 76
+  percent: 86
 last_gate_trip: null
-last_activity_desc: Phase 7 有效完成3/16，07-04等待HTTP deadline行为选择
+last_activity_desc: Phase 7 有效完成4/16，07-04方案A与REST Action验收通过，07-05 ready
 ---
 
 # Project State
@@ -30,12 +30,12 @@ See: .planning/PROJECT.md (updated 2026-10-28)
 ## Current Position
 
 Phase: 7 (REST & MCP Shell) — EXECUTING
-Current Plan: 4
+Current Plan: 5
 Total Plans in Phase: 16
 Status: Executing
-Last activity: 2026-10-29: 07-02 accepted; 07-04 decision pending
+Last activity: 2026-10-29: 07-04 accepted; 07-05 ready
 
-Progress: [████████░░] 85%
+Progress: [████████░░] 86%
 
 ## Performance Metrics
 
@@ -49,7 +49,7 @@ Progress: [████████░░] 85%
 
 ### Pending Todos
 
-确认 07-04 HTTP deadline 行为 A/B，详 `phases/07-rest-mcp-shell/reviews/07-04-PREFLIGHT.md`；确认后顺序执行剩余13份PLAN。
+执行下一份 ready plan 07-05，真实服务与发行仍按07-13/14承接。
 
 ### Blockers/Concerns
 
@@ -57,7 +57,7 @@ Progress: [████████░░] 85%
 - [Phase 2]: 非阻塞安全 observations 待后续 phase 跟进（详: `phases/02-source-binding-engine/02-SECURITY.md` Observations）
 - [Phase 5]: 生产 webhook 联调与正式 gstack gate 待发布/PR 前完成；GSD 关闭警告详见 `phases/05-online-action/deferred-items.md`
 - [Phase 6]: 本地 PR review、CI 与增量复签通过；外部 Codex 审查不可用。Phase 1–5 历史 fingerprint staleness 待 milestone audit 复核，详 Phase 6 VERIFICATION。
-- [Phase 7]: 有效完成3/16；07-04行为决策待答复，详 phase task_plan。真实服务与发行仍待实施，L2-04/SCOPE-07 Pending；PR #7 不合并。
+- [Phase 7]: 有效完成4/16；07-04方案A和REST Action验收通过，07-05 ready。真实服务与发行仍待实施，L2-04/SCOPE-07 Pending；PR #7 不合并。
 
 ## Deferred Items
 
@@ -68,5 +68,5 @@ Progress: [████████░░] 85%
 ## Session Continuity
 
 Last session: 2026-10-28T17:07:42.404Z
-Stopped at: Phase 7 07-04 HTTP deadline行为待用户选择
+Stopped at: Phase 7 07-05 ready
 Resume file: .planning/phases/07-rest-mcp-shell/task_plan.md

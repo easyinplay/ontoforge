@@ -2,6 +2,7 @@
 
 - 2026-10-29：07-02 SUMMARY `01808e9` 已核对Self-Check PASSED，独立最终复签 `87f9367`，原5项resolved。workspace 1279 passed/0 failed/107 ignored，最终test-only差异由定向history和all-features Clippy闭环，build exit0。wave post三项已实际执行，边界见 `07-02-wave-gates.md`。有效完成3/16，整体75/88、85%；唯一ready为07-04，已重呈A/B行为决策，等待答复后恢复，不默认选A。整项requirements继续Pending，PR #7保持不合并。
 - 2026-10-29：用户确认07-04方案A。预查状态改为accepted：正式Action由宿主跟踪，HTTP deadline/断连只结束响应等待，任务继续；超时返回504，客户端以同一`command_id`显式replay或GET receipt确认，禁止自动重试。已将该决策写入 `reviews/07-04-PREFLIGHT.md` 和 task_plan，启动07-04 executor；未提前计入完成数。
+- 2026-10-29：07-04完成，SUMMARY `a4b9576`，Self-Check PASSED。RED `3f0d10c`，GREEN `e936057`，安全/permit修复 `53203ac`，格式化 `fc05a61`。真实HTTP `http_actions` 2/2、`http_action_safety` 3/3；server unit+integration全通过，Clippy/fmt通过。wave post schema无漂移，codebase无STRUCTURE跳过，UI无前端且scope degraded但不阻塞。有效完成4/16，整体76/88、86%；唯一ready为07-05。
 
 - 2026-10-29：07-02 真实 replay RED `930ee87`、共同锁测试 `df8b748`、关键GREEN `3c0fb76`；Action定向12 passed，storage定向15 passed/2 ignored。独立复验原5项发现与all-features Clippy/workspace门禁进行中，尚未新增SUMMARY或完成计数。07-04 HTTP deadline待决项详 `reviews/07-04-PREFLIGHT.md`，已向用户异步提问，相关实现尚未开始。
 
