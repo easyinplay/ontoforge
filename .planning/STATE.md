@@ -4,16 +4,16 @@ current_phase: 7
 current_phase_name: REST & MCP Shell
 current_plan: 16
 status: executing
-stopped_at: Phase 7 07-08 accepted; 07-16 ready, 07-11 decision pending
-last_updated: "2026-10-30T00:25:00Z"
+stopped_at: Completed 07-rest-mcp-shell-16-PLAN.md
+last_updated: "2026-10-29T17:12:19.504Z"
 last_activity: "2026-10-30: 07-08 accepted; 07-16 ready"
-state_head: bfbf4f6
+state_head: 785207d50cd877c7003db2c67b3db93ef443319a
 progress:
   total_phases: 7
   completed_phases: 6
   total_plans: 88
-  completed_plans: 82
-  percent: 93
+  completed_plans: 83
+  percent: 86
 last_gate_trip: null
 last_activity_desc: Phase 7 有效完成10/16，MCP L2/session transport验收通过，07-16 ready，07-11等待TS版本决策
 ---
@@ -35,7 +35,7 @@ Total Plans in Phase: 16
 Status: Ready to execute
 Last activity: 2026-10-30: 07-08 accepted; 07-16 ready
 
-Progress: [█████████░] 93%
+Progress: [█████████░] 86%
 
 ## Performance Metrics
 
@@ -47,6 +47,7 @@ Progress: [█████████░] 93%
 | Phase 07 P05 | 33m12s | 2 tasks | 7 files |
 | Phase 07 P10 | 65m | 2 tasks | 5 files |
 | Phase 07 P08 | 38m | 2 tasks | 6 files |
+| Phase 07-rest-mcp-shell P16 | 43m | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -59,6 +60,8 @@ Progress: [█████████░] 93%
 - [Phase 07]: ClientError保留HTTP状态、code、apiName、request_id和完整ErrorEnvelope，command_id回放必须显式调用
 - [Phase 07]: MCP raw adapters reuse validate_l2 and typed ExplainType with audit and limits
 - [Phase 07]: Legacy MCP session owners are bounded TTL entries and every tool request reauthenticates the principal
+- [Phase 07-rest-mcp-shell]: Serve MCP defaults通过手写clap适配器解析，保持既有ServeArgs字面量兼容
+- [Phase 07-rest-mcp-shell]: MCP qualified table解析使用07-15 typed resolver，缺上下文以MissingContext在发送前拒绝
 
 ### Pending Todos
 
@@ -80,6 +83,6 @@ Progress: [█████████░] 93%
 
 ## Session Continuity
 
-Last session: 2026-10-29T16:17:46.175Z
-Stopped at: Phase 7 07-08 accepted; 07-16 ready, 07-11 decision pending
+Last session: 2026-10-29T17:12:18.442Z
+Stopped at: Completed 07-rest-mcp-shell-16-PLAN.md
 Resume file: None
