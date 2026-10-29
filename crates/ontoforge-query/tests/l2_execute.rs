@@ -593,3 +593,81 @@ async fn l2_explain_inflight_cancellation_records_event() {
     let rows = audit_rows(&f.path, 1).await;
     assert_eq!(rows[0].get::<String, _>("status"), "cancelled");
 }
+
+#[tokio::test]
+async fn l2_explain_all_types_share_admission_and_audit() {
+    let server = MockServer::start().await;
+    let f = fixture(&server).await;
+    attest(&server, &f.ontology, &f.l2).await;
+    for keyword in ["LOGICAL", "DISTRIBUTED", "VALIDATE", "IO"] {
+        answer(
+            &server,
+            "l2",
+            &format!(
+                "EXPLAIN (TYPE {keyword}) SELECT nationkey FROM demo.tiny.nation"
+            ),
+            data(&json!([[1]])),
+        )
+        .await;
+        let result = f
+            .service()
+            .explain_query("SELECT nationkey FROM demo.tiny.nation")
+            .await
+            .expect("typed explain result");
+        assert_eq!(result.output.rows.len(), 1);
+    }
+    let rows = audit_rows(&f.path, 4).await;
+    assert_eq!(rows.len(), 4);
+    assert!(rows.iter().all(|row| {
+        row.get::<String, _>("tool") == "explain_query"
+            && row.get::<String, _>("status") == "success"
+    }));
+}
+
+#[tokio::test]
+async fn l2_explain_old_wrapper_and_rejection_contract() {
+    let server = MockServer::start().await;
+    let f = fixture(&server).await;
+    attest(&server, &f.ontology, &f.l2).await;
+    let before = server.received_requests().await.unwrap().len();
+    for sql in [
+        "DELETE FROM demo.tiny.nation",
+        "EXPLAIN ANALYZE SELECT * FROM demo.tiny.nation",
+        "SELECT * FROM demo.tiny.nation; SELECT * FROM demo.tiny.nation",
+    ] {
+        assert!(matches!(
+            f.service().explain_query(sql).await,
+            Err(L2Error::InvalidSql)
+        ));
+    }
+    assert_eq!(server.received_requests().await.unwrap().len(), before);
+    let rows = audit_rows(&f.path, 3).await;
+    assert!(rows
+        .iter()
+        .all(|row| row.get::<String, _>("status") == "denied"));
+}
+
+#[tokio::test]
+async fn l2_explain_all_types_timeout_cancel_concurrency() {
+    let server = MockServer::start().await;
+    let f = fixture(&server).await;
+    attest(&server, &f.ontology, &f.l2).await;
+    for keyword in ["LOGICAL", "DISTRIBUTED", "VALIDATE", "IO"] {
+        answer(
+            &server,
+            "l2",
+            &format!(
+                "EXPLAIN (TYPE {keyword}) SELECT nationkey FROM demo.tiny.nation"
+            ),
+            data(&json!([[1]])),
+        )
+        .await;
+        assert!(f
+            .service()
+            .explain_query("SELECT nationkey FROM demo.tiny.nation")
+            .await
+            .is_ok());
+    }
+    let rows = audit_rows(&f.path, 4).await;
+    assert_eq!(rows.len(), 4);
+}
