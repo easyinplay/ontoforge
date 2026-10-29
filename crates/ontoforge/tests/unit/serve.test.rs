@@ -446,3 +446,16 @@ async fn serve_real_listener_auth_and_shutdown() {
     );
     pool.close().await;
 }
+
+#[tokio::test]
+async fn openapi_export_without_store_is_deterministic() {
+    let dir = tempfile::tempdir().unwrap();
+    let first = Utf8PathBuf::from_path_buf(dir.path().join("one.json")).unwrap();
+    let parsed = Cli::try_parse_from([
+        "ontoforge",
+        "serve",
+        "--export-openapi",
+        first.as_str(),
+    ]);
+    assert!(parsed.is_ok(), "serve must accept --export-openapi FILE");
+}
