@@ -1,5 +1,7 @@
 # Phase 7 progress
 
+- 2026-10-29：07-02 独立只读审查发现 1 blocker、4 项验收覆盖缺口，详 `reviews/07-02-ACCEPTANCE-AUDIT.md`。原 SUMMARY 改为 IMPLEMENTATION-RECORD，完成计数有效 1/16。07-03 当前 executor 继续其独立 REST 修复，结束后顺序修复 07-02，07-04 等待。
+
 - 2026-10-29：主会话复核撤销 07-03 完成结论：路由字符串测试不满足真实 listener，两个指定 rest 用例缺失，http_contract 未走实际 HTTP；编译错误不能充 RED。原 SUMMARY 改为 `07-03-IMPLEMENTATION-RECORD.md` 保留历史，07-04 0/2 暂停且无生产改动。当前有效完成 2/16，先修复 07-03 验收。
 
 - 2026-10-29：07-03 两个 task 与 SUMMARY 已提交（`66c6a08`、`989535d`、`0ef3ba1`、`70a1c4e`），REST/http contract/tracer、fmt、server clippy 与 workspace 单线程回归通过；workspace 全量 clippy 受既有 `idempotency_pg.rs` 3 个 `large_futures` 阻塞，已记录为限制。已执行 3/16，唯一 ready 为 07-04。

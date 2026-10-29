@@ -1,5 +1,7 @@
 # Phase 7 findings
 
+- 2026-10-29 独立审查确认07-02 submit replay内部重读当前定义，违背snapshot；现有frozen_replay只测result lookup。SQLite race只是顺序读，PG用例吞错误无断言，fence/CAS/guard及history当前scope组合覆盖不足。修复清单唯一家为 `reviews/07-02-ACCEPTANCE-AUDIT.md`，保留原提交并撤销完成，不把默认workspace绿当作验收充分。
+
 - 2026-10-29 query audit 接口核查：list/aggregate 各自 reserve guard却只返回page，REST transport ID无法与 durable audit关联。Grok 本轮exit0完整意见支持同型 audited wrappers，拒绝扩大storage上下文。保留原finish/status/Drop语义，reserve失败None、单次reserve、旧wrapper兼容；具体合同见07-03-PLAN补充。
 
 - 2026-10-29 07-04 合同核查：`lib.rs` 是唯一 router 装配点，补白名单仅作注册；当前 principal 的 command lookup 后复用 domain result grant/expiry 检查；POST 过期 key 沿既有七天 TTL 可新执行，GET 过期不可见。Grok 第一次55秒超时无正文；第二次55秒超时但返回上述三项与撤销假完成的实质建议，仅作为部分第二意见，不标完整审查。结论以本地源码与既有 idempotency 测试交叉核对为准。

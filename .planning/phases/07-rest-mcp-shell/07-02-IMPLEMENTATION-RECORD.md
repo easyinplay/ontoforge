@@ -1,6 +1,7 @@
 ---
 phase: 07-rest-mcp-shell
 plan: 02
+acceptance_status: gaps_found
 subsystem: storage-action-history
 tags: [rust, sqlite, postgres, snapshots, actions, history]
 requires: [07-01]

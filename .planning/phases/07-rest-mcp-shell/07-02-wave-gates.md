@@ -1,5 +1,7 @@
 # 07-02 Wave Gates
 
+状态：撤销完成，gaps_found。下列仅保留此前命令结果；独立验收缺口见 `reviews/07-02-ACCEPTANCE-AUDIT.md`，不能视为原计划通过。
+
 日期：2026-10-29。实现证据见 `07-02-SUMMARY.md`。
 
 | 检查 | 实际结果 |
