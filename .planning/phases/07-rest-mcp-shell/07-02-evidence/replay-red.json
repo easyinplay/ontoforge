@@ -1,0 +1,17 @@
+{
+  "command": "C:\\Users\\easyi\\AppData\\Local\\Temp/ontoforge-phase07-nextest/cargo-nextest.exe nextest run --config-file .planning/phases/07-rest-mcp-shell/07-02-evidence/nextest.toml --profile gsd -p ontoforge-action --test frozen_definition --locked -E test(=frozen_replay_uses_current_grant_keeps_original_receipt)",
+  "exitCode": 100,
+  "runStartedAt": "2026-10-29T04:37:30.4765053Z",
+  "runFinishedAt": "2026-10-29T04:39:04.9639091Z",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07-rest-mcp-shell\\07-02-evidence\\replay-red.log",
+  "cargoBuildJobs": 2,
+  "output": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<testsuites name=\"nextest-run\" tests=\"1\" skipped=\"0\" failures=\"1\" errors=\"0\" uuid=\"f7b89400-ec52-4ecf-8353-8ab4fb6425d4\" timestamp=\"2026-10-29T12:39:04.779+08:00\" time=\"0.088\">\n    <testsuite name=\"ontoforge-action::frozen_definition\" tests=\"1\" skipped=\"0\" errors=\"0\" failures=\"1\">\n        <testcase name=\"frozen_replay_uses_current_grant_keeps_original_receipt\" classname=\"ontoforge-action::frozen_definition\" timestamp=\"2026-10-29T12:39:04.779+08:00\" time=\"0.086\">\n            <failure message=\"thread &apos;frozen_replay_uses_current_grant_keeps_original_receipt&apos; (22948) panicked at crates\\ontoforge-action\\tests\\frozen_definition.rs:196:5\" type=\"test failure with exit code 101\">thread &apos;frozen_replay_uses_current_grant_keeps_original_receipt&apos; (22948) panicked at crates\\ontoforge-action\\tests\\frozen_definition.rs:196:5:\nadmission snapshot replay must survive external Action removal: Err(ScopeDenied)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace</failure>\n            <system-out>\nrunning 1 test\ntest frozen_replay_uses_current_grant_keeps_original_receipt ... FAILED\n\nfailures:\n\nfailures:\n    frozen_replay_uses_current_grant_keeps_original_receipt\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.07s\n\n</system-out>\n            <system-err>\nthread &apos;frozen_replay_uses_current_grant_keeps_original_receipt&apos; (22948) panicked at crates\\ontoforge-action\\tests\\frozen_definition.rs:196:5:\nadmission snapshot replay must survive external Action removal: Err(ScopeDenied)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n</system-err>\n        </testcase>\n    </testsuite>\n</testsuites>\n",
+  "targetTest": "frozen_replay_uses_current_grant_keeps_original_receipt",
+  "targetFile": "crates/ontoforge-action/tests/frozen_definition.rs",
+  "expected": "snapshot replay returns original receipt after external Action removal",
+  "actual": "execute_with_snapshot returned ScopeDenied after external Action removal",
+  "reportPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07-rest-mcp-shell\\07-02-evidence\\replay-red.junit.xml",
+  "reportModifiedAt": "2026-10-29T04:39:04.8694072Z",
+  "semanticAssessment": "Real persisted command replay failed at admission snapshot assertion after another store removed Action; unchanged native JUnit contains assertion failure."
+}

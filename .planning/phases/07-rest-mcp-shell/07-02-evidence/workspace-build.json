@@ -1,0 +1,9 @@
+{
+  "command": "cargo build --workspace --locked",
+  "exitCode": 0,
+  "runStartedAt": "2026-10-29T05:02:36.6168286Z",
+  "runFinishedAt": "2026-10-29T05:03:55.8563236Z",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07-rest-mcp-shell\\07-02-evidence\\workspace-build.log",
+  "cargoBuildJobs": 2
+}

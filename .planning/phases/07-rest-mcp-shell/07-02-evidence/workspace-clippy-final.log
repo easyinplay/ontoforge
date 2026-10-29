@@ -1,0 +1,130 @@
+    Checking ontoforge-action v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-action)
+    Checking ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+error: this function has too many lines (104/100)
+   --> crates\ontoforge-action\tests\frozen_definition.rs:298:7
+    |
+298 | async fn frozen_replay_uses_current_grant_keeps_original_receipt() {
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#too_many_lines
+    = note: `-D clippy::too-many-lines` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::too_many_lines)]`
+
+error: could not compile `ontoforge-action` (test "frozen_definition") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: large future with a size of 45608 bytes
+  --> crates\ontoforge-storage\tests\request_snapshot.rs:41:5
+   |
+41 | /     metadata_contract(
+42 | |         &fixture.store,
+43 | |         &other,
+44 | |         &LockSource::Sqlite(fixture.side_pool().await),
+45 | |     )
+   | |_____^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#large_futures
+   = note: `-D clippy::large-futures` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::large_futures)]`
+help: consider `Box::pin` on it
+   |
+41 ~     Box::pin(metadata_contract(
+42 +         &fixture.store,
+43 +         &other,
+44 +         &LockSource::Sqlite(fixture.side_pool().await),
+45 +     ))
+   |
+
+error: large future with a size of 43760 bytes
+   --> crates\ontoforge-storage\tests\request_snapshot.rs:163:18
+    |
+163 |     let during = race_snapshot(other, locks, reload(store, &changed, &opts)).await;
+    |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: consider `Box::pin` on it: `Box::pin(race_snapshot(other, locks, reload(store, &changed, &opts)))`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#large_futures
+
+error: consider adding a `;` to the last statement for consistent formatting
+   --> crates\ontoforge-storage\tests\request_snapshot.rs:184:9
+    |
+184 | /         binding.subjects = vec![ontoforge_schema::ir::Subject::User(
+185 | |             "snapshot|new".to_owned(),
+186 | |         )]
+    | |__________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#semicolon_if_nothing_returned
+    = note: `-D clippy::semicolon-if-nothing-returned` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::semicolon_if_nothing_returned)]`
+help: add a `;` here
+    |
+184 |         binding.subjects = vec![ontoforge_schema::ir::Subject::User(
+185 |             "snapshot|new".to_owned(),
+186 ~         )];
+    |
+
+error: large future with a size of 34568 bytes
+   --> crates\ontoforge-storage\tests\request_snapshot.rs:192:18
+    |
+192 |       let during = race_snapshot(
+    |  __________________^
+193 | |         other,
+194 | |         locks,
+195 | |         store.scope_apply(&updated, &props, &plan.hash, "snapshot-test"),
+196 | |     )
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#large_futures
+help: consider `Box::pin` on it
+    |
+192 ~     let during = Box::pin(race_snapshot(
+193 +         other,
+194 +         locks,
+195 +         store.scope_apply(&updated, &props, &plan.hash, "snapshot-test"),
+196 +     ))
+    |
+
+error: large future with a size of 34568 bytes
+   --> crates\ontoforge-storage\tests\request_snapshot.rs:213:18
+    |
+213 |       let during = race_snapshot(
+    |  __________________^
+214 | |         other,
+215 | |         locks,
+216 | |         store.scope_apply(&revoked, &props, &plan.hash, "snapshot-test"),
+217 | |     )
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#large_futures
+help: consider `Box::pin` on it
+    |
+213 ~     let during = Box::pin(race_snapshot(
+214 +         other,
+215 +         locks,
+216 +         store.scope_apply(&revoked, &props, &plan.hash, "snapshot-test"),
+217 +     ))
+    |
+
+error: large future with a size of 45608 bytes
+   --> crates\ontoforge-storage\tests\request_snapshot.rs:268:5
+    |
+268 | /     metadata_contract(
+269 | |         &fixture.store,
+270 | |         &other,
+271 | |         &LockSource::Postgres(
+...   |
+274 | |         ),
+275 | |     )
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#large_futures
+help: consider `Box::pin` on it
+    |
+268 ~     Box::pin(metadata_contract(
+269 +         &fixture.store,
+270 +         &other,
+271 +         &LockSource::Postgres(
+272 +             fixture.side().clone(),
+273 +             ontoforge_storage::store::definition_lock_key(&fixture.schema_edit),
+274 +         ),
+275 +     ))
+    |
+
+error: could not compile `ontoforge-storage` (test "request_snapshot") due to 6 previous errors

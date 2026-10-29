@@ -1,0 +1,30 @@
+   Compiling ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+   Compiling ontoforge-query v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-query)
+   Compiling ontoforge-action v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-action)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 32s
+────────────
+ Nextest run ID f7b89400-ec52-4ecf-8353-8ab4fb6425d4 with nextest profile: gsd
+    Starting 1 test across 1 binary (2 tests skipped)
+        FAIL [   0.086s] (1/1) ontoforge-action::frozen_definition frozen_replay_uses_current_grant_keeps_original_receipt
+  stdout ───
+
+    running 1 test
+    test frozen_replay_uses_current_grant_keeps_original_receipt ... FAILED
+
+    failures:
+
+    failures:
+        frozen_replay_uses_current_grant_keeps_original_receipt
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.07s
+
+  stderr ───
+
+    thread 'frozen_replay_uses_current_grant_keeps_original_receipt' (22948) panicked at crates\ontoforge-action\tests\frozen_definition.rs:196:5:
+    admission snapshot replay must survive external Action removal: Err(ScopeDenied)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.088s] 1 test run: 0 passed, 1 failed, 2 skipped
+        FAIL [   0.086s] (1/1) ontoforge-action::frozen_definition frozen_replay_uses_current_grant_keeps_original_receipt
+error: test run failed

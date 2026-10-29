@@ -1,0 +1,9 @@
+{
+  "command": "node C:/Users/easyi/.codex/gsd-core/bin/gsd-tools.cjs check tdd-red-evidence .planning/phases/07-rest-mcp-shell/07-02-evidence/replay-red.json --raw",
+  "exitCode": 0,
+  "runStartedAt": "2026-10-29T04:56:58.9835839Z",
+  "runFinishedAt": "2026-10-29T04:57:00.3334660Z",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07-rest-mcp-shell\\07-02-evidence\\tdd-red-gate.log",
+  "cargoBuildJobs": 2
+}
