@@ -22,7 +22,7 @@
 
 ## Next Step
 
-P3 执行中：有效完成 07-01、07-03，共 2/16；07-03 的真实 HTTP、独立审查与 workspace 回归证据见 `07-03-SUMMARY.md`，wave build exit 0。下一步修复 07-02 的 replay 固定定义与验收缺口，详 `reviews/07-02-ACCEPTANCE-AUDIT.md`，通过后恢复 07-04。auto_advance=false，仅执行用户指定 Phase 7 的全部剩余 PLAN。
+P3 执行中：有效完成 07-01、07-02、07-03，共3/16；验收证据见各 SUMMARY 与 wave-gates。07-02独立复签和本地门禁已通过，真实服务未跑项交07-13/14。唯一ready为07-04，先等待用户确认 `reviews/07-04-PREFLIGHT.md` 中HTTP deadline行为A/B，再同步PLAN并下放实现；不默认选择。auto_advance=false，用户授权范围仍为Phase 7全部剩余13份PLAN。
 
 ## Execution Order
 
