@@ -265,14 +265,14 @@ Plans:
   5. `ontoforge serve --dev`（SQLite 替身 + dev token）在 Windows 本机零外部依赖跑通示例 ontology 的查询 → Action → 历史演示；release workflow 发布 Linux / macOS / Windows 二进制
   6. 服务启动并维持 Phase 6 的 L2 ACL attestation；无法证明或证明过期时 L2 禁用，`/health` 告警并暴露脱敏原因，覆盖失败和恢复的端到端测试（ADR-0028）
 
-**Plans**: 7/16 verified；07-06、07-15 accepted，2026-10-29；详: `.planning/phases/07-rest-mcp-shell/task_plan.md`
+**Plans**: 9/16 verified；07-07、07-10 accepted，2026-10-29；详: `.planning/phases/07-rest-mcp-shell/task_plan.md`
 - [x] 07-01-PLAN.md
 - [x] 07-02-PLAN.md
 - [x] 07-03-PLAN.md
 - [x] 07-04-PLAN.md
 - [x] 07-05-PLAN.md
 - [x] 07-06-PLAN.md
-- [ ] 07-07-PLAN.md
+- [x] 07-07-PLAN.md
 - [ ] 07-08-PLAN.md
 - [ ] 07-09-PLAN.md
 - [x] 07-10-PLAN.md
@@ -298,4 +298,4 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7（纵切片
 | 4. Scoped L0 Read | 7/7 | Complete    | 2026-10-23 |
 | 5. Online Action | 7/7 | Complete    | 2026-10-26 |
 | 6. L2 Raw DQL, Toolsets & Audit | 11/11 | Complete | 2026-10-28 |
-| 7. REST & MCP Shell | 8/16 | Executing | - |
+| 7. REST & MCP Shell | 9/16 | Executing | - |

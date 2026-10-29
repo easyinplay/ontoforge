@@ -2,20 +2,20 @@
 gsd_state_version: "1.0"
 current_phase: 7
 current_phase_name: REST & MCP Shell
-current_plan: 7
+current_plan: 8
 status: executing
-stopped_at: Completed 07-10-PLAN.md
-last_updated: "2026-10-29T15:37:40.956Z"
-last_activity: "2026-10-29: 07-06 and 07-15 accepted; wave 7 ready"
-state_head: 160d955aa5aaca00aa81a7ad1b0e5bbd8ed8f166
+stopped_at: Phase 7 wave 7 complete; 07-08 ready, 07-11 decision pending
+last_updated: "2026-10-29T23:50:00Z"
+last_activity: "2026-10-29: 07-07 and 07-10 accepted; 07-08 ready"
+state_head: f96ebf8
 progress:
   total_phases: 7
   completed_phases: 6
   total_plans: 88
-  completed_plans: 80
-  percent: 86
+  completed_plans: 81
+  percent: 92
 last_gate_trip: null
-last_activity_desc: Phase 7 有效完成7/16，health/shutdown与typed EXPLAIN验收通过，07-07/10/11 ready
+last_activity_desc: Phase 7 有效完成9/16，MCP core/full与Rust client验收通过，07-08 ready，07-11等待TS版本决策
 ---
 
 # Project State
@@ -30,12 +30,12 @@ See: .planning/PROJECT.md (updated 2026-10-28)
 ## Current Position
 
 Phase: 7 (REST & MCP Shell) — EXECUTING
-Current Plan: 7
+Current Plan: 8
 Total Plans in Phase: 16
 Status: Ready to execute
-Last activity: 2026-10-29: 07-06 and 07-15 accepted; wave 7 ready
+Last activity: 2026-10-29: 07-07 and 07-10 accepted; 07-08 ready
 
-Progress: [█████████░] 86%
+Progress: [█████████░] 92%
 
 ## Performance Metrics
 
@@ -59,7 +59,7 @@ Progress: [█████████░] 86%
 
 ### Pending Todos
 
-并行执行 wave 7 ready plans 07-07、07-10、07-11；真实服务与发行仍按07-13/14承接。
+执行 07-08；07-11 等待用户确认 TypeScript 5/7 生成工具兼容方案，真实服务与发行仍按07-13/14承接。
 
 ### Blockers/Concerns
 
@@ -67,7 +67,7 @@ Progress: [█████████░] 86%
 - [Phase 2]: 非阻塞安全 observations 待后续 phase 跟进（详: `phases/02-source-binding-engine/02-SECURITY.md` Observations）
 - [Phase 5]: 生产 webhook 联调与正式 gstack gate 待发布/PR 前完成；GSD 关闭警告详见 `phases/05-online-action/deferred-items.md`
 - [Phase 6]: 本地 PR review、CI 与增量复签通过；外部 Codex 审查不可用。Phase 1–5 历史 fingerprint staleness 待 milestone audit 复核，详 Phase 6 VERIFICATION。
-- [Phase 7]: 有效完成7/16；07-06 health/shutdown与07-15 typed EXPLAIN验收通过，07-07/10/11 ready。真实服务与发行仍待实施，L2-04/SCOPE-07 Pending；PR #7 不合并。
+- [Phase 7]: 有效完成9/16；07-07 MCP core/full与07-10 Rust client验收通过，07-08 ready，07-11等待TS版本决策。真实服务与发行仍待实施，L2-04/SCOPE-07 Pending；PR #7 不合并。
 
 ## Deferred Items
 
@@ -78,5 +78,5 @@ Progress: [█████████░] 86%
 ## Session Continuity
 
 Last session: 2026-10-29T15:37:37.147Z
-Stopped at: Completed 07-10-PLAN.md
+Stopped at: Phase 7 wave 8 ready; 07-11 decision pending
 Resume file: None

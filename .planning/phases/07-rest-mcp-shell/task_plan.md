@@ -22,7 +22,7 @@
 
 ## Next Step
 
-P3 执行中：有效完成07-01至07-06、07-15，共7/16。07-06 SUMMARY `49d5215` Self-Check PASSED：health 4/4、CLI shutdown 8/8；07-15 SUMMARY `4f77441` Self-Check PASSED：engine/query typed EXPLAIN、qualified identifier、L2 service 15/15、Clippy通过。下一波唯一ready为07-07、07-10、07-11，三者文件边界独立，将并行执行；auto_advance=false，用户授权范围仍为Phase 7全部剩余9份PLAN。
+P3 执行中：有效完成07-01至07-07、07-10、07-15，共9/16。07-07 SUMMARY `f96ebf8` Self-Check PASSED：MCP真实rmcp HTTP、mcp_contract 4/4、mcp_actions 4/4；07-10 SUMMARY `bfca4fa` Self-Check PASSED：Rust client真实HTTP contract 5/5。07-08 ready；07-11因openapi-typescript与TypeScript版本冲突等待用户决策，不默认改版本。auto_advance=false，用户授权范围仍为Phase 7全部剩余7份PLAN。
 
 ## 07-05 Execution
 
