@@ -1,5 +1,9 @@
 # Phase 7 findings
 
+- 2026-10-29 07-04 合同核查：`lib.rs` 是唯一 router 装配点，补白名单仅作注册；当前 principal 的 command lookup 后复用 domain result grant/expiry 检查；POST 过期 key 沿既有七天 TTL 可新执行，GET 过期不可见。Grok 第一次55秒超时无正文；第二次55秒超时但返回上述三项与撤销假完成的实质建议，仅作为部分第二意见，不标完整审查。结论以本地源码与既有 idempotency 测试交叉核对为准。
+
+- 2026-10-29 验收纠偏：不能只消费 executor 的 PLAN COMPLETE 或套名测试。07-03 实际 rest unit 仅常量断言，http_contract 直接构造 helper response/空 page，缺乏计划要求的真实 listener/source/storage 证据。已撤销完成标记，保留生产提交，要求补真实 HTTP 行为测试与可归因 RED。后续每份 SUMMARY 必须逐项对照验收测试的实际含义，不能只数 passed。
+
 - 2026-10-29 wave 3 收尾：四条 REST 路由与结构化错误 envelope 已接入，使用请求 snapshot；workspace clippy all-features 的唯一失败来自既有 `crates/ontoforge-action/tests/idempotency_pg.rs`，不属于本 plan 文件，不能标记全量 clippy passed。真实 PG/Trino/private 仍归环境验收计划。
 
 - 2026-10-29 wave 2 收尾：RequestSnapshot 已模块化，Action/history 提供 snapshot-aware 入口并保留旧 wrappers；history visibility short-circuit 回归已修复。`cargo tree ... -i native-tls` 因无 package ID 返回 101，但 TLS gate 结论为无 native-tls 依赖；不能把该探针写成通过。核心授权与 race 逻辑继续要求 TDD，真实 PG race 归 07-13。

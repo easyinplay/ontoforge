@@ -1,5 +1,7 @@
 # 07-03 Wave Gates
 
+状态：撤销完成，gaps_found。以下是此前命令结果，不能代表计划验收通过；缺口见 `07-03-IMPLEMENTATION-RECORD.md`。
+
 日期：2026-10-29。实现证据见 `07-03-SUMMARY.md`。
 
 | 检查 | 实际结果 |

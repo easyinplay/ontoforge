@@ -36,7 +36,7 @@ metrics:
   commits: 3
   plan_head_before: 7e4953b1b34c8cc9291a10f5ee70b6635ec78e97
   plan_head_after: 0ef3ba1f4dc4c725f98d68368ec7e43462c9a0e
-status: complete
+status: gaps_found
 ---
 
 # Phase 07 Plan 03: REST 元数据、对象集与统一错误 Summary
@@ -87,7 +87,9 @@ status: complete
 - `989535d`: `test(07-03): enforce structured HTTP rejection contracts`
 - `0ef3ba1`: `fix(07-03): satisfy strict REST lint checks`
 
-## Self-Check: PASSED
+## Self-Check: FAILED
+
+主会话 2026-10-29 复核撤销完成结论：`rest_metadata_and_all_l0_operations` 仅检查常量，不走真实 listener；`rest_equal_sort_keys_empty_nullable_and_pagination` 与 `rest_reload_and_revoke_freeze_inflight_only` 缺失。`http_contract` 直接调用 helper/DTO，未验证承诺的真实 HTTP 拒绝、限额、取消和审计故障。此前 RED 为作用域编译错误，不构成行为 RED。保留本记录作为实际提交历史，补齐合同后才能重新生成完成 SUMMARY。
 
 - All created production/test files exist.
 - All three plan commits are ancestors of `HEAD`.

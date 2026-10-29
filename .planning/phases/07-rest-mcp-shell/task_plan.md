@@ -22,7 +22,7 @@
 
 ## Next Step
 
-P3 执行中：07-01、07-02、07-03 已完成，证据见各自 SUMMARY 与 wave gate 记录；下一步执行唯一 ready 的 `07-04-PLAN.md`。auto_advance=false，仅执行用户指定 Phase 7 的全部剩余 PLAN。32 个 task 的验收映射见 `07-VALIDATION.md`，需求与边界映射见 `07-EDGE-COVERAGE.md`，最终计划审查见 `reviews/07-PLAN-CHECK-R2.md`。
+P3 执行中：07-01、07-02 已完成；07-03 实现存在但真实 HTTP 验收不完整，完成结论已撤销，详 `07-03-IMPLEMENTATION-RECORD.md`。下一步补齐 `07-03-PLAN.md` 的真实 listener、分页/snapshot/race 与故障分支测试，通过后恢复 07-04。auto_advance=false，仅执行用户指定 Phase 7 的全部剩余 PLAN。验收映射见 `07-VALIDATION.md`、`07-EDGE-COVERAGE.md`。
 
 ## Execution Order
 
