@@ -1,0 +1,8 @@
+{
+  "command": "cargo test --workspace --locked -- --test-threads=1",
+  "exitCode": 0,
+  "runStartedAt": "2026-10-29T04:06:49.6138073Z",
+  "runFinishedAt": "2026-10-29T04:22:52.7004087Z",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07-rest-mcp-shell\\07-03-evidence\\workspace-tests-jobs2.log"
+}

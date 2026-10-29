@@ -4,7 +4,7 @@
 
 - 基线：`0a84fee3d9a69bd1777f35f2f580a5ddc1efb1b1`，`gsd/phase-07-rest-mcp-shell`，根目录已核验。
 - 既有 complete 记录不构成验收：路由字符串测试、helper 测试、编译错误 RED 均无效。下方历史记录保留用于追溯。
-- 当前：六个指定真实验收测试、三个 tracer、13个 Query audit 回归均已通过；workspace gate 运行中，尚未输出完成信号。
+- 当前：六个指定真实验收测试、三个tracer、13个Query audit回归通过；workspace test最终1279 passed/0 failed/107 ignored。业务修复已提交，SUMMARY与自检收口中；all-features Clippy仍有三项既有Action错误。
 - 已读取 GSD 执行/TDD、planning-with-files 与 superpowers TDD 规则；本执行者只维护本台账和证据，不写主会话状态文件。
 - `AGENTS.md`/`RTK.md` 不存在于项目根，遵循派发中提供的规则。无 `.codegraph/`，无需 CodeGraph。
 - Warp 与 `ralph-loop` 未暴露，不声称使用。未触发新功能战略讨论；原 PLAN 已锁定范围，新增 API 灰区向主会话回流。
@@ -29,6 +29,8 @@
 - `workspace-clippy-fixed`：exit101，仅既有 `crates/ontoforge-action/tests/idempotency_pg.rs:242/257/398` 三处 `large_futures`（16464 bytes），按范围边界不修改Action。首次workspace Clippy检出本次observer测试102行，移出局部imports后已无本次lint。
 - TLS负向依赖检查：`tls-native-final` / `tls-openssl-final` 各exit101且报 package ID did not match any packages，含义是lock依赖图不存在native-tls/openssl-sys，不把非零码写成命令通过。
 - 证据脚本只增加空日志初始化，以保留静默成功命令的原始零字节log；该可逆工具记录修正不属业务逻辑，跳过单独TDD，已通过实际fmt gate验证。
+- `workspace-tests-jobs2`：实际PowerShell子进程 `CARGO_BUILD_JOBS=2`，原命令 `cargo test --workspace --locked -- --test-threads=1`；UTC04:06:49.6138073至04:22:52.7004087，exit0。121组结果累计1279 passed/0 failed/107 ignored/0 filtered，包含doctests；忽略项与default-feature下0 tests的PG套件均不计通过，原始log可逐条追溯。
+- 最终业务提交：`93fad96`。独立审查 `reviews/07-03-ACCEPTANCE-AUDIT.md` 已由主会话确认metadata/405/PK预算三项resolved；共享STATE/ROADMAP/REQUIREMENTS和跨phase缺陷登记归主会话维护。
 
 ## 范围
 
