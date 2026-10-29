@@ -506,11 +506,24 @@ impl<E: Engine> QueryService<'_, E> {
         reason = "keeps the bounded source and edit state machine together"
     )]
     pub async fn execute_list(&self, query: &ValidatedQuery) -> Result<ListPage, QueryError> {
+        self.execute_list_audited(query).await.result
+    }
+
+    pub async fn execute_list_audited(
+        &self,
+        query: &ValidatedQuery,
+    ) -> crate::QueryExecution<ListPage> {
         let audit = self
             .store
             .read_audit()
-            .reserve(self.audit_metadata("query.list", &query.request.set))
-            .map_err(|_| QueryError::AuditUnavailable)?;
+            .reserve(self.audit_metadata("query.list", &query.request.set));
+        let Ok(audit) = audit else {
+            return crate::QueryExecution {
+                request_id: None,
+                result: Err(QueryError::AuditUnavailable),
+            };
+        };
+        let request_id = Some(audit.request_id().to_owned());
         let mut budget = WorkBudget::with_audit(self.limits, audit);
         let result = self.execute_list_with_budget(query, &mut budget).await;
         let (status, count) = match &result {
@@ -518,8 +531,8 @@ impl<E: Engine> QueryService<'_, E> {
             Err(QueryError::Source | QueryError::Store) => (ReadAuditStatus::SourceError, 0),
             Err(_) => (ReadAuditStatus::Denied, 0),
         };
-        budget.finish_audit(status, count)?;
-        result
+        let result = budget.finish_audit(status, count).and(result);
+        crate::QueryExecution { request_id, result }
     }
 
     async fn execute_list_with_budget(

@@ -246,11 +246,12 @@ pub async fn query<E: Engine + Send + Sync + 'static>(
         limits: ExecutionLimits::phase4_default(),
         tokens: &host.tokens,
     }
-    .execute_list(&validated)
+    .execute_list_audited(&validated)
     .await;
-    match result {
-        Ok(value) => error::response(StatusCode::OK, &request_id, json!(value)),
-        Err(e) => error::wire(error::query_status(&e), e.code(), "query", &request_id),
+    let request_id = result.request_id.as_deref().unwrap_or(&request_id);
+    match result.result {
+        Ok(value) => error::response(StatusCode::OK, request_id, json!(value)),
+        Err(e) => error::wire(error::query_status(&e), e.code(), "query", request_id),
     }
 }
 
@@ -310,7 +311,7 @@ pub async fn aggregate<E: Engine + Send + Sync + 'static>(
         limits: ExecutionLimits::phase4_default(),
         tokens: &host.tokens,
     }
-    .execute_aggregate(
+    .execute_aggregate_audited(
         ast::AggregateRequest {
             set,
             group_by,
@@ -320,13 +321,14 @@ pub async fn aggregate<E: Engine + Send + Sync + 'static>(
         AggregateLimits::phase4_default(),
     )
     .await;
-    match result {
-        Ok(value) => error::response(StatusCode::OK, &request_id, json!(value)),
+    let request_id = result.request_id.as_deref().unwrap_or(&request_id);
+    match result.result {
+        Ok(value) => error::response(StatusCode::OK, request_id, json!(value)),
         Err(e) => error::wire(
             error::aggregate_status(&e),
             error::aggregate_code(&e),
             "aggregate",
-            &request_id,
+            request_id,
         ),
     }
 }

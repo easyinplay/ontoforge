@@ -55,9 +55,9 @@ pub struct QueryPage {
 }
 
 /// A query result and the identifier assigned by its audit reservation, when available.
-pub struct QueryExecution {
+pub struct QueryExecution<T = QueryPage, E = QueryError> {
     pub request_id: Option<String>,
-    pub result: Result<QueryPage, QueryError>,
+    pub result: Result<T, E>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]

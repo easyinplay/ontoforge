@@ -13,6 +13,9 @@
 - 03-1：三个真实 REST 测试初轮通过，证明既有操作/排序/snapshot 行为；不为这些 GREEN 行为制造 RED。
 - 03-1 修复 RED：`rest-audit-red.json` 原生 nextest JUnit，实际 HTTP query ID 未匹配 durable query.list audit ID。测试执行至预期断言，非编译/fixture 失败。
 - 03-1 追加边界：实际 9 MiB 对象产生短页、`truncated=true`、`hasMore=true`，后续通过 cursor 延续读取。
+- 03-1 GREEN：`rest-green.json`，指定三个真实用例全部通过，0 ignored。
+- 03-2 RED：`http-framework-red.json`，非法 UTF-8 path 返回纯文本，统一 envelope 断言失败；非 fixture 或 JSON parser 错误。
+- 主会话批准 request-scoped Engine adapter 仅按 EngineError 类型记录 Timeout/Cancelled，普通 Source 映射保留；HTTP timer 明确 deadline，Drop 审计保持原语义。
 
 ## 范围
 

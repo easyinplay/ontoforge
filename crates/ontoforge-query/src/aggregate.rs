@@ -880,11 +880,28 @@ impl<E: Engine> QueryService<'_, E> {
         capabilities: AggregateCapabilities,
         limits: AggregateLimits,
     ) -> Result<AggregateResult, AggregateError> {
+        self.execute_aggregate_audited(request, capabilities, limits)
+            .await
+            .result
+    }
+
+    pub async fn execute_aggregate_audited(
+        &self,
+        request: AggregateRequest,
+        capabilities: AggregateCapabilities,
+        limits: AggregateLimits,
+    ) -> crate::QueryExecution<AggregateResult, AggregateError> {
         let audit = self
             .store
             .read_audit()
-            .reserve(self.audit_metadata("query.aggregate", &request.set))
-            .map_err(|_| AggregateError::AuditUnavailable)?;
+            .reserve(self.audit_metadata("query.aggregate", &request.set));
+        let Ok(audit) = audit else {
+            return crate::QueryExecution {
+                request_id: None,
+                result: Err(AggregateError::AuditUnavailable),
+            };
+        };
+        let request_id = Some(audit.request_id().to_owned());
         let mut budget = WorkBudget::with_audit(self.limits, audit);
         let result = self
             .execute_aggregate_inner(request, capabilities, limits, &mut budget)
@@ -896,8 +913,11 @@ impl<E: Engine> QueryService<'_, E> {
             }
             Err(_) => (ReadAuditStatus::Denied, 0),
         };
-        budget.finish_audit(status, count)?;
-        result
+        let result = budget
+            .finish_audit(status, count)
+            .map_err(AggregateError::from)
+            .and(result);
+        crate::QueryExecution { request_id, result }
     }
 
     #[allow(
