@@ -325,7 +325,7 @@ pub async fn aggregate<E: Engine + Send + Sync + 'static>(
         Ok(value) => error::response(StatusCode::OK, &request_id, json!(value)),
         Err(e) => error::wire(
             error::aggregate_status(&e),
-            "INVALID_QUERY",
+            error::aggregate_code(&e),
             "aggregate",
             &request_id,
         ),

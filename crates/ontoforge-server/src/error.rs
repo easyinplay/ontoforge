@@ -37,6 +37,18 @@ pub fn aggregate_status(error: &AggregateError) -> StatusCode {
         _ => StatusCode::BAD_REQUEST,
     }
 }
+
+pub fn aggregate_code(error: &AggregateError) -> &'static str {
+    match error {
+        AggregateError::InvalidQuery => "INVALID_QUERY",
+        AggregateError::Unsupported => "UNSUPPORTED",
+        AggregateError::AggregateCostExceeded => "COST_EXCEEDED",
+        AggregateError::Source => "SOURCE_UNAVAILABLE",
+        AggregateError::Store => "STORE_UNAVAILABLE",
+        AggregateError::AuditUnavailable => "AUDIT_UNAVAILABLE",
+        AggregateError::UnsupportedNumericValue => "UNSUPPORTED_NUMERIC_VALUE",
+    }
+}
 pub fn json_rejection(api_name: &str, request_id: &str) -> Response {
     wire(
         StatusCode::BAD_REQUEST,
@@ -44,4 +56,16 @@ pub fn json_rejection(api_name: &str, request_id: &str) -> Response {
         api_name,
         request_id,
     )
+}
+
+pub async fn not_found(request: axum::extract::Request) -> Response {
+    let request_id = ulid::Ulid::generate().to_string();
+    let api_name = request
+        .uri()
+        .path()
+        .split('/')
+        .next_back()
+        .filter(|value| !value.is_empty())
+        .unwrap_or("unknown");
+    wire(StatusCode::NOT_FOUND, "NOT_FOUND", api_name, &request_id)
 }

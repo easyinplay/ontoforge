@@ -71,6 +71,7 @@ impl<E: Engine + Send + Sync + 'static> ServerHost<E> {
             )
             .route("/api/query", axum::routing::post(rest::query::<E>))
             .route("/api/aggregate", axum::routing::post(rest::aggregate::<E>))
+            .fallback(error::not_found)
             .with_state(Arc::clone(&self));
         let served = axum::serve(listener, router)
             .with_graceful_shutdown(shutdown)
