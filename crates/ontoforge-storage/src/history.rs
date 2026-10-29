@@ -36,7 +36,7 @@ pub struct HistoryRequest<'a> {
     pub attrs: &'a Attrs,
     /// The object as the caller sees it now, source overlay included; `None` when it does not
     /// exist.
-    pub current_row: Option<&'a dyn RowValues>,
+    pub current_row: Option<&'a (dyn RowValues + Sync)>,
     pub caller: CallerKind,
     pub limit: u32,
     /// Only entries with a smaller `seq` are returned.

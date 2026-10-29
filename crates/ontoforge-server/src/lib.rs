@@ -133,6 +133,18 @@ impl<E: Engine + Send + Sync + 'static> ServerHost<E> {
             )
             .route("/api/query", axum::routing::post(rest::query::<E>))
             .route("/api/aggregate", axum::routing::post(rest::aggregate::<E>))
+            .route(
+                "/api/actions/{action}",
+                axum::routing::post(rest::action::<E>),
+            )
+            .route(
+                "/api/commands/{command_id}",
+                axum::routing::get(rest::command_result::<E>),
+            )
+            .route(
+                "/api/objects/{object_type}/{pk}/history",
+                axum::routing::get(rest::history::<E>),
+            )
             .fallback(error::not_found)
             .method_not_allowed_fallback(error::method_not_allowed)
             .layer(axum::Extension(limits))
@@ -144,6 +156,7 @@ impl<E: Engine + Send + Sync + 'static> ServerHost<E> {
         let served = axum::serve(listener, router)
             .with_graceful_shutdown(shutdown)
             .await;
+        context::wait_actions(&self).await;
         let drained = self.store.read_audit().shutdown().await;
         served.map_err(|_| HostError::Listener)?;
         drained.map_err(|_| HostError::AuditDrain)

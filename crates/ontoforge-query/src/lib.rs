@@ -593,7 +593,7 @@ fn engine_json(value: ontoforge_engine::Value) -> Result<Value, QueryError> {
     }
 }
 
-pub(crate) fn scope_scalar(value: &Value) -> Scalar {
+pub fn scope_scalar(value: &Value) -> Scalar {
     match value {
         Value::Bool(v) => Scalar::Bool(*v),
         Value::Number(v) => v.as_i64().map_or_else(

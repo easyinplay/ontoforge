@@ -49,7 +49,7 @@ async fn http_action_validate_submit_history_result() {
     assert!(history["entries"].as_array().unwrap().iter().any(|entry| {
         entry["action"] == "delayFlight"
     }));
-    assert_eq!(f.finish().await.len(), 1);
+    assert_eq!(f.finish_actions().await.len(), 1);
 }
 
 #[tokio::test]

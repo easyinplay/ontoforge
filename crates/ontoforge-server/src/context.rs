@@ -1,6 +1,8 @@
 use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::sync::Arc;
 use std::sync::Mutex;
+use std::sync::OnceLock;
 use std::time::Duration;
 
 use axum::http::{HeaderMap, StatusCode, header};
@@ -14,6 +16,29 @@ use ontoforge_engine::{
 use ontoforge_storage::store::ActiveDefinition;
 
 use crate::{ServerHost, error};
+
+#[derive(Clone)]
+pub struct AdmissionPermit(pub Arc<Mutex<Option<tokio::sync::OwnedSemaphorePermit>>>);
+
+static ACTION_TASKS: OnceLock<Mutex<HashMap<usize, Vec<tokio::task::JoinHandle<()>>>>> =
+    OnceLock::new();
+
+fn task_registry() -> &'static Mutex<HashMap<usize, Vec<tokio::task::JoinHandle<()>>>> {
+    ACTION_TASKS.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+pub fn register_action<E>(host: &ServerHost<E>, task: tokio::task::JoinHandle<()>) {
+    let key = std::ptr::from_ref(&host.store) as usize;
+    task_registry().lock().unwrap().entry(key).or_default().push(task);
+}
+
+pub async fn wait_actions<E>(host: &ServerHost<E>) {
+    let key = std::ptr::from_ref(&host.store) as usize;
+    let tasks = task_registry().lock().unwrap().remove(&key).unwrap_or_default();
+    for task in tasks {
+        let _ = task.await;
+    }
+}
 
 #[derive(Clone)]
 pub struct RequestTrace {
@@ -75,7 +100,7 @@ pub async fn admit(
         .nth(2)
         .unwrap_or("unknown")
         .to_owned();
-    let Ok(_permit) = slots.try_acquire_owned() else {
+    let Ok(permit) = slots.try_acquire_owned() else {
         return error::wire(
             StatusCode::TOO_MANY_REQUESTS,
             "CONCURRENCY_LIMIT",
@@ -83,6 +108,9 @@ pub async fn admit(
             &trace.id(),
         );
     };
+    request
+        .extensions_mut()
+        .insert(AdmissionPermit(Arc::new(Mutex::new(Some(permit)))));
     request.extensions_mut().insert(trace.clone());
     match tokio::time::timeout(deadline, next.run(request)).await {
         Ok(response) => response,

@@ -2,6 +2,7 @@ use axum::Json;
 use axum::http::{HeaderValue, StatusCode};
 use axum::response::{IntoResponse, Response};
 use ontoforge_query::{QueryError, aggregate::AggregateError};
+use ontoforge_action::ActionError;
 use serde_json::{Value, json};
 
 pub fn wire(status: StatusCode, code: &str, api_name: &str, request_id: &str) -> Response {
@@ -47,6 +48,36 @@ pub fn aggregate_code(error: &AggregateError) -> &'static str {
         AggregateError::Store => "STORE_UNAVAILABLE",
         AggregateError::AuditUnavailable => "AUDIT_UNAVAILABLE",
         AggregateError::UnsupportedNumericValue => "UNSUPPORTED_NUMERIC_VALUE",
+    }
+}
+
+pub fn action_status(error: &ActionError) -> StatusCode {
+    match error {
+        ActionError::ScopeDenied | ActionError::NotFound | ActionError::UnknownAction(_) => StatusCode::NOT_FOUND,
+        ActionError::VersionConflict => StatusCode::CONFLICT,
+        ActionError::EngineUnavailable | ActionError::Store(_) => StatusCode::SERVICE_UNAVAILABLE,
+        ActionError::Commit(ontoforge_storage::commit::ActionCommitError::CommandIdReused) => StatusCode::CONFLICT,
+        ActionError::Commit(ontoforge_storage::commit::ActionCommitError::Edit(ontoforge_storage::commit::EditError::DefinitionStale { .. })) => StatusCode::CONFLICT,
+        _ => StatusCode::BAD_REQUEST,
+    }
+}
+
+pub fn action_code(error: &ActionError) -> &'static str {
+    match error {
+        ActionError::VersionConflict => "VERSION_CONFLICT",
+        ActionError::ScopeDenied | ActionError::NotFound | ActionError::UnknownAction(_) => "NOT_FOUND",
+        ActionError::EngineUnavailable => "SOURCE_UNAVAILABLE",
+        ActionError::Store(_) => "STORE_UNAVAILABLE",
+        ActionError::Commit(ontoforge_storage::commit::ActionCommitError::CommandIdReused) => "COMMAND_ID_REUSED",
+        ActionError::Commit(ontoforge_storage::commit::ActionCommitError::Edit(ontoforge_storage::commit::EditError::DefinitionStale { .. })) => "DEFINITION_STALE",
+        ActionError::MissingCommandId => "MISSING_COMMAND_ID",
+        ActionError::ParameterErrors(_) => "INVALID_PARAMETERS",
+        ActionError::InvalidRequest(_) => "INVALID_REQUEST",
+        ActionError::AmbiguousObject => "AMBIGUOUS_OBJECT",
+        ActionError::CriteriaFailed(_) => "CRITERIA_FAILED",
+        ActionError::UnsupportedRule => "UNSUPPORTED",
+        ActionError::InvalidLimits => "ACTION_UNAVAILABLE",
+        ActionError::Commit(_) => "ACTION_FAILED",
     }
 }
 pub fn json_rejection(api_name: &str, request_id: &str) -> Response {

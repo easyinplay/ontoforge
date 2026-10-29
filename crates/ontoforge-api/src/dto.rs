@@ -250,3 +250,20 @@ pub struct ErrorEnvelope {
     pub api_name: String,
     pub request_id: String,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ActionRequest {
+    pub command_id: Option<String>,
+    pub items: Vec<ActionItem>,
+    #[serde(default)]
+    pub validate_only: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ActionItem {
+    pub params: std::collections::BTreeMap<String, Value>,
+    #[serde(default)]
+    pub expected_versions: std::collections::BTreeMap<String, String>,
+}

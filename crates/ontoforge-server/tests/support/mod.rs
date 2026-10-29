@@ -261,6 +261,14 @@ impl Running {
         .await
     }
     pub async fn finish(self) -> Vec<Value> {
+        self.finish_expect(1).await
+    }
+
+    pub async fn finish_actions(self) -> Vec<Value> {
+        self.finish_expect(2).await
+    }
+
+    async fn finish_expect(self, expected_edits: i64) -> Vec<Value> {
         self.stop.send(()).unwrap();
         self.task.await.unwrap().unwrap();
         let pool = sqlx::SqlitePool::connect_with(sqlite_connect_options(&self.path))
@@ -277,7 +285,7 @@ impl Running {
             .await
             .unwrap();
         assert_eq!(
-            count, 1,
+            count, expected_edits,
             "reads and rejections must not write business commits"
         );
         pool.close().await;
