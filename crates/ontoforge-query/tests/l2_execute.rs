@@ -7,6 +7,7 @@ use ontoforge_auth::Principal;
 use ontoforge_auth::authn::PrincipalId;
 use ontoforge_auth::scope::PrincipalScope;
 use ontoforge_engine::config::{TrinoConfig, build_trino_engines, parse_server_config};
+use ontoforge_engine::printer::l2::ExplainType;
 use ontoforge_engine::trino::TrinoEngine;
 use ontoforge_engine::trino::l2_health::L2HealthStatus;
 use ontoforge_expr::Attrs;
@@ -599,19 +600,22 @@ async fn l2_explain_all_types_share_admission_and_audit() {
     let server = MockServer::start().await;
     let f = fixture(&server).await;
     attest(&server, &f.ontology, &f.l2).await;
-    for keyword in ["LOGICAL", "DISTRIBUTED", "VALIDATE", "IO"] {
+    for (explain_type, keyword) in [
+        (ExplainType::Logical, "LOGICAL"),
+        (ExplainType::Distributed, "DISTRIBUTED"),
+        (ExplainType::Validate, "VALIDATE"),
+        (ExplainType::Io, "IO"),
+    ] {
         answer(
             &server,
             "l2",
-            &format!(
-                "EXPLAIN (TYPE {keyword}) SELECT nationkey FROM demo.tiny.nation"
-            ),
+            &format!("EXPLAIN (TYPE {keyword}) SELECT nationkey FROM demo.tiny.nation"),
             data(&json!([[1]])),
         )
         .await;
         let result = f
             .service()
-            .explain_query("SELECT nationkey FROM demo.tiny.nation")
+            .explain_query_with_type("SELECT nationkey FROM demo.tiny.nation", explain_type)
             .await
             .expect("typed explain result");
         assert_eq!(result.output.rows.len(), 1);
@@ -642,9 +646,10 @@ async fn l2_explain_old_wrapper_and_rejection_contract() {
     }
     assert_eq!(server.received_requests().await.unwrap().len(), before);
     let rows = audit_rows(&f.path, 3).await;
-    assert!(rows
-        .iter()
-        .all(|row| row.get::<String, _>("status") == "denied"));
+    assert!(
+        rows.iter()
+            .all(|row| row.get::<String, _>("status") == "denied")
+    );
 }
 
 #[tokio::test]
@@ -652,21 +657,25 @@ async fn l2_explain_all_types_timeout_cancel_concurrency() {
     let server = MockServer::start().await;
     let f = fixture(&server).await;
     attest(&server, &f.ontology, &f.l2).await;
-    for keyword in ["LOGICAL", "DISTRIBUTED", "VALIDATE", "IO"] {
+    for (explain_type, keyword) in [
+        (ExplainType::Logical, "LOGICAL"),
+        (ExplainType::Distributed, "DISTRIBUTED"),
+        (ExplainType::Validate, "VALIDATE"),
+        (ExplainType::Io, "IO"),
+    ] {
         answer(
             &server,
             "l2",
-            &format!(
-                "EXPLAIN (TYPE {keyword}) SELECT nationkey FROM demo.tiny.nation"
-            ),
+            &format!("EXPLAIN (TYPE {keyword}) SELECT nationkey FROM demo.tiny.nation"),
             data(&json!([[1]])),
         )
         .await;
-        assert!(f
-            .service()
-            .explain_query("SELECT nationkey FROM demo.tiny.nation")
-            .await
-            .is_ok());
+        assert!(
+            f.service()
+                .explain_query_with_type("SELECT nationkey FROM demo.tiny.nation", explain_type)
+                .await
+                .is_ok()
+        );
     }
     let rows = audit_rows(&f.path, 4).await;
     assert_eq!(rows.len(), 4);

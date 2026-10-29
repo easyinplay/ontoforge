@@ -5,7 +5,9 @@ use std::sync::Arc;
 use ontoforge_auth::Principal;
 use ontoforge_auth::scope::PrincipalScope;
 use ontoforge_engine::config::TrinoConfig;
-use ontoforge_engine::printer::l2::{self, L2Error as SqlError, L2Policy, validate_l2};
+use ontoforge_engine::printer::l2::{
+    self, ExplainType, L2Error as SqlError, L2Policy, validate_l2,
+};
 use ontoforge_engine::trino::TrinoEngine;
 use ontoforge_engine::trino::l2_health::L2HealthStatus;
 use ontoforge_engine::{Column, Engine, EngineError, PhysicalType, QueryOutput, TableRef, Value};
@@ -60,6 +62,12 @@ enum Discovery<'a> {
     Schemas(&'a str),
     Tables(&'a str, &'a str),
     TableSchema(&'a str, &'a str, &'a str),
+}
+
+#[derive(Clone, Copy)]
+enum RunKind {
+    Execute,
+    Explain(ExplainType),
 }
 
 impl Discovery<'_> {
@@ -364,20 +372,29 @@ impl L2Service<'_> {
     }
 
     pub async fn execute_query(&self, sql: &str) -> Result<L2Result, L2Error> {
-        self.run(sql, false).await
+        self.run(sql, RunKind::Execute).await
     }
 
     pub async fn explain_query(&self, sql: &str) -> Result<L2Result, L2Error> {
-        self.run(sql, true).await
+        self.explain_query_with_type(sql, ExplainType::Distributed)
+            .await
     }
 
-    async fn run(&self, sql: &str, explain: bool) -> Result<L2Result, L2Error> {
+    pub async fn explain_query_with_type(
+        &self,
+        sql: &str,
+        explain_type: ExplainType,
+    ) -> Result<L2Result, L2Error> {
+        self.run(sql, RunKind::Explain(explain_type)).await
+    }
+
+    async fn run(&self, sql: &str, kind: RunKind) -> Result<L2Result, L2Error> {
         let mut audit = self
             .store
             .read_audit()
             .reserve(ReadAuditMetadata {
                 principal: self.principal.id.to_string(),
-                tool: if explain {
+                tool: if matches!(kind, RunKind::Explain(_)) {
                     "explain_query"
                 } else {
                     "execute_query"
@@ -395,7 +412,7 @@ impl L2Service<'_> {
             })
             .map_err(|_| L2Error::AuditUnavailable)?;
         audit.observe_sql(sql);
-        let result = self.run_checked(sql, explain, &mut audit).await;
+        let result = self.run_checked(sql, kind, &mut audit).await;
         let (status, rows) = match &result {
             Ok(page) if page.output.truncated => {
                 (ReadAuditStatus::Truncated, page.output.rows.len())
@@ -414,7 +431,7 @@ impl L2Service<'_> {
     async fn run_checked(
         &self,
         sql: &str,
-        explain: bool,
+        kind: RunKind,
         audit: &mut ReadAuditGuard,
     ) -> Result<L2Result, L2Error> {
         if self.engine.l2_status() != Some(L2HealthStatus::Enabled) {
@@ -434,10 +451,11 @@ impl L2Service<'_> {
             SqlError::Denied => L2Error::Denied,
             SqlError::Unsupported => L2Error::InvalidSql,
         })?;
-        let printed = if explain {
-            ontoforge_engine::printer::l2::explain_l2(&printed)
-        } else {
-            printed
+        let printed = match kind {
+            RunKind::Execute => printed,
+            RunKind::Explain(explain_type) => {
+                ontoforge_engine::printer::l2::explain_l2_with_type(&printed, explain_type)
+            }
         };
         audit.observe_sql(printed.as_str());
         let ctx = self
