@@ -16,6 +16,8 @@
 - 03-1 GREEN：`rest-green.json`，指定三个真实用例全部通过，0 ignored。
 - 03-2 RED：`http-framework-red.json`，非法 UTF-8 path 返回纯文本，统一 envelope 断言失败；非 fixture 或 JSON parser 错误。
 - 主会话批准 request-scoped Engine adapter 仅按 EngineError 类型记录 Timeout/Cancelled，普通 Source 映射保留；HTTP timer 明确 deadline，Drop 审计保持原语义。
+- 03-2 追加 RED：`http-concurrency-red.json`（第33个阻塞请求未及时拒绝），`http-fault-red.json`（typed Timeout 被折叠为503而非504）。两条真实HTTP断言获 RED_EVIDENCE_OK。
+- 主会话批准 observed wrappers：reserve 成功后同步回调 ID 一次，失败不回调，保持原 guard；REST 每请求 ID 槽用于 deadline 与 cancelled audit 关联。
 
 ## 范围
 

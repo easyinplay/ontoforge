@@ -2,9 +2,11 @@
 mod support;
 
 use reqwest::StatusCode;
+use ontoforge_engine::EngineError;
 use serde_json::{Value, json};
 use std::collections::BTreeSet;
 use std::sync::atomic::Ordering;
+use std::time::Duration;
 use support::{fixture, success};
 
 async fn rejection(response: reqwest::Response, expected: StatusCode, code: &str) -> String {
@@ -126,8 +128,17 @@ async fn http_error_utf8_ids_and_l0_redaction() {
             "concurrent request IDs must be distinct"
         );
     }
+    for (failure, status, code) in [
+        (EngineError::Config(String::new()), StatusCode::SERVICE_UNAVAILABLE, "SOURCE_UNAVAILABLE"),
+        (EngineError::Timeout { after_ms:1 }, StatusCode::GATEWAY_TIMEOUT, "DEADLINE_EXCEEDED"),
+        (EngineError::Cancelled, StatusCode::REQUEST_TIMEOUT, "CANCELLED"),
+    ] {
+        *f.engine.failure.lock().unwrap() = Some(failure);
+        let response = f.get("/api/objects/Flight/F-1001").await;
+        assert!(ids.insert(rejection(response,status,code).await));
+    }
     let audit = f.finish().await;
-    assert_eq!(audit.len(), 16);
+    assert_eq!(audit.len(), 19);
     assert!(
         audit
             .iter()
@@ -142,6 +153,27 @@ async fn http_error_utf8_ids_and_l0_redaction() {
 
 #[tokio::test]
 async fn http_rows_bytes_concurrency_timeout_and_audit_fail_closed() {
+    let f = fixture().await.start().await;
+    f.engine.block.store(true, Ordering::SeqCst);
+    let mut pending = Vec::new();
+    for _ in 0..32 {
+        let client = f.client.clone();
+        let url = f.url.clone();
+        let token = f.token.clone();
+        pending.push(tokio::spawn(async move {
+            client.get(format!("{url}/api/objects/Flight/F-1001")).bearer_auth(token).send().await.unwrap()
+        }));
+        tokio::time::timeout(Duration::from_secs(3), f.engine.entered.notified()).await.unwrap();
+    }
+    let saturated = f.client.get(format!("{}/api/objects/Flight/F-1001",f.url)).bearer_auth(&f.token).timeout(Duration::from_secs(1)).send().await;
+    f.engine.block.store(false, Ordering::SeqCst);
+    f.engine.release.notify_waiters();
+    for task in pending { success(task.await.unwrap()).await; }
+    let audit = f.finish().await;
+    assert!(saturated.is_ok(), "saturated HTTP admission must promptly return a structured rejection");
+    rejection(saturated.unwrap(), StatusCode::TOO_MANY_REQUESTS, "CONCURRENCY_LIMIT").await;
+    assert_eq!(audit.len(),32, "rejected admission cannot reserve read audit");
+
     let f = fixture().await.start().await;
     f.store.read_audit().shutdown().await.unwrap();
     rejection(

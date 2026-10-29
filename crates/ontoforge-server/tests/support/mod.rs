@@ -4,7 +4,7 @@
 )]
 
 use std::collections::BTreeMap;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::time::Duration;
 
@@ -112,6 +112,7 @@ pub async fn fixture_airports(airports: &[(&str, &str, Option<&str>)]) -> Fixtur
         inner,
         block: AtomicBool::new(false),
         fail: AtomicBool::new(false),
+        failure: Mutex::new(None),
         calls: AtomicUsize::new(0),
         entered: Notify::new(),
         release: Notify::new(),
@@ -295,6 +296,7 @@ pub struct ControlledEngine {
     pub inner: SqliteEngine,
     pub block: AtomicBool,
     pub fail: AtomicBool,
+    pub failure: Mutex<Option<EngineError>>,
     pub calls: AtomicUsize,
     pub entered: Notify,
     pub release: Notify,
@@ -325,7 +327,10 @@ impl Engine for ControlledEngine {
             self.entered.notify_one();
             self.release.notified().await;
         }
-        let result = if self.fail.load(Ordering::SeqCst) {
+        let failure = self.failure.lock().unwrap().clone();
+        let result = if let Some(error) = failure {
+            Err(error)
+        } else if self.fail.load(Ordering::SeqCst) {
             Err(EngineError::Config(
                 "physical_table SELECT secret_token=sentinel".to_owned(),
             ))
