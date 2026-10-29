@@ -60,9 +60,11 @@ mod serve_fixture {
         let (_, request_id, _) = http(bind, Some(&f.token)).await;
         stop.send(()).unwrap();
         assert_eq!(task.await.unwrap(), 0);
-        let pool = sqlx::SqlitePool::connect_with(ontoforge_storage::store::sqlite_connect_options(&f.path))
-            .await
-            .unwrap();
+        let pool = sqlx::SqlitePool::connect_with(
+            ontoforge_storage::store::sqlite_connect_options(&f.path),
+        )
+        .await
+        .unwrap();
         let row = sqlx::query("SELECT request_id, status FROM of_read_audit")
             .fetch_one(&pool)
             .await
@@ -85,9 +87,11 @@ mod serve_fixture {
             .await
         });
         assert!(wait_listening(bind, &task).await);
-        let pool = sqlx::SqlitePool::connect_with(ontoforge_storage::store::sqlite_connect_options(&f.path))
-            .await
-            .unwrap();
+        let pool = sqlx::SqlitePool::connect_with(
+            ontoforge_storage::store::sqlite_connect_options(&f.path),
+        )
+        .await
+        .unwrap();
         sqlx::query("DROP TABLE of_read_audit")
             .execute(&pool)
             .await
