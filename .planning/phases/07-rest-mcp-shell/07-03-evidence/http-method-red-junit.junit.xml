@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="nextest-run" tests="1" skipped="0" failures="1" errors="0" uuid="444ab1ab-18bf-4dee-8de6-add87c9e4465" timestamp="2026-10-29T11:53:24.739+08:00" time="0.137">
+    <testsuite name="ontoforge-server::http_contract" tests="1" skipped="0" errors="0" failures="1">
+        <testcase name="contracts::http_framework_rejections_are_structured" classname="ontoforge-server::http_contract" timestamp="2026-10-29T11:53:24.740+08:00" time="0.136">
+            <failure message="thread &apos;contracts::http_framework_rejections_are_structured&apos; (24636) panicked at crates\ontoforge-server\tests\unit\http_contract.test.rs:16:5" type="test failure with exit code 101">thread &apos;contracts::http_framework_rejections_are_structured&apos; (24636) panicked at crates\ontoforge-server\tests\unit\http_contract.test.rs:16:5:
+every rejection must use the structured JSON envelope
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace</failure>
+            <system-out>
+running 1 test
+test contracts::http_framework_rejections_are_structured ... FAILED
+
+failures:
+
+failures:
+    contracts::http_framework_rejections_are_structured
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.12s
+
+</system-out>
+            <system-err>
+thread &apos;contracts::http_framework_rejections_are_structured&apos; (24636) panicked at crates\ontoforge-server\tests\unit\http_contract.test.rs:16:5:
+every rejection must use the structured JSON envelope
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+</system-err>
+        </testcase>
+    </testsuite>
+</testsuites>

@@ -1,0 +1,8 @@
+{
+  "command": "cargo test -p ontoforge-server --test http_contract --locked http_framework_rejections_are_structured -- --nocapture",
+  "exitCode": 101,
+  "runStartedAt": "2026-10-29T03:52:49.6558024Z",
+  "runFinishedAt": "2026-10-29T03:53:06.9555335Z",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07-rest-mcp-shell\\07-03-evidence\\http-method-red.log"
+}
