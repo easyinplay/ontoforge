@@ -1,0 +1,16 @@
+{
+  "command": "C:\\Users\\easyi\\AppData\\Local\\Temp/ontoforge-phase07-nextest/cargo-nextest.exe nextest run -p ontoforge-server --test http_contract --locked --profile gsd --config-file .planning/phases/07-rest-mcp-shell/07-03-evidence/nextest.toml -E test(http_framework_rejections_are_structured)",
+  "exitCode": 100,
+  "runStartedAt": "2026-10-29T03:34:32.8166643Z",
+  "runFinishedAt": "2026-10-29T03:35:02.7474720Z",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07-rest-mcp-shell\\07-03-evidence\\http-framework-red.log",
+  "output": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<testsuites name=\"nextest-run\" tests=\"1\" skipped=\"0\" failures=\"1\" errors=\"0\" uuid=\"2afd4fef-e205-4e14-a2af-a05fed60d154\" timestamp=\"2026-10-29T11:35:02.583+08:00\" time=\"0.143\">\n    <testsuite name=\"ontoforge-server::http_contract\" tests=\"1\" skipped=\"0\" errors=\"0\" failures=\"1\">\n        <testcase name=\"contracts::http_framework_rejections_are_structured\" classname=\"ontoforge-server::http_contract\" timestamp=\"2026-10-29T11:35:02.583+08:00\" time=\"0.141\">\n            <failure message=\"thread &apos;contracts::http_framework_rejections_are_structured&apos; (28840) panicked at crates\\ontoforge-server\\tests\\unit\\http_contract.test.rs:12:5\" type=\"test failure with exit code 101\">thread &apos;contracts::http_framework_rejections_are_structured&apos; (28840) panicked at crates\\ontoforge-server\\tests\\unit\\http_contract.test.rs:12:5:\nevery rejection must use the structured JSON envelope\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace</failure>\n            <system-out>\nrunning 1 test\ntest contracts::http_framework_rejections_are_structured ... FAILED\n\nfailures:\n\nfailures:\n    contracts::http_framework_rejections_are_structured\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.12s\n\n</system-out>\n            <system-err>\nthread &apos;contracts::http_framework_rejections_are_structured&apos; (28840) panicked at crates\\ontoforge-server\\tests\\unit\\http_contract.test.rs:12:5:\nevery rejection must use the structured JSON envelope\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n</system-err>\n        </testcase>\n    </testsuite>\n</testsuites>\n",
+  "targetTest": "contracts::http_framework_rejections_are_structured",
+  "targetFile": "crates/ontoforge-server/tests/unit/rest.test.rs",
+  "expected": "bad UTF-8 path uses JSON error envelope",
+  "actual": "axum Path rejection returns plain text",
+  "reportPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07-rest-mcp-shell\\07-03-evidence\\http-framework-red.junit.xml",
+  "reportModifiedAt": "2026-10-29T03:35:02.7231918Z",
+  "semanticAssessment": "Target ran against a real listener; the planned HTTP result or durable audit assertion failed. See unchanged JUnit failure."
+}
