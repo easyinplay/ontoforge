@@ -29,6 +29,8 @@ use crate::{ServerHost, ServerLimits};
 
 #[path = "mcp_l2.rs"]
 pub mod mcp_l2;
+#[path = "mcp_sessions.rs"]
+pub mod mcp_sessions;
 
 #[derive(Clone)]
 pub struct OntologyMcpHandler<E> {
@@ -56,9 +58,20 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
             .extensions
             .get::<Parts>()
             .ok_or_else(|| ErrorData::invalid_request("authentication required", None))?;
-        context::context_from_headers(&self.host, parts.headers.clone(), api_name)
-            .await
-            .map_err(|_| ErrorData::invalid_request("authentication required", None))
+        let (ctx, request_id) =
+            context::context_from_headers(&self.host, parts.headers.clone(), api_name)
+                .await
+                .map_err(|_| ErrorData::invalid_request("authentication required", None))?;
+        if let Some(session) = parts
+            .headers
+            .get("mcp-session-id")
+            .and_then(|value| value.to_str().ok())
+        {
+            mcp_sessions::global()
+                .admit(session, ctx.principal.id.as_str())
+                .map_err(|_| ErrorData::invalid_request("session owner mismatch", None))?;
+        }
+        Ok((ctx, request_id))
     }
 
     fn catalog(ctx: &context::RequestContext) -> ToolCatalog {
