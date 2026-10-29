@@ -1,4 +1,4 @@
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use ontoforge_api::dto::{ActionRequest, ObjectSet, WhereClause};
 
@@ -47,18 +47,22 @@ fn openapi_recursive_nullable_required_and_unknown_fields() {
     let encoded = serde_json::to_value(&nested).expect("serialize recursive union");
     assert_eq!(encoded["kind"], "where");
     assert_eq!(encoded["predicate"]["op"], "and");
-    assert!(serde_json::from_value::<ObjectSet>(json!({
-        "kind": "type",
-        "object_type": "文档",
-        "unknown": true
-    }))
-    .is_err());
-    assert!(serde_json::from_value::<ActionRequest>(json!({
-        "items": [],
-        "validateOnly": false,
-        "unknown": true
-    }))
-    .is_err());
+    assert!(
+        serde_json::from_value::<ObjectSet>(json!({
+            "kind": "type",
+            "object_type": "文档",
+            "unknown": true
+        }))
+        .is_err()
+    );
+    assert!(
+        serde_json::from_value::<ActionRequest>(json!({
+            "items": [],
+            "validateOnly": false,
+            "unknown": true
+        }))
+        .is_err()
+    );
 }
 
 #[test]

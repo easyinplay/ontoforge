@@ -210,7 +210,10 @@ pub fn document() -> utoipa::openapi::OpenApi {
 pub fn render() -> String {
     let mut value = serde_json::to_value(document()).expect("OpenAPI document is serializable");
     if let Some(object) = value.as_object_mut() {
-        object.insert("openapi".to_owned(), serde_json::Value::String("3.1.0".to_owned()));
+        object.insert(
+            "openapi".to_owned(),
+            serde_json::Value::String("3.1.0".to_owned()),
+        );
     }
     let mut text = serde_json::to_string_pretty(&value).expect("OpenAPI document is JSON");
     text.push('\n');
