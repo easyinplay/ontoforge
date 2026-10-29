@@ -1,0 +1,10 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.45s
+     Running unittests src\lib.rs (target\debug\deps\ontoforge_server-ceb9cd1c5d033352.exe)
+
+running 3 tests
+test tracer_tests::tracer_authenticated_pk_is_durable_after_shutdown ... ok
+test tracer_tests::tracer_snapshot_releases_lock_before_source ... ok
+test tracer_tests::tracer_unauthenticated_and_forged_context_are_denied ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.16s
+

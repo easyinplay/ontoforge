@@ -3,6 +3,7 @@ $ErrorActionPreference = 'Stop'
 $env:CARGO_TERM_COLOR = 'never'
 $started = [DateTime]::UtcNow
 $log = Join-Path $PSScriptRoot "$Name.log"
+[IO.File]::WriteAllText($log, '')
 & $FilePath @ArgumentList 2>&1 | Tee-Object -FilePath $log
 $code = $LASTEXITCODE
 $record = [ordered]@{ command = "$FilePath $($ArgumentList -join ' ')"; exitCode = $code; runStartedAt = $started.ToString('o'); runFinishedAt = [DateTime]::UtcNow.ToString('o'); cwd = (Get-Location).Path; logPath = $log }

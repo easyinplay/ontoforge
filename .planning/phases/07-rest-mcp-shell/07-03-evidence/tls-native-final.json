@@ -1,0 +1,8 @@
+{
+  "command": "cargo tree -i native-tls --workspace --locked",
+  "exitCode": 101,
+  "runStartedAt": "2026-10-29T03:57:57.2431012Z",
+  "runFinishedAt": "2026-10-29T03:57:57.6672111Z",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07-rest-mcp-shell\\07-03-evidence\\tls-native-final.log"
+}

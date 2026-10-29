@@ -1,0 +1,31 @@
+    Blocking waiting for file lock on build directory
+    Checking ontoforge-api v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-api)
+    Checking ontoforge-query v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-query)
+    Checking ontoforge-action v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-action)
+    Checking ontoforge-server v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-server)
+error: assigning the result of `ToOwned::to_owned()` may be inefficient
+  --> crates\ontoforge-server\src\context.rs:38:9
+   |
+38 |         *self.id.lock().unwrap() = id.to_owned();
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: use `clone_into()`: `id.clone_into(&mut self.id.lock().unwrap())`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#assigning_clones
+   = note: `-D clippy::assigning-clones` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::assigning_clones)]`
+
+error: this could be rewritten as `let...else`
+   --> crates\ontoforge-server\src\rest.rs:123:5
+    |
+123 | /     let (api_name, pk_text) = match path {
+124 | |         Ok(Path(value)) => value,
+125 | |         Err(_) => return error::json_rejection("objects", &ulid::Ulid::generate().to_string()),
+126 | |     };
+    | |______^ help: consider writing: `let Ok(Path((api_name, pk_text))) = path else { return error::json_rejection("objects", &ulid::Ulid::generate().to_string()) };`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#manual_let_else
+    = note: `-D clippy::manual-let-else` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::manual_let_else)]`
+
+error: could not compile `ontoforge-server` (lib) due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `ontoforge-server` (lib test) due to 2 previous errors

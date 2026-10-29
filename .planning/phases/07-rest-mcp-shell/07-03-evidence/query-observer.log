@@ -1,0 +1,10 @@
+   Compiling ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+   Compiling ontoforge-query v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-query)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 40s
+     Running tests\audit_pk.rs (target\debug\deps\audit_pk-f86d44635d7f6a10.exe)
+
+running 1 test
+test audit_observed_wrappers_report_single_reservation_and_never_report_failed_reserve ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 12 filtered out; finished in 0.10s
+

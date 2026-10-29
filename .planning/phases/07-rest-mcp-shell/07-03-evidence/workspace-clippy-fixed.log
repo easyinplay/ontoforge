@@ -1,0 +1,45 @@
+    Blocking waiting for file lock on build directory
+    Checking ontoforge-query v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-query)
+    Checking ontoforge-server v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-server)
+    Checking ontoforge-action v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-action)
+error: large future with a size of 16464 bytes
+   --> crates\ontoforge-action\tests\idempotency_pg.rs:242:25
+    |
+242 |     let (left, right) = race(&f, delete("same-key", "A1"), delete("same-key", "A1")).await;
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: consider `Box::pin` on it: `Box::pin(race(&f, delete("same-key", "A1"), delete("same-key", "A1")))`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#large_futures
+    = note: `-D clippy::large-futures` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::large_futures)]`
+
+error: large future with a size of 16464 bytes
+   --> crates\ontoforge-action\tests\idempotency_pg.rs:257:25
+    |
+257 |     let (left, right) = race(&f, delete("reused-key", "A1"), delete("reused-key", "B1")).await;
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: consider `Box::pin` on it: `Box::pin(race(&f, delete("reused-key", "A1"), delete("reused-key", "B1")))`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#large_futures
+
+error: large future with a size of 16464 bytes
+   --> crates\ontoforge-action\tests\idempotency_pg.rs:398:25
+    |
+398 |       let (left, right) = race(
+    |  _________________________^
+399 | |         &f,
+400 | |         rename("expired-race", "A1"),
+401 | |         rename("expired-race", "A1"),
+402 | |     )
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#large_futures
+help: consider `Box::pin` on it
+    |
+398 ~     let (left, right) = Box::pin(race(
+399 +         &f,
+400 +         rename("expired-race", "A1"),
+401 +         rename("expired-race", "A1"),
+402 +     ))
+    |
+
+error: could not compile `ontoforge-action` (test "idempotency_pg") due to 3 previous errors
+warning: build failed, waiting for other jobs to finish...
