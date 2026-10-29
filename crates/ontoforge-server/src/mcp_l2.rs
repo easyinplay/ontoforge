@@ -1,11 +1,10 @@
 //! Generic MCP adapters for the six `sql:raw` L2 tools.
 
-use std::collections::BTreeSet;
 use std::sync::Arc;
 
 use ontoforge_auth::Principal;
 use ontoforge_auth::scope::PrincipalScope;
-use ontoforge_engine::printer::l2::{self, ExplainType, L2Policy};
+use ontoforge_engine::printer::l2::{self, ExplainType, L2Policy, L2TableNameError, McpDefaults};
 use ontoforge_engine::{Engine, EngineError, QueryContext, QueryOutput, TableRef, Value};
 use ontoforge_schema::ir::SqlLevel;
 use ontoforge_storage::read_audit::{ReadAuditMetadata, ReadAuditStatus};
@@ -13,6 +12,7 @@ use ontoforge_storage::store::{ActiveDefinition, EditStore};
 use serde_json::{Value as JsonValue, json};
 
 use crate::ServerLimits;
+use crate::state;
 
 #[derive(Debug, thiserror::Error)]
 pub enum McpL2Error {
@@ -162,15 +162,7 @@ impl<'a, E: Engine + Sync> McpL2Tools<'a, E> {
         schema: Option<&str>,
     ) -> Result<JsonValue, McpL2Error> {
         let _ = self.gate().await?;
-        let (catalog, schema) = self.resolve_schema(catalog, schema)?;
-        if table.is_empty() || table.contains('$') || table.contains('\0') {
-            return Err(McpL2Error::Invalid("invalid table".to_owned()));
-        }
-        let target = TableRef {
-            catalog,
-            schema,
-            table: table.to_owned(),
-        };
+        let target = self.resolve_table(table, catalog, schema)?;
         let audit = self
             .store
             .read_audit()
@@ -245,30 +237,15 @@ impl<'a, E: Engine + Sync> McpL2Tools<'a, E> {
     }
 
     fn resolve_catalog(&self, catalog: Option<&str>) -> Result<String, McpL2Error> {
-        if let Some(catalog) = catalog {
-            return self
-                .allowed_catalog(catalog)
-                .then(|| catalog.to_owned())
-                .ok_or(McpL2Error::Denied);
-        }
-        let values = self
-            .scope
-            .l2_catalogs
-            .iter()
-            .cloned()
-            .collect::<BTreeSet<_>>();
-        let schemas = self
-            .scope
-            .l2_schemas
-            .iter()
-            .filter_map(|value| value.split_once('.').map(|(catalog, _)| catalog.to_owned()))
-            .collect::<BTreeSet<_>>();
-        let mut values = values.union(&schemas).cloned().collect::<Vec<_>>();
-        values.sort();
-        values.dedup();
-        (values.len() == 1)
-            .then(|| values.remove(0))
-            .ok_or_else(|| McpL2Error::Invalid("catalog is required".to_owned()))
+        let defaults = self.defaults();
+        let value = catalog
+            .map(str::to_owned)
+            .or(defaults.catalog)
+            .ok_or_else(|| missing_context("catalog"))?;
+        let value = resolve_component(&value)?;
+        self.allowed_catalog(&value)
+            .then_some(value)
+            .ok_or(McpL2Error::Denied)
     }
 
     fn resolve_schema(
@@ -277,26 +254,67 @@ impl<'a, E: Engine + Sync> McpL2Tools<'a, E> {
         schema: Option<&str>,
     ) -> Result<(String, String), McpL2Error> {
         let catalog = self.resolve_catalog(catalog)?;
-        if let Some(schema) = schema {
-            return self
-                .allowed_schema(&catalog, schema)
-                .then(|| (catalog, schema.to_owned()))
-                .ok_or(McpL2Error::Denied);
-        }
-        let mut values = self
-            .scope
-            .l2_schemas
-            .iter()
-            .filter_map(|value| value.split_once('.'))
-            .filter(|(value, _)| value.eq_ignore_ascii_case(&catalog))
-            .map(|(_, schema)| schema.to_owned())
-            .collect::<Vec<_>>();
-        values.sort();
-        values.dedup();
-        (values.len() == 1)
-            .then(|| (catalog, values.remove(0)))
-            .ok_or_else(|| McpL2Error::Invalid("schema is required".to_owned()))
+        let value = schema
+            .map(str::to_owned)
+            .or_else(|| self.defaults().schema)
+            .ok_or_else(|| missing_context("schema"))?;
+        let value = resolve_component(&value)?;
+        self.allowed_schema(&catalog, &value)
+            .then_some((catalog, value))
+            .ok_or(McpL2Error::Denied)
     }
+
+    fn defaults(&self) -> McpDefaults {
+        state::for_store(self.store).mcp_defaults()
+    }
+
+    fn resolve_table(
+        &self,
+        table: &str,
+        catalog: Option<&str>,
+        schema: Option<&str>,
+    ) -> Result<TableRef, McpL2Error> {
+        let trusted = self.defaults();
+        let defaults = McpDefaults {
+            catalog: catalog.map(str::to_owned).or(trusted.catalog),
+            schema: schema.map(str::to_owned).or(trusted.schema),
+        };
+        let target = l2::resolve_l2_table_name(table, &defaults).map_err(table_name_error)?;
+        if target.table.is_empty() || target.table.contains('$') {
+            return Err(McpL2Error::Invalid("invalid table identifier".to_owned()));
+        }
+        self.allowed_schema(&target.catalog, &target.schema)
+            .then_some(target)
+            .ok_or(McpL2Error::Denied)
+    }
+}
+
+fn missing_context(component: &str) -> McpL2Error {
+    McpL2Error::Invalid(format!(
+        "trusted L2 qualification context is missing: {component}"
+    ))
+}
+
+fn table_name_error(error: L2TableNameError) -> McpL2Error {
+    match error {
+        L2TableNameError::MissingContext => missing_context("catalog or schema"),
+        L2TableNameError::Unsupported => {
+            McpL2Error::Invalid("invalid L2 table identifier".to_owned())
+        }
+    }
+}
+
+fn resolve_component(value: &str) -> Result<String, McpL2Error> {
+    let defaults = McpDefaults {
+        catalog: Some("__catalog__".to_owned()),
+        schema: Some("__schema__".to_owned()),
+    };
+    let target = l2::resolve_l2_table_name(
+        &format!("\"__catalog__\".\"__schema__\".{value}"),
+        &defaults,
+    )
+    .map_err(table_name_error)?;
+    Ok(target.table)
 }
 
 pub fn parse_explain_format(format: Option<&str>) -> Result<ExplainType, McpL2Error> {

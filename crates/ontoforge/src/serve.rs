@@ -10,6 +10,7 @@ use ontoforge_auth::authn::Authenticator;
 use ontoforge_auth::authn::dev::{DevKey, DevMode, DevVerifier};
 use ontoforge_engine::AnyEngine;
 use ontoforge_engine::config::{AuthConfig, build_trino_engines};
+use ontoforge_engine::printer::l2::McpDefaults;
 use ontoforge_engine::sqlite::SqliteEngine;
 use ontoforge_server::ServerHost;
 use ontoforge_storage::store::EditStore;
@@ -158,6 +159,7 @@ pub async fn run_with_shutdown(
         eprintln!("cannot initialize HTTP server signing key");
         return 3;
     };
+    ontoforge_server::state::set_mcp_defaults(&store, deployment_mcp_defaults(args));
     if let Some((l2, monitor)) = l2_runtime {
         host = host.with_l2_status_provider(move || l2.l2_status());
         if host.install_l2_monitor(monitor).is_err() {
@@ -172,6 +174,11 @@ pub async fn run_with_shutdown(
             3
         }
     }
+}
+
+fn deployment_mcp_defaults(args: &ServeArgs) -> McpDefaults {
+    let _ = args;
+    crate::cli::mcp_defaults()
 }
 
 #[cfg(test)]

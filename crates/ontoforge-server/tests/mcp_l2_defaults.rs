@@ -1,12 +1,16 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::{Arc, Mutex};
 
-use ontoforge_auth::{Principal, PrincipalId};
 use ontoforge_auth::scope::PrincipalScope;
-use ontoforge_engine::{Column, Dialect, Engine, EngineError, EngineStatus, PhysicalColumn, PhysicalType, PrintedSql, QueryContext, QueryOutput, TableRef, Value};
+use ontoforge_auth::{Principal, PrincipalId};
+use ontoforge_engine::printer::l2::McpDefaults;
+use ontoforge_engine::{
+    Column, Dialect, Engine, EngineError, EngineStatus, PhysicalColumn, PhysicalType, PrintedSql,
+    QueryContext, QueryOutput, TableRef, Value,
+};
 use ontoforge_schema::ir::{SqlLevel, Toolset};
 use ontoforge_server::mcp::mcp_l2::{McpL2Error, McpL2Tools};
-use ontoforge_server::ServerLimits;
+use ontoforge_server::{ServerLimits, state};
 
 mod support;
 
@@ -90,7 +94,16 @@ async fn mcp_l2_optional_context_defaults_and_qualified_override() {
     let fixture = support::fixture().await;
     let active = fixture.store.active_definition().await.unwrap();
     let principal = principal();
-    let scope = raw_scope();
+    let mut scope = raw_scope();
+    scope.l2_catalogs.insert("other".to_owned());
+    scope.l2_schemas.insert("other.空间".to_owned());
+    state::set_mcp_defaults(
+        &fixture.store,
+        McpDefaults {
+            catalog: Some("demo".to_owned()),
+            schema: Some("tiny".to_owned()),
+        },
+    );
     let tools = McpL2Tools {
         principal: &principal,
         scope: &scope,
@@ -100,10 +113,28 @@ async fn mcp_l2_optional_context_defaults_and_qualified_override() {
         limits: ServerLimits::default(),
     };
 
+    let defaulted = tools
+        .get_table_schema("航班", None, None)
+        .await
+        .expect("deployment defaults qualify a bare table");
+    assert_eq!(defaulted["columns"][0]["name"], "id");
+    assert_eq!(
+        engine.tables.lock().unwrap().as_slice(),
+        &[TableRef {
+            catalog: "demo".to_owned(),
+            schema: "tiny".to_owned(),
+            table: "航班".to_owned(),
+        }]
+    );
+    engine.tables.lock().unwrap().clear();
+
     let result = tools
         .get_table_schema("\"other\".\"空间\".\"航班\"", Some("demo"), Some("tiny"))
         .await;
-    assert!(result.is_ok(), "qualified table should be accepted: {result:?}");
+    assert!(
+        result.is_ok(),
+        "qualified table should be accepted: {result:?}"
+    );
     assert_eq!(
         engine.tables.lock().unwrap().as_slice(),
         &[TableRef {
@@ -112,6 +143,17 @@ async fn mcp_l2_optional_context_defaults_and_qualified_override() {
             table: "航班".to_owned(),
         }]
     );
+
+    let schemas = tools
+        .list_schemas(None)
+        .await
+        .expect("deployment catalog default");
+    assert_eq!(schemas["names"], serde_json::json!(["demo"]));
+    let tables = tools
+        .list_tables(None, None)
+        .await
+        .expect("deployment catalog/schema defaults");
+    assert_eq!(tables["names"], serde_json::json!(["demo"]));
 }
 
 #[tokio::test]

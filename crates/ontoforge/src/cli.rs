@@ -49,18 +49,82 @@ pub struct WebhookWorkerArgs {
     pub server_config: Utf8PathBuf,
 }
 
-#[derive(Debug, Args)]
+#[derive(Debug)]
 pub struct ServeArgs {
-    #[arg(long, value_name = "FILE", required_unless_present = "export_openapi")]
     pub server_config: Option<Utf8PathBuf>,
-    #[arg(long, default_value = "127.0.0.1:8080")]
     pub bind: std::net::SocketAddr,
     /// Explicitly accept development tokens using the configured key file.
-    #[arg(long)]
     pub dev: bool,
     /// Export the static OpenAPI contract without loading configuration or starting a listener.
-    #[arg(long, value_name = "FILE", conflicts_with = "server_config")]
     pub export_openapi: Option<Utf8PathBuf>,
+}
+
+#[derive(Debug, Args)]
+struct ServeArgsParser {
+    #[arg(long, value_name = "FILE", required_unless_present = "export_openapi")]
+    server_config: Option<Utf8PathBuf>,
+    #[arg(long, default_value = "127.0.0.1:8080")]
+    bind: std::net::SocketAddr,
+    #[arg(long)]
+    dev: bool,
+    #[arg(long, value_name = "FILE", conflicts_with = "server_config")]
+    export_openapi: Option<Utf8PathBuf>,
+    #[arg(long, value_name = "CATALOG")]
+    mcp_catalog: Option<String>,
+    #[arg(long, value_name = "SCHEMA")]
+    mcp_schema: Option<String>,
+}
+
+static MCP_DEFAULTS: std::sync::OnceLock<
+    std::sync::Mutex<ontoforge_engine::printer::l2::McpDefaults>,
+> = std::sync::OnceLock::new();
+
+impl clap::FromArgMatches for ServeArgs {
+    fn from_arg_matches(matches: &clap::ArgMatches) -> Result<Self, clap::Error> {
+        let parsed = ServeArgsParser::from_arg_matches(matches)?;
+        if let Ok(mut defaults) = MCP_DEFAULTS
+            .get_or_init(|| {
+                std::sync::Mutex::new(ontoforge_engine::printer::l2::McpDefaults::default())
+            })
+            .lock()
+        {
+            *defaults = ontoforge_engine::printer::l2::McpDefaults {
+                catalog: parsed.mcp_catalog,
+                schema: parsed.mcp_schema,
+            };
+        }
+        Ok(Self {
+            server_config: parsed.server_config,
+            bind: parsed.bind,
+            dev: parsed.dev,
+            export_openapi: parsed.export_openapi,
+        })
+    }
+
+    fn update_from_arg_matches(&mut self, matches: &clap::ArgMatches) -> Result<(), clap::Error> {
+        *self = Self::from_arg_matches(matches)?;
+        Ok(())
+    }
+}
+
+impl Args for ServeArgs {
+    fn augment_args(cmd: clap::Command) -> clap::Command {
+        ServeArgsParser::augment_args(cmd)
+    }
+
+    fn augment_args_for_update(cmd: clap::Command) -> clap::Command {
+        ServeArgsParser::augment_args_for_update(cmd)
+    }
+}
+
+pub(crate) fn mcp_defaults() -> ontoforge_engine::printer::l2::McpDefaults {
+    MCP_DEFAULTS
+        .get_or_init(
+            || std::sync::Mutex::new(ontoforge_engine::printer::l2::McpDefaults::default()),
+        )
+        .lock()
+        .map(|defaults| defaults.clone())
+        .unwrap_or_default()
 }
 
 #[derive(Debug, Args)]

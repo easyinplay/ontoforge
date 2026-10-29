@@ -3,8 +3,10 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex, OnceLock, RwLock};
 
+use ontoforge_engine::printer::l2::McpDefaults;
 use ontoforge_engine::trino::l2_health::{L2DisableReason, L2HealthStatus};
 use ontoforge_engine::trino::l2_monitor::L2AclMonitor;
+use ontoforge_storage::store::EditStore;
 
 use crate::ServerHost;
 
@@ -14,6 +16,7 @@ pub struct ServerState {
     accepting: std::sync::atomic::AtomicBool,
     l2_status: RwLock<Option<L2StatusProvider>>,
     monitor: Mutex<Option<L2AclMonitor>>,
+    mcp_defaults: RwLock<McpDefaults>,
 }
 
 impl Default for ServerState {
@@ -22,6 +25,7 @@ impl Default for ServerState {
             accepting: std::sync::atomic::AtomicBool::new(true),
             l2_status: RwLock::new(None),
             monitor: Mutex::new(None),
+            mcp_defaults: RwLock::new(McpDefaults::default()),
         }
     }
 }
@@ -70,6 +74,19 @@ impl ServerState {
     pub fn take_monitor(&self) -> Option<L2AclMonitor> {
         self.monitor.lock().ok().and_then(|mut slot| slot.take())
     }
+
+    pub fn mcp_defaults(&self) -> McpDefaults {
+        self.mcp_defaults
+            .read()
+            .map(|defaults| defaults.clone())
+            .unwrap_or_default()
+    }
+
+    pub fn set_mcp_defaults(&self, defaults: McpDefaults) {
+        if let Ok(mut slot) = self.mcp_defaults.write() {
+            *slot = defaults;
+        }
+    }
 }
 
 static STATES: OnceLock<Mutex<HashMap<usize, Arc<ServerState>>>> = OnceLock::new();
@@ -79,16 +96,28 @@ fn registry() -> &'static Mutex<HashMap<usize, Arc<ServerState>>> {
 }
 
 fn key<E>(host: &ServerHost<E>) -> usize {
-    Arc::as_ptr(&host.store) as usize
+    key_store(&host.store)
+}
+
+fn key_store(store: &EditStore) -> usize {
+    std::ptr::from_ref(store) as usize
 }
 
 pub(crate) fn for_host<E>(host: &ServerHost<E>) -> Arc<ServerState> {
+    for_store(&host.store)
+}
+
+pub(crate) fn for_store(store: &EditStore) -> Arc<ServerState> {
     let mut states = registry().lock().expect("server state registry poisoned");
     Arc::clone(
         states
-            .entry(key(host))
+            .entry(key_store(store))
             .or_insert_with(|| Arc::new(ServerState::default())),
     )
+}
+
+pub fn set_mcp_defaults(store: &EditStore, defaults: McpDefaults) {
+    for_store(store).set_mcp_defaults(defaults);
 }
 
 pub(crate) fn remove<E>(host: &ServerHost<E>) {
