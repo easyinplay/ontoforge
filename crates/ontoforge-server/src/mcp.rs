@@ -14,7 +14,10 @@ use ontoforge_query::{ObjectSet, QueryRequest, QueryService};
 use ontoforge_schema::ir::{ObjectTypeName, PropertyName};
 use ontoforge_storage::history::{CallerKind, HistoryRequest};
 use ontoforge_storage::value::PropertyValue;
-use rmcp::model::*;
+use rmcp::model::{
+    CallToolRequestParams, CallToolResponse, CallToolResult, ErrorData, ListToolsResult,
+    PaginatedRequestParams, ServerCapabilities, ServerConfig,
+};
 use rmcp::service::RequestContext;
 use rmcp::{RoleServer, ServerHandler};
 use serde_json::{Value, json};
@@ -55,11 +58,15 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
             .map_err(|_| ErrorData::invalid_request("authentication required", None))
     }
 
-    fn catalog(&self, ctx: &context::RequestContext) -> ToolCatalog {
+    fn catalog(ctx: &context::RequestContext) -> ToolCatalog {
         ToolCatalog::for_scope(&ctx.scope)
             .with_actions(&ctx.scope, ctx.active.ontology.action_types.values())
     }
 
+    #[expect(
+        clippy::too_many_lines,
+        reason = "keeps MCP read tool dispatch on shared service paths"
+    )]
     async fn call_read(
         &self,
         name: &str,
@@ -122,7 +129,7 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
                 )
                 .map_err(|_| "invalid request".to_owned())?;
                 let set =
-                    crate::rest::convert_set(input.set).map_err(|_| "invalid query".to_owned())?;
+                    crate::rest::convert_set(input.set).map_err(|()| "invalid query".to_owned())?;
                 let select = input
                     .select
                     .into_iter()
@@ -134,7 +141,7 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
                     .into_iter()
                     .map(crate::rest::convert_order)
                     .collect::<Result<Vec<_>, _>>()
-                    .map_err(|_| "invalid query".to_owned())?;
+                    .map_err(|()| "invalid query".to_owned())?;
                 let object_type = set.object_type().clone();
                 let scope = ctx
                     .scope
@@ -176,7 +183,7 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
                 )
                 .map_err(|_| "invalid request".to_owned())?;
                 let set =
-                    crate::rest::convert_set(input.set).map_err(|_| "invalid query".to_owned())?;
+                    crate::rest::convert_set(input.set).map_err(|()| "invalid query".to_owned())?;
                 let group_by = input
                     .group_by
                     .into_iter()
@@ -188,7 +195,7 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
                     .into_iter()
                     .map(crate::rest::convert_measure)
                     .collect::<Result<Vec<_>, _>>()
-                    .map_err(|_| "invalid query".to_owned())?;
+                    .map_err(|()| "invalid query".to_owned())?;
                 let result = QueryService {
                     principal: &ctx.principal,
                     scope: &ctx.scope,
@@ -265,7 +272,10 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
                             attrs: &ctx.principal.attrs,
                             current_row: Some(&current),
                             caller: CallerKind::Ordinary,
-                            limit: args.get("limit").and_then(Value::as_u64).unwrap_or(100) as u32,
+                            limit: u32::try_from(
+                                args.get("limit").and_then(Value::as_u64).unwrap_or(100),
+                            )
+                            .unwrap_or(u32::MAX),
                             before_seq: args.get("beforeSeq").and_then(Value::as_i64),
                         },
                         &ctx.active,
@@ -294,7 +304,7 @@ impl<E: Engine + Send + Sync + 'static> ServerHandler for OntologyMcpHandler<E> 
         context: RequestContext<RoleServer>,
     ) -> Result<ListToolsResult, ErrorData> {
         let (ctx, _) = self.request_context(&context, "tools/list").await?;
-        let catalog = self.catalog(&ctx);
+        let catalog = Self::catalog(&ctx);
         let page = catalog.page(
             request.as_ref().and_then(|value| value.cursor.as_deref()),
             100,
@@ -311,7 +321,7 @@ impl<E: Engine + Send + Sync + 'static> ServerHandler for OntologyMcpHandler<E> 
     ) -> Result<CallToolResponse, ErrorData> {
         let tool_name = request.name.to_string();
         let (ctx, _) = self.request_context(&context, &tool_name).await?;
-        let catalog = self.catalog(&ctx);
+        let catalog = Self::catalog(&ctx);
         let Some(_tool) = catalog.all().iter().find(|tool| tool.name == tool_name) else {
             return Err(ErrorData::invalid_request("tool unavailable", None));
         };
@@ -358,7 +368,7 @@ impl<E: Engine + Send + Sync + 'static> ServerHandler for OntologyMcpHandler<E> 
                     command_id,
                     items: vec![ActionItem {
                         params,
-                        expected_versions: Default::default(),
+                        expected_versions: std::collections::BTreeMap::default(),
                     }],
                     validate_only,
                 },

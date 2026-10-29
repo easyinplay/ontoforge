@@ -92,17 +92,13 @@ impl ToolCatalog {
 
 fn static_tool(name: &str) -> Tool {
     let schema = match name {
-        DESCRIBE_TOOL => json!({"type":"object","additionalProperties":false}),
         GET_OBJECT_TOOL => json!({
             "type":"object",
             "required":["objectType","pk"],
             "properties":{"objectType":{"type":"string"},"pk":{}},
             "additionalProperties":false
         }),
-        QUERY_TOOL | OBJECT_SET_TOOL | SEARCH_AROUND_TOOL => {
-            json!({"type":"object","required":["request"],"properties":{"request":{"type":"object"}},"additionalProperties":false})
-        }
-        AGGREGATE_TOOL => {
+        QUERY_TOOL | OBJECT_SET_TOOL | SEARCH_AROUND_TOOL | AGGREGATE_TOOL => {
             json!({"type":"object","required":["request"],"properties":{"request":{"type":"object"}},"additionalProperties":false})
         }
         HISTORY_TOOL => {

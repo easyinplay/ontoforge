@@ -186,6 +186,7 @@ impl<E: Engine + Send + Sync + 'static> ServerHost<E> {
         })
     }
 
+    #[must_use]
     pub fn with_l2_status_provider<F>(self, provider: F) -> Self
     where
         F: Fn() -> Option<ontoforge_engine::trino::l2_health::L2HealthStatus>
