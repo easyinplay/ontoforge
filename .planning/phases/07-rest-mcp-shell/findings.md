@@ -2,6 +2,9 @@
 
 ## 07-01 执行前接口核查与第二意见
 
+- 01-2 signing key 核查：engine/config.rs 的 ServerConfig 无查询签名配置，只有 auth.dev.key_file；进程随机 key 会使已有版本 token 重启失效。Grok 本轮 exit0，推荐立即补可信持久文件配置。采用最小可选 query.signing_key_file 与 serve 必须加载；不采纳预加 key id 前缀，避免无需求的 wire 变更。具体合同落 07-01-PLAN，dev owner 接线指针落 07-12-PLAN。
+- 主会话初次定位尝试 crates/ontoforge-config/src 不存在，随后 rg --files 定位至 crates/ontoforge-engine/src/config.rs；dev.rs 尚为 07-12 待创建文件。没有依据缺失文件推断已实现。
+
 - `QueryService::execute` 自行 reserve guard，`QueryPage` 不含 ID，宿主原接口无法取得 durable audit 的 request_id。executor 在 RED 前返回 checkpoint，未写业务实现或生产提交。锁定的最小兼容合同见 07-01-PLAN 执行前修订；这是既有追踪要求的 bounded 技术修正，已按 brainstorming 在主会话核对方案，无新增产品决策。
 - Grok 第一轮 55 秒 ETIMEDOUT/SIGTERM，无正文；第二轮 exit 0，支持返回 guard ID、旧 wrapper 兼容、reserve 失败 None、保留取消 Drop。建议 Option<Ulid> 未采用：现有公共 guard/storage 使用 String，额外类型转换没有本次需求依据。审计 ID 与 transport ID 语义须区分，不能凭 None 假造持久审计。
 - Grok 提醒自研 libtest 文本解析受输出变化/测试打印影响，优先成熟 reporter。实测本机 stable libtest 的 --format=junit 拒绝，cargo-nextest 原未安装。已从官方 get.nexte.st/0.9/windows 下载独立工具到系统 TEMP 的 ontoforge-phase07-nextest，不修改项目依赖或全局 PATH。cargo-nextest 0.9.150 (d225b1daf)，Authenticode Status=Valid，Signer=SignPath Foundation。恢复 executor 后使用原生 JUnit，不新增解析器、不修改全局 GSD。
