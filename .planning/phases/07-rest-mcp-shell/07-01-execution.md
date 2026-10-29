@@ -27,7 +27,7 @@
 - [x] 01-2 test commit `1df4a16`
 - [x] 01-2 GREEN：serve_ 4/4；配置回归 35/35；feat commit `2e1a698`
 - [x] workspace/fmt/clippy/TLS
-- [ ] SUMMARY 自检与提交
+- [x] SUMMARY 自检与原子文档提交（见 `07-01-SUMMARY.md`）
 
 ## 发现
 
@@ -103,3 +103,4 @@
 - 完整重跑起止 `2026-10-29T00:40:47.5273483Z` 至 `2026-10-29T00:47:51.3490337Z`，编译 2m50s。首次失败和最终通过日志均保留。
 - stub 扫描未发现本 slice 的未接线功能或 TODO/FIXME；读取 key 文件与认证端点均在批准 PLAN 的信任边界内，未引入未登记的额外安全边界。
 - 本 plan 的自动验收全部执行。真实外部服务、完整进程生命周期矩阵与 dev seed/reset 仍归后续 plan，不声称当前已经运行。共享 STATE/ROADMAP/REQUIREMENTS/PWF 由主会话同步。
+- 修复提交 `1835945`，Git 将两个测试文件识别为 100% rename，post-commit 检查无意外删除。目标文件存在，六个执行者任务/修复 commits 均为 HEAD 祖先；最终事实以 SUMMARY 和原始 evidence 为准。
