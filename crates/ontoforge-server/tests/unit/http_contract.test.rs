@@ -26,7 +26,10 @@ async fn rejection(response: reqwest::Response, expected: StatusCode, code: &str
         .to_owned();
     let body: Value = response.json().await.unwrap();
     for secret in ["physical_table", "SELECT", "secret_token", "sentinel"] {
-        assert!(!body.to_string().contains(secret), "backend details must not appear in the actual HTTP body");
+        assert!(
+            !body.to_string().contains(secret),
+            "backend details must not appear in the actual HTTP body"
+        );
     }
     assert_eq!(body["code"], code);
     assert_eq!(body["request_id"], id);
@@ -91,7 +94,12 @@ async fn http_framework_rejections_are_structured() {
         (f.post("/api/ontology", &json!({})).await, "GET,HEAD"),
     ] {
         assert_eq!(response.headers()["allow"], allowed);
-        rejection(response, StatusCode::METHOD_NOT_ALLOWED, "METHOD_NOT_ALLOWED").await;
+        rejection(
+            response,
+            StatusCode::METHOD_NOT_ALLOWED,
+            "METHOD_NOT_ALLOWED",
+        )
+        .await;
     }
     let large = f
         .client
@@ -184,6 +192,7 @@ async fn http_error_utf8_ids_and_l0_redaction() {
 #[tokio::test]
 async fn http_rows_bytes_concurrency_timeout_and_audit_fail_closed() {
     work_budget_boundaries().await;
+    pk_budget_boundaries().await;
     body_budget_boundaries().await;
     deadline_and_disconnect().await;
     concurrency_admission().await;
@@ -246,7 +255,6 @@ async fn work_budget_boundaries() {
         }
         assert_eq!(f.finish().await.len(), 1);
     }
-
 }
 
 async fn body_budget_boundaries() {
@@ -275,7 +283,30 @@ async fn body_budget_boundaries() {
         }
         assert_eq!(f.finish().await.len(), usize::from(succeeds));
     }
+}
 
+async fn pk_budget_boundaries() {
+    let f = fixture().await.start().await;
+    let row = success(f.get("/api/objects/Airport/BER").await).await;
+    let bytes = serde_json::to_vec(&row).unwrap().len();
+    assert_eq!(f.finish().await.len(), 1);
+    for (cap, succeeds) in [(bytes, true), (bytes - 1, false)] {
+        let mut limits = ServerLimits::default();
+        limits.execution.max_decoded_bytes = cap;
+        let f = fixture().await.start_with_limits(limits).await;
+        let response = f.get("/api/objects/Airport/BER").await;
+        let id = response.headers()["x-request-id"].to_str().unwrap().to_owned();
+        if succeeds {
+            assert_eq!(success(response).await["pk"], "BER");
+        } else {
+            rejection(response, StatusCode::BAD_REQUEST, "COST_EXCEEDED").await;
+        }
+        assert_eq!(f.engine.calls.load(Ordering::SeqCst), 0);
+        let audit = f.finish().await;
+        assert_eq!(audit.len(), 1);
+        assert_eq!(audit[0]["request_id"], id);
+        assert_eq!(audit[0]["row_count"], usize::from(succeeds));
+    }
 }
 
 async fn deadline_and_disconnect() {
@@ -350,7 +381,6 @@ async fn deadline_and_disconnect() {
     assert_eq!(audit.len(), 1);
     assert_eq!(audit[0]["status"], "cancelled");
     assert_eq!(audit[0]["row_count"], 0);
-
 }
 
 async fn concurrency_admission() {
@@ -401,7 +431,6 @@ async fn concurrency_admission() {
         32,
         "rejected admission cannot reserve read audit"
     );
-
 }
 
 async fn audit_unavailable() {
