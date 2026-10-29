@@ -9,6 +9,13 @@ fn checked_in_openapi() -> Value {
 }
 
 #[test]
+fn checked_in_document_matches_static_render() {
+    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../docs/openapi.json");
+    let checked_in = std::fs::read_to_string(path).expect("checked-in OpenAPI document");
+    assert_eq!(checked_in, ontoforge_api::openapi::render());
+}
+
+#[test]
 fn openapi_31_all_operations_and_security() {
     let document = checked_in_openapi();
     assert_eq!(document["openapi"], "3.1.0");

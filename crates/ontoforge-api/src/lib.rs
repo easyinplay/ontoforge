@@ -4,6 +4,7 @@
 pub const CRATE_NAME: &str = env!("CARGO_PKG_NAME");
 
 pub mod dto;
+pub mod openapi;
 
 #[cfg(test)]
 mod tests {

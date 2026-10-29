@@ -1,0 +1,1850 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Ontoforge REST API",
+    "description": "Stable platform wire contract for authenticated ontology reads and writes. Unicode descriptions are preserved in UTF-8.",
+    "license": {
+      "name": ""
+    },
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/actions/{action}": {
+      "post": {
+        "tags": [],
+        "operationId": "action",
+        "parameters": [
+          {
+            "name": "action",
+            "in": "path",
+            "description": "Action API name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Committed receipt or validation acknowledgement",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/aggregate": {
+      "post": {
+        "tags": [],
+        "operationId": "aggregate",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AggregateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AggregateResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/commands/{command_id}": {
+      "get": {
+        "tags": [],
+        "operationId": "command_result",
+        "parameters": [
+          {
+            "name": "command_id",
+            "in": "path",
+            "description": "Durable Action command id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionReceipt"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/objects/{object_type}/{pk}": {
+      "get": {
+        "tags": [],
+        "operationId": "object",
+        "parameters": [
+          {
+            "name": "object_type",
+            "in": "path",
+            "description": "Logical object type API name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pk",
+            "in": "path",
+            "description": "JSON or string primary key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectRow"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/objects/{object_type}/{pk}/history": {
+      "get": {
+        "tags": [],
+        "operationId": "history",
+        "parameters": [
+          {
+            "name": "object_type",
+            "in": "path",
+            "description": "Logical object type API name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pk",
+            "in": "path",
+            "description": "JSON or string primary key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum history entries",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "beforeSeq",
+            "in": "query",
+            "description": "Return entries before sequence",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoryPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/ontology": {
+      "get": {
+        "tags": [],
+        "operationId": "ontology",
+        "responses": {
+          "200": {
+            "description": "Scoped ontology metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Metadata"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/query": {
+      "post": {
+        "tags": [],
+        "operationId": "query",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QueryRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [],
+        "operationId": "health",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ActionItem": {
+        "type": "object",
+        "required": [
+          "params"
+        ],
+        "properties": {
+          "expectedVersions": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "propertyNames": {
+              "type": "string"
+            }
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "ActionMetadata": {
+        "type": "object",
+        "required": [
+          "apiName"
+        ],
+        "properties": {
+          "apiName": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "displayName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "ActionReceipt": {
+        "type": "object",
+        "required": [
+          "commandId",
+          "eventId",
+          "logSeq",
+          "committedAt",
+          "chosenCurrentTime",
+          "items"
+        ],
+        "properties": {
+          "chosenCurrentTime": {
+            "type": "string"
+          },
+          "commandId": {
+            "type": "string"
+          },
+          "committedAt": {
+            "type": "string"
+          },
+          "eventId": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemReceipt"
+            }
+          },
+          "logSeq": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "ActionRequest": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "commandId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActionItem"
+            }
+          },
+          "validateOnly": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AggregateBucket": {
+        "type": "object",
+        "required": [
+          "group",
+          "values"
+        ],
+        "properties": {
+          "group": {
+            "type": "array",
+            "items": {}
+          },
+          "values": {
+            "type": "array",
+            "items": {}
+          }
+        }
+      },
+      "AggregateMeasure": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "op"
+            ],
+            "properties": {
+              "op": {
+                "type": "string",
+                "enum": [
+                  "count"
+                ]
+              },
+              "property": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "property",
+              "op"
+            ],
+            "properties": {
+              "op": {
+                "type": "string",
+                "enum": [
+                  "sum"
+                ]
+              },
+              "property": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "property",
+              "op"
+            ],
+            "properties": {
+              "op": {
+                "type": "string",
+                "enum": [
+                  "avg"
+                ]
+              },
+              "property": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "property",
+              "op"
+            ],
+            "properties": {
+              "op": {
+                "type": "string",
+                "enum": [
+                  "min"
+                ]
+              },
+              "property": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "property",
+              "op"
+            ],
+            "properties": {
+              "op": {
+                "type": "string",
+                "enum": [
+                  "max"
+                ]
+              },
+              "property": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "property",
+              "op"
+            ],
+            "properties": {
+              "op": {
+                "type": "string",
+                "enum": [
+                  "distinct"
+                ]
+              },
+              "property": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "AggregateRequest": {
+        "type": "object",
+        "required": [
+          "set",
+          "measures"
+        ],
+        "properties": {
+          "groupBy": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "measures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AggregateMeasure"
+            }
+          },
+          "set": {
+            "$ref": "#/components/schemas/ObjectSet"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AggregateResult": {
+        "type": "object",
+        "required": [
+          "buckets"
+        ],
+        "properties": {
+          "buckets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AggregateBucket"
+            }
+          }
+        }
+      },
+      "Direction": {
+        "type": "string",
+        "enum": [
+          "asc",
+          "desc"
+        ]
+      },
+      "EngineAvailability": {
+        "type": "string",
+        "enum": [
+          "available",
+          "unavailable"
+        ]
+      },
+      "ErrorEnvelope": {
+        "type": "object",
+        "required": [
+          "code",
+          "apiName",
+          "request_id"
+        ],
+        "properties": {
+          "apiName": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "request_id": {
+            "type": "string"
+          }
+        }
+      },
+      "HealthResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "engineStatus"
+        ],
+        "properties": {
+          "engineStatus": {
+            "$ref": "#/components/schemas/EngineAvailability"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "HistoryEntry": {
+        "type": "object",
+        "required": [
+          "seq",
+          "eventId",
+          "actor",
+          "action",
+          "committedAt",
+          "op",
+          "version",
+          "values",
+          "unset",
+          "maskedChanges"
+        ],
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "actor": {
+            "type": "string"
+          },
+          "committedAt": {
+            "type": "string"
+          },
+          "eventId": {
+            "type": "string"
+          },
+          "maskedChanges": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "op": {
+            "type": "string"
+          },
+          "params": {},
+          "seq": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "unset": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "values": {
+            "type": "object",
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            }
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "HistoryPage": {
+        "type": "object",
+        "required": [
+          "entries",
+          "truncated"
+        ],
+        "properties": {
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HistoryEntry"
+            }
+          },
+          "nextBeforeSeq": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ItemReceipt": {
+        "type": "object",
+        "required": [
+          "itemOrdinal",
+          "objectType",
+          "pk",
+          "version"
+        ],
+        "properties": {
+          "itemOrdinal": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "objectType": {
+            "type": "string"
+          },
+          "pk": {},
+          "version": {
+            "type": "string"
+          }
+        }
+      },
+      "LinkDirection": {
+        "type": "string",
+        "enum": [
+          "fromTo",
+          "toFrom"
+        ]
+      },
+      "LinkMetadata": {
+        "type": "object",
+        "required": [
+          "apiName",
+          "from",
+          "to"
+        ],
+        "properties": {
+          "apiName": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "displayName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          }
+        }
+      },
+      "ListPage": {
+        "type": "object",
+        "required": [
+          "rows",
+          "hasMore",
+          "truncated"
+        ],
+        "properties": {
+          "cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "hasMore": {
+            "type": "boolean"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectRow"
+            }
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Metadata": {
+        "type": "object",
+        "required": [
+          "apiName",
+          "objectTypes",
+          "links",
+          "actions",
+          "defVersion",
+          "engineStatus"
+        ],
+        "properties": {
+          "actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActionMetadata"
+            }
+          },
+          "apiName": {
+            "type": "string"
+          },
+          "defVersion": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "displayName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "engineStatus": {
+            "$ref": "#/components/schemas/EngineAvailability"
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LinkMetadata"
+            }
+          },
+          "objectTypes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectMetadata"
+            }
+          }
+        }
+      },
+      "Nulls": {
+        "type": "string",
+        "enum": [
+          "first",
+          "last"
+        ]
+      },
+      "ObjectMetadata": {
+        "type": "object",
+        "required": [
+          "apiName",
+          "aliases",
+          "primaryKey",
+          "titleKey",
+          "properties"
+        ],
+        "properties": {
+          "aliases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "apiName": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "displayName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "primaryKey": {
+            "type": "string"
+          },
+          "properties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PropertyMetadata"
+            }
+          },
+          "titleKey": {
+            "type": "string"
+          }
+        }
+      },
+      "ObjectRow": {
+        "type": "object",
+        "required": [
+          "objectType",
+          "pk",
+          "properties",
+          "_version"
+        ],
+        "properties": {
+          "_version": {
+            "type": "string"
+          },
+          "objectType": {
+            "type": "string"
+          },
+          "pk": {},
+          "properties": {
+            "type": "object",
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ObjectSet": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "object_type",
+              "pk",
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "pk"
+                ]
+              },
+              "object_type": {
+                "type": "string"
+              },
+              "pk": {}
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "object_type",
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "type"
+                ]
+              },
+              "object_type": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "object_type",
+              "predicate",
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "where"
+                ]
+              },
+              "object_type": {
+                "type": "string"
+              },
+              "predicate": {
+                "$ref": "#/components/schemas/WhereClause"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "object_type",
+              "property",
+              "query",
+              "mode",
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "search"
+                ]
+              },
+              "mode": {
+                "$ref": "#/components/schemas/TermMode"
+              },
+              "object_type": {
+                "type": "string"
+              },
+              "property": {
+                "type": "string"
+              },
+              "query": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "object_type",
+              "sets",
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "union"
+                ]
+              },
+              "object_type": {
+                "type": "string"
+              },
+              "sets": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ObjectSet"
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "object_type",
+              "sets",
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "intersect"
+                ]
+              },
+              "object_type": {
+                "type": "string"
+              },
+              "sets": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ObjectSet"
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "object_type",
+              "left",
+              "right",
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "subtract"
+                ]
+              },
+              "left": {
+                "$ref": "#/components/schemas/ObjectSet"
+              },
+              "object_type": {
+                "type": "string"
+              },
+              "right": {
+                "$ref": "#/components/schemas/ObjectSet"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "object_type",
+              "base",
+              "link",
+              "direction",
+              "kind"
+            ],
+            "properties": {
+              "base": {
+                "$ref": "#/components/schemas/ObjectSet"
+              },
+              "direction": {
+                "$ref": "#/components/schemas/LinkDirection"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "searchAround"
+                ]
+              },
+              "link": {
+                "type": "string"
+              },
+              "object_type": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "OrderBy": {
+        "type": "object",
+        "required": [
+          "property",
+          "direction",
+          "nulls"
+        ],
+        "properties": {
+          "direction": {
+            "$ref": "#/components/schemas/Direction"
+          },
+          "nulls": {
+            "$ref": "#/components/schemas/Nulls"
+          },
+          "property": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PageSpec": {
+        "type": "object",
+        "required": [
+          "first"
+        ],
+        "properties": {
+          "after": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "first": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      },
+      "PropertyMetadata": {
+        "type": "object",
+        "required": [
+          "apiName",
+          "type",
+          "required"
+        ],
+        "properties": {
+          "apiName": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "displayName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "QueryRequest": {
+        "type": "object",
+        "required": [
+          "set",
+          "page"
+        ],
+        "properties": {
+          "orderBy": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderBy"
+            }
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageSpec"
+          },
+          "select": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "set": {
+            "$ref": "#/components/schemas/ObjectSet"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TermMode": {
+        "type": "string",
+        "enum": [
+          "any",
+          "all"
+        ]
+      },
+      "ValidationResponse": {
+        "type": "object",
+        "required": [
+          "validated"
+        ],
+        "properties": {
+          "validated": {
+            "type": "boolean"
+          }
+        }
+      },
+      "WhereClause": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "property",
+              "value",
+              "op"
+            ],
+            "properties": {
+              "op": {
+                "type": "string",
+                "enum": [
+                  "eq"
+                ]
+              },
+              "property": {
+                "type": "string"
+              },
+              "value": {}
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "property",
+              "value",
+              "op"
+            ],
+            "properties": {
+              "op": {
+                "type": "string",
+                "enum": [
+                  "gt"
+                ]
+              },
+              "property": {
+                "type": "string"
+              },
+              "value": {}
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "property",
+              "value",
+              "op"
+            ],
+            "properties": {
+              "op": {
+                "type": "string",
+                "enum": [
+                  "gte"
+                ]
+              },
+              "property": {
+                "type": "string"
+              },
+              "value": {}
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "property",
+              "value",
+              "op"
+            ],
+            "properties": {
+              "op": {
+                "type": "string",
+                "enum": [
+                  "lt"
+                ]
+              },
+              "property": {
+                "type": "string"
+              },
+              "value": {}
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "property",
+              "value",
+              "op"
+            ],
+            "properties": {
+              "op": {
+                "type": "string",
+                "enum": [
+                  "lte"
+                ]
+              },
+              "property": {
+                "type": "string"
+              },
+              "value": {}
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "property",
+              "op"
+            ],
+            "properties": {
+              "op": {
+                "type": "string",
+                "enum": [
+                  "isNull"
+                ]
+              },
+              "property": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "property",
+              "values",
+              "op"
+            ],
+            "properties": {
+              "op": {
+                "type": "string",
+                "enum": [
+                  "in"
+                ]
+              },
+              "property": {
+                "type": "string"
+              },
+              "values": {
+                "type": "array",
+                "items": {}
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "property",
+              "value",
+              "op"
+            ],
+            "properties": {
+              "op": {
+                "type": "string",
+                "enum": [
+                  "startsWith"
+                ]
+              },
+              "property": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "property",
+              "value",
+              "op"
+            ],
+            "properties": {
+              "op": {
+                "type": "string",
+                "enum": [
+                  "containsAnyTerm"
+                ]
+              },
+              "property": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "property",
+              "value",
+              "op"
+            ],
+            "properties": {
+              "op": {
+                "type": "string",
+                "enum": [
+                  "containsAllTerms"
+                ]
+              },
+              "property": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "clauses",
+              "op"
+            ],
+            "properties": {
+              "clauses": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/WhereClause"
+                }
+              },
+              "op": {
+                "type": "string",
+                "enum": [
+                  "and"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "clauses",
+              "op"
+            ],
+            "properties": {
+              "clauses": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/WhereClause"
+                }
+              },
+              "op": {
+                "type": "string",
+                "enum": [
+                  "or"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "clause",
+              "op"
+            ],
+            "properties": {
+              "clause": {
+                "$ref": "#/components/schemas/WhereClause"
+              },
+              "op": {
+                "type": "string",
+                "enum": [
+                  "not"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer token accepted by the authenticated REST host"
+      }
+    }
+  }
+}
