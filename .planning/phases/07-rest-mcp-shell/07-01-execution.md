@@ -24,7 +24,7 @@
 - [x] 01-1 GREEN（tracer 3/3、query audit 12/12）；feat commit 后执行 feedback gate
 - [x] 01-1 feedback 再跑指定 tracer：3 passed，commit `5df9f2a`
 - [x] 01-2 RED：Cargo 2 executed / 2 failed，nextest 原生 JUnit 同样 2 failed；`RED_EVIDENCE_OK`
-- [ ] 01-2 test commit
+- [x] 01-2 test commit `1df4a16`
 - [ ] 01-2 GREEN、feat commit
 - [ ] workspace/fmt/clippy/TLS
 - [ ] SUMMARY 自检与提交
@@ -62,3 +62,21 @@
 - 01-1 GREEN：共享定义锁中读取definition/scope，显式commit后编译scope；Query保留原execute wrapper，execute_audited复制guard ID。HTTP仅投影ObjectRow并返回同ID，未认证/注入在读取前拒绝。
 - 指定tracer命令3 passed/0 failed，query audit全文件12 passed/0 failed。取消、reserve、finish、durable重开、source Pending/reload合同均有实际测试覆盖。
 - 01-2 RED 的失败分别为有效 `serve` 参数未注册、真实 listener 未启动，均命中目标行为断言。没有编译或 fixture 错误。报告 `task2-nextest-red.json` 包含原样 JUnit；下一步提交 RED 后实现。
+
+## 01-2 合同检查点 (2026-10-29)
+
+- 主会话要求暂停在查询版本 signing key 生命周期决策处。已核对 CONTEXT、RESEARCH、ENG-REVIEW、ServerConfig，当前只有 `auth.dev.key_file`，没有查询版本 token 的可信持久 key 配置。
+- `TokenCodec` 需要 key，HTTP 返回的 `ObjectRow` 包含版本 token。进程随机 key 会使重启前 token 失效，不能自行引入这个生产默认。向主会话回流 `STATUS: NEEDS_CLARIFICATION`。
+- Task 01-2 的 RED 已提交；无关装配保留在工作区：`Command::Serve`、dispatch、runtime、配置/认证/显式 dev/engine/listener/store/受控关闭，server 增加接收 signing_key 的轻量构造入口。
+- 当前 `serve.rs` 的 signing_key 是待决策的空值，构造会明确失败并 drain audit，因此不是可用 GREEN。此缺口只用于当前未提交检查点，不得带入完成提交。
+- 主会话原文要求：只完成与该决策无关的装配后终态 CHECKPOINT，保留 Task01-2 RED 和当前变更，不提交不完整 GREEN 或 SUMMARY。遵照此指令，不修改共享状态文件。
+- 待主会话锁定可信 key 配置和生命周期后继续 Task 01-2 GREEN，再执行完整 workspace/fmt/clippy/TLS 验收。
+- 装配编译检查 `cargo check -p ontoforge --locked` 退出 0；证据 `07-01-evidence/task2-assembly-check.json`。这仅证明可编译，不证明 Task 01-2 行为已 GREEN。所有 Cargo session 已结束。
+
+## 01-2 持久 key 合同恢复 (2026-10-29)
+
+- 主会话已锁定方案 B 并更新 PLAN，当前恢复 base `74db66c`。新增精确所有权 engine/config.rs、engine/tests/server_config.rs、示例配置和 docs/api.md，不再重复询问此决策。
+- `[query] signing_key_file` 可选以兼容旧命令；serve 必须存在可信引用并在监听前读取至少 32 bytes 的原始 key，沿既有 64 KiB secret 文件上限。独立 auth key、不自动创建、不改变 token wire。
+- 新增真实重启与 key 独立行为测试。Cargo RED 2 executed / 1 passed / 1 failed，nextest 同样；目标失败为现有 parser 拒绝 query 配置导致真实宿主不启动。不是编译/fixture 错误，原生 JUnit 判定 `RED_EVIDENCE_OK`。
+- 负向 key 测试在 RED 已通过，但当前仅说明现有宿主 fail closed，不将它宣称为缺失 key 读取实现的单独 RED；GREEN 后连同正向启动一起验证。
+- engine query config 的解析回归正在执行，随后生成 reporter 证据并提交追加 RED，再补最小 key loader 和 CLI 接线。

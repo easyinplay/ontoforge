@@ -1,0 +1,26 @@
+   Compiling ontoforge-server v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-server)
+   Compiling ontoforge v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 30.97s
+     Running unittests src\lib.rs (target\debug\deps\ontoforge-b6e03de9df0f5730.exe)
+
+running 2 tests
+invalid server configuration for HTTP server
+invalid server configuration for HTTP server
+invalid server configuration for HTTP server
+
+thread 'serve::tests::serve_query_key_survives_restart_and_is_independent_of_auth' (53180) panicked at crates\ontoforge\src\serve.test.rs:127:5:
+configured query key must start the authenticated host
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test serve::tests::serve_query_key_survives_restart_and_is_independent_of_auth ... FAILED
+invalid server configuration for HTTP server
+cannot initialize HTTP server signing key
+test serve::tests::serve_query_key_rejects_missing_short_and_oversized_files_before_listen ... ok
+
+failures:
+
+failures:
+    serve::tests::serve_query_key_survives_restart_and_is_independent_of_auth
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 14 filtered out; finished in 8.30s
+
+error: test failed, to rerun pass `-p ontoforge --lib`

@@ -1,0 +1,29 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.50s
+────────────
+ Nextest run ID bfa6e469-3843-48c4-b06d-19aed99051ee with nextest profile: gsd
+    Starting 2 tests across 1 binary (14 tests skipped)
+        FAIL [   2.143s] (1/2) ontoforge serve::tests::serve_query_key_survives_restart_and_is_independent_of_auth
+  stdout ───
+
+    running 1 test
+    test serve::tests::serve_query_key_survives_restart_and_is_independent_of_auth ... FAILED
+
+    failures:
+
+    failures:
+        serve::tests::serve_query_key_survives_restart_and_is_independent_of_auth
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 15 filtered out; finished in 2.12s
+
+  stderr ───
+    invalid server configuration for HTTP server
+
+    thread 'serve::tests::serve_query_key_survives_restart_and_is_independent_of_auth' (25940) panicked at crates\ontoforge\src\serve.test.rs:127:5:
+    configured query key must start the authenticated host
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        PASS [   8.272s] (2/2) ontoforge serve::tests::serve_query_key_rejects_missing_short_and_oversized_files_before_listen
+────────────
+     Summary [   8.273s] 2 tests run: 1 passed, 1 failed, 14 skipped
+        FAIL [   2.143s] (1/2) ontoforge serve::tests::serve_query_key_survives_restart_and_is_independent_of_auth
+error: test run failed

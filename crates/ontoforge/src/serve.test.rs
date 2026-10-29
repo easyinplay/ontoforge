@@ -5,9 +5,12 @@ use std::time::Duration;
 
 use camino::{Utf8Path, Utf8PathBuf};
 use clap::Parser;
-use ontoforge_auth::authn::dev::{DevClaims, DevKey, issue_dev_token};
+use ontoforge_auth::authn::Authenticator;
+use ontoforge_auth::authn::dev::{DevClaims, DevKey, DevMode, DevVerifier, issue_dev_token};
 use ontoforge_auth::scope::{ScopeInputs, attr_types, compile_scope};
 use ontoforge_engine::config::AuthConfig;
+use ontoforge_query::TokenCodec;
+use ontoforge_query::cursor::{VersionClaims, VersionTokenCodec};
 use ontoforge_schema::ir::{ObjectTypeName, PropertyName};
 use ontoforge_schema::{load_dir, load_scope_dir};
 use ontoforge_storage::commit::{Actor, Commit, Edit, ObjectOp};
@@ -23,6 +26,7 @@ use super::run_with_shutdown;
 
 const AVIATION: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../examples/ontologies/aviation");
 const SCOPE: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../examples/scopes/aviation");
+const QUERY_KEY: [u8; 32] = [0xa5; 32];
 
 struct Fixture {
     _dir: tempfile::TempDir,
@@ -43,7 +47,8 @@ async fn fixture() -> Fixture {
     let root = Utf8PathBuf::from_path_buf(dir.path().to_owned()).unwrap();
     let path = root.join("edit.db");
     let config = root.join("server.toml");
-    std::fs::write(&config, "[store]\nkind = \"sqlite\"\npath = \"edit.db\"\n[auth.dev]\nkey_file = \"dev.key\"\n[auth.principal_attrs.homeAirports]\nclaim = \"airports\"\ntype = \"string_list\"\n").unwrap();
+    std::fs::write(&config, "[query]\nsigning_key_file = \"query.key\"\n[store]\nkind = \"sqlite\"\npath = \"edit.db\"\n[auth.dev]\nkey_file = \"dev.key\"\n[auth.principal_attrs.homeAirports]\nclaim = \"airports\"\ntype = \"string_list\"\n").unwrap();
+    std::fs::write(root.join("query.key"), QUERY_KEY).unwrap();
     let store = EditStore::open(settings(&path)).await.unwrap();
     let ontology = load_dir(Utf8Path::new(AVIATION)).ontology.unwrap();
     reload(&store, &ontology, &ReloadOptions::default()).await.unwrap();
@@ -110,6 +115,90 @@ async fn wait_listening(bind: SocketAddr, task: &tokio::task::JoinHandle<u8>) ->
             tokio::time::sleep(Duration::from_millis(10)).await;
         }
     }).await.unwrap_or(false)
+}
+
+async fn read_across_start(f: &Fixture) -> Value {
+    let bind = unused_address();
+    let serve_args = args(f, bind);
+    let (stop, rx) = oneshot::channel();
+    let task = tokio::spawn(async move {
+        run_with_shutdown(&serve_args, async { let _ = rx.await; }).await
+    });
+    assert!(wait_listening(bind, &task).await, "configured query key must start the authenticated host");
+    let (status, _, body) = http(bind, Some(&f.token)).await;
+    assert_eq!(status, 200);
+    stop.send(()).unwrap();
+    assert_eq!(tokio::time::timeout(Duration::from_secs(3), task).await.unwrap().unwrap(), 0);
+    body
+}
+
+#[tokio::test]
+async fn serve_query_key_survives_restart_and_is_independent_of_auth() {
+    let mut f = fixture().await;
+    let first = read_across_start(&f).await;
+    let second = read_across_start(&f).await;
+    let token = first["_version"].as_str().unwrap();
+    assert_eq!(second["_version"], token, "same persistent key must retain version tokens across host restarts");
+
+    let store = EditStore::open(settings(&f.path)).await.unwrap();
+    let snapshot = store.request_snapshot().await.unwrap();
+    let auth: AuthConfig = serde_json::from_value(json!({
+        "principal_attrs": {"homeAirports": {"claim": "airports", "type": "string_list"}}
+    })).unwrap();
+    let key = DevKey::load_or_create(&f.config.with_file_name("dev.key")).unwrap();
+    let principal = Authenticator::from_config(&auth, f.config.parent().unwrap()).unwrap()
+        .with_dev(DevVerifier::new(DevMode::enable_insecure(), key, &auth.principal_attrs))
+        .authenticate(&f.token).await.unwrap();
+    let scope = compile_scope(&ScopeInputs {
+        ontology: &snapshot.active.ontology, profile: None,
+        attrs: &attr_types(Some(&auth)), scope: &snapshot.scope, sources: None,
+    }).unwrap().for_principal(&principal);
+    let ty = ObjectTypeName::try_from("Airport".to_owned()).unwrap();
+    let pk = PropertyValue::String("BER".to_owned());
+    let edit = store.read_object_edit(&snapshot.active, &ty, &pk).await.unwrap().unwrap();
+    let claims = VersionClaims {
+        principal: &principal, scope: &scope, object_type: &ty, pk: &pk,
+        def_version: snapshot.active.def_version, source: None, edit: Some(&edit.row),
+    };
+    let signer = TokenCodec::new(QUERY_KEY.to_vec()).unwrap();
+    assert_eq!(VersionTokenCodec::new(&signer).verify(token, &claims), Ok(()));
+    let wrong = TokenCodec::new(vec![0x5a; 32]).unwrap();
+    assert!(VersionTokenCodec::new(&wrong).verify(token, &claims).is_err());
+    store.read_audit().shutdown().await.unwrap();
+
+    std::fs::remove_file(f.config.with_file_name("dev.key")).unwrap();
+    let replacement = DevKey::load_or_create(&f.config.with_file_name("dev.key")).unwrap();
+    f.token = issue_dev_token(&replacement, &DevClaims {
+        sub: "alice".to_owned(), groups: vec!["dispatchers".to_owned()],
+        attrs: serde_json::Map::new(), ttl: Duration::from_secs(300),
+    }).unwrap();
+    assert_eq!(read_across_start(&f).await["_version"], token,
+        "auth key replacement must not replace the independent query key");
+    std::fs::write(f.config.with_file_name("query.key"), [0x5a; 32]).unwrap();
+    assert_ne!(read_across_start(&f).await["_version"], token);
+}
+
+#[tokio::test]
+async fn serve_query_key_rejects_missing_short_and_oversized_files_before_listen() {
+    let f = fixture().await;
+    let original = std::fs::read_to_string(&f.config).unwrap();
+    for bytes in [None, Some(vec![1; 31]), Some(vec![1; 64 * 1024 + 1])] {
+        let path = f.config.with_file_name("query.key");
+        match bytes {
+            Some(bytes) => std::fs::write(&path, bytes).unwrap(),
+            None => std::fs::remove_file(&path).unwrap(),
+        }
+        let bind = unused_address();
+        assert_ne!(tokio::time::timeout(Duration::from_secs(3),
+            run_with_shutdown(&args(&f, bind), std::future::pending()))
+            .await.expect("invalid key must fail before awaiting shutdown"), 0);
+        assert!(tokio::net::TcpStream::connect(bind).await.is_err());
+    }
+    std::fs::write(f.config.with_file_name("query.key"), QUERY_KEY).unwrap();
+    std::fs::write(&f.config, original.replace("[query]\nsigning_key_file = \"query.key\"\n", "")).unwrap();
+    let bind = unused_address();
+    assert_ne!(run_with_shutdown(&args(&f, bind), async {}).await, 0);
+    assert!(tokio::net::TcpStream::connect(bind).await.is_err());
 }
 
 #[tokio::test]

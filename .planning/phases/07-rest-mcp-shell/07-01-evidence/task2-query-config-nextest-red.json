@@ -1,0 +1,16 @@
+{
+  "command": "C:\\Users\\easyi\\AppData\\Local\\Temp/ontoforge-phase07-nextest/cargo-nextest.exe nextest run --config-file .planning/phases/07-rest-mcp-shell/07-01-evidence/nextest.toml --profile gsd --color never -p ontoforge-engine --test server_config --locked -E test(query_signing_key_reference)",
+  "exitCode": 100,
+  "runStartedAt": "2026-10-29T00:06:35.6010068Z",
+  "runFinishedAt": "2026-10-29T00:06:36.7394724Z",
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07-rest-mcp-shell\\07-01-evidence\\task2-query-config-nextest-red.log",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "output": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<testsuites name=\"nextest-run\" tests=\"1\" skipped=\"0\" failures=\"1\" errors=\"0\" uuid=\"c5bcf789-5618-47fc-bc92-155aef17f498\" timestamp=\"2026-10-29T08:06:36.707+08:00\" time=\"0.015\">\n    <testsuite name=\"ontoforge-engine::server_config\" tests=\"1\" skipped=\"0\" errors=\"0\" failures=\"1\">\n        <testcase name=\"query_signing_key_reference_is_optional_and_trusted\" classname=\"ontoforge-engine::server_config\" timestamp=\"2026-10-29T08:06:36.707+08:00\" time=\"0.014\">\n            <failure message=\"thread &apos;query_signing_key_reference_is_optional_and_trusted&apos; (26700) panicked at crates\\ontoforge-engine\\tests\\server_config.rs:24:5\" type=\"test failure with exit code 101\">thread &apos;query_signing_key_reference_is_optional_and_trusted&apos; (26700) panicked at crates\\ontoforge-engine\\tests\\server_config.rs:24:5:\ntrusted query signing key file must be accepted\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace</failure>\n            <system-out>\nrunning 1 test\ntest query_signing_key_reference_is_optional_and_trusted ... FAILED\n\nfailures:\n\nfailures:\n    query_signing_key_reference_is_optional_and_trusted\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 34 filtered out; finished in 0.00s\n\n</system-out>\n            <system-err>\nthread &apos;query_signing_key_reference_is_optional_and_trusted&apos; (26700) panicked at crates\\ontoforge-engine\\tests\\server_config.rs:24:5:\ntrusted query signing key file must be accepted\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n</system-err>\n        </testcase>\n    </testsuite>\n</testsuites>\n",
+  "targetTest": "query_signing_key_reference_is_optional_and_trusted",
+  "targetFile": "crates/ontoforge-engine/tests/server_config.rs",
+  "expected": "trusted query signing key file reference is accepted",
+  "actual": "parser rejects query section",
+  "reportPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07-rest-mcp-shell\\07-01-evidence\\task2-query-config-nextest-red.junit.xml",
+  "reportModifiedAt": "2026-10-29T00:06:36.7225117Z",
+  "semanticAssessment": "Target executed and failed on the planned behavior assertion; inspect the unchanged JUnit failure output."
+}

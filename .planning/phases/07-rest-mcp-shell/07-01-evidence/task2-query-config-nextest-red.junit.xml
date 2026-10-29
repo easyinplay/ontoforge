@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="nextest-run" tests="1" skipped="0" failures="1" errors="0" uuid="c5bcf789-5618-47fc-bc92-155aef17f498" timestamp="2026-10-29T08:06:36.707+08:00" time="0.015">
+    <testsuite name="ontoforge-engine::server_config" tests="1" skipped="0" errors="0" failures="1">
+        <testcase name="query_signing_key_reference_is_optional_and_trusted" classname="ontoforge-engine::server_config" timestamp="2026-10-29T08:06:36.707+08:00" time="0.014">
+            <failure message="thread &apos;query_signing_key_reference_is_optional_and_trusted&apos; (26700) panicked at crates\ontoforge-engine\tests\server_config.rs:24:5" type="test failure with exit code 101">thread &apos;query_signing_key_reference_is_optional_and_trusted&apos; (26700) panicked at crates\ontoforge-engine\tests\server_config.rs:24:5:
+trusted query signing key file must be accepted
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace</failure>
+            <system-out>
+running 1 test
+test query_signing_key_reference_is_optional_and_trusted ... FAILED
+
+failures:
+
+failures:
+    query_signing_key_reference_is_optional_and_trusted
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 34 filtered out; finished in 0.00s
+
+</system-out>
+            <system-err>
+thread &apos;query_signing_key_reference_is_optional_and_trusted&apos; (26700) panicked at crates\ontoforge-engine\tests\server_config.rs:24:5:
+trusted query signing key file must be accepted
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+</system-err>
+        </testcase>
+    </testsuite>
+</testsuites>
