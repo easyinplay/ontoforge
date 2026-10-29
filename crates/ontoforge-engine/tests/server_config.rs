@@ -21,8 +21,12 @@ const SECRET: &str = "s3cr3t-value";
 fn query_signing_key_reference_is_optional_and_trusted() {
     assert!(parse_server_config("[store]\nkind = \"sqlite\"\npath = \"edit.db\"\n").is_ok());
     let config = parse_server_config("[query]\nsigning_key_file = \"keys/query.key\"\n");
-    assert!(config.is_ok(), "trusted query signing key file must be accepted");
-    let errors = parse_server_config("[query]\nsigning_key = \"never-accept-plaintext-key\"\n").unwrap_err();
+    assert!(
+        config.is_ok(),
+        "trusted query signing key file must be accepted"
+    );
+    let errors =
+        parse_server_config("[query]\nsigning_key = \"never-accept-plaintext-key\"\n").unwrap_err();
     assert!(!format!("{errors:?}").contains("never-accept-plaintext-key"));
     assert!(parse_server_config("[query]\nsigning_key_file = \"\"\n").is_err());
 }

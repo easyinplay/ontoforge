@@ -43,6 +43,9 @@ pub struct ServerConfig {
     /// How callers authenticate.
     #[serde(default)]
     pub auth: Option<AuthConfig>,
+    /// File reference for persistent query token signatures.
+    #[serde(default)]
+    pub query: Option<QueryConfig>,
     /// Outbound Action event delivery by a trusted worker process.
     #[serde(default)]
     pub webhook: Option<WebhookWorkerConfig>,
@@ -57,6 +60,31 @@ pub struct WebhookWorkerConfig {
     pub request_timeout_ms: u64,
     pub lease_duration_ms: u64,
     pub batch_limit: u32,
+}
+
+/// Trusted configuration for object version and query token signatures.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct QueryConfig {
+    pub signing_key_file: String,
+}
+
+impl QueryConfig {
+    /// Reads raw key bytes without text decoding, newline trimming or key creation.
+    pub fn load_signing_key(&self, config_dir: &Utf8Path) -> Result<Vec<u8>, ConfigError> {
+        let bytes = read_limited(
+            config_dir.join(&self.signing_key_file).as_std_path(),
+            true,
+            MAX_SECRET_FILE_BYTES,
+        )
+        .map_err(|_| ConfigError::new("cannot read query signing key file"))?;
+        if bytes.len() < 32 {
+            return Err(ConfigError::new(
+                "query signing key file needs at least 32 bytes",
+            ));
+        }
+        Ok(bytes)
+    }
 }
 
 /// The `[trino]` section.
@@ -549,6 +577,16 @@ impl<'a> Checker<'a> {
             errors.push(ConfigError::new(
                 "L2 ACL edit probe must use the configured edit-store catalog",
             ));
+        }
+        if cfg
+            .query
+            .as_ref()
+            .is_some_and(|query| query.signing_key_file.trim().is_empty())
+        {
+            errors.push(
+                ConfigError::new("`query.signing_key_file` must not be empty")
+                    .at(self.key_span(&["query", "signing_key_file"])),
+            );
         }
         if let Some(auth) = &cfg.auth {
             self.check_auth(auth, &mut errors);

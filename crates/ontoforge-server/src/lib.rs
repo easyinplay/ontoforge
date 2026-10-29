@@ -48,6 +48,22 @@ pub struct RequestContext {
 }
 
 impl<E: Engine + Send + Sync + 'static> ServerHost<E> {
+    pub fn new(
+        store: Arc<EditStore>,
+        engine: Arc<E>,
+        auth: Authenticator,
+        auth_config: AuthConfig,
+        signing_key: Vec<u8>,
+    ) -> Result<Self, QueryError> {
+        Ok(Self {
+            store,
+            engine,
+            auth,
+            auth_config,
+            tokens: TokenCodec::new(signing_key)?,
+        })
+    }
+
     pub async fn serve(
         self: Arc<Self>,
         listener: TcpListener,

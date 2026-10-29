@@ -25,7 +25,7 @@
 - [x] 01-1 feedback 再跑指定 tracer：3 passed，commit `5df9f2a`
 - [x] 01-2 RED：Cargo 2 executed / 2 failed，nextest 原生 JUnit 同样 2 failed；`RED_EVIDENCE_OK`
 - [x] 01-2 test commit `1df4a16`
-- [ ] 01-2 GREEN、feat commit
+- [x] 01-2 GREEN：serve_ 4/4；配置回归 35/35；等待原子 feat commit
 - [ ] workspace/fmt/clippy/TLS
 - [ ] SUMMARY 自检与提交
 
@@ -80,3 +80,7 @@
 - 新增真实重启与 key 独立行为测试。Cargo RED 2 executed / 1 passed / 1 failed，nextest 同样；目标失败为现有 parser 拒绝 query 配置导致真实宿主不启动。不是编译/fixture 错误，原生 JUnit 判定 `RED_EVIDENCE_OK`。
 - 负向 key 测试在 RED 已通过，但当前仅说明现有宿主 fail closed，不将它宣称为缺失 key 读取实现的单独 RED；GREEN 后连同正向启动一起验证。
 - engine query config 的解析回归正在执行，随后生成 reporter 证据并提交追加 RED，再补最小 key loader 和 CLI 接线。
+- engine 配置 RED 1 executed / 1 failed，`RED_EVIDENCE_OK`；追加 test commit `8aa4d46`。
+- GREEN 使用 `QueryConfig::load_signing_key`，沿既有 `read_limited` 的 64 KiB 上限读取原始 bytes，至少 32 bytes；错误不含内容或路径。CLI 在 auth/engine/listener 前读取，不隐式创建/旋转，不复用 dev key。doc 与示例只含 key reference。
+- 指定 serve_ 4 passed / 0 failed；server_config 全 35 passed；最终 tracer 3 passed；fmt check exit 0。真实同 key 重启后 `VersionTokenCodec::verify` 通过，错误 key 拒绝，替换 auth key 不改变 query token。query audit 最终回归正在编译。
+- query audit 最终 12 passed / 0 failed，Task 01-2 目标验收已满足。GREEN 原子提交后执行整体 gates。证据脚本补建零输出命令的空日志，使 fmt 的 logPath 指向真实文件；重复 fmt check 仍 exit 0。

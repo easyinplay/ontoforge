@@ -3,7 +3,8 @@
 # It contains no secrets. The SQLite edit store and the development signing key are files below
 # `target/ontoforge-dev/`, which git ignores. Nothing needs to exist beforehand: the first
 # `ontoforge reload` (or any command that opens the store) creates the store file, the first
-# `ontoforge dev-token` creates the key, and the missing directories are created with them.
+# `ontoforge dev-token` creates the authentication key, and the missing directories are created
+# with them. Before `serve`, create the independent query key as described in docs/api.md.
 # Paths are relative to this file. On Windows the key file inherits the ACL of its directory, so
 # other local accounts may be able to read it; see "Known gaps" in docs/edit-store.md. Use it with:
 #
@@ -22,3 +23,6 @@ type = "string_list"
 
 [auth.dev]
 key_file = "../../target/ontoforge-dev/dev-token.key"
+
+[query]
+signing_key_file = "../../target/ontoforge-dev/query-signing.key"

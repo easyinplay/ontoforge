@@ -1,0 +1,8 @@
+{
+  "command": "cargo fmt --all --check",
+  "exitCode": 0,
+  "runStartedAt": "2026-10-29T00:13:44.2364649Z",
+  "runFinishedAt": "2026-10-29T00:13:45.6295932Z",
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07-rest-mcp-shell\\07-01-evidence\\final-fmt.log",
+  "cwd": "D:\\DataSpellProjects\\ontoforge"
+}

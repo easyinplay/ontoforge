@@ -13,6 +13,7 @@ $evidenceRoot = $PSScriptRoot
 $env:CARGO_TERM_COLOR = 'never'
 $started = [DateTime]::UtcNow
 $logPath = Join-Path $evidenceRoot "$Name.log"
+New-Item -ItemType File -Path $logPath -Force | Out-Null
 & $FilePath @ArgumentList 2>&1 | Tee-Object -FilePath $logPath
 $commandExit = $LASTEXITCODE
 $finished = [DateTime]::UtcNow

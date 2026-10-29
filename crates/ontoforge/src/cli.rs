@@ -38,6 +38,8 @@ pub enum Command {
     DevToken(DevTokenArgs),
     /// Deliver committed Action events from the edit store to a configured webhook.
     WebhookWorker(WebhookWorkerArgs),
+    /// Run the authenticated HTTP server.
+    Serve(ServeArgs),
 }
 
 #[derive(Debug, Args)]
