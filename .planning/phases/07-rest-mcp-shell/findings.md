@@ -1,5 +1,10 @@
 # Phase 7 findings
 
+## 07-03 超时与取消补充决定
+
+- 2026-10-29：Grok session 68211 正常 exit 0 返回第二意见，支持请求内 Engine adapter；已核查 Engine QueryContext 无 CancellationToken、Query 将 EngineError 映为 Source。采用类型分支记录 Timeout/Cancelled，REST 仅覆写对应 Source 响应，合同见 `07-03-PLAN.md`。
+- 不采纳第二意见中“无记录默认 cancelled”的泛化：正常 Source 仍须保留原映射；HTTP timer 显式区分 deadline，真实 drop 与持久审计验证取消，保留原 guard finish/Drop。
+
 - 2026-10-29 独立审查确认07-02 submit replay内部重读当前定义，违背snapshot；现有frozen_replay只测result lookup。SQLite race只是顺序读，PG用例吞错误无断言，fence/CAS/guard及history当前scope组合覆盖不足。修复清单唯一家为 `reviews/07-02-ACCEPTANCE-AUDIT.md`，保留原提交并撤销完成，不把默认workspace绿当作验收充分。
 
 - 2026-10-29 query audit 接口核查：list/aggregate 各自 reserve guard却只返回page，REST transport ID无法与 durable audit关联。Grok 本轮exit0完整意见支持同型 audited wrappers，拒绝扩大storage上下文。保留原finish/status/Drop语义，reserve失败None、单次reserve、旧wrapper兼容；具体合同见07-03-PLAN补充。

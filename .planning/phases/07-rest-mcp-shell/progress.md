@@ -1,5 +1,7 @@
 # Phase 7 progress
 
+- 2026-10-29：恢复执行已核对 GSD init、工作树与活跃 executor：仅 07-01 SUMMARY 有效，07-03 修复继续，07-02 随后修复。Grok session 68211 exit 0；请求内 Engine adapter 合同落入 07-03 PLAN，详 findings。GSD 重算为 73/88、83%，其单调进度保护保留旧75/88；已按有效 SUMMARY 显式校正 STATE 为73/88并恢复 Executing 状态。
+
 - 2026-10-29：07-02 独立只读审查发现 1 blocker、4 项验收覆盖缺口，详 `reviews/07-02-ACCEPTANCE-AUDIT.md`。原 SUMMARY 改为 IMPLEMENTATION-RECORD，完成计数有效 1/16。07-03 当前 executor 继续其独立 REST 修复，结束后顺序修复 07-02，07-04 等待。
 
 - 2026-10-29：主会话复核撤销 07-03 完成结论：路由字符串测试不满足真实 listener，两个指定 rest 用例缺失，http_contract 未走实际 HTTP；编译错误不能充 RED。原 SUMMARY 改为 `07-03-IMPLEMENTATION-RECORD.md` 保留历史，07-04 0/2 暂停且无生产改动。当前有效完成 2/16，先修复 07-03 验收。
