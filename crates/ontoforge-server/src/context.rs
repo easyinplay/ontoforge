@@ -62,7 +62,7 @@ enum SourceFault {
 }
 
 impl RequestTrace {
-    fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self {
             id: Arc::new(Mutex::new(ulid::Ulid::generate().to_string())),
             fault: Arc::new(Mutex::new(None)),

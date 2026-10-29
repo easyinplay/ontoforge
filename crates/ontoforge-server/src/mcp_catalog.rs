@@ -1,6 +1,7 @@
 use std::collections::BTreeSet;
 
 use ontoforge_auth::scope::PrincipalScope;
+use ontoforge_schema::ir::ActionType;
 use ontoforge_schema::ir::Toolset;
 use rmcp::model::{Tool, ToolAnnotations};
 use serde_json::json;
@@ -8,6 +9,8 @@ use serde_json::json;
 pub const DESCRIBE_TOOL: &str = "describe";
 pub const GET_OBJECT_TOOL: &str = "get_object";
 pub const QUERY_TOOL: &str = "query";
+pub const OBJECT_SET_TOOL: &str = "object_set";
+pub const SEARCH_AROUND_TOOL: &str = "searchAround";
 pub const AGGREGATE_TOOL: &str = "aggregate";
 pub const HISTORY_TOOL: &str = "history";
 
@@ -28,13 +31,37 @@ impl ToolCatalog {
     pub fn for_scope(scope: &PrincipalScope) -> Self {
         let mut names = BTreeSet::new();
         if scope.toolsets.contains(&Toolset::Core) || scope.toolsets.contains(&Toolset::Full) {
-            names.extend([DESCRIBE_TOOL, GET_OBJECT_TOOL, QUERY_TOOL]);
+            names.extend([
+                DESCRIBE_TOOL,
+                GET_OBJECT_TOOL,
+                QUERY_TOOL,
+                OBJECT_SET_TOOL,
+                SEARCH_AROUND_TOOL,
+            ]);
         }
         if scope.toolsets.contains(&Toolset::Full) {
             names.extend([AGGREGATE_TOOL, HISTORY_TOOL]);
         }
         let tools = names.into_iter().map(static_tool).collect();
         Self { tools }
+    }
+
+    #[must_use]
+    pub fn with_actions<'a, I>(mut self, scope: &PrincipalScope, actions: I) -> Self
+    where
+        I: IntoIterator<Item = &'a ActionType>,
+    {
+        if scope.toolsets.contains(&Toolset::Core) || scope.toolsets.contains(&Toolset::Full) {
+            for action in actions {
+                if scope.actions.contains(&action.api_name) {
+                    let schema = crate::mcp_actions::ActionToolSchema::from_action(action);
+                    self.tools.push(schema.tool(action.description.as_deref()));
+                }
+            }
+            self.tools.sort_by(|left, right| left.name.cmp(&right.name));
+            self.tools.dedup_by(|left, right| left.name == right.name);
+        }
+        self
     }
 
     #[must_use]
@@ -72,7 +99,7 @@ fn static_tool(name: &str) -> Tool {
             "properties":{"objectType":{"type":"string"},"pk":{}},
             "additionalProperties":false
         }),
-        QUERY_TOOL => {
+        QUERY_TOOL | OBJECT_SET_TOOL | SEARCH_AROUND_TOOL => {
             json!({"type":"object","required":["request"],"properties":{"request":{"type":"object"}},"additionalProperties":false})
         }
         AGGREGATE_TOOL => {

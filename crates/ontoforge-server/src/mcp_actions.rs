@@ -62,6 +62,28 @@ impl ActionToolSchema {
         {
             return Err("missing required action parameter".to_owned());
         }
+        for (key, value) in arguments {
+            let Some(kind) = properties
+                .get(key)
+                .and_then(Value::as_object)
+                .and_then(|schema| schema.get("type"))
+                .and_then(Value::as_str)
+            else {
+                continue;
+            };
+            let valid = match kind {
+                "string" => value.is_string(),
+                "integer" => value.as_i64().is_some() || value.as_u64().is_some(),
+                "number" => value.is_number(),
+                "boolean" => value.is_boolean(),
+                "array" => value.is_array(),
+                "object" => value.is_object(),
+                _ => true,
+            };
+            if !valid {
+                return Err(format!("invalid type for action parameter `{key}`"));
+            }
+        }
         Ok(())
     }
 }

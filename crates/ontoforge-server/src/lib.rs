@@ -10,6 +10,9 @@ use ontoforge_engine::Engine;
 use ontoforge_engine::config::AuthConfig;
 use ontoforge_query::{QueryError, TokenCodec};
 use ontoforge_storage::store::EditStore;
+use rmcp::transport::streamable_http_server::{
+    StreamableHttpServerConfig, StreamableHttpService, session::local::LocalSessionManager,
+};
 use tokio::net::TcpListener;
 use tokio::sync::Semaphore;
 
@@ -133,7 +136,15 @@ impl<E: Engine + Send + Sync + 'static> ServerHost<E> {
             Arc::new(Semaphore::new(limits.max_concurrent_requests)),
             limits.deadline,
         );
+        let mcp_host = Arc::clone(&self);
+        let mcp_service = StreamableHttpService::new(
+            move || Ok(mcp::OntologyMcpHandler::new(Arc::clone(&mcp_host))),
+            Arc::new(LocalSessionManager::default()),
+            StreamableHttpServerConfig::default()
+                .with_max_request_body_bytes(limits.max_body_bytes),
+        );
         let router = Router::new()
+            .nest_service("/mcp", mcp_service)
             .route("/health", axum::routing::get(health::endpoint::<E>))
             .route("/api/ontology", axum::routing::get(rest::ontology::<E>))
             .route(

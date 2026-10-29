@@ -734,7 +734,7 @@ fn query_failure(
     error::wire(error::query_status(error), error.code(), api_name, id)
 }
 
-fn convert_set(input: wire::ObjectSet) -> Result<ObjectSet, ()> {
+pub(crate) fn convert_set(input: wire::ObjectSet) -> Result<ObjectSet, ()> {
     Ok(match input {
         wire::ObjectSet::Pk { object_type, pk } => ObjectSet::Pk {
             object_type: ObjectTypeName::try_from(object_type).map_err(|_| ())?,
@@ -866,7 +866,7 @@ fn convert_where(input: wire::WhereClause) -> Result<ast::WhereClause, ()> {
     })
 }
 
-fn convert_order(input: wire::OrderBy) -> Result<ast::OrderBy, ()> {
+pub(crate) fn convert_order(input: wire::OrderBy) -> Result<ast::OrderBy, ()> {
     Ok(ast::OrderBy {
         property: PropertyName::try_from(input.property).map_err(|_| ())?,
         direction: match input.direction {
@@ -879,7 +879,7 @@ fn convert_order(input: wire::OrderBy) -> Result<ast::OrderBy, ()> {
         },
     })
 }
-fn convert_measure(input: wire::AggregateMeasure) -> Result<ast::AggregateMeasure, ()> {
+pub(crate) fn convert_measure(input: wire::AggregateMeasure) -> Result<ast::AggregateMeasure, ()> {
     Ok(match input {
         wire::AggregateMeasure::Count { property } => ast::AggregateMeasure::Count {
             property: property
