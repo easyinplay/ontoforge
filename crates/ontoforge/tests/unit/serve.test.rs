@@ -129,9 +129,10 @@ fn unused_address() -> SocketAddr {
 
 fn args(f: &Fixture, bind: SocketAddr) -> ServeArgs {
     ServeArgs {
-        server_config: f.config.clone(),
+        server_config: Some(f.config.clone()),
         bind,
         dev: true,
+        export_openapi: None,
     }
 }
 
@@ -346,7 +347,7 @@ async fn serve_args_validate_config_and_address() {
     assert!(Cli::try_parse_from(["ontoforge", "serve"]).is_err());
     let f = fixture().await;
     let mut bad = args(&f, unused_address());
-    bad.server_config = f.config.with_file_name("missing.toml");
+    bad.server_config = Some(f.config.with_file_name("missing.toml"));
     assert_ne!(run_with_shutdown(&bad, async {}).await, 0);
     let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
     assert_ne!(
@@ -451,11 +452,44 @@ async fn serve_real_listener_auth_and_shutdown() {
 async fn openapi_export_without_store_is_deterministic() {
     let dir = tempfile::tempdir().unwrap();
     let first = Utf8PathBuf::from_path_buf(dir.path().join("one.json")).unwrap();
-    let parsed = Cli::try_parse_from([
-        "ontoforge",
-        "serve",
-        "--export-openapi",
-        first.as_str(),
-    ]);
+    let parsed = Cli::try_parse_from(["ontoforge", "serve", "--export-openapi", first.as_str()]);
     assert!(parsed.is_ok(), "serve must accept --export-openapi FILE");
+
+    let second = Utf8PathBuf::from_path_buf(dir.path().join("two.json")).unwrap();
+    let third = Utf8PathBuf::from_path_buf(dir.path().join("three.json")).unwrap();
+    let one = ServeArgs {
+        server_config: None,
+        bind: unused_address(),
+        dev: false,
+        export_openapi: Some(first.clone()),
+    };
+    let two = ServeArgs {
+        server_config: None,
+        bind: unused_address(),
+        dev: false,
+        export_openapi: Some(second.clone()),
+    };
+    let three = ServeArgs {
+        server_config: None,
+        bind: unused_address(),
+        dev: false,
+        export_openapi: Some(third.clone()),
+    };
+    let (a, b, c) = tokio::join!(
+        run_with_shutdown(&one, async {}),
+        run_with_shutdown(&two, async {}),
+        run_with_shutdown(&three, async {})
+    );
+    assert_eq!((a, b, c), (0, 0, 0));
+    let expected = ontoforge_server::api::openapi::render();
+    for path in [first, second, third] {
+        assert_eq!(std::fs::read_to_string(path).unwrap(), expected);
+    }
+    let failed = ServeArgs {
+        server_config: None,
+        bind: unused_address(),
+        dev: false,
+        export_openapi: Some(Utf8PathBuf::from("missing-parent/openapi.json")),
+    };
+    assert_ne!(run_with_shutdown(&failed, async {}).await, 0);
 }

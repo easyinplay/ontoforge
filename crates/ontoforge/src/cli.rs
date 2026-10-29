@@ -51,13 +51,16 @@ pub struct WebhookWorkerArgs {
 
 #[derive(Debug, Args)]
 pub struct ServeArgs {
-    #[arg(long, value_name = "FILE")]
-    pub server_config: Utf8PathBuf,
+    #[arg(long, value_name = "FILE", required_unless_present = "export_openapi")]
+    pub server_config: Option<Utf8PathBuf>,
     #[arg(long, default_value = "127.0.0.1:8080")]
     pub bind: std::net::SocketAddr,
     /// Explicitly accept development tokens using the configured key file.
     #[arg(long)]
     pub dev: bool,
+    /// Export the static OpenAPI contract without loading configuration or starting a listener.
+    #[arg(long, value_name = "FILE", conflicts_with = "server_config")]
+    pub export_openapi: Option<Utf8PathBuf>,
 }
 
 #[derive(Debug, Args)]

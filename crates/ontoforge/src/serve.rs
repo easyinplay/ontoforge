@@ -47,12 +47,24 @@ pub async fn run_with_shutdown(
     args: &ServeArgs,
     shutdown: impl Future<Output = ()> + Send + 'static,
 ) -> u8 {
-    let Ok(server) = load_server(&args.server_config) else {
+    if let Some(path) = &args.export_openapi {
+        return match std::fs::write(path, ontoforge_server::api::openapi::render()) {
+            Ok(()) => 0,
+            Err(error) => {
+                eprintln!("cannot write OpenAPI document: {error}");
+                1
+            }
+        };
+    }
+    let Some(server_config) = &args.server_config else {
+        eprintln!("HTTP server needs --server-config unless --export-openapi is used");
+        return 1;
+    };
+    let Ok(server) = load_server(server_config) else {
         eprintln!("invalid server configuration for HTTP server");
         return 1;
     };
-    let dir = args
-        .server_config
+    let dir = server_config
         .parent()
         .filter(|dir| !dir.as_str().is_empty())
         .unwrap_or(Utf8Path::new("."));
