@@ -104,12 +104,31 @@ pub async fn run_with_shutdown(
             &auth_config.principal_attrs,
         ));
     }
-    let engine = if let Some(config) = server.config.trino {
-        let Ok(engines) = build_trino_engines(&config, dir, &|name| std::env::var(name).ok())
+    let mut l2_runtime = None;
+    let engine = if let Some(config) = server.config.trino.clone() {
+        let Ok(mut engines) = build_trino_engines(&config, dir, &|name| std::env::var(name).ok())
         else {
             eprintln!("cannot initialize configured query engine");
             return 1;
         };
+        if let Some(l2) = engines.l2.take() {
+            let l2 = Arc::new(l2);
+            let Ok(monitor_ontology) =
+                build_trino_engines(&config, dir, &|name| std::env::var(name).ok())
+            else {
+                eprintln!("cannot initialize L2 monitor query engine");
+                return 1;
+            };
+            let Ok(monitor) = l2
+                .clone()
+                .start_l2_acl_monitor(Arc::new(monitor_ontology.ontology))
+                .await
+            else {
+                eprintln!("cannot initialize L2 ACL monitor");
+                return 3;
+            };
+            l2_runtime = Some((l2, monitor));
+        }
         AnyEngine::Trino(engines.ontology)
     } else {
         let Ok(engine) = SqliteEngine::in_memory().await else {
@@ -134,11 +153,18 @@ pub async fn run_with_shutdown(
         auth_config,
         signing_key,
     );
-    let Ok(host) = host else {
+    let Ok(mut host) = host else {
         let _ = store.read_audit().shutdown().await;
         eprintln!("cannot initialize HTTP server signing key");
         return 3;
     };
+    if let Some((l2, monitor)) = l2_runtime {
+        host = host.with_l2_status_provider(move || l2.l2_status());
+        if host.install_l2_monitor(monitor).is_err() {
+            eprintln!("cannot install L2 ACL monitor");
+            return 3;
+        }
+    }
     match Arc::new(host).serve(listener, shutdown).await {
         Ok(()) => 0,
         Err(error) => {

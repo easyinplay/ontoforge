@@ -89,6 +89,8 @@ pub enum HostError {
     Listener,
     #[error("read audit drain failed")]
     AuditDrain,
+    #[error("server shutdown failed")]
+    Shutdown,
 }
 
 impl<E: Engine + Send + Sync + 'static> ServerHost<E> {
@@ -166,6 +168,7 @@ impl<E: Engine + Send + Sync + 'static> ServerHost<E> {
             lifecycle::LifecycleError::Audit | lifecycle::LifecycleError::Monitor(_) => {
                 HostError::AuditDrain
             }
+            lifecycle::LifecycleError::Timeout => HostError::Shutdown,
         })
     }
 
