@@ -5,10 +5,9 @@ current_phase_name: REST & MCP Shell
 current_plan: 3
 status: executing
 stopped_at: Phase 7 07-03 验收缺口修复中；07-04 暂停，详 phase task_plan
-last_updated: "2026-10-29T03:18:21.861Z"
-last_activity: 2026-10-29
-last_activity_desc: Phase 7 有效完成 2/16，补齐 07-03 真实 HTTP 验收
-state_head: 072cbad5c5a8f5f68744a63bff69d11a3f9aff49
+last_updated: "2026-10-29T03:27:46.004Z"
+last_activity: "2026-10-29: 07-03 acceptance gaps; 07-04 waiting"
+state_head: 9484210ca7ad3c16eec3e9b6eaead926888a519b
 progress:
   total_phases: 7
   completed_phases: 6
@@ -16,6 +15,7 @@ progress:
   completed_plans: 75
   percent: 85
 last_gate_trip: null
+last_activity_desc: Phase 7 有效完成 1/16，顺序修复 07-03 与 07-02 验收
 ---
 
 # Project State
@@ -57,7 +57,7 @@ Progress: [█████████░] 85%
 - [Phase 2]: 非阻塞安全 observations 待后续 phase 跟进（详: `phases/02-source-binding-engine/02-SECURITY.md` Observations）
 - [Phase 5]: 生产 webhook 联调与正式 gstack gate 待发布/PR 前完成；GSD 关闭警告详见 `phases/05-online-action/deferred-items.md`
 - [Phase 6]: 本地 PR review、CI 与增量复签通过；外部 Codex 审查不可用。Phase 1–5 历史 fingerprint staleness 待 milestone audit 复核，详 Phase 6 VERIFICATION。
-- [Phase 7]: 有效完成 2/16；07-03 真实 HTTP 验收待修复。真实服务与发行仍待实施，L2-04/SCOPE-07 Pending；PR #7 不合并。
+- [Phase 7]: 有效完成 1/16；07-02/03 验收待修复，详 phase task_plan。真实服务与发行仍待实施，L2-04/SCOPE-07 Pending；PR #7 不合并。
 
 ## Deferred Items
 
