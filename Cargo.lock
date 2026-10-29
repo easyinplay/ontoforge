@@ -2129,7 +2129,22 @@ dependencies = [
 name = "ontoforge-client"
 version = "0.1.0"
 dependencies = [
+ "camino",
+ "jsonwebtoken",
+ "ontoforge-action",
  "ontoforge-api",
+ "ontoforge-auth",
+ "ontoforge-engine",
+ "ontoforge-schema",
+ "ontoforge-server",
+ "ontoforge-storage",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "tempfile",
+ "thiserror",
+ "tokio",
 ]
 
 [[package]]

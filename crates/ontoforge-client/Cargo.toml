@@ -11,3 +11,20 @@ workspace = true
 
 [dependencies]
 ontoforge-api = { path = "../ontoforge-api" }
+reqwest = { workspace = true, features = ["json"] }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+ontoforge-action = { path = "../ontoforge-action" }
+ontoforge-auth = { path = "../ontoforge-auth" }
+ontoforge-engine = { path = "../ontoforge-engine" }
+ontoforge-schema = { path = "../ontoforge-schema" }
+ontoforge-server = { path = "../ontoforge-server" }
+ontoforge-storage = { path = "../ontoforge-storage" }
+camino.workspace = true
+jsonwebtoken.workspace = true
+sqlx.workspace = true
+tempfile.workspace = true
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "net", "sync", "time"] }
