@@ -20,3 +20,12 @@
 | 实际 GREEN | `../07-03-evidence/rest-green.log` 三个指定测试，3 passed、0 failed、0 ignored；对应 JSON exitCode 0。本轮仅读取，未重跑。 |
 
 在途用例 reload 只修改 description；固定版本证据为持久审计 def_version 以及 context/QueryService 传递同一 active 的源码路径。此处不扩大为字段语义变化的实测结论。
+
+## 03-2 施工期抽查
+
+- 已核查真实HTTP覆盖framework拒绝、UTF-8/空错误/16并发ID/脱敏、rows与byte等值/越界、32准入、三个Query入口deadline、真实TCP断开，以及observer成功一次/失败不调用。`http-admission-fault-green`、`http-budget-boundaries`、`http-deadline-cancel`为exit0；后续修改须最终重跑。
+- 发现405缺统一envelope，已交executor；必须保留Allow和header/body ID并断言零audit准入。
+- 发现PK忽略QueryPage.truncated而将空rows映404。Airport fixture为`editOnly`（`examples/ontologies/aviation/objects.yaml:15`），跳过Engine，因此budget=1时源码可达该路径；不是source-backed的普遍复现，source_pk已有Engine truncated -> CostExceeded。交executor落实真实RED/GREEN与精确边界。
+- 批准PK仅改REST为既有400 COST_EXCEEDED；Query审计仍记其原bounded结果success/0，不将HTTP状态强加为Query审计状态。此边界需在测试和SUMMARY明确。
+- metadata状态及reason sentinel已在源码补齐，等待最新REST GREEN。
+- partial-body停滞本轮未见真实HTTP用例，不计为已实测；middleware timer/to_bytes覆盖源码路径。
