@@ -26,6 +26,11 @@ fn mcp_dynamic_action_schema_matches_real_validation() {
     let schema = ActionToolSchema::from_action(&action());
     assert_eq!(schema.tool_name, "action_renameGate");
     assert_eq!(schema.schema["properties"]["name"]["type"], "string");
+    assert_eq!(
+        schema.schema["properties"]["validateOnly"]["type"],
+        "boolean"
+    );
+    assert_eq!(schema.schema["properties"]["commandId"]["type"], "string");
     assert!(
         schema.schema["required"]
             .as_array()
