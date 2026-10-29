@@ -50,3 +50,27 @@ try {
 Ctrl+C 停止接收新连接，等待活跃请求结束，并显式 drain 读取审计。监听和 audit drain
 失败返回非零退出码。启动前使用既有 CLI 命令准备 definition、scope 和持久 edit store。
 完整开发数据 seed 与 reset 属于计划 `07-12`。
+
+## MCP HTTP 与 stdio
+
+`serve` 同时提供 `POST /mcp` 的 Streamable HTTP MCP endpoint。stdio 客户端必须先
+启动同一份 `serve`，然后运行：
+
+```powershell
+$env:ONTOFORGE_TOKEN = '<token>'
+ontoforge mcp --server-url http://127.0.0.1:8080/mcp
+```
+
+也可以用 `--token-file FILE` 读取 token。token 不应放入命令行参数；stdio bridge
+只把 JSON-RPC frame 写入 stdout，诊断写入脱敏 stderr。`server-url` 必须是没有
+userinfo、query 或 fragment 的 `http(s)` URL，并以 `/mcp` 结尾。
+
+stdio bridge 是现有 HTTP host 的认证转发层，不会创建独立 edit store、engine 或
+数据库。HTTP transport 禁止 redirect，并关闭 expired session 的透明初始化；连接、
+认证或 session 错误直接返回调用者。请求和通知保留 JSON-RPC `id`，取消通知沿同一
+session 转发，stdin EOF 会停止 bridge 并等待服务端清理。
+
+REST 与 MCP 共享同一主体认证、scope、Action receipt、command result、history 和
+read audit。写请求的显式 `command_id` 是唯一重试边界；stdio 或 HTTP 断连不会自动
+重放 Action。MCP 的错误可能以 HTTP 200 携带 JSON-RPC `error` 返回，调用者必须同时
+检查 HTTP 状态和响应 envelope。
