@@ -1,6 +1,8 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::{Arc, Mutex};
 
+use camino::Utf8PathBuf;
+use ontoforge_auth::authn::dev::{DevClaims, DevKey, issue_dev_token};
 use ontoforge_auth::scope::PrincipalScope;
 use ontoforge_auth::{Principal, PrincipalId};
 use ontoforge_engine::printer::l2::McpDefaults;
@@ -195,4 +197,77 @@ async fn mcp_l2_missing_context_and_outside_allowlist_deny_before_send() {
         .await;
     assert!(matches!(invalid, Err(McpL2Error::Invalid(_))));
     assert!(engine.tables.lock().unwrap().is_empty());
+}
+
+#[tokio::test]
+async fn mcp_l2_defaults_real_listener_consumes_deployment_context() {
+    let mut fixture = support::fixture().await;
+    let key_path = Utf8PathBuf::from_path_buf(fixture.dir.path().join("token.key")).unwrap();
+    let key = DevKey::load_or_create(&key_path).unwrap();
+    fixture.token = issue_dev_token(
+        &key,
+        &DevClaims {
+            sub: "mia".to_owned(),
+            groups: Vec::new(),
+            attrs: serde_json::Map::new(),
+            ttl: std::time::Duration::from_secs(600),
+        },
+    )
+    .unwrap();
+    state::set_mcp_defaults(
+        &fixture.store,
+        McpDefaults {
+            catalog: Some("demo".to_owned()),
+            schema: Some("aviation".to_owned()),
+        },
+    );
+    let running = fixture.start().await;
+    let client = reqwest::Client::new();
+    let url = format!("{}/mcp", running.url);
+    let initialize = client
+        .post(&url)
+        .bearer_auth(&running.token)
+        .header("accept", "application/json, text/event-stream")
+        .header("mcp-protocol-version", "2025-03-26")
+        .json(&serde_json::json!({
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "initialize",
+            "params": {"protocolVersion": "2025-03-26", "capabilities": {}, "clientInfo": {"name": "defaults", "version": "0"}}
+        }))
+        .send()
+        .await
+        .unwrap();
+    let session = initialize
+        .headers()
+        .get("mcp-session-id")
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_owned();
+    let call = client
+        .post(&url)
+        .bearer_auth(&running.token)
+        .header("accept", "application/json, text/event-stream")
+        .header("mcp-protocol-version", "2025-03-26")
+        .header("mcp-session-id", &session)
+        .json(&serde_json::json!({
+            "jsonrpc": "2.0",
+            "id": 2,
+            "method": "tools/call",
+            "params": {"name": "get_table_schema", "arguments": {"table": "aircraft"}}
+        }))
+        .send()
+        .await
+        .unwrap();
+    let body = call.text().await.unwrap();
+    assert!(
+        body.contains("columns"),
+        "listener response must contain schema: {body}"
+    );
+    assert!(
+        !body.contains("catalog is required"),
+        "deployment defaults were not consumed: {body}"
+    );
+    let _ = running.finish().await;
 }
