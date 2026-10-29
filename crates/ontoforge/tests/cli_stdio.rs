@@ -10,7 +10,10 @@ fn stdio_real_process_describe_query_action_dryrun_history() {
     );
     let output = run_mcp("http://127.0.0.1:1/mcp", "stdio-secret-sentinel", input);
     assert!(!output.status.success());
-    assert!(output.stdout.is_empty(), "stdout must contain only MCP frames");
+    assert!(
+        output.stdout.is_empty(),
+        "stdout must contain only MCP frames"
+    );
     assert!(!String::from_utf8_lossy(&output.stderr).contains("stdio-secret-sentinel"));
 }
 

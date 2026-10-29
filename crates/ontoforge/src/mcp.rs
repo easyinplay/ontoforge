@@ -1,18 +1,18 @@
 //! Authenticated stdio bridge for the already-running HTTP MCP service.
 
+use crate::cli::McpArgs;
 use camino::Utf8PathBuf;
-use rmcp::service::{Peer, PeerRequestOptions, RequestContext, Service};
-use rmcp::{ErrorData, RoleClient, RoleServer};
 use rmcp::model::{
     CancelledNotification, CancelledNotificationParam, ClientNotification, Implementation,
     ServerConfig, ServerResult,
 };
+use rmcp::service::{Peer, PeerRequestOptions, RequestContext, Service};
 use rmcp::transport::async_rw::AsyncRwTransport;
 use rmcp::transport::io::stdio_pipes;
 use rmcp::transport::streamable_http_client::{
     StreamableHttpClientTransport, StreamableHttpClientTransportConfig,
 };
-use crate::cli::McpArgs;
+use rmcp::{ErrorData, RoleClient, RoleServer};
 
 const TOKEN_ENV: &str = "ONTOFORGE_TOKEN";
 
@@ -53,8 +53,9 @@ async fn run_async(args: &McpArgs) -> Result<(), String> {
 
 fn read_token(path: Option<&Utf8PathBuf>) -> Result<String, String> {
     let token = match path {
-        Some(path) => std::fs::read_to_string(path)
-            .map_err(|_| format!("cannot read token file `{path}`"))?,
+        Some(path) => {
+            std::fs::read_to_string(path).map_err(|_| format!("cannot read token file `{path}`"))?
+        }
         None => std::env::var(TOKEN_ENV).map_err(|_| format!("{TOKEN_ENV} is not set"))?,
     };
     let token = token.trim().to_owned();
@@ -123,12 +124,9 @@ where
         remote: remote.peer().clone(),
         info,
     };
-    let local = rmcp::serve_server(
-        service,
-        local,
-    )
-    .await
-    .map_err(|error| redact_error(format!("stdio MCP initialization failed: {error}"), token))?;
+    let local = rmcp::serve_server(service, local).await.map_err(|error| {
+        redact_error(format!("stdio MCP initialization failed: {error}"), token)
+    })?;
     let result = local
         .waiting()
         .await
@@ -209,7 +207,10 @@ mod tests {
         let config = transport_config("http://127.0.0.1:8080/mcp", "secret-sentinel");
         assert_eq!(config.max_concurrent_requests, 16);
         assert!(validate_server_url("http://127.0.0.1:8080/mcp").is_ok());
-        let sanitized = redact_error("request secret-sentinel failed".to_owned(), "secret-sentinel");
+        let sanitized = redact_error(
+            "request secret-sentinel failed".to_owned(),
+            "secret-sentinel",
+        );
         assert!(!sanitized.contains("secret-sentinel"));
     }
 }
