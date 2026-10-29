@@ -1,5 +1,9 @@
 # Phase 7 findings
 
+## 真实服务前置预查
+
+- 2026-10-29：只读核查Docker/PG/Trino/WSL与native runner前置，详 `reviews/07-REAL-SERVICE-READINESS.md`。资源可用不等于真实服务验收通过；07-13/14执行时重新核对。
+
 ## 07-03 超时与取消补充决定
 
 - 2026-10-29：Grok session 68211 正常 exit 0 返回第二意见，支持请求内 Engine adapter；已核查 Engine QueryContext 无 CancellationToken、Query 将 EngineError 映为 Source。采用类型分支记录 Timeout/Cancelled，REST 仅覆写对应 Source 响应，合同见 `07-03-PLAN.md`。
