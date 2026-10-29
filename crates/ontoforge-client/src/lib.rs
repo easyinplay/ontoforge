@@ -76,6 +76,13 @@ impl ClientError {
             _ => None,
         }
     }
+
+    pub fn envelope(&self) -> Option<&dto::ErrorEnvelope> {
+        match self {
+            Self::HttpStatus { envelope, .. } => Some(envelope),
+            _ => None,
+        }
+    }
     pub fn is_timeout(&self) -> bool {
         matches!(self, Self::Transport(error) if error.is_timeout())
     }

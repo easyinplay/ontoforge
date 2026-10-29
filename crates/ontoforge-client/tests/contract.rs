@@ -162,6 +162,12 @@ async fn rust_client_auth_scope_revoke_stale_and_transport_errors() {
         .await
         .unwrap_err();
     assert_eq!(error.code(), Some("COMMAND_ID_REUSED"));
+    assert!(
+        error
+            .envelope()
+            .is_some_and(|envelope| !envelope.request_id.is_empty())
+    );
+    assert_eq!(error.api_name(), Some("delayFlight"));
     let unauthorized = client(&f.url, "revoked").metadata().await.unwrap_err();
     assert_eq!(unauthorized.code(), Some("UNAUTHENTICATED"));
     f.finish_actions().await;
