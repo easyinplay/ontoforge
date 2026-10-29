@@ -4,18 +4,18 @@ current_phase: 7
 current_phase_name: REST & MCP Shell
 current_plan: 6
 status: executing
-stopped_at: Completed 07-05-PLAN.md
-last_updated: "2026-10-29T14:03:09.562Z"
-last_activity: "2026-10-29: 07-04 accepted; 07-05 ready"
-state_head: 487073ba4c1ebfcdc0cbb6e09d3720fa49c264a0
+stopped_at: Phase 7 有效完成5/16，07-05 accepted，下一步07-06
+last_updated: "2026-10-29T14:10:00Z"
+last_activity: "2026-10-29: 07-05 accepted; 07-06 ready"
+state_head: 88abdd7
 progress:
   total_phases: 7
   completed_phases: 6
   total_plans: 88
   completed_plans: 77
-  percent: 86
+  percent: 88
 last_gate_trip: null
-last_activity_desc: Phase 7 有效完成4/16，07-04方案A与REST Action验收通过，07-05 ready
+last_activity_desc: Phase 7 有效完成5/16，OpenAPI 3.1与静态导出验收通过，07-06 ready
 ---
 
 # Project State
@@ -33,7 +33,7 @@ Phase: 7 (REST & MCP Shell) — EXECUTING
 Current Plan: 6
 Total Plans in Phase: 16
 Status: Ready to execute
-Last activity: 2026-10-29: 07-04 accepted; 07-05 ready
+Last activity: 2026-10-29: 07-05 accepted; 07-06 ready
 
 Progress: [█████████░] 86%
 
@@ -56,7 +56,7 @@ Progress: [█████████░] 86%
 
 ### Pending Todos
 
-执行下一份 ready plan 07-05，真实服务与发行仍按07-13/14承接。
+执行下一份 ready plan 07-06，真实服务与发行仍按07-13/14承接。
 
 ### Blockers/Concerns
 
@@ -64,7 +64,7 @@ Progress: [█████████░] 86%
 - [Phase 2]: 非阻塞安全 observations 待后续 phase 跟进（详: `phases/02-source-binding-engine/02-SECURITY.md` Observations）
 - [Phase 5]: 生产 webhook 联调与正式 gstack gate 待发布/PR 前完成；GSD 关闭警告详见 `phases/05-online-action/deferred-items.md`
 - [Phase 6]: 本地 PR review、CI 与增量复签通过；外部 Codex 审查不可用。Phase 1–5 历史 fingerprint staleness 待 milestone audit 复核，详 Phase 6 VERIFICATION。
-- [Phase 7]: 有效完成4/16；07-04方案A和REST Action验收通过，07-05 ready。真实服务与发行仍待实施，L2-04/SCOPE-07 Pending；PR #7 不合并。
+- [Phase 7]: 有效完成5/16；07-05 OpenAPI 3.1与静态导出验收通过，07-06 ready。真实服务与发行仍待实施，L2-04/SCOPE-07 Pending；PR #7 不合并。
 
 ## Deferred Items
 
@@ -75,5 +75,5 @@ Progress: [█████████░] 86%
 ## Session Continuity
 
 Last session: 2026-10-29T14:03:07.109Z
-Stopped at: Completed 07-05-PLAN.md
+Stopped at: Phase 7 07-06 ready
 Resume file: None
