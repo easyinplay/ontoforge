@@ -1,5 +1,7 @@
 # Phase 7 progress
 
+- 2026-10-29：07-02 两个 task 与 SUMMARY 已提交（`6efa315`、`a4311bc`、`b8806e0`、`c2b9b43`），指定 frozen/idempotency/history、fmt、clippy、TLS 与 workspace 单线程回归均通过；PG/Trino/private 仍按环境 ignored。已执行 2/16，唯一 ready 为 07-03。
+
 - 2026-10-29：07-01 两个 task 与 SUMMARY 已提交，wave build 与 workspace test 均 exit 0；详 `07-01-wave-gates.md`。已执行 1/16，唯一 ready 为 07-02。整项 API-01/API-03/SCOPE-07 未完成，不更新 REQUIREMENTS 为 completed；真实 PG/Trino 与发行仍 pending。
 
 - 2026-10-29：01-2 GREEN 2e1a698，serve 4/4、config 35/35、tracer 3/3、query audit 12/12；fmt通过。首轮workspace编译12m46s后进入测试，CLI lib16/16、integration8/8通过，在production入口guard发现src测试布局误报。采用tests/unit机械移动恢复现有guard，不改安全allow-list；后续workspace/clippy仍pending，07-01尚未完成。

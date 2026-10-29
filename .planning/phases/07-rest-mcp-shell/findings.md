@@ -1,5 +1,7 @@
 # Phase 7 findings
 
+- 2026-10-29 wave 2 收尾：RequestSnapshot 已模块化，Action/history 提供 snapshot-aware 入口并保留旧 wrappers；history visibility short-circuit 回归已修复。`cargo tree ... -i native-tls` 因无 package ID 返回 101，但 TLS gate 结论为无 native-tls 依赖；不能把该探针写成通过。核心授权与 race 逻辑继续要求 TDD，真实 PG race 归 07-13。
+
 - 2026-10-29 wave 1 收尾：build/workspace 回归 exit 0；schema drift 不阻塞，codebase drift 无 STRUCTURE.md 跳过；UI gate 重试通过但 scope degraded（no-task-commit-rows），不能声称完整 UI scope 核验。当前只做文档同步，跳过新增 TDD；07-02 核心 snapshot/授权逻辑继续强制 TDD。沿用已批准合同，跳过重复战略审查与 brainstorming，新增灰区须返回主会话并先取 Grok 第二意见。
 
 ## 07-01 执行前接口核查与第二意见
