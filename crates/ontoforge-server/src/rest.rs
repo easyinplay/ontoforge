@@ -143,9 +143,8 @@ pub async fn object<E: Engine + Send + Sync + 'static>(
         ) => Value::String(pk_text),
         _ => serde_json::from_str(&pk_text).unwrap_or(Value::String(pk_text)),
     };
-    let object_type = match ObjectTypeName::try_from(api_name.to_owned()) {
-        Ok(value) => value,
-        Err(_) => return error::wire(StatusCode::NOT_FOUND, "NOT_FOUND", &api_name, &request_id),
+    let Ok(object_type) = ObjectTypeName::try_from(api_name.clone()) else {
+        return error::wire(StatusCode::NOT_FOUND, "NOT_FOUND", &api_name, &request_id);
     };
     let execution = QueryService {
         principal: &ctx.principal,
@@ -502,7 +501,7 @@ fn convert_measure(input: wire::AggregateMeasure) -> Result<ast::AggregateMeasur
     Ok(match input {
         wire::AggregateMeasure::Count { property } => ast::AggregateMeasure::Count {
             property: property
-                .map(|p| PropertyName::try_from(p))
+                .map(PropertyName::try_from)
                 .transpose()
                 .map_err(|_| ())?,
         },
