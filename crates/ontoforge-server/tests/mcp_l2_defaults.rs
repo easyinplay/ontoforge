@@ -175,9 +175,12 @@ async fn mcp_l2_missing_context_and_outside_allowlist_deny_before_send() {
     };
 
     let missing = tools.list_schemas(None).await;
-    assert!(
-        matches!(missing, Err(McpL2Error::Invalid(ref message)) if message.contains("trusted L2 qualification context")),
-        "missing context must be explicit: {missing:?}"
+    assert_eq!(
+        missing
+            .as_ref()
+            .map_err(ToString::to_string)
+            .expect_err("missing catalog context must be rejected"),
+        "missing trusted L2 context: catalog"
     );
     assert!(engine.sql.lock().unwrap().is_empty());
 
