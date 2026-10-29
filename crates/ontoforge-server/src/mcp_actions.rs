@@ -27,6 +27,11 @@ impl ActionToolSchema {
                 required.push(Value::String(name.to_string()));
             }
         }
+        properties.insert(
+            "validateOnly".to_owned(),
+            json!({"type":"boolean","default":false}),
+        );
+        properties.insert("commandId".to_owned(), json!({"type":"string"}));
         let mut schema = Map::new();
         schema.insert("type".to_owned(), Value::String("object".to_owned()));
         schema.insert("properties".to_owned(), Value::Object(properties));
