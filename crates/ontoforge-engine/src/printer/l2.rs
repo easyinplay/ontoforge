@@ -14,8 +14,9 @@ use sqlparser::dialect::GenericDialect;
 use sqlparser::parser::Parser;
 use thiserror::Error;
 
+use super::PrintedSql;
 use super::escape::quote_ident;
-use super::{Dialect, PrintedSql, print_explain_distributed_sql};
+use crate::TableRef;
 
 const MAX_SQL_BYTES: usize = 32 * 1024;
 const PARSER_STACK_BYTES: usize = 16 * 1024 * 1024;
@@ -36,6 +37,41 @@ pub enum L2Error {
     Denied,
     #[error("unsupported or invalid L2 SQL")]
     Unsupported,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Error)]
+pub enum L2TableNameError {
+    #[error("unsupported or invalid L2 table identifier")]
+    Unsupported,
+    #[error("trusted L2 table qualification context is missing")]
+    MissingContext,
+}
+
+/// The only EXPLAIN formats exposed by the L2 contract.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ExplainType {
+    Logical,
+    Distributed,
+    Validate,
+    Io,
+}
+
+impl ExplainType {
+    const fn as_str(self) -> &'static str {
+        match self {
+            Self::Logical => "LOGICAL",
+            Self::Distributed => "DISTRIBUTED",
+            Self::Validate => "VALIDATE",
+            Self::Io => "IO",
+        }
+    }
+}
+
+/// Deployment-owned defaults used to qualify MCP table identifiers.
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct McpDefaults {
+    pub catalog: Option<String>,
+    pub schema: Option<String>,
 }
 
 /// A deployment-owned, three-part relation used only by ACL health probes.
@@ -101,9 +137,122 @@ pub fn validate_l2(raw: &str, policy: &L2Policy) -> Result<PrintedSql, L2Error> 
         .map_err(|_| L2Error::Unsupported)?
 }
 
-/// Only a validated SQL value can be wrapped for a distributed EXPLAIN.
+/// Only a validated SQL value can be wrapped for an EXPLAIN.
+pub fn explain_l2_with_type(sql: &PrintedSql, explain_type: ExplainType) -> PrintedSql {
+    PrintedSql::new(format!(
+        "EXPLAIN (TYPE {}) {}",
+        explain_type.as_str(),
+        sql.as_str()
+    ))
+}
+
+/// The compatibility wrapper keeps the historical distributed EXPLAIN behavior.
 pub fn explain_l2(sql: &PrintedSql) -> PrintedSql {
-    print_explain_distributed_sql(sql, Dialect::Trino).expect("Trino EXPLAIN is printable")
+    explain_l2_with_type(sql, ExplainType::Distributed)
+}
+
+/// Resolves a caller-supplied table identifier with trusted deployment defaults.
+pub fn resolve_l2_table_name(
+    raw: &str,
+    defaults: &McpDefaults,
+) -> Result<TableRef, L2TableNameError> {
+    let input = raw.trim();
+    if input.is_empty() {
+        return Err(L2TableNameError::Unsupported);
+    }
+    let mut statements = Parser::parse_sql(&GenericDialect {}, &format!("SELECT * FROM {input}"))
+        .map_err(|_| L2TableNameError::Unsupported)?;
+    if statements.len() != 1 {
+        return Err(L2TableNameError::Unsupported);
+    }
+    let Statement::Query(query) = statements.pop().expect("checked one statement") else {
+        return Err(L2TableNameError::Unsupported);
+    };
+    let SetExpr::Select(select) = query.body.as_ref() else {
+        return Err(L2TableNameError::Unsupported);
+    };
+    if select.from.len() != 1
+        || select.selection.is_some()
+        || !matches!(
+            select.group_by,
+            GroupByExpr::Expressions(ref expressions, ref modifiers)
+                if expressions.is_empty() && modifiers.is_empty()
+        )
+        || query.order_by.is_some()
+        || query.limit_clause.is_some()
+        || query.fetch.is_some()
+        || !select.from[0].joins.is_empty()
+    {
+        return Err(L2TableNameError::Unsupported);
+    }
+    let TableFactor::Table {
+        name,
+        alias,
+        args,
+        with_hints,
+        version,
+        with_ordinality,
+        partitions,
+        json_path,
+        sample,
+        index_hints,
+    } = &select.from[0].relation
+    else {
+        return Err(L2TableNameError::Unsupported);
+    };
+    if alias.is_some()
+        || args.is_some()
+        || !with_hints.is_empty()
+        || version.is_some()
+        || *with_ordinality
+        || !partitions.is_empty()
+        || json_path.is_some()
+        || sample.is_some()
+        || !index_hints.is_empty()
+        || name.to_string() != input
+    {
+        return Err(L2TableNameError::Unsupported);
+    }
+    let parts = name
+        .0
+        .iter()
+        .map(|part| part.as_ident().map(|ident| ident.value.clone()))
+        .collect::<Option<Vec<_>>>()
+        .ok_or(L2TableNameError::Unsupported)?;
+    if parts.is_empty() || parts.len() > 3 {
+        return Err(L2TableNameError::Unsupported);
+    }
+    let (catalog, schema, table) = match parts.as_slice() {
+        [table] => (
+            defaults
+                .catalog
+                .clone()
+                .ok_or(L2TableNameError::MissingContext)?,
+            defaults
+                .schema
+                .clone()
+                .ok_or(L2TableNameError::MissingContext)?,
+            table.clone(),
+        ),
+        [schema, table] => (
+            defaults
+                .catalog
+                .clone()
+                .ok_or(L2TableNameError::MissingContext)?,
+            schema.clone(),
+            table.clone(),
+        ),
+        [catalog, schema, table] => (catalog.clone(), schema.clone(), table.clone()),
+        _ => return Err(L2TableNameError::Unsupported),
+    };
+    for component in [&catalog, &schema, &table] {
+        quote_ident(component).map_err(|_| L2TableNameError::Unsupported)?;
+    }
+    Ok(TableRef {
+        catalog,
+        schema,
+        table,
+    })
 }
 
 /// Metadata commands cannot accept caller-supplied SQL fragments.
