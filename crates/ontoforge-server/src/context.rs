@@ -29,12 +29,21 @@ fn task_registry() -> &'static Mutex<HashMap<usize, Vec<tokio::task::JoinHandle<
 
 pub fn register_action<E>(host: &ServerHost<E>, task: tokio::task::JoinHandle<()>) {
     let key = std::ptr::from_ref(&host.store) as usize;
-    task_registry().lock().unwrap().entry(key).or_default().push(task);
+    task_registry()
+        .lock()
+        .unwrap()
+        .entry(key)
+        .or_default()
+        .push(task);
 }
 
 pub async fn wait_actions<E>(host: &ServerHost<E>) {
     let key = std::ptr::from_ref(&host.store) as usize;
-    let tasks = task_registry().lock().unwrap().remove(&key).unwrap_or_default();
+    let tasks = task_registry()
+        .lock()
+        .unwrap()
+        .remove(&key)
+        .unwrap_or_default();
     for task in tasks {
         let _ = task.await;
     }
@@ -108,11 +117,12 @@ pub async fn admit(
             &trace.id(),
         );
     };
+    let permit_slot = Arc::new(Mutex::new(Some(permit)));
     request
         .extensions_mut()
-        .insert(AdmissionPermit(Arc::new(Mutex::new(Some(permit)))));
+        .insert(AdmissionPermit(Arc::clone(&permit_slot)));
     request.extensions_mut().insert(trace.clone());
-    match tokio::time::timeout(deadline, next.run(request)).await {
+    let response = match tokio::time::timeout(deadline, next.run(request)).await {
         Ok(response) => response,
         Err(_) => error::wire(
             StatusCode::GATEWAY_TIMEOUT,
@@ -120,7 +130,9 @@ pub async fn admit(
             &api_name,
             &trace.id(),
         ),
-    }
+    };
+    let _ = permit_slot.lock().unwrap().take();
+    response
 }
 
 pub struct ScopedEngine<'a, E> {

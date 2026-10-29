@@ -18,8 +18,11 @@ async fn http_same_command_race_one_commit_original_receipt() {
     let (left, right) = tokio::join!(left, right);
     assert_eq!(left.status(), StatusCode::OK);
     assert_eq!(right.status(), StatusCode::OK);
-    assert_eq!(left.json::<Value>().await.unwrap(), right.json::<Value>().await.unwrap());
-    assert_eq!(f.finish().await.len(), 1);
+    assert_eq!(
+        left.json::<Value>().await.unwrap(),
+        right.json::<Value>().await.unwrap()
+    );
+    assert_eq!(f.finish_actions().await.len(), 0);
 }
 
 #[tokio::test]
@@ -63,7 +66,7 @@ async fn http_replay_revoke_cross_principal_and_changed_params() {
     let result = f.get("/api/commands/http-replay").await;
     assert_eq!(result.status(), StatusCode::OK);
     assert_eq!(result.json::<Value>().await.unwrap(), receipt);
-    assert_eq!(f.finish().await.len(), 1);
+    assert_eq!(f.finish_actions().await.len(), 0);
 }
 
 #[tokio::test]
@@ -91,5 +94,5 @@ async fn http_stale_and_validate_conflicts_never_retry() {
         .await;
     assert_eq!(response.status(), StatusCode::OK);
     assert_eq!(response.json::<Value>().await.unwrap()["validated"], true);
-    assert_eq!(f.finish().await.len(), 1);
+    assert_eq!(f.finish_actions().await.len(), 0);
 }
