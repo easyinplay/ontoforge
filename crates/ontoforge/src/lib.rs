@@ -6,6 +6,7 @@ pub mod cli;
 pub mod dev_token;
 pub mod import;
 pub mod lint_cmd;
+pub mod mcp;
 pub mod migrate;
 pub mod online;
 pub mod pipeline;
