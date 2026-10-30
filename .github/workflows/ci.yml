@@ -319,3 +319,22 @@ jobs:
       - name: Clean up query containers and catalog
         if: ${{ always() && steps.checkout.outcome == 'success' }}
         run: bash ci/query-services.sh cleanup
+
+  phase7-real-services:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # v1
+        with:
+          toolchain: "1.98.0"
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - name: Real PostgreSQL, Trino, Rust and TypeScript named suites
+        run: bash ci/server-services.sh verify
+      - name: Upload server evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: phase7-real-services
+          path: target/phase7-services/state/server.log
+          if-no-files-found: warn
