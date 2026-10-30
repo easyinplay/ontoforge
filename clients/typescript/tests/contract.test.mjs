@@ -156,7 +156,7 @@ test('ts_client_action_validate_history_result_and_replay', async () => {
 });
 
 test('ts_client_auth_scope_stale_errors_limits_and_runtime_capability', async () => {
-  const { LosslessCodecError, encodeWire, createOntoforgeClient } = await import('../dist/index.js');
+  const { LosslessCodecError, decodeWire, encodeWire, createOntoforgeClient } = await import('../dist/index.js');
   const noGrant = createOntoforgeClient({ baseUrl, bearer: run(binary, ['dev-token', '--server-config', join(dataDir, 'server.toml'), '--sub', 'bob']).trim() });
   await assert.rejects(
     () => noGrant.validate('delayFlight', { items: [{ params: { flight: 'F-1001', delayMinutes: 1 } }] }),
@@ -180,5 +180,15 @@ test('ts_client_auth_scope_stale_errors_limits_and_runtime_capability', async ()
     assert.throws(() => encodeWire({ value: 1n }), LosslessCodecError);
   } finally {
     Object.defineProperty(JSON, 'rawJSON', { configurable: true, value: original });
+  }
+  const originalParse = JSON.parse;
+  try {
+    Object.defineProperty(JSON, 'parse', {
+      configurable: true,
+      value: (source, reviver) => originalParse(source, reviver ? (key, value) => reviver(key, value) : undefined),
+    });
+    assert.throws(() => decodeWire('{"value":9007199254740993}'), LosslessCodecError);
+  } finally {
+    Object.defineProperty(JSON, 'parse', { configurable: true, value: originalParse });
   }
 });

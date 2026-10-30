@@ -12,7 +12,18 @@ export class LosslessCodecError extends Error {
 }
 
 function hasLosslessRuntime(): boolean {
-  return typeof (JSON as JSON & { rawJSON?: (source: string) => unknown }).rawJSON === 'function';
+  if (typeof (JSON as JSON & { rawJSON?: (source: string) => unknown }).rawJSON !== 'function') return false;
+  let sourceSeen = false;
+  try {
+    const parse = JSON.parse as unknown as (source: string, reviver?: (key: string, value: unknown, context?: { source: string }) => unknown) => unknown;
+    parse('1', (_key: string, value: unknown, context?: { source: string }) => {
+      sourceSeen = context?.source === '1';
+      return value;
+    });
+  } catch {
+    return false;
+  }
+  return sourceSeen;
 }
 
 export function assertLosslessRuntime(): void {
@@ -52,6 +63,7 @@ export function encodeWire(value: WireJson): string {
 const integerToken = /^-?(?:0|[1-9]\d*)$/;
 
 export function decodeWire(text: string): WireJson {
+  assertLosslessRuntime();
   const parse = JSON.parse as (source: string, reviver?: (key: string, value: unknown, context?: { source: string }) => unknown) => WireJson;
   return parse(text, (_key, value, context) => {
     if (context && typeof context.source === 'string' && integerToken.test(context.source)) {
