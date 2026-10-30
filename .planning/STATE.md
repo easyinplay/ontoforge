@@ -3,10 +3,10 @@ gsd_state_version: "1.0"
 current_phase: 7
 current_phase_name: REST & MCP Shell
 current_plan: 13
-status: executing
-stopped_at: Phase 7 07-11 accepted; 07-13 ready
-last_updated: "2026-10-30T04:10:00Z"
-last_activity: "2026-10-30: 07-11 accepted; isolated generator workspace and TypeScript client verified"
+status: blocked
+stopped_at: Phase 7 07-13 blocked by unavailable Docker Desktop WSL integration
+last_updated: "2026-10-30T19:20:00Z"
+last_activity: "2026-10-30: 07-13 WIP real-service probes/CI framework; local WSL verify blocked"
 state_head: 386f090
 progress:
   total_phases: 7
@@ -15,7 +15,7 @@ progress:
   completed_plans: 86
   percent: 98
 last_gate_trip: null
-last_activity_desc: Phase 7 有效完成14/16，07-11 TypeScript client与真实HTTP contract验收通过，07-13 ready
+last_activity_desc: Phase 7 有效完成14/16，07-13 已有 WIP 测试/CI 框架但真实 GREEN 受 Docker WSL integration 阻塞
 ---
 
 # Project State
@@ -32,8 +32,8 @@ See: .planning/PROJECT.md (updated 2026-10-28)
 Phase: 7 (REST & MCP Shell) — EXECUTING
 Current Plan: 13
 Total Plans in Phase: 16
-Status: Ready to execute
-Last activity: 2026-10-30: 07-11 accepted; 07-13 ready
+Status: Blocked on local real-service environment
+Last activity: 2026-10-30: 07-13 WIP real-service probes/CI framework; local WSL verify blocked
 
 Progress: [██████████] 98%
 
@@ -79,7 +79,7 @@ Progress: [██████████] 98%
 - [Phase 2]: 非阻塞安全 observations 待后续 phase 跟进（详: `phases/02-source-binding-engine/02-SECURITY.md` Observations）
 - [Phase 5]: 生产 webhook 联调与正式 gstack gate 待发布/PR 前完成；GSD 关闭警告详见 `phases/05-online-action/deferred-items.md`
 - [Phase 6]: 本地 PR review、CI 与增量复签通过；外部 Codex 审查不可用。Phase 1–5 历史 fingerprint staleness 待 milestone audit 复核，详 Phase 6 VERIFICATION。
-- [Phase 7]: 有效完成9/16；07-07 MCP core/full与07-10 Rust client验收通过，07-08 ready，07-11等待TS版本决策。真实服务与发行仍待实施，L2-04/SCOPE-07 Pending；PR #7 不合并。
+- [Phase 7]: 有效完成14/16；07-11 TypeScript client 已验收，07-13 已有真实服务测试/CI WIP，但本地 WSL 未启用 Docker Desktop integration，真实 PG/Trino GREEN 未验收；L2-04/SCOPE-07 Pending；PR #7 不合并。
 
 ## Deferred Items
 
@@ -90,5 +90,5 @@ Progress: [██████████] 98%
 ## Session Continuity
 
 Last session: 2026-10-29T18:27:00.209Z
-Stopped at: Phase 7 07-11 accepted; 07-13 ready
+Stopped at: Phase 7 07-13 blocked by unavailable Docker Desktop WSL integration
 Resume file: None
