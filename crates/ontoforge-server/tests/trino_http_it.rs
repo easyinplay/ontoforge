@@ -22,6 +22,7 @@ use std::collections::BTreeMap;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
+use tokio::io::AsyncWriteExt;
 use tokio::sync::Notify;
 use tokio::sync::oneshot;
 
@@ -30,6 +31,20 @@ struct DelayedTrino {
     delay: AtomicBool,
     entered: Notify,
     release: Notify,
+    cancelled: Notify,
+}
+
+struct PendingSource<'a> {
+    cancelled: &'a Notify,
+    released: bool,
+}
+
+impl Drop for PendingSource<'_> {
+    fn drop(&mut self) {
+        if !self.released {
+            self.cancelled.notify_one();
+        }
+    }
 }
 
 impl Engine for DelayedTrino {
@@ -42,8 +57,13 @@ impl Engine for DelayedTrino {
         ctx: &QueryContext,
     ) -> Result<QueryOutput, EngineError> {
         if self.delay.load(Ordering::SeqCst) {
+            let mut pending = PendingSource {
+                cancelled: &self.cancelled,
+                released: false,
+            };
             self.entered.notify_one();
             self.release.notified().await;
+            pending.released = true;
         }
         self.inner.execute(sql, ctx).await
     }
@@ -195,6 +215,7 @@ async fn trino_http_long_read_releases_snapshot_lock() {
         delay: AtomicBool::new(true),
         entered: Notify::new(),
         release: Notify::new(),
+        cancelled: Notify::new(),
     });
     let store = Arc::clone(&fixture.store);
     let host = ServerHost {
@@ -249,20 +270,74 @@ async fn trino_http_long_read_releases_snapshot_lock() {
     let (status, object) = support::json(response).await;
     assert_eq!(status, reqwest::StatusCode::OK, "{object}");
     assert_eq!(object["properties"]["flightId"], "F-1001");
-    stop.send(()).expect("stop source host");
-    task.await.expect("host task").expect("audit drain");
+
     let pool = sqlx::SqlitePool::connect_with(ontoforge_storage::store::sqlite_connect_options(
         &fixture.path,
     ))
     .await
     .expect("audit pool");
+    let writes_before: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM of_edit_log")
+        .fetch_one(&pool)
+        .await
+        .expect("business writes before independent read");
+    engine.delay.store(true, Ordering::SeqCst);
+    let address = server.strip_prefix("http://").expect("listener URL");
+    let mut socket = tokio::net::TcpStream::connect(address)
+        .await
+        .expect("independent read connection");
+    socket
+        .write_all(
+            format!(
+                "GET /api/objects/Flight/F-1001 HTTP/1.1\r\nHost: {address}\r\nAuthorization: Bearer {}\r\n\r\n",
+                fixture.token
+            )
+            .as_bytes(),
+        )
+        .await
+        .expect("independent HTTP read");
+    tokio::time::timeout(Duration::from_secs(5), engine.entered.notified())
+        .await
+        .expect("independent read reaches real source barrier");
+    drop(socket);
+    let cancelled = tokio::time::timeout(Duration::from_secs(3), engine.cancelled.notified()).await;
+    engine.delay.store(false, Ordering::SeqCst);
+    engine.release.notify_waiters();
+    stop.send(()).expect("stop source host");
+    tokio::time::timeout(Duration::from_secs(10), task)
+        .await
+        .expect("host shutdown deadline")
+        .expect("host task")
+        .expect("audit drain");
+    assert!(
+        cancelled.is_ok(),
+        "disconnect must cancel the independent source read"
+    );
     let version: i64 =
         sqlx::query_scalar("SELECT def_version FROM of_read_audit WHERE request_id = ?")
-            .bind(request_id)
+            .bind(&request_id)
             .fetch_one(&pool)
             .await
             .expect("durable source audit");
     assert_eq!(version, snapshot.active.def_version);
+    let cancelled_audits: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM of_read_audit WHERE request_id <> ? AND status = 'cancelled' AND row_count = 0",
+    )
+    .bind(request_id)
+    .fetch_one(&pool)
+    .await
+    .expect("durable cancellation audit");
+    assert_eq!(
+        cancelled_audits, 1,
+        "the disconnected read must leave exactly one cancelled audit row"
+    );
+    let writes_after: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM of_edit_log")
+        .fetch_one(&pool)
+        .await
+        .expect("business writes after cancellation");
+    assert_eq!(
+        writes_after, writes_before,
+        "cancelled reads must not create business writes"
+    );
     other
         .read_audit()
         .shutdown()
