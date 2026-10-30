@@ -1,0 +1,19 @@
+{
+  "name": "@ontoforge/typescript-client",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "npm --prefix ../../tools/openapi-gen run generate",
+    "check:generated": "npm run generate && git diff --exit-code -- src/generated.ts",
+    "typecheck": "tsc --noEmit --module NodeNext --moduleResolution NodeNext --target ES2022 --strict --noUncheckedIndexedAccess src/generated.ts src/codec.ts src/index.ts",
+    "build": "tsc --module NodeNext --moduleResolution NodeNext --target ES2022 --strict --noUncheckedIndexedAccess --outDir dist src/generated.ts src/codec.ts src/index.ts",
+    "test:contract": "npm run build && node --test tests/contract.test.mjs"
+  },
+  "dependencies": {
+    "openapi-fetch": "0.17.0"
+  },
+  "devDependencies": {
+    "openapi-typescript": "7.13.0",
+    "typescript": "7.0.2"
+  }
+}
