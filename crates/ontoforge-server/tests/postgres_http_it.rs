@@ -57,7 +57,22 @@ async fn pg_http_action_validate_stale_replay_atomicity() {
     let _pg = support::required("ONTOFORGE_PG_URL");
     let server = support::required("ONTOFORGE_SERVER_URL");
     let bearer = support::token();
-    let command_id = format!("pg-http-{}", std::process::id());
+    let command_id = format!(
+        "pg-http-{}-{}",
+        std::process::id(),
+        std::thread::current().name().unwrap_or("test")
+    );
+    let validate = serde_json::json!({
+        "validateOnly": true,
+        "items": [{"params": {"flight": "F-1001", "delayMinutes": 7}}]
+    });
+    let (status, validated) = support::json(
+        support::post_json(&server, "/api/actions/delayFlight", &bearer, &validate).await,
+    )
+    .await;
+    assert_eq!(status, reqwest::StatusCode::OK, "{validated}");
+    assert_eq!(validated["validated"], true, "dry-run must not commit");
+
     let request = serde_json::json!({
         "commandId": command_id,
         "items": [{"params": {"flight": "F-1001", "delayMinutes": 7}}]
@@ -94,6 +109,24 @@ async fn pg_http_action_validate_stale_replay_atomicity() {
             .await;
     assert_eq!(status, reqwest::StatusCode::OK, "{result}");
     assert_eq!(result, first);
+
+    let (status, denied) = support::json(
+        support::post_json(
+            &server,
+            "/api/actions/delayFlight",
+            &support::no_grant_token(),
+            &request,
+        )
+        .await,
+    )
+    .await;
+    assert!(
+        matches!(
+            status,
+            reqwest::StatusCode::FORBIDDEN | reqwest::StatusCode::NOT_FOUND
+        ),
+        "unauthorized principal must not replay or write: {status} {denied}"
+    );
 
     let (status, history) =
         support::json(support::get(&server, "/api/objects/Flight/F-1001/history", &bearer).await)
