@@ -1,5 +1,8 @@
 # Phase 7 progress
 
+- 2026-10-30：用户确认 07-11 采用方案 A。实现约束：独立 generator workspace 使用 `openapi-typescript@7.13.0` 与兼容 TypeScript 版本，`clients/typescript` 保留 TypeScript 7；先同步计划，再执行 07-11。
+- 2026-10-30：07-11 完成。`70a9ed9`、`5c76afe`：generator workspace 使用 TypeScript 5.9.3，主 client 保留 TypeScript 7.0.2；`npm ci`、生成漂移、typecheck、build、真实 serve contract 5/5 全部通过。07-13 解除阻塞。
+
 - 2026-10-29：07-05 executor started. Existing `ontoforge-api` had no OpenAPI module or snapshot test directory; first RED will assert the checked-in 3.1 contract before production generation is added.
 - 2026-10-29：07-05 completed. RED commits `e73623a` and `f5e547e`; GREEN commits `44cac2d` and `3fafb7f`; refactor/format commit `487073b`. API snapshot 4/4 and export 1/1 passed; `serve --export-openapi` writes static OpenAPI without config/store/listener and concurrent outputs are byte-identical.
 - 2026-10-29：07-05 wave post已执行：schema无漂移，codebase因无STRUCTURE跳过，UI无前端且scope degraded但不阻塞。有效完成5/16，整体77/88、88%；下一步唯一ready为07-06。完整requirements仍Pending，真实PG/Trino/private与发行仍交后续计划。

@@ -9,7 +9,7 @@
 - [x] P0：确认 Phase 6 的 owner 状态为 passed，保留 PR #7 不合并约束。
 - [x] P1：完成 GSD discuss。用户决策见 `07-CONTEXT.md`，备选项审计见 `07-DISCUSSION-LOG.md`；已消费临时检查点。
 - [x] P2：工程审查、研究与 rmcp spike 已完成；16 份 PLAN 经第二轮独立 checker 通过，详 `reviews/07-PLAN-CHECK-R2.md`。
-- [ ] P3：按 PLAN 实施，核心授权、状态与数据逻辑强制 TDD，实施交给 subagent。
+- [ ] P3：按 PLAN 实施，核心授权、状态与数据逻辑强制 TDD，实施交给 subagent。07-11 已选方案 A：生成器隔离 workspace 使用兼容 TypeScript 版本，主 client 保留 TypeScript 7。
 - [ ] P4：验证 REST/MCP 授权一致性、dev 演示、真实 L2 生命周期与健康、三平台 release 构建；通过正式审查和 GSD 验收后关闭阶段。
 
 ## Ownership
@@ -22,7 +22,9 @@
 
 ## Next Step
 
-P3 执行中：有效完成07-01至07-12、07-15、07-16，共13/16。07-12 SUMMARY `bec15c8` Self-Check PASSED：dev_lifecycle 5/5、serve unit 5/5、fmt通过；持久dev/reset/embedded demo已交付。07-13依赖07-11，因openapi-typescript与TypeScript版本冲突等待用户决策，不默认改版本；07-14继续依赖07-13。auto_advance=false，用户授权范围仍为Phase 7剩余3份PLAN。
+P3 执行中：有效完成07-01至07-12、07-15、07-16，共13/16。07-12 SUMMARY `bec15c8` Self-Check PASSED：dev_lifecycle 5/5、serve unit 5/5、fmt通过；持久dev/reset/embedded demo已交付。用户已选择 07-11 方案 A：独立 generator workspace 使用兼容 TypeScript 版本，主 client 保留 TypeScript 7；07-13依赖07-11，07-14继续依赖07-13。auto_advance=false，用户授权范围仍为Phase 7剩余3份PLAN。
+
+07-11 已完成：`70a9ed9`、`5c76afe`；独立 generator workspace、TypeScript 7 client、无损 codec 与 5 项真实 HTTP contract 均通过。主 package 已移除 `openapi-typescript`，避免 clean install peer 冲突。
 
 ## 07-05 Execution
 

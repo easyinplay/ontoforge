@@ -109,7 +109,7 @@ coverage:
 
 1. **Task 11-1: 交付生成 types 与可调用 TS 读取 client** - `70a9ed9`
 2. **Task 11-2: 无损整数 codec 与全部写入/历史/错误合同** - `5c76afe`
-3. **Dependency isolation fix: 主包移除 generator-only dependency** - pending
+3. **Dependency isolation fix: 主包移除 generator-only dependency** - `66493e1`
 
 **Plan metadata:** pending parent execution lane metadata commit.
 
