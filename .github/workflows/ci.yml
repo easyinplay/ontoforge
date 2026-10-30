@@ -329,12 +329,22 @@ jobs:
         with:
           toolchain: "1.98.0"
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "24.22.1"
       - name: Real PostgreSQL, Trino, Rust and TypeScript named suites
         run: bash ci/server-services.sh verify
-      - name: Upload server evidence
+      - id: credential_scan
+        name: Check server evidence for job credentials
         if: ${{ !cancelled() }}
+        run: bash ci/server-services.sh check-artifacts
+      - name: Upload server evidence
+        if: ${{ !cancelled() && steps.credential_scan.outcome == 'success' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: phase7-real-services
-          path: target/phase7-services/state/server.log
-          if-no-files-found: warn
+          path: target/phase7-services/evidence/**
+          if-no-files-found: error
+      - name: Clean up Phase 7 services
+        if: ${{ always() }}
+        run: bash ci/server-services.sh cleanup
