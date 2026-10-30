@@ -34,3 +34,4 @@ tempfile.workspace = true
 reqwest = { workspace = true, features = ["json"] }
 sqlx.workspace = true
 jsonwebtoken.workspace = true
+secrecy.workspace = true
