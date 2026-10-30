@@ -56,7 +56,7 @@ wait_http() {
 run_ignored() {
   local package=$1 target=$2; shift 2
   local output name
-  output=$(cargo test -p "$package" --test "$target" --locked -- --ignored --list)
+  output=$(cargo test -p "$package" --test "$target" --locked -- --ignored --list | tr -d '\r')
   printf '%s\n' "$output" > "$EVIDENCE_DIR/$target.discovery.log"
   for name in "$@"; do
     grep -Fxq "$name: test" <<< "$output" || die "$target did not discover required test $name"
@@ -153,7 +153,7 @@ verify() {
   run_ignored ontoforge-server health_trino_it real_health_l2_failure_expiry_recovery_keeps_core real_shutdown_action_dependency_audit_and_cleanup
   run_ignored ontoforge-engine trino_l2_acl_it trino_l2_acl_rejects_existing_outside_and_edit_tables trino_l2_acl_loosened_rule_fails_closed
   local client_tests name
-  client_tests=$(cargo test -p ontoforge-client --test contract --locked -- --list)
+  client_tests=$(cargo test -p ontoforge-client --test contract --locked -- --list | tr -d '\r')
   for name in rust_client_metadata_pk_query_aggregate_health rust_client_instances_and_concurrent_cancellation_are_isolated rust_client_action_validate_history_result_and_replay rust_client_auth_scope_revoke_stale_and_transport_errors rust_client_wire_numbers_and_all_endpoint_groups; do
     grep -Fxq "$name: test" <<< "$client_tests" || die "Rust client did not discover required test $name"
   done
@@ -207,6 +207,10 @@ cleanup() {
     rm -f "$SERVER_PID_FILE"
   fi
   if [[ -f "$STARTED_FILE" ]]; then
+    if ! docker info >/dev/null 2>&1; then
+      printf '[server-services] cannot verify container cleanup: Docker is unavailable\n' >&2
+      return 1
+    fi
     bash "$ROOT/ci/query-services.sh" cleanup || failed=1
     for container in postgres trino ontoforge-trino-l2 ontoforge-trino-l2-loose; do
       if docker inspect "$container" >/dev/null 2>&1; then
