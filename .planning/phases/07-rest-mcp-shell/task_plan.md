@@ -22,7 +22,7 @@
 
 ## Next Step
 
-P3 执行中：有效完成07-01至07-12、07-15、07-16，共13/16。07-12 SUMMARY `bec15c8` Self-Check PASSED：dev_lifecycle 5/5、serve unit 5/5、fmt通过；持久dev/reset/embedded demo已交付。用户已选择 07-11 方案 A：独立 generator workspace 使用兼容 TypeScript 版本，主 client 保留 TypeScript 7；07-13 已有真实服务测试/CI WIP，但本地 WSL 未启用 Docker Desktop integration，真实 GREEN 阻塞；07-14继续依赖07-13。auto_advance=false，用户授权范围仍为Phase 7剩余3份PLAN。
+P3 执行中：07-01至07-12、07-15、07-16中除07-13/14外有效完成14/16，07-11隔离generator已通过验收。07-13正在补齐PG双store/Trino-MCP/health-shutdown真实行为与CI门禁；本地Git Bash/native Docker路径已可用，Linux CI仍待验收。07-14继续依赖07-13。详见07-13-SUMMARY.md。
 
 07-11 已完成：`70a9ed9`、`5c76afe`；独立 generator workspace、TypeScript 7 client、无损 codec 与 5 项真实 HTTP contract 均通过。主 package 已移除 `openapi-typescript`，避免 clean install peer 冲突。
 

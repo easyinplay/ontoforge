@@ -1,5 +1,10 @@
 # Phase 7 progress
 
+- 2026-10-30 本地验收：`a733759` PG HTTP 2/2；storage request_snapshot ignored 1/1；`2057c33` Trino HTTP/MCP 2/2、health/shutdown 2/2（64.33s，真实61秒TTL）通过。CI生命周期已提交但Linux实际job/独立读取消audit仍pending，07-13与Phase7不标完成。详07-13-SUMMARY.md。
+- 用户补充规则步骤展示布局：左侧步骤序号，右侧该步关键逻辑与产出指标；当前ontoforge未发现对应前端，已请求页面URL或项目目录，尚未修改UI。
+
+- 2026-10-30 07-13 恢复推进：已通过 Git Bash/native Docker 启动真实 L2 与loose对照，base Trino8080与PG5432均可用；WSL不再是本地唯一阻塞。PG、Trino/health、CI ownership分别补齐，完整验收及Linux CI仍pending，保持14/16。
+
 - 2026-10-30：用户确认 07-11 采用方案 A。实现约束：独立 generator workspace 使用 `openapi-typescript@7.13.0` 与兼容 TypeScript 版本，`clients/typescript` 保留 TypeScript 7；先同步计划，再执行 07-11。
 - 2026-10-30：07-11 完成。`70a9ed9`、`5c76afe`：generator workspace 使用 TypeScript 5.9.3，主 client 保留 TypeScript 7.0.2；`npm ci`、生成漂移、typecheck、build、真实 serve contract 5/5 全部通过。07-13 解除阻塞。
 - 2026-10-30：07-13 WIP `d6f2d54`、`c04bfce`、`ae0f939`：真实 PG/Trino ignored targets、CI 生命周期、PG seed、Trino/L2 env wiring 已落盘；6 个 named tests discovery、no-run、fmt、bash syntax 通过。纯 WSL `/mnt/d/DataSpellProjects/ontoforge` 运行 `ci/server-services.sh verify` 因 `The command 'docker' could not be found in this WSL 2 distro` 阻塞；真实行为测试仍有缺口，07-13 保持 blocked。

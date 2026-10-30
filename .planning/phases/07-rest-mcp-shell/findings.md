@@ -1,5 +1,9 @@
 # Phase 7 findings
 
+- 2026-10-30 07-13 恢复：缺 env 的失败只证明前置检查，不能当 snapshot/ACL/shutdown 的行为 RED。Grok 第二意见支持必须真实六工具/四 EXPLAIN/PG 双 store/审计 flush；其把 ACL proof TTL 误解为 token TTL、把 alice 称作管理主体的推测不采纳，真实合同以代码和绑定为准。
+- 本地启动已绕过 WSL integration：Git Bash 调用 native Windows Docker；`ci/query-services.sh trino-l2` 完整 seed/readiness exit 0，58081/58082 可用。base Trino 的旧 host network 无法映射到 Windows8080，已仅在本次 runtime 配置改为端口映射及 `host.docker.internal`；真实 `SELECT count(*) FROM demo.aviation.flights` 返回23。runtime密码仅在进程内读取，不进入证据或代码。
+- 已开始的本地真实验收：L2 health 61秒证明过期/recovery通过（65.32s），MCP六工具/四格式通过；PG双store在途快照测试已通过，Action测试暴露撤权后的隐藏404与测试期望403不一致，交给PG lane修正断言，未放宽生产授权。
+
 - 2026-10-29 07-05 execution started：TDD applies to both tasks because OpenAPI and export are externally observable wire behavior. `utoipa = 6.0.0` and `utoipa-axum = 0.3.0` are approved in `07-RESEARCH.md`; no new dependency legitimacy gate is needed. Warp and `ralph-loop` are unavailable, so execution uses PowerShell and Cargo directly.
 - 2026-10-29 07-05 RED/GREEN：Task 05-1 RED failed semantically on missing `docs/openapi.json` with 3 tests discovered; GREEN added recursive `ToSchema` with `no_recursion`, static 3.1.0 document, all REST paths/errors/security, and checked-in render equality. Task 05-2 RED failed semantically because `serve --export-openapi` was not accepted; GREEN added an early static export branch and verified 3 concurrent files plus explicit write failure. The first export test run spent 13m18s downloading/compiling the workspace; subsequent run was 18.75s.
 
