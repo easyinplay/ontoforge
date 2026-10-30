@@ -45,6 +45,7 @@ plan_head_after: b6c36d5272003ecee4f0ba80fd82b716b7f2b600
 4. 本地 Docker setup 通过 WSL wrapper 运行 `ci/query-services.sh` 时存在 Windows/WSL path conversion 差异，尚未固化到生产 CI 脚本。
 5. 恢复时 WSL `docker info` 仍返回 Docker Desktop WSL integration 不可用，`psql` 也未发现；Windows daemon 可用不代表 WSL/Linux setup 可运行。
 6. CI configured server 还缺 ontology reload/scope apply 初始化与 Trino readiness；当前脚本不能被认为已形成可运行的完整 GREEN 路径。
+7. 纯 WSL 复验命令 `cd /mnt/d/DataSpellProjects/ontoforge && RUNNER_TEMP=/tmp/ontoforge-phase7 bash ci/server-services.sh verify` 立即失败：`The command 'docker' could not be found in this WSL 2 distro.`
 
 ## Known Stubs
 
