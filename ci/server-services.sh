@@ -152,13 +152,22 @@ verify() {
   run_ignored ontoforge-server trino_http_it trino_http_long_read_releases_snapshot_lock trino_http_and_mcp_six_l2_tools_all_formats
   run_ignored ontoforge-server health_trino_it real_health_l2_failure_expiry_recovery_keeps_core real_shutdown_action_dependency_audit_and_cleanup
   run_ignored ontoforge-engine trino_l2_acl_it trino_l2_acl_rejects_existing_outside_and_edit_tables trino_l2_acl_loosened_rule_fails_closed
-  cargo test -p ontoforge-client --locked -- --nocapture 2>&1 | tee "$EVIDENCE_DIR/rust-client.log"
+  local client_tests name
+  client_tests=$(cargo test -p ontoforge-client --test contract --locked -- --list)
+  for name in rust_client_metadata_pk_query_aggregate_health rust_client_instances_and_concurrent_cancellation_are_isolated rust_client_action_validate_history_result_and_replay rust_client_auth_scope_revoke_stale_and_transport_errors rust_client_wire_numbers_and_all_endpoint_groups; do
+    grep -Fxq "$name: test" <<< "$client_tests" || die "Rust client did not discover required test $name"
+  done
+  cargo test -p ontoforge-client --test contract --locked -- --nocapture 2>&1 | tee "$EVIDENCE_DIR/rust-client.log"
   npm --prefix "$ROOT/tools/openapi-gen" ci
   npm --prefix "$ROOT/clients/typescript" ci
   npm --prefix "$ROOT/clients/typescript" run check:generated
   npm --prefix "$ROOT/clients/typescript" run typecheck
   npm --prefix "$ROOT/clients/typescript" run build
   npm --prefix "$ROOT/clients/typescript" run test:contract 2>&1 | tee "$EVIDENCE_DIR/typescript-contract.log"
+  for name in ts_client_generated_metadata_pk_query_aggregate_health ts_client_typecheck_generation_and_instance_abort ts_lossless_integer_decimal_boundary_roundtrips ts_client_action_validate_history_result_and_replay ts_client_auth_scope_stale_errors_limits_and_runtime_capability; do
+    grep -Fq "$name" "$EVIDENCE_DIR/typescript-contract.log" || die "TypeScript contract did not execute $name"
+  done
+  grep -Eq 'skipped[[:space:]]+0([[:space:]]|$)' "$EVIDENCE_DIR/typescript-contract.log" || die "TypeScript contract skipped tests or did not produce a test summary"
 }
 
 check_artifacts() {
@@ -214,7 +223,7 @@ finish() {
   local status=$?
   trap - EXIT
   if [[ "$CURRENT_RUN_STARTED" -eq 1 ]]; then
-    if [[ -s "$ENV_FILE" ]] && ! check_artifacts; then status=1; fi
+    if [[ -s "$ENV_FILE" ]] && ! (check_artifacts); then status=1; fi
     if ! cleanup; then status=1; fi
   fi
   exit "$status"
