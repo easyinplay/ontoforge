@@ -56,6 +56,8 @@ start() {
   : > "$ENV_FILE"
   export GITHUB_ENV="$ENV_FILE"
   export RUNNER_TEMP
+  export PGHOST=localhost
+  export PGUSER=postgres
   bash "$ROOT/ci/query-services.sh" postgres
   load_env
   require_env ONTOFORGE_PG_URL TRINO_CATALOG_DIR
