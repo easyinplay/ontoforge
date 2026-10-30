@@ -1,7 +1,7 @@
 # Phase 7 progress
 
 - 2026-10-30 本地验收：`a733759` PG HTTP 2/2；storage request_snapshot ignored 1/1；`2057c33` Trino HTTP/MCP 2/2、health/shutdown 2/2（64.33s，真实61秒TTL）通过。CI生命周期已提交但Linux实际job/独立读取消audit仍pending，07-13与Phase7不标完成。详07-13-SUMMARY.md。
-- 用户补充规则步骤展示布局：左侧步骤序号，右侧该步关键逻辑与产出指标；当前ontoforge未发现对应前端，已请求页面URL或项目目录，尚未修改UI。
+- 2026-10-30：`0aa3e67` 新增独立读断开后的 cancellation/durable audit/零业务写入断言；编译和no-run通过，真实GREEN留给Linux CI或重启完整PG/Trino服务后验证。
 
 - 2026-10-30 07-13 恢复推进：已通过 Git Bash/native Docker 启动真实 L2 与loose对照，base Trino8080与PG5432均可用；WSL不再是本地唯一阻塞。PG、Trino/health、CI ownership分别补齐，完整验收及Linux CI仍pending，保持14/16。
 

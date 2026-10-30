@@ -11,12 +11,13 @@ affects: [API-01, API-03, MCP-01, MCP-06, MCP-07, MCP-08, L2-04, SCOPE-07]
 
 # Phase 07 Plan 13 Summary
 
-07-13 已完成本地真实 PG/Trino 行为验证和 CI 生命周期实现，但未关闭：Linux `phase7-real-services` 尚未在远程 runner 执行，独立读取消的专门断言仍未新增。
+07-13 已完成本地真实 PG/Trino 行为验证和 CI 生命周期实现，但未关闭：Linux `phase7-real-services` 尚未在远程 runner 执行；独立读取消 audit 断言已新增并编译通过，尚未在本地重新跑出 GREEN。
 
 ## Implemented
 
 - `a733759`：真实 PostgreSQL 独立 schema、双 store、reload/revoke barrier、原子写入计数、持久审计与 HTTP Action/history/result 合同。
 - `2057c33`：真实 Trino source barrier、snapshot/reload、L2 MCP 六工具、四种 EXPLAIN、ACL deny、61 秒 proof expiry/recovery、core 503/recovery、shutdown Action dependency/audit。
+- `0aa3e67`：独立 TCP 读断开后的 cancellation、durable audit `cancelled`/`row_count=0` 与无业务写入断言。
 - `6325a8b`、`b2e7cc9`、`aba451b`：PG/Trino/L2 服务生命周期、seed、named-suite discovery、Rust/TypeScript gates、credential scan、always cleanup 与 CRLF 兼容。
 
 ## Local Verification
@@ -31,7 +32,7 @@ affects: [API-01, API-03, MCP-01, MCP-06, MCP-07, MCP-08, L2-04, SCOPE-07]
 ## Remaining Blockers
 
 1. Linux `phase7-real-services` workflow 尚未实际运行，不能把 CI job 标记为 GREEN。
-2. long-read 已证明 source barrier 期间 snapshot/reload 可完成，但尚未新增独立“取消读请求后 durable audit 状态”的专门断言。
+2. cancellation 断言已实现；因本地 base Trino 已清理，新增断言尚未重新跑出真实 GREEN。
 3. 全 workspace regression、full Clippy 和远程 artifact credential scan 尚未在本 lane 重跑；既有 `ontoforge-api/openapi.rs:202,208` `clippy::doc_markdown` 仍是范围外阻塞。
 
 ## Not Complete
