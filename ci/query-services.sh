@@ -14,7 +14,7 @@ cleanup_l2() {
 case "${1:-}" in
   postgres)
     password=$(openssl rand -hex 24)
-    printf '::add-mask::%s\n' "$password"
+    if [[ "${GITHUB_ACTIONS:-}" == true ]]; then printf '::add-mask::%s\n' "$password"; fi
 
     catalog_dir=$(mktemp -d "$RUNNER_TEMP/trino-catalog.XXXXXXXX")
     printf 'TRINO_CATALOG_DIR=%s\n' "$catalog_dir" >> "$GITHUB_ENV"
@@ -28,7 +28,7 @@ case "${1:-}" in
     done
 
     printf 'PGPASSWORD=%s\n' "$password" >> "$GITHUB_ENV"
-    printf 'ONTOFORGE_PG_URL=postgres://postgres:%s@localhost:5432/editstore\n' "$password" >> "$GITHUB_ENV"
+    printf 'ONTOFORGE_PG_URL=postgres://postgres:%s@127.0.0.1:5432/editstore\n' "$password" >> "$GITHUB_ENV"
 
     docker run -d --name postgres \
       -e POSTGRES_PASSWORD="$password" \
@@ -38,7 +38,7 @@ case "${1:-}" in
       postgres:17.11@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3
 
     for attempt in {1..60}; do
-      if PGPASSWORD="$password" psql -h localhost -U postgres -d postgres -Atqc 'SELECT 1' >/dev/null 2>&1; then
+      if docker exec postgres psql -U postgres -d postgres -Atqc 'SELECT 1' >/dev/null 2>&1; then
         exit 0
       fi
       sleep 2
@@ -46,10 +46,27 @@ case "${1:-}" in
     echo '::error::PostgreSQL did not accept connections within 120 s'
     exit 1
     ;;
+  seed)
+    root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+    fixtures="$root/examples/ontologies/aviation/bindings/dev/fixtures"
+    if command -v cygpath >/dev/null 2>&1; then fixtures=$(cygpath -w "$fixtures"); fi
+    MSYS_NO_PATHCONV=1 docker cp "$fixtures" postgres:/tmp/ontoforge-fixtures
+    docker exec postgres psql -U postgres -v ON_ERROR_STOP=1 -d postgres -c 'CREATE DATABASE demo' -c 'CREATE DATABASE editstore'
+    MSYS_NO_PATHCONV=1 docker exec -i postgres psql -U postgres -v ON_ERROR_STOP=1 -v fixtures=/tmp/ontoforge-fixtures -d demo < "$root/ci/pg/seed.sql"
+    docker exec -i postgres psql -U postgres -v ON_ERROR_STOP=1 -d demo < "$root/ci/pg/rowpred_corpus.sql"
+    docker exec -i postgres psql -U postgres -v ON_ERROR_STOP=1 -d demo < "$root/ci/pg/query_corpus.sql"
+    ;;
   trino)
     : "${TRINO_CATALOG_DIR:?PostgreSQL setup must run first}"
-    docker run -d --name trino --network host \
-      -v "$TRINO_CATALOG_DIR:/etc/trino/catalog:ro" \
+    mount_catalog=$TRINO_CATALOG_DIR
+    network=(--network host)
+    if command -v cygpath >/dev/null 2>&1; then
+      sed -i 's@jdbc:postgresql://localhost:@jdbc:postgresql://host.docker.internal:@' "$TRINO_CATALOG_DIR"/*.properties
+      mount_catalog=$(cygpath -w "$TRINO_CATALOG_DIR")
+      network=(-p 127.0.0.1:8080:8080)
+    fi
+    MSYS_NO_PATHCONV=1 docker run -d --name trino "${network[@]}" \
+      -v "$mount_catalog:/etc/trino/catalog:ro" \
       trinodb/trino:483@sha256:db58cc93e593a2706553745f276bb119c9810e69918be56ecde088ba7ccb0534
     ;;
   trino-l2)
@@ -91,7 +108,7 @@ case "${1:-}" in
             exit 1
           fi
         done
-        if ! docker exec -i ontoforge-trino-l2 trino --user ontology --file /dev/stdin < "$root/ci/trino/l2/seed.sql" >/dev/null; then
+        if ! MSYS_NO_PATHCONV=1 docker exec -i ontoforge-trino-l2 trino --user ontology --file /dev/stdin < "$root/ci/trino/l2/seed.sql" >/dev/null; then
           cleanup_l2
           echo 'Trino L2 hive.sales fixture seed failed' >&2
           exit 1
@@ -105,7 +122,7 @@ case "${1:-}" in
           trinodb/trino:483@sha256:db58cc93e593a2706553745f276bb119c9810e69918be56ecde088ba7ccb0534
         for control_attempt in {1..60}; do
           if curl -fsS --max-time 2 http://127.0.0.1:58082/v1/info 2>/dev/null | node -e 'let s="";process.stdin.on("data",c=>s+=c).on("end",()=>{try{const d=JSON.parse(s);process.exit(d.nodeVersion?.version==="483"&&d.starting===false?0:1)}catch{process.exit(1)}})' 2>/dev/null; then
-            if ! docker exec -i ontoforge-trino-l2-loose trino --user ontology --file /dev/stdin < "$root/ci/trino/l2/seed.sql" >/dev/null; then
+            if ! MSYS_NO_PATHCONV=1 docker exec -i ontoforge-trino-l2-loose trino --user ontology --file /dev/stdin < "$root/ci/trino/l2/seed.sql" >/dev/null; then
               cleanup_l2
               echo 'Trino L2 loose hive.sales fixture seed failed' >&2
               exit 1
@@ -150,7 +167,7 @@ case "${1:-}" in
     fi
     ;;
   *)
-    echo 'usage: query-services.sh {postgres|trino|trino-l2|check-artifacts|cleanup}' >&2
+    echo 'usage: query-services.sh {postgres|seed|trino|trino-l2|check-artifacts|cleanup}' >&2
     exit 2
     ;;
 esac

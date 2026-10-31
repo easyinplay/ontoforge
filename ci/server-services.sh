@@ -66,7 +66,7 @@ run_ignored() {
 
 start() {
   local command container
-  for command in docker cargo psql jq openssl node npm curl; do
+  for command in docker cargo jq openssl node npm curl; do
     command -v "$command" >/dev/null || die "$command is required"
   done
   docker info >/dev/null
@@ -83,10 +83,7 @@ start() {
   GITHUB_ENV="$ENV_FILE" bash "$ROOT/ci/query-services.sh" postgres
   load_env
   require_env ONTOFORGE_PG_URL TRINO_CATALOG_DIR PGPASSWORD
-  psql -v ON_ERROR_STOP=1 -d postgres -c 'CREATE DATABASE demo' -c 'CREATE DATABASE editstore'
-  psql -v ON_ERROR_STOP=1 -v fixtures="$ROOT/examples/ontologies/aviation/bindings/dev/fixtures" -d demo -f "$ROOT/ci/pg/seed.sql"
-  psql -v ON_ERROR_STOP=1 -d demo -f "$ROOT/ci/pg/rowpred_corpus.sql"
-  psql -v ON_ERROR_STOP=1 -d demo -f "$ROOT/ci/pg/query_corpus.sql"
+  bash "$ROOT/ci/query-services.sh" seed
   bash "$ROOT/ci/query-services.sh" trino
   export ONTOFORGE_TRINO_URL="http://127.0.0.1:8080"
   local deadline=$((SECONDS + 180))
@@ -124,6 +121,10 @@ key_file = "dev-token.key"
 signing_key_file = "query-signing.key"
 EOF
   cargo build -p ontoforge --locked
+  local runtime_binary="$RUNNER_TEMP/ontoforge-server-runtime"
+  if [[ "${OS:-}" == Windows_NT ]]; then runtime_binary+=.exe; fi
+  cp "$BINARY" "$runtime_binary"
+  BINARY="$runtime_binary"
   "$BINARY" reload "$ROOT/examples/ontologies/aviation" --server-config "$SERVER_CONFIG" --profile dev --format json > "$EVIDENCE_DIR/reload.json"
   local plan_hash
   plan_hash=$("$BINARY" scope plan "$ROOT/examples/scopes/aviation" --ontology "$ROOT/examples/ontologies/aviation" --server-config "$SERVER_CONFIG" --format json | jq -er '.result.plan.hash')
