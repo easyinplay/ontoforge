@@ -25,6 +25,7 @@ use std::time::Duration;
 use tokio::io::AsyncWriteExt;
 use tokio::sync::Notify;
 use tokio::sync::oneshot;
+use tokio_util::task::AbortOnDropHandle;
 
 struct DelayedTrino {
     inner: TrinoEngine,
@@ -230,14 +231,14 @@ async fn trino_http_long_read_releases_snapshot_lock() {
         .expect("listener");
     let server = format!("http://{}", listener.local_addr().expect("address"));
     let (stop, rx) = oneshot::channel();
-    let task = tokio::spawn(Arc::new(host).serve(listener, async {
+    let task = AbortOnDropHandle::new(tokio::spawn(Arc::new(host).serve(listener, async {
         let _ = rx.await;
-    }));
+    })));
     let bearer = fixture.token.clone();
     let request_server = server.clone();
-    let pending = tokio::spawn(async move {
+    let pending = AbortOnDropHandle::new(tokio::spawn(async move {
         support::get(&request_server, "/api/objects/Flight/F-1001", &bearer).await
-    });
+    }));
     tokio::time::timeout(Duration::from_secs(5), engine.entered.notified())
         .await
         .expect("authenticated read reaches real source barrier");
@@ -319,6 +320,22 @@ async fn trino_http_long_read_releases_snapshot_lock() {
             .await
             .expect("durable source audit");
     assert_eq!(version, snapshot.active.def_version);
+    let audit_rows: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM of_read_audit")
+        .fetch_one(&pool)
+        .await
+        .expect("durable audit count");
+    assert_eq!(
+        audit_rows, 2,
+        "one successful read and one cancelled read must each reserve one audit row"
+    );
+    let success_audits: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM of_read_audit WHERE request_id = ? AND status = 'success' AND row_count = 1",
+    )
+    .bind(&request_id)
+    .fetch_one(&pool)
+    .await
+    .expect("durable successful audit");
+    assert_eq!(success_audits, 1);
     let cancelled_audits: i64 = sqlx::query_scalar(
         "SELECT COUNT(*) FROM of_read_audit WHERE request_id <> ? AND status = 'cancelled' AND row_count = 0",
     )
