@@ -1,5 +1,7 @@
 # Phase 7 findings
 
+- 2026-10-31 Clippy gate恢复：本次修复openapi.rs两个`doc_markdown`注释，仅给OpenAPI补反引号，不改变行为；TDD跳过，使用全workspace Clippy/fmt验证。
+
 - 2026-10-30 07-13 恢复：缺 env 的失败只证明前置检查，不能当 snapshot/ACL/shutdown 的行为 RED。Grok 第二意见支持必须真实六工具/四 EXPLAIN/PG 双 store/审计 flush；其把 ACL proof TTL 误解为 token TTL、把 alice 称作管理主体的推测不采纳，真实合同以代码和绑定为准。
 - 本地启动已绕过 WSL integration：Git Bash 调用 native Windows Docker；`ci/query-services.sh trino-l2` 完整 seed/readiness exit 0，58081/58082 可用。base Trino 的旧 host network 无法映射到 Windows8080，已仅在本次 runtime 配置改为端口映射及 `host.docker.internal`；真实 `SELECT count(*) FROM demo.aviation.flights` 返回23。runtime密码仅在进程内读取，不进入证据或代码。
 - 已开始的本地真实验收：L2 health 61秒证明过期/recovery通过（65.32s），MCP六工具/四格式通过；PG双store在途快照测试已通过，Action测试暴露撤权后的隐藏404与测试期望403不一致，交给PG lane修正断言，未放宽生产授权。
@@ -71,6 +73,18 @@
 - Grok 上轮有界咨询超时，但返回了建议正文，仅作为部分第二意见：建议 stdio 认证桥接同一服务、dev 数据默认持久化、部分 L2 降级在健康正文表达。来源为 Phase 6 findings 的 Phase 7 预查条目。health HTTP 状态现已由用户接受，见 CONTEXT D-03；不采纳“所有非 200 都会触发重启”的泛化推断。
 - 本轮仅记录讨论和状态，不修改业务实现，按项目判据跳过新 TDD；以 JSON 解析、git diff --check 和 Phase 6 verification.status 验证。ralph-loop 本机此前确认不可用，本轮未运行或声称运行该工具。
 - 跳过 office-hours/plan-ceo-review：本轮延续已获批 milestone 的既定 Phase 7 范围，不涉及新产品方向。Phase 层 discuss 正在进行，复杂架构在 P2 进入 plan-eng-review；实现前按任务判据判断 brainstorming。
+
+## 07-13 收尾复验
+
+- 首轮完整服务的所有行为用例通过，但末尾Bash报`syntax error near unexpected token ;;`并exit1；当前脚本`bash -n`通过，执行期间曾插入代码，文件读取偏移变化是待证实解释。已显式credential scan及清理，四个本轮容器/server均不存在；冻结脚本第二轮重跑验证整个流程。Grok有界55秒第二意见exit124，无正文，不构成外部审查证据。
+- `7fa2401`通过真实HTTP锁定history分页：旧实现两页均返回[3,2]，新实现limit=1返回[3]、beforeSeq=3返回[2]；4 unit+6 contract、client Clippy/fmt绿。`49deb40`/`4290bed`保留独立复签与执行边界。
+- CLI新增test-only manual_assert诊断属于同批lint收尾，保留已有dev/stdio/shutdown/serve行为测试，跳过新增TDD。
+- 全workspace Clippy越过server/client后暴露CLI六项lint（cli doc、dev map_or、stdio unit/ready future、serve长度与条件折叠），交原server lane最小收尾。纯lint不新增业务合同，跳过新增TDD，以CLI全target Clippy及dev/stdio/serve已有行为测试验证；未通过前不声明全workspace绿。
+- 交叉审查定位Rust client `history`的`limit=${limit}`/`beforeSeq=${before_seq}`生成literal`$`；server数值解析失败会使用默认limit/None。按既有API合同修复两处格式串，跳过重复brainstorming，真实HTTP分页测试必须先RED再GREEN，不以原只检查非空的history合同作为充分证据。
+- `4b0b18d`修复SDK capability检查与公开raw绕过问题，8/8真实HTTP contract及typecheck/build/生成漂移通过；最终复签仍待全部修复落定。
+- Rust client Clippy修复属于既有合同收尾，跳过重复brainstorming；数值checked conversion属于数据逻辑，要求真实边界RED/GREEN，其余lint按既有pattern最小修改。
+- 完整workspace test遇到`target/debug/ontoforge.exe`被运行中的服务占用，Windows返回`os error 5`。CI lane将运行时binary复制至隔离目录；这次退出不证明业务断言失败，也不证明通过。
+- 本轮继续既定Phase，跳过office-hours/plan-ceo-review与重复Phase讨论。Warp/ralph-loop工具仍未提供，使用实际PowerShell执行与明确验收循环，不声称调用了不可用工具。
 
 ## Open Decisions
 

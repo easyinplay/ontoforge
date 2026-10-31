@@ -1,5 +1,13 @@
 # Phase 7 progress
 
+- 2026-10-31 `7fa2401`修复history limit/beforeSeq多余`$`；真实分页RED观察两页均[3,2]，修复后分别[3]/[2]，最终4 unit+6 HTTP contract、client Clippy/fmt通过。`49deb40`独立复签MCP CR-03 resolved，`4290bed`复签SDK CR-01/02与receipt边界通过，分页发现待独立追加复签。首轮服务所有用例绿但末尾shell语法错误exit1，已完成scan和清理；CI lane冻结脚本启动第二轮，未标完整通过。主会话重跑workspace tests，CLI纯lint收尾仍进行中。
+
+- 2026-10-31 `9e6d858`清除Rust client 15项Clippy，4 unit+5真实HTTP contract通过；itemOrdinal负值/溢出真实RED后3项边界GREEN。交叉审查新发现history查询参数带literal`$`，纳入同client合同修复，必须增加真实HTTP分页RED/GREEN。完整workspace Clippy进行中，服务PG2/2已通过；其余门禁仍pending。
+
+- 2026-10-31 接续07-13：SDK blocker已由`4b0b18d`修复，真实HTTP contract 8/8、typecheck/build/生成漂移通过；MCP schema修复定向GREEN，扩展回归中。Rust client 15项Clippy诊断交独立lane处理，checked conversion边界要求TDD。完整服务pipeline仍运行，workspace test上轮因服务占用Windows binary导致os error 5，必须在runtime副本接线后重跑；不计为业务通过。07-14继续等待07-13门禁。
+
+- 2026-10-31 恢复07-13：取消读断言0aa3e67仍待真实执行，完整server-services脚本待端到端验收。按现有计划修复本地Docker工具/端口兼容性并运行回归；PR#7实际是Phase6分支，不能把旧CI状态当Phase7证据。Phase7保持14/16，不关闭需求。
+
 - 2026-10-30 本地验收：`a733759` PG HTTP 2/2；storage request_snapshot ignored 1/1；`2057c33` Trino HTTP/MCP 2/2、health/shutdown 2/2（64.33s，真实61秒TTL）通过。CI生命周期已提交但Linux实际job/独立读取消audit仍pending，07-13与Phase7不标完成。详07-13-SUMMARY.md。
 - 2026-10-30：`0aa3e67` 新增独立读断开后的 cancellation/durable audit/零业务写入断言；编译和no-run通过，真实GREEN留给Linux CI或重启完整PG/Trino服务后验证。
 

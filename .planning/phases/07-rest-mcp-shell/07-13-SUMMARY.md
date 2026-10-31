@@ -11,7 +11,7 @@ affects: [API-01, API-03, MCP-01, MCP-06, MCP-07, MCP-08, L2-04, SCOPE-07]
 
 # Phase 07 Plan 13 Summary
 
-07-13 已完成本地真实 PG/Trino 行为验证和 CI 生命周期实现，但未关闭：Linux `phase7-real-services` 尚未在远程 runner 执行；独立读取消 audit 断言已新增并编译通过，尚未在本地重新跑出 GREEN。
+07-13 的本地真实 PG/Trino 行为及独立读取消 audit 断言已通过，但未关闭：完整服务脚本仍在执行，Linux `phase7-real-services` 尚未在远程 runner 执行，全workspace门禁与审查收尾尚待完成。
 
 ## Implemented
 
@@ -19,6 +19,11 @@ affects: [API-01, API-03, MCP-01, MCP-06, MCP-07, MCP-08, L2-04, SCOPE-07]
 - `2057c33`：真实 Trino source barrier、snapshot/reload、L2 MCP 六工具、四种 EXPLAIN、ACL deny、61 秒 proof expiry/recovery、core 503/recovery、shutdown Action dependency/audit。
 - `0aa3e67`：独立 TCP 读断开后的 cancellation、durable audit `cancelled`/`row_count=0` 与无业务写入断言。
 - `6325a8b`、`b2e7cc9`、`aba451b`：PG/Trino/L2 服务生命周期、seed、named-suite discovery、Rust/TypeScript gates、credential scan、always cleanup 与 CRLF 兼容。
+- `4b0b18d`：SDK发送前无损JSON能力验证，移除公开raw绕过入口；8项contract通过。
+- `3f5b5db`、`150a6d2`：MCP参数schema修复与server lint收尾，14项相邻测试通过。
+- `9e6d858`、`7fa2401`：Rust receipt序号checked conversion、15项client lint和history分页参数修复，最终4 unit+6 HTTP contract通过。
+- `c0abe96`：CLI纯lint最小修改已提交；本地完整Clippy/既有行为回归仍待结果。
+- `ec15dd2`、`77382e7`：取消读任务清理及精确audit断言、容器内seed、Windows网络/运行binary隔离接线与Cargo jobs=2。
 
 ## Local Verification
 
@@ -32,8 +37,8 @@ affects: [API-01, API-03, MCP-01, MCP-06, MCP-07, MCP-08, L2-04, SCOPE-07]
 ## Remaining Blockers
 
 1. Linux `phase7-real-services` workflow 尚未实际运行，不能把 CI job 标记为 GREEN。
-2. cancellation 断言已实现；因本地 base Trino 已清理，新增断言尚未重新跑出真实 GREEN。
-3. 全 workspace regression、full Clippy 和远程 artifact credential scan 尚未在本 lane 重跑；既有 `ontoforge-api/openapi.rs:202,208` `clippy::doc_markdown` 仍是范围外阻塞。
+2. 本次完整脚本已通过PG 2/2（360.23s）、storage snapshot 1/1（106.58s）、Trino 2/2（4.55s，包括取消读精确audit/零写入）；health、后续client gate、credential scan与cleanup仍待结果。证据在`target/phase7-services/evidence/`，不把执行中状态当完整通过。
+3. 全workspace regression、full Clippy和远程artifact credential scan尚待完成。API/server/client已发现lint已修，CLI lint与Rust history分页参数缺陷正在收尾，最终交叉复签待落盘。
 
 ## Not Complete
 
@@ -43,4 +48,4 @@ affects: [API-01, API-03, MCP-01, MCP-06, MCP-07, MCP-08, L2-04, SCOPE-07]
 
 ## Next Step
 
-在 Linux runner 执行 `bash ci/server-services.sh verify`，确认真实服务 job、named suites、TypeScript gate、artifact scan 和 always cleanup 全部通过；随后补独立读取消 audit 断言，再由主会话执行 Phase 7 verify。
+完成本地完整服务及workspace门禁，创建独立Phase 7 Draft PR并在Linux runner执行`bash ci/server-services.sh verify`；确认named suites、TypeScript gate、artifact scan和always cleanup全部通过后再解除07-14依赖。Phase 7 verify在全部PLAN验收后执行。

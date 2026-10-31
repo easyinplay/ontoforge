@@ -22,9 +22,20 @@
 
 ## Next Step
 
-P3 执行中：07-01至07-12、07-15、07-16中除07-13/14外有效完成14/16，07-11隔离generator已通过验收。07-13正在补齐PG双store/Trino-MCP/health-shutdown真实行为与CI门禁；本地Git Bash/native Docker路径已可用，Linux CI仍待验收。07-14继续依赖07-13。详见07-13-SUMMARY.md。
+P3执行中：07-01至07-12、07-15、07-16共14/16完成。当前先完成07-13取消读真实测试、完整服务脚本及远程Linux CI，再执行依赖它的07-14。复用现有PLAN，不新建重复规划文档；最新证据进入07-13-SUMMARY.md。
 
 07-11 已完成：`70a9ed9`、`5c76afe`；独立 generator workspace、TypeScript 7 client、无损 codec 与 5 项真实 HTTP contract 均通过。主 package 已移除 `openapi-typescript`，避免 clean install peer 冲突。
+
+## 07-13 当前验收清单
+
+- [x] SDK无损JSON capability与公开入口修复，8项contract及生成/typecheck/build通过。
+- [x] MCP参数schema修复，新增真实回归及相邻14项测试通过。
+- [x] Rust client数值边界修复，4 unit与5 HTTP contract、client Clippy通过。
+- [x] Rust history分页参数修复及真实HTTP分页回归（`7fa2401`，4 unit+6 HTTP contract）。
+- [ ] CLI与全workspace Clippy、workspace回归。
+- [ ] 完整服务脚本（包括取消读audit、Rust/TS、credential scan与cleanup）真实通过。
+- [ ] SDK/MCP/client交叉复签无剩余blocker。
+- [ ] Phase 7 Draft PR远程Linux CI真实通过，解除07-14依赖。
 
 ## 07-05 Execution
 
