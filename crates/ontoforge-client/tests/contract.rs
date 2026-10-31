@@ -137,6 +137,52 @@ async fn rust_client_action_validate_history_result_and_replay() {
 }
 
 #[tokio::test]
+async fn rust_client_history_paginates_with_limit_and_before_seq() {
+    let f = fixture().await.start().await;
+    let api = client(&f.url, &f.token);
+    let mut receipts = Vec::new();
+    for (command_id, delay) in [("history-first", 10), ("history-second", 20)] {
+        let request = ActionRequest {
+            command_id: Some(command_id.to_owned()),
+            items: vec![ontoforge_api::dto::ActionItem {
+                params: std::collections::BTreeMap::from([
+                    ("flight".to_owned(), json!("F-1001")),
+                    ("delayMinutes".to_owned(), json!(delay)),
+                ]),
+                expected_versions: std::collections::BTreeMap::new(),
+            }],
+            validate_only: false,
+        };
+        let ActionResponse::Committed(receipt) =
+            api.execute_action("delayFlight", &request).await.unwrap()
+        else {
+            panic!("expected committed receipt");
+        };
+        receipts.push(receipt);
+    }
+    let limited = api
+        .history("Flight", &json!("F-1001"), Some(1), None)
+        .await
+        .unwrap();
+    let older = api
+        .history(
+            "Flight",
+            &json!("F-1001"),
+            Some(1),
+            Some(receipts[1].log_seq),
+        )
+        .await
+        .unwrap();
+    let limited_seqs: Vec<_> = limited.entries.iter().map(|entry| entry.seq).collect();
+    let older_seqs: Vec<_> = older.entries.iter().map(|entry| entry.seq).collect();
+    assert_eq!(
+        (limited_seqs, older_seqs),
+        (vec![receipts[1].log_seq], vec![receipts[0].log_seq])
+    );
+    f.finish_actions().await;
+}
+
+#[tokio::test]
 async fn rust_client_auth_scope_revoke_stale_and_transport_errors() {
     let f = fixture().await.start().await;
     let api = client(&f.url, &f.token);

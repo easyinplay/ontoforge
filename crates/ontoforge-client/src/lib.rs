@@ -200,10 +200,10 @@ impl OntoforgeClient {
         );
         let mut query = Vec::new();
         if let Some(limit) = limit {
-            query.push(format!("limit=${limit}"));
+            query.push(format!("limit={limit}"));
         }
         if let Some(before_seq) = before_seq {
-            query.push(format!("beforeSeq=${before_seq}"));
+            query.push(format!("beforeSeq={before_seq}"));
         }
         if !query.is_empty() {
             path.push('?');
