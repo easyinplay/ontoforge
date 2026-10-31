@@ -286,15 +286,15 @@ fn pid_is_running(pid: u32) -> bool {
         std::process::Command::new("tasklist")
             .args(["/FI", &format!("PID eq {pid}")])
             .output()
-            .map(|output| String::from_utf8_lossy(&output.stdout).contains(&pid.to_string()))
-            .unwrap_or(true)
+            .map_or(true, |output| {
+                String::from_utf8_lossy(&output.stdout).contains(&pid.to_string())
+            })
     }
     #[cfg(not(windows))]
     {
         std::process::Command::new("kill")
             .args(["-0", &pid.to_string()])
             .status()
-            .map(|status| status.success())
-            .unwrap_or(true)
+            .map_or(true, |status| status.success())
     }
 }

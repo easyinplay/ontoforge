@@ -67,7 +67,7 @@ pub struct ServeArgs {
     pub bind: std::net::SocketAddr,
     /// Explicitly accept development tokens using the configured key file.
     pub dev: bool,
-    /// Export the static OpenAPI contract without loading configuration or starting a listener.
+    /// Export the static `OpenAPI` contract without loading configuration or starting a listener.
     pub export_openapi: Option<Utf8PathBuf>,
 }
 

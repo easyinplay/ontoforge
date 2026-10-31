@@ -159,7 +159,7 @@ impl Service<RoleServer> for BridgeService {
             result = task => result
                 .map_err(|error| ErrorData::internal_error(error.to_string(), None))?
                 .map_err(|error| ErrorData::internal_error(error.to_string(), None)),
-            _ = context.ct.cancelled() => {
+            () = context.ct.cancelled() => {
                 let notification = CancelledNotification::new(CancelledNotificationParam::new(
                     Some(request_id),
                     Some("stdio request cancelled".to_owned()),
@@ -170,12 +170,12 @@ impl Service<RoleServer> for BridgeService {
         }
     }
 
-    async fn handle_notification(
+    fn handle_notification(
         &self,
         _notification: rmcp::model::ClientNotification,
         _context: rmcp::service::NotificationContext<RoleServer>,
-    ) -> Result<(), ErrorData> {
-        Ok(())
+    ) -> impl std::future::Future<Output = Result<(), ErrorData>> {
+        std::future::ready(Ok(()))
     }
 
     fn get_info(&self) -> ServerConfig {

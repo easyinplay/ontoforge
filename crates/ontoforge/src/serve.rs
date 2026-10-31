@@ -44,6 +44,10 @@ pub fn run(args: &ServeArgs) -> u8 {
     }
 }
 
+#[expect(
+    clippy::too_many_lines,
+    reason = "preserves linear startup validation and failure cleanup ordering"
+)]
 pub async fn run_with_shutdown(
     args: &ServeArgs,
     shutdown: impl Future<Output = ()> + Send + 'static,
@@ -130,12 +134,12 @@ pub async fn run_with_shutdown(
         return 3;
     };
     let store = Arc::new(store);
-    if let Some(state) = &dev_state {
-        if let Err(error) = crate::dev::seed_store(state, &store).await {
-            let _ = store.read_audit().shutdown().await;
-            eprintln!("cannot initialize dev store: {error}");
-            return 3;
-        }
+    if let Some(state) = &dev_state
+        && let Err(error) = crate::dev::seed_store(state, &store).await
+    {
+        let _ = store.read_audit().shutdown().await;
+        eprintln!("cannot initialize dev store: {error}");
+        return 3;
     }
     let mut l2_runtime = None;
     let engine = if let Some(state) = &dev_state {

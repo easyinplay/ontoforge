@@ -66,9 +66,10 @@ fn start(root: &Path, reset: bool) -> Running {
 
 fn wait_ready(running: &mut Running) {
     for _ in 0..100 {
-        if running.child.try_wait().expect("child status").is_some() {
-            panic!("dev server exited before becoming ready");
-        }
+        assert!(
+            running.child.try_wait().expect("child status").is_none(),
+            "dev server exited before becoming ready"
+        );
         let address = running.base.strip_prefix("http://").expect("HTTP base");
         if std::net::TcpStream::connect(address).is_ok() {
             return;

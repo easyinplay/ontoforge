@@ -22,7 +22,6 @@ mod serve_fixture {
         });
         assert!(wait_listening(bind, &task).await);
         let mut stream = std::net::TcpStream::connect(bind).unwrap();
-        use std::io::Write;
         let body = serde_json::to_string(&serde_json::json!({
             "commandId": "shutdown-action",
             "items": [{"params": {"flight": "F-1001", "delayMinutes": 2}}]
