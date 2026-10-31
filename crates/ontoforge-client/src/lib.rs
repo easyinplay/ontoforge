@@ -26,10 +26,12 @@ impl ClientConfig {
             timeout: Duration::from_secs(30),
         }
     }
+    #[must_use]
     pub fn with_bearer_token(mut self, token: impl Into<String>) -> Self {
         self.bearer_token = Some(token.into());
         self
     }
+    #[must_use]
     pub fn with_timeout(mut self, timeout: Duration) -> Self {
         self.timeout = timeout;
         self
@@ -125,7 +127,7 @@ impl OntoforgeClient {
     }
 
     pub async fn metadata(&self) -> Result<dto::Metadata, ClientError> {
-        decode_metadata(self.send(Method::GET, "/api/ontology", None).await?)
+        decode_metadata(&self.send(Method::GET, "/api/ontology", None).await?)
     }
     pub async fn get_object(
         &self,
@@ -137,22 +139,23 @@ impl OntoforgeClient {
             encode_path(object_type),
             encode_path(&pk_path(pk))
         );
-        decode_object_row(self.send(Method::GET, &path, None).await?)
+        decode_object_row(&self.send(Method::GET, &path, None).await?)
     }
     pub async fn query(&self, request: &dto::QueryRequest) -> Result<dto::ListPage, ClientError> {
-        decode_list_page(self.send_json(Method::POST, "/api/query", request).await?)
+        decode_list_page(&self.send_json(Method::POST, "/api/query", request).await?)
     }
     pub async fn aggregate(
         &self,
         request: &dto::AggregateRequest,
     ) -> Result<dto::AggregateResult, ClientError> {
         decode_aggregate_result(
-            self.send_json(Method::POST, "/api/aggregate", request)
+            &self
+                .send_json(Method::POST, "/api/aggregate", request)
                 .await?,
         )
     }
     pub async fn health(&self) -> Result<dto::HealthResponse, ClientError> {
-        decode_health(self.send(Method::GET, "/health", None).await?)
+        decode_health(&self.send(Method::GET, "/health", None).await?)
     }
     pub async fn execute_action(
         &self,
@@ -166,7 +169,7 @@ impl OntoforgeClient {
                 validated: true,
             }));
         }
-        decode_action_receipt(value).map(ActionResponse::Committed)
+        decode_action_receipt(&value).map(ActionResponse::Committed)
     }
     pub async fn validate_action(
         &self,
@@ -206,14 +209,14 @@ impl OntoforgeClient {
             path.push('?');
             path.push_str(&query.join("&"));
         }
-        decode_history_page(self.send(Method::GET, &path, None).await?)
+        decode_history_page(&self.send(Method::GET, &path, None).await?)
     }
     pub async fn get_command_result(
         &self,
         command_id: &str,
     ) -> Result<dto::ActionReceipt, ClientError> {
         let path = format!("/api/commands/{}", encode_path(command_id));
-        decode_action_receipt(self.send(Method::GET, &path, None).await?)
+        decode_action_receipt(&self.send(Method::GET, &path, None).await?)
     }
     async fn send_json<T: Serialize>(
         &self,
@@ -248,8 +251,7 @@ impl OntoforgeClient {
         let status = response.status();
         let api_name = path
             .split('/')
-            .filter(|part| !part.is_empty())
-            .next_back()
+            .rfind(|part| !part.is_empty())
             .unwrap_or("unknown")
             .split('?')
             .next()
@@ -289,12 +291,12 @@ fn decode_error_envelope(value: &Value) -> dto::ErrorEnvelope {
             .to_owned(),
     }
 }
-fn decode_metadata(value: Value) -> Result<dto::Metadata, ClientError> {
+fn decode_metadata(value: &Value) -> Result<dto::Metadata, ClientError> {
     decode("ontology", || {
         Ok(dto::Metadata {
-            api_name: string_field(&value, "apiName"),
-            display_name: optional_string(&value, "displayName"),
-            description: optional_string(&value, "description"),
+            api_name: string_field(value, "apiName"),
+            display_name: optional_string(value, "displayName"),
+            description: optional_string(value, "description"),
             object_types: value
                 .get("objectTypes")
                 .and_then(Value::as_array)
@@ -308,19 +310,19 @@ fn decode_metadata(value: Value) -> Result<dto::Metadata, ClientError> {
                 .ok_or_else(|| "links must be an array".to_owned())?
                 .iter()
                 .map(decode_link_metadata)
-                .collect::<Result<_, _>>()?,
+                .collect(),
             actions: value
                 .get("actions")
                 .and_then(Value::as_array)
                 .ok_or_else(|| "actions must be an array".to_owned())?
                 .iter()
                 .map(decode_action_metadata)
-                .collect::<Result<_, _>>()?,
+                .collect(),
             def_version: value
                 .get("defVersion")
                 .and_then(Value::as_i64)
                 .ok_or_else(|| "defVersion must be an integer".to_owned())?,
-            engine_status: decode_engine_status(&value, "engineStatus")?,
+            engine_status: decode_engine_status(value, "engineStatus")?,
         })
     })
 }
@@ -352,26 +354,26 @@ fn decode_object_metadata(value: &Value) -> Result<dto::ObjectMetadata, String> 
             .collect::<Result<_, String>>()?,
     })
 }
-fn decode_link_metadata(value: &Value) -> Result<dto::LinkMetadata, String> {
-    Ok(dto::LinkMetadata {
+fn decode_link_metadata(value: &Value) -> dto::LinkMetadata {
+    dto::LinkMetadata {
         api_name: string_field(value, "apiName"),
         display_name: optional_string(value, "displayName"),
         description: optional_string(value, "description"),
         from: string_field(value, "from"),
         to: string_field(value, "to"),
-    })
+    }
 }
-fn decode_action_metadata(value: &Value) -> Result<dto::ActionMetadata, String> {
-    Ok(dto::ActionMetadata {
+fn decode_action_metadata(value: &Value) -> dto::ActionMetadata {
+    dto::ActionMetadata {
         api_name: string_field(value, "apiName"),
         display_name: optional_string(value, "displayName"),
         description: optional_string(value, "description"),
-    })
+    }
 }
-fn decode_object_row(value: Value) -> Result<dto::ObjectRow, ClientError> {
-    decode("objects", || decode_object_row_value(&value))
+fn decode_object_row(value: &Value) -> Result<dto::ObjectRow, ClientError> {
+    decode("objects", || decode_object_row_value(value))
 }
-fn decode_list_page(value: Value) -> Result<dto::ListPage, ClientError> {
+fn decode_list_page(value: &Value) -> Result<dto::ListPage, ClientError> {
     decode("query", || {
         Ok(dto::ListPage {
             rows: value
@@ -381,9 +383,9 @@ fn decode_list_page(value: Value) -> Result<dto::ListPage, ClientError> {
                 .iter()
                 .map(decode_object_row_value)
                 .collect::<Result<_, _>>()?,
-            has_more: bool_field(&value, "hasMore"),
-            truncated: bool_field(&value, "truncated"),
-            cursor: optional_string(&value, "cursor"),
+            has_more: bool_field(value, "hasMore"),
+            truncated: bool_field(value, "truncated"),
+            cursor: optional_string(value, "cursor"),
         })
     })
 }
@@ -398,7 +400,7 @@ fn decode_object_row_value(value: &Value) -> Result<dto::ObjectRow, String> {
         version: string_field(value, "_version"),
     })
 }
-fn decode_aggregate_result(value: Value) -> Result<dto::AggregateResult, ClientError> {
+fn decode_aggregate_result(value: &Value) -> Result<dto::AggregateResult, ClientError> {
     decode("aggregate", || {
         Ok(dto::AggregateResult {
             buckets: value
@@ -424,15 +426,15 @@ fn decode_aggregate_result(value: Value) -> Result<dto::AggregateResult, ClientE
         })
     })
 }
-fn decode_health(value: Value) -> Result<dto::HealthResponse, ClientError> {
+fn decode_health(value: &Value) -> Result<dto::HealthResponse, ClientError> {
     decode("health", || {
         Ok(dto::HealthResponse {
-            status: string_field(&value, "status"),
-            engine_status: decode_engine_status(&value, "engineStatus")?,
+            status: string_field(value, "status"),
+            engine_status: decode_engine_status(value, "engineStatus")?,
         })
     })
 }
-fn decode_history_page(value: Value) -> Result<dto::HistoryPage, ClientError> {
+fn decode_history_page(value: &Value) -> Result<dto::HistoryPage, ClientError> {
     decode("history", || {
         Ok(dto::HistoryPage {
             entries: value
@@ -442,7 +444,7 @@ fn decode_history_page(value: Value) -> Result<dto::HistoryPage, ClientError> {
                 .iter()
                 .map(decode_history_entry)
                 .collect::<Result<_, String>>()?,
-            truncated: bool_field(&value, "truncated"),
+            truncated: bool_field(value, "truncated"),
             next_before_seq: value.get("nextBeforeSeq").and_then(Value::as_i64),
         })
     })
@@ -462,14 +464,14 @@ fn decode_history_entry(value: &Value) -> Result<dto::HistoryEntry, String> {
         params: value.get("params").cloned(),
     })
 }
-fn decode_action_receipt(value: Value) -> Result<dto::ActionReceipt, ClientError> {
+fn decode_action_receipt(value: &Value) -> Result<dto::ActionReceipt, ClientError> {
     decode("commands", || {
         Ok(dto::ActionReceipt {
-            command_id: string_field(&value, "commandId"),
-            event_id: string_field(&value, "eventId"),
-            log_seq: integer_field(&value, "logSeq")?,
-            committed_at: string_field(&value, "committedAt"),
-            chosen_current_time: string_field(&value, "chosenCurrentTime"),
+            command_id: string_field(value, "commandId"),
+            event_id: string_field(value, "eventId"),
+            log_seq: integer_field(value, "logSeq")?,
+            committed_at: string_field(value, "committedAt"),
+            chosen_current_time: string_field(value, "chosenCurrentTime"),
             items: value
                 .get("items")
                 .and_then(Value::as_array)
@@ -482,8 +484,13 @@ fn decode_action_receipt(value: Value) -> Result<dto::ActionReceipt, ClientError
                         .and_then(|edits| edits.first())
                         .ok_or_else(|| "receipt item must contain an edit".to_owned())?;
                     Ok(dto::ItemReceipt {
-                        item_ordinal: integer_field_any(item, &["itemOrdinal", "item_ordinal"])?
-                            as u32,
+                        item_ordinal: u32::try_from(integer_field_any(
+                            item,
+                            &["itemOrdinal", "item_ordinal"],
+                        )?)
+                        .map_err(|_| {
+                            "itemOrdinal must be an integer in 0..=4294967295".to_owned()
+                        })?,
                         object_type: string_field_any(edit, &["typeName", "type_name"]),
                         pk: edit
                             .get("pk")
@@ -559,7 +566,7 @@ fn string_array(value: &Value, field: &str) -> Result<Vec<String>, String> {
         .collect()
 }
 fn string_array_default(value: &Value, field: &str) -> Result<Vec<String>, String> {
-    if value.get(field).is_none() || value.get(field).is_some_and(Value::is_null) {
+    if value.get(field).is_none_or(Value::is_null) {
         return Ok(Vec::new());
     }
     string_array(value, field)
@@ -596,9 +603,57 @@ fn encode_path(value: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::CRATE_NAME;
+    use super::{CRATE_NAME, ClientError, decode_action_receipt};
+    use serde_json::{Value, json};
+
     #[test]
     fn crate_name_has_ontoforge_prefix() {
         assert!(CRATE_NAME.starts_with("ontoforge-"));
+    }
+
+    fn receipt_with_ordinal(field: &str, ordinal: i64) -> Value {
+        let mut value = json!({
+            "commandId": "command-1",
+            "eventId": "event-1",
+            "logSeq": 1,
+            "committedAt": "2026-10-31T00:00:00Z",
+            "chosenCurrentTime": "2026-10-31T00:00:00Z",
+            "items": [{
+                "edits": [{"typeName": "Airport", "pk": "BER", "versionAfter": 1}]
+            }]
+        });
+        value["items"][0][field] = json!(ordinal);
+        value
+    }
+
+    #[test]
+    fn receipt_rejects_negative_item_ordinal() {
+        for field in ["itemOrdinal", "item_ordinal"] {
+            let error = decode_action_receipt(&receipt_with_ordinal(field, -1)).unwrap_err();
+            assert!(
+                matches!(error, ClientError::Decode { api_name, .. } if api_name == "commands")
+            );
+        }
+    }
+
+    #[test]
+    fn receipt_rejects_item_ordinal_above_u32_max() {
+        for field in ["itemOrdinal", "item_ordinal"] {
+            let error =
+                decode_action_receipt(&receipt_with_ordinal(field, 4_294_967_296)).unwrap_err();
+            assert!(
+                matches!(error, ClientError::Decode { api_name, .. } if api_name == "commands")
+            );
+        }
+    }
+
+    #[test]
+    fn receipt_preserves_item_ordinal_u32_boundaries() {
+        for field in ["itemOrdinal", "item_ordinal"] {
+            for (ordinal, expected) in [(0, 0), (4_294_967_295, u32::MAX)] {
+                let receipt = decode_action_receipt(&receipt_with_ordinal(field, ordinal)).unwrap();
+                assert_eq!(receipt.items[0].item_ordinal, expected);
+            }
+        }
     }
 }
