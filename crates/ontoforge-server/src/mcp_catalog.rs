@@ -123,7 +123,6 @@ fn static_tool(name: &str) -> Tool {
             "properties":{"query":{"type":"string"}},
             "additionalProperties":false
         }),
-        LIST_CATALOGS_TOOL => json!({"type":"object","additionalProperties":false}),
         LIST_SCHEMAS_TOOL => json!({
             "type":"object",
             "properties":{"catalog":{"type":"string"}},

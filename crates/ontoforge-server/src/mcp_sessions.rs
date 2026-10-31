@@ -10,6 +10,10 @@ pub enum SessionAdmission {
     Existing,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
+#[error("session owner binding unavailable")]
+pub struct SessionOwnerError;
+
 #[derive(Debug)]
 pub struct SessionOwners {
     entries: Mutex<HashMap<String, Entry>>,
@@ -33,28 +37,27 @@ impl SessionOwners {
         }
     }
 
-    pub fn admit(&self, session: &str, owner: &str) -> Result<SessionAdmission, ()> {
+    pub fn admit(&self, session: &str, owner: &str) -> Result<SessionAdmission, SessionOwnerError> {
         if session.is_empty() || owner.is_empty() {
-            return Err(());
+            return Err(SessionOwnerError);
         }
-        let mut entries = self.entries.lock().map_err(|_| ())?;
+        let mut entries = self.entries.lock().map_err(|_| SessionOwnerError)?;
         let now = Instant::now();
         entries.retain(|_, entry| now.duration_since(entry.touched) <= self.ttl);
         if let Some(entry) = entries.get_mut(session) {
             if entry.owner != owner {
-                return Err(());
+                return Err(SessionOwnerError);
             }
             entry.touched = now;
             return Ok(SessionAdmission::Existing);
         }
-        if entries.len() >= self.capacity {
-            if let Some(oldest) = entries
+        if entries.len() >= self.capacity
+            && let Some(oldest) = entries
                 .iter()
                 .min_by_key(|(_, entry)| entry.touched)
                 .map(|(session, _)| session.clone())
-            {
-                entries.remove(&oldest);
-            }
+        {
+            entries.remove(&oldest);
         }
         entries.insert(
             session.to_owned(),
@@ -76,11 +79,16 @@ impl SessionOwners {
     pub fn len(&self) -> usize {
         self.entries.lock().map_or(0, |entries| entries.len())
     }
+
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
 }
 
 static OWNERS: OnceLock<SessionOwners> = OnceLock::new();
 
 #[must_use]
 pub fn global() -> &'static SessionOwners {
-    OWNERS.get_or_init(|| SessionOwners::new(256, Duration::from_secs(30 * 60)))
+    OWNERS.get_or_init(|| SessionOwners::new(256, Duration::from_mins(30)))
 }

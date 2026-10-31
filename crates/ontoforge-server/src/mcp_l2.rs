@@ -39,7 +39,7 @@ pub struct McpL2Tools<'a, E> {
     pub limits: ServerLimits,
 }
 
-impl<'a, E: Engine + Sync> McpL2Tools<'a, E> {
+impl<E: Engine + Sync> McpL2Tools<'_, E> {
     async fn gate(&self) -> Result<L2Policy, McpL2Error> {
         if !self
             .scope
@@ -130,7 +130,7 @@ impl<'a, E: Engine + Sync> McpL2Tools<'a, E> {
         let _ = self.gate().await?;
         self.run_sql("list_catalogs", l2::list_l2_catalogs())
             .await
-            .map(|value| filter_names(value, |name| self.allowed_catalog(name)))
+            .map(|value| filter_names(&value, |name| self.allowed_catalog(name)))
     }
 
     pub async fn list_schemas(&self, catalog: Option<&str>) -> Result<JsonValue, McpL2Error> {
@@ -140,7 +140,7 @@ impl<'a, E: Engine + Sync> McpL2Tools<'a, E> {
             .map_err(|error| McpL2Error::Invalid(error.to_string()))?;
         self.run_sql("list_schemas", sql)
             .await
-            .map(|value| filter_names(value, |name| self.allowed_schema(&catalog, name)))
+            .map(|value| filter_names(&value, |name| self.allowed_schema(&catalog, name)))
     }
 
     pub async fn list_tables(
@@ -154,7 +154,7 @@ impl<'a, E: Engine + Sync> McpL2Tools<'a, E> {
             .map_err(|error| McpL2Error::Invalid(error.to_string()))?;
         self.run_sql("list_tables", sql)
             .await
-            .map(|value| filter_names(value, |name| !name.contains('$')))
+            .map(|value| filter_names(&value, |name| !name.contains('$')))
     }
 
     pub async fn get_table_schema(
@@ -281,7 +281,8 @@ impl<'a, E: Engine + Sync> McpL2Tools<'a, E> {
             catalog: catalog.map(str::to_owned).or(trusted.catalog),
             schema: schema.map(str::to_owned).or(trusted.schema),
         };
-        let target = l2::resolve_l2_table_name(table, &defaults).map_err(table_name_error)?;
+        let target = l2::resolve_l2_table_name(table, &defaults)
+            .map_err(|error| table_name_error(&error))?;
         if target.table.is_empty() || target.table.contains('$') {
             return Err(McpL2Error::Invalid("invalid table identifier".to_owned()));
         }
@@ -295,7 +296,7 @@ fn missing_context(component: &str) -> McpL2Error {
     McpL2Error::MissingContext(component.to_owned())
 }
 
-fn table_name_error(error: L2TableNameError) -> McpL2Error {
+fn table_name_error(error: &L2TableNameError) -> McpL2Error {
     match error {
         L2TableNameError::MissingContext => missing_context("catalog or schema"),
         L2TableNameError::Unsupported => {
@@ -313,7 +314,7 @@ fn resolve_component(value: &str) -> Result<String, McpL2Error> {
         &format!("\"__catalog__\".\"__schema__\".{value}"),
         &defaults,
     )
-    .map_err(table_name_error)?;
+    .map_err(|error| table_name_error(&error))?;
     Ok(target.table)
 }
 
@@ -329,7 +330,7 @@ pub fn parse_explain_format(format: Option<&str>) -> Result<ExplainType, McpL2Er
     }
 }
 
-fn filter_names(value: JsonValue, allowed: impl Fn(&str) -> bool) -> JsonValue {
+fn filter_names(value: &JsonValue, allowed: impl Fn(&str) -> bool) -> JsonValue {
     let mut names = value["rows"]
         .as_array()
         .into_iter()
