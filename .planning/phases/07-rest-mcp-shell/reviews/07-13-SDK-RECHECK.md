@@ -2,7 +2,7 @@
 phase: 07-rest-mcp-shell
 reviewed: 2026-10-31
 scope: SDK gate fixes only
-reviewed_commits: [4b0b18d, 9e6d858]
+reviewed_commits: [4b0b18d, 9e6d858, 7fa2401]
 status: selected_fixes_verified
 ---
 
@@ -35,11 +35,23 @@ CARGO_BUILD_JOBS=2 cargo test -p ontoforge-client --lib receipt_ --locked -- --n
 
 TypeScript 测试使用独立临时 `serve --dev` fixture；未重启或清理 PG/Trino lane 的容器。Rust receipt 的三个定向测试在该复签 lane 重新执行，不只引用 SDK owner 的结果。
 
-## 额外发现
+## 额外发现与关闭
 
-Rust `OntoforgeClient::history` 仍构造 `limit=${limit}` 和 `beforeSeq=${before_seq}`，其中 `$` 会进入实际 query 参数。服务端 `rest::history` 的数字解析因此失败并落回默认值/None，现有传 None 的 contract 未覆盖该行为。
+初次复签发现 Rust `OntoforgeClient::history` 构造 `limit=${limit}` 和 `beforeSeq=${before_seq}`，其中 `$` 会进入实际 query 参数。服务端 `rest::history` 的数字解析因此失败并落回默认值/None，原有 contract 未验证非空参数的分页结果。
 
-该发现已同步主会话及 SDK owner；本复签 lane 保持只读，不修改 SDK。关闭该新问题须有带非空 limit/beforeSeq 的真实 HTTP 回归及修复提交，不能由 CR-01/CR-02 的通过推导其已修复。
+SDK owner 已通过 TDD 在 `7fa2401` 关闭：两处格式串移除 `$`，新增真实 HTTP contract，连续提交两次 Action 后分别验证 `limit=1` 和 `beforeSeq`。owner 的 RED 实际返回 `([3, 2], [3, 2])`，期望 `([3], [2])`；修复后 GREEN。该 RED 由 owner 执行，本复签 lane 未重复恢复缺陷代码。
+
+本复签 lane 重新检查修复源码与新增断言，并直接运行包含该新增用例的已构建测试程序，避免等待完整 workspace 测试持有的 Cargo build lock：
+
+```text
+target/debug/deps/contract-c64ca9177a3c3aa8.exe --list
+6 tests, 0 benchmarks，包含新增 history contract
+
+target/debug/deps/contract-c64ca9177a3c3aa8.exe rust_client_history_paginates_with_limit_and_before_seq --exact --nocapture
+1 passed, 0 failed, 0 ignored, 5 filtered out，0.15s
+```
+
+这是实际测试程序的独立重跑，不是本 lane 新执行的 `cargo test`，也不替代完整 workspace 验证。history 新发现状态为 resolved；CR-01/CR-02 的既有结论不用于推导该结果。本复签 lane 未修改 SDK 实现。
 
 ## 边界
 
