@@ -151,18 +151,6 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
         ctx: &context::RequestContext,
     ) -> Result<Value, String> {
         let trace = context::RequestTrace::new();
-        let object_type = args
-            .get("objectType")
-            .and_then(Value::as_str)
-            .ok_or_else(|| "objectType is required".to_owned())?;
-        let object_type_name = ObjectTypeName::try_from(object_type.to_owned())
-            .map_err(|_| "invalid objectType".to_owned())?;
-        let ty = ctx
-            .active
-            .ontology
-            .object_types
-            .get(&object_type_name)
-            .ok_or_else(|| "object not found".to_owned())?;
         let engine = context::ScopedEngine {
             inner: &*self.host.engine,
             trace: &trace,
@@ -200,6 +188,18 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
                 )
             }
             mcp_catalog::GET_OBJECT_TOOL => {
+                let object_type = args
+                    .get("objectType")
+                    .and_then(Value::as_str)
+                    .ok_or_else(|| "objectType is required".to_owned())?;
+                let object_type_name = ObjectTypeName::try_from(object_type.to_owned())
+                    .map_err(|_| "invalid objectType".to_owned())?;
+                let ty = ctx
+                    .active
+                    .ontology
+                    .object_types
+                    .get(&object_type_name)
+                    .ok_or_else(|| "object not found".to_owned())?;
                 let pk = args
                     .get("pk")
                     .cloned()
@@ -326,6 +326,18 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
                 Ok(json!(result))
             }
             mcp_catalog::HISTORY_TOOL => {
+                let object_type = args
+                    .get("objectType")
+                    .and_then(Value::as_str)
+                    .ok_or_else(|| "objectType is required".to_owned())?;
+                let object_type_name = ObjectTypeName::try_from(object_type.to_owned())
+                    .map_err(|_| "invalid objectType".to_owned())?;
+                let ty = ctx
+                    .active
+                    .ontology
+                    .object_types
+                    .get(&object_type_name)
+                    .ok_or_else(|| "object not found".to_owned())?;
                 let pk_json = args
                     .get("pk")
                     .cloned()
