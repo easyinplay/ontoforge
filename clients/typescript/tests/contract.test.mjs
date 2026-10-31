@@ -192,3 +192,83 @@ test('ts_client_auth_scope_stale_errors_limits_and_runtime_capability', async ()
     Object.defineProperty(JSON, 'parse', { configurable: true, value: originalParse });
   }
 });
+
+async function withoutLosslessCapability(capability, callback) {
+  const descriptor = Object.getOwnPropertyDescriptor(JSON, capability === 'rawJSON' ? 'rawJSON' : 'parse');
+  const originalParse = JSON.parse;
+  try {
+    Object.defineProperty(JSON, capability === 'rawJSON' ? 'rawJSON' : 'parse', {
+      configurable: true,
+      value: capability === 'rawJSON'
+        ? undefined
+        : (source, reviver) => originalParse(source, reviver ? (key, value) => reviver(key, value) : undefined),
+    });
+    await callback();
+  } finally {
+    Object.defineProperty(JSON, capability === 'rawJSON' ? 'rawJSON' : 'parse', descriptor);
+  }
+}
+
+test('ts_client_rejects_missing_lossless_runtime_before_construction', async () => {
+  const { createOntoforgeClient, LosslessCodecError } = await import('../dist/index.js');
+  for (const capability of ['rawJSON', 'context.source']) {
+    let fetchCalls = 0;
+    await withoutLosslessCapability(capability, async () => {
+      assert.throws(() => createOntoforgeClient({
+        baseUrl,
+        fetch: async () => {
+          fetchCalls += 1;
+          return new Response('{}');
+        },
+      }), LosslessCodecError);
+      assert.equal(fetchCalls, 0, capability);
+    });
+  }
+});
+
+test('ts_client_rechecks_lossless_runtime_before_every_request', async () => {
+  const { createOntoforgeClient, LosslessCodecError } = await import('../dist/index.js');
+  for (const capability of ['rawJSON', 'context.source']) {
+    let fetchCalls = 0;
+    const supportedClient = createOntoforgeClient({
+      baseUrl,
+      fetch: async () => {
+        fetchCalls += 1;
+        return new Response('{}');
+      },
+    });
+    await withoutLosslessCapability(capability, async () => {
+      await assert.rejects(() => supportedClient.action('delayFlight', {
+        commandId: `unsupported-${capability}`,
+        items: [{ params: { flight: 'F-1001', delayMinutes: 1 } }],
+      }), LosslessCodecError);
+      await assert.rejects(() => supportedClient.metadata(), LosslessCodecError);
+      assert.equal(fetchCalls, 0, `${capability} must fail before any request is sent`);
+    });
+  }
+});
+
+test('ts_client_public_endpoints_preserve_bigint_without_raw_escape', async () => {
+  const { createOntoforgeClient } = await import('../dist/index.js');
+  const losslessClient = createOntoforgeClient({
+    baseUrl,
+    fetch: async () => new Response('{"defVersion":9007199254740993}', {
+      headers: { 'Content-Type': 'application/json' },
+    }),
+  });
+  assert.equal('raw' in losslessClient, false, 'only lossless endpoint methods are public');
+  const requests = [
+    () => losslessClient.metadata(),
+    () => losslessClient.get('Flight', 'F-1001'),
+    () => losslessClient.query({ set: { kind: 'type', object_type: 'Flight' } }),
+    () => losslessClient.aggregate({ set: { kind: 'type', object_type: 'Flight' }, measures: [{ op: 'count' }] }),
+    () => losslessClient.health(),
+    () => losslessClient.action('delayFlight', { items: [{ params: { flight: 'F-1001', delayMinutes: 1 } }] }),
+    () => losslessClient.validate('delayFlight', { items: [{ params: { flight: 'F-1001', delayMinutes: 1 } }] }),
+    () => losslessClient.commandResult('lossless-result'),
+    () => losslessClient.history('Flight', 'F-1001'),
+  ];
+  for (const request of requests) {
+    assert.equal((await request()).defVersion, 9007199254740993n);
+  }
+});

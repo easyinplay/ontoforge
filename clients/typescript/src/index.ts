@@ -1,6 +1,6 @@
-import createClient, { type Client } from 'openapi-fetch';
+import createClient from 'openapi-fetch';
 import type { components, paths } from './generated.js';
-import { decodeWire, encodeWire, type WireJson } from './codec.js';
+import { assertLosslessRuntime, decodeWire, encodeWire, type WireJson } from './codec.js';
 
 export { assertLosslessRuntime, decodeWire, encodeWire, LosslessCodecError } from './codec.js';
 export type { WireJson } from './codec.js';
@@ -54,7 +54,6 @@ function asWireJson(value: unknown): WireJson {
 }
 
 export interface OntoforgeClient {
-  readonly raw: Client<paths>;
   metadata(options?: CallOptions): Promise<Metadata>;
   get(objectType: string, pk: string, options?: CallOptions): Promise<ObjectRow>;
   query(body: QueryRequest, options?: CallOptions): Promise<ListPage>;
@@ -67,12 +66,16 @@ export interface OntoforgeClient {
 }
 
 export function createOntoforgeClient(options: OntoforgeClientOptions): OntoforgeClient {
+  assertLosslessRuntime();
   const fetcher = options.fetch ?? globalThis.fetch;
   const raw = createClient<paths>({
     baseUrl: options.baseUrl,
     headers: options.bearer ? { Authorization: `Bearer ${options.bearer}` } : undefined,
     bodySerializer: (body) => encodeWire(asWireJson(body)),
-    fetch: (request) => fetcher(request),
+    fetch: async (request) => {
+      assertLosslessRuntime();
+      return fetcher(request);
+    },
   });
 
   async function call<T>(response: Promise<{ data?: string; error?: unknown; response: Response }>): Promise<T> {
@@ -92,7 +95,6 @@ export function createOntoforgeClient(options: OntoforgeClientOptions): Ontoforg
   }
 
   return {
-    raw,
     metadata: (callOptions = {}) => call<Metadata>(raw.GET('/api/ontology', { ...callOptions, parseAs: 'text' })),
     get: (objectType, pk, callOptions = {}) => call<ObjectRow>(raw.GET('/api/objects/{object_type}/{pk}', {
       ...callOptions,

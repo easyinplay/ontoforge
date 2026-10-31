@@ -29,7 +29,7 @@ function hasLosslessRuntime(): boolean {
 export function assertLosslessRuntime(): void {
   if (!hasLosslessRuntime()) {
     throw new LosslessCodecError(
-      'Lossless JSON codec requires native JSON.rawJSON support; refusing to encode bigint values with number rounding.',
+      'Lossless JSON codec requires native JSON.rawJSON and JSON.parse reviver context.source support.',
     );
   }
 }
