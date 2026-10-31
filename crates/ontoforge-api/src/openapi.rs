@@ -199,13 +199,13 @@ fn health() {}
 )]
 struct ApiDoc;
 
-/// Build the static OpenAPI document without opening a store, listener, or tenant state.
+/// Build the static `OpenAPI` document without opening a store, listener, or tenant state.
 #[must_use]
 pub fn document() -> utoipa::openapi::OpenApi {
     ApiDoc::openapi()
 }
 
-/// Render the static OpenAPI document with stable pretty JSON and a trailing newline.
+/// Render the static `OpenAPI` document with stable pretty JSON and a trailing newline.
 #[must_use]
 pub fn render() -> String {
     let mut value = serde_json::to_value(document()).expect("OpenAPI document is serializable");
