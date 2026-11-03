@@ -14,6 +14,7 @@ use ontoforge_engine::{
     TableRef,
 };
 use ontoforge_storage::store::ActiveDefinition;
+use rmcp::transport::streamable_http_server::session::SessionManager;
 
 use crate::{ServerHost, error};
 
@@ -333,14 +334,15 @@ pub async fn context_from_headers<E: Engine + Send + Sync + 'static>(
 
 pub async fn authenticate_mcp<E: Engine + Send + Sync + 'static>(
     axum::extract::State(host): axum::extract::State<Arc<ServerHost<E>>>,
-    request: axum::extract::Request,
+    mut request: axum::extract::Request,
     next: axum::middleware::Next,
 ) -> Response {
     let (ctx, id) = match context_from_headers(&host, request.headers().clone(), "mcp").await {
         Ok(context) => context,
         Err(response) => return response,
     };
-    let owners = crate::mcp::mcp_sessions::global();
+    let server_state = crate::state::for_host(&host);
+    let owners = &server_state.mcp_sessions;
     let session = request
         .headers()
         .get("mcp-session-id")
@@ -355,20 +357,18 @@ pub async fn authenticate_mcp<E: Engine + Send + Sync + 'static>(
         };
         return error::wire(status, "SESSION_OWNER_UNAVAILABLE", "mcp", &id);
     }
-    let deleting = request.method() == axum::http::Method::DELETE;
+    let initialization = owners.initialization_guard();
+    request.extensions_mut().insert(initialization.slot());
     let response = next.run(request).await;
-    if response.status().is_success() {
-        if deleting {
-            if let Some(session) = session {
-                owners.remove(&session);
-            }
-        } else if session.is_none()
-            && let Some(created) = response
-                .headers()
-                .get("mcp-session-id")
-                .and_then(|value| value.to_str().ok())
-            && owners.admit(created, ctx.principal.id.as_str()).is_err()
-        {
+    if response.status().is_success()
+        && session.is_none()
+        && let Some(created) = response
+            .headers()
+            .get("mcp-session-id")
+            .and_then(|value| value.to_str().ok())
+    {
+        if owners.bind(created, ctx.principal.id.as_str()).is_err() {
+            let _ = owners.close_session(&created.into()).await;
             return error::wire(
                 StatusCode::SERVICE_UNAVAILABLE,
                 "SESSION_OWNER_UNAVAILABLE",
@@ -376,6 +376,7 @@ pub async fn authenticate_mcp<E: Engine + Send + Sync + 'static>(
                 &id,
             );
         }
+        initialization.disarm();
     }
     response
 }

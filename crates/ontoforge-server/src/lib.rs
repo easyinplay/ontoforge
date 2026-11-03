@@ -10,9 +10,7 @@ use ontoforge_engine::Engine;
 use ontoforge_engine::config::AuthConfig;
 use ontoforge_query::{QueryError, TokenCodec};
 use ontoforge_storage::store::EditStore;
-use rmcp::transport::streamable_http_server::{
-    StreamableHttpServerConfig, StreamableHttpService, session::local::LocalSessionManager,
-};
+use rmcp::transport::streamable_http_server::{StreamableHttpServerConfig, StreamableHttpService};
 use tokio::net::TcpListener;
 use tokio::sync::Semaphore;
 
@@ -109,6 +107,7 @@ impl From<lifecycle::LifecycleError> for HostError {
             lifecycle::LifecycleError::Audit => Self::AuditDrain,
             lifecycle::LifecycleError::Timeout
             | lifecycle::LifecycleError::Action
+            | lifecycle::LifecycleError::Sessions
             | lifecycle::LifecycleError::Monitor(_)
             | lifecycle::LifecycleError::SourceMonitor
             | lifecycle::LifecycleError::Cancellation(_) => Self::Shutdown,
@@ -199,6 +198,7 @@ impl<E: Engine + Send + Sync + 'static> ServerHost<E> {
         );
         let mcp_host = Arc::clone(&self);
         let mcp_state = Arc::clone(&server_state);
+        server_state.mcp_sessions.start();
         let mcp_service = StreamableHttpService::new(
             move || {
                 Ok(mcp::OntologyMcpHandler {
@@ -207,7 +207,7 @@ impl<E: Engine + Send + Sync + 'static> ServerHost<E> {
                     state: Arc::clone(&mcp_state),
                 })
             },
-            Arc::new(LocalSessionManager::default()),
+            Arc::clone(&server_state.mcp_sessions),
             StreamableHttpServerConfig::default()
                 .with_cancellation_token(server_state.read_cancellation.clone())
                 .with_max_request_body_bytes(limits.max_body_bytes),

@@ -1,5 +1,11 @@
 # Phase 7 progress
 
+- 2026-11-03 T24修复最终session12/12、transport11/11、server all-target Clippy/fmt、跨3crate tests-check通过，独立auditor复签SECURED，48/48实现威胁关闭。Phase仍15/16，E1–E7动态与集成CI待完成；Cargo已交SDK执行Rust，之后server/bridge，详各lane报告。
+
+- 2026-11-03 T24第二RED：阻塞真实map写锁并取消close后，新create令map=2而cap=1，exit101，详target/phase7-t24-close-red.log。Claude Code多轮REFINE与独立auditor同向，采用Notify合并清理及取消安全的双map删除；最终11项session GREEN运行中。E1/E2/E6、E3、Rust SDK代码已冻结待Cargo串行；CI必需discovery已加入2项PG和2项Rust SDK用例，bash -n通过。
+
+- 2026-11-03 T24真实RED已复现：257次initialize后底层LocalSessionManager峰值257>256，1 failed/0 passed，日志target/phase7-t24-red.log；进入GREEN修复。TS安全补测17/17通过、build/typecheck通过，但使用此前binary副本；Rust及新head集成仍pending。E1/E2/E6测试已准备，E3 bridge按Claude Code REFINE方案编写，所有Cargo由T24独占。
+
 - 2026-11-03 收口恢复：run41648281446三native+aggregate全部success、publish skipped，下载产物SHA256已重算一致。最终security实现47/48 CLOSED，T24 high OPEN，另E1–E7动态证据缺口；Phase仍15/16且未关闭。CI磁盘修复b068ff5尚未push；旧CI Ubuntu磁盘耗尽、integration和real-services成功、Windows仍运行。下一步T24设计/Claude Code复核与有界补测，详07-SECURITY及证据缺口清单。
 
 - 2026-11-03 07-14实现cba62af与证据e6ae310已推送；head e6ae310触发常规CI41648281253与release验收41648281446，均in_progress。三native实际package/smoke与聚合待结果；PR事件publish条件不会成立，不创建Release。当前15/16验收，07-14仍executing。

@@ -29,4 +29,14 @@ Claude Code 返回 REFINE，同方向补强（原文：target/phase7-t24-claude-
 
 ## Ownership
 
+### 实施期A+补强
+
+主会话发现初始化guard的unbounded cleanup channel可在连续取消下堆积已过期ID。Claude Code第二轮REFINE支持删除queue，见target/phase7-t24-cleanup-claude-review.json。改由单一request Guard持有pending transport CancellationToken，Drop同步cancel；successful bind后同步disarm。Slot可clone供extensions使用，Guard不可clone。bind与disarm间不得await；同一future的独占guard加Mutex<Option<Token>>表达原子take，无需无界tombstone或额外状态框架。
+
+进一步核对rmcp握手server.rs:685/local.rs:1090等待未select cancellation，第三轮Claude Code REFINE接受A++（target/phase7-t24-handshake-claude-review.json）：Guard cancel后用合并Notify唤醒既有reaper，扫描全部cancelled OR expired entries回收，无队列/新task。自然worker退出仍同一幂等close。测试暂挂initialize，在释放handler前确认registry清零，释放后确认无复活；不虚称任意第三方挂起handler已join。当前生产handler使用立即返回的default initialize。
+
+独立auditor发现close取消窗口：先删Entry再await真实map锁会释放容量但遗留真实session。第四轮Claude Code REFINE接受修复（target/phase7-t24-close-claude-review.json）：同一mutation gate内先cancel Entry token并Notify，Entry仍占容量；await公开inner.sessions写锁，拿锁后真实map与Entry同步remove，无await，drop LocalSessionHandle。已核handle只有event_tx Sender，无close专属资源，不再await可能满的Close队列。所有create/close共用mutation，无inner锁持有者反等mutation。测试阻塞map写锁、abort close、放锁后reaper清零及容量不越界；SSE/GET/自然回调/shutdown回归。drop不等于worker joined，文档与测试区分registry回收和handler退出。
+
+已批准额外最小接线：server Cargo.toml引用workspace既有futures-util重导出的Stream，锁文件仅更新依赖边；mcp.rs原global verify改成同host manager verify。无新包、版本或feature。
+
 T24 worker拥有server session及其装配/生命周期与mcp_transport测试。SDK worker拥有Rust/TS client测试及独立fixture。server evidence worker拥有HTTP/MCP Action/contract/L2测试及专用support。共享STATE/task_plan/progress/findings由主会话单写，Cargo仅T24 worker当前持有，jobs2。Warp/ralph-loop未提供，不声称已调用。

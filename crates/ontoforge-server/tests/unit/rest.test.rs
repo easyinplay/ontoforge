@@ -1,5 +1,5 @@
 #[path = "../support/mod.rs"]
-mod support;
+pub(crate) mod support;
 
 use camino::Utf8Path;
 use ontoforge_auth::scope::{ScopeInputs, attr_types, compile_scope};

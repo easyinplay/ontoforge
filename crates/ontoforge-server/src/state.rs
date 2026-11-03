@@ -11,10 +11,16 @@ use ontoforge_engine::trino::l2_monitor::L2AclMonitor;
 use ontoforge_storage::store::EditStore;
 
 use crate::ServerHost;
+use crate::mcp::mcp_sessions::BoundedSessionManager;
 
 type L2StatusProvider = Arc<dyn Fn() -> Option<L2HealthStatus> + Send + Sync>;
 
+#[cfg(test)]
+#[path = "../tests/unit/mcp_sessions.test.rs"]
+mod session_tests;
+
 pub struct ServerState {
+    pub(crate) mcp_sessions: Arc<BoundedSessionManager>,
     accepting: std::sync::atomic::AtomicBool,
     l2_status: RwLock<Option<L2StatusProvider>>,
     l2_engine: RwLock<Option<Arc<TrinoEngine>>>,
@@ -28,6 +34,7 @@ pub struct ServerState {
 impl Default for ServerState {
     fn default() -> Self {
         Self {
+            mcp_sessions: Arc::new(BoundedSessionManager::default()),
             accepting: std::sync::atomic::AtomicBool::new(true),
             l2_status: RwLock::new(None),
             l2_engine: RwLock::new(None),

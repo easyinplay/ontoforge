@@ -20,6 +20,8 @@ pub enum LifecycleError {
     SourceMonitor,
     #[error("accepted action task failed")]
     Action,
+    #[error("MCP session shutdown failed")]
+    Sessions,
     #[error("engine cancellation drain failed: {0}")]
     Cancellation(EngineError),
 }
@@ -62,6 +64,13 @@ impl<E: Engine + Send + Sync + 'static> ServerLifecycle<'_, E> {
         .await
         .unwrap_or(Err(LifecycleError::Timeout));
         context::detach_actions(self.host);
+        let sessions = tokio::time::timeout_at(
+            deadline - Duration::from_secs(4),
+            server_state.mcp_sessions.shutdown(),
+        )
+        .await
+        .map_err(|_| LifecycleError::Timeout)
+        .and_then(|result| result.map_err(|()| LifecycleError::Sessions));
         let audit = tokio::time::timeout_at(
             deadline - Duration::from_secs(4),
             self.host.store.read_audit().shutdown(),
@@ -126,6 +135,7 @@ impl<E: Engine + Send + Sync + 'static> ServerLifecycle<'_, E> {
         state::remove(self.host);
         actions
             .and(drained)
+            .and(sessions)
             .and(audit)
             .and(monitors)
             .and(cancellations)

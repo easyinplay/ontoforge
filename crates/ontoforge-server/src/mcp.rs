@@ -121,7 +121,8 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
             .get("mcp-session-id")
             .and_then(|value| value.to_str().ok())
         {
-            mcp_sessions::global()
+            self.state
+                .mcp_sessions
                 .verify(session, ctx.principal.id.as_str())
                 .map_err(|_| context_error("UNAUTHENTICATED", api_name, &request_id))?;
         }

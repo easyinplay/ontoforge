@@ -1,22 +1,22 @@
 ---
 phase: 07-rest-mcp-shell
-status: OPEN_THREATS
+status: SECURED
 asvs_level: 1
 block_on: high
-threats_open: 1
+threats_open: 0
 audited_head: b068ff5
 date: 2026-11-03
 ---
 
 # Phase 7 安全核验
 
-独立 gsd-security-auditor 核对16份 PLAN，去重为48项（44 high、4 medium），实现控制47 CLOSED、1 high OPEN。全部 disposition=mitigate，无 accepted/transfer 风险。源码基线e6ae310，b068ff5仅CI配置差异，已复核。CLOSED仅代表ASVS L1实现控制存在；动态验收E1–E7独立见reviews/07-SECURITY-EVIDENCE-GAPS.md，未齐备前不关闭Phase。
+独立 gsd-security-auditor 核对16份 PLAN，去重为48项（44 high、4 medium）；初审47 CLOSED、T24 high OPEN，修复后增量独立复签为48/48 CLOSED、threats_open=0。全部 disposition=mitigate，无 accepted/transfer 风险。初审源码基线e6ae310及b068ff5，T24最终11文件指纹见reviews/07-T24-SECURITY-RECHECK.md。CLOSED仅代表ASVS L1实现控制存在；动态验收E1–E7独立见reviews/07-SECURITY-EVIDENCE-GAPS.md，未齐备前不关闭Phase。
 
-## Blocking
+## T24 初审发现与关闭
 
 T-07-24：lib.rs使用独立LocalSessionManager::default，mcp_sessions.rs仅限制owner HashMap容量256。owner eviction没有close_session接线，真实rmcp session可超过容量。锁定rmcp3.8.0 local.rs:74无容量判断；300秒idle和tower.rs:1637自然退出回收存在，故不报告永久泄漏。mcp_transport.rs:360仅测owner map。
 
-关闭条件：真实session创建前有界准入，初始化中资源也计数；驱逐/TTL/DELETE/宿主关闭释放实际资源，真实HTTP验证容量峰值及旧session不可用。修复设计与第二意见见reviews/07-T24-DESIGN.md。
+关闭条件已通过真实session12项与transport11项，并由独立auditor复签：真实session创建前有界准入，初始化中资源计数；驱逐/TTL/DELETE/宿主关闭释放实际资源，真实HTTP验证容量峰值及旧session不可用。修复设计与第二意见见reviews/07-T24-DESIGN.md，最终证据及指纹见reviews/07-T24-SECURITY-RECHECK.md。
 
 ## Register
 
@@ -47,7 +47,7 @@ T-07-24：lib.rs使用独立LocalSessionManager::default，mcp_sessions.rs仅限
 | T-07-21 | R | high | CLOSED; E2 pending | crates/ontoforge-server/src/rest.rs:481; mcp.rs:637; crates/ontoforge-storage/src/commit.rs:632 |
 | T-07-22 | E | high | CLOSED; E6 pending | crates/ontoforge-server/src/mcp_l2.rs:93,125,162,174,268,283 |
 | T-07-23 | S | high | CLOSED; E3 pending | crates/ontoforge-server/src/context.rs:339,350,370; mcp.rs:109 |
-| T-07-24 | D | high | OPEN blocking | crates/ontoforge-server/src/lib.rs:210; mcp_sessions.rs:52,60,66; context.rs:370 |
+| T-07-24 | D | high | CLOSED | 最终mcp_sessions.rs:104,125,171,240; lib.rs:210; context.rs:370,379；详T24复签报告 |
 | T-07-25 | I | high | CLOSED | crates/ontoforge/src/mcp.rs:42,44,54,68,210 |
 | T-07-26 | T | high | CLOSED; E3 pending | crates/ontoforge/src/mcp.rs:91,175 |
 | T-07-27 | D | high | CLOSED | crates/ontoforge/src/mcp.rs:90,184; rmcp transport/worker.rs:214,216 |

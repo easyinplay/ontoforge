@@ -1,9 +1,58 @@
 use serde_json::{Value, json};
 use std::time::Duration;
 
-use ontoforge_server::mcp::mcp_sessions::{SessionAdmission, SessionOwners};
-
 mod support;
+
+#[tokio::test]
+async fn expired_signed_token_rejects_every_session_method() {
+    let mut fixture = support::fixture().await;
+    let key = std::fs::read(fixture.dir.path().join("token.key")).unwrap();
+    let now = jsonwebtoken::get_current_timestamp();
+    fixture.token = jsonwebtoken::encode(
+        &jsonwebtoken::Header::new(jsonwebtoken::Algorithm::HS256),
+        &json!({"iss":"ontoforge-dev","aud":"ontoforge-dev","sub":"alice",
+            "groups":["dispatchers"],"iat":now - 60,"exp":now - 25}),
+        &jsonwebtoken::EncodingKey::from_secret(&key),
+    )
+    .unwrap();
+    let running = fixture.start().await;
+    let session = initialize(&running, "2025-03-26").await;
+    assert!(
+        !session.is_empty(),
+        "signed token must initially be accepted within clock skew"
+    );
+    tokio::time::sleep(Duration::from_secs(7)).await;
+    let calls = running
+        .engine
+        .calls
+        .load(std::sync::atomic::Ordering::SeqCst);
+    for method in [
+        reqwest::Method::POST,
+        reqwest::Method::GET,
+        reqwest::Method::DELETE,
+    ] {
+        let response = running
+            .client
+            .request(method, format!("{}/mcp", running.url))
+            .bearer_auth(&running.token)
+            .header("accept", "application/json, text/event-stream")
+            .header("mcp-protocol-version", "2025-03-26")
+            .header("mcp-session-id", &session)
+            .json(&json!({"jsonrpc":"2.0","id":2,"method":"tools/list"}))
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(response.status(), reqwest::StatusCode::UNAUTHORIZED);
+    }
+    assert_eq!(
+        running
+            .engine
+            .calls
+            .load(std::sync::atomic::Ordering::SeqCst),
+        calls
+    );
+    let _ = running.finish().await;
+}
 
 #[tokio::test]
 async fn transport_authenticates_initialize_and_control_requests() {
@@ -354,27 +403,6 @@ async fn mcp_old_session_reauth_owner_ttl_capacity_delete() {
     .await;
     assert_eq!(replay.status(), reqwest::StatusCode::NOT_FOUND);
     let _ = running.finish().await;
-}
-
-#[test]
-fn session_owners_expire_evict_and_delete() {
-    let owners = SessionOwners::new(1, Duration::from_millis(1));
-    assert_eq!(owners.admit("one", "alice"), Ok(SessionAdmission::Bound));
-    assert_eq!(owners.admit("one", "alice"), Ok(SessionAdmission::Existing));
-    assert!(owners.admit("one", "bob").is_err());
-    std::thread::sleep(Duration::from_millis(3));
-    assert!(owners.verify("one", "alice").is_err());
-    assert!(owners.verify("one", "bob").is_err());
-    assert_eq!(owners.admit("two", "bob"), Ok(SessionAdmission::Bound));
-    assert!(owners.verify("one", "alice").is_err());
-    owners.remove("two");
-    assert_eq!(owners.len(), 0);
-    let owners = SessionOwners::new(1, Duration::from_secs(30));
-    owners.admit("one", "alice").unwrap();
-    owners.admit("two", "bob").unwrap();
-    assert!(owners.verify("one", "alice").is_err());
-    assert!(owners.verify("one", "bob").is_err());
-    assert!(owners.verify("two", "bob").is_ok());
 }
 
 #[tokio::test]

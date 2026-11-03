@@ -26,7 +26,7 @@
 
 ### 最终安全与证据收口
 
-- [ ] T24：主会话局部设计、Claude Code第二意见、session真实资源TDD修复。
+- [x] T24：两轮真实RED，session12/12与transport11/11 GREEN，Clippy/fmt通过，独立security复签CLOSED；详reviews/07-T24-SECURITY-RECHECK.md。
 - [ ] E1/E2：真实REST/MCP Action race、definition fence、snapshot/revoke验收。
 - [ ] E3：真实stdio expiry/响应丢失不重发；session容量/TTL与T24共验。
 - [ ] E4/E5/E7：Rust/TS主体隔离、撤权、在途abort、u64、丢响应不重试与显式replay。
