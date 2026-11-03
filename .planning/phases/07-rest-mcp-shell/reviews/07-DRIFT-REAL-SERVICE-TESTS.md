@@ -73,6 +73,18 @@ DC01 已获主会话批准，两个非 ignored 用例已写入 `source_drift_cle
 
 测试冻结，Cargo 槽位释放，等待主会话复签、commit/push 和 fresh verify 通知。
 
+## Fresh 整合与 RT02
+
+在主会话 push 后确认 HEAD 为 `9e7df9c772588e0b35e8d471ec4a5784f068ca50`，使用独立 `target/phase7-drift-final-9e7df9c-20261103-run2` 启动 `ci/server-services.sh verify`。CLI fresh build/start 成功；PG HTTP 2/2、真实 drift 2/2（92.04s）、PG snapshot 1/1、Trino 六工具用例通过。`trino_http_long_read_releases_snapshot_lock` 在第二 read 的 engine barrier 超时，与远程 CI 同源；Trino suite 为 1 passed / 1 failed / 0 ignored，完整脚本 exit 101。日志 `target/phase7-drift-final-verify.log`，证据 `target/phase7-services/evidence/commit.txt` 精确匹配该 HEAD。EXIT cleanup 后仅剩 `vennuap-casdoor`。后续 HF01、ACL、SDK 检查尚未执行。
+
+首次 shell 参数路由未进入原生 Git Bash，在容器操作前因缺少 Cargo 退出；改为 PowerShell 显式调用 `C:/Program Files/Git/bin/bash.exe -lc`，验证 MINGW64 与 Cargo 路径后在上述新目录重跑。没有生产环境或用户容器操作。
+
+RT02 根因：reload 后第二 read 取得新版本，而 monitor 尚未发布该版本报告，source gate 返回 Pending，未进入测试想观察的 engine barrier。Claude Code 已 AGREE（`target/phase7-claude-reload-readiness-review.json`），主会话授权仅修改 `trino_http_it.rs`：核对 reload/current snapshot 版本，第二业务 read 前有界轮询 `/health`，接受 HTTP 200、engineStatus available、status healthy/degraded，超时保留最后响应；不增加业务 read、不要求全部 target 健康、不修改生产 gate、保持 audit 精确两条、先取消后 shutdown 与零业务写断言。
+
+最小 patch 为 31 insertions / 1 deletion。使用新 `RUNNER_TEMP=target/phase7-rt02-runtime-20261103` 启动真实服务后执行 `cargo test -p ontoforge-server --test trino_http_it --locked trino_http_long_read_releases_snapshot_lock -- --ignored --nocapture --test-threads=1`：exit 0，1 passed / 0 failed / 0 ignored / 1 filtered out，1.04s。随后 `cargo clippy -p ontoforge-server --test trino_http_it --locked -- -D warnings`、`cargo fmt --all -- --check`、`git diff --check` 均 exit 0。证据 `target/phase7-rt02-green.log` 末行：`rt02_exit=0 artifact_scan_exit=0 cleanup_exit=0`；容器仅剩 `vennuap-casdoor`，Cargo 已释放。
+
+RT02 冻结文件 Git blob 为 `bcd0855464feda3652e80115f9461991e54fb2c5`，SHA256 为 `AD94E3458EFFB231C5A9E1612B53DEBCFDFD7B95813BFCA0ABADFB67CDCF5CF7`。已有真实 RED 和修正后 GREEN，无生产 mutation；等待主会话复签、commit/push 后再针对新 HEAD fresh 完整矩阵。HF01/ACL/SDK 的本轮整合结果仍 pending。
+
 ## 清理证据与剩余范围
 
 真实用例结束后只读查询 `pg_namespace WHERE nspname LIKE 'of_drift_%'`，结果为 `demo|0`、`editstore|0`，见 `target/phase7-drift-real-schema-cleanup.log`。自有日志已复制至 `target/phase7-services/evidence/`；`bash ci/server-services.sh check-artifacts` 与 `bash ci/server-services.sh cleanup` 均 exit 0，见 `target/phase7-drift-real-cleanup.log` 的 `artifact_scan_exit=0 cleanup_exit=0`。最后容器列表仅剩 `vennuap-casdoor`，未操作该容器。所有工具 session 已结束，Cargo 槽位已释放。

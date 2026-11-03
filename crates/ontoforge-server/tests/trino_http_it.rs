@@ -191,6 +191,31 @@ async fn initialize_mcp(server: &str, bearer: &str) -> (reqwest::Client, String)
     (client, session)
 }
 
+async fn wait_for_source_report(server: &str) {
+    let client = support::client();
+    let mut last = None;
+    let ready = tokio::time::timeout(Duration::from_secs(75), async {
+        loop {
+            let response = client
+                .get(format!("{server}/health"))
+                .send()
+                .await
+                .expect("reload readiness health request");
+            let (status, body) = support::json(response).await;
+            let complete = status == reqwest::StatusCode::OK
+                && body["engineStatus"] == "available"
+                && matches!(body["status"].as_str(), Some("healthy" | "degraded"));
+            last = Some((status, body));
+            if complete {
+                break;
+            }
+            tokio::time::sleep(Duration::from_millis(250)).await;
+        }
+    })
+    .await;
+    assert!(ready.is_ok(), "current source report not ready: {last:?}");
+}
+
 #[tokio::test]
 #[ignore = "requires real Trino and an authenticated ontoforge HTTP server"]
 #[expect(
@@ -259,7 +284,7 @@ async fn trino_http_long_read_releases_snapshot_lock() {
         .expect("metadata snapshot");
     let mut ontology = snapshot.active.ontology.clone();
     ontology.description = Some("reload while real Trino source is pending".to_owned());
-    tokio::time::timeout(
+    let reloaded = tokio::time::timeout(
         Duration::from_secs(3),
         reload(&other, &ontology, &ReloadOptions::default()),
     )
@@ -279,6 +304,11 @@ async fn trino_http_long_read_releases_snapshot_lock() {
     let (status, object) = support::json(response).await;
     assert_eq!(status, reqwest::StatusCode::OK, "{object}");
     assert_eq!(object["properties"]["flightId"], "F-1001");
+
+    let current = other.request_snapshot().await.expect("reloaded snapshot");
+    assert_eq!(Some(current.active.def_version), reloaded.def_version);
+    assert_ne!(current.active.def_version, snapshot.active.def_version);
+    wait_for_source_report(&server).await;
 
     let pool = sqlx::SqlitePool::connect_with(ontoforge_storage::store::sqlite_connect_options(
         &fixture.path,
