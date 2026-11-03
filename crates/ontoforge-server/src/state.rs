@@ -21,6 +21,7 @@ mod session_tests;
 
 pub struct ServerState {
     pub(crate) mcp_sessions: Arc<BoundedSessionManager>,
+    pub(crate) mcp_controls: Arc<tokio::sync::Semaphore>,
     accepting: std::sync::atomic::AtomicBool,
     l2_status: RwLock<Option<L2StatusProvider>>,
     l2_engine: RwLock<Option<Arc<TrinoEngine>>>,
@@ -35,6 +36,7 @@ impl Default for ServerState {
     fn default() -> Self {
         Self {
             mcp_sessions: Arc::new(BoundedSessionManager::default()),
+            mcp_controls: Arc::new(tokio::sync::Semaphore::new(1)),
             accepting: std::sync::atomic::AtomicBool::new(true),
             l2_status: RwLock::new(None),
             l2_engine: RwLock::new(None),

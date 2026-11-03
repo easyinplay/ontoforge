@@ -1,5 +1,9 @@
 # Phase 7 progress
 
+- 2026-11-04 T08最终统一GREEN50/50（lib25/admission4/L2defaults10/transport11），Clippy/fmt通过，生产冻结并已归还Cargo；原typed cap1 RED与双向REST/MCP竞争均关闭。准备在统一提交启动fresh真实PG/Trino/SDK及远程workspace/native门禁。最终独立安全/Staff复签与总体GSD验收尚待归并。
+
+- 2026-11-03 T08首轮新并发4项3pass/1fail，REST Body extractor提前丢Parts导致反向竞争仍200。Staff/security与实际RED一致，CC AGREE补回outer REST Arc保活，仅drop不take；已修且server全targetClippy通过。最终lib/admission/transport/L2defaults回归运行中，包含slowbody控制槽deadline回收；尚未最终GREEN。
+
 - 2026-11-03 MCP业务并发修复设计已接受，详07-MCP-EXECUTION-ADMISSION-FIX.md；CC REFINE+AGREE支持handler/task唯一持槽、cap+1有界POST reservation和固定独立control槽。t24_session_fix重新取得唯一Cargo，实施T08/N3真实RED修复；无产品配置/API扩展。已完成CLI与query补测不重做，最终集成门禁在该修复后运行。
 
 - 2026-11-03 N3 query15/15、Clippy通过，但真实HTTP typed cap1首请求阻塞时第二返回200非429；context.admit在SSE头返回强制take permit为根因。CC REFINE同向支持handler/task唯一持槽与独立有界control，设计收敛中，生产修复未开始。Mia A+定向1/1和CLI Clippy通过（8次拒绝全持久行不变），无需用户新决策。

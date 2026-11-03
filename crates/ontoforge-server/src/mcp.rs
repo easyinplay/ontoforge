@@ -539,6 +539,18 @@ impl<E: Engine + Send + Sync + 'static> ServerHandler for OntologyMcpHandler<E> 
         let server_state = Arc::clone(&self.state);
         let _request = server_state.read_tasks.token();
         let tool_name = request.name.to_string();
+        let owned_permit = context
+            .extensions
+            .get::<Parts>()
+            .and_then(|parts| parts.extensions.get::<context::AdmissionPermit>())
+            .and_then(|permit| permit.0.lock().unwrap().take())
+            .ok_or_else(|| {
+                crate::error::mcp(
+                    "CONCURRENCY_LIMIT",
+                    &tool_name,
+                    &ulid::Ulid::generate().to_string(),
+                )
+            })?;
         let (ctx, request_id) = self.request_context(&context, &tool_name).await?;
         let trace = context
             .extensions
@@ -605,11 +617,6 @@ impl<E: Engine + Send + Sync + 'static> ServerHandler for OntologyMcpHandler<E> 
             let action_name = action_name.to_owned();
             let host = Arc::clone(&self.host);
             let limits = self.limits;
-            let owned_permit = context
-                .extensions
-                .get::<Parts>()
-                .and_then(|parts| parts.extensions.get::<context::AdmissionPermit>())
-                .and_then(|permit| permit.0.lock().unwrap().take());
             let (sender, receiver) = tokio::sync::oneshot::channel();
             let action_tool = tool_name.clone();
             let action_trace = trace.clone();

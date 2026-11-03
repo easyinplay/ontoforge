@@ -193,7 +193,7 @@ impl<E: Engine + Send + Sync + 'static> ServerHost<E> {
     ) -> Result<(), HostError> {
         let admission = (
             Arc::new(Semaphore::new(limits.max_concurrent_requests)),
-            limits.deadline,
+            limits,
             Arc::clone(&server_state),
         );
         let mcp_host = Arc::clone(&self);

@@ -21,6 +21,10 @@ Claude Code REFINE支持将permit改为业务执行生命周期（target/phase7-
 
 ## 验收与ownership
 
+### 实施期生命周期补强
+
+Staff与真实REST→MCP测试共同发现：若REST分支只把Arc放extensions，Axum Body extractor会在handler执行前drop Parts。Claude Code AGREE恢复outer REST clone直到next.run/timeout结束，只drop不take，见target/phase7-rest-permit-lifetime-claude-review.json。MCP分支由rmcp Parts保活，不额外保留初始business clone，避免合法cancel转换control后旧business reservation仍被outer保留。属于落实原RAII合同，无额外配置/接口策略。
+
 已有N3真实RED保留。GREEN必须四typedformat cap1：首请求实际阻塞、第二429且全上游/业务audit无增量、释放后第三成功。补REST→MCP和MCP→REST竞争、满槽cancel真正取消目标且不触发额外业务、非法/伪造control不绕过、GET/SSE与DELETE不会堵control、Action在断连/显式cancel后仍持槽直至task完成。失败解析/初始化/超限body回收，原token/owner/T24/sse/shutdown回归。
 
 t24_session_fix拥有context.rs、mcp.rs、lib.rs及control存放所需state.rs，mcp_transport.rs及unit/mcp_sessions.test.rs最小callsite变更、独立07-MCP-EXECUTION-ADMISSION-IMPLEMENTATION.md。不得改T24 manager；新独立test文件可创建。typed现有mcp_l2_defaults.rs由explain lane已冻结，worker可运行但如需修改须报告。主会话维护共享计划与提交。Cargo唯一owner/jobs2，先完成批准设计再实施；真实RED已存在，不以编译失败当RED。所有重大gray area回主会话CC，不自改合同。

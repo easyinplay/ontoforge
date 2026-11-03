@@ -451,7 +451,10 @@ impl HandshakeServer {
             .layer(axum::middleware::from_fn_with_state(
                 (
                     Arc::new(tokio::sync::Semaphore::new(4)),
-                    Duration::from_millis(300),
+                    crate::ServerLimits {
+                        deadline: Duration::from_millis(300),
+                        ..crate::ServerLimits::default()
+                    },
                     state,
                 ),
                 crate::context::admit,
