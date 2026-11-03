@@ -13,7 +13,9 @@ SERVER_STATE_FILE="$RUNNER_TEMP/server.windows-state"
 STARTED_FILE="$RUNNER_TEMP/services.started"
 BINARY="$ROOT/target/debug/ontoforge"
 CURRENT_RUN_STARTED=0
-if [[ "${OS:-}" == Windows_NT ]]; then BINARY+=.exe; fi
+IS_WINDOWS=0
+case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) IS_WINDOWS=1 ;; esac
+if (( IS_WINDOWS )); then BINARY+=.exe; fi
 mkdir -p "$RUNNER_TEMP" "$EVIDENCE_DIR"
 chmod 700 "$RUNNER_TEMP"
 log() { printf '[server-services] %s\n' "$*"; }
@@ -70,7 +72,7 @@ start() {
   for command in docker cargo jq openssl node npm curl; do
     command -v "$command" >/dev/null || die "$command is required"
   done
-  if [[ "${OS:-}" == Windows_NT ]]; then
+  if (( IS_WINDOWS )); then
     command -v python >/dev/null || die "Python 3 is required for the Windows server owner"
   fi
   docker info >/dev/null
@@ -126,7 +128,7 @@ signing_key_file = "query-signing.key"
 EOF
   cargo build -p ontoforge --locked
   local runtime_binary="$RUNNER_TEMP/ontoforge-server-runtime"
-  if [[ "${OS:-}" == Windows_NT ]]; then runtime_binary+=.exe; fi
+  if (( IS_WINDOWS )); then runtime_binary+=.exe; fi
   cp "$BINARY" "$runtime_binary"
   BINARY="$runtime_binary"
   "$BINARY" reload "$ROOT/examples/ontologies/aviation" --server-config "$SERVER_CONFIG" --profile dev --format json > "$EVIDENCE_DIR/reload.json"
@@ -142,19 +144,22 @@ EOF
   export ONTOFORGE_SERVER_CONFIG="$SERVER_CONFIG"
   export ONTOFORGE_SERVER_URL="http://127.0.0.1:18080"
   write_env
-  if [[ "${OS:-}" == Windows_NT ]]; then
+  start_server serve --server-config "$SERVER_CONFIG" --dev --bind 127.0.0.1:18080
+  wait_http "$ONTOFORGE_SERVER_URL/health"
+  log "PostgreSQL/Trino server ready"
+}
+
+start_server() {
+  if (( IS_WINDOWS )); then
     local windows_run
     windows_run=$(mktemp -d "$RUNNER_TEMP/server-windows.XXXXXX")
     printf '%s\n' "$windows_run/state.json" > "$SERVER_STATE_FILE"
     python "$ROOT/ci/windows-server.py" run --state "$windows_run/state.json" \
-      --log "$EVIDENCE_DIR/server.log" -- "$BINARY" serve \
-      --server-config "$SERVER_CONFIG" --dev --bind 127.0.0.1:18080 &
+      --log "$EVIDENCE_DIR/server.log" -- "$BINARY" "$@" &
   else
-    "$BINARY" serve --server-config "$SERVER_CONFIG" --dev --bind 127.0.0.1:18080 > "$EVIDENCE_DIR/server.log" 2>&1 &
+    "$BINARY" "$@" > "$EVIDENCE_DIR/server.log" 2>&1 &
   fi
   printf '%s\n' "$!" > "$SERVER_PID_FILE"
-  wait_http "$ONTOFORGE_SERVER_URL/health"
-  log "PostgreSQL/Trino server ready"
 }
 
 verify() {
@@ -200,7 +205,7 @@ check_artifacts() {
 cleanup() {
   local failed=0 pid container
   load_env
-  if [[ "${OS:-}" == Windows_NT && ( -f "$SERVER_PID_FILE" || -f "$SERVER_STATE_FILE" ) ]]; then
+  if [[ "$IS_WINDOWS" -eq 1 && ( -f "$SERVER_PID_FILE" || -f "$SERVER_STATE_FILE" ) ]]; then
     local stop_status=0 owner_status=0
     if [[ -f "$SERVER_STATE_FILE" ]]; then
       python "$ROOT/ci/windows-server.py" stop --shell-status --state "$(cat "$SERVER_STATE_FILE")" || stop_status=$?
@@ -267,6 +272,8 @@ finish() {
   fi
   exit "$status"
 }
+
+if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then return 0; fi
 
 case "${1:-}" in
   start) start ;;

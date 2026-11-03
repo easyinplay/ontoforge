@@ -27,6 +27,8 @@ ontoforge serve --dev --data-dir .ontoforge/dev --reset --bind 127.0.0.1:8080
 
 `bash ci/server-services.sh verify` 在 Windows 上额外使用 Python 3 标准库工具 `ci/windows-server.py`，无需安装 Python 包。Git Bash 的 POSIX `kill -INT` 无法可靠触发原生 Windows CLI 的 Ctrl+C；工具在独立隐藏 console 启动服务，由后台 owner 保留进程和 Job handle，在唯一运行目录原子记录 PID、创建时间及真实退出码。
 
+脚本通过 `uname -s` 识别 MINGW、MSYS、CYGWIN，不依赖可能缺失的 `OS` 环境变量。owner 在创建服务前清除自身继承的 Ctrl+C 忽略标志，避免 Bash 后台启动把该标志继续传给服务；回归测试会清除 `OS` 并执行脚本实际的启动及清理函数。
+
 清理时工具持有目标 process handle 并核验创建时间，仅在 console 成员恰为目标服务与停止助手时发送 `CTRL_C_EVENT`。不会向共享 console 广播。停止最多等待 30 秒，超时强制清理仍返回失败，退出码 `130`、`137` 或其他非零结果不会视作成功；owner 异常结束时 Job 会回收已纳管的进程。启动与 Job assignment 之间不宣称具备原子保证，assignment 失败会立即回收刚启动的子进程并报错。Linux 继续使用现有信号路径。
 
 状态文件和 owner 保留完整 Windows 退出码；Bash 调用 stop 的 `--shell-status` 模式，将所有非零退出转换为 shell 失败并输出原始退出码，防止 `256` 等值被 8 位 shell 状态截断成成功。

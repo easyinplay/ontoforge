@@ -220,11 +220,78 @@ class WindowsServerTests(unittest.TestCase):
                 runtime.mkdir()
                 (runtime / "server.windows-state").write_text(str(self.state), encoding="utf-8")
                 (runtime / "server.pid").write_text(str(owner.pid), encoding="ascii")
-                environment = dict(os.environ, RUNNER_TEMP=str(runtime), OS="Windows_NT")
+                environment = dict(os.environ, RUNNER_TEMP=str(runtime))
+                environment.pop("OS", None)
                 cleaned = subprocess.run([str(bash), str(ROOT / "ci/server-services.sh"), "cleanup"],
                                          env=environment, capture_output=True, text=True, timeout=10)
                 self.assertEqual(cleaned.returncode, expected, cleaned.stdout + cleaned.stderr)
                 self.assertEqual(owner.wait(timeout=5), 0 if mode == "graceful" else int(mode[4:]))
+
+    def test_bash_without_os_preserves_nonzero_cleanup(self):
+        bash = Path(os.environ.get("ProgramFiles", "C:/Program Files")) / "Git/bin/bash.exe"
+        owner, _ = self.fixture("exit137")
+        self.assertEqual(owner.wait(timeout=5), 137)
+        runtime = self.path / "runtime"
+        runtime.mkdir()
+        (runtime / "server.windows-state").write_text(str(self.state), encoding="utf-8")
+        (runtime / "server.pid").write_text(str(owner.pid), encoding="ascii")
+        environment = dict(os.environ, RUNNER_TEMP=str(runtime))
+        environment.pop("OS", None)
+        cleaned = subprocess.run([str(bash), str(ROOT / "ci/server-services.sh"), "cleanup"],
+                                 env=environment, capture_output=True, text=True, timeout=5)
+        self.assertNotEqual(cleaned.returncode, 0, "missing OS must not bypass Windows exit verification")
+
+    def test_bash_start_and_cleanup_without_os_use_real_windows_branch(self):
+        bash = Path(os.environ.get("ProgramFiles", "C:/Program Files")) / "Git/bin/bash.exe"
+        binary = self.path / "ontoforge.exe"
+        shutil.copy2(ROOT / "target/debug/ontoforge.exe", binary)
+        runtime = self.path / "runtime"
+        runtime.mkdir()
+        with socket.socket() as listener:
+            listener.bind(("127.0.0.1", 0))
+            port = listener.getsockname()[1]
+        environment = dict(os.environ, RUNNER_TEMP=str(runtime))
+        environment.pop("OS", None)
+        script = r'''
+unset OS
+source "$1"
+[[ "$BINARY" == *.exe ]] || exit 91
+BINARY=$2
+EVIDENCE_DIR=$3
+trap cleanup EXIT
+start_server serve --dev --data-dir "$4" --bind "$5"
+[[ -s "$SERVER_STATE_FILE" ]] || exit 92
+ready=0
+for attempt in {1..100}; do
+  if curl -fsS --max-time 1 "http://$5/health" >/dev/null 2>&1; then ready=1; break; fi
+  sleep 0.1
+done
+[[ "$ready" -eq 1 ]] || exit 93
+cleanup
+trap - EXIT
+[[ ! -f "$SERVER_PID_FILE" && ! -f "$SERVER_STATE_FILE" ]]
+'''
+        owner = subprocess.Popen(
+            [str(bash), "-c", script, "probe", (ROOT / "ci/server-services.sh").as_posix(),
+             binary.as_posix(), self.path.as_posix(), (self.path / "data").as_posix(), f"127.0.0.1:{port}"],
+            env=environment, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+            creationflags=subprocess.CREATE_NO_WINDOW,
+        )
+        try:
+            stdout, stderr = owner.communicate(timeout=20)
+            self.assertEqual(owner.returncode, 0, stdout + stderr)
+            states = list(runtime.rglob("state.json"))
+            self.assertEqual(len(states), 1, "actual start branch must publish one Windows owner state")
+            self.assertEqual(read_state(states[0])["exit_code"], 0)
+            with socket.socket() as check:
+                self.assertNotEqual(check.connect_ex(("127.0.0.1", port)), 0)
+        finally:
+            for state in runtime.rglob("state.json"):
+                subprocess.run([sys.executable, str(HELPER), "stop", "--state", str(state), "--timeout", "2"],
+                               capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW, timeout=5)
+            if owner.poll() is None:
+                owner.kill()
+            owner.communicate(timeout=5)
 
 
 def child(mode, ready):

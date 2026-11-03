@@ -138,6 +138,9 @@ def run(args, windows):
             startup = subprocess.STARTUPINFO()
             startup.dwFlags = subprocess.STARTF_USESHOWWINDOW
             startup.wShowWindow = subprocess.SW_HIDE
+            # Git Bash marks asynchronous children as ignoring Ctrl+C. Clear the
+            # inheritable Windows flag before creating the server's private console.
+            windows.checked(windows.kernel.SetConsoleCtrlHandler(None, False))
             with args.log.open("wb") as output:
                 child = subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=output,
                                          stderr=output, creationflags=subprocess.CREATE_NEW_CONSOLE,
