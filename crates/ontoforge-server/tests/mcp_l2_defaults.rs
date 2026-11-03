@@ -16,6 +16,57 @@ use ontoforge_server::{ServerLimits, state};
 
 mod support;
 
+async fn attested_l2(
+    store: &ontoforge_storage::store::EditStore,
+) -> (
+    tokio_util::task::AbortOnDropHandle<()>,
+    Arc<Mutex<Vec<String>>>,
+) {
+    let statements = Arc::new(Mutex::new(Vec::<String>::new()));
+    let recorded = Arc::clone(&statements);
+    let app = axum::Router::new().route(
+        "/v1/statement",
+        axum::routing::post(move |headers: axum::http::HeaderMap, sql: String| {
+            let recorded = Arc::clone(&recorded);
+            async move {
+                recorded.lock().unwrap().push(sql.clone());
+                let l2 = headers["x-trino-user"] == "l2";
+                let body = if sql.contains("query_id") {
+                    serde_json::json!({"columns":[{"name":"query_id","type":"varchar"},{"name":"state","type":"varchar"}],"data":if l2 {serde_json::json!([])} else {serde_json::json!([["probe_1","RUNNING"]])}})
+                } else if l2 && (sql.contains("\"outside\"") || sql.contains("\"editstore\"")) {
+                    serde_json::json!({"error":{"errorName":"PERMISSION_DENIED","message":"denied"}})
+                } else if sql.contains("information_schema") {
+                    serde_json::json!({"columns":[],"data":[]})
+                } else {
+                    serde_json::json!({"columns":[{"name":"value","type":"bigint"}],"data":[[1]]})
+                };
+                axum::Json(body)
+            }
+        }),
+    );
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let url = format!("http://{}", listener.local_addr().unwrap());
+    let serving = tokio_util::task::AbortOnDropHandle::new(tokio::spawn(async move {
+        axum::serve(listener, app).await.unwrap();
+    }));
+    let config = ontoforge_engine::config::parse_server_config(&format!(
+        "[trino]\nurl = \"{url}\"\n[trino.identities.ontology]\nuser = \"ontology\"\n[trino.identities.l2]\nuser = \"l2\"\n[trino.l2_acl.allowed]\ncatalog = \"demo\"\nschema = \"tiny\"\ntable = \"nation\"\n[trino.l2_acl.outside]\ncatalog = \"outside\"\nschema = \"tiny\"\ntable = \"nation\"\n[trino.l2_acl.edit]\ncatalog = \"editstore\"\nschema = \"tiny\"\ntable = \"nation\"\n"
+    )).unwrap().trino.unwrap();
+    let engines =
+        ontoforge_engine::config::build_trino_engines(&config, camino::Utf8Path::new("."), &|_| {
+            None
+        })
+        .unwrap();
+    let l2 = Arc::new(engines.l2.unwrap());
+    assert_eq!(
+        l2.recheck_l2_acl(&engines.ontology, "probe_1").await,
+        ontoforge_engine::trino::l2_health::L2HealthStatus::Enabled,
+    );
+    state::set_l2_engine(store, l2).unwrap();
+    statements.lock().unwrap().clear();
+    (serving, statements)
+}
+
 #[derive(Clone, Default)]
 struct RecordingEngine {
     sql: Arc<Mutex<Vec<String>>>,
@@ -27,29 +78,30 @@ impl Engine for RecordingEngine {
         Dialect::Trino
     }
 
-    async fn execute(
+    fn execute(
         &self,
         sql: &PrintedSql,
         _ctx: &QueryContext,
-    ) -> Result<QueryOutput, EngineError> {
+    ) -> impl Future<Output = Result<QueryOutput, EngineError>> + Send {
         self.sql.lock().unwrap().push(sql.as_str().to_owned());
-        Ok(QueryOutput {
+        std::future::ready(Ok(QueryOutput {
             columns: vec![Column {
                 name: "name".to_owned(),
                 physical: PhysicalType::Varchar { length: None },
             }],
             rows: vec![vec![Value::String("demo".to_owned())]],
             truncated: false,
-        })
+        }))
     }
 
-    async fn describe_tables(
+    fn describe_tables(
         &self,
         tables: &[TableRef],
         _ctx: &QueryContext,
-    ) -> Result<BTreeMap<TableRef, Vec<PhysicalColumn>>, EngineError> {
+    ) -> impl Future<Output = Result<BTreeMap<TableRef, Vec<PhysicalColumn>>, EngineError>> + Send
+    {
         self.tables.lock().unwrap().extend(tables.iter().cloned());
-        Ok(tables
+        std::future::ready(Ok(tables
             .iter()
             .cloned()
             .map(|table| {
@@ -62,14 +114,18 @@ impl Engine for RecordingEngine {
                     }],
                 )
             })
-            .collect())
+            .collect()))
     }
 
-    async fn status(&self) -> EngineStatus {
-        EngineStatus::Available
+    fn status(&self) -> impl Future<Output = EngineStatus> + Send {
+        std::future::ready(EngineStatus::Available)
     }
 }
 
+#[expect(
+    clippy::default_trait_access,
+    reason = "Attrs is not re-exported by the public auth API"
+)]
 fn principal() -> Principal {
     Principal {
         id: PrincipalId::new("ontoforge-dev", "alice"),
@@ -202,6 +258,7 @@ async fn mcp_l2_missing_context_and_outside_allowlist_deny_before_send() {
 #[tokio::test]
 async fn mcp_l2_defaults_real_listener_consumes_deployment_context() {
     let mut fixture = support::fixture().await;
+    let (_trino, statements) = attested_l2(&fixture.store).await;
     let key_path = Utf8PathBuf::from_path_buf(fixture.dir.path().join("token.key")).unwrap();
     let key = DevKey::load_or_create(&key_path).unwrap();
     fixture.token = issue_dev_token(
@@ -268,6 +325,14 @@ async fn mcp_l2_defaults_real_listener_consumes_deployment_context() {
     assert!(
         !body.contains("catalog is required"),
         "deployment defaults were not consumed: {body}"
+    );
+    assert!(
+        statements.lock().unwrap().iter().any(|sql| {
+            sql.contains("\"demo\".\"information_schema\".\"columns\"")
+                && sql.contains("'aviation'")
+                && sql.contains("'aircraft'")
+        }),
+        "metadata SQL must consume the trusted deployment defaults"
     );
     let _ = running.finish().await;
 }

@@ -195,14 +195,17 @@ pub async fn run_with_shutdown(
         auth_config,
         signing_key,
     );
-    let Ok(mut host) = host else {
+    let Ok(host) = host else {
         let _ = store.read_audit().shutdown().await;
         eprintln!("cannot initialize HTTP server signing key");
         return 3;
     };
     ontoforge_server::state::set_mcp_defaults(&store, deployment_mcp_defaults(args));
     if let Some((l2, monitor)) = l2_runtime {
-        host = host.with_l2_status_provider(move || l2.l2_status());
+        if ontoforge_server::state::set_l2_engine(&store, l2).is_err() {
+            eprintln!("cannot install L2 query engine");
+            return 3;
+        }
         if host.install_l2_monitor(monitor).is_err() {
             eprintln!("cannot install L2 ACL monitor");
             return 3;

@@ -3,7 +3,9 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex, OnceLock, RwLock};
 
+use ontoforge_engine::EngineError;
 use ontoforge_engine::printer::l2::McpDefaults;
+use ontoforge_engine::trino::TrinoEngine;
 use ontoforge_engine::trino::l2_health::{L2DisableReason, L2HealthStatus};
 use ontoforge_engine::trino::l2_monitor::L2AclMonitor;
 use ontoforge_storage::store::EditStore;
@@ -15,8 +17,11 @@ type L2StatusProvider = Arc<dyn Fn() -> Option<L2HealthStatus> + Send + Sync>;
 pub struct ServerState {
     accepting: std::sync::atomic::AtomicBool,
     l2_status: RwLock<Option<L2StatusProvider>>,
+    l2_engine: RwLock<Option<Arc<TrinoEngine>>>,
     monitor: Mutex<Option<L2AclMonitor>>,
     mcp_defaults: RwLock<McpDefaults>,
+    pub read_cancellation: tokio_util::sync::CancellationToken,
+    pub read_tasks: tokio_util::task::TaskTracker,
 }
 
 impl Default for ServerState {
@@ -24,8 +29,11 @@ impl Default for ServerState {
         Self {
             accepting: std::sync::atomic::AtomicBool::new(true),
             l2_status: RwLock::new(None),
+            l2_engine: RwLock::new(None),
             monitor: Mutex::new(None),
             mcp_defaults: RwLock::new(McpDefaults::default()),
+            read_cancellation: tokio_util::sync::CancellationToken::new(),
+            read_tasks: tokio_util::task::TaskTracker::new(),
         }
     }
 }
@@ -40,11 +48,22 @@ impl ServerState {
         self.accepting.load(std::sync::atomic::Ordering::Acquire)
     }
 
+    pub fn cancel_reads(&self) {
+        self.read_cancellation.cancel();
+    }
+
     pub fn l2_status(&self) -> Option<L2HealthStatus> {
+        if let Some(engine) = self.l2_engine() {
+            return engine.l2_status();
+        }
         self.l2_status
             .read()
             .ok()
             .and_then(|provider| provider.as_ref().and_then(|provider| provider()))
+    }
+
+    pub(crate) fn l2_engine(&self) -> Option<Arc<TrinoEngine>> {
+        self.l2_engine.read().ok().and_then(|engine| engine.clone())
     }
 
     pub fn set_l2_status_provider<F>(&self, provider: F)
@@ -118,6 +137,21 @@ pub(crate) fn for_store(store: &EditStore) -> Arc<ServerState> {
 
 pub fn set_mcp_defaults(store: &EditStore, defaults: McpDefaults) {
     for_store(store).set_mcp_defaults(defaults);
+}
+
+/// Installs only an engine with L2 proof/admission enforcement. The monitor and
+/// raw tools must share this instance; an ontology engine is never a fallback.
+pub fn set_l2_engine(store: &EditStore, engine: Arc<TrinoEngine>) -> Result<(), EngineError> {
+    if engine.l2_status().is_none() {
+        return Err(EngineError::Config("not an L2 engine".to_owned()));
+    }
+    let state = for_store(store);
+    let mut slot = state
+        .l2_engine
+        .write()
+        .map_err(|_| EngineError::Config("L2 capability unavailable".to_owned()))?;
+    *slot = Some(engine);
+    Ok(())
 }
 
 pub(crate) fn remove<E>(host: &ServerHost<E>) {

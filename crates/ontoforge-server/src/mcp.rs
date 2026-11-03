@@ -85,11 +85,18 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
         args: &Map<String, Value>,
         ctx: &context::RequestContext,
     ) -> Result<Value, String> {
+        let engine = crate::state::for_host(&self.host)
+            .l2_engine()
+            .filter(|engine| {
+                engine.l2_status()
+                    == Some(ontoforge_engine::trino::l2_health::L2HealthStatus::Enabled)
+            })
+            .ok_or_else(|| "L2 unavailable".to_owned())?;
         let tools = mcp_l2::McpL2Tools {
             principal: &ctx.principal,
             scope: &ctx.scope,
             active: Arc::clone(&ctx.active),
-            engine: &*self.host.engine,
+            engine: &*engine,
             store: &self.host.store,
             limits: self.limits,
         };

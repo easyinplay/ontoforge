@@ -168,15 +168,15 @@ async fn real_health_l2_failure_expiry_recovery_keeps_core() {
         fail: AtomicBool::new(false),
     });
     let fixture = fixtures::fixture().await;
-    let status_engine = Arc::clone(&l2);
+    ontoforge_server::state::set_l2_engine(&fixture.host.store, Arc::clone(&l2))
+        .expect("dedicated L2 capability");
     let host = ServerHost {
         store: Arc::clone(&fixture.host.store),
         engine: Arc::clone(&core),
         auth: fixture.host.auth,
         auth_config: fixture.host.auth_config,
         tokens: fixture.host.tokens,
-    }
-    .with_l2_status_provider(move || status_engine.l2_status());
+    };
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
         .await
         .expect("listener");

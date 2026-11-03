@@ -492,21 +492,21 @@ async fn trino_http_and_mcp_six_l2_tools_all_formats() {
     )).expect("L2 config").trino.expect("Trino");
     let engines =
         build_trino_engines(&config, Utf8Path::new("."), &|_: &str| None).expect("L2 engines");
-    let engine = Arc::new(engines.l2.expect("L2 identity"));
-    let monitor = Arc::clone(&engine)
-        .start_l2_acl_monitor(Arc::new(engines.ontology))
+    let l2_engine = Arc::new(engines.l2.expect("L2 identity"));
+    let engine = Arc::new(engines.ontology);
+    let monitor = Arc::clone(&l2_engine)
+        .start_l2_acl_monitor(Arc::clone(&engine))
         .await
         .expect("real ACL monitor");
-    let status_engine = Arc::clone(&engine);
     let store = Arc::clone(&fixture.host.store);
+    state::set_l2_engine(&store, l2_engine).expect("dedicated L2 engine");
     let host = ServerHost {
         store: Arc::clone(&store),
         engine,
         auth: fixture.host.auth,
         auth_config: fixture.host.auth_config,
         tokens: fixture.host.tokens,
-    }
-    .with_l2_status_provider(move || status_engine.l2_status());
+    };
     assert!(host.install_l2_monitor(monitor).is_ok());
     state::set_mcp_defaults(
         &store,
