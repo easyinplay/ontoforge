@@ -1,7 +1,7 @@
 ---
 phase: 07-rest-mcp-shell
 plan: "13"
-status: blocked
+status: executing
 subsystem: integration
 tags: [postgres, trino, ci, real-services]
 requires: [07-09, 07-10, 07-11, 07-15, 07-16]
@@ -11,7 +11,7 @@ affects: [API-01, API-03, MCP-01, MCP-06, MCP-07, MCP-08, L2-04, SCOPE-07]
 
 # Phase 07 Plan 13 Summary
 
-07-13 的本地真实 PG/Trino 行为及独立读取消 audit 断言已通过，但未关闭：完整服务脚本仍在执行，Linux `phase7-real-services` 尚未在远程 runner 执行，全workspace门禁与审查收尾尚待完成。
+07-13 未关闭。2026-11-03 正在完成Staff修复后的最终回归；本轮完整服务脚本、全workspace门禁与Linux `phase7-real-services` 尚待运行。此前本地真实PG/Trino结果仅作为历史证据。
 
 ## Implemented
 
@@ -25,7 +25,7 @@ affects: [API-01, API-03, MCP-01, MCP-06, MCP-07, MCP-08, L2-04, SCOPE-07]
 - `c0abe96`：CLI纯lint最小修改已提交；本地完整Clippy/既有行为回归仍待结果。
 - `ec15dd2`、`77382e7`：取消读任务清理及精确audit断言、容器内seed、Windows网络/运行binary隔离接线与Cargo jobs=2。
 
-## Local Verification
+## Earlier Local Verification (2026-10-31)
 
 - `cargo test -p ontoforge-server --test postgres_http_it --locked -- --ignored --nocapture --test-threads=1`: **2 passed, 0 failed**。
 - `cargo test -p ontoforge-storage --test request_snapshot --locked -- --ignored --nocapture --test-threads=1`: **1 passed, 0 failed**。
@@ -36,9 +36,11 @@ affects: [API-01, API-03, MCP-01, MCP-06, MCP-07, MCP-08, L2-04, SCOPE-07]
 
 ## Remaining Blockers
 
+2026-11-03 Staff五项修复已冻结并独立复签，0剩余BLOCKER，详`reviews/07-13-STAFF-RECHECK.md`。提交链为`513a2f6`、`100976a`、`cf2a589`、`9aeb3ae`、`0dd3995`、`f835752`。transport11、stdio5、CLI最终L2/cleanup10、engine lib55/monitor19/resilience31通过；最终完整门禁仍待结果。
+
 1. Linux `phase7-real-services` workflow 尚未实际运行，不能把 CI job 标记为 GREEN。
-2. 本次完整脚本已通过PG 2/2（360.23s）、storage snapshot 1/1（106.58s）、Trino 2/2（4.55s，包括取消读精确audit/零写入）；health、后续client gate、credential scan与cleanup仍待结果。证据在`target/phase7-services/evidence/`，不把执行中状态当完整通过。
-3. 全workspace regression、full Clippy和远程artifact credential scan尚待完成。API/server/client已发现lint已修，CLI lint与Rust history分页参数缺陷正在收尾，最终交叉复签待落盘。
+2. 修复冻结后重新执行完整服务脚本，要求本轮exit0、named suites、credential scan与cleanup完整证据；旧日志不作为本轮通过依据。
+3. 全workspace regression、full Clippy和远程artifact credential scan尚待完成；最终交叉复签待落盘。
 
 ## Not Complete
 

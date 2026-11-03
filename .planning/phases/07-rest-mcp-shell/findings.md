@@ -1,5 +1,14 @@
 # Phase 7 findings
 
+- 2026-11-03 最终澄清：generation边界仅约束PendingProbe归属确认；Engine::drain_cancellations仍等待该实例全部已登记取消任务，不新增分组tracker或第二种drain。旧handle不会仅因新generation pending存在而判失败。PG测试Clippy收尾限于局部长场景注解、task类型别名与折叠条件，保留断言和运行语义；无新业务行为，跳过新增TDD，由Clippy及真实PG suite验收。
+
+- 2026-11-03 Grok第二意见正常返回并确认monitor recovery方案：用当前状态谓词替代一次性sticky failure；普通QueryGuard取消失败继续sticky，monitor PendingProbe按generation恢复。drain只等待engine任务并确认`pending.generation <= handle.generation`为空；新generation不阻塞旧handle。失败必须在tracked task内先写入PendingProbe再完成，enable检查与pending写入需同锁/原子化，deadline耗尽保持monitor disabled并报告失败。该方案不构成持久化跨进程保证，当前合同由Trino自身TTL与下次启动probe承担，不能宣称进程崩溃后债务持久化。
+- transport旧DELETE合同锁定：无token 401，owner不符403，owner缺失/过期404，禁止静默重新认领；不把新增全transport认证误报为原404回归。
+- 2026-11-03 stdio真实测试额外确认旧版本local initialize被重复转发已初始化远端，2025-03-26与远端2025-11-25冲突。纳入CR-03最小本地握手处理，独立建立旧新版本行为RED/GREEN；既有ID取消成功不冒充跨版本握手证明。monitor子deadline取消shutdown future时需保留其cleanup handle，最后总deadline排空覆盖该实例与Drop重试；独立复签已提醒且两lane协作处理。
+- 2026-11-03 tracked cleanup窄扩展至trino/l2_monitor.rs：monitor使用独立monitor_ontology实例，必须由L2AclMonitor持有并在后台任务join后drain其取消任务，避免只排空host core/L2而漏掉probe实例。复用既有monitor shutdown预算与错误传播，不改全局Engine选择结构。
+- 2026-11-03 原子Action准入里程碑：context registry以稳定store Arc key识别，spawn与stop在同一mutex检查/登记，REST与MCP采用同一接受边界。四目标26项回归通过后记录小提交；该结果不代表之后新增10秒分段预算/engine drain的最终验证。
+- 2026-11-03 shutdown内部预算锁定为总10秒：Action及read/HTTP截止5秒、audit截止6秒、monitor截止8秒、core/L2并行DELETE drain截止10秒，保留原Action的5秒窗口。无额外sleep；前段失败仍尝试后段有界清理并保留首个错误。此为可信实现默认值而非新SLA，transport同步docs/dev.md。
+- 2026-11-03 关闭顺序以07-06-PLAN第32/51/160行优先：stop admission→accepted Action及其依赖→独立read/SSE取消→audit→monitor。修正Staff/Grok先取消独立读的建议；stop与Action注册在同一锁下原子执行，禁止迟到Action绕过drain。Trino QueryGuard::Drop现为detached DELETE，新增per-engine tracked cancellation及Engine默认drain接口，使shutdown可在总budget内等取消任务结束；保持原query Timeout/Cancelled语义与实例隔离，不能把spawn视为已完成cleanup。L2 lane增补engine/lib+trino/cancel/mod及行为测试，transport接收尾调用。
 - 2026-11-03 Grok第二意见正常exit0（`target/phase7-grok-review-opinion-20261103.log`）：支持完整edits、独立L2能力、全transport认证、remote handle.id取消、有界关闭。采纳多edit/zero-edit/缺失能力/跨主体/取消隔离/真实SSE回归；不采纳把history强行等同receipt（违反当前scope遮蔽），也不采纳把health与执行的L2 engine割裂（二者应共享同一受限实例）。L2具体实现采用现有sidecar持`Arc<TrinoEngine>`，setter拒绝普通ontology engine，避免无必要的类型擦除适配器。
 - 2026-11-03 workspace编译回归最小修复：history_masking::Ask::run参数补`RowValues + Sync`以匹配既有HistoryRequest合同；只改测试类型，不新增业务行为，跳过新TDD，运行该target原有测试验证。
 - 2026-11-03 修复合同澄清：07-04明确要求原receipt/time与完整调用，07-10要求客户端保留receipt；因此CR-05采用完整items[].edits[]，统一camelCase DTO与显式序列化，拒绝静默取first或空值掩盖缺字段。此为恢复既定合同，不新加兼容摘要。五项已知根因不重复战略/Phase讨论；主会话已锁定边界，执行者必须真实RED/GREEN，灰区回流。Grok第二意见重新以120秒上限发起，未返回前不宣称获得意见。
