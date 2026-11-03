@@ -22,7 +22,7 @@
 
 ## Next Step
 
-核验整合修复head86e3648的新CI，不能用旧0a3e359 CI绿色代替。12项审查发现已定向验证并独立关闭10项，详`reviews/07-REVIEW-FIX-CONTRACT.md`；RF-05 MCP参数信封与RF-01部分target health状态等待用户选择及后续实施。
+整合head972c7be的CI41608551893四项必需job已通过。GT01与RF05已独立复签并提交；WR01 OpenAPI补强门禁全绿、待报告复签。下一动作是RF01 executor独占Cargo按ADR0030与工程设计执行四项listener RED，再完成core/host及全出口/生命周期/真实服务验收。新整合head必须再次验证，Performance观察保留既有API边界。
 
 P3执行中：已实施14/16，07-13尚未关闭，07-14继续等待全部验收缺口关闭。Windows方案A与后续修复提交/证据统一见`07-13-SUMMARY.md`，不重新执行已完成的环境诊断。
 
@@ -30,6 +30,8 @@ P3执行中：已实施14/16，07-13尚未关闭，07-14继续等待全部验收
 
 ## 07-13 当前验收清单
 
+- [x] GT-01：客户端取消在shutdown前独立对账audit，mutation RED→6/6 GREEN、Clippy通过且独立复签clean；详reviews/07-CANCEL-CAUSALITY-FIX.md。
+- [x] API WR-01：history OpenAPI9状态合同RED→API8项GREEN、生成/typecheck/build/lint通过，独立复签clean。
 - [x] Staff CR-01：独立L2执行身份与proof准入接线，真实生产assembly回归。
 - [x] Staff CR-02/03/04：MCP全transport认证、初始owner绑定、定向取消和有界SSE shutdown。
 - [x] 关闭补强：原子Action准入/注册、按07-06既定顺序排空、等待Trino取消任务且清理失败可见。
@@ -43,9 +45,10 @@ P3执行中：已实施14/16，07-13尚未关闭，07-14继续等待全部验收
 - [x] 完整服务脚本（包括取消读audit、Rust/TS、credential scan与cleanup）真实通过（`fd24beb`，unset OS，exit0，Windows state exit0）。
 - [x] SDK/MCP/client交叉复签无剩余blocker（最终冻结`f835752`；整体动态门禁另计）。
 - [x] Phase 7 Draft PR #8的旧head0a3e359全部4必需CI job通过（run41600147824），包括dev Unix权限实际运行。
-- [x] 双轴审查10/12修复已定向验证、独立复签并提交，详修复合同与SUMMARY。
-- [ ] 整合后当前head的Windows/Linux CI与真实服务门禁通过。
-- [ ] RF-01 drift与RF-05 MCP参数信封契约选择、实施及验收。
+- [x] 双轴审查11/12修复已定向验证、独立复签并提交，RF05为0b4a661；详修复合同与SUMMARY。
+- [x] 整合head972c7be的Windows/Linux CI与真实服务门禁通过（41608551893）；后续实现仍需新head门禁。
+- [x] RF-05 MCP参数信封按ADR0029实施，36项通过且独立复签clean。
+- [ ] RF-01 drift按ADR0030与工程审查实施及验收。
 
 ## 07-05 Execution
 

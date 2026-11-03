@@ -1,5 +1,10 @@
 # Phase 7 findings
 
+- 2026-11-03 RF01工程检查核对本机锁定Tokio1.54.1源码：Notify持单permit、interval Skip与JoinHandle任务状态均已有原语，不新增调度器。内置web两次调用未返回可读内容，实际依据为Cargo registry对应版本源码。旧.codex/rules/web-search.md缺失，已找到并读.claude/rules同名规则。工程审查与最终最小方案见07-DRIFT-ENG-REVIEW.md；用户同方向自动推进授权覆盖skill逐项确认，不因模板再次停下询问。
+
+- 2026-11-03 Claude Code第二意见入口已核实为C:/Users/easyi/.local/bin/claude.exe，以只读Read/Grep/Glob、dontAsk、禁MCP和不持久化session运行。CLI报告配置模型MiniMax-M3.1-Flash[1m]，不将该工具结果称为Claude模型意见。用户新授权取代本轮旧“等待用户选择”流程：主会话与第二意见一致/同方向补强可自动落定，实质分歧仍停下询问。
+- 2026-11-03 gstack Testing初步发现客户端取消测试在notifications/cancelled后立即调用running.finish()；主会话亲读mcp_l2_defaults.rs:326与support/mod.rs的finish_expect，确认shutdown可使取消审计断言通过，尚不能独立证明通知路径有效。这是新增验收可靠性问题，不推导生产取消必然失效；需保留服务运行时先观测取消审计/cleanup，再停机。维护性专项已NO FINDINGS，其余审查及第二意见进行中。
+
 - 2026-11-03 RF03 TS真实负请求发现openapi-fetch已安装dist/index.mjs对非2xx先JSON.parse，无视parseAs:text；这会使新增integer诊断字段丢失lossless类型。worker将失败Response原始text的decodeWire/typed HttpError前移至已有fetch wrapper，Error.message原展示保持。13项TS最终通过，原12/13失败单独保留；这不是只改生成类型即可解决的问题。
 
 - 2026-11-03 RF06 L2草案补强：Audited错误wrapper在tokio::select取消时不会返回，不能单独保证取消错误ID；已要求reserve后同步observer，再首次await，覆盖两种L2发送入口。现request_context还把所有内部context错误变成authentication required且无data，纳入统一安全envelope。RF03 all-targets Clippy被MCP准备中的L2测试102/100行阻断，原owner修复；RF03先用自身targets验证，后续整体验证仍需完整gate。

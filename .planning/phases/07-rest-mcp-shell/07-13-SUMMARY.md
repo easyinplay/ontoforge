@@ -11,7 +11,7 @@ affects: [API-01, API-03, MCP-01, MCP-06, MCP-07, MCP-08, L2-04, SCOPE-07]
 
 # Phase 07 Plan 13 Summary
 
-2026-11-03 Windows helper方案A已通过。正式双轴review的12项发现现已定向验证并独立关闭10项，RF-01/RF-05仍待契约选择与实施，详`reviews/07-REVIEW-FIX-CONTRACT.md`。整合代码已冻结至86e3648，新CI待跑；旧CI绿色不替代当前head，也不推导Phase完成。
+2026-11-03 Windows helper方案A与整合head972c7be的四项必需CI（41608551893）已通过。原12项review关闭11项，RF05提交0b4a661并独立复签clean；剩余RF01按已接受ADR0030推进，详`reviews/07-REVIEW-FIX-CONTRACT.md`。新增gstack审查发现与修复见`reviews/07-GSTACK-INCREMENTAL-REVIEW.md`；新改动仍需整合CI，不推导Phase完成。
 
 ## Implemented
 

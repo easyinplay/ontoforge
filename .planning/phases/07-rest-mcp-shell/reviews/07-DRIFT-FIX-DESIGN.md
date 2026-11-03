@@ -1,7 +1,7 @@
 ---
 phase: 07-rest-mcp-shell
 fixes: [RF-01, RF-10]
-status: needs_clarification
+status: accepted_for_implementation
 reviewed: 2026-11-03T07:41:57Z
 source_head: fd24beb36091bc4d9fc56e2984a4103ee923fe3f
 implementation_started: false
@@ -12,7 +12,7 @@ tests_executed: false
 
 本文件是只读实现设计，唯一写入物为本文件。以下符号名称是建议，不表示源码已有实现；开放合同由主会话结合 Grok 第二意见决定。RF-10 可共用 health wire 变更，但不得由两个 lane 并发修改 DTO/server/client 文件。
 
-主会话后续确认：Grok第二意见完整exit0（`target/phase7-history-drift-opinion-20261103.log`，执行归属主会话）；已采纳版本绑定、仅在实际source访问消费状态、匿名health不泄露target。部分target故障的HTTP200 degraded/503已独立提交用户选择，仍待答。本lane未独立执行或复签Grok命令。
+主会话2026-11-03收敛：用户授权Claude Code同方向意见自动推进，完整exit0意见见`target/phase7-claude-contract-review.json`及`target/phase7-claude-followup.json`。最终产品合同以ADR-0030为准，覆盖本文早期待决草案。采用既有health字段、30s/20s常量、raw host engine和原有drain；不新增独立Trino client。ScopedEngine可在owned Action async块内借用captured host并持固定view，无需强制新增第二wrapper。保留单slot与exact-key隔离，可用必要短锁观察标记拒绝旧轮发布，不建立多版本缓存。下列测试矩阵继续适用，新增source摘要wire测试不适用。工程增量四维审查见07-DRIFT-ENG-REVIEW.md；全部target降级仍200 degraded，monitor异常退出转CheckFailed；现有Query读审计保留，不为Action发明额外read_audit合同。
 
 ## 1. 已有合同与真实调用链
 
@@ -98,13 +98,13 @@ TDD必须先以真实listener/真实服务seam证明行为RED；本设计没有�
 
 完成证据须包含实际命名用例非零执行、RED归因、GREEN日志及独立复签；不能以原1373项通过代替新增链路证据。Windows本地的fixture测试与Linux真实Trino/PG覆盖各自记录，未运行保持pending。
 
-## 6. STATUS: NEEDS_CLARIFICATION
+## 6. 已收敛的合同
 
-以下均为真实合同空白，主会话确认前不实施相关行为：
+以下原开放项已由主会话与Claude Code同方向收敛，最终行为见ADR-0030：
 
-1. **部分target degraded时 `/health` HTTP状态。** 用户正在选择A：200 degraded，或B：503；Grok及本设计推荐A，但现D-03只批准L2特例，不能把推荐当既定事实。匿名health不公开对象名已锁定；具体计数/稳定原因字段由主会话确认。
-2. **新版本Pending/检查失败的source准入。** 推荐精确版本无有效report时source依赖请求fail-closed，并触发同一monitor立即检查；明确稳定错误码和HTTP映射。没有批准的drift TTL，不额外引入60s过期。
-3. **初始runtime engine failure。** 推荐监听并显示503，source fail-closed、editOnly保留，monitor周期恢复；结构配置/活动定义读取失败仍退出。现合同未明确首次engine failure必须退出还是提供可观察服务。
+1. 部分target degraded为HTTP200 degraded，匿名health保持既有字段。
+2. 精确版本无report为SOURCE_CHECK_PENDING，整轮失败为SOURCE_CHECK_UNAVAILABLE；source fail-closed/HTTP503，合并唤醒同一monitor，无新增TTL。
+3. 初次runtime probe失败仍提供HTTP/health503并周期恢复；结构配置/活动定义读取失败退出并清理。
 
 已决：只拦实际source依赖，完整patch且无需source的既有QUERY-01/ACTION-12路径继续可用，不因对象type存在source binding就一律拒绝。
 
