@@ -35,6 +35,14 @@ struct CoreProbe {
 }
 
 impl Engine for CoreProbe {
+    async fn drain_cancellations(&self) -> Result<(), EngineError> {
+        let (inner, disconnected) = tokio::join!(
+            self.inner.drain_cancellations(),
+            self.disconnected.drain_cancellations()
+        );
+        inner.and(disconnected)
+    }
+
     fn dialect(&self) -> ontoforge_engine::Dialect {
         self.inner.dialect()
     }

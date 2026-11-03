@@ -49,6 +49,10 @@ impl Drop for PendingSource<'_> {
 }
 
 impl Engine for DelayedTrino {
+    async fn drain_cancellations(&self) -> Result<(), EngineError> {
+        self.inner.drain_cancellations().await
+    }
+
     fn dialect(&self) -> ontoforge_engine::Dialect {
         self.inner.dialect()
     }

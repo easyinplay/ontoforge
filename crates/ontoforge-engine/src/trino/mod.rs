@@ -6,12 +6,13 @@
 //! transactions, prepared statements, Kerberos.
 
 use std::collections::{BTreeMap, HashMap};
+use std::sync::Arc;
 use std::time::Duration;
 
 use reqwest::{Client, Method, RequestBuilder, Url};
 use secrecy::SecretString;
 
-use self::cancel::QueryGuard;
+use self::cancel::{CancellationTasks, QueryGuard};
 use crate::printer::ast::{CompareOp, Expr, Literal, OrderItem, Select, SelectItem};
 use crate::printer::print_select;
 use crate::{
@@ -56,6 +57,7 @@ pub struct TrinoEngine {
     conn: Box<TrinoConnection>,
     statement_url: Url,
     l2_health: Option<Box<L2Health>>,
+    cancellations: Arc<CancellationTasks>,
 }
 
 impl TrinoEngine {
@@ -124,6 +126,7 @@ impl TrinoEngine {
             conn: Box::new(conn),
             statement_url,
             l2_health: None,
+            cancellations: Arc::default(),
         })
     }
 
@@ -269,7 +272,7 @@ impl TrinoEngine {
         ctx: &QueryContext,
     ) -> Result<QueryOutput, EngineError> {
         // Keep cancellation active for internal ACL probes as well as public requests.
-        let mut guard = QueryGuard::new();
+        let mut guard = QueryGuard::new(Arc::clone(&self.cancellations));
         match tokio::time::timeout(ctx.timeout, self.run(sql, ctx, &mut guard)).await {
             Err(_elapsed) => {
                 guard.cancel_now().await;
@@ -437,6 +440,10 @@ fn json_len(row: &[serde_json::Value]) -> usize {
 }
 
 impl Engine for TrinoEngine {
+    async fn drain_cancellations(&self) -> Result<(), EngineError> {
+        self.cancellations.drain().await
+    }
+
     fn dialect(&self) -> Dialect {
         Dialect::Trino
     }

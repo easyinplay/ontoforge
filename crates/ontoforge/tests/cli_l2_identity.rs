@@ -8,6 +8,11 @@ mod production_assembly {
     #![allow(clippy::all)]
     include!("unit/serve.test.rs");
 
+    use ontoforge_engine::config::{build_trino_engines, parse_server_config};
+    use ontoforge_engine::trino::l2_health::{L2DisableReason, L2HealthStatus};
+    use ontoforge_server::{ServerHost, state};
+    use std::fmt::Write as _;
+    use std::sync::Arc;
     use wiremock::matchers::method;
     use wiremock::{Mock, MockServer, Request, Respond, ResponseTemplate};
 
@@ -68,10 +73,12 @@ mod production_assembly {
 
     fn configure_trino(f: &Fixture, server: &MockServer, l2: bool, proof: bool) {
         let mut config = std::fs::read_to_string(&f.config).unwrap();
-        config.push_str(&format!(
+        write!(
+            config,
             "\n[trino]\nurl = \"{}\"\n[trino.identities.ontology]\nuser = \"ontology\"\n",
             server.uri()
-        ));
+        )
+        .unwrap();
         if l2 {
             config.push_str("[trino.identities.l2]\nuser = \"l2\"\n");
         }
@@ -88,7 +95,7 @@ mod production_assembly {
             &DevClaims {
                 sub: "mia".to_owned(),
                 groups: vec!["dispatchers".to_owned()],
-                attrs: Default::default(),
+                attrs: serde_json::Map::new(),
                 ttl: Duration::from_secs(300),
             },
         )
@@ -247,12 +254,107 @@ mod production_assembly {
     }
 
     #[tokio::test]
-    async fn same_host_l2_unverified_failed_and_expired_proofs_reject_all_six_tools() {
-        use ontoforge_engine::config::{build_trino_engines, parse_server_config};
-        use ontoforge_engine::trino::l2_health::{L2DisableReason, L2HealthStatus};
-        use ontoforge_server::{ServerHost, state};
-        use std::sync::Arc;
+    async fn serve_shutdown_waits_for_trino_delete_completion() {
+        shutdown_delete_case(204, Duration::from_millis(800), 0).await;
+    }
 
+    #[tokio::test]
+    async fn serve_shutdown_reports_failed_or_timed_out_trino_delete() {
+        shutdown_delete_case(500, Duration::ZERO, 3).await;
+        shutdown_delete_case(204, Duration::from_secs(3), 3).await;
+    }
+
+    async fn shutdown_delete_case(delete_status: u16, delete_delay: Duration, expected_exit: u8) {
+        use wiremock::matchers::{body_string_contains, path};
+
+        let f = fixture().await;
+        let trino = trino(false).await;
+        Mock::given(method("POST"))
+            .and(body_string_contains("998"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+                "id":"read_1", "nextUri":format!("{}/read/1", trino.uri()), "stats":{"state":"RUNNING"}
+            })))
+            .with_priority(1).mount(&trino).await;
+        Mock::given(method("GET"))
+            .and(path("/read/1"))
+            .respond_with(
+                ResponseTemplate::new(200)
+                    .set_body_json(json!({"columns":[],"data":[]}))
+                    .set_delay(Duration::from_secs(10)),
+            )
+            .mount(&trino)
+            .await;
+        Mock::given(method("DELETE"))
+            .and(path("/read/1"))
+            .respond_with(ResponseTemplate::new(delete_status).set_delay(delete_delay))
+            .with_priority(1)
+            .mount(&trino)
+            .await;
+        configure_trino(&f, &trino, true, true);
+        let bind = unused_address();
+        let serve_args = args(&f, bind);
+        let (stop, rx) = oneshot::channel();
+        let mut task = tokio::spawn(async move {
+            run_with_shutdown(&serve_args, async {
+                let _ = rx.await;
+            })
+            .await
+        });
+        assert!(wait_listening(bind, &task).await);
+        let token = raw_token(&f);
+        let (client, session) = initialize(bind, &token).await;
+        let request = tokio::spawn(async move {
+            client.post(format!("http://{bind}/mcp"))
+                .bearer_auth(token).header("accept", "application/json, text/event-stream")
+                .header("mcp-session-id", session).header("mcp-protocol-version", "2025-03-26")
+                .json(&json!({"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"execute_query","arguments":{"query":"SELECT 998 FROM demo.tiny.nation"}}}))
+                .send().await.unwrap().text().await
+        });
+        tokio::time::timeout(Duration::from_secs(2), async {
+            loop {
+                if trino
+                    .received_requests()
+                    .await
+                    .unwrap()
+                    .iter()
+                    .any(|request| request.method == "GET" && request.url.path() == "/read/1")
+                {
+                    break;
+                }
+                tokio::time::sleep(Duration::from_millis(10)).await;
+            }
+        })
+        .await
+        .unwrap();
+        stop.send(()).unwrap();
+        if !delete_delay.is_zero() {
+            assert!(
+                tokio::time::timeout(Duration::from_millis(200), &mut task)
+                    .await
+                    .is_err(),
+                "serve returned before the pending Trino DELETE could complete"
+            );
+        }
+        assert_eq!(
+            tokio::time::timeout(Duration::from_secs(4), task)
+                .await
+                .unwrap()
+                .unwrap(),
+            expected_exit
+        );
+        assert!(
+            trino
+                .received_requests()
+                .await
+                .unwrap()
+                .iter()
+                .any(|request| request.method == "DELETE" && request.url.path() == "/read/1")
+        );
+        let _ = request.await;
+    }
+
+    #[tokio::test]
+    async fn same_host_l2_unverified_failed_and_expired_proofs_reject_all_six_tools() {
         let f = fixture().await;
         let trino = trino(false).await;
         configure_trino(&f, &trino, true, true);

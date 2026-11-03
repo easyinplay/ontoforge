@@ -109,6 +109,11 @@ pub trait Engine {
     ) -> impl Future<Output = Result<BTreeMap<TableRef, Vec<PhysicalColumn>>, EngineError>> + Send;
 
     fn status(&self) -> impl Future<Output = EngineStatus> + Send;
+
+    /// After query futures have ended, await cancellation cleanup owned by this engine.
+    fn drain_cancellations(&self) -> impl Future<Output = Result<(), EngineError>> + Send {
+        std::future::ready(Ok(()))
+    }
 }
 
 /// Runtime selected engine.
@@ -118,6 +123,13 @@ pub enum AnyEngine {
 }
 
 impl Engine for AnyEngine {
+    async fn drain_cancellations(&self) -> Result<(), EngineError> {
+        match self {
+            Self::Sqlite(engine) => engine.drain_cancellations().await,
+            Self::Trino(engine) => engine.drain_cancellations().await,
+        }
+    }
+
     fn dialect(&self) -> Dialect {
         match self {
             Self::Sqlite(e) => e.dialect(),

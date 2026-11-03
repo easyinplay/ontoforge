@@ -8,6 +8,7 @@ use ontoforge_engine::config::{build_trino_engines, parse_server_config};
 use ontoforge_engine::trino::TrinoEngine;
 use ontoforge_engine::trino::l2_health::{L2DisableReason, L2HealthStatus};
 use ontoforge_engine::trino::l2_monitor::L2MonitorOptions;
+use ontoforge_engine::{Engine, QueryContext};
 use serde_json::json;
 use wiremock::{Mock, MockServer, Request, Respond, ResponseTemplate};
 
@@ -727,5 +728,140 @@ async fn monitor_shutdown_reports_inherited_cleanup_failure() {
         L2HealthStatus::Disabled {
             reason: L2DisableReason::Stopped
         }
+    );
+}
+
+#[tokio::test]
+async fn monitor_shutdown_drains_its_ontology_instance_and_reports_delete_failure() {
+    use ontoforge_engine::printer::l2::{L2Policy, validate_l2};
+
+    for status in [204, 500] {
+        let (server, fixture) = fixture().await;
+        let (l2, ontology) = engines(&server.uri(), Some(PROBE));
+        let monitor = l2
+            .start_l2_acl_monitor(Arc::clone(&ontology))
+            .await
+            .expect("monitor");
+        fixture.cancel_delayed.store(true, Ordering::SeqCst);
+        fixture.cancel_status.store(status, Ordering::SeqCst);
+        let sql = validate_l2(
+            PROBE,
+            &L2Policy {
+                raw_allowed: true,
+                catalogs: ["demo".to_owned()].into_iter().collect(),
+                schemas: std::collections::BTreeSet::new(),
+                edit_catalog: "editstore".to_owned(),
+                max_rows: 1,
+            },
+        )
+        .expect("probe SQL");
+        let query = tokio::spawn(async move {
+            ontology
+                .execute(
+                    &sql,
+                    &QueryContext::new("monitor-cleanup".to_owned(), vec![]),
+                )
+                .await
+        });
+        tokio::time::timeout(Duration::from_secs(2), async {
+            loop {
+                if server
+                    .received_requests()
+                    .await
+                    .expect("requests")
+                    .iter()
+                    .any(|request| {
+                        request.method == "GET" && request.url.path().ends_with("active_2")
+                    })
+                {
+                    break;
+                }
+                tokio::time::sleep(Duration::from_millis(5)).await;
+            }
+        })
+        .await
+        .expect("query acquired nextUri");
+        query.abort();
+        assert!(query.await.expect_err("cancelled").is_cancelled());
+        let shutdown = monitor.shutdown();
+        tokio::pin!(shutdown);
+        assert!(
+            tokio::time::timeout(Duration::from_millis(100), &mut shutdown)
+                .await
+                .is_err(),
+            "monitor returned before ontology DELETE finished"
+        );
+        let result = tokio::time::timeout(Duration::from_secs(2), shutdown)
+            .await
+            .expect("bounded shutdown");
+        assert_eq!(result.is_ok(), status == 204, "DELETE {status}: {result:?}");
+    }
+}
+
+#[tokio::test]
+async fn monitor_cancelled_shutdown_keeps_drop_retry_in_retained_cleanup_handle() {
+    for retry_status in [204, 500] {
+        let (server, fixture) = fixture().await;
+        fixture.cancel_status.store(500, Ordering::SeqCst);
+        let (l2, ontology) = engines(&server.uri(), Some(PROBE));
+        let monitor = l2
+            .start_l2_acl_monitor(ontology)
+            .await
+            .expect("disabled monitor");
+        let cleanup = monitor.cleanup_handle();
+        fixture.cancel_status.store(retry_status, Ordering::SeqCst);
+        fixture.cancel_delayed.store(true, Ordering::SeqCst);
+        assert!(
+            tokio::time::timeout(Duration::from_millis(50), monitor.shutdown())
+                .await
+                .is_err(),
+            "shutdown must still be waiting for DELETE"
+        );
+        assert!(
+            tokio::time::timeout(Duration::from_millis(100), cleanup.drain())
+                .await
+                .is_err(),
+            "retained cleanup handle omitted monitor Drop retry"
+        );
+        let result = tokio::time::timeout(Duration::from_secs(2), cleanup.drain())
+            .await
+            .expect("bounded Drop retry");
+        assert_eq!(
+            result.is_ok(),
+            retry_status == 204,
+            "retry status {retry_status}: {result:?}"
+        );
+        assert_eq!(fixture.deletes.load(Ordering::SeqCst), 3);
+    }
+}
+
+#[tokio::test]
+async fn monitor_cleanup_handle_only_checks_its_generation_and_never_retries() {
+    let (server, fixture) = fixture().await;
+    let (l2, ontology) = engines(&server.uri(), Some(PROBE));
+    let first = Arc::clone(&l2)
+        .start_l2_acl_monitor(Arc::clone(&ontology))
+        .await
+        .expect("first monitor");
+    let old_cleanup = first.cleanup_handle();
+    first.shutdown().await.expect("first cleanup");
+    fixture.cancel_status.store(500, Ordering::SeqCst);
+    let second = l2
+        .start_l2_acl_monitor(ontology)
+        .await
+        .expect("second monitor");
+    let current_cleanup = second.cleanup_handle();
+    assert!(second.shutdown().await.is_err());
+    old_cleanup
+        .drain()
+        .await
+        .expect("new generation does not belong to old handle");
+    let before = fixture.deletes.load(Ordering::SeqCst);
+    assert!(current_cleanup.drain().await.is_err());
+    assert!(current_cleanup.drain().await.is_err());
+    assert_eq!(
+        fixture.deletes.load(Ordering::SeqCst),
+        before,
+        "drain must not resubmit DELETE"
     );
 }

@@ -10,7 +10,7 @@ use tokio::task::JoinHandle;
 use super::TrinoEngine;
 use super::l2_health::{self, L2DisableReason, L2HealthStatus};
 use crate::printer::l2::{L2Policy, acl_query_probe, validate_l2};
-use crate::{EngineError, PrintedSql, QueryContext};
+use crate::{Engine, EngineError, PrintedSql, QueryContext};
 
 #[derive(Debug, Clone, Copy)]
 pub struct L2MonitorOptions {
@@ -30,26 +30,64 @@ impl Default for L2MonitorOptions {
 
 pub struct L2AclMonitor {
     l2: Arc<TrinoEngine>,
+    ontology: Arc<TrinoEngine>,
     generation: u64,
     pending: Arc<PendingProbe>,
     task: Option<JoinHandle<()>>,
 }
 
+/// Retained cleanup state for a monitor generation after its shutdown future ends.
+#[derive(Clone)]
+pub struct L2MonitorCleanup {
+    ontology: Arc<TrinoEngine>,
+    pending: Arc<PendingProbe>,
+    generation: u64,
+}
+
+impl L2MonitorCleanup {
+    /// Awaits the engine's registered cleanup tasks, then verifies this generation's
+    /// probe obligation. A newer generation's probe does not belong to this handle.
+    pub async fn drain(&self) -> Result<(), EngineError> {
+        let engine = self.ontology.drain_cancellations().await;
+        let probe = self
+            .pending
+            .confirm_cleared_through(self.generation)
+            .map_err(|_| EngineError::Unavailable {
+                reason: "L2 probe cleanup failed".to_owned(),
+                retryable: true,
+            });
+        engine.and(probe)
+    }
+}
+
 impl L2AclMonitor {
+    /// Retain this handle before bounded shutdown so its cleanup can still be
+    /// drained if the shutdown future is cancelled.
+    pub fn cleanup_handle(&self) -> L2MonitorCleanup {
+        L2MonitorCleanup {
+            ontology: Arc::clone(&self.ontology),
+            pending: Arc::clone(&self.pending),
+            generation: self.generation,
+        }
+    }
+
     /// Immediately disables admission, joins the monitor and awaits bounded cleanup.
     pub async fn shutdown(mut self) -> Result<(), EngineError> {
         self.stop();
         if let Some(task) = self.task.take() {
             let _ = task.await;
         }
-        self.pending
+        let cleanup = self
+            .pending
             .cancel(Some(self.generation))
             .await
             .and_then(|()| self.pending.confirm_cleared_through(self.generation))
             .map_err(|_| EngineError::Unavailable {
                 reason: "L2 probe cleanup failed".to_owned(),
                 retryable: true,
-            })
+            });
+        let drained = self.ontology.drain_cancellations().await;
+        cleanup.and(drained)
     }
 
     fn stop(&self) {
@@ -67,8 +105,9 @@ impl Drop for L2AclMonitor {
         self.stop();
         let pending = self.pending.clone();
         let generation = self.generation;
-        if let Ok(runtime) = tokio::runtime::Handle::try_current() {
-            runtime.spawn(async move {
+        if pending.confirm_cleared_through(generation).is_err() {
+            let _ = self.ontology.cancellations.observe(async move {
+                // Failure leaves the pending obligation intact for cleanup_handle().drain().
                 let _ = pending.cancel(Some(generation)).await;
             });
         }
@@ -119,6 +158,7 @@ impl TrinoEngine {
         // Construct the lease before the first await so startup cancellation runs Drop.
         let mut monitor = L2AclMonitor {
             l2: self.clone(),
+            ontology: Arc::clone(&ontology),
             generation,
             pending: pending.clone(),
             task: None,
