@@ -22,9 +22,9 @@
 
 ## Next Step
 
-用户已确认Windows收尾方案A：接入私有隐藏console helper（仅CI工具层），以真实Ctrl+C关闭server，保留原始退出码/超时失败、验证进程身份及console成员；先正式回归，再完整server-services验收。Rust/API不改，完成后继续07-14。
+核验整合修复head86e3648的新CI，不能用旧0a3e359 CI绿色代替。12项审查发现已定向验证并独立关闭10项，详`reviews/07-REVIEW-FIX-CONTRACT.md`；RF-05 MCP参数信封与RF-01部分target health状态等待用户选择及后续实施。
 
-P3执行中：07-01至07-12、07-15、07-16共14/16完成。当前先完成07-13取消读真实测试、完整服务脚本及远程Linux CI，再执行依赖它的07-14。复用现有PLAN，不新建重复规划文档；最新证据进入07-13-SUMMARY.md。
+P3执行中：已实施14/16，07-13尚未关闭，07-14继续等待全部验收缺口关闭。Windows方案A与后续修复提交/证据统一见`07-13-SUMMARY.md`，不重新执行已完成的环境诊断。
 
 07-11 已完成：`70a9ed9`、`5c76afe`；独立 generator workspace、TypeScript 7 client、无损 codec 与 5 项真实 HTTP contract 均通过。主 package 已移除 `openapi-typescript`，避免 clean install peer 冲突。
 
@@ -40,9 +40,12 @@ P3执行中：07-01至07-12、07-15、07-16共14/16完成。当前先完成07-13
 - [x] Rust client数值边界修复，4 unit与5 HTTP contract、client Clippy通过。
 - [x] Rust history分页参数修复及真实HTTP分页回归（`7fa2401`，4 unit+6 HTTP contract）。
 - [x] CLI与全workspace Clippy、embedded-pg Clippy、workspace回归（1373 passed / 0 failed / 113 ignored）。
-- [ ] 完整服务脚本（包括取消读audit、Rust/TS、credential scan与cleanup）真实通过。
+- [x] 完整服务脚本（包括取消读audit、Rust/TS、credential scan与cleanup）真实通过（`fd24beb`，unset OS，exit0，Windows state exit0）。
 - [x] SDK/MCP/client交叉复签无剩余blocker（最终冻结`f835752`；整体动态门禁另计）。
-- [x] Phase 7 Draft PR #8远程Windows/Linux CI全部必需job通过（run `41577377433`）；07-14仍等待本轮本地完整服务脚本。
+- [x] Phase 7 Draft PR #8的旧head0a3e359全部4必需CI job通过（run41600147824），包括dev Unix权限实际运行。
+- [x] 双轴审查10/12修复已定向验证、独立复签并提交，详修复合同与SUMMARY。
+- [ ] 整合后当前head的Windows/Linux CI与真实服务门禁通过。
+- [ ] RF-01 drift与RF-05 MCP参数信封契约选择、实施及验收。
 
 ## 07-05 Execution
 

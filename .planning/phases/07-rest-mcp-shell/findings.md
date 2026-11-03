@@ -1,5 +1,30 @@
 # Phase 7 findings
 
+- 2026-11-03 RF03 TS真实负请求发现openapi-fetch已安装dist/index.mjs对非2xx先JSON.parse，无视parseAs:text；这会使新增integer诊断字段丢失lossless类型。worker将失败Response原始text的decodeWire/typed HttpError前移至已有fetch wrapper，Error.message原展示保持。13项TS最终通过，原12/13失败单独保留；这不是只改生成类型即可解决的问题。
+
+- 2026-11-03 RF06 L2草案补强：Audited错误wrapper在tokio::select取消时不会返回，不能单独保证取消错误ID；已要求reserve后同步observer，再首次await，覆盖两种L2发送入口。现request_context还把所有内部context错误变成authentication required且无data，纳入统一安全envelope。RF03 all-targets Clippy被MCP准备中的L2测试102/100行阻断，原owner修复；RF03先用自身targets验证，后续整体验证仍需完整gate。
+
+- 2026-11-03 MCP worker发现L2错误也经Source(String)→Display发送。主会话亲读mcp_l2.rs和EngineError，确认protocol/config/credentials等原始文本可达；纳入RF-06后续L2扩展，需真实故障RED与audit ID证据。L0局部GREEN不冒充全部MCP错误边界关闭。RF-03保留TS Error.message原code/status展示，配置failureMessage经typed envelope.message提供；不改变Action批量校验短路语义。
+
+- 2026-11-03 Linux CI41599098393 test job在dev两个unit用例提前失败：临时目录不符合0700，尚未执行锁内断言（原始job日志target/phase7-dev-linux-ci-41599098393.log）。修复仅在canonical_root测试夹具显式设置Unix0700，不改生产权限拒绝边界；此为已知测试前置错误，跳过新增TDD用例，由原失败用例Linux重跑验证。gh run --log因整体run未完成不可用，改job logs API；首次API拒绝escape后显式允许写日志文件，不在终端执行其内容。
+
+- 2026-11-03 Grok history/drift第二意见正常exit0（target/phase7-history-drift-opinion-20261103.log）：采纳现有history接口二次lookahead、规范化页面bytes计费、条数软界限与首组超预算明确错误，不扩大storage接口。其认为target漂移200 degraded无需确认的结论未直接采用：D03只明示L2例外，已把200 degraded/503运维取舍作为独立问题交用户。版本绑定/source访问层拒绝与私有metadata边界进入设计，非已实施证据。
+- 2026-11-03 RF-12初次spawn因继承的gpt-6.1-sol不可用失败；GSD resolver也给不可用gpt-5.6-terra。改用工具明确支持的gpt-6-astra和resolver high成功，未重复同一失败调用。
+
+- 2026-11-03 dev独立复签追加：锁前目录校验需锁内复核，reset不可绕过已有key权限拒绝，dangling lock symlink不可被create跟随。交原owner按真实RED/GREEN修复；先前8/8并不覆盖这些边界。RF-01 drift与RF-07历史整记录预算进入主会话bounded设计，Grok第二意见待返回，未开始其实现。
+
+- 2026-11-03 新审查修复的Grok第二意见正常exit0，支持MCP嵌套params及OS锁；主会话本机Rust1.98 `File::try_lock`独占/Drop释放probe exit0（`target/dev-lock-api-probe.rs`），不是业务race修复证据。Grok关于B双读、drift持dev锁/自动去抖未采纳，具体边界统一见`reviews/07-REVIEW-FIX-CONTRACT.md`。只对MCP新信封向用户确认；其余明确既有合同修复无新增产品范围。
+
+- 2026-11-03 generator告警只读核查：本地audit唯一根因为`GHSA-g3hv-75wg-m249`（minimatch globparts amplification），其余2项为传播链；实际链openapi-typescript7.13.0→Redocly1.34.22→minimatch5.1.9。默认生成器读取checked-in OpenAPI对象，76个refs全部内部引用；Redocly唯一直接minimatch用于远程header.matches，当前默认headers为空且无外部refs，未发现当前入口触发路径。脚本允许人工指定本地规范，不夸大为强制仓库输入。此链不进入Rust binary或TS client运行时依赖，当前不做跨major降级；最终security gate跟踪将来输入/配置变化。依据为audit和已安装源码，原始advisory网页未返回内容，未宣称已独立核验完整利用条件。
+
+- 2026-11-03 07-14只读预查：四个目标文件尚未创建；现有dev_lifecycle中名为distributed完整演示的测试仅启动/kill并检查配置，既有stop也用kill，不能替代计划要求的artifact真实query→Action→history→正常关闭重启→reset→stdio。后续executor必须自行实现全部断言，Windows复用helper但将harness与artifact复制到隔离目录，产品运行不依赖checkout/Python。docs/dev.md旧`/api/health`已按真实路由修为`/health`，纯文档修正不新增TDD。仓库无download-artifact pin，可用已有gh CLI下载汇总，避免未经核验的新action。
+
+- 2026-11-03 unset-OS真实Bash start/cleanup新增RED进一步定位后台Ctrl+C ignore继承：服务health已ready但stop20秒不退出。唯一变量为owner创建child前调用自身`SetConsoleCtrlHandler(None, False)`，同一真实入口立即GREEN（4.369s）；未改console隔离核验或扩大信号范围。将此接入正式helper，并保留实际Bash入口回归；直接Python启动的旧9项不再冒充后台shell继承覆盖。
+
+- 2026-11-03 helper完整脚本复验仍exit1，已查证新根因：实际Git Bash环境`OS`未定义，旧/new四个`${OS:-} == Windows_NT`分支全部跳过，故本轮未创建Windows state而仍走POSIX INT。定向Bash测试强设OS变量未覆盖该入口。修复统一采用实际shell平台检测，回归必须在unset OS下走真实启动与cleanup函数；不以再次强设环境掩盖脚本缺陷。19项Rust+9项TS本轮仍全绿，credential scan独立0，测试容器/服务已清。
+
+- 2026-11-03 完整服务脚本中的generator npm ci报告3项moderate，独立`npm --prefix tools/openapi-gen audit --json`确认high/critical为0（`@redocly/openapi-core`、`minimatch`、`openapi-typescript`链，日志`target/phase7-generator-audit-20261103.json`）。属于现有隔离generator依赖，非本次Windows helper新增；npm建议跨major降级到6.7.6，不自动force修改锁定工具链。交最终Phase security核对，不将其计作本helper或服务功能测试失败。
+
 - 2026-11-03 正式helper回归新增真实RED：Windows child exit256经Git Bash低8位截断成为0，导致cleanup误成功。沿既定“任何非零不能吞”合同增加stop的shell-status模式，state和原生接口保留完整退出码，Bash模式将所有非零归一为1并输出真实code；无需新产品/API决策。
 
 - 2026-11-03 用户明确批准方案A。正式边界：Python标准库Windows helper仅供CI启动/停止原生server；隐藏私有console、验证进程身份和console成员后发送CTRL_C_EVENT，真实exit0才成功，强杀/超时/身份错误非零。复用已证实probe机制，禁止新增Rust unsafe/公开shutdown API。本任务涉及进程隔离和错误传播，使用TDD；配置/文档仅随真实回归验收，不另写镜像测试。既有scope已批准，不重复战略/Phase讨论。

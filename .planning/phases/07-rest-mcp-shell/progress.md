@@ -1,5 +1,55 @@
 # Phase 7 progress
 
+- 2026-11-03 RF03兼容增量独立复签clean（TS14/Rust17，普通502与structured malformed对照）；MCP最终tranche也独立复签clean（唯一46项）。本批12项审查发现已关闭10项，RF01/RF05仍待用户契约选择与后续实施。主会话全workspace fmt --check及git diff --check exit0，STATE94行。现按RF03→MCP→文档提交，并推送当前整合代码由既有Windows/Linux CI跑完整workspace与真实服务门禁；旧0a3e359 CI绿不替代新head。
+
+- 2026-11-03 MCP最终tranche冻结：唯一目标lib10/contract13/L2defaults6/actions6/transport11共46项通过，server全目标Clippy通过；早期adapter/observer/L2源错误与分页均有真实RED。取消/关闭transport无JSON，证据为durable audit trace-token及reserve前同步observer，不夸大响应。Cargo交RF03完成Rust兼容BLOCKER；MCP提交依赖RF03 action_envelope，按先RF03后MCP顺序，整体验证待两slice冻结。
+
+- 2026-11-03 RF03复签1项BLOCKER：TS/Rust对未识别的普通502 JSON先校验同名message，丢失原typed HTTP状态。TS已补真实RED→14/14 GREEN，Rust普通502/兼容alias用例已准备待MCP释放Cargo。MCP下一tranche已取得真实source错误原文泄漏、history预算/继续信息和criteria message缺失RED；取消/关闭真实transport四场景只有audit trace-token证据、无JSON响应，不冒充wire取消envelope已发。observer与早期adapter各自另建RED。
+
+- 2026-11-03 RF03冻结14文件，server11/Rust15/API7/TS13、定向Clippy/fmt/生成一致性通过，进入独立复签。TS首次GREEN尝试12/13暴露openapi-fetch非2xx先JSON.parse导致ordinal类型丢失，已前移raw text lossless错误解码并补GREEN，RED留target/phase7-action-diagnostics-ts-error-codec-red.log。RF07 REST已提交f834d03；CI41600147824（head0a3e359）4必需job全部success，元数据已保存，后续新改动仍需整合门禁。
+
+- 2026-11-03 RF07 REST/helper独立复签clean（reviews/07-HISTORY-PAGINATION-RECHECK.md），准许4文件原子提交，MCP接入仍待验。MCP L0已提交ff97513；RF03取得server2项/Rust2项/API1项及TS3项行为RED，生产helper/DTO/SDK修复中，rest action_response接线暂让RF07提交窗口。
+
+- 2026-11-03 MCP L0独立复签clean，关闭RF02/04/09，RF06仅L0/Action部分已通过。RF07 REST/helper真实7项RED→7GREEN、综合20/20、lint后14/14，Clippy/fmt通过，已冻结给独立复签；MCP分页接线仍未实施。主会话准许MCP六文件tranche原子提交，随后RF03获Cargo，MCP L2/分页排队。
+
+- 2026-11-03 Linux CI41600147824 ubuntu job125796698650 success。亲读job日志target/phase7-dev-linux-ci-41600147824.log：锁内复核2/2、dev_lifecycle12/12（8.24s），4项Unix权限/symlink全实际执行。结合Windows2+8与独立复签，关闭RF-08/11；该CI仅覆盖head0a3e359，不涵盖后续SDK/MCP/helper未提交改动。MCP L0 tranche进入独立复签；RF03已取得TS三项真实RED，Rust部分排队。
+
+- 2026-11-03 MCP L0 tranche冻结：actions6/contract10/transport11全部GREEN（target/phase7-mcp-review-final-tests.log），定向Clippy通过，待独立复签。RF-06还需L2追加错误边界，已锁typed Source/附原audit ID方案；未宣称整体关闭。Cargo已交RF-07执行真实分页RED。RF-10提交4f9d159，未推送。
+
+- 2026-11-03 RF-10独立复签clean（reviews/07-HEALTH-WIRE-RECHECK.md），11文件blob稳定，准许原子冻结。证据限度：Rust真实HTTP三态由controlled L2 provider产生，非新跑Trino monitor；TS enabled/disabled为注入fetch payload，未配置省略为真实CLI HTTP。RF-07的7项HTTP行为测试就绪，未运行，排队等待MCP释放Cargo。
+
+- 2026-11-03 MCP RF-02/04/06/09取得真实RED（target/phase7-mcp-review-red.log）：6个新增行为失败，分别覆盖float数组schema、integer ObjectReference、PK预算伪null、describe缺engineStatus以及无安全错误信封。首轮测试编译问题已修，不计行为RED；现进入最小实现，RF-05仍待答。
+
+- 2026-11-03 RF-12已提交24422dc；Unix测试夹具修复0a3e359已推送，新CI41600147824运行。RF-10冻结11文件待独立复签，Rust6unit+7HTTP、API6、TS10、Clippy/fmt/生成一致性通过；TS真实服务只覆盖无L2省略，enabled/disabled真实服务由Rust覆盖。MCP lane已获Cargo槽位；RF-07准备真实分页RED。
+
+- 2026-11-03 dev Linux CI出现夹具RED：2条锁内复核unit在0700前置检查失败，Unix integration尚未执行。主会话只修测试根目录mode，生产fail-closed保持。不能以其他两个service job绿色宣布Unix通过。
+
+- 2026-11-03 RF-12独立复签clean，已核读history_errors RED0/7→GREEN7/7，相邻http_actions/http_contract6/6和Clippy/fmt通过。准备2文件原子提交。审计语义保留07-03既定单次query.pk finish：后续history存储503关联前置查询记录，不表示端点最终成功；详reviews/07-HISTORY-ERROR-RECHECK.md。dev CI41599098393的integration/phase7-real-services已success，Windows/Linux workspace尚在运行。
+
+- 2026-11-03 dev修复已提交并推送5e00281（仅4文件），远程Linux CI待运行。RF-12新history_errors 7/7从RED转GREEN，正在相邻回归；RF-10准备wire测试。另启动不依赖RF-05选择的MCP describe/参数类型/PK截断三项，Cargo统一串行，避免共享文件并发owner。
+
+- 2026-11-03 RF-10限定为已有l2.status/reason的DTO/SDK完整保留，已锁定文件所有权并启动；不依赖待决source health映射。先编写真实HTTP解码RED用例，Cargo排在RF-12之后，RF-03共享DTO改动暂不并行。
+
+- 2026-11-03 dev增量复签clean（reviews/07-DEV-SAFETY-RECHECK.md）：锁内复核2/2、Windows生命周期8/8、CLI all-targets Clippy exit0。证据target/phase7-dev-review-{lock-recheck,fixes-tests,clippy}.log；准备4文件冻结提交及Linux CI，3权限+1dangling symlink测试仍未运行。RF-12已取得真实RED：7/7失败，错误类别/截断/audit ID原因与合同一致，正在最小修复。
+
+- 2026-11-03 dev复签3项未闭合交回原owner；另启动RF-12 history错误类别/audit ID最小修复，沿用既有REST object模式，不依赖待决RF-05信封。RF-01/07主会话设计第二意见进行中，尚未实施。
+
+- 2026-11-03 恢复后接收RF-08/11实现：worker报告Windows dev_lifecycle 8/8、CLI all-targets Clippy/fmt/diffcheck通过；新增Unix权限3例尚未运行。已启动独立dev安全复签，准备冻结提交后由现有Linux CI实际验收。已有root权限边界补入修复合同。RF-05仍为独立待决契约，不能复用Windows方案A授权。
+
+- 2026-11-03 `fd24beb`最新CI run41593120599全部4必需job success，Windows helper方案A验收完成。正式双轴审查报告5项Standards/10项Spec，去重12项既有合同缺口，执行合同已落`reviews/07-REVIEW-FIX-CONTRACT.md`。Grok正常exit0支持OS锁和嵌套params；RF-05正等待用户选择，先推进明确dev安全修复，阶段不标完成。
+
+- 2026-11-03 等待Windows CI期间启动已实施范围的正式双轴code-review：Standards与Spec两个独立fresh subagent，固定base Phase6、head fd24beb，分别产出reviews/07-STANDARDS-REVIEW.md与07-SPEC-REVIEW.md；07-14未实施不计新缺陷，后续只增量审查新发行文件。此审查不改变Phase完成状态。
+
+- 2026-11-03 `fd24beb`完整本地服务第三轮exit0：Rust19/TS9通过、生成漂移/typecheck/build及credential scan通过；Windows state明确`phase=exited, exit_code=0`，无runtime server/四测试容器残留。完整log/exit为`target/phase7-windows-final-services-20261103.*`，已将本轮named logs和state快照存`target/phase7-windows-final-evidence-20261103/`。仅待最新CI run `41593120599`，未提前进入07-14。
+
+- 2026-11-03 `fd24beb`增量复签clean，报告显式记录初审漏过的OS缺失与后台ignore继承并关闭WH-01/WH-02。已推送，最新CI run `41593120599`；完整服务第三轮session64838显式unset OS运行，日志`target/phase7-windows-final-services-20261103.log`，等待真实exit0及state/cleanup证据。
+
+- 2026-11-03 实际Bash双根因修复最终11/11 GREEN（17.867s，`target/phase7-windows-platform-tests.log`）：uname统一Windows识别、unset OS真实start/cleanup、创建child前恢复Ctrl+C处理，保留完整退出码和原9项隔离/失败回归。等待增量冻结与review后再次完整服务复验，不修改运行脚本。
+
+- 2026-11-03 修复后完整服务run仍exit1，发现实际OS环境缺失导致Windows分支未选；正在修统一平台检测并增加unset-OS真实start/cleanup回归。此前9项仅证明helper及显式OS路径，不当作实际完整入口通过；07-13继续pending。
+
+- 2026-11-03 `02a9c4e`五文件独立review clean（0 BLOCKER/0 WARNING），报告`reviews/07-13-WINDOWS-HELPER-REVIEW.md`。已推送`6588132`，CI run `41591699113`运行中；修复后完整本地服务复验session1373，日志`target/phase7-windows-helper-full-services-20261103.log`及结束后的`.exit`。冻结脚本直到该run结束。
+
 - 2026-11-03 helper冻结`02a9c4e`，最终9/9 GREEN（12.545s），包含原生17/130/137/256和Bash低8位截断回归；bash-n/diffcheck通过。独立review已启动，尚未将完整服务脚本判GREEN；待冻结复签后重跑完整Docker脚本，推送后远程CI确认新增Windows回归。
 
 - 2026-11-03 Windows helper正式回归9/9 GREEN（11.636s，原始日志`target/phase7-windows-helper-tests.log`）：真实binary优雅退出、Bash cleanup接线、非零码传播、陈旧身份/无关PID拒绝、多console成员拒绝、超时清理与owner异常退出回收。等待冻结提交与独立review，再重跑完整本地服务脚本。
