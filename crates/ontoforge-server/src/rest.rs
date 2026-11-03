@@ -590,34 +590,28 @@ pub async fn history<E: Engine + Send + Sync + 'static>(
         |id| trace.reserved(id),
     )
     .await;
+    let id = page.request_id.as_deref().unwrap_or(&request_id);
     let row = match page.result {
+        Ok(page) if page.truncated => {
+            return query_failure(
+                &ontoforge_query::QueryError::CostExceeded,
+                &trace,
+                &object_type,
+                id,
+            );
+        }
         Ok(page) => page.rows.into_iter().next(),
-        Err(_) => None,
+        Err(e) => return query_failure(&e, &trace, &object_type, id),
     };
     let Some(row) = row else {
-        return error::wire(
-            StatusCode::NOT_FOUND,
-            "NOT_FOUND",
-            &object_type,
-            &request_id,
-        );
+        return error::wire(StatusCode::NOT_FOUND, "NOT_FOUND", &object_type, id);
     };
     let Some(type_scope) = ctx.scope.types.get(&object_type_name) else {
-        return error::wire(
-            StatusCode::NOT_FOUND,
-            "NOT_FOUND",
-            &object_type,
-            &request_id,
-        );
+        return error::wire(StatusCode::NOT_FOUND, "NOT_FOUND", &object_type, id);
     };
     let Ok(pk_value) = PropertyValue::from_json(ty.properties.get(&ty.primary_key).unwrap(), &pk)
     else {
-        return error::wire(
-            StatusCode::NOT_FOUND,
-            "NOT_FOUND",
-            &object_type,
-            &request_id,
-        );
+        return error::wire(StatusCode::NOT_FOUND, "NOT_FOUND", &object_type, id);
     };
     let current = row
         .properties
@@ -645,13 +639,16 @@ pub async fn history<E: Engine + Send + Sync + 'static>(
                 next_before_seq: entries.last().map(|entry| entry.seq),
                 entries: entries.into_iter().map(history_entry).collect(),
             };
-            error::response(StatusCode::OK, &request_id, json!(page))
+            error::response(StatusCode::OK, id, json!(page))
         }
-        Err(_) => error::wire(
-            StatusCode::NOT_FOUND,
-            "NOT_FOUND",
+        Err(ontoforge_storage::history::HistoryError::NotFound) => {
+            error::wire(StatusCode::NOT_FOUND, "NOT_FOUND", &object_type, id)
+        }
+        Err(ontoforge_storage::history::HistoryError::Store(_)) => error::wire(
+            StatusCode::SERVICE_UNAVAILABLE,
+            "STORE_UNAVAILABLE",
             &object_type,
-            &request_id,
+            id,
         ),
     }
 }
