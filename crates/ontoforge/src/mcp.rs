@@ -141,24 +141,48 @@ struct BridgeService {
     info: ServerConfig,
 }
 
+struct BridgeHandshake(ServerConfig);
+
+impl rmcp::ServerHandler for BridgeHandshake {
+    fn get_info(&self) -> ServerConfig {
+        self.0.clone()
+    }
+
+    fn supported_protocol_versions(
+        &self,
+    ) -> std::borrow::Cow<'static, [rmcp::model::ProtocolVersion]> {
+        std::borrow::Cow::Borrowed(rmcp::model::ProtocolVersion::known_up_to(
+            &self.0.protocol_version,
+        ))
+    }
+}
+
 impl Service<RoleServer> for BridgeService {
     async fn handle_request(
         &self,
         request: rmcp::model::ClientRequest,
         context: RequestContext<RoleServer>,
     ) -> Result<ServerResult, ErrorData> {
+        if let rmcp::model::ClientRequest::InitializeRequest(request) = request {
+            return rmcp::ServerHandler::initialize(
+                &BridgeHandshake(self.info.clone()),
+                request.params,
+                context,
+            )
+            .await
+            .map(ServerResult::InitializeResult);
+        }
         let handle = self
             .remote
             .send_cancellable_request(request, PeerRequestOptions::no_options())
             .await
             .map_err(|error| ErrorData::internal_error(error.to_string(), None))?;
-        let request_id = context.id.clone();
+        let request_id = handle.id.clone();
         let remote = self.remote.clone();
-        let task = tokio::spawn(async move { handle.await_response().await });
+        let response = handle.await_response();
+        tokio::pin!(response);
         tokio::select! {
-            result = task => result
-                .map_err(|error| ErrorData::internal_error(error.to_string(), None))?
-                .map_err(|error| ErrorData::internal_error(error.to_string(), None)),
+            result = &mut response => result.map_err(|error| ErrorData::internal_error(error.to_string(), None)),
             () = context.ct.cancelled() => {
                 let notification = CancelledNotification::new(CancelledNotificationParam::new(
                     Some(request_id),
@@ -195,7 +219,7 @@ mod tests {
     use super::{redact_error, transport_config, validate_server_url};
 
     #[tokio::test]
-    async fn bridge_uses_same_service_no_redirect_or_reinit() {
+    async fn bridge_configuration_disables_reinit_and_rejects_url_credentials() {
         let config = transport_config("http://127.0.0.1:8080/mcp", "secret-sentinel");
         assert!(!config.reinit_on_expired_session);
         assert_eq!(config.auth_header.as_deref(), Some("secret-sentinel"));
@@ -203,7 +227,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn bridge_parallel_ids_cancel_and_eof() {
+    async fn bridge_configuration_bounds_concurrency_and_redacts_errors() {
         let config = transport_config("http://127.0.0.1:8080/mcp", "secret-sentinel");
         assert_eq!(config.max_concurrent_requests, 16);
         assert!(validate_server_url("http://127.0.0.1:8080/mcp").is_ok());
