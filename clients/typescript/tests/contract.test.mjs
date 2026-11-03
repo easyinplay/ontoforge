@@ -8,6 +8,8 @@ import { fileURLToPath } from 'node:url';
 import { before, after, test } from 'node:test';
 import { createServer } from 'node:net';
 import { createServer as createHttpServer } from 'node:http';
+import { durableState, revokeDispatchers, faultProxy } from './support-security.mjs';
+import './numeric-security.test.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 const binary = process.env.ONTOFORGE_BIN ?? join(repoRoot, 'target', 'debug', process.platform === 'win32' ? 'ontoforge.exe' : 'ontoforge');
@@ -255,6 +257,46 @@ test('ts_client_typecheck_generation_and_instance_abort', async () => {
   await assert.rejects(() => second.metadata({ signal: controller.signal }), (error) => error?.name === 'AbortError');
 });
 
+test('ts_valid_principals_real_revoke_and_inflight_abort_are_isolated', { timeout: 15000 }, async () => {
+  const { createOntoforgeClient } = await import('../dist/index.js');
+  const miaBearer = run(binary, ['dev-token', '--server-config', join(dataDir, 'server.toml'), '--sub', 'mia']).trim();
+  const mia = createOntoforgeClient({ baseUrl, bearer: miaBearer });
+  const [aliceMetadata, miaMetadata] = await Promise.all([client.metadata(), mia.metadata()]);
+  assert.ok(aliceMetadata.objectTypes.some((type) => type.apiName === 'Flight'));
+  assert.ok(!aliceMetadata.objectTypes.some((type) => type.apiName === 'Aircraft'));
+  assert.ok(miaMetadata.objectTypes.some((type) => type.apiName === 'Aircraft'));
+  assert.ok(!miaMetadata.objectTypes.some((type) => type.apiName === 'Flight'));
+  const errors = await Promise.allSettled([client.get('Aircraft', 'N100'), mia.get('Flight', 'F-1001')]);
+  assert.ok(errors.every((result) => result.status === 'rejected' && result.reason.code === 'NOT_FOUND'));
+  assert.ok(errors.every((result) => typeof result.reason.requestId === 'string' && result.reason.requestId.length > 0));
+  assert.notEqual(errors[0].reason.requestId, errors[1].reason.requestId);
+
+  const proxy = await faultProxy(baseUrl, 'hold-both');
+  try {
+    const isolated = createOntoforgeClient({ baseUrl: proxy.url, bearer });
+    const controller = new AbortController();
+    const pending = isolated.get('Flight', 'F-1001', { signal: controller.signal });
+    const rejected = assert.rejects(pending, (error) => error.name === 'AbortError');
+    const independent = isolated.get('Flight', 'F-1001');
+    await Promise.race([proxy.reached, new Promise((_, reject) => {
+      const timer = setTimeout(() => reject(new Error('proxy did not observe an actual upstream response')), 5000);
+      timer.unref();
+    })]);
+    controller.abort();
+    await rejected;
+    proxy.release();
+    assert.equal((await independent).pk, 'F-1001');
+    assert.deepEqual(proxy.counts(), { requests: 2, forwards: 2 });
+  } finally { await proxy.close(); }
+
+  const restore = revokeDispatchers(join(dataDir, 'editstore.db'));
+  try {
+    await assert.rejects(() => client.get('Flight', 'F-1001'), (error) => error.code === 'NOT_FOUND' && !!error.requestId);
+    assert.ok((await mia.metadata()).objectTypes.some((type) => type.apiName === 'Aircraft'));
+  } finally { restore(); }
+  assert.equal((await client.get('Flight', 'F-1001')).pk, 'F-1001');
+});
+
 test('ts_lossless_integer_decimal_boundary_roundtrips', async () => {
   const { decodeWire, encodeWire } = await import('../dist/index.js');
   const wire = '{"safe":9007199254740991,"above":9007199254740993,"i64Min":-9223372036854775808,"i64Max":9223372036854775807,"decimal":"0.123456789012345678901234567890","unicode":"航空\ud83d\ude80"}';
@@ -447,4 +489,44 @@ test('ts_client_rejects_malformed_receipt_history_and_validation', async () => {
   await assert.rejects(() => apiFor({ validated: 'true' }).validate('delayFlight', { items: [] }), /response/);
   await assert.rejects(() => apiFor(receipt).validate('delayFlight', { items: [] }), /response/);
   await assert.rejects(() => apiFor({ validated: true }).action('delayFlight', { items: [] }), /response/);
+});
+
+test('ts_transport_failures_never_retry_and_replay_has_one_durable_commit', { timeout: 15000 }, async () => {
+  const { createOntoforgeClient, decodeWire } = await import('../dist/index.js');
+  const database = join(dataDir, 'editstore.db');
+  const request = { commandId: 'ts-loss-after-commit', items: [{ params: { flight: 'F-1001', delayMinutes: 23n } }] };
+  const before = durableState(database);
+  const early = await faultProxy(baseUrl, 'before');
+  try {
+    const api = createOntoforgeClient({ baseUrl: early.url, bearer });
+    await assert.rejects(() => api.action('delayFlight', request), TypeError);
+    assert.deepEqual(early.counts(), { requests: 1, forwards: 0 });
+    assert.deepEqual(durableState(database), before);
+  } finally { await early.close(); }
+
+  const lost = await faultProxy(baseUrl, 'after');
+  let receipt;
+  try {
+    const api = createOntoforgeClient({ baseUrl: lost.url, bearer });
+    await assert.rejects(() => api.action('delayFlight', request), TypeError);
+    assert.deepEqual(lost.counts(), { requests: 1, forwards: 1 });
+    receipt = decodeWire(lost.receipt());
+  } finally { await lost.close(); }
+  const committed = durableState(database);
+  for (const [table, delta] of Object.entries({ of_edit_log: 1, of_edit_log_entry: 2, of_edit_history: 2, of_action_command: 1, of_webhook_outbox: 1 })) {
+    assert.equal(committed[table].length - before[table].length, delta, table);
+  }
+  for (const [table, rows] of Object.entries(before)) {
+    if ((table.startsWith('of_obj_') || table.startsWith('of_lnk_')) && table !== 'of_obj_flight') {
+      assert.deepEqual(committed[table], rows, `unrelated business table ${table}`);
+    }
+  }
+  const original = before.of_obj_flight.find((row) => row.flight_id === 'F-1001');
+  const changed = committed.of_obj_flight.find((row) => row.flight_id === 'F-1001');
+  assert.equal(changed.of_version - (original?.of_version ?? 0n), 2n);
+  assert.equal(changed.delay_minutes, 23n);
+  assert.equal(changed.status, 'DELAYED');
+  assert.deepEqual(await client.action('delayFlight', request), receipt);
+  assert.deepEqual(await client.commandResult(request.commandId), receipt);
+  assert.deepEqual(durableState(database), committed, 'replay must preserve all persisted business and transaction rows');
 });

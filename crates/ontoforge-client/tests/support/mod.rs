@@ -1,5 +1,7 @@
 #![allow(dead_code, reason = "shared real HTTP fixture helpers")]
 
+pub mod security;
+
 use std::collections::BTreeMap;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
