@@ -19,6 +19,7 @@ pub struct ServerState {
     l2_status: RwLock<Option<L2StatusProvider>>,
     l2_engine: RwLock<Option<Arc<TrinoEngine>>>,
     monitor: Mutex<Option<L2AclMonitor>>,
+    drift: Mutex<Option<Arc<crate::drift::SourceDriftMonitor>>>,
     mcp_defaults: RwLock<McpDefaults>,
     pub read_cancellation: tokio_util::sync::CancellationToken,
     pub read_tasks: tokio_util::task::TaskTracker,
@@ -31,6 +32,7 @@ impl Default for ServerState {
             l2_status: RwLock::new(None),
             l2_engine: RwLock::new(None),
             monitor: Mutex::new(None),
+            drift: Mutex::new(None),
             mcp_defaults: RwLock::new(McpDefaults::default()),
             read_cancellation: tokio_util::sync::CancellationToken::new(),
             read_tasks: tokio_util::task::TaskTracker::new(),
@@ -39,6 +41,40 @@ impl Default for ServerState {
 }
 
 impl ServerState {
+    pub(crate) fn start_drift<E: ontoforge_engine::Engine + Send + Sync + 'static>(
+        &self,
+        host: &ServerHost<E>,
+    ) -> Result<tokio::sync::oneshot::Receiver<Result<(), ()>>, ()> {
+        let mut slot = self.drift.lock().map_err(|_| ())?;
+        if slot.is_some() {
+            return Err(());
+        }
+        let (monitor, ready) = crate::drift::SourceDriftMonitor::start(
+            Arc::clone(&host.store),
+            Arc::clone(&host.engine),
+        );
+        *slot = Some(Arc::new(monitor));
+        Ok(ready)
+    }
+
+    pub(crate) fn drift_view(
+        &self,
+        active: &ontoforge_storage::store::ActiveDefinition,
+    ) -> Arc<crate::drift::DriftView> {
+        self.drift
+            .lock()
+            .expect("drift owner poisoned")
+            .as_ref()
+            .map_or_else(
+                || Arc::new(crate::drift::DriftView::Pending),
+                |monitor| monitor.capture(active),
+            )
+    }
+
+    pub(crate) fn take_drift(&self) -> Option<Arc<crate::drift::SourceDriftMonitor>> {
+        self.drift.lock().ok().and_then(|mut slot| slot.take())
+    }
+
     pub fn stop_admission(&self) {
         self.accepting
             .store(false, std::sync::atomic::Ordering::Release);

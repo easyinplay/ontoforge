@@ -12,7 +12,7 @@ use ontoforge_schema::ir::{
 };
 use ontoforge_schema::loader::sourcemap::Seg;
 
-use crate::{AnyEngine, Engine, EngineError, PhysicalColumn, PhysicalType, QueryContext, TableRef};
+use crate::{Engine, EngineError, PhysicalColumn, PhysicalType, QueryContext, TableRef};
 
 /// Identifies one binding: the profile it belongs to and what it binds.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -516,11 +516,21 @@ type Described = BTreeMap<TableRef, Vec<PhysicalColumn>>;
 /// An error that is not engine wide ([`EngineError::is_engine_wide`]) is copied onto every
 /// binding of the catalog it came from and the other catalogs are still described. An engine
 /// wide error aborts the round.
-pub async fn describe_bindings(
-    engine: &AnyEngine,
+pub async fn describe_bindings<E: Engine + Sync>(
+    engine: &E,
     ontology: &Ontology,
     profile: &ProfileName,
     ctx: &QueryContext,
+) -> Result<Vec<DescribedBinding>, EngineError> {
+    describe_bindings_before(engine, ontology, profile, ctx, None).await
+}
+
+async fn describe_bindings_before<E: Engine + Sync>(
+    engine: &E,
+    ontology: &Ontology,
+    profile: &ProfileName,
+    ctx: &QueryContext,
+    deadline: Option<tokio::time::Instant>,
 ) -> Result<Vec<DescribedBinding>, EngineError> {
     let Some(bindings) = ontology.profile_bindings(profile) else {
         return Ok(Vec::new());
@@ -550,7 +560,16 @@ pub async fn describe_bindings(
     let mut results: HashMap<String, Result<Described, EngineError>> = HashMap::new();
     for (catalog, tables) in by_catalog {
         let tables: Vec<TableRef> = tables.into_iter().cloned().collect();
-        match engine.describe_tables(&tables, ctx).await {
+        let mut remaining = ctx.clone();
+        if let Some(deadline) = deadline {
+            remaining.timeout = deadline.saturating_duration_since(tokio::time::Instant::now());
+            if remaining.timeout.is_zero() {
+                return Err(EngineError::Timeout {
+                    after_ms: u64::try_from(ctx.timeout.as_millis()).unwrap_or(u64::MAX),
+                });
+            }
+        }
+        match engine.describe_tables(&tables, &remaining).await {
             Ok(described) => {
                 results.insert(catalog.to_owned(), Ok(described));
             }
@@ -757,8 +776,8 @@ pub fn drift_report(
 
 /// Describes the bindings of `profile` and judges them (BIND-03).
 ///
-/// Only an engine wide error ([`EngineError::is_engine_wide`]: unavailable, authentication
-/// failure and the like) is returned as `Err`; a report is never made from an engine that could
+/// An engine wide error ([`EngineError::is_engine_wide`]: unavailable, authentication
+/// failure and the like), or an exhausted round budget, is returned as `Err`; a report is never made from an engine that could
 /// not answer, because engine health and schema drift are different things. One target whose
 /// metadata cannot be read is [`DegradeReason::SourceUnreadable`] and the others are judged as
 /// usual.
@@ -767,13 +786,15 @@ pub fn drift_report(
 /// service process of Phase 7 (D-15). The duplicate primary key check (`--check-pk`) is not
 /// drift: ADR-0015 lets it degrade a type only when asked for explicitly, so drift never scans
 /// a table.
-pub async fn check_drift(
-    engine: &AnyEngine,
+pub async fn check_drift<E: Engine + Sync>(
+    engine: &E,
     ontology: &Ontology,
     profile: &ProfileName,
     ctx: &QueryContext,
 ) -> Result<DriftReport, EngineError> {
-    let described = describe_bindings(engine, ontology, profile, ctx).await?;
+    let deadline = tokio::time::Instant::now() + ctx.timeout;
+    let described =
+        describe_bindings_before(engine, ontology, profile, ctx, Some(deadline)).await?;
     Ok(drift_report(ontology, profile, &described))
 }
 

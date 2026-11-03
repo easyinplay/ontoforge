@@ -223,6 +223,8 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
             inner: &*self.host.engine,
             trace,
             limits: self.limits,
+            drift: &ctx.drift,
+            purpose: context::EnginePurpose::Query,
         };
         match name {
             mcp_catalog::DESCRIBE_TOOL => {
@@ -612,6 +614,13 @@ impl<E: Engine + Send + Sync + 'static> ServerHandler for OntologyMcpHandler<E> 
             let action_trace = trace.clone();
             context::spawn_action(&self.host, async move {
                 let _permit = owned_permit;
+                let engine = context::ScopedEngine {
+                    inner: &*host.engine,
+                    trace: &action_trace,
+                    limits,
+                    drift: &ctx.drift,
+                    purpose: context::EnginePurpose::Action,
+                };
                 let result = async {
                     ActionService::new(
                         &host.store,
@@ -624,7 +633,7 @@ impl<E: Engine + Send + Sync + 'static> ServerHandler for OntologyMcpHandler<E> 
                         })?,
                         &host.tokens,
                     )
-                    .with_engine(&*host.engine)
+                    .with_engine(&engine)
                     .execute_with_snapshot(
                         &ctx.principal,
                         &ctx.scope,

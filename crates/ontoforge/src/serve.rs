@@ -8,10 +8,10 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use camino::Utf8Path;
 use ontoforge_auth::authn::Authenticator;
 use ontoforge_auth::authn::dev::{DevKey, DevMode, DevVerifier};
-use ontoforge_engine::AnyEngine;
 use ontoforge_engine::config::{AuthConfig, build_trino_engines};
 use ontoforge_engine::printer::l2::McpDefaults;
 use ontoforge_engine::sqlite::SqliteEngine;
+use ontoforge_engine::{AnyEngine, Engine};
 use ontoforge_server::ServerHost;
 use ontoforge_storage::store::EditStore;
 
@@ -141,6 +141,11 @@ pub async fn run_with_shutdown(
         eprintln!("cannot initialize dev store: {error}");
         return 3;
     }
+    let Ok(listener) = tokio::net::TcpListener::bind(args.bind).await else {
+        eprintln!("cannot bind HTTP listener");
+        let _ = store.read_audit().shutdown().await;
+        return 3;
+    };
     let mut l2_runtime = None;
     let engine = if let Some(state) = &dev_state {
         match crate::dev::build_engine(state).await {
@@ -154,6 +159,7 @@ pub async fn run_with_shutdown(
     } else if let Some(config) = server.config.trino.clone() {
         let Ok(mut engines) = build_trino_engines(&config, dir, &|name| std::env::var(name).ok())
         else {
+            let _ = store.read_audit().shutdown().await;
             eprintln!("cannot initialize configured query engine");
             return 1;
         };
@@ -162,6 +168,7 @@ pub async fn run_with_shutdown(
             let Ok(monitor_ontology) =
                 build_trino_engines(&config, dir, &|name| std::env::var(name).ok())
             else {
+                let _ = store.read_audit().shutdown().await;
                 eprintln!("cannot initialize L2 monitor query engine");
                 return 1;
             };
@@ -170,6 +177,8 @@ pub async fn run_with_shutdown(
                 .start_l2_acl_monitor(Arc::new(monitor_ontology.ontology))
                 .await
             else {
+                let _ = store.read_audit().shutdown().await;
+                let _ = l2.drain_cancellations().await;
                 eprintln!("cannot initialize L2 ACL monitor");
                 return 3;
             };
@@ -178,35 +187,34 @@ pub async fn run_with_shutdown(
         AnyEngine::Trino(engines.ontology)
     } else {
         let Ok(engine) = SqliteEngine::in_memory().await else {
+            let _ = store.read_audit().shutdown().await;
             eprintln!("cannot initialize query engine");
             return 3;
         };
         AnyEngine::Sqlite(engine)
     };
-    let Ok(listener) = tokio::net::TcpListener::bind(args.bind).await else {
-        eprintln!("cannot bind HTTP listener");
-        let _ = store.read_audit().shutdown().await;
-        return 3;
-    };
+    let engine = Arc::new(engine);
     let host = ServerHost::new(
         Arc::clone(&store),
-        Arc::new(engine),
+        Arc::clone(&engine),
         auth,
         auth_config,
         signing_key,
     );
     let Ok(host) = host else {
-        let _ = store.read_audit().shutdown().await;
+        cleanup_startup(&store, &engine, l2_runtime).await;
         eprintln!("cannot initialize HTTP server signing key");
         return 3;
     };
     ontoforge_server::state::set_mcp_defaults(&store, deployment_mcp_defaults(args));
     if let Some((l2, monitor)) = l2_runtime {
         if ontoforge_server::state::set_l2_engine(&store, l2).is_err() {
+            cleanup_failed_install(&host, monitor).await;
             eprintln!("cannot install L2 query engine");
             return 3;
         }
-        if host.install_l2_monitor(monitor).is_err() {
+        if let Err(monitor) = host.install_l2_monitor(monitor) {
+            cleanup_failed_install(&host, monitor).await;
             eprintln!("cannot install L2 ACL monitor");
             return 3;
         }
@@ -218,6 +226,69 @@ pub async fn run_with_shutdown(
             3
         }
     }
+}
+
+async fn cleanup_failed_install(
+    host: &ServerHost<AnyEngine>,
+    monitor: ontoforge_engine::trino::l2_monitor::L2AclMonitor,
+) {
+    let cleanup = monitor.cleanup_handle();
+    let _ = tokio::time::timeout(ontoforge_server::lifecycle::SHUTDOWN_TIMEOUT, async {
+        let _ = tokio::join!(
+            monitor.shutdown(),
+            ontoforge_server::lifecycle::ServerLifecycle::new(host).shutdown()
+        );
+        let _ = cleanup.drain().await;
+    })
+    .await;
+}
+
+async fn cleanup_startup(
+    store: &EditStore,
+    engine: &AnyEngine,
+    l2: Option<(
+        Arc<ontoforge_engine::trino::TrinoEngine>,
+        ontoforge_engine::trino::l2_monitor::L2AclMonitor,
+    )>,
+) {
+    let deadline = tokio::time::Instant::now() + ontoforge_server::lifecycle::SHUTDOWN_TIMEOUT;
+    let _ = tokio::time::timeout_at(
+        deadline - std::time::Duration::from_secs(4),
+        store.read_audit().shutdown(),
+    )
+    .await;
+    let mut l2_engine = None;
+    let mut cleanup = None;
+    if let Some((l2, monitor)) = l2 {
+        cleanup = Some(monitor.cleanup_handle());
+        l2_engine = Some(l2);
+        let _ = tokio::time::timeout_at(
+            deadline - std::time::Duration::from_secs(2),
+            monitor.shutdown(),
+        )
+        .await;
+    }
+    let _ = tokio::time::timeout_at(deadline, async {
+        let (core, l2, monitor) = tokio::join!(
+            engine.drain_cancellations(),
+            async {
+                if let Some(l2) = l2_engine {
+                    l2.drain_cancellations().await
+                } else {
+                    Ok(())
+                }
+            },
+            async {
+                if let Some(cleanup) = cleanup {
+                    cleanup.drain().await
+                } else {
+                    Ok(())
+                }
+            }
+        );
+        core.and(l2).and(monitor)
+    })
+    .await;
 }
 
 fn deployment_mcp_defaults(args: &ServeArgs) -> McpDefaults {

@@ -170,8 +170,18 @@ async fn real_health_l2_failure_expiry_recovery_keeps_core() {
     let loose = support::required("ONTOFORGE_TRINO_L2_LOOSE_URL");
     let (ontology, l2) = acl_engines(&url);
     let (disconnected, _) = acl_engines("http://127.0.0.1:0");
+    let core_url = support::required("ONTOFORGE_TRINO_URL");
+    let core_config = parse_server_config(&format!(
+        "[trino]\nurl = \"{core_url}\"\n[trino.identities.ontology]\nuser = \"ontology\"\n"
+    ))
+    .expect("core Trino config")
+    .trino
+    .expect("core Trino");
+    let core_engine = build_trino_engines(&core_config, Utf8Path::new("."), &|_: &str| None)
+        .expect("real ontology engine")
+        .ontology;
     let core = Arc::new(CoreProbe {
-        inner: Arc::clone(&ontology),
+        inner: Arc::new(core_engine),
         disconnected,
         fail: AtomicBool::new(false),
     });

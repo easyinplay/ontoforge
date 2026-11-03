@@ -83,6 +83,8 @@ pub enum QueryError {
     QueryTooComplex,
     #[error("source unavailable")]
     Source,
+    #[error(transparent)]
+    SourceTarget(#[from] ontoforge_engine::SourceTargetError),
     #[error("unsupported numeric value")]
     UnsupportedNumericValue,
     #[error("edit store unavailable")]
@@ -107,6 +109,7 @@ impl QueryError {
             Self::CostExceeded => "COST_EXCEEDED",
             Self::QueryTooComplex => "QUERY_TOO_COMPLEX",
             Self::Source => "SOURCE_UNAVAILABLE",
+            Self::SourceTarget(error) => error.code(),
             Self::UnsupportedNumericValue => "UNSUPPORTED_NUMERIC_VALUE",
             Self::Store => "STORE_UNAVAILABLE",
             Self::AuditUnavailable => "AUDIT_UNAVAILABLE",
@@ -289,7 +292,9 @@ impl<E: Engine> QueryService<'_, E> {
         let result = self.execute_pk(request, &mut audit).await;
         let (status, count) = match &result {
             Ok(page) => (ReadAuditStatus::Success, page.rows.len()),
-            Err(QueryError::Source | QueryError::Store) => (ReadAuditStatus::SourceError, 0),
+            Err(QueryError::Source | QueryError::SourceTarget(_) | QueryError::Store) => {
+                (ReadAuditStatus::SourceError, 0)
+            }
             Err(_) => (ReadAuditStatus::Denied, 0),
         };
         let result = audit
@@ -512,6 +517,7 @@ async fn read_pk_source_with_audit<E: Engine>(
     let mut ctx = QueryContext::new("l0-pk".to_owned(), Vec::new());
     ctx.max_rows = max_rows;
     ctx.max_bytes = max_decoded_bytes;
+    engine.check_source_target(&binding.target)?;
     let output = engine
         .execute(&sql, &ctx)
         .await

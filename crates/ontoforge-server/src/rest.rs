@@ -162,6 +162,8 @@ pub async fn object<E: Engine + Send + Sync + 'static>(
         inner: &*host.engine,
         trace: &trace,
         limits,
+        drift: &ctx.drift,
+        purpose: context::EnginePurpose::Query,
     };
     let execution = QueryService {
         principal: &ctx.principal,
@@ -273,6 +275,8 @@ pub async fn query<E: Engine + Send + Sync + 'static>(
         inner: &*host.engine,
         trace: &trace,
         limits,
+        drift: &ctx.drift,
+        purpose: context::EnginePurpose::Query,
     };
     let result = QueryService {
         principal: &ctx.principal,
@@ -350,6 +354,8 @@ pub async fn aggregate<E: Engine + Send + Sync + 'static>(
         inner: &*host.engine,
         trace: &trace,
         limits,
+        drift: &ctx.drift,
+        purpose: context::EnginePurpose::Query,
     };
     let result = QueryService {
         principal: &ctx.principal,
@@ -438,8 +444,16 @@ pub async fn action<E: Engine + Send + Sync + 'static>(
         );
     };
     if request.validate_only {
+        let trace = context::RequestTrace::new();
+        let engine = context::ScopedEngine {
+            inner: &*host.engine,
+            trace: &trace,
+            limits,
+            drift: &ctx.drift,
+            purpose: context::EnginePurpose::Action,
+        };
         let result = ActionService::new(&host.store, action_limits, &host.tokens)
-            .with_engine(&*host.engine)
+            .with_engine(&engine)
             .execute_with_snapshot(&ctx.principal, &ctx.scope, &ctx.active, request)
             .await;
         return action_response(result, &action_name, &request_id);
@@ -451,10 +465,19 @@ pub async fn action<E: Engine + Send + Sync + 'static>(
     let principal = ctx.principal;
     let scope = ctx.scope;
     let active = Arc::clone(&ctx.active);
+    let drift = ctx.drift;
     let admitted = context::spawn_action(&host, async move {
         let _permit = owned_permit;
+        let trace = context::RequestTrace::new();
+        let engine = context::ScopedEngine {
+            inner: &*task_host.engine,
+            trace: &trace,
+            limits,
+            drift: &drift,
+            purpose: context::EnginePurpose::Action,
+        };
         let result = ActionService::new(&task_host.store, action_limits, &task_host.tokens)
-            .with_engine(&*task_host.engine)
+            .with_engine(&engine)
             .execute_with_snapshot(&principal, &scope, &active, request)
             .await;
         let _ = sender.send(result);
@@ -569,6 +592,8 @@ pub async fn history<E: Engine + Send + Sync + 'static>(
         inner: &*host.engine,
         trace: &trace,
         limits,
+        drift: &ctx.drift,
+        purpose: context::EnginePurpose::Query,
     };
     let page = QueryService {
         principal: &ctx.principal,

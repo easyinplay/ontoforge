@@ -30,18 +30,20 @@ pub fn response(status: StatusCode, request_id: &str, value: Value) -> Response 
 pub fn query_status(error: &QueryError) -> StatusCode {
     match error {
         QueryError::NotFound => StatusCode::NOT_FOUND,
-        QueryError::Source | QueryError::Store | QueryError::AuditUnavailable => {
-            StatusCode::SERVICE_UNAVAILABLE
-        }
+        QueryError::Source
+        | QueryError::SourceTarget(_)
+        | QueryError::Store
+        | QueryError::AuditUnavailable => StatusCode::SERVICE_UNAVAILABLE,
         QueryError::AmbiguousObject => StatusCode::CONFLICT,
         _ => StatusCode::BAD_REQUEST,
     }
 }
 pub fn aggregate_status(error: &AggregateError) -> StatusCode {
     match error {
-        AggregateError::Source | AggregateError::Store | AggregateError::AuditUnavailable => {
-            StatusCode::SERVICE_UNAVAILABLE
-        }
+        AggregateError::Source
+        | AggregateError::SourceTarget(_)
+        | AggregateError::Store
+        | AggregateError::AuditUnavailable => StatusCode::SERVICE_UNAVAILABLE,
         _ => StatusCode::BAD_REQUEST,
     }
 }
@@ -52,6 +54,7 @@ pub fn aggregate_code(error: &AggregateError) -> &'static str {
         AggregateError::Unsupported => "UNSUPPORTED",
         AggregateError::AggregateCostExceeded => "COST_EXCEEDED",
         AggregateError::Source => "SOURCE_UNAVAILABLE",
+        AggregateError::SourceTarget(error) => error.code(),
         AggregateError::Store => "STORE_UNAVAILABLE",
         AggregateError::AuditUnavailable => "AUDIT_UNAVAILABLE",
         AggregateError::UnsupportedNumericValue => "UNSUPPORTED_NUMERIC_VALUE",
@@ -67,7 +70,9 @@ pub fn action_status(error: &ActionError) -> StatusCode {
         | ActionError::Commit(ontoforge_storage::commit::ActionCommitError::Edit(
             ontoforge_storage::commit::EditError::DefinitionStale { .. },
         )) => StatusCode::CONFLICT,
-        ActionError::EngineUnavailable | ActionError::Store(_) => StatusCode::SERVICE_UNAVAILABLE,
+        ActionError::EngineUnavailable | ActionError::SourceTarget(_) | ActionError::Store(_) => {
+            StatusCode::SERVICE_UNAVAILABLE
+        }
         ActionError::Commit(ontoforge_storage::commit::ActionCommitError::CommandIdReused) => {
             StatusCode::CONFLICT
         }
@@ -114,6 +119,7 @@ pub fn action_code(error: &ActionError) -> &'static str {
             "NOT_FOUND"
         }
         ActionError::EngineUnavailable => "SOURCE_UNAVAILABLE",
+        ActionError::SourceTarget(error) => error.code(),
         ActionError::Store(_) => "STORE_UNAVAILABLE",
         ActionError::Commit(ontoforge_storage::commit::ActionCommitError::CommandIdReused) => {
             "COMMAND_ID_REUSED"

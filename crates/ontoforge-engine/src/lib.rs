@@ -88,9 +88,43 @@ pub enum EngineStatus {
     Unavailable { reason: String },
 }
 
+/// A safe source admission result for a logical binding target.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error, serde::Serialize)]
+pub enum SourceTargetError {
+    #[error("source schema drift")]
+    SchemaDrift,
+    #[error("source metadata unreadable")]
+    Unreadable,
+    #[error("source check pending")]
+    Pending,
+    #[error("source check unavailable")]
+    Unavailable,
+}
+
+impl SourceTargetError {
+    #[must_use]
+    pub fn code(self) -> &'static str {
+        match self {
+            Self::SchemaDrift => "SOURCE_SCHEMA_DRIFT",
+            Self::Unreadable => "SOURCE_UNREADABLE",
+            Self::Pending => "SOURCE_CHECK_PENDING",
+            Self::Unavailable => "SOURCE_CHECK_UNAVAILABLE",
+        }
+    }
+}
+
 /// A query engine.
 pub trait Engine {
     fn dialect(&self) -> Dialect;
+
+    /// Called only at an actual source access, after authorization and audit reservation.
+    /// Library engines have no host-owned drift policy; request wrappers enforce it.
+    fn check_source_target(
+        &self,
+        _target: &ontoforge_schema::ir::BindingTarget,
+    ) -> Result<(), SourceTargetError> {
+        Ok(())
+    }
 
     fn execute(
         &self,

@@ -537,7 +537,9 @@ impl<E: Engine> QueryService<'_, E> {
         let result = self.execute_list_with_budget(query, &mut budget).await;
         let (status, count) = match &result {
             Ok(page) => (ReadAuditStatus::Success, page.rows.len()),
-            Err(QueryError::Source | QueryError::Store) => (ReadAuditStatus::SourceError, 0),
+            Err(QueryError::Source | QueryError::SourceTarget(_) | QueryError::Store) => {
+                (ReadAuditStatus::SourceError, 0)
+            }
             Err(_) => (ReadAuditStatus::Denied, 0),
         };
         let result = budget.finish_audit(status, count).and(result);
@@ -741,6 +743,10 @@ impl<E: Engine> QueryService<'_, E> {
         let mut edit_cursor: Option<EditScanCursor>;
         let mut edit_more: bool;
         if let Some(plan) = &source_plan {
+            self.engine
+                .check_source_target(&ontoforge_schema::ir::BindingTarget::ObjectType(
+                    type_name.clone(),
+                ))?;
             budget.charge_backend_calls(2)?;
             let sql = print_select(&plan.select, self.engine.dialect())
                 .map_err(|_| QueryError::Source)?;
@@ -890,6 +896,10 @@ impl<E: Engine> QueryService<'_, E> {
         limit: usize,
         budget: &mut WorkBudget,
     ) -> Result<Vec<SourceRow>, QueryError> {
+        self.engine
+            .check_source_target(&ontoforge_schema::ir::BindingTarget::ObjectType(
+                ty.api_name.clone(),
+            ))?;
         budget.charge_backend_calls(1)?;
         let sql = print_select(select, self.engine.dialect()).map_err(|_| QueryError::Source)?;
         budget.observe_sql(sql.as_str());

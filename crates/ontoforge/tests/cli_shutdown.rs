@@ -9,6 +9,49 @@ mod serve_fixture {
     include!("unit/serve.test.rs");
 
     #[tokio::test]
+    async fn occupied_listener_does_not_start_an_l2_probe_owner() {
+        use std::fmt::Write as _;
+        use std::sync::Arc;
+        use std::sync::atomic::{AtomicUsize, Ordering};
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+        let f = fixture().await;
+        let occupied = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let bind = occupied.local_addr().unwrap();
+        let upstream = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let url = format!("http://{}", upstream.local_addr().unwrap());
+        let calls = Arc::new(AtomicUsize::new(0));
+        let observed = Arc::clone(&calls);
+        let stub = tokio::spawn(async move {
+            loop {
+                let (mut stream, _) = upstream.accept().await.unwrap();
+                let mut buffer = [0; 8192];
+                let _ = stream.read(&mut buffer).await.unwrap();
+                observed.fetch_add(1, Ordering::SeqCst);
+                stream.write_all(b"HTTP/1.1 401 Unauthorized\r\nContent-Length: 0\r\nConnection: close\r\n\r\n").await.unwrap();
+            }
+        });
+        let mut config = std::fs::read_to_string(&f.config).unwrap();
+        write!(&mut config, "\n[trino]\nurl = \"{url}\"\n[trino.identities.ontology]\nuser = \"ontology\"\n[trino.identities.l2]\nuser = \"l2\"\n[trino.l2_acl.allowed]\ncatalog = \"demo\"\nschema = \"tiny\"\ntable = \"nation\"\n[trino.l2_acl.outside]\ncatalog = \"outside\"\nschema = \"tiny\"\ntable = \"nation\"\n[trino.l2_acl.edit]\ncatalog = \"editstore\"\nschema = \"tiny\"\ntable = \"nation\"\n").unwrap();
+        config.push_str(
+            "[trino.l2_acl]\nactive_query_sql = \"SELECT count(*) FROM demo.tiny.nation\"\n",
+        );
+        std::fs::write(&f.config, config).unwrap();
+        let result = tokio::time::timeout(
+            Duration::from_secs(5),
+            run_with_shutdown(&args(&f, bind), std::future::pending()),
+        )
+        .await;
+        stub.abort();
+        let _ = stub.await;
+        assert_eq!(result.unwrap(), 3);
+        assert_eq!(
+            calls.load(Ordering::SeqCst),
+            0,
+            "port failure must precede all monitor startup probes"
+        );
+    }
+
+    #[tokio::test]
     async fn shutdown_finishes_accepted_action_before_dependency_cancel() {
         let f = fixture().await;
         let bind = unused_address();

@@ -13,27 +13,36 @@ pub async fn endpoint<E: Engine + Send + Sync + 'static>(
     State(host): State<Arc<ServerHost<E>>>,
 ) -> Response {
     let core = host.engine.status().await;
-    let l2 = state::for_host(&host).l2_status();
+    let server_state = state::for_host(&host);
+    let l2 = server_state.l2_status();
+    let drift = match host.store.request_snapshot().await {
+        Ok(snapshot) => server_state.drift_view(&snapshot.active).degraded(),
+        Err(_) => None,
+    };
     let core_available = matches!(core, EngineStatus::Available);
     let (status, http_status) = match core {
-        EngineStatus::Available => {
-            let degraded = l2.is_some_and(|status| {
-                !matches!(
-                    status,
-                    ontoforge_engine::trino::l2_health::L2HealthStatus::Enabled
-                ) && !matches!(
-                    status,
-                    ontoforge_engine::trino::l2_health::L2HealthStatus::Disabled {
-                        reason: ontoforge_engine::trino::l2_health::L2DisableReason::NotConfigured
-                    }
-                )
-            });
+        EngineStatus::Available if drift.is_some() => {
+            let degraded = drift == Some(true)
+                || l2.is_some_and(|status| {
+                    !matches!(
+                        status,
+                        ontoforge_engine::trino::l2_health::L2HealthStatus::Enabled
+                    ) && !matches!(
+                        status,
+                        ontoforge_engine::trino::l2_health::L2HealthStatus::Disabled {
+                            reason:
+                                ontoforge_engine::trino::l2_health::L2DisableReason::NotConfigured
+                        }
+                    )
+                });
             (
                 if degraded { "degraded" } else { "healthy" },
                 StatusCode::OK,
             )
         }
-        EngineStatus::Unavailable { .. } => ("unhealthy", StatusCode::SERVICE_UNAVAILABLE),
+        EngineStatus::Available | EngineStatus::Unavailable { .. } => {
+            ("unhealthy", StatusCode::SERVICE_UNAVAILABLE)
+        }
     };
     let mut body = json!({
         "status": status,

@@ -17,6 +17,7 @@ use tokio::net::TcpListener;
 use tokio::sync::Semaphore;
 
 pub mod context;
+pub mod drift;
 pub mod error;
 pub mod health;
 pub(crate) mod history_page;
@@ -98,6 +99,8 @@ pub enum HostError {
     AuditDrain,
     #[error("server shutdown failed")]
     Shutdown,
+    #[error("source drift monitor initialization failed")]
+    SourceMonitor,
 }
 
 impl From<lifecycle::LifecycleError> for HostError {
@@ -107,6 +110,7 @@ impl From<lifecycle::LifecycleError> for HostError {
             lifecycle::LifecycleError::Timeout
             | lifecycle::LifecycleError::Action
             | lifecycle::LifecycleError::Monitor(_)
+            | lifecycle::LifecycleError::SourceMonitor
             | lifecycle::LifecycleError::Cancellation(_) => Self::Shutdown,
         }
     }
@@ -144,8 +148,50 @@ impl<E: Engine + Send + Sync + 'static> ServerHost<E> {
         shutdown: impl Future<Output = ()> + Send + 'static,
         limits: ServerLimits,
     ) -> Result<(), HostError> {
-        let limits = limits.validate()?;
+        let mut shutdown = Box::pin(shutdown);
+        let Some(limits) = self.initialize(limits, &mut shutdown).await? else {
+            return Ok(());
+        };
         let server_state = state::for_host(&self);
+        self.serve_initialized(listener, shutdown, limits, server_state)
+            .await
+    }
+
+    async fn initialize(
+        &self,
+        limits: ServerLimits,
+        shutdown: &mut (impl Future<Output = ()> + Send + Unpin),
+    ) -> Result<Option<ServerLimits>, HostError> {
+        let limits = limits.validate()?;
+        let server_state = state::for_host(self);
+        let ready = server_state
+            .start_drift(self)
+            .map_err(|()| HostError::SourceMonitor)?;
+        let initialized = tokio::select! {
+            biased;
+            () = shutdown => None,
+            result = ready => Some(result),
+        };
+        match initialized {
+            Some(Ok(Ok(()))) => Ok(Some(limits)),
+            other => {
+                lifecycle::ServerLifecycle::new(self).shutdown().await?;
+                if other.is_none() {
+                    Ok(None)
+                } else {
+                    Err(HostError::SourceMonitor)
+                }
+            }
+        }
+    }
+
+    async fn serve_initialized(
+        self: Arc<Self>,
+        listener: TcpListener,
+        shutdown: impl Future<Output = ()> + Send + 'static,
+        limits: ServerLimits,
+        server_state: Arc<state::ServerState>,
+    ) -> Result<(), HostError> {
         let admission = (
             Arc::new(Semaphore::new(limits.max_concurrent_requests)),
             limits.deadline,

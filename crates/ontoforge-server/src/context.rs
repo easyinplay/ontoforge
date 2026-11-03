@@ -180,13 +180,29 @@ pub async fn admit(
     response
 }
 
+/// Source admission is shared; only independent queries inherit transport limits.
+#[derive(Debug, Clone, Copy)]
+pub enum EnginePurpose {
+    Query,
+    Action,
+}
+
 pub struct ScopedEngine<'a, E> {
     pub inner: &'a E,
     pub trace: &'a RequestTrace,
     pub limits: crate::ServerLimits,
+    pub drift: &'a crate::drift::DriftView,
+    pub purpose: EnginePurpose,
 }
 
 impl<E: Engine + Sync> Engine for ScopedEngine<'_, E> {
+    fn check_source_target(
+        &self,
+        target: &ontoforge_schema::ir::BindingTarget,
+    ) -> Result<(), ontoforge_engine::SourceTargetError> {
+        self.drift.check(target)?;
+        self.inner.check_source_target(target)
+    }
     fn dialect(&self) -> ontoforge_engine::Dialect {
         self.inner.dialect()
     }
@@ -195,6 +211,9 @@ impl<E: Engine + Sync> Engine for ScopedEngine<'_, E> {
         sql: &PrintedSql,
         ctx: &QueryContext,
     ) -> Result<QueryOutput, EngineError> {
+        if matches!(self.purpose, EnginePurpose::Action) {
+            return self.inner.execute(sql, ctx).await;
+        }
         let mut ctx = ctx.clone();
         ctx.max_rows = ctx.max_rows.min(self.limits.execution.max_raw_candidates);
         ctx.max_bytes = ctx.max_bytes.min(self.limits.execution.max_decoded_bytes);
@@ -226,6 +245,7 @@ pub struct RequestContext {
     pub principal: Principal,
     pub active: Arc<ActiveDefinition>,
     pub scope: PrincipalScope,
+    pub drift: Arc<crate::drift::DriftView>,
 }
 
 pub async fn build<E: Engine + Send + Sync + 'static>(
@@ -280,6 +300,7 @@ pub async fn build<E: Engine + Send + Sync + 'static>(
     Ok((
         RequestContext {
             principal: principal.clone(),
+            drift: crate::state::for_host(host).drift_view(&snapshot.active),
             active: snapshot.active,
             scope: compiled.for_principal(&principal),
         },

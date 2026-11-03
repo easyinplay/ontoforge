@@ -6,7 +6,7 @@ use std::time::Duration;
 
 use crate::{ServerHost, context, state};
 
-pub(crate) const SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(10);
+pub const SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(10);
 
 #[derive(Debug, thiserror::Error)]
 pub enum LifecycleError {
@@ -16,6 +16,8 @@ pub enum LifecycleError {
     Audit,
     #[error("L2 monitor shutdown failed: {0}")]
     Monitor(EngineError),
+    #[error("source drift monitor shutdown failed")]
+    SourceMonitor,
     #[error("accepted action task failed")]
     Action,
     #[error("engine cancellation drain failed: {0}")]
@@ -71,14 +73,32 @@ impl<E: Engine + Send + Sync + 'static> ServerLifecycle<'_, E> {
         let monitor_cleanup = monitor
             .as_ref()
             .map(ontoforge_engine::trino::l2_monitor::L2AclMonitor::cleanup_handle);
-        let monitor = if let Some(monitor) = monitor {
-            tokio::time::timeout_at(deadline - Duration::from_secs(2), monitor.shutdown())
-                .await
-                .map_err(|_| LifecycleError::Timeout)
-                .and_then(|result| result.map_err(LifecycleError::Monitor))
-        } else {
-            Ok(())
-        };
+        let drift = server_state.take_drift();
+        let monitors = tokio::time::timeout_at(deadline - Duration::from_secs(2), async {
+            let (l2, source) = tokio::join!(
+                async {
+                    if let Some(monitor) = monitor {
+                        monitor.shutdown().await.map_err(LifecycleError::Monitor)
+                    } else {
+                        Ok(())
+                    }
+                },
+                async {
+                    if let Some(drift) = drift {
+                        drift
+                            .shutdown()
+                            .await
+                            .map_err(|()| LifecycleError::SourceMonitor)
+                    } else {
+                        Ok(())
+                    }
+                }
+            );
+            l2.and(source)
+        })
+        .await
+        .map_err(|_| LifecycleError::Timeout)
+        .and_then(|result| result);
         let l2 = server_state.l2_engine();
         let cancellations = tokio::time::timeout_at(deadline, async {
             let (core, l2, monitor) = tokio::join!(
@@ -107,7 +127,7 @@ impl<E: Engine + Send + Sync + 'static> ServerLifecycle<'_, E> {
         actions
             .and(drained)
             .and(audit)
-            .and(monitor)
+            .and(monitors)
             .and(cancellations)
     }
 }

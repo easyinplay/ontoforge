@@ -120,6 +120,8 @@ pub enum AggregateError {
     AggregateCostExceeded,
     #[error("aggregate source unavailable")]
     Source,
+    #[error(transparent)]
+    SourceTarget(#[from] ontoforge_engine::SourceTargetError),
     #[error("aggregate edit store unavailable")]
     Store,
     #[error("read audit unavailable")]
@@ -132,6 +134,7 @@ impl From<crate::QueryError> for AggregateError {
     fn from(value: crate::QueryError) -> Self {
         match value {
             crate::QueryError::Source => Self::Source,
+            crate::QueryError::SourceTarget(error) => Self::SourceTarget(error),
             crate::QueryError::UnsupportedNumericValue => Self::UnsupportedNumericValue,
             crate::QueryError::Store => Self::Store,
             crate::QueryError::AuditUnavailable => Self::AuditUnavailable,
@@ -781,6 +784,7 @@ impl<E: Engine> QueryService<'_, E> {
         budget: &mut WorkBudget,
     ) -> Result<AggregateResult, AggregateError> {
         budget.charge_backend_calls(1)?;
+        self.engine.check_source_target(&binding.target)?;
         let sql =
             print_select(select, self.engine.dialect()).map_err(|_| AggregateError::Source)?;
         budget.observe_sql(sql.as_str());
@@ -920,9 +924,9 @@ impl<E: Engine> QueryService<'_, E> {
             .await;
         let (status, count) = match &result {
             Ok(value) => (ReadAuditStatus::Success, value.buckets.len()),
-            Err(AggregateError::Source | AggregateError::Store) => {
-                (ReadAuditStatus::SourceError, 0)
-            }
+            Err(
+                AggregateError::Source | AggregateError::SourceTarget(_) | AggregateError::Store,
+            ) => (ReadAuditStatus::SourceError, 0),
             Err(_) => (ReadAuditStatus::Denied, 0),
         };
         let result = budget

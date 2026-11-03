@@ -110,6 +110,8 @@ pub enum ActionError {
     NotFound,
     #[error("source unavailable")]
     EngineUnavailable,
+    #[error(transparent)]
+    SourceTarget(#[from] ontoforge_engine::SourceTargetError),
     #[error("object key is ambiguous")]
     AmbiguousObject,
     #[error("{0}")]

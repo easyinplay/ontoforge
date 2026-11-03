@@ -53,6 +53,16 @@ pub(crate) async fn prepare<E: Engine>(
             else {
                 continue;
             };
+            let denied = || {
+                if criteria::is_target_ref(action, name) {
+                    ActionError::NotFound
+                } else {
+                    ActionError::ScopeDenied
+                }
+            };
+            if !scope.types.contains_key(type_name) {
+                return Err(denied());
+            }
             let key = row_key(type_name, pk);
             let ty = active
                 .ontology
@@ -69,13 +79,6 @@ pub(crate) async fn prepare<E: Engine>(
                 .get(&key)
                 .and_then(|edit| edit.as_ref())
                 .map(|e| &e.row);
-            let denied = || {
-                if criteria::is_target_ref(action, name) {
-                    ActionError::NotFound
-                } else {
-                    ActionError::ScopeDenied
-                }
-            };
             if row.is_some_and(|row| row.deleted) {
                 return Err(denied());
             }
@@ -118,6 +121,7 @@ pub(crate) async fn prepare<E: Engine>(
                         .await
                         .map_err(|error| match error {
                             QueryError::AmbiguousObject => ActionError::AmbiguousObject,
+                            QueryError::SourceTarget(error) => ActionError::SourceTarget(error),
                             _ => ActionError::EngineUnavailable,
                         })?
                         .ok_or_else(denied)?;

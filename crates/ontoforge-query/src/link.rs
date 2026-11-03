@@ -301,6 +301,7 @@ impl<E: Engine> QueryService<'_, E> {
             let other_def = &other_ty.properties[&other_ty.primary_key];
             let mut after: Option<PropertyValue> = None;
             loop {
+                self.engine.check_source_target(&binding.target)?;
                 let mut filters = vec![Expr::Compare {
                     left: Box::new(Expr::Column(fixed_column.clone())),
                     op: CompareOp::Eq,
