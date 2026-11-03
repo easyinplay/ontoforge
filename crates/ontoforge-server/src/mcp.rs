@@ -78,8 +78,7 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
     }
 
     fn catalog(ctx: &context::RequestContext) -> ToolCatalog {
-        ToolCatalog::for_scope(&ctx.scope)
-            .with_actions(&ctx.scope, ctx.active.ontology.action_types.values())
+        ToolCatalog::for_scope(&ctx.scope).with_actions(&ctx.scope, &ctx.active.ontology)
     }
 
     async fn call_l2(
@@ -159,11 +158,12 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
         name: &str,
         args: &Map<String, Value>,
         ctx: &context::RequestContext,
-    ) -> Result<Value, String> {
-        let trace = context::RequestTrace::new();
+        trace: &context::RequestTrace,
+    ) -> Result<Value, ErrorData> {
+        let failure = |code| crate::error::mcp(code, name, &trace.id());
         let engine = context::ScopedEngine {
             inner: &*self.host.engine,
-            trace: &trace,
+            trace,
             limits: self.limits,
         };
         match name {
@@ -193,27 +193,37 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
                     .filter(|action| ctx.scope.actions.contains(&action.api_name))
                     .map(|action| json!({"apiName": action.api_name, "displayName": action.display_name, "description": action.description}))
                     .collect::<Vec<_>>();
+                let links = ctx.active.ontology.link_types.values()
+                    .filter(|link| ctx.scope.types.contains_key(&link.from.object_type)
+                        && ctx.scope.types.contains_key(&link.to.object_type))
+                    .map(|link| json!({"apiName": link.api_name, "displayName": link.display_name,
+                        "description": link.description, "from": link.from.object_type, "to": link.to.object_type}))
+                    .collect::<Vec<_>>();
+                let engine_status = match self.host.engine.status().await {
+                    ontoforge_engine::EngineStatus::Available => "available",
+                    ontoforge_engine::EngineStatus::Unavailable { .. } => "unavailable",
+                };
                 Ok(
-                    json!({"apiName": ctx.active.ontology.api_name, "description": ctx.active.ontology.description, "defVersion": ctx.active.def_version, "objectTypes": object_types, "actions": actions}),
+                    json!({"apiName": ctx.active.ontology.api_name, "description": ctx.active.ontology.description, "defVersion": ctx.active.def_version, "objectTypes": object_types, "actions": actions, "links": links, "engineStatus": engine_status}),
                 )
             }
             mcp_catalog::GET_OBJECT_TOOL => {
                 let object_type = args
                     .get("objectType")
                     .and_then(Value::as_str)
-                    .ok_or_else(|| "objectType is required".to_owned())?;
+                    .ok_or_else(|| failure("INVALID_REQUEST"))?;
                 let object_type_name = ObjectTypeName::try_from(object_type.to_owned())
-                    .map_err(|_| "invalid objectType".to_owned())?;
+                    .map_err(|_| failure("INVALID_REQUEST"))?;
                 let ty = ctx
                     .active
                     .ontology
                     .object_types
                     .get(&object_type_name)
-                    .ok_or_else(|| "object not found".to_owned())?;
+                    .ok_or_else(|| failure("NOT_FOUND"))?;
                 let pk = args
                     .get("pk")
                     .cloned()
-                    .ok_or_else(|| "pk is required".to_owned())?;
+                    .ok_or_else(|| failure("INVALID_REQUEST"))?;
                 let select = ty.properties.keys().cloned().collect();
                 let result = QueryService {
                     principal: &ctx.principal,
@@ -224,16 +234,22 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
                     limits: self.limits.execution,
                     tokens: &self.host.tokens,
                 }
-                .execute_audited(QueryRequest {
-                    set: ObjectSet::Pk {
-                        object_type: object_type_name,
-                        pk,
+                .execute_audited_observed(
+                    QueryRequest {
+                        set: ObjectSet::Pk {
+                            object_type: object_type_name,
+                            pk,
+                        },
+                        select,
                     },
-                    select,
-                })
+                    |id| trace.reserved(id),
+                )
                 .await
                 .result
-                .map_err(|error| error.to_string())?;
+                .map_err(|error| failure(error.code()))?;
+                if result.truncated {
+                    return Err(failure("COST_EXCEEDED"));
+                }
                 Ok(json!(result.rows.into_iter().next()))
             }
             mcp_catalog::QUERY_TOOL
@@ -242,29 +258,29 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
                 let input: wire::QueryRequest = serde_json::from_value(
                     args.get("request")
                         .cloned()
-                        .ok_or_else(|| "request is required".to_owned())?,
+                        .ok_or_else(|| failure("INVALID_REQUEST"))?,
                 )
-                .map_err(|_| "invalid request".to_owned())?;
+                .map_err(|_| failure("INVALID_REQUEST"))?;
                 let set =
-                    crate::rest::convert_set(input.set).map_err(|()| "invalid query".to_owned())?;
+                    crate::rest::convert_set(input.set).map_err(|()| failure("INVALID_QUERY"))?;
                 let select = input
                     .select
                     .into_iter()
                     .map(PropertyName::try_from)
                     .collect::<Result<Vec<_>, _>>()
-                    .map_err(|_| "invalid query".to_owned())?;
+                    .map_err(|_| failure("INVALID_QUERY"))?;
                 let order_by = input
                     .order_by
                     .into_iter()
                     .map(crate::rest::convert_order)
                     .collect::<Result<Vec<_>, _>>()
-                    .map_err(|()| "invalid query".to_owned())?;
+                    .map_err(|()| failure("INVALID_QUERY"))?;
                 let object_type = set.object_type().clone();
                 let scope = ctx
                     .scope
                     .types
                     .get(&object_type)
-                    .ok_or_else(|| "object not found".to_owned())?;
+                    .ok_or_else(|| failure("NOT_FOUND"))?;
                 let validated = ValidatedQuery::new(
                     QueryRequest { set, select },
                     order_by,
@@ -276,7 +292,7 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
                     scope,
                     CompileLimits::default(),
                 )
-                .map_err(|error| error.to_string())?;
+                .map_err(|error| failure(error.code()))?;
                 let result = QueryService {
                     principal: &ctx.principal,
                     scope: &ctx.scope,
@@ -286,33 +302,33 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
                     limits: self.limits.execution,
                     tokens: &self.host.tokens,
                 }
-                .execute_list_audited(&validated)
+                .execute_list_audited_observed(&validated, |id| trace.reserved(id))
                 .await
                 .result
-                .map_err(|error| error.to_string())?;
+                .map_err(|error| failure(error.code()))?;
                 Ok(json!(result))
             }
             mcp_catalog::AGGREGATE_TOOL => {
                 let input: wire::AggregateRequest = serde_json::from_value(
                     args.get("request")
                         .cloned()
-                        .ok_or_else(|| "request is required".to_owned())?,
+                        .ok_or_else(|| failure("INVALID_REQUEST"))?,
                 )
-                .map_err(|_| "invalid request".to_owned())?;
+                .map_err(|_| failure("INVALID_REQUEST"))?;
                 let set =
-                    crate::rest::convert_set(input.set).map_err(|()| "invalid query".to_owned())?;
+                    crate::rest::convert_set(input.set).map_err(|()| failure("INVALID_QUERY"))?;
                 let group_by = input
                     .group_by
                     .into_iter()
                     .map(PropertyName::try_from)
                     .collect::<Result<Vec<_>, _>>()
-                    .map_err(|_| "invalid query".to_owned())?;
+                    .map_err(|_| failure("INVALID_QUERY"))?;
                 let measures = input
                     .measures
                     .into_iter()
                     .map(crate::rest::convert_measure)
                     .collect::<Result<Vec<_>, _>>()
-                    .map_err(|()| "invalid query".to_owned())?;
+                    .map_err(|()| failure("INVALID_QUERY"))?;
                 let result = QueryService {
                     principal: &ctx.principal,
                     scope: &ctx.scope,
@@ -322,7 +338,7 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
                     limits: self.limits.execution,
                     tokens: &self.host.tokens,
                 }
-                .execute_aggregate(
+                .execute_aggregate_audited_observed(
                     ast::AggregateRequest {
                         set,
                         group_by,
@@ -330,40 +346,42 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
                     },
                     AggregateCapabilities::all_supported(),
                     AggregateLimits::phase4_default(),
+                    |id| trace.reserved(id),
                 )
                 .await
-                .map_err(|error| error.to_string())?;
+                .result
+                .map_err(|error| failure(crate::error::aggregate_code(&error)))?;
                 Ok(json!(result))
             }
             mcp_catalog::HISTORY_TOOL => {
                 let object_type = args
                     .get("objectType")
                     .and_then(Value::as_str)
-                    .ok_or_else(|| "objectType is required".to_owned())?;
+                    .ok_or_else(|| failure("INVALID_REQUEST"))?;
                 let object_type_name = ObjectTypeName::try_from(object_type.to_owned())
-                    .map_err(|_| "invalid objectType".to_owned())?;
+                    .map_err(|_| failure("INVALID_REQUEST"))?;
                 let ty = ctx
                     .active
                     .ontology
                     .object_types
                     .get(&object_type_name)
-                    .ok_or_else(|| "object not found".to_owned())?;
+                    .ok_or_else(|| failure("NOT_FOUND"))?;
                 let pk_json = args
                     .get("pk")
                     .cloned()
-                    .ok_or_else(|| "pk is required".to_owned())?;
+                    .ok_or_else(|| failure("INVALID_REQUEST"))?;
                 let pk_def = ty
                     .properties
                     .get(&ty.primary_key)
-                    .ok_or_else(|| "invalid primary key".to_owned())?;
-                let pk = PropertyValue::from_json(pk_def, &pk_json)
-                    .map_err(|_| "object not found".to_owned())?;
+                    .ok_or_else(|| failure("INVALID_REQUEST"))?;
+                let pk =
+                    PropertyValue::from_json(pk_def, &pk_json).map_err(|_| failure("NOT_FOUND"))?;
                 let type_scope = ctx
                     .scope
                     .types
                     .get(&object_type_name)
-                    .ok_or_else(|| "object not found".to_owned())?;
-                let row = QueryService {
+                    .ok_or_else(|| failure("NOT_FOUND"))?;
+                let page = QueryService {
                     principal: &ctx.principal,
                     scope: &ctx.scope,
                     active: Arc::clone(&ctx.active),
@@ -372,19 +390,27 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
                     limits: self.limits.execution,
                     tokens: &self.host.tokens,
                 }
-                .execute(QueryRequest {
-                    set: ObjectSet::Pk {
-                        object_type: object_type_name.clone(),
-                        pk: pk_json,
+                .execute_audited_observed(
+                    QueryRequest {
+                        set: ObjectSet::Pk {
+                            object_type: object_type_name.clone(),
+                            pk: pk_json,
+                        },
+                        select: ty.properties.keys().cloned().collect(),
                     },
-                    select: ty.properties.keys().cloned().collect(),
-                })
+                    |id| trace.reserved(id),
+                )
                 .await
-                .map_err(|error| error.to_string())?
-                .rows
-                .into_iter()
-                .next()
-                .ok_or_else(|| "object not found".to_owned())?;
+                .result
+                .map_err(|error| failure(error.code()))?;
+                if page.truncated {
+                    return Err(failure("COST_EXCEEDED"));
+                }
+                let row = page
+                    .rows
+                    .into_iter()
+                    .next()
+                    .ok_or_else(|| failure("NOT_FOUND"))?;
                 let current = row
                     .properties
                     .iter()
@@ -410,13 +436,20 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
                         &ctx.active,
                     )
                     .await
-                    .map_err(|error| error.to_string())?;
+                    .map_err(|error| {
+                        failure(match error {
+                            ontoforge_storage::history::HistoryError::NotFound => "NOT_FOUND",
+                            ontoforge_storage::history::HistoryError::Store(_) => {
+                                "STORE_UNAVAILABLE"
+                            }
+                        })
+                    })?;
                 let next = history.last().map(|entry| entry.seq);
                 Ok(
                     json!({"entries": history.into_iter().map(crate::rest::history_entry).collect::<Vec<_>>(), "truncated": false, "nextBeforeSeq": next}),
                 )
             }
-            _ => Err("tool unavailable".to_owned()),
+            _ => Err(failure("NOT_FOUND")),
         }
     }
 }
@@ -456,13 +489,19 @@ impl<E: Engine + Send + Sync + 'static> ServerHandler for OntologyMcpHandler<E> 
         let server_state = Arc::clone(&self.state);
         let _request = server_state.read_tasks.token();
         let tool_name = request.name.to_string();
-        let (ctx, _) = self.request_context(&context, &tool_name).await?;
+        let (ctx, request_id) = self.request_context(&context, &tool_name).await?;
+        let trace = context::RequestTrace::new();
+        trace.reserved(&request_id);
         if !server_state.accepting() {
-            return Err(ErrorData::internal_error("server shutting down", None));
+            return Err(crate::error::mcp(
+                "SERVER_SHUTTING_DOWN",
+                &tool_name,
+                &trace.id(),
+            ));
         }
         let catalog = Self::catalog(&ctx);
         let Some(_tool) = catalog.all().iter().find(|tool| tool.name == tool_name) else {
-            return Err(ErrorData::invalid_request("tool unavailable", None));
+            return Err(crate::error::mcp("NOT_FOUND", &tool_name, &trace.id()));
         };
         let args = request.arguments.unwrap_or_default();
         if matches!(
@@ -491,11 +530,11 @@ impl<E: Engine + Send + Sync + 'static> ServerHandler for OntologyMcpHandler<E> 
                 .action_types
                 .values()
                 .find(|action| action.api_name.as_str() == action_name)
-                .ok_or_else(|| ErrorData::invalid_request("tool unavailable", None))?;
-            let schema = ActionToolSchema::from_action(action);
+                .ok_or_else(|| crate::error::mcp("NOT_FOUND", &tool_name, &trace.id()))?;
+            let schema = ActionToolSchema::from_action(action, &ctx.active.ontology);
             schema
                 .validate_arguments(&args)
-                .map_err(|error| ErrorData::invalid_params(error, None))?;
+                .map_err(|_| crate::error::mcp("INVALID_PARAMETERS", &tool_name, &trace.id()))?;
             let validate_only = args
                 .get("validateOnly")
                 .and_then(Value::as_bool)
@@ -518,13 +557,20 @@ impl<E: Engine + Send + Sync + 'static> ServerHandler for OntologyMcpHandler<E> 
                 .and_then(|parts| parts.extensions.get::<context::AdmissionPermit>())
                 .and_then(|permit| permit.0.lock().unwrap().take());
             let (sender, receiver) = tokio::sync::oneshot::channel();
+            let action_tool = tool_name.clone();
+            let action_trace = trace.clone();
             context::spawn_action(&self.host, async move {
                 let _permit = owned_permit;
                 let result = async {
                     ActionService::new(
                         &host.store,
-                        ActionLimits::new(256, 256, limits.max_body_bytes)
-                            .map_err(|_| ErrorData::internal_error("action unavailable", None))?,
+                        ActionLimits::new(256, 256, limits.max_body_bytes).map_err(|_| {
+                            crate::error::mcp(
+                                "ACTION_UNAVAILABLE",
+                                &action_tool,
+                                &action_trace.id(),
+                            )
+                        })?,
                         &host.tokens,
                     )
                     .with_engine(&*host.engine)
@@ -543,15 +589,21 @@ impl<E: Engine + Send + Sync + 'static> ServerHandler for OntologyMcpHandler<E> 
                         },
                     )
                     .await
-                    .map_err(|error| ErrorData::invalid_params(error.to_string(), None))
+                    .map_err(|error| {
+                        crate::error::mcp(
+                            crate::error::action_code(&error),
+                            &action_tool,
+                            &action_trace.id(),
+                        )
+                    })
                 }
                 .await;
                 let _ = sender.send(result);
             })
-            .map_err(|()| ErrorData::internal_error("server shutting down", None))?;
+            .map_err(|()| crate::error::mcp("SERVER_SHUTTING_DOWN", &tool_name, &trace.id()))?;
             let result = receiver
                 .await
-                .map_err(|_| ErrorData::internal_error("action task failed", None))??;
+                .map_err(|_| crate::error::mcp("ACTION_FAILED", &tool_name, &trace.id()))??;
             let value = match result {
                 ActionOutcome::Committed(receipt) => {
                     json!({"receipt": crate::rest::receipt_json(&receipt)})
@@ -562,11 +614,10 @@ impl<E: Engine + Send + Sync + 'static> ServerHandler for OntologyMcpHandler<E> 
         }
         let result = tokio::select! {
             biased;
-            () = context.ct.cancelled() => return Err(ErrorData::internal_error("request cancelled", None)),
-            () = server_state.read_cancellation.cancelled() => return Err(ErrorData::internal_error("server shutting down", None)),
-            result = self.call_read(&tool_name, &args, &ctx) => result,
-        }
-            .map_err(|error| ErrorData::invalid_params(error, None))?;
+            () = context.ct.cancelled() => return Err(crate::error::mcp("CANCELLED", &tool_name, &trace.id())),
+            () = server_state.read_cancellation.cancelled() => return Err(crate::error::mcp("SERVER_SHUTTING_DOWN", &tool_name, &trace.id())),
+            result = self.call_read(&tool_name, &args, &ctx, &trace) => result,
+        }?;
         Ok(CallToolResult::structured(result).into())
     }
 }

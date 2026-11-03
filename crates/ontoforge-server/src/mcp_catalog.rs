@@ -1,7 +1,7 @@
 use std::collections::BTreeSet;
 
 use ontoforge_auth::scope::PrincipalScope;
-use ontoforge_schema::ir::ActionType;
+use ontoforge_schema::ir::Ontology;
 use ontoforge_schema::ir::Toolset;
 use rmcp::model::{Tool, ToolAnnotations};
 use serde_json::json;
@@ -63,14 +63,12 @@ impl ToolCatalog {
     }
 
     #[must_use]
-    pub fn with_actions<'a, I>(mut self, scope: &PrincipalScope, actions: I) -> Self
-    where
-        I: IntoIterator<Item = &'a ActionType>,
-    {
+    pub fn with_actions(mut self, scope: &PrincipalScope, ontology: &Ontology) -> Self {
         if scope.toolsets.contains(&Toolset::Core) || scope.toolsets.contains(&Toolset::Full) {
-            for action in actions {
+            for action in ontology.action_types.values() {
                 if scope.actions.contains(&action.api_name) {
-                    let schema = crate::mcp_actions::ActionToolSchema::from_action(action);
+                    let schema =
+                        crate::mcp_actions::ActionToolSchema::from_action(action, ontology);
                     self.tools.push(schema.tool(action.description.as_deref()));
                 }
             }

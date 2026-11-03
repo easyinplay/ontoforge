@@ -5,6 +5,13 @@ use ontoforge_action::ActionError;
 use ontoforge_query::{QueryError, aggregate::AggregateError};
 use serde_json::{Value, json};
 
+pub fn mcp(code: &'static str, api_name: &str, request_id: &str) -> rmcp::model::ErrorData {
+    rmcp::model::ErrorData::invalid_params(
+        code,
+        Some(json!({"code": code, "apiName": api_name, "request_id": request_id})),
+    )
+}
+
 pub fn wire(status: StatusCode, code: &str, api_name: &str, request_id: &str) -> Response {
     response(
         status,
