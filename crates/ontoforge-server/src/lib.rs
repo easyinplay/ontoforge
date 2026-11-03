@@ -19,6 +19,7 @@ use tokio::sync::Semaphore;
 pub mod context;
 pub mod error;
 pub mod health;
+pub(crate) mod history_page;
 pub mod lifecycle;
 pub mod mcp;
 pub mod mcp_actions;

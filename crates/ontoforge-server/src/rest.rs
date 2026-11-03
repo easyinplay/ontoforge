@@ -628,28 +628,16 @@ pub async fn history<E: Engine + Send + Sync + 'static>(
         limit,
         before_seq,
     };
-    match host
-        .store
-        .history_with_snapshot(&request, &ctx.active)
-        .await
+    match crate::history_page::read_history_page(
+        &host.store,
+        request,
+        &ctx.active,
+        limits.execution.max_decoded_bytes,
+    )
+    .await
     {
-        Ok(entries) => {
-            let page = wire::HistoryPage {
-                truncated: entries.len() >= limit as usize,
-                next_before_seq: entries.last().map(|entry| entry.seq),
-                entries: entries.into_iter().map(history_entry).collect(),
-            };
-            error::response(StatusCode::OK, id, json!(page))
-        }
-        Err(ontoforge_storage::history::HistoryError::NotFound) => {
-            error::wire(StatusCode::NOT_FOUND, "NOT_FOUND", &object_type, id)
-        }
-        Err(ontoforge_storage::history::HistoryError::Store(_)) => error::wire(
-            StatusCode::SERVICE_UNAVAILABLE,
-            "STORE_UNAVAILABLE",
-            &object_type,
-            id,
-        ),
+        Ok(page) => error::response(StatusCode::OK, id, json!(page)),
+        Err(e) => query_failure(&e, &trace, &object_type, id),
     }
 }
 
