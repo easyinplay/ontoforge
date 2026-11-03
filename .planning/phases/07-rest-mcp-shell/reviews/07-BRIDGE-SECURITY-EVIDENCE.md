@@ -1,6 +1,19 @@
 # E3 真实 stdio 证据
 
-状态：验证通过，11 passed / 0 failed / 0 ignored。第一轮 5 passed / 3 failed 为 fixture/protocol 假设错误，已按主会话及 Claude Code AGREE 修订。Cargo 验证使用 `CARGO_BUILD_JOBS=2`，完成后归还主会话。
+状态：既有 11 项验证通过；独立 Spec 复签要求的 Mia 直调用拒绝扩展也已定向验证通过。最终 Cargo 已归还主会话。
+
+## Mia 直调用拒绝补证据
+
+- 依据 `07-E3-BRIDGE-DESIGN.md` 的 A+，仅扩展既有 `live_stdio_two_principals_validate_action_history_and_rest_receipt`，不增加 Mia 权限或第二套 Action 故事。
+- Mia 有效 bearer 经真实 stdio 直调 `action_delayFlight` submit、validateOnly、Flight history，以及 Alice 原 command 的 action replay；HTTP 直调 delayFlight submit/validateOnly、Flight history、Alice command result。
+- 每次拒绝后比较全部事务与 overlay 行快照，并以 Alice 身份重新查询原 receipt/time，要求仍完全相同。
+- 当前 MCP catalog 没有独立 commandResult tool。stdio 采用同 command 的 action replay 检查不可取得 Alice receipt，HTTP 使用实际 `/api/commands/{id}`；已报告主会话该真实入口差异，不将未知工具响应当权限证据。
+- 当前 bridge 将上游 ErrorData 包装为 `-32603` + message；测试严格提取 `Mcp error: -32602: NOT_FOUND(...)` 内原始 envelope，断言 code=NOT_FOUND 与目标 apiName；HTTP 断言 404 + NOT_FOUND。
+- 未改共享 helper，其他 10 项测试行为未变；此前 11/11 为本扩展前基线，最后仅重跑该成功链及 CLI Clippy。
+- 最终定向命令：`cargo test -p ontoforge --test cli_stdio --locked live_stdio_two_principals_validate_action_history_and_rest_receipt -- --exact --nocapture`，exit 0，1 passed / 0 failed / 0 ignored / 10 filtered out，编译 1m09s、测试 2.52s；日志 `target/phase7-bridge-security-mia.log`。
+- Mia 的 stdio submit/validateOnly/history/原 command replay 与 HTTP submit/validateOnly/history/command result 共 8 次实际拒绝，精确 NOT_FOUND、逐次全持久行不变、Alice receipt/time 仍能查询的断言全部通过。
+- 最终 CLI Clippy：`cargo clippy -p ontoforge --test cli_stdio --locked -- -D warnings` exit 0，7.18s；日志 `target/phase7-bridge-security-mia-clippy.log`。owned `rustfmt --check` 与 `git diff --check` exit 0。
+- 本轮使用 `CARGO_BUILD_JOBS=2`。主会话另行处理 MCP SSE permit 问题；本 lane 未修改生产代码，未将该问题与 Mia 授权测试混淆。
 
 ## 最终执行证据
 

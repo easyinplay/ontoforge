@@ -8,6 +8,10 @@
 
 Nyquist补齐原07-09-2：新增真实stdio成功链（双有效主体scope/list/describe/query、authorized validateOnly零持久写、Action/history/result与REST一致）和在线badtoken/真实302→loopback trap零连接或请求的否定场景，stderr/stdout凭据不泄露。Claude Code分别AGREE/REFINE同向支持，见target/phase7-stdio-success-claude-review.json与phase7-stdio-deny-claude-review.json。复用当前fixture，不改生产。
 
+独立Spec复签要求第二主体的其余操作也走实际transport。Claude Code AGREE最小A+（target/phase7-stdio-second-principal-claude-review.json）：Mia无Flight/delayFlight授权，真实stdio与HTTP分别直调submit、validateOnly、Flight history、Alice command result，按现有安全错误码拒绝；每次拒绝完整业务/命令/receipt行不变，Alice原receipt仍可查询。不能仅用tools/list隐藏代替直调拒绝，也不为测试增加Mia生产授权。该补测只完善原双主体权限边界，不要求第二个独立Action业务故事。
+
+实际API边界：MCP没有command-result tool，不能虚造tool取method-not-found冒充授权证据；MCP以Alice原command显式action replay检查Mia不能取得receipt，HTTP使用真实GET /api/commands/{id}。Claude Code REFINE同意该权限隔离目标（target/phase7-stdio-result-boundary-claude-review.json）；原PLAN要求的是两主体各受scope约束，没有要求Mia取得Alice receipt，因此不新增权限/API。MCP bridge保留既有-32603包装，断言message内真实底层NOT_FOUND；HTTP断言404和NOT_FOUND。该说明优先于上段泛称的MCP result。
+
 ## 初稿历史（默认modern假设已被上节更正）
 
 真实CLI子进程连接受控fault proxy，再转发真实ServerHost。默认modern分支透传discover，断言无session；统计protocol请求与业务POST分开。

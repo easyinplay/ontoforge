@@ -1,11 +1,13 @@
 use std::collections::BTreeSet;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 
 use camino::{Utf8Path, Utf8PathBuf};
 use ontoforge_auth::Principal;
 use ontoforge_auth::authn::PrincipalId;
 use ontoforge_auth::scope::PrincipalScope;
+use ontoforge_engine::Engine;
 use ontoforge_engine::config::{TrinoConfig, build_trino_engines, parse_server_config};
 use ontoforge_engine::printer::l2::ExplainType;
 use ontoforge_engine::trino::TrinoEngine;
@@ -654,29 +656,233 @@ async fn l2_explain_old_wrapper_and_rejection_contract() {
 
 #[tokio::test]
 async fn l2_explain_all_types_timeout_cancel_concurrency() {
-    let server = MockServer::start().await;
-    let f = fixture(&server).await;
-    attest(&server, &f.ontology, &f.l2).await;
     for (explain_type, keyword) in [
         (ExplainType::Logical, "LOGICAL"),
         (ExplainType::Distributed, "DISTRIBUTED"),
         (ExplainType::Validate, "VALIDATE"),
         (ExplainType::Io, "IO"),
     ] {
-        answer(
-            &server,
-            "l2",
-            &format!("EXPLAIN (TYPE {keyword}) SELECT nationkey FROM demo.tiny.nation"),
-            data(&json!([[1]])),
-        )
-        .await;
-        assert!(
-            f.service()
-                .explain_query_with_type("SELECT nationkey FROM demo.tiny.nation", explain_type)
-                .await
-                .is_ok()
-        );
+        typed_explain_timeout(explain_type, keyword).await;
+        typed_explain_cancel_isolated(explain_type, keyword).await;
     }
-    let rows = audit_rows(&f.path, 4).await;
-    assert_eq!(rows.len(), 4);
+}
+
+struct ExplainGate {
+    entered: Arc<Notify>,
+    release: Arc<AtomicBool>,
+}
+
+async fn explain_gate(
+    server: &MockServer,
+    keyword: &str,
+    sql: &str,
+    query_id: &str,
+    delay: Duration,
+) -> ExplainGate {
+    let entered = Arc::new(Notify::new());
+    let release = Arc::new(AtomicBool::new(false));
+    let next_path = format!("/v1/statement/{query_id}/1");
+    let running = json!({
+        "id": query_id,
+        "nextUri": format!("{}{next_path}", server.uri()),
+        "stats": {"state": "RUNNING"}
+    });
+    Mock::given(method("POST"))
+        .and(path("/v1/statement"))
+        .and(header("x-trino-user", "l2"))
+        .and(wiremock::matchers::body_string(format!(
+            "EXPLAIN (TYPE {keyword}) {sql} LIMIT 3"
+        )))
+        .respond_with(ResponseTemplate::new(200).set_body_json(&running))
+        .expect(1)
+        .mount(server)
+        .await;
+    let signal = Arc::clone(&entered);
+    let released = Arc::clone(&release);
+    let finished = json!({
+        "id": query_id,
+        "columns": [{"name": "nationkey", "type": "integer"}],
+        "data": [[1]],
+        "stats": {"state": "FINISHED"}
+    });
+    Mock::given(method("GET"))
+        .and(path(&next_path))
+        .respond_with(move |_: &wiremock::Request| {
+            signal.notify_one();
+            if released.load(Ordering::Acquire) {
+                ResponseTemplate::new(200).set_body_json(&finished)
+            } else {
+                ResponseTemplate::new(200)
+                    .set_delay(delay)
+                    .set_body_json(&running)
+            }
+        })
+        .mount(server)
+        .await;
+    Mock::given(method("DELETE"))
+        .and(path(&next_path))
+        .respond_with(ResponseTemplate::new(204))
+        .mount(server)
+        .await;
+    ExplainGate { entered, release }
+}
+
+async fn typed_explain_timeout(explain_type: ExplainType, keyword: &str) {
+    let server = MockServer::start().await;
+    let mut f = fixture(&server).await;
+    attest(&server, &f.ontology, &f.l2).await;
+    server.reset().await;
+    f.config.query_timeout_ms = 500;
+    let f = Arc::new(f);
+    let sql = "SELECT nationkey FROM demo.tiny.nation WHERE nationkey = 1";
+    let gate = explain_gate(&server, keyword, sql, "timed_out", Duration::from_secs(2)).await;
+    let worker = {
+        let f = Arc::clone(&f);
+        tokio::spawn(async move { f.service().explain_query_with_type(sql, explain_type).await })
+    };
+    tokio::time::timeout(Duration::from_secs(3), gate.entered.notified())
+        .await
+        .expect("timeout query reached upstream nextUri");
+    assert!(
+        matches!(
+            tokio::time::timeout(Duration::from_secs(3), worker)
+                .await
+                .expect("bounded timeout result")
+                .unwrap(),
+            Err(L2Error::Source(ontoforge_engine::EngineError::Timeout {
+                after_ms: 500
+            }))
+        ),
+        "{keyword}"
+    );
+    f.l2.drain_cancellations().await.unwrap();
+    f.store.read_audit().shutdown().await.unwrap();
+    assert_explain_audits(&f, &server, &[(sql, "source_error", 0)]).await;
+    assert_explain_deletes(&server, &["/v1/statement/timed_out/1"]).await;
+}
+
+async fn typed_explain_cancel_isolated(explain_type: ExplainType, keyword: &str) {
+    let server = MockServer::start().await;
+    let f = Arc::new(fixture(&server).await);
+    attest(&server, &f.ontology, &f.l2).await;
+    server.reset().await;
+    let cancelled_sql = "SELECT nationkey FROM demo.tiny.nation WHERE nationkey = 2";
+    let independent_sql = "SELECT nationkey FROM demo.tiny.nation WHERE nationkey = 3";
+    let cancelled_gate = explain_gate(
+        &server,
+        keyword,
+        cancelled_sql,
+        "cancelled",
+        Duration::from_secs(10),
+    )
+    .await;
+    let independent_gate = explain_gate(
+        &server,
+        keyword,
+        independent_sql,
+        "independent",
+        Duration::from_millis(10),
+    )
+    .await;
+    let cancelled = {
+        let f = Arc::clone(&f);
+        tokio::spawn(async move {
+            f.service()
+                .explain_query_with_type(cancelled_sql, explain_type)
+                .await
+        })
+    };
+    tokio::time::timeout(Duration::from_secs(3), cancelled_gate.entered.notified())
+        .await
+        .expect("cancelled query reached upstream nextUri");
+    let independent = {
+        let f = Arc::clone(&f);
+        tokio::spawn(async move {
+            f.service()
+                .explain_query_with_type(independent_sql, explain_type)
+                .await
+        })
+    };
+    tokio::time::timeout(Duration::from_secs(3), independent_gate.entered.notified())
+        .await
+        .expect("independent query reached upstream nextUri concurrently");
+    cancelled.abort();
+    assert!(cancelled.await.unwrap_err().is_cancelled());
+    tokio::time::timeout(Duration::from_secs(3), f.l2.drain_cancellations())
+        .await
+        .unwrap()
+        .unwrap();
+    assert!(
+        !independent.is_finished(),
+        "independent query remains gated after cancellation"
+    );
+    assert_explain_deletes(&server, &["/v1/statement/cancelled/1"]).await;
+    independent_gate.release.store(true, Ordering::Release);
+    let result = tokio::time::timeout(Duration::from_secs(3), independent)
+        .await
+        .expect("independent query completes after release")
+        .unwrap()
+        .expect("independent query must survive another request cancellation");
+    assert_eq!(
+        result.output.rows,
+        vec![vec![ontoforge_engine::Value::Long(1)]]
+    );
+    f.l2.drain_cancellations().await.unwrap();
+    f.store.read_audit().shutdown().await.unwrap();
+    assert_explain_audits(
+        &f,
+        &server,
+        &[
+            (cancelled_sql, "cancelled", 0),
+            (independent_sql, "success", 1),
+        ],
+    )
+    .await;
+    assert_explain_deletes(&server, &["/v1/statement/cancelled/1"]).await;
+}
+
+async fn assert_explain_audits(f: &Fixture, server: &MockServer, expected: &[(&str, &str, i64)]) {
+    let requests = server.received_requests().await.unwrap();
+    let rows = audit_rows(&f.path, expected.len()).await;
+    assert_eq!(
+        rows.len(),
+        expected.len(),
+        "one audit per request after audit drain"
+    );
+    let mut request_ids = BTreeSet::new();
+    for &(sql, status, row_count) in expected {
+        let posts: Vec<_> = requests
+            .iter()
+            .filter(|request| {
+                request.method.as_str() == "POST"
+                    && String::from_utf8_lossy(&request.body).contains(sql)
+            })
+            .collect();
+        assert_eq!(posts.len(), 1, "one POST for {sql}");
+        let request_id = posts[0]
+            .headers
+            .get("x-trino-trace-token")
+            .unwrap()
+            .to_str()
+            .unwrap();
+        assert!(request_ids.insert(request_id), "distinct request IDs");
+        let audits: Vec<_> = rows
+            .iter()
+            .filter(|row| row.get::<String, _>("request_id") == request_id)
+            .collect();
+        assert_eq!(audits.len(), 1, "one audit for {sql}");
+        assert_eq!(audits[0].get::<String, _>("status"), status);
+        assert_eq!(audits[0].get::<String, _>("tool"), "explain_query");
+        assert_eq!(audits[0].get::<i64, _>("row_count"), row_count);
+    }
+}
+
+async fn assert_explain_deletes(server: &MockServer, expected: &[&str]) {
+    let requests = server.received_requests().await.unwrap();
+    let paths: Vec<_> = requests
+        .iter()
+        .filter(|request| request.method.as_str() == "DELETE")
+        .map(|request| request.url.path())
+        .collect();
+    assert_eq!(paths, expected, "cancel only the abandoned upstream query");
 }

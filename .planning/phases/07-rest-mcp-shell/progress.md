@@ -1,5 +1,9 @@
 # Phase 7 progress
 
+- 2026-11-03 MCP业务并发修复设计已接受，详07-MCP-EXECUTION-ADMISSION-FIX.md；CC REFINE+AGREE支持handler/task唯一持槽、cap+1有界POST reservation和固定独立control槽。t24_session_fix重新取得唯一Cargo，实施T08/N3真实RED修复；无产品配置/API扩展。已完成CLI与query补测不重做，最终集成门禁在该修复后运行。
+
+- 2026-11-03 N3 query15/15、Clippy通过，但真实HTTP typed cap1首请求阻塞时第二返回200非429；context.admit在SSE头返回强制take permit为根因。CC REFINE同向支持handler/task唯一持槽与独立有界control，设计收敛中，生产修复未开始。Mia A+定向1/1和CLI Clippy通过（8次拒绝全持久行不变），无需用户新决策。
+
 - 2026-11-03 stdio最终11/11、CLI Clippy/fmt通过（target/phase7-bridge-security-cli-r2.log），E3和N1/N2关闭；真实Initialize/session透传、双主体成功链、在线badtoken、302 trap零连接及丢响应完整持久不重放均已验证。Cargo转typed EXPLAIN最后补测，随后统一fresh服务与CI。
 
 - 2026-11-03 stdio首轮5pass/3fail，归因新测试错误假设：rmcp serve_client默认Initialize（非discover），MCP receipt有包装。CC AGREE修正测试透传真实session且保留所有计数，不改生产。Nyquist另确认原07-09-2成功链/在线badtoken/302trap与07-15-2四typed EXPLAIN timeout/cancel/concurrency缺口，均获CC同向意见，分别由bridge/explain lane补齐，Cargo仍bridge独占。

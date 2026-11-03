@@ -29,6 +29,7 @@ struct L2Control {
     failure: AtomicBool,
     block: AtomicBool,
     entered: tokio::sync::Notify,
+    release: tokio::sync::Notify,
     traces: Mutex<Vec<String>>,
     proof: std::sync::OnceLock<L2Proof>,
     all_statements: AtomicUsize,
@@ -60,7 +61,7 @@ async fn attested_l2(
                 }
                 if tool_request && failure.block.load(Ordering::SeqCst) {
                     failure.entered.notify_one();
-                    std::future::pending::<()>().await;
+                    failure.release.notified().await;
                 }
                 let body = if tool_request && failure.failure.load(Ordering::SeqCst) {
                     serde_json::json!({"error":{"errorName":"INTERNAL_ERROR","message":"physical_relation SELECT secret_token=sentinel"}})
@@ -349,6 +350,136 @@ fn authorize_l2_fixture(fixture: &mut support::Fixture) {
             schema: Some("aviation".to_owned()),
         },
     );
+}
+
+#[tokio::test]
+async fn mcp_l2_typed_explain_concurrency_limit_releases_permit() {
+    for format in ["LOGICAL", "DISTRIBUTED", "VALIDATE", "IO"] {
+        typed_explain_concurrency_limit(format).await;
+    }
+}
+
+#[allow(
+    clippy::too_many_lines,
+    reason = "keep typed request admission, saturation, release and audit in temporal order"
+)]
+async fn typed_explain_concurrency_limit(format: &'static str) {
+    use serde_json::json;
+    use std::time::Duration;
+    let mut fixture = support::fixture().await;
+    let (_trino, statements, control) = attested_l2(&fixture.store).await;
+    authorize_l2_fixture(&mut fixture);
+    let mut running = fixture
+        .start_with_limits(ServerLimits {
+            max_concurrent_requests: 1,
+            ..ServerLimits::default()
+        })
+        .await;
+    running.client = evidence::client();
+    let session = evidence::session(&running.client, &running.url, &running.token).await;
+    let baseline = control.all_statements.load(Ordering::SeqCst);
+    control.block.store(true, Ordering::SeqCst);
+    let pending = {
+        let client = running.client.clone();
+        let url = running.url.clone();
+        let token = running.token.clone();
+        let session = session.clone();
+        tokio::spawn(async move {
+            evidence::rpc(&client, &url, &token, &session, json!({
+                "jsonrpc":"2.0", "id":2, "method":"tools/call",
+                "params":{"name":"explain_query", "arguments":{"query":"SELECT 1", "format":format}}
+            })).await
+        })
+    };
+    tokio::time::timeout(Duration::from_secs(3), control.entered.notified())
+        .await
+        .expect("typed EXPLAIN reached upstream while holding the only permit");
+    let source_calls = running.engine.calls.load(Ordering::SeqCst);
+    assert_eq!(statements.lock().unwrap().len(), 1);
+    assert_eq!(control.all_statements.load(Ordering::SeqCst), baseline + 2);
+    let denied = running
+        .client
+        .post(format!("{}/mcp", running.url))
+        .bearer_auth(&running.token)
+        .timeout(Duration::from_secs(2))
+        .header("accept", "application/json, text/event-stream")
+        .header("mcp-protocol-version", "2025-03-26")
+        .header("mcp-session-id", &session)
+        .json(&json!({"jsonrpc":"2.0", "id":3, "method":"tools/call",
+            "params":{"name":"explain_query", "arguments":{"query":"SELECT 1", "format":format}}
+        }))
+        .send()
+        .await
+        .expect("saturated admission must reject without waiting for upstream");
+    assert_eq!(denied.status(), reqwest::StatusCode::TOO_MANY_REQUESTS);
+    let denied: serde_json::Value = denied.json().await.unwrap();
+    assert_eq!(denied["code"], "CONCURRENCY_LIMIT", "{format}: {denied}");
+    assert!(
+        !pending.is_finished(),
+        "the first request still owns the permit"
+    );
+    assert_eq!(
+        statements.lock().unwrap().len(),
+        1,
+        "rejection sends no L2 SQL"
+    );
+    assert_eq!(
+        control.all_statements.load(Ordering::SeqCst),
+        baseline + 2,
+        "rejection sends nothing with any identity or client tags"
+    );
+    assert_eq!(
+        running.engine.calls.load(Ordering::SeqCst),
+        source_calls,
+        "rejection does not reroute to the source engine"
+    );
+    control.block.store(false, Ordering::SeqCst);
+    control.release.notify_one();
+    let first = tokio::time::timeout(Duration::from_secs(3), pending)
+        .await
+        .expect("first request completes after explicit release")
+        .unwrap();
+    assert!(
+        first["result"].is_object() && first.get("error").is_none(),
+        "{first}"
+    );
+    let third = l2_request(
+        &running,
+        &session,
+        4,
+        "explain_query",
+        json!({"query":"SELECT 1", "format":format}),
+    )
+    .await;
+    assert!(
+        third["result"].is_object() && third.get("error").is_none(),
+        "{third}"
+    );
+    assert_eq!(control.all_statements.load(Ordering::SeqCst), baseline + 4);
+    assert_eq!(running.engine.calls.load(Ordering::SeqCst), source_calls);
+    let sql = statements.lock().unwrap().clone();
+    assert_eq!(sql.len(), 2);
+    assert!(
+        sql.iter()
+            .all(|sql| sql.starts_with(&format!("EXPLAIN (TYPE {format}) SELECT 1")))
+    );
+    let trace_ids = control.traces.lock().unwrap().clone();
+    assert_eq!(trace_ids.len(), 2);
+    assert_ne!(trace_ids[0], trace_ids[1]);
+    let audit = running.finish().await;
+    assert_eq!(
+        audit.len(),
+        2,
+        "admission rejection must not reserve a read audit"
+    );
+    for id in trace_ids {
+        let rows: Vec<_> = audit.iter().filter(|row| row["request_id"] == id).collect();
+        assert_eq!(rows.len(), 1, "one audit per accepted typed request");
+        assert_eq!(rows[0]["status"], "success");
+        assert_eq!(rows[0]["tool"], "explain_query");
+        assert_eq!(rows[0]["row_count"], 1);
+        assert_ne!(denied["request_id"], id);
+    }
 }
 
 #[tokio::test]

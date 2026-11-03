@@ -90,6 +90,7 @@ async fn live_stdio_two_principals_validate_action_history_and_rest_receipt() {
         "REST must replay the same full stdio receipt"
     );
     assert_eq!(durable_rows(&running.path).await, after_rows);
+    check_mia_denials_preserve_alice_receipt(&running, &mia, &receipt).await;
     assert!(cli.finish(&running.token).await.success());
     let audit = tokio::time::timeout(DEADLINE, running.finish_actions())
         .await
@@ -101,6 +102,112 @@ async fn live_stdio_two_principals_validate_action_history_and_rest_receipt() {
                 .any(|entry| entry["principal"] == principal && entry["status"] == "success")
         );
     }
+}
+
+async fn check_mia_denials_preserve_alice_receipt(
+    running: &support::Running,
+    mia: &str,
+    receipt: &serde_json::Value,
+) {
+    use serde_json::{Value, json};
+    use stdio_security_support::{Cli, action, durable_rows};
+    let before = durable_rows(&running.path).await;
+    let mut cli = Cli::spawn(&format!("{}/mcp", running.url), mia);
+    cli.initialize().await;
+    let submit = action(40, "stdio-mia-denied-command");
+    let mut validate = action(41, "stdio-mia-denied-validation");
+    validate["params"]["arguments"]["validateOnly"] = json!(true);
+    let history = json!({"jsonrpc":"2.0","id":42,"method":"tools/call","params":{
+        "name":"history","arguments":{"objectType":"Flight","pk":"F-1001"}
+    }});
+    let replay = action(43, "stdio-success-command");
+    for request in [submit, validate, history, replay] {
+        cli.send(&request);
+        let response = cli.receive().await.expect("Mia direct-call response");
+        assert_eq!(response["id"], request["id"]);
+        assert_eq!(response["error"]["code"], -32603, "{response}");
+        let message = response["error"]["message"].as_str().unwrap();
+        let envelope: Value = serde_json::from_str(
+            message
+                .strip_prefix("Mcp error: -32602: NOT_FOUND(")
+                .and_then(|data| data.strip_suffix(')'))
+                .expect("bridge must preserve the remote NOT_FOUND rejection in its error message"),
+        )
+        .unwrap();
+        assert_eq!(envelope["code"], "NOT_FOUND");
+        assert_eq!(envelope["apiName"], request["params"]["name"]);
+        assert!(response.get("result").is_none());
+        assert_alice_receipt_unchanged(running, &before, receipt).await;
+    }
+    assert!(cli.finish(mia).await.success());
+
+    for validate_only in [false, true] {
+        let request = running
+            .client
+            .post(format!("{}/api/actions/delayFlight", running.url))
+            .bearer_auth(mia)
+            .json(&json!({
+                "commandId":"http-mia-denied-command","validateOnly":validate_only,
+                "items":[{"params":{"flight":"F-1001","delayMinutes":5}}]
+            }));
+        assert_http_not_found(request, "delayFlight").await;
+        assert_alice_receipt_unchanged(running, &before, receipt).await;
+    }
+    for (path, api_name) in [
+        ("/api/objects/Flight/F-1001/history", "Flight"),
+        ("/api/commands/stdio-success-command", "commands"),
+    ] {
+        assert_http_not_found(
+            running
+                .client
+                .get(format!("{}{path}", running.url))
+                .bearer_auth(mia),
+            api_name,
+        )
+        .await;
+        assert_alice_receipt_unchanged(running, &before, receipt).await;
+    }
+}
+
+async fn assert_http_not_found(request: reqwest::RequestBuilder, api_name: &str) {
+    use serde_json::Value;
+    use stdio_security_support::DEADLINE;
+    let body: Value = tokio::time::timeout(DEADLINE, async {
+        let response = request.send().await.unwrap();
+        assert_eq!(response.status(), reqwest::StatusCode::NOT_FOUND);
+        response.json().await.unwrap()
+    })
+    .await
+    .expect("Mia HTTP rejection deadline");
+    assert_eq!(body["code"], "NOT_FOUND");
+    assert_eq!(body["apiName"], api_name);
+}
+
+async fn assert_alice_receipt_unchanged(
+    running: &support::Running,
+    before: &std::collections::BTreeMap<String, serde_json::Value>,
+    receipt: &serde_json::Value,
+) {
+    use stdio_security_support::{durable_rows, http_json};
+    assert_eq!(
+        &durable_rows(&running.path).await,
+        before,
+        "each unauthorized direct call must preserve all business, command and receipt rows"
+    );
+    let result = http_json(
+        running
+            .client
+            .get(format!(
+                "{}/api/commands/stdio-success-command",
+                running.url
+            ))
+            .bearer_auth(&running.token),
+    )
+    .await;
+    assert_eq!(
+        &result, receipt,
+        "Alice must retain access to her original receipt and time"
+    );
 }
 
 async fn check_stdio_principal_reads(
