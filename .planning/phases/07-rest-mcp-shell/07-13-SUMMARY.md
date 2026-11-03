@@ -1,7 +1,7 @@
 ---
 phase: 07-rest-mcp-shell
 plan: "13"
-status: executing
+status: complete
 subsystem: integration
 tags: [postgres, trino, ci, real-services]
 requires: [07-09, 07-10, 07-11, 07-15, 07-16]
@@ -11,9 +11,9 @@ affects: [API-01, API-03, MCP-01, MCP-06, MCP-07, MCP-08, L2-04, SCOPE-07]
 
 # Phase 07 Plan 13 Summary
 
-2026-11-03 RF01已提交29375e8，命名CI接线fb814df：最终定向27/27、真实Trino/PG新增2/2、五包Clippy与独立复签通过；完整fresh服务矩阵、HF01夹具修正GREEN及新head CI仍待执行，07-13保持executing。已通过的旧head4d203bf/CI41621274320不覆盖本增量。详`reviews/07-DRIFT-GSTACK-REVIEW.md`与`reviews/07-DRIFT-REAL-SERVICE-TESTS.md`。
+2026-11-03 07-13验收完成。最新head10175f6的CI41638673666四项必需job全部success（Windows、Ubuntu、integration、phase7-real-services）；本地fresh矩阵36/36、生成/typecheck/build、artifact scan与cleanup全部exit0。RF01最终定向27/27、五包Clippy与独立复签通过，HF01/RT02/RT03整合闭环。元数据target/phase7-ci-41638673666.json；详`reviews/07-DRIFT-GSTACK-REVIEW.md`与`reviews/07-DRIFT-REAL-SERVICE-TESTS.md`。07-14及Phase级验证另计。
 
-整合9e7df9c的CI41634382039随后暴露RT02/RT03两项旧测试适配。RT02提交d49d0ad，真实1/1 GREEN；RT03提交41d142b，最终11/11（含61秒expiry）GREEN；均独立复签clean，生产未变。待最新整合head完整矩阵重验，详对应TEST-RECHECK报告。
+整合9e7df9c的CI41634382039暴露RT02/RT03两项旧测试适配。RT02提交d49d0ad，真实1/1 GREEN；RT03提交41d142b，最终11/11（含61秒expiry）GREEN；均独立复签clean，生产未变，详对应TEST-RECHECK报告。
 
 ## Implemented
 
@@ -72,16 +72,17 @@ affects: [API-01, API-03, MCP-01, MCP-06, MCP-07, MCP-08, L2-04, SCOPE-07]
 
 ## Remaining Blockers
 
-- RF-01：drift周期owner/版本与source gate仍未实施；部分target漂移的health状态待用户选择，设计见reviews/07-DRIFT-FIX-DESIGN.md。
-- RF-05：MCP控制/业务参数信封待用户选择，尚未改变现有平铺入参。
-- 当前整合head的完整CI尚待运行，不能由各slice定向GREEN代替。
+- 本plan无剩余阻塞。isolated-query-bench按条件skipped，不是本plan必需job；未将其视为实跑。Phase级需求仍待07-14与最终verify归并。
 
-## Not Complete
+## 验收范围
 
-- 不更新 ROADMAP 的 07-13 checkbox。
-- 不关闭 `L2-04` / `SCOPE-07`。
-- 不进入 07-14 release 计划，直到本轮剩余完整门禁通过。
+- 本plan的真实服务/CI验收已完成，允许进入07-14。
+- `L2-04` / `SCOPE-07`保留Phase级最终验证流程，发布、npm和PR合并未执行。
 
 ## Next Step
 
-关闭`reviews/07-REVIEW-FIX-CONTRACT.md`中的RF审查缺口，补新增改动的定向回归、Linux权限实测与独立复签，之后按影响范围完成整体验证。07-14依赖仍未解除；Phase 7 verify在全部PLAN验收后执行。
+执行07-14实际三平台artifact构建及完整安装smoke。Phase 7 verify在全部PLAN验收后执行。
+
+## Self-Check: PASSED
+
+已核对当前head、四项必需CI、本地完整命名非零suite、最终blob复签及资源清理；原12项审查缺口均闭环。所有日志边界与未执行的发布操作明确，未用旧head绿色替代本次验收。

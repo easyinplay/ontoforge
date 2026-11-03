@@ -1,7 +1,7 @@
 ---
 phase: 07-rest-mcp-shell
 review_head: fd24beb36091bc4d9fc56e2984a4103ee923fe3f
-status: fixing
+status: closed
 ---
 
 # Phase 7 review fix contract
@@ -10,7 +10,7 @@ status: fixing
 
 | ID | 来源 | 修复范围 | 必需行为证据 | 状态 |
 |---|---|---|---|---|
-| RF-01 | Spec CR-01 | 启动/周期drift owner、版本绑定、target与engine-wide健康分开 | 真实schema drift/恢复、reload期间陈旧报告不污染新版本、shutdown清理 | 29375e8已实施，定向27/27+真实2/2+复签通过；待fresh矩阵与新head CI |
+| RF-01 | Spec CR-01 | 启动/周期drift owner、版本绑定、target与engine-wide健康分开 | 真实schema drift/恢复、reload期间陈旧报告不污染新版本、shutdown清理 | 已关闭：27/27+fresh36/36、独立复签与10175f6 CI41638673666四必需job通过 |
 | RF-02 | Spec CR-02 | MCP describe补scope过滤links与engine状态 | REST/MCP同主体metadata字段与授权一致 | 已关闭：27项tranche通过，复签clean |
 | RF-03 | Spec CR-03 | REST安全Action参数诊断及criteria消息，DTO/SDK合同 | 逐参数错误、配置criteria消息可达，不暴露底层异常 | 已关闭：server11/Rust17/API7/TS14，复签clean |
 | RF-04 | Spec CR-04、Standards CR-03 | MCP schema从实际PK/数组元素类型生成 | integer/boolean ObjectReference与float数组真实调用 | 已关闭：27项tranche通过，复签clean |

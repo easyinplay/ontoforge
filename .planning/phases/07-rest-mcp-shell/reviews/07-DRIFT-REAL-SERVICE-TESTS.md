@@ -1,6 +1,6 @@
 ---
 fix: RF-01
-status: drift-green-integration-pending
+status: fresh-integration-passed
 tests_executed: true
 production_modified: false
 ---
@@ -87,6 +87,23 @@ RT02 冻结文件 Git blob 为 `bcd0855464feda3652e80115f9461991e54fb2c5`，SHA2
 
 ## 清理证据与剩余范围
 
+最终 fresh 完整矩阵已在 HEAD `10175f6fadf114d487d112ebb391292a25df38cb` 通过，`target/phase7-services/evidence/commit.txt` 与执行前后 HEAD 精确一致。使用新 `RUNNER_TEMP=target/phase7-final-10175f6-20261103`，重新 build/copy/start 当前 CLI；`bash ci/server-services.sh verify` 最终 exit 0，日志 `target/phase7-final-10175f6-verify.log`（已复制到 evidence）。全部命名 discovery 检查通过。
+
+| 最终矩阵目标 | 动态结果 | 用例运行时间 |
+| --- | --- | --- |
+| PostgreSQL HTTP | 2 passed / 0 failed / 0 ignored | 4.52s |
+| source drift 真实服务 | 2 passed / 0 failed / 0 ignored | 92.01s |
+| PostgreSQL request snapshot | 1 passed / 0 failed / 0 ignored，2 filtered out | 0.76s |
+| Trino HTTP/MCP（含 RT02） | 2 passed / 0 failed / 0 ignored | 7.07s |
+| health（含 HF01 与 shutdown） | 2 passed / 0 failed / 0 ignored | 65.15s |
+| Trino L2 ACL/monitor | 6 passed / 0 failed / 0 ignored | 4.61s |
+| Rust client contract | 7 passed / 0 failed / 0 ignored | 0.40s |
+| TypeScript contract | 14 passed / 0 failed / 0 skipped | 16.74s |
+
+最终共 36 例通过，其中真实服务 suites 15 例、Rust client 7 例、TypeScript 14 例。TypeScript 两个目录 `npm ci`、`check:generated`、`typecheck`、`build`、`test:contract` 全部 exit 0，生成文件无差异。`tools/openapi-gen` 安装日志报告 3 moderate severity vulnerabilities，未执行依赖升级或 audit fix；客户端依赖安装报告 0 vulnerabilities。HF01 GREEN 和 RT02 完整矩阵 GREEN 已闭环，不再 pending。
+
+verify 的 EXIT trap 已执行日志扫描与服务清理。随后将完整总日志复制至 evidence，再显式执行 `check-artifacts` 与幂等 `cleanup`，均 exit 0；日志 `target/phase7-final-10175f6-cleanup.log` 为 `artifact_scan_exit=0 cleanup_exit=0`。最终 `docker ps` 仅剩 `vennuap-casdoor`，runtime 下 `server.pid`、`server.windows-state`、`services.started` 均已移除；Cargo/session 已结束。未修改生产、未 commit/push，主会话负责共享 planning 和 phase 状态。
+
 真实用例结束后只读查询 `pg_namespace WHERE nspname LIKE 'of_drift_%'`，结果为 `demo|0`、`editstore|0`，见 `target/phase7-drift-real-schema-cleanup.log`。自有日志已复制至 `target/phase7-services/evidence/`；`bash ci/server-services.sh check-artifacts` 与 `bash ci/server-services.sh cleanup` 均 exit 0，见 `target/phase7-drift-real-cleanup.log` 的 `artifact_scan_exit=0 cleanup_exit=0`。最后容器列表仅剩 `vennuap-casdoor`，未操作该容器。所有工具 session 已结束，Cargo 槽位已释放。
 
-本真实 suite 不覆盖全部 Query/Action/source hook 出口、monitor panic、engine-wide 权限故障；定向 source drift 的覆盖见其独立报告。完整整合矩阵仍待执行，07-13 仍 executing。未新增公共 drift 配置，无持久生产修改，未改共享 planning，未 commit/push。Warp/ralph-loop 在本环境不可用，未声称调用。
+本真实 suite 不覆盖全部 Query/Action/source hook 出口、monitor panic、engine-wide 权限故障；定向 source drift 的覆盖见其独立报告。完整整合矩阵已通过，phase 是否关闭由主会话汇总其他验收决定。未新增公共 drift 配置，无持久生产修改，未改共享 planning，未 commit/push。Warp/ralph-loop 在本环境不可用，未声称调用。

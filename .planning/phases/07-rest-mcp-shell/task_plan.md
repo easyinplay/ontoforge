@@ -22,9 +22,9 @@
 
 ## Next Step
 
-RF01代码29375e8与CI接线fb814df已提交；整合CI发现的RT02/RT03测试适配分别由d49d0ad/41d142b修复并定向GREEN、独立复签。下一步以最新同一HEAD重跑fresh完整服务矩阵与远程CI，HF01修正GREEN在此闭环；通过后才关闭07-13并进入07-14。发行只读预检见reviews/07-14-PREFLIGHT.md，不代表已实施。
+07-13已由10175f6四必需CI成功与本地fresh36/36验收关闭。下一步执行07-14的实际native三平台构建/archive/checksum与无checkout完整安装smoke，范围见07-14-PLAN.md、reviews/07-14-PREFLIGHT.md。主会话维护状态与提交，executor仅拥有四个计划文件和独立实施记录；不创建Release、不发布npm、不合并PR。
 
-P3执行中：已实施14/16，07-13尚未关闭，07-14继续等待全部验收缺口关闭。Windows方案A与后续修复提交/证据统一见`07-13-SUMMARY.md`，不重新执行已完成的环境诊断。
+P3执行中：已验收15/16，07-13已关闭，07-14执行中。Windows方案A与后续修复提交/证据统一见`07-13-SUMMARY.md`，不重新执行已完成的环境诊断。
 
 07-11 已完成：`70a9ed9`、`5c76afe`；独立 generator workspace、TypeScript 7 client、无损 codec 与 5 项真实 HTTP contract 均通过。主 package 已移除 `openapi-typescript`，避免 clean install peer 冲突。
 
@@ -48,7 +48,7 @@ P3执行中：已实施14/16，07-13尚未关闭，07-14继续等待全部验收
 - [x] 双轴审查11/12修复已定向验证、独立复签并提交，RF05为0b4a661；详修复合同与SUMMARY。
 - [x] 整合head972c7be的Windows/Linux CI与真实服务门禁通过（41608551893）；后续实现仍需新head门禁。
 - [x] RF-05 MCP参数信封按ADR0029实施，36项通过且独立复签clean。
-- [ ] RF-01 drift按ADR0030与工程审查实施及验收。
+- [x] RF-01 drift按ADR0030与工程审查实施及验收，最终27项、本地fresh36项和10175f6四必需CI通过。
 
 ## 07-05 Execution
 

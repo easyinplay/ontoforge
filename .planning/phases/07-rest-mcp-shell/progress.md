@@ -1,5 +1,11 @@
 # Phase 7 progress
 
+- 2026-11-03 CI41638673666/head10175f6四必需job全部success（Windows/Ubuntu/integration/phase7-real-services），与本地fresh36/36及清理证据对账。关闭RF01和07-13，原12/12审查修复完成，有效验收15/16；进入07-14 native artifact与安装smoke，不创建Release/npm/合并PR。详07-13-SUMMARY和07-14-PLAN。
+
+- 2026-11-03 HEAD10175f6本地fresh完整矩阵exit0：真实服务15/Rust7/TS14共36例，HF01与RT02闭环，生成/typecheck/build无漂移；artifact scan/cleanup exit0，Docker仅vennuap-casdoor。远程CI41638673666 integration与phase7-real-services已success，Windows/Ubuntu workspace仍运行；详07-DRIFT-REAL-SERVICE-TESTS.md，不提前完成07-13。
+
+- 2026-11-03 已推送最新整合10175f6，CI41638673666已in_progress且head匹配；transport重启同HEAD fresh完整服务矩阵。生产与9e7df9c相同，新增RT02/RT03测试适配均已定向GREEN/复签，仍等待完整矩阵，不提前关闭07-13。
+
 - 2026-11-03 RT03最终11/11 GREEN（61.71s真实proof expiry）、目标Clippy/fmt/diffcheck通过，独立复签clean并绑定6b90a443；详07-L2-MONITOR-TEST-RECHECK.md。RT02已提交d49d0ad。两项都只修测试观测/就绪同步，不改生产；准备一起推送新整合head重跑CI及fresh完整服务矩阵。
 
 - 2026-11-03 RT02已独立复签clean，真实定向1/1 GREEN，目标Clippy/fmt与artifact scan/cleanup exit0；trino_http_it.rs最终blob bcd0855，详07-RELOAD-READINESS-TEST-RECHECK.md。CI41634382039已结束failure：Windows与Ubuntu均同一RT03旧计数断言，真实服务同RT02，integration成功；元数据/失败日志已保存target。RT03修复正在独占Cargo验证，未宣称整体绿。
