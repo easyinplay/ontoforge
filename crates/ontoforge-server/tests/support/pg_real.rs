@@ -46,6 +46,10 @@ pub struct Fixture {
     pub key_dir: tempfile::TempDir,
 }
 
+#[allow(
+    clippy::too_many_lines,
+    reason = "Keep the real PostgreSQL fixture setup together"
+)]
 async fn fixture(
     pg_url: String,
     trino_url: String,
@@ -172,6 +176,8 @@ async fn fixture(
     }
 }
 
+type ServerTask = Arc<Mutex<Option<tokio::task::JoinHandle<Result<(), HostError>>>>>;
+
 pub struct Running {
     pub url: String,
     pub token: String,
@@ -183,7 +189,7 @@ pub struct Running {
     pub schema_sys: String,
     pub engine: Arc<BarrierEngine>,
     stop: oneshot::Sender<()>,
-    task: Arc<Mutex<Option<tokio::task::JoinHandle<Result<(), HostError>>>>>,
+    task: ServerTask,
     _key_dir: tempfile::TempDir,
 }
 
@@ -360,14 +366,13 @@ where
             let result = tokio::spawn(test(running)).await;
             engine.release.notify_waiters();
             let pending = task.lock().expect("server task slot").take();
-            if let Some(mut pending) = pending {
-                if tokio::time::timeout(Duration::from_secs(10), &mut pending)
+            if let Some(mut pending) = pending
+                && tokio::time::timeout(Duration::from_secs(10), &mut pending)
                     .await
                     .is_err()
-                {
-                    pending.abort();
-                    let _ = pending.await;
-                }
+            {
+                pending.abort();
+                let _ = pending.await;
             }
             store
                 .read_audit()

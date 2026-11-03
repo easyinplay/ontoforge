@@ -9,6 +9,10 @@ use serde_json::json;
 
 #[tokio::test]
 #[ignore = "requires real PostgreSQL and an authenticated ontoforge HTTP server"]
+#[allow(
+    clippy::too_many_lines,
+    reason = "Keep the snapshot and revoke scenario in execution order"
+)]
 async fn pg_http_mixed_snapshot_reload_revoke_and_history() {
     support::run_case(|running| async move {
         let bearer = running.token.clone();
@@ -132,6 +136,10 @@ async fn pg_http_mixed_snapshot_reload_revoke_and_history() {
 
 #[tokio::test]
 #[ignore = "requires real PostgreSQL and an authenticated ontoforge HTTP server"]
+#[allow(
+    clippy::too_many_lines,
+    reason = "Keep the Action replay and atomicity scenario in execution order"
+)]
 async fn pg_http_action_validate_stale_replay_atomicity() {
     support::run_case(|running| async move {
     let bearer = running.token.clone();
