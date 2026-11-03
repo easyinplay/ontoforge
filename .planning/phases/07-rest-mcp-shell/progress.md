@@ -1,5 +1,9 @@
 # Phase 7 progress
 
+- 2026-11-03 `1cb7272`补history_masking测试Sync约束，定向12 passed/0 failed/1 PG ignored。Staff修复已取得真实RED：TS itemOrdinal为undefined；MCP无token initialize实际200而期望401、跨主体初始owner抢绑实际200而期望403。L2生产CLI身份回归编译排队；各lane继续TDD，暂无五项已完成结论。
+
+- 2026-11-03 恢复：工作树仅保留用户原有未跟踪文件和Staff报告，无活跃Cargo/subagent。Staff五项blocker尚未实施，先按原合同TDD修复L2隔离、MCP认证/取消/关闭及完整receipt/history。10月31日workspace日志显示history_masking测试RowValues缺Sync导致编译失败，不能记全绿；第二轮服务日志用例绿但尚缺可核对的流程exit/cleanup记录。远程Phase7分支位于45aac78，尚无PR。07-14继续等待。
+
 - 2026-10-31 `7fa2401`修复history limit/beforeSeq多余`$`；真实分页RED观察两页均[3,2]，修复后分别[3]/[2]，最终4 unit+6 HTTP contract、client Clippy/fmt通过。`49deb40`独立复签MCP CR-03 resolved，`4290bed`复签SDK CR-01/02与receipt边界通过，分页发现待独立追加复签。首轮服务所有用例绿但末尾shell语法错误exit1，已完成scan和清理；CI lane冻结脚本启动第二轮，未标完整通过。主会话重跑workspace tests，CLI纯lint收尾仍进行中。
 
 - 2026-10-31 `9e6d858`清除Rust client 15项Clippy，4 unit+5真实HTTP contract通过；itemOrdinal负值/溢出真实RED后3项边界GREEN。交叉审查新发现history查询参数带literal`$`，纳入同client合同修复，必须增加真实HTTP分页RED/GREEN。完整workspace Clippy进行中，服务PG2/2已通过；其余门禁仍pending。

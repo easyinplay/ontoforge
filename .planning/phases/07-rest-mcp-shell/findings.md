@@ -1,5 +1,9 @@
 # Phase 7 findings
 
+- 2026-11-03 Grok第二意见正常exit0（`target/phase7-grok-review-opinion-20261103.log`）：支持完整edits、独立L2能力、全transport认证、remote handle.id取消、有界关闭。采纳多edit/zero-edit/缺失能力/跨主体/取消隔离/真实SSE回归；不采纳把history强行等同receipt（违反当前scope遮蔽），也不采纳把health与执行的L2 engine割裂（二者应共享同一受限实例）。L2具体实现采用现有sidecar持`Arc<TrinoEngine>`，setter拒绝普通ontology engine，避免无必要的类型擦除适配器。
+- 2026-11-03 workspace编译回归最小修复：history_masking::Ask::run参数补`RowValues + Sync`以匹配既有HistoryRequest合同；只改测试类型，不新增业务行为，跳过新TDD，运行该target原有测试验证。
+- 2026-11-03 修复合同澄清：07-04明确要求原receipt/time与完整调用，07-10要求客户端保留receipt；因此CR-05采用完整items[].edits[]，统一camelCase DTO与显式序列化，拒绝静默取first或空值掩盖缺字段。此为恢复既定合同，不新加兼容摘要。五项已知根因不重复战略/Phase讨论；主会话已锁定边界，执行者必须真实RED/GREEN，灰区回流。Grok第二意见重新以120秒上限发起，未返回前不宣称获得意见。
+- 并行所有权：L2 lane负责state/L2 adapter/serve及mcp.call_l2；transport lane负责lib/lifecycle/session/认证与mcp.call_tool和CLI bridge；wire lane负责DTO/REST/Rust/TS/schema。mcp.rs按函数边界协调，任何冲突由主会话调度。主会话维护共享planning，修复history_masking单行类型注解。
 - 2026-10-31 Clippy gate恢复：本次修复openapi.rs两个`doc_markdown`注释，仅给OpenAPI补反引号，不改变行为；TDD跳过，使用全workspace Clippy/fmt验证。
 
 - 2026-10-30 07-13 恢复：缺 env 的失败只证明前置检查，不能当 snapshot/ACL/shutdown 的行为 RED。Grok 第二意见支持必须真实六工具/四 EXPLAIN/PG 双 store/审计 flush；其把 ACL proof TTL 误解为 token TTL、把 alice 称作管理主体的推测不采纳，真实合同以代码和绑定为准。

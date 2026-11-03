@@ -28,6 +28,10 @@ P3执行中：07-01至07-12、07-15、07-16共14/16完成。当前先完成07-13
 
 ## 07-13 当前验收清单
 
+- [ ] Staff CR-01：独立L2执行身份与proof准入接线，真实生产assembly回归。
+- [ ] Staff CR-02/03/04：MCP全transport认证、初始owner绑定、定向取消和有界SSE shutdown。
+- [ ] Staff CR-05：完整多edit receipt与history显式wire转换，OpenAPI/Rust/TS真实合同一致。
+- [ ] 修复workspace历史测试RowValues + Sync类型回归并完成整体验证。
 - [x] SDK无损JSON capability与公开入口修复，8项contract及生成/typecheck/build通过。
 - [x] MCP参数schema修复，新增真实回归及相邻14项测试通过。
 - [x] Rust client数值边界修复，4 unit与5 HTTP contract、client Clippy通过。
