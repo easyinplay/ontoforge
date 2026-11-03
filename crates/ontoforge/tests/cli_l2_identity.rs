@@ -71,6 +71,143 @@ mod production_assembly {
         server
     }
 
+    fn source_monitor_sql() -> String {
+        let tables = [
+            "aircraft",
+            "flight_crew",
+            "flights",
+            "maintenance_records",
+            "pilots",
+        ];
+        let conditions = tables.map(|table| {
+            format!(r#"(("table_schema" = 'aviation') AND ("table_name" = '{table}'))"#)
+        });
+        format!(
+            concat!(
+                "SELECT \"table_schema\", \"table_name\", \"column_name\", \"data_type\", \"is_nullable\" ",
+                "FROM \"demo\".\"information_schema\".\"columns\" WHERE {} ",
+                "ORDER BY \"table_schema\" ASC NULLS LAST, \"table_name\" ASC NULLS LAST, ",
+                "\"ordinal_position\" ASC NULLS LAST"
+            ),
+            conditions.join(" OR ")
+        )
+    }
+
+    fn is_source_monitor(request: &Request, origin: &str) -> bool {
+        let header_is = |name: &str, expected: &str| {
+            request
+                .headers
+                .get_all(name)
+                .iter()
+                .map(reqwest::header::HeaderValue::as_bytes)
+                .eq([expected.as_bytes()])
+        };
+        // wiremock records origin-form requests against localhost; Host retains the target.
+        request.method == "POST"
+            && request.url.as_str() == "http://localhost/v1/statement"
+            && origin
+                .strip_prefix("http://")
+                .is_some_and(|host| header_is("host", host))
+            && header_is("x-trino-user", "ontology")
+            && header_is("x-trino-trace-token", "source-drift")
+            && request.body == source_monitor_sql().as_bytes()
+    }
+
+    async fn non_monitor_requests(server: &MockServer) -> Vec<Request> {
+        server
+            .received_requests()
+            .await
+            .unwrap()
+            .into_iter()
+            .filter(|request| !is_source_monitor(request, &server.uri()))
+            .collect()
+    }
+
+    async fn wait_for_source_monitor(server: &MockServer) {
+        let observed = tokio::time::timeout(Duration::from_secs(3), async {
+            loop {
+                if server
+                    .received_requests()
+                    .await
+                    .unwrap()
+                    .iter()
+                    .any(|request| is_source_monitor(request, &server.uri()))
+                {
+                    break;
+                }
+                tokio::time::sleep(Duration::from_millis(10)).await;
+            }
+        })
+        .await;
+        assert!(
+            observed.is_ok(),
+            "expected the exact startup source monitor request: {:?}",
+            server.received_requests().await.unwrap()
+        );
+    }
+
+    #[test]
+    fn source_monitor_classifier_preserves_every_nonmatching_request() {
+        let origin = "http://127.0.0.1:54321";
+        let mut probe = Request {
+            url: "http://localhost/v1/statement".parse().unwrap(),
+            method: "POST".parse().unwrap(),
+            headers: reqwest::header::HeaderMap::default(),
+            body: source_monitor_sql().into_bytes(),
+        };
+        for (name, value) in [
+            ("host", "127.0.0.1:54321"),
+            ("x-trino-user", "ontology"),
+            ("x-trino-trace-token", "source-drift"),
+        ] {
+            probe.headers.insert(name, value.parse().unwrap());
+        }
+        assert!(is_source_monitor(&probe, origin));
+        assert!(!is_source_monitor(&probe, "http://127.0.0.1:54322"));
+        let mut changed = probe.clone();
+        changed.method = "GET".parse().unwrap();
+        assert!(!is_source_monitor(&changed, origin));
+        for url in [
+            "http://localhost/unknown",
+            "http://localhost/v1/statement?extra=1",
+            "http://other/v1/statement",
+        ] {
+            let mut changed = probe.clone();
+            changed.url = url.parse().unwrap();
+            assert!(!is_source_monitor(&changed, origin), "{url}");
+        }
+        for name in ["host", "x-trino-user", "x-trino-trace-token"] {
+            let mut changed = probe.clone();
+            changed.headers.remove(name);
+            assert!(!is_source_monitor(&changed, origin), "missing {name}");
+            changed.headers.insert(name, "unknown".parse().unwrap());
+            assert!(!is_source_monitor(&changed, origin), "wrong {name}");
+            let mut changed = probe.clone();
+            changed.headers.append(name, probe.headers[name].clone());
+            assert!(!is_source_monitor(&changed, origin), "duplicate {name}");
+        }
+        for sql in [
+            source_monitor_sql().replace("'aviation'", "'outside'"),
+            source_monitor_sql().replace("'pilots'", "'unknown'"),
+            "SELECT * FROM demo.information_schema.columns".to_owned(),
+            "SELECT 1 FROM demo.tiny.nation".to_owned(),
+            "unknown".to_owned(),
+            String::new(),
+        ] {
+            for user in ["ontology", "l2", "unknown"] {
+                let mut changed = probe.clone();
+                changed
+                    .headers
+                    .insert("x-trino-user", user.parse().unwrap());
+                changed.body = sql.as_bytes().to_vec();
+                assert!(!is_source_monitor(&changed, origin), "{user}: {sql}");
+            }
+        }
+        let mut changed = probe;
+        changed.body = vec![0xff];
+        assert!(!is_source_monitor(&changed, origin));
+    }
+
     fn configure_trino(f: &Fixture, server: &MockServer, l2: bool, proof: bool) {
         let mut config = std::fs::read_to_string(&f.config).unwrap();
         write!(
@@ -173,6 +310,29 @@ mod production_assembly {
         ]
     }
 
+    async fn assert_six_tools_rejected(
+        client: &reqwest::Client,
+        bind: SocketAddr,
+        token: &str,
+        session: &str,
+        trino: &MockServer,
+        reason: &str,
+    ) {
+        let before = non_monitor_requests(trino).await.len();
+        for (name, arguments) in six_tools() {
+            let value = call(client, bind, token, session, name, arguments).await;
+            assert!(
+                value["error"].is_object(),
+                "{reason}: {name} must fail closed: {value}"
+            );
+        }
+        assert_eq!(
+            non_monitor_requests(trino).await.len(),
+            before,
+            "{reason}: disabled L2 must not submit SQL under any identity"
+        );
+    }
+
     #[tokio::test]
     async fn serve_l2_requires_dedicated_proved_identity_for_all_six_tools() {
         for (configured, proof, fail_proof) in [
@@ -195,19 +355,7 @@ mod production_assembly {
             assert!(wait_listening(bind, &task).await);
             let token = raw_token(&f);
             let (client, session) = initialize(bind, &token).await;
-            let before = trino.received_requests().await.unwrap().len();
-            for (name, arguments) in six_tools() {
-                let value = call(&client, bind, &token, &session, name, arguments).await;
-                assert!(
-                    value["error"].is_object(),
-                    "unproved {name} must fail closed: {value}"
-                );
-            }
-            assert_eq!(
-                trino.received_requests().await.unwrap().len(),
-                before,
-                "disabled L2 must not submit SQL under any identity"
-            );
+            assert_six_tools_rejected(&client, bind, &token, &session, &trino, "unproved").await;
             assert_eq!(
                 http(bind, Some(&f.token)).await.0,
                 200,
@@ -235,12 +383,12 @@ mod production_assembly {
         assert!(wait_listening(bind, &task).await);
         let token = raw_token(&f);
         let (client, session) = initialize(bind, &token).await;
-        let before = trino.received_requests().await.unwrap().len();
+        let before = non_monitor_requests(&trino).await.len();
         for (name, arguments) in six_tools() {
             let value = call(&client, bind, &token, &session, name, arguments).await;
             assert!(value["error"].is_null(), "proved {name}: {value}");
         }
-        let requests = trino.received_requests().await.unwrap();
+        let requests = non_monitor_requests(&trino).await;
         assert!(requests.len() >= before + 6);
         for request in &requests[before..] {
             assert_eq!(
@@ -399,14 +547,8 @@ mod production_assembly {
         let token = raw_token(&f);
         let (client, session) = initialize(bind, &token).await;
 
-        for (name, arguments) in six_tools() {
-            let value = call(&client, bind, &token, &session, name, arguments).await;
-            assert!(
-                value["error"].is_object(),
-                "health alone cannot grant {name}: {value}"
-            );
-        }
-        assert!(trino.received_requests().await.unwrap().is_empty());
+        wait_for_source_monitor(&trino).await;
+        assert_six_tools_rejected(&client, bind, &token, &session, &trino, "health alone").await;
         state::set_l2_engine(&store, Arc::clone(&l2)).unwrap();
 
         for reason in [
@@ -415,16 +557,15 @@ mod production_assembly {
             L2DisableReason::Expired,
         ] {
             assert_eq!(l2.l2_status(), Some(L2HealthStatus::Disabled { reason }));
-            let before = trino.received_requests().await.unwrap().len();
-            for (name, arguments) in six_tools() {
-                let value = call(&client, bind, &token, &session, name, arguments).await;
-                assert!(value["error"].is_object(), "{reason:?} {name}: {value}");
-            }
-            assert_eq!(
-                trino.received_requests().await.unwrap().len(),
-                before,
-                "disabled proof must prevent every SQL request"
-            );
+            assert_six_tools_rejected(
+                &client,
+                bind,
+                &token,
+                &session,
+                &trino,
+                &format!("{reason:?}"),
+            )
+            .await;
             assert_eq!(http(bind, Some(&f.token)).await.0, 200);
             if reason == L2DisableReason::Expired {
                 break;
