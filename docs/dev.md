@@ -22,3 +22,13 @@ ontoforge serve --dev --data-dir .ontoforge/dev --reset --bind 127.0.0.1:8080
 收到关闭信号后，服务先停止接入新请求，等待已接受的 Action 及其 source 依赖，再取消独立读和 MCP SSE，持久化 read audit，停止 L2 monitor，最后等待 core/L2 engine 的远端查询取消请求完成。客户端取消或断连不会重发 Action，也不会中止已接受的 Action。
 
 默认关闭总预算为 10 秒，从收到关闭信号计时：Action、独立读和 HTTP 连接等待截止于第 5 秒，audit drain 截止于第 6 秒，monitor cleanup 截止于第 8 秒，core/L2 和 monitor 取消任务的并发 drain 截止于第 10 秒。各步骤完成后立即进入下一步，不额外等待；任一步失败或超时仍在剩余预算内尝试后续清理，最终返回失败退出码。
+
+## Windows 服务验收工具
+
+`bash ci/server-services.sh verify` 在 Windows 上额外使用 Python 3 标准库工具 `ci/windows-server.py`，无需安装 Python 包。Git Bash 的 POSIX `kill -INT` 无法可靠触发原生 Windows CLI 的 Ctrl+C；工具在独立隐藏 console 启动服务，由后台 owner 保留进程和 Job handle，在唯一运行目录原子记录 PID、创建时间及真实退出码。
+
+清理时工具持有目标 process handle 并核验创建时间，仅在 console 成员恰为目标服务与停止助手时发送 `CTRL_C_EVENT`。不会向共享 console 广播。停止最多等待 30 秒，超时强制清理仍返回失败，退出码 `130`、`137` 或其他非零结果不会视作成功；owner 异常结束时 Job 会回收已纳管的进程。启动与 Job assignment 之间不宣称具备原子保证，assignment 失败会立即回收刚启动的子进程并报错。Linux 继续使用现有信号路径。
+
+状态文件和 owner 保留完整 Windows 退出码；Bash 调用 stop 的 `--shell-status` 模式，将所有非零退出转换为 shell 失败并输出原始退出码，防止 `256` 等值被 8 位 shell 状态截断成成功。
+
+已有 `target/debug/ontoforge.exe` 时，可运行 `python -B -m unittest discover -s ci -p test_windows_server.py -v` 单独验证真实进程关闭。Windows CI 在 workspace 测试产物就绪后运行同一组用例，不需要 Docker。

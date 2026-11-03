@@ -9,6 +9,7 @@ EVIDENCE_DIR="$ROOT/target/phase7-services/evidence"
 ENV_FILE="$RUNNER_TEMP/server-services.env"
 SERVER_CONFIG="$RUNNER_TEMP/ontoforge-server.toml"
 SERVER_PID_FILE="$RUNNER_TEMP/server.pid"
+SERVER_STATE_FILE="$RUNNER_TEMP/server.windows-state"
 STARTED_FILE="$RUNNER_TEMP/services.started"
 BINARY="$ROOT/target/debug/ontoforge"
 CURRENT_RUN_STARTED=0
@@ -69,6 +70,9 @@ start() {
   for command in docker cargo jq openssl node npm curl; do
     command -v "$command" >/dev/null || die "$command is required"
   done
+  if [[ "${OS:-}" == Windows_NT ]]; then
+    command -v python >/dev/null || die "Python 3 is required for the Windows server owner"
+  fi
   docker info >/dev/null
   for container in postgres trino ontoforge-trino-l2 ontoforge-trino-l2-loose; do
     if docker inspect "$container" >/dev/null 2>&1; then
@@ -138,7 +142,16 @@ EOF
   export ONTOFORGE_SERVER_CONFIG="$SERVER_CONFIG"
   export ONTOFORGE_SERVER_URL="http://127.0.0.1:18080"
   write_env
-  "$BINARY" serve --server-config "$SERVER_CONFIG" --dev --bind 127.0.0.1:18080 > "$EVIDENCE_DIR/server.log" 2>&1 &
+  if [[ "${OS:-}" == Windows_NT ]]; then
+    local windows_run
+    windows_run=$(mktemp -d "$RUNNER_TEMP/server-windows.XXXXXX")
+    printf '%s\n' "$windows_run/state.json" > "$SERVER_STATE_FILE"
+    python "$ROOT/ci/windows-server.py" run --state "$windows_run/state.json" \
+      --log "$EVIDENCE_DIR/server.log" -- "$BINARY" serve \
+      --server-config "$SERVER_CONFIG" --dev --bind 127.0.0.1:18080 &
+  else
+    "$BINARY" serve --server-config "$SERVER_CONFIG" --dev --bind 127.0.0.1:18080 > "$EVIDENCE_DIR/server.log" 2>&1 &
+  fi
   printf '%s\n' "$!" > "$SERVER_PID_FILE"
   wait_http "$ONTOFORGE_SERVER_URL/health"
   log "PostgreSQL/Trino server ready"
@@ -187,7 +200,28 @@ check_artifacts() {
 cleanup() {
   local failed=0 pid container
   load_env
-  if [[ -f "$SERVER_PID_FILE" ]]; then
+  if [[ "${OS:-}" == Windows_NT && ( -f "$SERVER_PID_FILE" || -f "$SERVER_STATE_FILE" ) ]]; then
+    local stop_status=0 owner_status=0
+    if [[ -f "$SERVER_STATE_FILE" ]]; then
+      python "$ROOT/ci/windows-server.py" stop --shell-status --state "$(cat "$SERVER_STATE_FILE")" || stop_status=$?
+    else
+      stop_status=1
+    fi
+    if [[ -f "$SERVER_PID_FILE" ]]; then
+      pid=$(cat "$SERVER_PID_FILE")
+      # An identity refusal must not turn into an unbounded wait on a live owner.
+      if [[ "$stop_status" -eq 0 ]] || ! kill -0 "$pid" 2>/dev/null; then
+        wait "$pid" 2>/dev/null || owner_status=$?
+      fi
+    fi
+    # 127 only means another shell owns the child; stop still verifies its real exit.
+    if [[ "$stop_status" -ne 0 || ( "$owner_status" -ne 0 && "$owner_status" -ne 127 ) ]]; then
+      log "Windows server cleanup failed (stop=$stop_status, owner=$owner_status)"
+      failed=1
+    else
+      rm -f "$SERVER_PID_FILE" "$SERVER_STATE_FILE"
+    fi
+  elif [[ -f "$SERVER_PID_FILE" ]]; then
     pid=$(cat "$SERVER_PID_FILE")
     if kill -0 "$pid" 2>/dev/null; then
       kill -INT "$pid" || failed=1
