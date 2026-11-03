@@ -451,7 +451,7 @@ pub async fn action<E: Engine + Send + Sync + 'static>(
     let principal = ctx.principal;
     let scope = ctx.scope;
     let active = Arc::clone(&ctx.active);
-    let task = tokio::spawn(async move {
+    let admitted = context::spawn_action(&host, async move {
         let _permit = owned_permit;
         let result = ActionService::new(&task_host.store, action_limits, &task_host.tokens)
             .with_engine(&*task_host.engine)
@@ -459,7 +459,14 @@ pub async fn action<E: Engine + Send + Sync + 'static>(
             .await;
         let _ = sender.send(result);
     });
-    context::register_action(&host, task);
+    if admitted.is_err() {
+        return error::wire(
+            StatusCode::SERVICE_UNAVAILABLE,
+            "SHUTTING_DOWN",
+            &action_name,
+            &request_id,
+        );
+    }
     match tokio::time::timeout(limits.deadline, receiver).await {
         Ok(Ok(result)) => action_response(result, &action_name, &request_id),
         Ok(Err(_)) => error::wire(

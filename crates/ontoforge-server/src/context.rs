@@ -28,7 +28,7 @@ fn task_registry() -> &'static Mutex<HashMap<usize, Vec<tokio::task::JoinHandle<
 }
 
 pub fn register_action<E>(host: &ServerHost<E>, task: tokio::task::JoinHandle<()>) {
-    let key = std::ptr::from_ref(&host.store) as usize;
+    let key = Arc::as_ptr(&host.store) as usize;
     task_registry()
         .lock()
         .unwrap()
@@ -37,8 +37,28 @@ pub fn register_action<E>(host: &ServerHost<E>, task: tokio::task::JoinHandle<()
         .push(task);
 }
 
+pub(crate) fn spawn_action<E, F>(host: &ServerHost<E>, action: F) -> Result<(), ()>
+where
+    F: std::future::Future<Output = ()> + Send + 'static,
+{
+    let mut tasks = task_registry().lock().unwrap();
+    if !crate::state::for_host(host).accepting() {
+        return Err(());
+    }
+    tasks
+        .entry(Arc::as_ptr(&host.store) as usize)
+        .or_default()
+        .push(tokio::spawn(action));
+    Ok(())
+}
+
+pub(crate) fn stop_admission<E>(host: &ServerHost<E>) {
+    let _tasks = task_registry().lock().unwrap();
+    crate::state::for_host(host).stop_admission();
+}
+
 pub async fn wait_actions<E>(host: &ServerHost<E>) {
-    let key = std::ptr::from_ref(&host.store) as usize;
+    let key = Arc::as_ptr(&host.store) as usize;
     let tasks = task_registry()
         .lock()
         .unwrap()

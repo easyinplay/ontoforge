@@ -29,7 +29,7 @@ impl<'a, E> ServerLifecycle<'a, E> {
 impl<E: Engine + Send + Sync + 'static> ServerLifecycle<'_, E> {
     pub async fn shutdown(self) -> Result<(), LifecycleError> {
         let server_state = state::for_host(self.host);
-        server_state.stop_admission();
+        context::stop_admission(self.host);
         tokio::time::timeout(Duration::from_secs(5), context::wait_actions(self.host))
             .await
             .map_err(|_| LifecycleError::Timeout)?;
