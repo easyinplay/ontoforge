@@ -6,8 +6,8 @@ current_plan: 13
 status: executing
 stopped_at: Phase 7 07-13 real-service tests and CI verification in progress
 last_updated: "2026-11-03"
-last_activity: "2026-11-03: Staff五项复签resolved、workspace Clippy通过；完整回归/服务/Linux待验收"
-state_head: 54414eb
+last_activity: "2026-11-03: 全workspace与CI通过；本地Windows停止脚本失败已定位，等待A/B路径选择"
+state_head: 3b5989f
 progress:
   total_phases: 7
   completed_phases: 6
@@ -33,7 +33,7 @@ Phase: 7 (REST & MCP Shell) — EXECUTING
 Current Plan: 13
 Total Plans in Phase: 16
 Status: Real-service verification in progress
-Last activity: 2026-11-03: Staff五项已复签resolved，完整门禁进行中；详phase reviews/07-13-STAFF-RECHECK.md
+Last activity: 2026-11-03: 全workspace与CI通过；Windows脚本停止路径待接入，详phase 07-13-SUMMARY.md
 
 Progress: [██████████] 98%
 
@@ -71,7 +71,7 @@ Progress: [██████████] 98%
 
 ### Pending Todos
 
-继续07-13真实测试和Linux CI门禁；07-14等待07-13。07-11已完成，见同phase SUMMARY。
+07-13等待Windows helper或WSL路径选择，推荐已实测的helper；07-14等待07-13。详phase progress.md。
 
 ### Blockers/Concerns
 
@@ -79,7 +79,7 @@ Progress: [██████████] 98%
 - [Phase 2]: 非阻塞安全 observations 待后续 phase 跟进（详: `phases/02-source-binding-engine/02-SECURITY.md` Observations）
 - [Phase 5]: 生产 webhook 联调与正式 gstack gate 待发布/PR 前完成；GSD 关闭警告详见 `phases/05-online-action/deferred-items.md`
 - [Phase 6]: 本地 PR review、CI 与增量复签通过；外部 Codex 审查不可用。Phase 1–5 历史 fingerprint staleness 待 milestone audit 复核，详 Phase 6 VERIFICATION。
-- [Phase 7]: 有效完成14/16；本地PG/Trino/L2已可用，07-13完整测试与Linux CI尚待验收；L2-04/SCOPE-07 Pending；PR #7 不合并。
+- [Phase 7]: 有效完成14/16；PR #8全部必需CI通过，本地服务收尾SIGINT路径待修；L2-04/SCOPE-07 Pending；PR #7 不合并。
 
 ## Deferred Items
 
@@ -90,5 +90,5 @@ Progress: [██████████] 98%
 ## Session Continuity
 
 Last session: 2026-11-03
-Stopped at: Phase 7 07-13 resumed; final cleanup regression, workspace and service gates pending
+Stopped at: Phase 7 07-13 waiting for Windows helper vs WSL path choice; workspace and CI passed
 Resume file: None
