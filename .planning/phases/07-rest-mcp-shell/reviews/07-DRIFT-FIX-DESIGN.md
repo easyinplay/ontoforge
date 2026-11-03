@@ -4,18 +4,22 @@ fixes: [RF-01, RF-10]
 status: accepted_for_implementation
 reviewed: 2026-11-03T07:41:57Z
 source_head: fd24beb36091bc4d9fc56e2984a4103ee923fe3f
-implementation_started: false
-tests_executed: false
+implementation_record: 07-DRIFT-IMPLEMENTATION.md
 ---
 
 # RF-01 drift 修复设计
 
-本文件是只读实现设计，唯一写入物为本文件。以下符号名称是建议，不表示源码已有实现；开放合同由主会话结合 Grok 第二意见决定。RF-10 可共用 health wire 变更，但不得由两个 lane 并发修改 DTO/server/client 文件。
+2026-11-03 DC01验证细化：第6项关闭链路由实际ServerHost与TrinoEngine连接本地受控HTTP上游，以metadata GET/DELETE barrier证明同raw tracker排空、等待DELETE及失败非零；不将它称为真实Trino服务测试。周期ALTER/版本隔离仍由两个真实Trino/PG suite证明。Claude Code同意该分层验证，无需额外人为阻塞真实PG catalog，详target/phase7-claude-drift-cancellation-review.json。
+
+2026-11-03 AB01补充：复用ScopedEngine不得改变07-04已接受的Action领域source预算。Action模式只执行固定view的target gate并原样传递QueryContext；独立Query模式继续收紧HTTP deadline/查询row-byte limits。REST/MCP正式及validate-only均保留原领域bounds，后者仍受外围请求取消。不得新增engine client或绕过drift。主会话与Claude Code第二意见AGREE，证据target/phase7-claude-action-budget-review.json；须补尊重ctx.timeout的listener回归证明正式Action响应超时/断连后按原bounds恰好提交一次。
+
+本文件保留初始设计与后续已接受修订；当前实施与验收状态见07-DRIFT-IMPLEMENTATION.md、07-DRIFT-REAL-SERVICE-TESTS.md及phase progress。以下早期建议受前述已接受修订与ADR0030/0031约束，不单独代表当前实现状态。
 
 主会话2026-11-03收敛：用户授权Claude Code同方向意见自动推进，完整exit0意见见`target/phase7-claude-contract-review.json`及`target/phase7-claude-followup.json`。最终产品合同以ADR-0030为准，覆盖本文早期待决草案。采用既有health字段、30s/20s常量、raw host engine和原有drain；不新增独立Trino client。ScopedEngine可在owned Action async块内借用captured host并持固定view，无需强制新增第二wrapper。保留单slot与exact-key隔离，可用必要短锁观察标记拒绝旧轮发布，不建立多版本缓存。下列测试矩阵继续适用，新增source摘要wire测试不适用。工程增量四维审查见07-DRIFT-ENG-REVIEW.md；全部target降级仍200 degraded，monitor异常退出转CheckFailed；现有Query读审计保留，不为Action发明额外read_audit合同。
 
 ## 1. 已有合同与真实调用链
 
+- 传输映射澄清见ADR-0031：本文source错误HTTP503仅指REST；MCP保持既有HTTP200+JSON-RPC error，安全data保留code/apiName/request_id。主会话与Claude Code同方向确认，不改变MCP transport。
 - `.planning/REQUIREMENTS.md:31`、ADR-0015:21、ADR-0021:32/44 要求启动及周期检查、按目标降级，其余照常。`docs/designs/trino-engine-sql-tiers.md:176/268` 要求受影响目标返回 `SourceSchemaDrift`。ADR-0015:20 明确自动 drift 不做 pk 全表查重。
 - `07-06-PLAN.md:120` 要求 owner、启动/周期检测、限时 probe 与失败清理；本修复使用 interval 默认 30s、每轮总预算默认 20s，配置须为正且不超过二者。既有 L2 的 60s proof TTL 不是已批准的 drift TTL，不将它复制成新失效 SLA。
 - `07-CONTEXT.md:29` 只明确 L2 单独故障时 200 degraded、核心故障 503；没有明确“部分 source target 漂移”的 HTTP 状态或新版本尚未检查的行为。

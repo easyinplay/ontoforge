@@ -22,7 +22,7 @@
 
 ## Next Step
 
-整合head972c7be的CI41608551893四项必需job已通过。GT01与RF05已独立复签并提交；WR01 OpenAPI补强门禁全绿、待报告复签。下一动作是RF01 executor独占Cargo按ADR0030与工程设计执行四项listener RED，再完成core/host及全出口/生命周期/真实服务验收。新整合head必须再次验证，Performance观察保留既有API边界。
+RF01代码29375e8与CI接线fb814df已提交，最终27项定向、新真实suite2项、Clippy与复签已绿。下一步推送并以同一HEAD执行fresh完整服务矩阵及远程CI，HF01修正GREEN在此闭环；通过后才关闭07-13并进入07-14。旧CI41621274320不覆盖本增量，Performance观察保留既有API边界。
 
 P3执行中：已实施14/16，07-13尚未关闭，07-14继续等待全部验收缺口关闭。Windows方案A与后续修复提交/证据统一见`07-13-SUMMARY.md`，不重新执行已完成的环境诊断。
 

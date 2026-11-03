@@ -1,5 +1,17 @@
 # Phase 7 findings
 
+- 2026-11-03 FT01：Testing专项确认在途旧view单元覆盖未贯通真实listener的第二次source gate，旧单PK barrier测试也只有一次gate。主会话与Claude Code正常exit0/AGREE补一条分页v1请求跨v2报告更新的行为验收：新请求503、旧请求第二source调用成功且audit仍v1，用reload唤醒无需30s；不把Action跨reload成功作为目标（commit fence应拒绝）。这是test-only合同补测，不是已证明生产漏洞，交core单owner追加source_drift.rs。
+
+- 2026-11-03 DC01验收分层：现有source_drift只模拟metadata drop，真实Trino双suite的barrier发生在metadata已完成后，尚未贯通host→monitor→describe_tables→raw tracker→DELETE drain。Claude Code正常exit0/AGREE补两条真实ServerHost/TrinoEngine配受控HTTP上游的确定性测试：延迟DELETE必须等待，失败DELETE必须HostError::Shutdown，audit关闭并有界。不额外锁真实PG catalog制造慢metadata；实际Trino/PG suite仍独立承担兼容与周期/版本证明，报告不能混称环境。
+
+- 2026-11-03 HF01：既有真实health测试store为aviation定义，却把CoreProbe接到L2 ACL TPCH catalog；过去SELECT1掩盖了metadata不匹配。Claude Code正常exit0/AGREE，授权只将core指向已有普通Trino aviation源，L2/recheck仍指向ACL服务，保留全部健康/过期/恢复断言。需先真实复现失败再修夹具，不关闭新monitor；详真实服务lane报告与target/phase7-claude-health-fixture-review.json。
+
+- 2026-11-03 AB01：RF01把Action裸engine替换为ScopedEngine时，连带套用独立Query的HTTP deadline及row/byte预算，违反07-04-PREFLIGHT既定方案A。ControlledEngine阻塞在inner.execute之前且未计入ctx.timeout，旧37项回归不能排除此问题。Claude Code text-only第二意见正常exit0/AGREE，已锁Action透传领域ctx、仅gate，独立Query保持原adapter语义；不新增产品选择。真实服务worker先完成已排定可逆mutation并恢复，然后core接context/rest/mcp与专用回归，Cargo仍串行。
+
+- 2026-11-03 RF01复签两项：DS01在未取得owner前对invalid limits执行shutdown会破坏已运行实例，恢复基线纯validate早返，CC同意且RED/GREEN已闭环。CR01 Action仅有action grant无target type grant时，prepare source先返回drift而最终criteria授权更晚；CC先要求核实静态/行授权区别，主会话读visibility/TypeScope确认类型分量就是canonical type和scope.types存在，最终AGREE只前置该分量，事务行列判定保留。一次CC返回伪tool文本未视为意见，text-only重试才取得有效AGREE（phase7-claude-action-auth-refinement-retry.json）。详两份DRIFT复签报告。
+
+- 2026-11-03 RF01中途代码核查：公共describe_bindings也由CLI online.rs:234调用，engine/lib.rs默认timeout注释是per-query。新共享deadline若直接放公共入口会改变CLI行为。Claude Code第二意见phase7-claude-drift-budget.json正常exit0/AGREE；已锁定只在check_drift路径共享预算，公共describe_bindings仍每catalog原ctx，剩余0不再发送，并补可控clock双catalog对照。属于RF01范围收窄，不新增产品选择。
+
 - 2026-11-03 RF01工程检查核对本机锁定Tokio1.54.1源码：Notify持单permit、interval Skip与JoinHandle任务状态均已有原语，不新增调度器。内置web两次调用未返回可读内容，实际依据为Cargo registry对应版本源码。旧.codex/rules/web-search.md缺失，已找到并读.claude/rules同名规则。工程审查与最终最小方案见07-DRIFT-ENG-REVIEW.md；用户同方向自动推进授权覆盖skill逐项确认，不因模板再次停下询问。
 
 - 2026-11-03 Claude Code第二意见入口已核实为C:/Users/easyi/.local/bin/claude.exe，以只读Read/Grep/Glob、dontAsk、禁MCP和不持久化session运行。CLI报告配置模型MiniMax-M3.1-Flash[1m]，不将该工具结果称为Claude模型意见。用户新授权取代本轮旧“等待用户选择”流程：主会话与第二意见一致/同方向补强可自动落定，实质分歧仍停下询问。

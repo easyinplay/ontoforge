@@ -11,9 +11,12 @@ affects: [API-01, API-03, MCP-01, MCP-06, MCP-07, MCP-08, L2-04, SCOPE-07]
 
 # Phase 07 Plan 13 Summary
 
-2026-11-03 Windows helper方案A与整合head972c7be的四项必需CI（41608551893）已通过。原12项review关闭11项，RF05提交0b4a661并独立复签clean；剩余RF01按已接受ADR0030推进，详`reviews/07-REVIEW-FIX-CONTRACT.md`。新增gstack审查发现与修复见`reviews/07-GSTACK-INCREMENTAL-REVIEW.md`；新改动仍需整合CI，不推导Phase完成。
+2026-11-03 RF01已提交29375e8，命名CI接线fb814df：最终定向27/27、真实Trino/PG新增2/2、五包Clippy与独立复签通过；完整fresh服务矩阵、HF01夹具修正GREEN及新head CI仍待执行，07-13保持executing。已通过的旧head4d203bf/CI41621274320不覆盖本增量。详`reviews/07-DRIFT-GSTACK-REVIEW.md`与`reviews/07-DRIFT-REAL-SERVICE-TESTS.md`。
 
 ## Implemented
+
+- `29375e8`：RF01单owner/精确版本view/全source出口gate/health及清理；AB01保留Action领域预算；FT01与DC01补齐固定view及DELETE链路，见独立修复与复签报告。
+- `fb814df`：两项真实source drift测试加入现有named discovery/执行CI门禁，缺失/ignored不作为通过。
 
 - `a733759`：真实 PostgreSQL 独立 schema、双 store、reload/revoke barrier、原子写入计数、持久审计与 HTTP Action/history/result 合同。
 - `2057c33`：真实 Trino source barrier、snapshot/reload、L2 MCP 六工具、四种 EXPLAIN、ACL deny、61 秒 proof expiry/recovery、core 503/recovery、shutdown Action dependency/audit。

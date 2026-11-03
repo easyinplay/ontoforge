@@ -1,5 +1,27 @@
 # Phase 7 progress
 
+- 2026-11-03 最终冻结三targets合跑27/27 GREEN（AB01 5、source20、DC01 2，target/phase7-drift-cleanup-budget-final.log），最终test blob与复签一致。DC01两场景总0.18s，真实HTTP/TrinoEngine上游受控，不冒称真实Trino。fresh Red Team无新增发现，Testing/DC01报告补绑定运行证据中。准备原子提交和新head CI；完整fresh服务矩阵/HF01 GREEN尚待，不关闭RF01/07-13。
+
+- 2026-11-03 AB01五例取得真实0/5 RED后，仅context/rest/mcp引入明确EnginePurpose恢复Action领域ctx；同五例5/5 GREEN（target/phase7-action-budget-{red,green}.log）。FT01补测与相邻回归/lint进行中；DC01测试已写待Cargo。冻结复签后先提交推新head，再以同HEAD fresh完整服务矩阵与远程CI并行，避免旧binary/旧commit证据混用。
+
+- 2026-11-03 真实服务lane完成2/2 GREEN、HF01业务RED后最小fixture修正、定向Clippy、artifact scan和cleanup exit0；Docker仅剩用户vennuap-casdoor。正式将唯一Cargo交core执行AB01五例RED/GREEN与FT01分页固定view补测；transport只准备DC01独立测试。HF01 GREEN与最新CLI完整矩阵留fresh整合，不提前报关闭。
+
+- 2026-11-03 新真实Trino/PG suite取得可归因mutation失败后恢复原context blob，正常2/2 GREEN（target/phase7-drift-real-green.log，92.08s）：周期target隔离/恢复、双store旧metadata隔离。Security/Maintainability/Performance/API四专项无新增发现。AB01与DC01仍待闭环，HF01夹具回归定位中；最终完整服务验收必须fresh RUNNER_TEMP重build最新CLI，不能复用旧宿主。
+
+- 2026-11-03 主会话gstack增量复核发现AB01 Action误继承HTTP/query预算；Claude Code同意恢复原领域bounds，生产修复等待真实suite mutation精确恢复后交core。RT01空MCP成功结果假阳性已独立复签关闭。当前真实服务启动中，RF01仍pending，不以此前本地GREEN代替新增回归。
+
+- 2026-11-03 RF01 core已冻结并释放Cargo：source19、相邻37、budget2、CLI9、owner2通过，五包all-target Clippy/fmt exit0，详reviews/07-DRIFT-IMPLEMENTATION.md。Cargo交真实服务lane，运行source_drift_trino_it两个命名suite的可逆mutation RED/恢复GREEN并接CI；RT01断言补强正在独立复签。07-13保持executing，14/16，未跨入07-14。
+
+- 2026-11-03 CI41621274320/head4d203bf已四项必需job全success，元数据target/phase7-ci-41621274320.json；不涵盖工作树RF01。RF01复签发现DS01非法重复启动清理他人owner，已真实2项RED→source17GREEN且安全复签关闭；CR01 Action缺type grant先泄露drift，Claude Code经源码细化AGREE，最小前置检查后source19GREEN，等待最终spec复签。相邻回归/lint后交真实服务lane；未宣称RF01完成。
+
+- 2026-11-03 RF01全出口/lifecycle定向12/12通过（phase7-drift-exits.log），仍在预算CLI兼容、启动清理及lint阶段。MCP错误协议歧义已由主会话+Claude Code AGREE收敛至ADR0031：REST503，MCP沿HTTP200+JSON-RPC error及原code/ID；真实服务测试lane已同步，不为本修复改变transport。
+
+- 2026-11-03 RF01 owner状态2项单测取得额外真实RED→GREEN，覆盖退出后未来版本不能永久Pending。生命周期第一轮9/10，失败为完整patch测试将array fixture写成string，owner修正夹具中；未报整套通过。主会话发现公共binding timeout会影响CLI，Claude Code同意将共享预算限定drift并加回归，已交executor。CI41621274320目前integration/real-services/Ubuntu成功，Windows仍运行。
+
+- 2026-11-03 RF01首个core/host slice的4项listener测试GREEN（target/phase7-drift-green.log，4passed/0failed）：PK原audit/source_error、list/aggregate/Action双模式零业务SQL/写入、editOnly和health两矩阵。仍欠调度/版本/异常生命周期/全出口及真实服务证据，未关闭RF01。engineStatus沿raw status，不把metadata轮失败伪装engine失联；最终status可unhealthy+engineStatus available。测试dev依赖仅启用锁定Tokio test-util，无升级包。
+
+- 2026-11-03 已推送4d203bf，CI41621274320运行，仅覆盖GT01/RF05/WR01及决策文档。RF01 core worker独占Cargo；独立real-service测试worker仅拥有新source_drift_trino_it.rs与独立报告，复用既有serve seam/真实30s周期，不改core/support/CI，不运行Cargo直到交接。当前源码实现和真实测试准备可并行，执行仍串行。
+
 - 2026-11-03 RF01已取得4/4可归因listener行为RED（target/phase7-drift-red.log）：当前PK/列表仍200而非drift拒绝，health不呈现target降级/metadata轮失败。executor开始core和host最小实现，尚未GREEN。WR01已提交ae6c4a7；准备将GT01/RF05/WR01及本轮决策文档推送做独立整合CI，未提交的RF01不得计入该CI覆盖。
 
 - 2026-11-03 WR01独立复签clean，4文件blob与owner报告/六份日志核对通过。准备原子提交history OpenAPI声明、精确合同测试和生成物；新增gstack两项确定缺口GT01/WR01均关闭，P01保留非阻塞观察。当前剩RF01实施及后续整合动态门禁，未关闭07-13。

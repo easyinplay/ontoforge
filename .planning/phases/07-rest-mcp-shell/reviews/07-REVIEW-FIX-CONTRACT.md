@@ -10,7 +10,7 @@ status: fixing
 
 | ID | 来源 | 修复范围 | 必需行为证据 | 状态 |
 |---|---|---|---|---|
-| RF-01 | Spec CR-01 | 启动/周期drift owner、版本绑定、target与engine-wide健康分开 | 真实schema drift/恢复、reload期间陈旧报告不污染新版本、shutdown清理 | ADR-0030已接受，待实施 |
+| RF-01 | Spec CR-01 | 启动/周期drift owner、版本绑定、target与engine-wide健康分开 | 真实schema drift/恢复、reload期间陈旧报告不污染新版本、shutdown清理 | 29375e8已实施，定向27/27+真实2/2+复签通过；待fresh矩阵与新head CI |
 | RF-02 | Spec CR-02 | MCP describe补scope过滤links与engine状态 | REST/MCP同主体metadata字段与授权一致 | 已关闭：27项tranche通过，复签clean |
 | RF-03 | Spec CR-03 | REST安全Action参数诊断及criteria消息，DTO/SDK合同 | 逐参数错误、配置criteria消息可达，不暴露底层异常 | 已关闭：server11/Rust17/API7/TS14，复签clean |
 | RF-04 | Spec CR-04、Standards CR-03 | MCP schema从实际PK/数组元素类型生成 | integer/boolean ObjectReference与float数组真实调用 | 已关闭：27项tranche通过，复签clean |
@@ -46,6 +46,8 @@ status: fixing
 ## 当前执行所有权
 
 RF05由wire worker负责，36项GREEN后冻结交fresh复签；同worker随后独占API WR01的OpenAPI源/精确合同测试和两个生成物。RF01完整链交独立gsd-executor，只能在前owner源码/Cargo冻结后开工。主会话继续维护全部共享planning，Cargo唯一owner且jobs=2。各自独立报告可写，共享rest/mcp文件不得并发编辑。
+
+当前RF05/WR01均已冻结提交。RF01真实服务worker持唯一Cargo，拥有source_drift_trino_it.rs、ci/server-services.sh命名suite接线与health_trino_it.rs的HF01夹具配对修正。source gate可逆mutation恢复后交core执行AB01 Action领域预算回归修复；core在交接前只准备独立测试，不改生产。shared context/rest/mcp仍单owner串行。
 
 ## 先前已完成修复的所有权记录
 
