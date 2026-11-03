@@ -11,7 +11,7 @@ affects: [API-01, API-03, MCP-01, MCP-06, MCP-07, MCP-08, L2-04, SCOPE-07]
 
 # Phase 07 Plan 13 Summary
 
-07-13 未关闭。2026-11-03 正在完成Staff修复后的最终回归；本轮完整服务脚本、全workspace门禁与Linux `phase7-real-services` 尚待运行。此前本地真实PG/Trino结果仅作为历史证据。
+07-13 未关闭。2026-11-03 Staff修复已复签，本地workspace/Clippy以及PR #8全部4个必需CI job通过；本地完整服务的所有测试通过，但Windows脚本SIGINT未触发graceful shutdown，收尾exit1，正在修复。此前本地真实PG/Trino结果仅作为历史证据。
 
 ## Implemented
 
@@ -38,16 +38,16 @@ affects: [API-01, API-03, MCP-01, MCP-06, MCP-07, MCP-08, L2-04, SCOPE-07]
 
 2026-11-03 Staff五项修复已冻结并独立复签，0剩余BLOCKER，详`reviews/07-13-STAFF-RECHECK.md`。提交链为`513a2f6`、`100976a`、`cf2a589`、`9aeb3ae`、`0dd3995`、`f835752`。transport11、stdio5、CLI最终L2/cleanup10、engine lib55/monitor19/resilience31通过；最终完整门禁仍待结果。
 
-1. Linux `phase7-real-services` workflow 尚未实际运行，不能把 CI job 标记为 GREEN。
-2. 修复冻结后重新执行完整服务脚本，要求本轮exit0、named suites、credential scan与cleanup完整证据；旧日志不作为本轮通过依据。
-3. 全workspace regression、full Clippy和远程artifact credential scan尚待完成；最终交叉复签待落盘。
+1. CI run `41577377433`（head `d649260`，PR merge测试commit `55309c0`）全部4个必需job通过。专项artifact位于`target/phase7-linux-ci-41577377433/`，Rust named suites共19项、TS9项通过；credential scan、上传和cleanup全部success。
+2. 本地完整脚本Rust19与TS9全部通过且无skip，credential scan独立exit0，但cleanup等待30秒后强杀返回137，使总exit1。根因经独立真实进程复现2/2，见`findings.md`；必须修复实际graceful shutdown信号路径并重跑，不能接受强杀退出为成功。
+3. 本地全workspace regression已exit0（1373 passed、0 failed、113 ignored，含doc-tests），full Clippy与embedded-pg Clippy通过；远程artifact credential scan已success。最终交叉复签已落盘。
 
 ## Not Complete
 
 - 不更新 ROADMAP 的 07-13 checkbox。
 - 不关闭 `L2-04` / `SCOPE-07`。
-- 不进入 07-14 release 计划，直到 Linux CI 真实服务 job 通过。
+- 不进入 07-14 release 计划，直到本轮剩余完整门禁通过。
 
 ## Next Step
 
-完成本地完整服务及workspace门禁，创建独立Phase 7 Draft PR并在Linux runner执行`bash ci/server-services.sh verify`；确认named suites、TypeScript gate、artifact scan和always cleanup全部通过后再解除07-14依赖。Phase 7 verify在全部PLAN验收后执行。
+完成本地workspace与完整服务门禁，并收齐Draft PR #8的Windows/Linux CI结果；已通过的Linux专项服务证据见上文。全部通过后解除07-14依赖，Phase 7 verify在全部PLAN验收后执行。

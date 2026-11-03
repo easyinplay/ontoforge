@@ -1,5 +1,21 @@
 # Phase 7 progress
 
+- 2026-11-03 收尾诊断闭合：POSIX INT路径2/2失败；私有隐藏console CTRL_C路径2/2成功（真实exit0、端口关闭、约1.36s、无强杀）。Grok第二轮正常返回支持A，已向用户提出A Windows helper / B WSL验收选择；当前等待路径选择，07-13仍未关闭，无后台Cargo或服务遗留。
+
+- 2026-11-03 本地完整服务脚本所有named suites通过（Rust19、TS9，0失败/skip），但收尾exit1，不能标完整GREEN；四测试容器已清理，server.log为空。进入最小复现诊断，优先核查Git Bash对原生Windows进程的SIGINT/退出码处理；不修改运行中的脚本，不重跑已通过workspace。07-13继续执行，07-14未放行。
+
+- 2026-11-03 CI run `41577377433`最终4个必需job全部success：Windows/Linux test、integration、phase7-real-services；isolated-query-bench按事件条件skipped且不计验收。完整job元数据保存`target/phase7-ci-41577377433.json`。本轮本地真实服务4容器均healthy，脚本仍执行，完成后解除07-14依赖。
+
+- 2026-11-03 本地完整`cargo test --workspace --locked -- --test-threads=1` exit0：1373 passed、0 failed、113 ignored（含doc-tests），139个libtest汇总；编译耗时33m39s。原始日志`target/phase7-final-workspace-test-20261103.log`，汇总JSON同前缀。已启动本轮完整`ci/server-services.sh verify`（session99941），不把ignored当通过。
+
+- 2026-11-03 CI run `41577377433`的`test (ubuntu-latest)`已success，Linux全workspace、Clippy/embedded-pg/TLS及L2/Action附加门禁完成；远程仅Windows job仍运行，本地完整回归继续。
+
+- 2026-11-03 同一CI run `41577377433`的常规`integration`已success；Windows/Linux workspace job尚未结束。Phase7专项artifact核读为Rust named suites共19 passed、TS9 passed，所有指定suite无skip；artifact记录的PR merge测试commit为`55309c01d84b81c664be5076b64500dbe17fe26b`。
+
+- 2026-11-03 Linux `phase7-real-services`于CI run `41577377433`通过（job `125723930446`），含PG2、snapshot1、Trino2、health2、ACL6、Rust client6以及TS合同；凭据扫描、artifact上传、cleanup均success。artifact已下载至`target/phase7-linux-ci-41577377433/`。完整CI其他job与本地workspace仍执行中，不提前关闭07-13。
+
+- 2026-11-03 已推送`d649260`并创建Phase 7 Draft PR #8（base为Phase6分支），CI run `41577377433`启动。embedded-pg all-targets Clippy exit0（26.52s）；workspace测试编译中。PR #7仍Draft OPEN；07-14继续等待07-13本地与Linux服务门禁。
+
 - 2026-11-03 全workspace all-targets Clippy exit0（1m33s），fmt/diffcheck与服务脚本bash语法检查通过。正在执行embedded-pg Clippy及workspace串行测试，日志为`target/phase7-final-*-20261103.log`；未用定向GREEN替代全量结果。
 
 - 2026-11-03 修复冻结：`9aeb3ae`取消tracker/monitor cleanup、`0dd3995`server认证与有界关闭、`f835752`stdio协商/定向取消；独立Staff复签原五项全部resolved，0新增发现，详`reviews/07-13-STAFF-RECHECK.md`。CLI最终10/10及engine105/105原始日志已核读；`9e6e712`补Trino测试机械lint，主会话统一workspace门禁运行中。

@@ -1,5 +1,9 @@
 # Phase 7 findings
 
+- 2026-11-03 Windows收尾方案第二意见：Grok首轮180s无输出已停止；精简verbatim第二轮正常exit0，记录`target/phase7-grok-windows-cleanup-second-20261103.log`。建议A：隔离隐藏console传递真实CTRL_C_EVENT，避免CREATE_NEW_PROCESS_GROUP使Ctrl+C disabled；不使用CTRL_BREAK替代ctrl_c，不将强杀137当成功。仅采纳与本地probe一致的机制，Grok对MSYS内部实现的泛化不当作独立证据。可丢弃`target/phase7-private-console-probe.py`实测2/2：console成员严格为server+helper，退出码0、端口关闭、无强杀，耗时1.363s/1.362s。正式接入需保留进程身份（PID+创建时间/句柄）与失败传播；B为补齐WSL运行Linux但不覆盖Windows原生缺口。已按用户第二意见约定提出A/B，等待路径选择，尚未改tracked实现。
+
+- 2026-11-03 本地完整服务脚本收尾失败根因已最小复现2/2：Git Bash启动Windows原生`serve --dev`，`kill -INT`返回0但30秒后health仍200，最终`kill -KILL`后wait137，按现有合同传播exit1。原credential scan单跑exit0，四本轮Docker容器已清理。复现入口`target/phase7-signal-probe.sh`及`target/signal-probe.EQ9175/`、`target/signal-probe.LvFeAT/`；没有向共享console广播。候选为隔离隐藏console helper或迁移本地WSL验收，尚未选定；WSL Ubuntu-26.04当前缺Linux Cargo/Node/jq，未发现Docker socket。完整CI均通过，不将此脚本失败误写为业务测试失败，也不吞掉137。
+
 - 2026-11-03 最终澄清：generation边界仅约束PendingProbe归属确认；Engine::drain_cancellations仍等待该实例全部已登记取消任务，不新增分组tracker或第二种drain。旧handle不会仅因新generation pending存在而判失败。PG测试Clippy收尾限于局部长场景注解、task类型别名与折叠条件，保留断言和运行语义；无新业务行为，跳过新增TDD，由Clippy及真实PG suite验收。
 
 - 2026-11-03 Grok第二意见正常返回并确认monitor recovery方案：用当前状态谓词替代一次性sticky failure；普通QueryGuard取消失败继续sticky，monitor PendingProbe按generation恢复。drain只等待engine任务并确认`pending.generation <= handle.generation`为空；新generation不阻塞旧handle。失败必须在tracked task内先写入PendingProbe再完成，enable检查与pending写入需同锁/原子化，deadline耗尽保持monitor disabled并报告失败。该方案不构成持久化跨进程保证，当前合同由Trino自身TTL与下次启动probe承担，不能宣称进程崩溃后债务持久化。

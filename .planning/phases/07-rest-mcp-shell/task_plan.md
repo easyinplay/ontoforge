@@ -32,15 +32,15 @@ P3执行中：07-01至07-12、07-15、07-16共14/16完成。当前先完成07-13
 - [x] Staff CR-02/03/04：MCP全transport认证、初始owner绑定、定向取消和有界SSE shutdown。
 - [x] 关闭补强：原子Action准入/注册、按07-06既定顺序排空、等待Trino取消任务且清理失败可见。
 - [x] Staff CR-05：完整多edit receipt与history显式wire转换，OpenAPI/Rust/TS真实合同一致。
-- [ ] 修复workspace历史测试RowValues + Sync类型回归并完成整体验证。
+- [x] 修复workspace历史测试RowValues + Sync类型回归并完成整体验证。
 - [x] SDK无损JSON capability与公开入口修复，8项contract及生成/typecheck/build通过。
 - [x] MCP参数schema修复，新增真实回归及相邻14项测试通过。
 - [x] Rust client数值边界修复，4 unit与5 HTTP contract、client Clippy通过。
 - [x] Rust history分页参数修复及真实HTTP分页回归（`7fa2401`，4 unit+6 HTTP contract）。
-- [ ] CLI与全workspace Clippy、workspace回归。
+- [x] CLI与全workspace Clippy、embedded-pg Clippy、workspace回归（1373 passed / 0 failed / 113 ignored）。
 - [ ] 完整服务脚本（包括取消读audit、Rust/TS、credential scan与cleanup）真实通过。
 - [x] SDK/MCP/client交叉复签无剩余blocker（最终冻结`f835752`；整体动态门禁另计）。
-- [ ] Phase 7 Draft PR远程Linux CI真实通过，解除07-14依赖。
+- [x] Phase 7 Draft PR #8远程Windows/Linux CI全部必需job通过（run `41577377433`）；07-14仍等待本轮本地完整服务脚本。
 
 ## 07-05 Execution
 
