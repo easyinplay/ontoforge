@@ -7,9 +7,13 @@ ontoforge serve --dev --bind 127.0.0.1:8080
 ontoforge dev-token --server-config .ontoforge/dev/server.toml --sub alice --groups dispatchers
 ```
 
-`dev-token` 的唯一输出是 token。将它作为 `Authorization: Bearer <token>` 发送到 `/api/health`、`/api/query` 或 `/api/actions/{action}`。服务会把 token key、独立 query signing key、SQLite edit store、ontology、scope 和 CSV fixtures 写入 data dir；路径只写到 stderr，不写 secret。
+`dev-token` 的唯一输出是 token。将它作为 `Authorization: Bearer <token>` 发送到 `/api/query` 或 `/api/actions/{action}`；健康检查路径为 `/health`。服务会把 token key、独立 query signing key、SQLite edit store、ontology、scope 和 CSV fixtures 写入 data dir；路径只写到 stderr，不写 secret。
 
 正常重启不会重新 seed 已有 definition，也不会删除 Action 修改、history 或 receipt。相同 `commandId` 的 Action 请求沿用 edit store 的幂等合同。
+
+服务在整个 dev 生命周期持有 `.ontoforge-dev.lock` 的独占 OS 文件锁；竞争启动和活跃实例上的 reset 会被拒绝。进程退出或崩溃后由内核释放锁，锁文件保留，不通过 PID 文本判断所有权或删除锁 inode。
+
+Unix 上新建 dev 目录使用 `0700`，`dev-token.key` 与 `query-signing.key` 使用 `0600`。已有 dev 根目录或 key 若具有任意 group/other 权限，会拒绝启动（包括 `--reset`）并分别提示 `chmod 700`、`chmod 600`；不会自动修改已有目录权限或 key 的字节与权限，也不检查父目录全树。Windows ACL 保持不变。
 
 ```powershell
 ontoforge serve --dev --data-dir .ontoforge/dev --reset --bind 127.0.0.1:8080

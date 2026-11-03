@@ -204,6 +204,10 @@ fn dev_active_instance_and_unsafe_reset_are_rejected() {
         .expect("spawn unsafe");
     assert!(!output.status.success());
     assert!(unsafe_root.join("user-data.txt").exists());
+    assert!(
+        !unsafe_root.join(".ontoforge-dev.lock").exists(),
+        "rejected user directory must not gain a lock artifact"
+    );
 }
 
 #[test]
@@ -236,4 +240,188 @@ fn dev_demo_restart_and_reset_preserve_then_reinitialize() {
     let mut reset = start(&root, true);
     assert!(root.join("editstore.db").exists());
     reset.stop();
+}
+
+fn rejected_start(root: &Path, reset: bool) -> std::process::Output {
+    let mut command = Command::new(binary());
+    command
+        .args(["serve", "--dev", "--data-dir"])
+        .arg(root)
+        .args(["--bind", &format!("127.0.0.1:{}", port())])
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    if reset {
+        command.arg("--reset");
+    }
+    let mut child = command.spawn().expect("spawn competing server");
+    for _ in 0..100 {
+        if child.try_wait().unwrap().is_some() {
+            return child.wait_with_output().unwrap();
+        }
+        std::thread::sleep(Duration::from_millis(20));
+    }
+    child.kill().expect("clean up unexpected competing server");
+    let output = child.wait_with_output().unwrap();
+    panic!(
+        "competing dev server remained active: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+}
+
+#[test]
+fn dev_lock_is_held_for_live_state_and_released_after_process_crash() {
+    let parent = tempfile::tempdir().unwrap();
+    let root = parent.path().join("dev");
+    let mut first = start(&root, false);
+    let lock = fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open(root.join(".ontoforge-dev.lock"))
+        .unwrap();
+    assert!(
+        lock.try_lock().is_err(),
+        "live DevState must hold an exclusive OS file lock"
+    );
+    let rejected = rejected_start(&root, true);
+    assert!(!rejected.status.success());
+    first.stop();
+    lock.try_lock()
+        .expect("kernel releases lock when owner crashes");
+    drop(lock);
+    let mut recovered = start(&root, false);
+    recovered.stop();
+    assert!(
+        root.join(".ontoforge-dev.lock").exists(),
+        "lock inode must survive owner release"
+    );
+}
+
+#[test]
+fn dev_empty_lock_window_never_allows_a_second_owner_or_reset() {
+    let parent = tempfile::tempdir().unwrap();
+    let root = parent.path().join("dev");
+    start(&root, false).stop();
+    let path = root.join(".ontoforge-dev.lock");
+    fs::write(&path, "").unwrap();
+    let lock = fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open(&path)
+        .unwrap();
+    lock.try_lock().unwrap();
+    let before = fs::read(root.join("dev-token.key")).unwrap();
+    for reset in [false, true] {
+        let rejected = rejected_start(&root, reset);
+        assert!(!rejected.status.success());
+        assert!(String::from_utf8_lossy(&rejected.stderr).contains("owns"));
+        assert_eq!(fs::read(root.join("dev-token.key")).unwrap(), before);
+    }
+    drop(lock);
+    let mut recovered = start(&root, false);
+    recovered.stop();
+}
+
+#[test]
+fn dev_recovers_unowned_empty_lock_before_first_marker() {
+    let parent = tempfile::tempdir().unwrap();
+    let root = parent.path().join("dev");
+    fs::create_dir(&root).unwrap();
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        fs::set_permissions(&root, fs::Permissions::from_mode(0o700)).unwrap();
+    }
+    fs::write(root.join(".ontoforge-dev.lock"), "").unwrap();
+    let mut recovered = start(&root, false);
+    recovered.stop();
+    assert!(root.join(".ontoforge-dev.lock").exists());
+}
+
+#[cfg(unix)]
+#[test]
+fn dev_new_directory_and_both_keys_are_private() {
+    use std::os::unix::fs::PermissionsExt;
+    let parent = tempfile::tempdir().unwrap();
+    let root = parent.path().join("private-parent/dev");
+    fs::create_dir(root.parent().unwrap()).unwrap();
+    let mut running = start(&root, false);
+    assert_eq!(
+        fs::metadata(&root).unwrap().permissions().mode() & 0o777,
+        0o700
+    );
+    for key in ["dev-token.key", "query-signing.key"] {
+        assert_eq!(
+            fs::metadata(root.join(key)).unwrap().permissions().mode() & 0o777,
+            0o600
+        );
+    }
+    running.stop();
+}
+
+#[cfg(unix)]
+#[test]
+fn dev_rejects_existing_exposed_keys_without_changing_them() {
+    use std::os::unix::fs::PermissionsExt;
+    let parent = tempfile::tempdir().unwrap();
+    let root = parent.path().join("dev");
+    start(&root, false).stop();
+    for key in ["dev-token.key", "query-signing.key"] {
+        let path = root.join(key);
+        let before = fs::read(&path).unwrap();
+        fs::set_permissions(&path, fs::Permissions::from_mode(0o640)).unwrap();
+        let database = fs::read(root.join("editstore.db")).unwrap();
+        for reset in [false, true] {
+            let rejected = rejected_start(&root, reset);
+            assert!(!rejected.status.success());
+            assert!(String::from_utf8_lossy(&rejected.stderr).contains("chmod 600"));
+            assert_eq!(fs::read(&path).unwrap(), before);
+            assert_eq!(fs::read(root.join("editstore.db")).unwrap(), database);
+            assert_eq!(
+                fs::metadata(&path).unwrap().permissions().mode() & 0o777,
+                0o640
+            );
+        }
+        fs::set_permissions(path, fs::Permissions::from_mode(0o600)).unwrap();
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn dev_rejects_existing_public_directory_without_modifying_it() {
+    use std::os::unix::fs::PermissionsExt;
+    let parent = tempfile::tempdir().unwrap();
+    let root = parent.path().join("dev");
+    fs::create_dir(&root).unwrap();
+    fs::set_permissions(&root, fs::Permissions::from_mode(0o755)).unwrap();
+    let rejected = rejected_start(&root, false);
+    assert!(!rejected.status.success());
+    assert!(String::from_utf8_lossy(&rejected.stderr).contains("chmod 700"));
+    assert_eq!(
+        fs::metadata(&root).unwrap().permissions().mode() & 0o777,
+        0o755
+    );
+    assert_eq!(fs::read_dir(&root).unwrap().count(), 0);
+}
+
+#[cfg(unix)]
+#[test]
+fn dev_rejects_dangling_lock_symlink_without_creating_external_target() {
+    use std::os::unix::fs::{PermissionsExt, symlink};
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path().join("dev");
+    fs::create_dir(&root).unwrap();
+    fs::set_permissions(&root, fs::Permissions::from_mode(0o700)).unwrap();
+    let outside = directory.path().join("outside.lock");
+    symlink(&outside, root.join(".ontoforge-dev.lock")).unwrap();
+    let rejected = rejected_start(&root, false);
+    assert!(!rejected.status.success());
+    assert!(!outside.exists());
+    assert!(!root.join(".ontoforge-dev-marker").exists());
+    assert!(!root.join("dev-token.key").exists());
+    assert!(
+        fs::symlink_metadata(root.join(".ontoforge-dev.lock"))
+            .unwrap()
+            .file_type()
+            .is_symlink()
+    );
 }

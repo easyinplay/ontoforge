@@ -1,7 +1,7 @@
 //! Persistent, embedded development runtime for `serve --dev`.
 
 use std::fs::{self, File, OpenOptions};
-use std::io::{ErrorKind, Read, Write};
+use std::io::Write;
 
 use camino::{Utf8Path, Utf8PathBuf};
 use ontoforge_auth::scope::{ScopeInputs, attr_types, compile_scope};
@@ -31,19 +31,35 @@ pub(crate) struct DevState {
 
 pub(crate) fn prepare(options: &DevCliOptions) -> Result<DevState, String> {
     let root = absolute_root(options.data_dir.as_ref())?;
-    fs::create_dir_all(root.as_std_path())
+    create_private_directory(&root)
         .map_err(|e| format!("cannot create dev directory `{root}`: {e}"))?;
     let root = Utf8PathBuf::from_path_buf(
         fs::canonicalize(root.as_std_path())
             .map_err(|e| format!("cannot resolve dev directory `{root}`: {e}"))?,
     )
     .map_err(|_| "dev directory is not valid UTF-8".to_owned())?;
-    reject_symlink(&root)?;
+    validate_directory(&root, options.reset)?;
+    prepare_locked(root, options.reset)
+}
+
+fn validate_directory(root: &Utf8Path, reset: bool) -> Result<(), String> {
+    reject_symlink(root)?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let metadata = fs::metadata(root)
+            .map_err(|e| format!("cannot inspect dev directory `{root}`: {e}"))?;
+        if metadata.permissions().mode() & 0o077 != 0 {
+            return Err(format!(
+                "dev directory `{root}` must be private; run chmod 700 before starting"
+            ));
+        }
+    }
 
     let marker = root.join(MARKER_FILE);
     let initialized = marker.exists();
-    if options.reset {
-        let expected = marker_text(&root);
+    if reset {
+        let expected = marker_text(root);
         if !initialized
             || reject_symlink(&marker).is_err()
             || fs::read_to_string(&marker).ok().as_deref() != Some(expected.as_str())
@@ -53,8 +69,7 @@ pub(crate) fn prepare(options: &DevCliOptions) -> Result<DevState, String> {
     } else if !initialized {
         let has_entries = fs::read_dir(root.as_std_path())
             .map_err(|e| format!("cannot inspect dev directory `{root}`: {e}"))?
-            .next()
-            .is_some();
+            .any(|entry| entry.map_or(true, |entry| entry.file_name() != LOCK_FILE));
         if has_entries {
             return Err(format!(
                 "refusing non-empty directory without `{MARKER_FILE}`: `{root}`"
@@ -62,8 +77,16 @@ pub(crate) fn prepare(options: &DevCliOptions) -> Result<DevState, String> {
         }
     }
 
+    Ok(())
+}
+
+fn prepare_locked(root: Utf8PathBuf, reset: bool) -> Result<DevState, String> {
     let lock = DevLock::acquire(&root)?;
-    if options.reset {
+    validate_directory(&root, reset)?;
+    for name in [AUTH_KEY, QUERY_KEY] {
+        inspect_existing_key(&root.join(name))?;
+    }
+    if reset {
         remove_known_assets(&root)?;
     }
     write_marker(&root)?;
@@ -79,6 +102,21 @@ pub(crate) fn prepare(options: &DevCliOptions) -> Result<DevState, String> {
         config,
         _lock: lock,
     })
+}
+
+#[cfg(test)]
+#[path = "../tests/unit/dev.test.rs"]
+mod tests;
+
+fn create_private_directory(root: &Utf8Path) -> std::io::Result<()> {
+    let mut builder = fs::DirBuilder::new();
+    builder.recursive(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::DirBuilderExt;
+        builder.mode(0o700);
+    }
+    builder.create(root)
 }
 
 pub(crate) async fn seed_store(state: &DevState, store: &EditStore) -> Result<(), String> {
@@ -154,25 +192,45 @@ fn write_config(path: &Utf8Path) -> Result<(), String> {
 }
 
 fn ensure_key(path: &Utf8Path) -> Result<(), String> {
-    if path.exists() {
-        let len = fs::metadata(path)
-            .map_err(|e| format!("cannot inspect dev key `{path}`: {e}"))?
-            .len();
-        if len < 32 {
+    if let Some(metadata) = inspect_existing_key(path)? {
+        if metadata.len() < 32 {
             return Err(format!("dev key `{path}` must hold at least 32 bytes"));
         }
         return Ok(());
     }
     let mut key = [0_u8; 32];
     getrandom::fill(&mut key).map_err(|e| format!("cannot generate dev signing key: {e}"))?;
-    let mut file = OpenOptions::new()
-        .write(true)
-        .create_new(true)
+    let mut options = OpenOptions::new();
+    options.write(true).create_new(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600);
+    }
+    let mut file = options
         .open(path.as_std_path())
         .map_err(|e| format!("cannot create dev key `{path}`: {e}"))?;
     file.write_all(&key)
         .and_then(|()| file.sync_all())
         .map_err(|e| format!("cannot persist dev key `{path}`: {e}"))
+}
+
+fn inspect_existing_key(path: &Utf8Path) -> Result<Option<fs::Metadata>, String> {
+    let metadata = match fs::metadata(path) {
+        Ok(metadata) => metadata,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+        Err(error) => return Err(format!("cannot inspect dev key `{path}`: {error}")),
+    };
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        if metadata.permissions().mode() & 0o077 != 0 {
+            return Err(format!(
+                "dev key `{path}` must be private; run chmod 600 before starting"
+            ));
+        }
+    }
+    Ok(Some(metadata))
 }
 
 fn remove_known_assets(root: &Utf8Path) -> Result<(), String> {
@@ -240,61 +298,31 @@ fn reject_symlink(path: &Utf8Path) -> Result<(), String> {
 }
 
 struct DevLock {
-    path: Utf8PathBuf,
     _file: File,
 }
 
 impl DevLock {
     fn acquire(root: &Utf8Path) -> Result<Self, String> {
         let path = root.join(LOCK_FILE);
-        match OpenOptions::new()
-            .write(true)
-            .create_new(true)
-            .open(path.as_std_path())
-        {
-            Ok(mut file) => {
-                writeln!(file, "{}", std::process::id())
-                    .map_err(|e| format!("cannot write dev lock: {e}"))?;
-                Ok(Self { path, _file: file })
+        match fs::symlink_metadata(&path) {
+            Ok(metadata) if metadata.file_type().is_symlink() => {
+                return Err(format!("refusing symlinked dev path `{path}`"));
             }
-            Err(error) if error.kind() == ErrorKind::AlreadyExists => {
-                let mut text = String::new();
-                let _ =
-                    File::open(path.as_std_path()).and_then(|mut f| f.read_to_string(&mut text));
-                let pid = text.trim().parse::<u32>().ok();
-                if pid.is_some_and(pid_is_running) {
-                    return Err(format!("another ontoforge dev instance owns `{root}`"));
-                }
-                fs::remove_file(path.as_std_path())
-                    .map_err(|e| format!("cannot recover stale dev lock `{path}`: {e}"))?;
-                Self::acquire(root)
-            }
-            Err(error) => Err(format!("cannot acquire dev lock `{path}`: {error}")),
+            Ok(_) => {}
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => return Err(format!("cannot inspect dev lock `{path}`: {error}")),
         }
-    }
-}
-
-impl Drop for DevLock {
-    fn drop(&mut self) {
-        let _ = fs::remove_file(self.path.as_std_path());
-    }
-}
-
-fn pid_is_running(pid: u32) -> bool {
-    #[cfg(windows)]
-    {
-        std::process::Command::new("tasklist")
-            .args(["/FI", &format!("PID eq {pid}")])
-            .output()
-            .map_or(true, |output| {
-                String::from_utf8_lossy(&output.stdout).contains(&pid.to_string())
-            })
-    }
-    #[cfg(not(windows))]
-    {
-        std::process::Command::new("kill")
-            .args(["-0", &pid.to_string()])
-            .status()
-            .map_or(true, |status| status.success())
+        let file = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .truncate(false)
+            .open(path.as_std_path())
+            .map_err(|error| format!("cannot open dev lock `{path}`: {error}"))?;
+        file.try_lock().map_err(|error| match error {
+            fs::TryLockError::WouldBlock => format!("another ontoforge dev instance owns `{root}`"),
+            fs::TryLockError::Error(error) => format!("cannot acquire dev lock `{path}`: {error}"),
+        })?;
+        Ok(Self { _file: file })
     }
 }
