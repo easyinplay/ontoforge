@@ -181,7 +181,7 @@ impl Ask {
         &self,
         f: &Fixture,
         scope: Option<&TypeScope>,
-        current: Option<&dyn RowValues>,
+        current: Option<&(dyn RowValues + Sync)>,
     ) -> Result<Vec<HistoryEntry>, HistoryError> {
         f.store
             .history(&HistoryRequest {
