@@ -212,7 +212,7 @@ async fn cancelled_action_survives_transport_shutdown_without_replay() {
             .header("accept", "application/json, text/event-stream")
             .header("mcp-protocol-version", "2025-03-26")
             .header("mcp-session-id", action_session)
-            .json(&json!({"jsonrpc":"2.0","id":"accepted-action","method":"tools/call","params":{"name":"action_delayFlight","arguments":{"flight":"F-1001","delayMinutes":2,"commandId":"owned-mcp-action"}}}))
+            .json(&json!({"jsonrpc":"2.0","id":"accepted-action","method":"tools/call","params":{"name":"action_delayFlight","arguments":{"params":{"flight":"F-1001","delayMinutes":2},"commandId":"owned-mcp-action"}}}))
             .send().await
     });
     tokio::time::timeout(Duration::from_secs(3), running.engine.entered.notified())

@@ -95,6 +95,19 @@ $env:ONTOFORGE_TOKEN = '<token>'
 ontoforge mcp --server-url http://127.0.0.1:8080/mcp
 ```
 
+动态 `action_*` 工具的 `arguments` 使用统一嵌套结构：
+
+```json
+{"commandId":"delay-001","validateOnly":false,"params":{"flight":"F-1001","delayMinutes":15}}
+```
+
+顶层只允许 `commandId`、`validateOnly`、`params`。`commandId` 是可选 string，正式执行
+缺失时返回既有 `MISSING_COMMAND_ID`；`validateOnly` 是可选 boolean，默认 false。
+业务字段全部放在 `params` 中，可以命名为 `commandId`、`validateOnly` 或 `params`，
+不会覆盖控制字段。有必填业务参数时必须提供 `params`；否则省略等价于空 object，
+业务默认值仍由 ActionService 应用。显式 null、数组、标量及任一层未知字段均拒绝。
+旧平铺业务参数不再接受。REST Action 请求形状不变。
+
 也可以用 `--token-file FILE` 读取 token。token 不应放入命令行参数；stdio bridge
 只把 JSON-RPC frame 写入 stdout，诊断写入脱敏 stderr。`server-url` 必须是没有
 userinfo、query 或 fragment 的 `http(s)` URL，并以 `/mcp` 结尾。

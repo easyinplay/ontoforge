@@ -218,7 +218,7 @@ async fn mcp_action_numeric_and_boolean_references_accept_real_pk_values() {
     ] {
         let running = typed_reference_fixture(kind, stored_pk).await.start().await;
         let session = initialize(&running).await;
-        let result = call_read_tool(&running, &session, 2, "action_renameGate", json!({"gate":pk,"samples":[1.25,2.5],"validateOnly":true,"commandId":"typed-reference"})).await;
+        let result = call_read_tool(&running, &session, 2, "action_renameGate", json!({"params":{"gate":pk,"samples":[1.25,2.5]},"validateOnly":true,"commandId":"typed-reference"})).await;
         assert_eq!(
             result["result"]["structuredContent"]["validated"], true,
             "{result}"
@@ -228,7 +228,7 @@ async fn mcp_action_numeric_and_boolean_references_accept_real_pk_values() {
             &session,
             3,
             "action_renameGate",
-            json!({"gate":pk,"samples":["bad"],"validateOnly":true,"commandId":"invalid-array"}),
+            json!({"params":{"gate":pk,"samples":["bad"]},"validateOnly":true,"commandId":"invalid-array"}),
         )
         .await;
         assert!(invalid["error"].is_object(), "{invalid}");
@@ -247,7 +247,7 @@ async fn mcp_action_numeric_and_boolean_references_accept_real_pk_values() {
             &session,
             4,
             "action_renameGate",
-            json!({"gate":pk,"samples":[1.25],"validateOnly":true,"commandId":"failed-reference"}),
+            json!({"params":{"gate":pk,"samples":[1.25]},"validateOnly":true,"commandId":"failed-reference"}),
         )
         .await;
         assert_eq!(
@@ -456,7 +456,7 @@ async fn mcp_action_criteria_failure_retains_safe_domain_diagnostics() {
         2,
         "action_delayFlight",
         json!({
-            "flight":"F-1001", "delayMinutes":0, "validateOnly":true, "commandId":"criteria-error"
+            "params":{"flight":"F-1001", "delayMinutes":0}, "validateOnly":true, "commandId":"criteria-error"
         }),
     )
     .await;
@@ -469,6 +469,205 @@ async fn mcp_action_criteria_failure_retains_safe_domain_diagnostics() {
         "Delay must be positive and cancelled flights cannot be delayed"
     );
     assert!(response["error"]["data"]["parameterErrors"].is_null());
+    running.finish().await;
+}
+
+async fn envelope_fixture() -> support::Fixture {
+    use ontoforge_auth::scope::{ScopeInputs, attr_types, compile_scope};
+    use ontoforge_storage::reload::{ReloadOptions, reload};
+    let fixture = support::fixture().await;
+    let loaded = ontoforge_schema::load_from_memory(&[
+        ("ontology.yaml", "apiName: demo\n"),
+        (
+            "envelope.yaml",
+            r"
+kind: ObjectType
+apiName: EnvelopeRecord
+backing: editOnly
+primaryKey: code
+properties:
+  code: {type: string, required: true}
+  commandValue: {type: string}
+  validateValue: {type: string}
+  payload: {type: string}
+---
+kind: ActionType
+apiName: echoEnvelope
+parameters:
+  commandId: {type: string, required: true}
+  validateOnly: {type: string, required: true}
+  params: {type: string, required: true}
+rules:
+  - kind: createObject
+    objectType: EnvelopeRecord
+    properties:
+      code: {static: envelope}
+      commandValue: {param: commandId}
+      validateValue: {param: validateOnly}
+      payload: {param: params}
+---
+kind: ActionType
+apiName: defaultEnvelope
+parameters:
+  label: {type: string, default: fallback}
+rules:
+  - kind: createObject
+    objectType: EnvelopeRecord
+    properties:
+      code: {static: default}
+      payload: {param: label}
+",
+        ),
+    ]);
+    assert!(loaded.diagnostics.is_empty(), "{:?}", loaded.diagnostics);
+    let addition = loaded.ontology.unwrap();
+    let mut ontology = fixture
+        .store
+        .active_definition()
+        .await
+        .unwrap()
+        .ontology
+        .clone();
+    ontology.object_types.extend(addition.object_types);
+    ontology.action_types.extend(addition.action_types);
+    reload(&fixture.store, &ontology, &ReloadOptions::default())
+        .await
+        .unwrap();
+    let scope = ontoforge_schema::load_scope_from_memory(&[("scope.yaml", "kind: Role\napiName: envelopeEditor\nobjectTypes:\n  EnvelopeRecord:\n    properties: [code, commandValue, validateValue, payload]\nactions: [echoEnvelope, defaultEnvelope]\ntoolsets: [core]\n---\nkind: RoleBinding\nrole: envelopeEditor\nsubjects:\n  - group: dispatchers\n")]).scope.unwrap();
+    let compiled = compile_scope(&ScopeInputs {
+        ontology: &ontology,
+        profile: None,
+        attrs: &attr_types(Some(&fixture.host.auth_config)),
+        scope: &scope,
+        sources: None,
+    })
+    .unwrap();
+    let props = compiled.row_filter_properties();
+    let plan = fixture.store.scope_plan(&scope, &props).await.unwrap();
+    fixture
+        .store
+        .scope_apply(&scope, &props, &plan.hash, "envelope-test")
+        .await
+        .unwrap();
+    fixture
+}
+
+#[tokio::test]
+async fn mcp_action_envelope_preserves_colliding_business_values_and_controls() {
+    let running = envelope_fixture().await.start().await;
+    let session = initialize(&running).await;
+    let params = json!({"commandId":"business-command","validateOnly":"business-validation","params":"business-payload"});
+    let dryrun = call_read_tool(
+        &running,
+        &session,
+        2,
+        "action_echoEnvelope",
+        json!({"validateOnly":true,"params":params}),
+    )
+    .await;
+    assert_eq!(
+        dryrun["result"]["structuredContent"]["validated"], true,
+        "{dryrun}"
+    );
+    assert_eq!(
+        running
+            .get("/api/objects/EnvelopeRecord/envelope")
+            .await
+            .status(),
+        reqwest::StatusCode::NOT_FOUND
+    );
+    let missing_control = call_read_tool(
+        &running,
+        &session,
+        3,
+        "action_echoEnvelope",
+        json!({"params":params}),
+    )
+    .await;
+    assert_eq!(
+        missing_control["error"]["data"]["code"], "MISSING_COMMAND_ID",
+        "{missing_control}"
+    );
+    let args = json!({"commandId":"control-receipt","params":params});
+    let committed =
+        call_read_tool(&running, &session, 4, "action_echoEnvelope", args.clone()).await;
+    let receipt = &committed["result"]["structuredContent"]["receipt"];
+    assert_eq!(receipt["commandId"], "control-receipt", "{committed}");
+    let row = support::success(running.get("/api/objects/EnvelopeRecord/envelope").await).await;
+    assert_eq!(row["properties"]["commandValue"], "business-command");
+    assert_eq!(row["properties"]["validateValue"], "business-validation");
+    assert_eq!(row["properties"]["payload"], "business-payload");
+    let replay = call_read_tool(&running, &session, 5, "action_echoEnvelope", args).await;
+    assert_eq!(&replay["result"]["structuredContent"]["receipt"], receipt);
+    running.finish_actions().await;
+}
+
+#[tokio::test]
+async fn mcp_action_envelope_optional_params_apply_domain_defaults() {
+    let running = envelope_fixture().await.start().await;
+    let session = initialize(&running).await;
+    for args in [
+        json!({"validateOnly":true}),
+        json!({"validateOnly":true,"params":{}}),
+    ] {
+        let dryrun = call_read_tool(&running, &session, 2, "action_defaultEnvelope", args).await;
+        assert_eq!(
+            dryrun["result"]["structuredContent"]["validated"], true,
+            "{dryrun}"
+        );
+    }
+    for params in [Value::Null, json!([]), json!(false), json!("wrong")] {
+        let rejected = call_read_tool(
+            &running,
+            &session,
+            3,
+            "action_defaultEnvelope",
+            json!({"validateOnly":true,"params":params}),
+        )
+        .await;
+        assert_eq!(
+            rejected["error"]["data"]["code"], "INVALID_PARAMETERS",
+            "{rejected}"
+        );
+    }
+    let committed = call_read_tool(
+        &running,
+        &session,
+        4,
+        "action_defaultEnvelope",
+        json!({"commandId":"default-receipt"}),
+    )
+    .await;
+    assert_eq!(
+        committed["result"]["structuredContent"]["receipt"]["commandId"], "default-receipt",
+        "{committed}"
+    );
+    let row = support::success(running.get("/api/objects/EnvelopeRecord/default").await).await;
+    assert_eq!(row["properties"]["payload"], "fallback");
+    running.finish_actions().await;
+}
+
+#[tokio::test]
+async fn mcp_action_envelope_rejects_flat_and_invalid_nested_requests() {
+    let running = support::fixture().await.start().await;
+    let session = initialize(&running).await;
+    for args in [
+        json!({"validateOnly":true,"flight":"F-1001","delayMinutes":1}),
+        json!({"validateOnly":true}),
+        json!({"validateOnly":true,"params":{"flight":"F-1001"}}),
+        json!({"validateOnly":true,"params":{"flight":"F-1001","delayMinutes":1,"extra":true}}),
+        json!({"validateOnly":true,"params":{"flight":"F-1001","delayMinutes":1},"extra":true}),
+        json!({"validateOnly":true,"params":{"flight":"F-1001","delayMinutes":"wrong"}}),
+        json!({"validateOnly":"true","params":{"flight":"F-1001","delayMinutes":1}}),
+        json!({"commandId":false,"params":{"flight":"F-1001","delayMinutes":1}}),
+    ] {
+        let rejected =
+            call_read_tool(&running, &session, 2, "action_delayFlight", args.clone()).await;
+        assert_eq!(
+            rejected["error"]["data"]["code"], "INVALID_PARAMETERS",
+            "{args}: {rejected}"
+        );
+    }
     running.finish().await;
 }
 

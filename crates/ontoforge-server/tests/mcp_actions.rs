@@ -1,7 +1,7 @@
 use ontoforge_schema::ir::ActionType;
 use ontoforge_schema::load_from_memory;
 use ontoforge_server::mcp_actions::ActionToolSchema;
-use serde_json::{Map, Value, json};
+use serde_json::{Value, json};
 
 mod support;
 
@@ -23,15 +23,26 @@ fn mcp_reference_schema_uses_the_fixed_ontology_primary_key_type() {
         let ty = fixed.object_types.values_mut().next().unwrap();
         ty.properties.get_mut(&ty.primary_key).unwrap().base_type = base;
         let schema = ActionToolSchema::from_action(&action(), &fixed);
-        assert_eq!(schema.schema["properties"]["gate"]["type"], expected);
+        assert_eq!(
+            schema.schema["properties"]["params"]["properties"]["gate"]["type"],
+            expected
+        );
         assert!(
             schema
-                .validate_arguments(json!({"gate":value,"name":"x"}).as_object().unwrap())
+                .validate_arguments(
+                    json!({"params":{"gate":value,"name":"x"}})
+                        .as_object()
+                        .unwrap()
+                )
                 .is_ok()
         );
         assert!(
             schema
-                .validate_arguments(json!({"gate":"42","name":"x"}).as_object().unwrap())
+                .validate_arguments(
+                    json!({"params":{"gate":"42","name":"x"}})
+                        .as_object()
+                        .unwrap()
+                )
                 .is_err()
         );
     }
@@ -54,15 +65,15 @@ fn mcp_float_array_schema_and_validation_agree() {
         parameter.items = Some(item);
         let schema = ActionToolSchema::from_action(&definition, &ontology());
         assert_eq!(
-            schema.schema["properties"]["name"]["items"]["type"],
+            schema.schema["properties"]["params"]["properties"]["name"]["items"]["type"],
             "number"
         );
-        let valid = json!({"gate":"A1","name":[1.25, 2.5]})
+        let valid = json!({"params":{"gate":"A1","name":[1.25, 2.5]}})
             .as_object()
             .unwrap()
             .clone();
         assert!(schema.validate_arguments(&valid).is_ok());
-        let invalid = json!({"gate":"A1","name":["invalid"]})
+        let invalid = json!({"params":{"gate":"A1","name":["invalid"]}})
             .as_object()
             .unwrap()
             .clone();
@@ -90,36 +101,144 @@ fn action() -> ActionType {
 fn mcp_dynamic_action_schema_matches_real_validation() {
     let schema = ActionToolSchema::from_action(&action(), &ontology());
     assert_eq!(schema.tool_name, "action_renameGate");
-    assert_eq!(schema.schema["properties"]["name"]["type"], "string");
+    assert_eq!(
+        schema.schema["properties"]["params"]["properties"]["name"]["type"],
+        "string"
+    );
     assert_eq!(
         schema.schema["properties"]["validateOnly"]["type"],
         "boolean"
     );
     assert_eq!(schema.schema["properties"]["commandId"]["type"], "string");
     assert!(
-        schema.schema["required"]
+        schema.schema["properties"]["params"]["required"]
             .as_array()
             .unwrap()
             .iter()
             .any(|v| v == "name")
     );
-    let invalid = Map::from_iter([(String::from("name"), json!("x"))]);
-    assert!(schema.validate_arguments(&invalid).is_err());
-    let invalid_type = Map::from_iter([
-        (String::from("gate"), json!(42)),
-        (String::from("name"), json!("x")),
-    ]);
-    assert!(schema.validate_arguments(&invalid_type).is_err());
+    assert_eq!(schema.schema["required"], json!(["params"]));
+    let invalid = json!({"params":{"name":"x"}});
+    assert!(
+        schema
+            .validate_arguments(invalid.as_object().unwrap())
+            .is_err()
+    );
+    let invalid_type = json!({"params":{"gate":42,"name":"x"}});
+    assert!(
+        schema
+            .validate_arguments(invalid_type.as_object().unwrap())
+            .is_err()
+    );
 }
 
 #[test]
 fn mcp_validate_only_keeps_fence_cas_guards_and_zero_writes() {
     let schema = ActionToolSchema::from_action(&action(), &ontology());
-    let valid = Map::from_iter([
-        (String::from("gate"), json!("A1")),
-        (String::from("name"), json!("x")),
-    ]);
-    assert!(schema.validate_arguments(&valid).is_ok());
+    let valid = json!({"validateOnly":true,"params":{"gate":"A1","name":"x"}});
+    assert!(
+        schema
+            .validate_arguments(valid.as_object().unwrap())
+            .is_ok()
+    );
+}
+
+#[test]
+fn mcp_action_envelope_rejects_wrong_shapes_and_unknown_fields() {
+    let schema = ActionToolSchema::from_action(&action(), &ontology());
+    assert_eq!(schema.schema["additionalProperties"], false);
+    assert_eq!(
+        schema.schema["properties"]["params"]["additionalProperties"],
+        false
+    );
+    for value in [
+        json!({}),
+        json!({"params":null}),
+        json!({"params":[]}),
+        json!({"params":"wrong"}),
+        json!({"gate":"A1","name":"x"}),
+        json!({"params":{"gate":"A1","name":"x","extra":true}}),
+        json!({"params":{"gate":"A1","name":"x"},"extra":true}),
+        json!({"params":{"gate":"A1","name":"x"},"validateOnly":"true"}),
+        json!({"params":{"gate":"A1","name":"x"},"commandId":1}),
+    ] {
+        assert!(
+            schema
+                .validate_arguments(value.as_object().unwrap())
+                .is_err(),
+            "{value}"
+        );
+    }
+}
+
+#[test]
+fn mcp_action_envelope_optional_params_preserve_business_defaults() {
+    let mut definition = action();
+    for parameter in definition.parameters.values_mut() {
+        parameter.required = false;
+    }
+    definition.parameters.get_mut("name").unwrap().default = Some(json!("fallback"));
+    let schema = ActionToolSchema::from_action(&definition, &ontology());
+    assert!(
+        !schema
+            .schema
+            .get("required")
+            .and_then(Value::as_array)
+            .is_some_and(|required| required.contains(&json!("params")))
+    );
+    assert_eq!(
+        schema.schema["properties"]["params"]["properties"]["name"]["default"],
+        "fallback"
+    );
+    for value in [json!({}), json!({"params":{}})] {
+        assert!(
+            schema
+                .validate_arguments(value.as_object().unwrap())
+                .is_ok(),
+            "{value}"
+        );
+    }
+    for value in [
+        json!({"params":null}),
+        json!({"params":[]}),
+        json!({"params":false}),
+    ] {
+        assert!(
+            schema
+                .validate_arguments(value.as_object().unwrap())
+                .is_err(),
+            "{value}"
+        );
+    }
+}
+
+#[test]
+fn mcp_action_envelope_separates_same_named_business_fields() {
+    let mut definition = action();
+    let template = definition.parameters["name"].clone();
+    definition.parameters.clear();
+    for name in ["commandId", "validateOnly", "params"] {
+        definition
+            .parameters
+            .insert(name.to_owned().try_into().unwrap(), template.clone());
+    }
+    let schema = ActionToolSchema::from_action(&definition, &ontology());
+    assert_eq!(schema.schema["properties"].as_object().unwrap().len(), 3);
+    let business = &schema.schema["properties"]["params"];
+    assert_eq!(business["type"], "object");
+    let required: std::collections::BTreeSet<_> = business["required"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(Value::as_str)
+        .collect();
+    assert_eq!(
+        required,
+        std::collections::BTreeSet::from(["commandId", "params", "validateOnly"])
+    );
+    assert_eq!(business["properties"]["validateOnly"]["type"], "string");
+    let args = json!({"commandId":"control","validateOnly":true,"params":{"commandId":"business-command","validateOnly":"business-validation","params":"business-payload"}});
+    assert!(schema.validate_arguments(args.as_object().unwrap()).is_ok());
 }
 
 #[test]
@@ -173,7 +292,7 @@ async fn mcp_validate_only_http_zero_business_writes() {
     let listed = common(json!({"jsonrpc":"2.0","id":2,"method":"tools/list"})).await;
     let listed_body = listed.text().await.unwrap();
     assert!(listed_body.contains("action_delayFlight"), "{listed_body}");
-    let dryrun = common(json!({"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"action_delayFlight","arguments":{"flight":"F1","delayMinutes":10,"validateOnly":true,"commandId":"mcp-dryrun-1"}}})).await;
+    let dryrun = common(json!({"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"action_delayFlight","arguments":{"params":{"flight":"F1","delayMinutes":10},"validateOnly":true,"commandId":"mcp-dryrun-1"}}})).await;
     let dryrun_body = dryrun.text().await.unwrap();
     assert!(
         dryrun_body.contains("error") || dryrun_body.contains("NOT_FOUND"),

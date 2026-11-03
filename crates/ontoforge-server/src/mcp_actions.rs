@@ -63,24 +63,27 @@ impl ActionToolSchema {
                 required.push(Value::String(name.to_string()));
             }
         }
-        properties.insert(
-            "validateOnly".to_owned(),
-            json!({"type":"boolean","default":false}),
-        );
-        properties.insert("commandId".to_owned(), json!({"type":"string"}));
-        validators.insert(
-            "validateOnly".to_owned(),
-            ParameterValidator::Literal(BaseType::Boolean, None),
-        );
-        validators.insert(
-            "commandId".to_owned(),
-            ParameterValidator::Literal(BaseType::String, None),
-        );
+        let params_required = !required.is_empty();
+        let mut params = json!({
+            "type": "object",
+            "properties": properties,
+            "additionalProperties": false,
+        });
+        if params_required {
+            params["required"] = Value::Array(required);
+        }
         let mut schema = Map::new();
         schema.insert("type".to_owned(), Value::String("object".to_owned()));
-        schema.insert("properties".to_owned(), Value::Object(properties));
-        if !required.is_empty() {
-            schema.insert("required".to_owned(), Value::Array(required));
+        schema.insert(
+            "properties".to_owned(),
+            json!({
+                "commandId": {"type": "string"},
+                "validateOnly": {"type": "boolean", "default": false},
+                "params": params,
+            }),
+        );
+        if params_required {
+            schema.insert("required".to_owned(), json!(["params"]));
         }
         schema.insert("additionalProperties".to_owned(), Value::Bool(false));
         Self {
@@ -98,21 +101,42 @@ impl ActionToolSchema {
     }
 
     pub fn validate_arguments(&self, arguments: &Map<String, Value>) -> Result<(), String> {
-        let Some(properties) = self.schema.get("properties").and_then(Value::as_object) else {
-            return Ok(());
-        };
-        if arguments.keys().any(|key| !properties.contains_key(key)) {
+        if arguments
+            .keys()
+            .any(|key| !matches!(key.as_str(), "commandId" | "validateOnly" | "params"))
+        {
             return Err("unknown action parameter".to_owned());
         }
-        if let Some(required) = self.schema.get("required").and_then(Value::as_array)
+        if arguments
+            .get("commandId")
+            .is_some_and(|value| !value.is_string())
+            || arguments
+                .get("validateOnly")
+                .is_some_and(|value| !value.is_boolean())
+        {
+            return Err("invalid action control parameter".to_owned());
+        }
+        let empty = Map::new();
+        let params = match arguments.get("params") {
+            Some(value) => value
+                .as_object()
+                .ok_or_else(|| "params must be an object".to_owned())?,
+            None => &empty,
+        };
+        if params.keys().any(|key| !self.validators.contains_key(key)) {
+            return Err("unknown action parameter".to_owned());
+        }
+        if let Some(required) = self.schema["properties"]["params"]
+            .get("required")
+            .and_then(Value::as_array)
             && required
                 .iter()
                 .filter_map(Value::as_str)
-                .any(|key| !arguments.contains_key(key))
+                .any(|key| !params.contains_key(key))
         {
             return Err("missing required action parameter".to_owned());
         }
-        for (key, value) in arguments {
+        for (key, value) in params {
             let valid = self
                 .validators
                 .get(key)

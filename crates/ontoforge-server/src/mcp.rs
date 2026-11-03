@@ -595,10 +595,10 @@ impl<E: Engine + Send + Sync + 'static> ServerHandler for OntologyMcpHandler<E> 
                 .and_then(Value::as_str)
                 .map(str::to_owned);
             let params = args
-                .iter()
-                .filter(|(key, _)| *key != "validateOnly" && *key != "commandId")
-                .map(|(key, value)| (key.clone(), value.clone()))
-                .collect();
+                .get("params")
+                .and_then(Value::as_object)
+                .cloned()
+                .unwrap_or_default();
             let action_name = action_name.to_owned();
             let host = Arc::clone(&self.host);
             let limits = self.limits;
