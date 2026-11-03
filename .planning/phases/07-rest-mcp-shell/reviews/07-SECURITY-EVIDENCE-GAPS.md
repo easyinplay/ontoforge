@@ -14,4 +14,6 @@
 
 ## 验收纪律
 
+进度：E1/E2本地HTTP3/Actions10/contract16通过，新增PG两项待真实服务；E3stdio11/11、Clippy通过（含N1/N2）；E4/E5/E7 TS17/17、Rust9/9与Clippy通过，TS最终fresh binary仍须整合复验；E6真实L2 2+9、最终六工具矩阵、Clippy和独立复签通过；T24 session12/transport11与独立复签通过。详各lane独立报告，最终head CI/真实服务与typed EXPLAIN N3仍pending。
+
 用真实listener/生产client/生产handler和可控barrier，mock仅可作上游故障源，不能以静态catalog冒充行为。计数区分合法monitor与业务请求。补证据可直接GREEN；发现实现缺陷需真实RED→GREEN。Cargo串行/jobs2，完整CI在集成head执行。各lane独立报告测试/日志/限制，主会话根据证据更新本表。

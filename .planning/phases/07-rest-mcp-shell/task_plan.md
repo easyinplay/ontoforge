@@ -28,7 +28,9 @@
 
 - [x] T24：两轮真实RED，session12/12与transport11/11 GREEN，Clippy/fmt通过，独立security复签CLOSED；详reviews/07-T24-SECURITY-RECHECK.md。
 - [ ] E1/E2：真实REST/MCP Action race、definition fence、snapshot/revoke验收。
-- [ ] E3：真实stdio expiry/响应丢失不重发；session容量/TTL与T24共验。
+- [x] E3：真实stdio session失效/响应丢失不重发通过，session资源与token到期由T24共验；详07-BRIDGE-SECURITY-EVIDENCE。
+- [x] Nyquist 07-09-2：stdio成功链、双主体、在线badtoken/真实redirect否定均通过，合计stdio11/11与Clippy/fmt；详07-BRIDGE-SECURITY-EVIDENCE。
+- [ ] Nyquist 07-15-2：四typed EXPLAIN真实timeout/cancel/concurrency与单audit，详07-EXPLAIN-EVIDENCE-PLAN。
 - [ ] E4/E5/E7：Rust/TS主体隔离、撤权、在途abort、u64、丢响应不重试与显式replay。
 - [x] E6：真实RED后修复预检顺序，L2 11项及最终六工具矩阵GREEN，Clippy/fmt、Staff和security复签通过；详reviews/07-E6-SECURITY-RECHECK.md。
 - [ ] 新head完整CI与native产物复验，security/code review/GSD verification对账。

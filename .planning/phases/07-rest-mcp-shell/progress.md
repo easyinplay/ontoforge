@@ -1,5 +1,9 @@
 # Phase 7 progress
 
+- 2026-11-03 stdio最终11/11、CLI Clippy/fmt通过（target/phase7-bridge-security-cli-r2.log），E3和N1/N2关闭；真实Initialize/session透传、双主体成功链、在线badtoken、302 trap零连接及丢响应完整持久不重放均已验证。Cargo转typed EXPLAIN最后补测，随后统一fresh服务与CI。
+
+- 2026-11-03 stdio首轮5pass/3fail，归因新测试错误假设：rmcp serve_client默认Initialize（非discover），MCP receipt有包装。CC AGREE修正测试透传真实session且保留所有计数，不改生产。Nyquist另确认原07-09-2成功链/在线badtoken/302trap与07-15-2四typed EXPLAIN timeout/cancel/concurrency缺口，均获CC同向意见，分别由bridge/explain lane补齐，Cargo仍bridge独占。
+
 - 2026-11-03 E6最终Clippy/fmt与Staff/security独立复签通过，T22关闭，安全48/48 CLOSED。server本地HTTP3/Actions10/contract16/L2 2+9全绿；PG两新入口仍待真实服务。Cargo转交bridge执行stdio，Nyquist开始对32task更新过时映射与证据边界，Phase不提前关闭。
 
 - 2026-11-03 E6生产最小修复已GREEN：mcp_l2 2/2、defaults9/9（含61秒expiry/recovery、真实撤权零上游、取消audit），生产blob667102e12decd2fae4381579202df92c71d0c3e2。末项六工具缺scope否定矩阵及Clippy/fmt收尾中，等待最终指纹复签；不重复已完成Action/SDK回归。stdio/PG及新head完整CI仍pending。

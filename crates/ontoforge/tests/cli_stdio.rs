@@ -5,12 +5,435 @@ use std::time::Duration;
 #[path = "../../ontoforge-server/tests/support/mod.rs"]
 mod support;
 
+mod stdio_security_support;
+
+#[tokio::test]
+async fn live_stdio_two_principals_validate_action_history_and_rest_receipt() {
+    use serde_json::json;
+    use stdio_security_support::{
+        Cli, DEADLINE, action, counts, durable_rows, http_json, principal_token,
+    };
+    let mut fixture = support::fixture().await;
+    fixture.token = principal_token(&fixture, "alice", &["dispatchers", "crew-schedulers"]);
+    let mia = principal_token(&fixture, "mia", &[]);
+    let running = fixture.start().await;
+    for (token, allowed, denied, property, action_name) in [
+        (
+            &running.token,
+            "Flight",
+            "Aircraft",
+            "flightId",
+            "action_delayFlight",
+        ),
+        (
+            &mia,
+            "Aircraft",
+            "Flight",
+            "tailNumber",
+            "action_recordMaintenance",
+        ),
+    ] {
+        check_stdio_principal_reads(&running, token, allowed, denied, property, action_name).await;
+    }
+    let mut cli = Cli::spawn(&format!("{}/mcp", running.url), &running.token);
+    cli.initialize().await;
+    let before = durable_rows(&running.path).await;
+    let before_counts = counts(&running.path).await;
+    let mut validate = action(30, "stdio-success-command");
+    validate["params"]["arguments"]["validateOnly"] = json!(true);
+    let validated = cli.request(&validate).await;
+    assert_eq!(validated["structuredContent"], json!({"validated":true}));
+    assert_eq!(
+        durable_rows(&running.path).await,
+        before,
+        "authorized validation must not write any durable business row"
+    );
+
+    let committed = cli.request(&action(31, "stdio-success-command")).await;
+    let receipt = committed["structuredContent"]["receipt"].clone();
+    assert!(receipt["eventId"].is_string());
+    assert!(receipt["committedAt"].is_string());
+    assert_eq!(receipt["commandId"], "stdio-success-command");
+    let after = counts(&running.path).await;
+    assert_eq!(
+        std::array::from_fn::<_, 5, _>(|index| after[index] - before_counts[index]),
+        [1; 5]
+    );
+    let after_rows = durable_rows(&running.path).await;
+    let history = cli
+        .tool(32, "history", json!({"objectType":"Flight","pk":"F-1001"}))
+        .await;
+    let rest_history = http_json(
+        running
+            .client
+            .get(format!("{}/api/objects/Flight/F-1001/history", running.url))
+            .bearer_auth(&running.token),
+    )
+    .await;
+    assert_eq!(history, rest_history);
+    assert_eq!(history["entries"].as_array().unwrap().len(), 1);
+    let result = http_json(
+        running
+            .client
+            .get(format!(
+                "{}/api/commands/stdio-success-command",
+                running.url
+            ))
+            .bearer_auth(&running.token),
+    )
+    .await;
+    assert_eq!(result, receipt);
+    let replay = http_json(running.client.post(format!("{}/api/actions/delayFlight", running.url)).bearer_auth(&running.token)
+        .json(&json!({"commandId":"stdio-success-command","items":[{"params":{"flight":"F-1001","delayMinutes":5}}]}))).await;
+    assert_eq!(
+        replay, receipt,
+        "REST must replay the same full stdio receipt"
+    );
+    assert_eq!(durable_rows(&running.path).await, after_rows);
+    assert!(cli.finish(&running.token).await.success());
+    let audit = tokio::time::timeout(DEADLINE, running.finish_actions())
+        .await
+        .unwrap();
+    for principal in ["ontoforge-dev|alice", "ontoforge-dev|mia"] {
+        assert!(
+            audit
+                .iter()
+                .any(|entry| entry["principal"] == principal && entry["status"] == "success")
+        );
+    }
+}
+
+async fn check_stdio_principal_reads(
+    running: &support::Running,
+    token: &str,
+    allowed: &str,
+    denied: &str,
+    property: &str,
+    action_name: &str,
+) {
+    use serde_json::json;
+    use stdio_security_support::{Cli, http_json};
+    let mut cli = Cli::spawn(&format!("{}/mcp", running.url), token);
+    cli.initialize().await;
+    let tools = cli
+        .request(&json!({"jsonrpc":"2.0","id":2,"method":"tools/list"}))
+        .await;
+    let names: Vec<_> = tools["tools"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|tool| tool["name"].as_str().unwrap())
+        .collect();
+    assert!(names.contains(&action_name));
+    let forbidden_action = if action_name == "action_delayFlight" {
+        "action_recordMaintenance"
+    } else {
+        "action_delayFlight"
+    };
+    assert!(!names.contains(&forbidden_action));
+    for name in ["describe", "query", "history"] {
+        assert!(names.contains(&name));
+    }
+    let metadata = cli.tool(3, "describe", json!({})).await;
+    let rest_metadata = http_json(
+        running
+            .client
+            .get(format!("{}/api/ontology", running.url))
+            .bearer_auth(token),
+    )
+    .await;
+    for field in ["apiName", "defVersion", "links", "engineStatus"] {
+        assert_eq!(metadata[field], rest_metadata[field]);
+    }
+    for description in [&metadata, &rest_metadata] {
+        let types = description["objectTypes"].as_array().unwrap();
+        assert!(types.iter().any(|ty| ty["apiName"] == allowed));
+        assert!(!types.iter().any(|ty| ty["apiName"] == denied));
+    }
+    let query = json!({"set":{"kind":"type","object_type":allowed},"select":[property],"page":{"first":100}});
+    let result = cli.tool(4, "query", json!({"request":query})).await;
+    let rest = http_json(
+        running
+            .client
+            .post(format!("{}/api/query", running.url))
+            .bearer_auth(token)
+            .json(&query),
+    )
+    .await;
+    assert!(!result["rows"].as_array().unwrap().is_empty());
+    assert_eq!(result["rows"], rest["rows"]);
+    assert!(cli.finish(token).await.success());
+}
+
+#[tokio::test]
+async fn live_stdio_online_bad_token_never_reaches_business_or_leaks_secret() {
+    use stdio_security_support::{Cli, DEADLINE, Mode, Proxy, durable_rows};
+    let running = support::fixture().await.start().await;
+    let before = durable_rows(&running.path).await;
+    let proxy = Proxy::start(&running.url, Mode::Pass).await;
+    let sentinel = "stdio-online-invalid-token-sentinel";
+    let mut cli = Cli::spawn(&proxy.url, sentinel);
+    assert!(
+        cli.receive().await.is_none(),
+        "failed authentication must leave stdout empty"
+    );
+    assert!(!cli.finish(sentinel).await.success());
+    proxy.settle().await;
+    assert_eq!(proxy.count("initialize"), 1);
+    assert_eq!(proxy.count("tools/call"), 0);
+    assert_eq!(proxy.evidence.lock().unwrap().requests[0].status, Some(401));
+    assert_eq!(durable_rows(&running.path).await, before);
+    proxy.finish().await;
+    assert!(
+        tokio::time::timeout(DEADLINE, running.finish())
+            .await
+            .unwrap()
+            .is_empty()
+    );
+}
+
+#[tokio::test]
+async fn live_stdio_real_redirect_never_connects_to_credential_trap() {
+    use std::sync::atomic::Ordering;
+    use stdio_security_support::{Cli, RedirectTrap};
+    let sentinel = "stdio-redirect-credential-sentinel";
+    let trap = RedirectTrap::start(sentinel.to_owned()).await;
+    let mut cli = Cli::spawn(&trap.url, sentinel);
+    assert!(
+        cli.receive().await.is_none(),
+        "redirect failure must leave stdout empty"
+    );
+    assert!(!cli.finish(sentinel).await.success());
+    tokio::time::sleep(Duration::from_millis(500)).await;
+    assert_eq!(trap.origin_requests.load(Ordering::SeqCst), 1);
+    assert_eq!(trap.trap_connections.load(Ordering::SeqCst), 0);
+    trap.finish().await;
+}
+
+#[tokio::test]
+async fn live_stdio_closed_upstream_session_never_reinitializes_or_replays() {
+    use serde_json::json;
+    use stdio_security_support::{
+        Cli, DEADLINE, LEGACY_VERSION, Mode, Proxy, action, counts, durable_rows,
+    };
+
+    let running = support::fixture().await.start().await;
+    let before = counts(&running.path).await;
+    let before_rows = durable_rows(&running.path).await;
+    let proxy = Proxy::start(&running.url, Mode::Pass).await;
+    let mut cli = Cli::spawn(&proxy.url, &running.token);
+    cli.initialize().await;
+    let session = proxy
+        .evidence
+        .lock()
+        .unwrap()
+        .session
+        .clone()
+        .expect("real legacy session");
+    let closed = tokio::time::timeout(
+        DEADLINE,
+        running
+            .client
+            .delete(&proxy.url)
+            .bearer_auth(&running.token)
+            .header("accept", "application/json, text/event-stream")
+            .header("mcp-protocol-version", LEGACY_VERSION)
+            .header("mcp-session-id", &session)
+            .send(),
+    )
+    .await
+    .unwrap()
+    .unwrap();
+    assert!(
+        closed.status().is_success(),
+        "real host DELETE: {}",
+        closed.status()
+    );
+
+    cli.send(&action(71, "bridge-expired-session"));
+    cli.expect_failure(&json!(71)).await;
+    proxy.settle().await;
+    assert_eq!(proxy.count("server/discover"), 0);
+    assert_eq!(proxy.count("initialize"), 1);
+    assert_eq!(proxy.count("notifications/initialized"), 1);
+    assert_eq!(proxy.count("tools/call"), 1);
+    {
+        let evidence = proxy.evidence.lock().unwrap();
+        let failed = evidence
+            .requests
+            .iter()
+            .find(|r| r.method == "tools/call")
+            .unwrap();
+        assert_eq!(failed.verb, "POST");
+        assert_eq!(failed.status, Some(404), "404 must come from the real host");
+        assert_eq!(failed.session.as_deref(), Some(session.as_str()));
+        let deleted = evidence
+            .requests
+            .iter()
+            .find(|r| r.verb == "DELETE")
+            .unwrap();
+        assert_eq!(deleted.session.as_deref(), Some(session.as_str()));
+        assert!(deleted.status.unwrap() < 300);
+    }
+    assert_eq!(counts(&running.path).await, before);
+    assert_eq!(durable_rows(&running.path).await, before_rows);
+    cli.finish(&running.token).await;
+    proxy.finish().await;
+    tokio::time::timeout(DEADLINE, running.finish())
+        .await
+        .unwrap();
+}
+
+#[tokio::test]
+async fn live_stdio_disconnected_before_forward_never_retries_or_commits() {
+    live_stdio_fault_no_retry(false).await;
+}
+
+#[tokio::test]
+async fn live_stdio_lost_commit_response_requires_explicit_replay() {
+    live_stdio_fault_no_retry(true).await;
+}
+
+#[allow(
+    clippy::too_many_lines,
+    reason = "one fault and explicit replay scenario keeps its evidence assertions together"
+)]
+async fn live_stdio_fault_no_retry(after_commit: bool) {
+    use serde_json::json;
+    use stdio_security_support::{Cli, DEADLINE, Mode, Proxy, action, counts, durable_rows};
+
+    let running = support::fixture().await.start().await;
+    let before = counts(&running.path).await;
+    let before_rows = durable_rows(&running.path).await;
+    let mode = if after_commit {
+        Mode::DropAfterCommit
+    } else {
+        Mode::DropBeforeForward
+    };
+    let proxy = Proxy::start(&running.url, mode).await;
+    let mut cli = Cli::spawn(&proxy.url, &running.token);
+    cli.initialize().await;
+    cli.send(&action(72, "bridge-fault-command"));
+    proxy.injected().await;
+    cli.expect_failure(&json!(72)).await;
+    proxy.settle().await;
+    assert_eq!(
+        proxy.count("tools/call"),
+        1,
+        "no implicit business replay after disconnect"
+    );
+    assert_eq!(proxy.count("server/discover"), 0);
+    assert_eq!(
+        proxy.count("initialize"),
+        1,
+        "real Initialize lifecycle without reinitialization"
+    );
+    assert_eq!(proxy.count("notifications/initialized"), 1);
+    {
+        let evidence = proxy.evidence.lock().unwrap();
+        let session = evidence.session.as_ref().expect("real host session");
+        let call = evidence
+            .requests
+            .iter()
+            .find(|r| r.method == "tools/call")
+            .unwrap();
+        assert_eq!(call.verb, "POST");
+        assert_eq!(call.session.as_ref(), Some(session));
+        if !after_commit {
+            assert_eq!(call.status, None, "request was never forwarded");
+        }
+    }
+    let committed = counts(&running.path).await;
+    let committed_rows = durable_rows(&running.path).await;
+    assert_eq!(
+        std::array::from_fn::<_, 5, _>(|index| committed[index] - before[index]),
+        [i64::from(after_commit); 5]
+    );
+    cli.finish(&running.token).await;
+
+    if after_commit {
+        assert_eq!(before_rows["of_obj_flight"], json!([]));
+        let flights = committed_rows["of_obj_flight"].as_array().unwrap();
+        assert_eq!(flights.len(), 1);
+        assert_eq!(flights[0]["flight_id"], "F-1001");
+        assert_eq!(flights[0]["of_version"], "1");
+        assert_eq!(flights[0]["status"], "DELAYED");
+        assert_eq!(flights[0]["delay_minutes"], "5");
+        for (table, rows) in &before_rows {
+            if (table.starts_with("of_obj_") || table.starts_with("of_lnk_"))
+                && table != "of_obj_flight"
+            {
+                assert_eq!(&committed_rows[table], rows, "unrelated overlay {table}");
+            }
+        }
+        let receipt = proxy.evidence.lock().unwrap().receipt.clone().unwrap();
+        assert!(receipt["committedAt"].is_string());
+        let replay_proxy = Proxy::start(&running.url, Mode::Pass).await;
+        let mut replay = Cli::spawn(&replay_proxy.url, &running.token);
+        replay.initialize().await;
+        replay.send(&action(73, "bridge-fault-command"));
+        let response = replay.receive().await.unwrap();
+        assert_eq!(response["id"], 73);
+        assert!(response.get("error").is_none(), "{response}");
+        assert_eq!(
+            response["result"]["structuredContent"]["receipt"], receipt,
+            "original receipt and committedAt survive explicit replay"
+        );
+        assert_eq!(
+            counts(&running.path).await,
+            committed,
+            "replay must not add log, entry, history, command or outbox rows"
+        );
+        assert_eq!(
+            durable_rows(&running.path).await,
+            committed_rows,
+            "explicit replay must preserve every durable row, property and version"
+        );
+        assert_eq!(replay_proxy.count("server/discover"), 0);
+        assert_eq!(replay_proxy.count("initialize"), 1);
+        assert_eq!(replay_proxy.count("tools/call"), 1);
+        assert_eq!(
+            proxy.count("tools/call"),
+            1,
+            "original connection remains unretried"
+        );
+        replay.finish(&running.token).await;
+        replay_proxy.finish().await;
+    } else {
+        assert_eq!(
+            committed_rows, before_rows,
+            "pre-forward disconnect must preserve every durable row, property and version"
+        );
+    }
+    proxy.finish().await;
+    if after_commit {
+        tokio::time::timeout(DEADLINE, running.finish_actions())
+            .await
+            .unwrap();
+    } else {
+        tokio::time::timeout(DEADLINE, running.finish())
+            .await
+            .unwrap();
+    }
+}
+
 struct BridgeChild(std::process::Child);
 
 impl Drop for BridgeChild {
     fn drop(&mut self) {
         let _ = self.0.kill();
-        let _ = self.0.wait();
+        let deadline = std::time::Instant::now() + Duration::from_secs(2);
+        while std::time::Instant::now() < deadline {
+            if matches!(self.0.try_wait(), Ok(Some(_))) {
+                return;
+            }
+            std::thread::sleep(Duration::from_millis(10));
+        }
+        assert!(
+            std::thread::panicking(),
+            "stdio child could not be reaped within cleanup deadline"
+        );
+        eprintln!("stdio child could not be reaped within cleanup deadline");
     }
 }
 
