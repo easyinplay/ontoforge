@@ -1,5 +1,9 @@
 # Phase 7 findings
 
+- 2026-11-03 07-14 package CR-01：build的ExpectedCommit原只验证格式并自比manifest，能把当前binary冒标其他SHA。独立review与Claude Code正常exit0/AGREE要求build无条件读actual HEAD，ExpectedCommit只作断言且在Cargo前拒绝，manifest记录actual；VerifyOnly可验指定版本不绑定当前HEAD。当前Rust生产与HEAD一致，暂不扩dirty/worktree框架。证据target/phase7-claude-release-commit-review.json，交原executor修并做错误SHA前置拒绝probe。
+
+- 2026-11-03 07-14按批准PLAN跳过TDD：仅配置/打包/文档接线，无业务逻辑修改，以三native实际release binary/archive/checksum和解包后完整smoke验收。复用Windows private-console helper/Unix SIGINT，不强杀冒称正常关闭。PR产物核实际checkout synthetic merge SHA/GITHUB_SHA，gh下载限定本run且job级actions:read；contents:write只给release published上传job，本轮不触发发布。
+
 - 2026-11-03 RT03：Ubuntu CI在cli_l2_identity.rs:409的全局is_empty断言失败，合法source-drift metadata被误判为L2发SQL。Claude Code正常exit0/AGREE补强为默认计入、仅完整精确monitor请求排除（POST/当前origin与endpoint/ontology/source-drift/精确metadata SQL），并加逐条件反例；不能只按l2身份计数或用information_schema子串宽泛排除。各负向窗口和正向身份断言仍抓任何身份下业务SQL。仅cli_l2_identity测试修正，生产不变，Cargo排在RT02后。
 
 - 2026-11-03 RT02整合失败归因：CI41634382039的Trino long-read case在reload后立即发第二业务read，新v2尚无精确报告，合法Pending503让source barrier无法进入。Claude Code正常exit0/AGREE，限定测试在第二read前有界轮询health至HTTP200/engine available/healthy或degraded，失败显示末响应；health本身每次snapshot+exact-key，无新增version字段。维持exact2audit与cancel在shutdown前、零业务写，不增加business readiness请求。日志target/phase7-ci-41634382039-services.log与phase7-claude-reload-readiness-review.json，transport修test-only，生产不变。
