@@ -39,3 +39,7 @@
 | crates/ontoforge-server/tests/unit/rest.test.rs | 654ac441456074aa9572d13ddfe5e9a587dbc32a | 95bf377f5aa176d4e6b75021d33c98b7b9eb4207 | 95bf377f5aa176d4e6b75021d33c98b7b9eb4207 |
 | crates/ontoforge/tests/cli_stdio.rs | 845541776c70e20447c87c27c692aedf499ae815 | 845541776c70e20447c87c27c692aedf499ae815 | 673f5be98e62af7371745f8dd34b7bfca279bd79 |
 | crates/ontoforge/tests/stdio_security_support/mod.rs | (new) | (untracked) | ac9c29d01bd494f990afc3311a36f723b960e1c7 |
+
+## 2026-11-04 T08 增量复核
+
+`552556e..adc0227` 的 T08 admission 生产边界及新增测试：Critical 0、Informational 0；尾部简化建议 0。冻结指纹核对、范围及理由见 [07-FINAL-SIMPLIFICATION.md](07-FINAL-SIMPLIFICATION.md)。本节不扩大此前动态验收结论。

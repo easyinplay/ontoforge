@@ -1,19 +1,28 @@
-# Phase 7 动态证据缺口
+# Phase 7 动态证据缺口闭合
 
-日期2026-11-03，来源最终GSD安全核验。以下均pending；它们不等于已证明的生产漏洞，不计入07-SECURITY的threats_open。实施分工与CC取舍见07-T24-DESIGN。
+2026-11-04，冻结源码 `adc02278b5cc55111def9a30a1c3b778485e8279`。E1–E7 与 N1/N2/N3 均已动态 GREEN；T24、E6、T08 的生产缺陷和修复期回归已独立复签。48/48 threats CLOSED，详 `07-T08-SECURITY-RECHECK.md`。本表记录证据缺口，不将缺口数量等同生产漏洞数量。
 
-| ID / 威胁 | 确认的现有证据边界 | 动态验收标准 | 复用入口 / owner |
-|---|---|---|---|
-| E1 / T10 | http_action_safety.rs:73仅正常submit/validate；PG stale _version不是definition fence | HTTP捕获旧定义后barrier、另一store reload，submit/validate拒绝DefinitionStale、业务表零写且无重试 | support/pg_real.rs:407、postgres_http_it.rs:143、action frozen_definition.rs:249；server_security_evidence |
-| E2 / T20,T21,T37 | mcp_actions.rs:245仅schema名；mcp_contract.rs:804仅两个catalog | 同主体同command REST/MCP真实并发，原receipt/event/time一致、log/claim/history/outbox恰好一次；MCP在途固定schema/执行snapshot，提交fence、下一请求新授权 | support/mod.rs、source_drift.rs:872,893、PG counts；server_security_evidence |
-| E3 / T23,T26 | transport现有无效bearer/DELETE与owner-map单测，stdio缺expiry/丢响应计数 | 合法token到期后各HTTP方法拒绝；bridge session失效不自动initialize/replay；执行前断连与提交后丢响应均计数无隐式重发 | cli_stdio.rs:27、mcp_transport.rs:272,296；bridge后续lane，T24共验资源 |
-| E4 / T28,T32 | Rust/TS仅有效/无效bearer，Rust字符串revoked不是实际撤权，TS发送前abort | 双有效不同grants主体并发隔离；实际撤权后原client下一请求拒绝，另一主体正常；取消一个在途请求不影响另一请求 | Rust contract fixture、TS dev fixture/bob token；sdk_security_evidence |
-| E5 / T31 | TS覆盖2^53/i64但未覆盖u64 max | 18446744073709551615n经codec/公开client端点精确保留，unsafe number拒绝，decimal不变 | TS contract.test.mjs:258,393；sdk_security_evidence |
-| E6 / T16,T22,T38,T46 | 真实ACL/health expiry已测，mcp_l2.rs:65仍静态，缺同session贯通 | 同session撤sql:raw/grant和proof过期后调用拒绝、该调用上游零发送，health一致、恢复准入；defaults/qualified不可绕过 | mcp_l2_defaults.rs:28,596、health_trino_it.rs:168；server_security_evidence |
-| E7 / T29,T33 | 正常submit/replay已测，缺丢响应计数与完整持久增量 | Rust/TS写遇transport error/提交后丢响应仅发送1次，显式replay原receipt/time，完整业务表/事务事件无第二份提交 | Rust contract.rs:154、TS contract.test.mjs:271、PG counts/故障proxy；sdk_security_evidence |
+| ID / 威胁 | 原证据缺口 | 闭合证据与边界 |
+|---|---|---|
+| E1 / T10 | HTTP未跨definition fence，PG仅旧对象版本 | HTTP safety3/3；最终fresh PG4/4含definition stale barrier。第二store reload后submit/validate拒绝，完整持久行零变更。 |
+| E2 / T20,T21,T37 | 静态catalog/schema未证明跨transport race或在途snapshot | Actions10/10、MCP contract16/16；最终fresh PG4/4含REST/MCP race。同command一次提交、原receipt/event/time一致、当前授权及定义fence拒绝。 |
+| E3 / T23,T26 | 缺token到期、session关闭及丢响应发送计数 | transport11/11；stdio11/11覆盖实际Initialize/session关闭、执行前断连、提交后丢响应不隐式重放，显式replay原receipt。首轮5/3协议/fixture错误由后继GREEN闭合。 |
+| E4 / T28,T32 | 缺双有效主体撤权及在途取消隔离 | 最终fresh Rust9/9、TS17/17，真实grant/revoke与双请求隔离。TS只证明响应在途AbortSignal隔离，不扩称服务端执行取消。 |
+| E5 / T31 | 缺u64 max公开端点 | 最终fresh TS17/17含18446744073709551615n、unsafe number发送前拒绝及decimal字符串；范围为WireJson。 |
+| E6 / T16,T22,T38,T46 | 同session撤权/TTL/health/零发送贯通不足 | L2 core2/defaults9、六工具矩阵1/1；最终admission defaults10/10、fresh Trino2/health2/ACL6。授权预检先于availability的真实RED已修复，独立复签CLOSED。 |
+| E7 / T29,T33 | 缺写丢响应次数与完整持久增量 | 最终fresh Rust9/9、TS17/17；故障proxy只发送一次，显式replay保留原receipt/time，业务行与五张事务表不重复提交。 |
+| N1 / 07-09-2 | stdio成功链及不同主体直接调用不足 | stdio11/11 + Mia定向1/1（8次拒绝）；Alice完整读取/validate/Action/history/receipt与REST等价，Mia拒绝后持久行及Alice receipt不变；Spec CLOSED。 |
+| N2 / 07-09-1,2 | 无实际302与在线坏token | 在线host 401/零业务请求；302 origin收到bearer但trap零连接；有界退出/无secret；Spec CLOSED。 |
+| N3 / T08 | typed EXPLAIN仅顺序成功，cap1第二请求200≠429 | query15/15覆盖四格式timeout/cancel/独立请求；permit修复后typed limit及相邻测试50/50，REST↔MCP、slow body/control、Action持槽GREEN；Spec/Staff/security CLOSED。 |
 
-## 验收纪律
+## 最终证据与集成门关闭
 
-进度：E1/E2本地HTTP3/Actions10/contract16通过，新增PG两项待真实服务；E3stdio11/11、Clippy通过（含N1/N2）；E4/E5/E7 TS17/17、Rust9/9与Clippy通过，TS最终fresh binary仍须整合复验；E6真实L2 2+9、最终六工具矩阵、Clippy和独立复签通过；T24 session12/transport11与独立复签通过。详各lane独立报告，最终head CI/真实服务与typed EXPLAIN N3仍pending。
+- `target/phase7-final-adc0227-verify.log`：服务17（PG4、drift2、snapshot1、Trino2、health2、ACL6）+ Rust9 + TS17 = 43，全部实际执行，`fresh_verify_exit=0`。生成、strict typecheck、build、credential scan与cleanup通过；副本 `target/phase7-services/evidence/final-adc0227-verify.log`。
+- `target/phase7-mcp-admission-green-r2.log`：lib25、admission4、L2defaults10、transport11，共50/50，零失败/ignored；Clippy/fmt通过。该集合与上表重叠，不相加为唯一用例总数。
+- 复签：`07-FINAL-SPEC-REVIEW.md`、`07-FINAL-STAFF-REVIEW.md`、`07-T24-SECURITY-RECHECK.md`、`07-E6-SECURITY-RECHECK.md`、`07-T08-SECURITY-RECHECK.md`；末尾 `07-FINAL-SIMPLIFICATION.md` 建议0。
+- release `41669982362` 三native+aggregate成功，publish skipped，三个archive独立验hash，详 `../07-14-SUMMARY.md`。
+- CI `41669982375` completed/success，Windows test、Ubuntu test、integration、phase7-real-services四必需job全部成功。元数据与Windows/Ubuntu完整日志均在target保存，G5已关闭；32task动态门齐全后nyquist=true，UAT已complete、13/13（975f78e），Phase goal由独立VERIFICATION归并。
 
-用真实listener/生产client/生产handler和可控barrier，mock仅可作上游故障源，不能以静态catalog冒充行为。计数区分合法monitor与业务请求。补证据可直接GREEN；发现实现缺陷需真实RED→GREEN。Cargo串行/jobs2，完整CI在集成head执行。各lane独立报告测试/日志/限制，主会话根据证据更新本表。
+没有创建/上传Release、发布npm或合并PR。原始RED、fixture失败与后继GREEN保留在各lane ledger。历史07-02 D4与07-09 D3的unknown/human源于当时未跑，现由PG/stdio自动化实测覆盖，原SUMMARY不改；最终UAT记录裁决，CC AGREE见 `target/phase7-final-uat-review.json`。
+
+最终发布状态：PR #7/#8均OPEN、Draft、mergedAt=null，见`target/phase7-pr{7,8}-final-status.json`；release publish skipped。等待期间Windows pending记录已由最终CI结果替代。

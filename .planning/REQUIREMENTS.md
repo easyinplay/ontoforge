@@ -99,15 +99,15 @@
 - [x] **API-02**: 服务导出 OpenAPI 3.1 文档，并纳入快照测试
 - [x] **API-03**: 错误响应统一为结构化错误码 + apiName 级描述 + request_id；L0 不含物理名
 - [x] **API-04**: Rust 开发者可以用 `ontoforge-client` 调用全部 REST 能力
-- [ ] **API-05**: TypeScript 开发者可以使用由 OpenAPI 生成的平台层 client 调用全部 REST 能力
+- [x] **API-05**: TypeScript 开发者可以使用由 OpenAPI 生成的平台层 client 调用全部 REST 能力
 
 ### MCP
 
 - [x] **MCP-01**: agent 可以通过 stdio 或 streamable HTTP 连接 MCP server
-- [ ] **MCP-02**: agent 可以调用 describe 工具获取 ontology 结构（object types、属性、links、actions 及其描述）
-- [ ] **MCP-03**: agent 可以通过查询工具执行 object set 查询（filter / search / searchAround / aggregate）
-- [ ] **MCP-04**: 每个 action type 自动暴露为一个 MCP 工具，输入 schema 由参数定义派生
-- [ ] **MCP-05**: agent 可以以 validate-only 方式调用 action 工具（dry run）
+- [x] **MCP-02**: agent 可以调用 describe 工具获取 ontology 结构（object types、属性、links、actions 及其描述）
+- [x] **MCP-03**: agent 可以通过查询工具执行 object set 查询（filter / search / searchAround / aggregate）
+- [x] **MCP-04**: 每个 action type 自动暴露为一个 MCP 工具，输入 schema 由参数定义派生
+- [x] **MCP-05**: agent 可以以 validate-only 方式调用 action 工具（dry run）
 - [x] **MCP-06**: agent 通过 MCP 的读写与 REST 走同一套授权与 edit log
 - [x] **MCP-07**: `list_tools` 按主体过滤 toolset（core / full / sql:raw）；L2 的 6 个工具名称与参数对齐 mcp-trino
 - [x] **MCP-08**: L3 与任何定义 / 授权变更工具不出现在 agent MCP 中
@@ -117,7 +117,7 @@
 - [x] **DX-01**: 开发者用一个二进制 `ontoforge serve --dev` 即可在本机（含 Windows）启动完整服务（SQLite 替身引擎 + dev token），无需 Trino
 - [x] **DX-02**: 仓库附带至少一个示例 ontology，可完成查询、执行 action、查看历史的端到端演示
 - [x] **DX-03**: Windows 本机 `cargo test` 不依赖 Docker 即可全部通过
-- [ ] **DX-04**: release workflow 发布 Linux / macOS / Windows 单二进制到 GitHub Releases
+- [x] **DX-04**: release workflow 发布 Linux / macOS / Windows 单二进制到 GitHub Releases
 
 ## v2 Requirements
 
@@ -245,18 +245,18 @@ Which phases cover which requirements. Updated during roadmap creation.
 | API-02 | Phase 7 | Complete |
 | API-03 | Phase 7 | Complete |
 | API-04 | Phase 7 | Complete |
-| API-05 | Phase 7 | Pending |
+| API-05 | Phase 7 | Complete |
 | MCP-01 | Phase 7 | Complete |
-| MCP-02 | Phase 7 | Pending |
-| MCP-03 | Phase 7 | Pending |
-| MCP-04 | Phase 7 | Pending |
-| MCP-05 | Phase 7 | Pending |
+| MCP-02 | Phase 7 | Complete |
+| MCP-03 | Phase 7 | Complete |
+| MCP-04 | Phase 7 | Complete |
+| MCP-05 | Phase 7 | Complete |
 | MCP-06 | Phase 7 | Complete |
 | MCP-07 | Phase 7 | Complete |
 | MCP-08 | Phase 7 | Complete |
 | DX-01 | Phase 7 | Complete |
 | DX-02 | Phase 7 | Complete |
-| DX-04 | Phase 7 | Pending |
+| DX-04 | Phase 7 | Complete |
 
 **Coverage:**
 

@@ -3,92 +3,55 @@ gsd_state_version: "1.0"
 current_phase: 7
 current_phase_name: REST & MCP Shell
 current_plan: 14
-status: executing
-stopped_at: Phase 7 T24 secured; E1-E7 integration verification running
-last_updated: "2026-11-03"
-last_activity: "2026-11-03: 1040920修复T24，23项通过及security复签；SDK Rust9/TS17通过，server补测中"
-state_head: 1040920
+status: completed
+stopped_at: Phase 7 verified; milestone audit pending for historical fingerprints
+last_updated: "2026-11-04"
+last_activity: "2026-11-04: Phase 7 16/16，独立VERIFICATION passed、UAT13/13；详阶段报告"
+state_head: 975f78ecccd9dd047acbdb3453b3208c849f22c7
+verified_source_commit: adc02278b5cc55111def9a30a1c3b778485e8279
 progress:
   total_phases: 7
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 88
-  completed_plans: 87
-  percent: 99
+  completed_plans: 88
+  percent: 100
 last_gate_trip: null
-last_activity_desc: Phase 7 有效验收15/16，native通过，安全修复与证据补齐中；详phase task_plan
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-10-28)
+See: .planning/PROJECT.md (updated 2026-11-04)
 
-**Core value:** 定义一次 ontology，应用和 agent 就能通过 REST 与 MCP 对同一份对象图做受控读写：写入一律经 Action 校验与授权，每次写入都可审计。
-**Current focus:** Phase 7 — REST & MCP Shell
+**Core value:** 定义一次 ontology，应用和 agent 通过 REST 与 MCP 对同一对象图受控读写，写入均经 Action 校验并可审计。
+**Current focus:** Phase 7 已验收；下一步为 milestone 历史验证审计。
 
 ## Current Position
 
-Phase: 7 (REST & MCP Shell) — EXECUTING
-Current Plan: 14
+Phase: 7 (REST & MCP Shell)
+Current Plan: 14 (complete)
 Total Plans in Phase: 16
-Status: Final evidence and integration verification in progress
-Last activity: 2026-11-03: T24已关闭，E1-E7动态收口中；详phase task_plan
+Status: Phase 7 verified; milestone audit pending
+Progress: 88/88 plans implemented；历史阶段交付7/7，不等于当前全部fingerprint新鲜。
 
-Progress: [██████████] 99%
+## Evidence Pointers
 
-## Performance Metrics
+- 当前阶段真相源：`phases/07-rest-mcp-shell/07-VERIFICATION.md`（passed，80/80）；`07-UAT.md`（13/13）。
+- 实际运行与发行包：`phases/07-rest-mcp-shell/07-14-SUMMARY.md`；安全与任务覆盖：`07-SECURITY.md`、`07-VALIDATION.md`。
+- 决策归 `.planning/adr/`；运行合同归 Phase 7 CONTEXT，历史实施与修复归各 SUMMARY/reviews，进度归 phase progress。
 
-逐 plan 的耗时与文件数见各 `phases/*/NN-*-SUMMARY.md`。
-**Per-Plan Metrics:**
+## Pending Todos / Blockers
 
-| Plan | Duration | Tasks | Files |
-|------|----------|-------|-------|
-| Phase 07 P05 | 33m12s | 2 tasks | 7 files |
-| Phase 07 P10 | 65m | 2 tasks | 5 files |
-| Phase 07 P08 | 38m | 2 tasks | 6 files |
-| Phase 07-rest-mcp-shell P16 | 43m | 2 tasks | 5 files |
-| Phase 07 P09 | 70 | 2 tasks | 7 files |
-| Phase 7 P12 | 28m | 2 tasks | 9 files |
-
-## Accumulated Context
-
-### Decisions
-
-决策真相源为 `.planning/adr/`；Phase 1-6 的实施证据见各自 `SUMMARY.md`、`VERIFICATION.md` 和 git 历史。Phase 7 运行方式见 `phases/07-rest-mcp-shell/07-CONTEXT.md`，工作顺序见同目录的 `task_plan.md`。
-- [Phase 07]: OpenAPI 3.1.0 由静态平台 DTO 生成并以 checked-in JSON 做漂移门
-- [Phase 07]: serve --export-openapi 在无配置、store、listener 时直接导出确定性文档
-- [Phase 07]: Rust client手写轻量REST调用，生产依赖仅ontoforge-api/HTTP/serde/error，写入不自动重试
-- [Phase 07]: ClientError保留HTTP状态、code、apiName、request_id和完整ErrorEnvelope，command_id回放必须显式调用
-- [Phase 07]: MCP raw adapters reuse validate_l2 and typed ExplainType with audit and limits
-- [Phase 07]: Legacy MCP session owners are bounded TTL entries and every tool request reauthenticates the principal
-- [Phase 07-rest-mcp-shell]: Serve MCP defaults通过手写clap适配器解析，保持既有ServeArgs字面量兼容
-- [Phase 07-rest-mcp-shell]: MCP qualified table解析使用07-15 typed resolver，缺上下文以MissingContext在发送前拒绝
-- [Phase 07]: stdio 通过 rmcp serve_client 与 serve_server 桥接既有 /mcp，共用 host 状态，不创建第二 store/engine/DB
-- [Phase 07]: stdio transport 禁止 redirect 与 expired-session 自动 reinit，token 仅来自 env/token-file 并脱敏错误
-- [Phase 7]: serve --dev 使用 marker bounded persistent data dir and explicit reset
-- [Phase 7]: dev auth key and query signing key are independent persistent files
-
-### Pending Todos
-
-T24修复已复签，SDK Rust9/TS17通过；server/stdio/PG和新head CI待完成，详phase task_plan。
-
-### Blockers/Concerns
-
-- [Ops]: 测试凭据待轮换（`ontoforge_trino_ro`、postgres），测试 catalog `ontoforge_pg` 待删除
-- [Phase 2]: 非阻塞安全 observations 待后续 phase 跟进（详: `phases/02-source-binding-engine/02-SECURITY.md` Observations）
-- [Phase 5]: 生产 webhook 联调与正式 gstack gate 待发布/PR 前完成；GSD 关闭警告详见 `phases/05-online-action/deferred-items.md`
-- [Phase 6]: 本地 PR review、CI 与增量复签通过；外部 Codex 审查不可用。Phase 1–5 历史 fingerprint staleness 待 milestone audit 复核，详 Phase 6 VERIFICATION。
-- [Phase 7]: 已验收15/16；07-14执行中，L2-04/SCOPE-07待Phase最终验证；PR #7 不合并。
-
-## Deferred Items
-
-| Category | Item | Status | Deferred At | Milestone |
-|----------|------|--------|-------------|-----------|
-| *(none)* | | | | |
+- Phase 7 无未解决验收项。PR #7、#8 均 Draft OPEN；禁止合并、创建 Release 或发布 npm。
+- 当前只有 Phase 7 的独立报告 fingerprint 新鲜；Phase 1–6 因后续共享源码变化为 stale，需 milestone audit 重新核验。未据此判定生产回归，未刷新旧指纹或归档 milestone。
+- [Ops] 历史记录中的测试凭据轮换与 `ontoforge_pg` catalog 清理待核；本轮隔离 PG/Trino/服务进程已正常清理。
+- [Phase 2] 非阻塞安全 observations：`phases/02-source-binding-engine/02-SECURITY.md`。
+- [Phase 5] 生产 webhook 联调及既有治理债务：`phases/05-online-action/deferred-items.md`。
+- [Phase 6] Windows 慢机审计时限波动与历史验证边界：`phases/06-l2-raw-dql-toolsets-audit/deferred-items.md`、`06-VERIFICATION.md`。
 
 ## Session Continuity
 
-Last session: 2026-11-03
-Stopped at: Phase 7 T24 secured; E1-E7 integration verification running
+Last session: 2026-11-04
+Stopped at: Phase 7 verified; milestone audit pending for historical fingerprints
 Resume file: None

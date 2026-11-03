@@ -1,6 +1,6 @@
 # 07-14 实施记录
 
-状态：Windows 本机实际 release 构建、安装 smoke、拒绝分支通过；实现冻结，三平台 native CI 尚未完成。2026-11-03。
+状态：2026-11-04，最终源码 adc0227 的三平台 native 与 aggregate 已通过，publish skipped，三个 archive 独立 hash 校验通过。最终版本、tree、产物及动态门真相源为 [07-14-SUMMARY.md](../07-14-SUMMARY.md)；本文件保留实施历史，不用旧产物替代最终验收。最终CI `41669982375` 四必需job全部success；UAT已complete、13/13（975f78e），Phase目标判定交独立VERIFICATION归并。
 
 ## 范围与验证选择
 
@@ -78,7 +78,7 @@ exit 0，完整日志：`target/phase7-release-smoke.log`。
 - MCP isError 是可选字段，使用 ContainsKey 后再读取；现有 rmcp successful structured response 实际也写 false。见 `07-14-SMOKE-WORKFLOW-REVIEW.md`。
 - 两个 PowerShell 文件最终 parser 检查通过，`git diff --check` 通过。没有新增依赖、stub、skip test 或业务实现修改。
 
-## 三平台 native CI 最终证据
+## 三平台 native CI 历史证据（2026-11-03）
 
 2026-11-03，run `41648281446` completed/success，三个 native job及aggregate均success，publish skipped。保存元数据 `target/phase7-release-ci-41648281446.json`，下载目录 `target/phase7-native-artifacts-41648281446/`。CI source head为 `e6ae31055c17d6d4005226b21c2d5991ac5a34ef`；PR实际打包checkout及三个manifest commit均为 `f315d4650114c449d9f857fccbe0b6db8d80b686`，version均为0.1.0。
 
@@ -88,12 +88,12 @@ exit 0，完整日志：`target/phase7-release-smoke.log`。
 | x86_64-pc-windows-msvc | Windows 10.0.26100 X64 | 18548325 | b60329a52f0e1713a93518fad9082ee2f3d4760d7606811a82bc124f6b06a5f8 |
 | x86_64-unknown-linux-gnu | Ubuntu 24.04.5 X64, glibc 2.39 | 20231605 | 3b62032e1995e3dab5259e3f30bd6f0f59b3ce8cb27f69c5a173f4729941e841 |
 
-三个实际archive已下载并重算hash，与各自checksum一致。三个native runner均完成实际release build、package验证、无checkout安装smoke及artifact上传，aggregate核同commit/version/target/checksum。该结果替代先前Linux/macOS pending记录。后续T24生产修复仍需新head三平台复验。
+三个实际archive已下载并重算hash，与各自checksum一致。三个native runner均完成实际release build、package验证、无checkout安装smoke及artifact上传，aggregate核同commit/version/target/checksum。该结果替代先前Linux/macOS pending记录。后续T24/E6/T08修复已由2026-11-04 run `41669982362` 复验，最终产物见 `../07-14-SUMMARY.md`，本节保留早期产物历史。
 
 ## 交接与未跑项
 
 - Linux x64、macOS arm64、Windows Server 2025 x64 native CI已通过，环境与产物见上节。
 - tar executable bit、Linux glibc及macOS实际安装已由native job实测。
 - workflow 的 Release upload 路径仅静态审查，未实际触发；本轮授权范围禁止创建/上传 Release。PR 和 dispatch 仅构建验收。
-- 发行实现未发现剩余缺陷；Phase最终审查发现T24及E1–E7缺口，主会话收口中，不据native结果关闭整个Phase。
-- 本 lane 未 commit、push、更新共享 STATE/ROADMAP 或生成最终 SUMMARY；主会话拥有这些操作。Cargo 槽已释放。
+- 发行实现无剩余finding；T24/E1–E7/T08/N1–N3均已动态闭合及独立复签。最终CI四必需job均success，与native共同形成最终自动验收证据。
+- 原实现lane未commit/push；后续由主会话提交 `cba62af`，本次文档lane仅更新授权收口文档，不运行Cargo/服务或提交。T1由主会话维护。

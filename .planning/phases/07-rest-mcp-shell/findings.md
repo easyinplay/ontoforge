@@ -1,5 +1,7 @@
 # Phase 7 findings
 
+- 2026-11-04 goal-verifier指出跨phase已交付BIND-03/ENGINE-02/ENGINE-04在REQUIREMENTS有Phase7服务侧映射，但PLAN frontmatter漏tag。主会话仅补07-13 BIND-03、07-06 ENGINE-02、07-12 ENGINE-04元数据，使现有drift/health/dev证据可追溯；实现和验收合同未变，细节仍归各SUMMARY/VERIFICATION。
+
 - 2026-11-03 最终安全核验确认T24：owner map cap256不约束rmcp真实session，owner驱逐未close实际worker；rmcp300秒idle最终回收不等于容量限制。局部修复触发brainstorming/TDD，主会话锁定设计并取Claude Code第二意见后下放。E1–E7只代表动态验收证据不足，不冒称7项生产漏洞；详细事实保存在07-SECURITY及reviews/07-SECURITY-EVIDENCE-GAPS。
 
 - 2026-11-03 CI资源修复：常规CI41648281253 Ubuntu在test链接时No space left on device（尚未执行测试），同Rust上一head全绿。Claude Code REFINE同方向接受test矩阵job关闭DEV/TEST debug symbols与incremental，独立rust-cache prefix-key并cache-targets:false防旧target恢复，保留全部测试/断言/overflow/优化级别/jobs2；不改release和本地Cargo.toml。已核固定action SHA的action.yml定义prefix-key是完整重启命名空间，cache-targets:false只缓存registry。证据target/phase7-ci-41648281253-ubuntu.log、phase7-claude-ci-disk-review.json，需新CI实际验证。
@@ -202,3 +204,9 @@
 - 第一轮独立审查真相源为 `reviews/07-PLAN-CHECK.md`；完整确定性输入为 `reviews/plan-probes.json`。修订包括所有 warning 和有实际测试依赖影响的 info，不把严重度分类替代工程修复。
 - 修正 orchestrator 输入：ROADMAP Phase 7 已持久设置 `Mode: mvp`，应按该模式审查；首次 planner prompt 的 false 不覆盖已存模式。保留既有范围，只补足用户故事和纵向切片表达。
 - 按项目三层文档纪律，完成规划时 wave 依赖和跨切约束保存在 T2 PLAN/task_plan，不将 GSD 13c 的完整 wave 注释内联 ROADMAP；T1 仅更新计划数量、状态与 phase 指针。
+
+## 2026-11-04 最终验收证据归并
+
+- `07-02-SUMMARY.md` D4 与 `07-09-SUMMARY.md` D3 的 `unknown/human_judgment` 是原执行时点的未运行标记。现有真实 PG snapshot 1/1、PG 4/4、stdio 11/11 和 Mia 扩展 1/1 覆盖这些技术验收；最终 UAT 标记 `source: automated`，不声称用户亲测，不改历史事实。
+- Claude Code 文本第二意见 AGREE，原始结果 `target/phase7-final-uat-review.json`；实际配置模型 `MiniMax-M3.1-Flash[1m]`。双方一致继续自动收口，仍等待 Windows CI 最终通过后才关闭 Phase。
+- Phase 7 无网页或视觉 UI 交付，UI-SPEC/UI-REVIEW 不适用。verify:post 的 Nyquist/security 已有产物，按 `--after-fingerprint` 复用；UI hook 无验收对象，不制造视觉评分。

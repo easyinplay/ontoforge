@@ -1,8 +1,43 @@
 # Phase 7 本轮增量 Staff / Security / Performance / API 审查
 
-日期：2026-11-03。审查方式：只读静态审查，独立追调用链；没有运行 Cargo、服务或 commit。
+首次审查日期：2026-11-03。最终 T08 复签：2026-11-04。审查方式：只读静态审查，独立追调用链；没有运行 Cargo、服务或 commit。
 
-最终状态：E6 已确认 finding resolved，修复生产 blob 已独立静态复签，并亲读执行 worker 的 RED / GREEN 日志。原 T24 / CI / helper 范围的零 finding 结论保留。本报告只关闭指定审查范围，不替代主会话最终真实服务与 CI 门禁。
+最终状态：T08 / N3 实际业务并发 finding 与修复期 REST permit 回归均 resolved；E6 finding resolved。已独立复签冻结生产 blob，并亲读执行 worker 的 RED / GREEN 日志；原 T24 / CI / helper 范围结论保留。当前指定范围无未解决 finding，本报告不替代主会话最终真实服务与 CI 门禁。
+
+## T08 / N3 扩展范围：MCP 执行生命周期并发
+
+- 状态：RESOLVED（原分类 FIXABLE，confidence 100）；合同 `07-MCP-EXECUTION-ADMISSION-FIX.md`。
+- 主会话真实 RED：`target/phase7-explain-server-tests-r2.log`，cap=1 时首 typed EXPLAIN 已实际进入上游并被 barrier 阻塞，第二请求收到 200 而非 429。
+- 原实现根因：`context::admit` 在 SSE response headers 返回后强制 take business permit，rmcp 分派的业务 future 仍执行。旧 `call_tool` 仅 Action 分支尝试 take，存在与 middleware 抢夺窗口。
+- 接受合同：业务 permit 由执行 future 的 RAII guard 持有；Action 把同一 guard 转交 host-owned task。MCP POST 先以 business 或唯一 control slot 限定缓冲/auth 资源，auth/owner 后精确分类取消通知；控制通道不授予普通业务执行。GET/SSE 不长期占 business，DELETE 控制通道仍受 auth/owner。
+- 已完成 worker 冻结 context / mcp / lib / state 增量及负向测试复签；T24 session manager 未改，保留 E6 与既有已关闭 finding。
+
+### T08 草稿发现：REST permit 被 Body extractor 提前释放
+
+- 状态：RESOLVED（原分类 FIXABLE，confidence 100）；发现时即时通知 orchestrator 请求 Claude Code 第二意见，本 lane 未修改实现。
+- 第一轮草稿 `context::admit` 移除外层 `permit_slot`，REST 分支仅把 `AdmissionPermit` 放 request extensions。`rest.rs:201` query、`:299` aggregate 不提取该 extension，最后参数为 `Body`。
+- 精确调用链：锁定 axum 0.8.9 `handler/mod.rs:248` 构造 request 并交给最后一个 extractor；axum-core 0.5.6 `extract/request_parts.rs:170` 用 `req.into_body()` 提取 Body，消耗并丢弃 request parts / extensions。此时最后的 permit Arc 已 drop，尚未开始实际业务 handler。结果 REST→REST / REST→MCP 仍可越过 cap。
+- 最小修复：REST outer 保留同一个 AdmissionPermit Arc 直至 `next.run` 完成，仅 drop 该 Arc、不 take 内部 OwnedSemaphorePermit；MCP 仍由 Parts / handler 保活，REST Action 现有 guard 转交路径保留。冻结修复与真实交叉竞争 GREEN 已核验。
+- orchestrator 已收到 Claude Code AGREE（`target/phase7-rest-permit-lifetime-claude-review.json`），worker 的真实 REST→MCP cap 测试也得到 200 != 429 的 RED，确认并非仅静态推测。最终 `phase7-mcp-admission-green-r2.log` 中同一测试通过，finding resolved。
+
+### T08 冻结增量静态复签
+
+状态：静态接受，无新增 finding；实际 GREEN 日志已独立读取，两个 T08 finding 均 resolved。
+
+| 生产文件 | 冻结 blob |
+|---|---|
+| `crates/ontoforge-server/src/context.rs` | `12de800b01837b3b8ec8e26b819c82d382e0ac82` |
+| `crates/ontoforge-server/src/mcp.rs` | `7b154b0100f8e9433ab95061369d075cd8d1539e` |
+| `crates/ontoforge-server/src/lib.rs` | `d14d825c8e60199fe983bd472fa4c0e66837c5e1` |
+| `crates/ontoforge-server/src/state.rs` | `c6a2287eb87f6b06759a8c9a493e7cd8ca4faad0` |
+
+- Staff critical：`context.rs:296` 只为 REST 保留 `_http_permit` Arc 至 response / timeout，不再强制 take。MCP request Parts 自身保 reservation，`mcp.rs:542` 首次 await 前唯一 take；`:624` Action 将 guard move 到宿主 task，其他分支局部 RAII 覆盖 handler 收尾。修复了原 SSE 头提前释放与实现中 REST Body extractor 提前释放两条路径。
+- Security：`context.rs:52` POST 先占 business 或唯一 control reservation，auth/owner 在 `:484` 完成后才进入 `:509` body 分类。`:101` 从原 bytes 用 typed envelope、typed RequestId、rmcp params 与完整 message 交叉校验；重复 method/params/requestId、batch、id:null、伪造 header 不作为 cancel 特权。普通业务若只拿 control fallback 则 429。
+- Security / concurrency：合法 cancel 若先持 business，会先取得 control 再替换 reservation；MCP outer 不持额外旧 Arc，旧 business 槽及时释放。精确 endpoint GET 不持长业务/control，带 session 的 DELETE 持 control，二者仍经认证/owner。子路径没有 control 豁免。`state.rs:39` control 槽固定 1，未增加产品配置或无界队列。
+- API / Performance：使用实际 `ServerLimits` 的 max_body_bytes 与 `context.rs:321` 统一 deadline；body 缓冲前已有 reservation，最大同时缓冲受 business cap + 1 限制。原始 bytes 重建给 rmcp，未重写通知语义。解析/认证/超限/超时的早退通过 RAII 释放 reservation，业务超限维持 HTTP 429 / CONCURRENCY_LIMIT。
+- 已读新增 integration blob `10090eb81b28be113519b5cfdbfd1393ce2fe64c`：REST→MCP、MCP→REST、满槽真实 cancel、SSE/DELETE、Action cancel/断连后继续持槽、畸形 JSON/过大 body/初始化错误后槽回收。unit blob `d4204f34d83518505c639ae4b0421a20327dddda` 使用真实慢 TCP body 验证唯一 control reservation 与 deadline 回收。T24 fixture callsite blob `f98955789069fed1e2a27f3d101f45033c666692` 仅随 admission state 参数更新。
+- 已亲读 `target/phase7-mcp-admission-red.log`（MCP→REST RED）与 `target/phase7-mcp-admission-green.log`（第一轮 3 passed / REST→MCP 1 failed），不将文件名中的 green 误记为通过。`target/phase7-mcp-admission-clippy.log` 显示 all-targets 检查完成，worker 报 exit 0。本 lane 未运行 Cargo。
+- 最终亲读 `target/phase7-mcp-admission-green-r2.log`：lib 25 passed（含 T24 与 slow-body）、准入 integration 4 passed、L2 defaults 10 passed（含原 typed EXPLAIN RED 与真实 61.34s expiry）、transport 11 passed；合计 50 passed，0 failed。transport 中主动制造 Action task panic 的测试最终为 ok，未将预期注入日志误记为测试失败。最终读取日志后再次计算四个生产 blob，均与冻结表一致；`git diff --check` exit 0。
 
 ## E6 扩展范围：发送前拒绝缺口
 
@@ -27,10 +62,10 @@
 
 - 基线 `e6ae310`，生产 HEAD `552556e7bf9324c996f347b0960a52a096cfc90f`；检查本轮 T24 生产增量、CI 缓存与 discovery 增量，以及当前未提交 server/CLI evidence helper。
 - 原范围合同：`07-T24-DESIGN.md`、`07-E3-BRIDGE-DESIGN.md`；扩展范围合同：`07-E6-PREFLIGHT-FIX.md`。不重审 Phase 7 全量、既有 release 实现；testing 与 maintainability 由另外的独立 lane 负责。
-- 已读 gstack `review/checklist.md`、`specialists/security.md`、`specialists/performance.md`、`specialists/api-contract.md`。只接收 confidence >= 80 的可执行 finding；如有则标记 FIXABLE / INVESTIGATE。原范围无满足该门槛的 finding；扩展 E6 的 1 项已确认 finding 已 resolved，当前无未解决 finding。
+- 已读 gstack `review/checklist.md`、`specialists/security.md`、`specialists/performance.md`、`specialists/api-contract.md`。只接收 confidence >= 80 的可执行 finding；如有则标记 FIXABLE / INVESTIGATE。原范围无满足该门槛的 finding；扩展 E6、T08 及修复期 REST 回归共 3 项已确认 finding 均 resolved，当前指定范围无未解决 finding。
 - 已按 `planning-with-files` 恢复指定 phase 的 task_plan/progress/findings；resolver 返回 `D:\DataSpellProjects\ontoforge\.planning\phases\07-rest-mcp-shell`。本报告为本 worker 唯一写入，主计划由 orchestrator 单写。
 
-下表原范围生产文件工作树 blob 与 HEAD 一致；E6 新生产 blob 单独记录于上节：
+下表是首次 T24 审查时与 HEAD 一致的历史 blob；E6 / T08 后续生效 blob 单独记录于上节，历史行号按对应历史 blob 解释：
 
 | 文件 | 精确 blob |
 |---|---|
@@ -103,4 +138,4 @@ rmcp 的握手 handler 等待不承诺任意第三方永久挂起 handler 的 jo
 
 本 lane 未执行动态测试；主会话报告的 12 session + 11 transport GREEN 未作为静态结论前提。运行了只读 `git diff --check`，exit 0。TDD 不适用：本 lane 没有实现修改或新增测试，仅生成审查报告。
 
-Adversarial recommendation：原 T24 / CI / helper 增量无新增阻断 finding，E6 已确认缺口在指定 blob 上 resolved；可继续主会话其余真实服务与 CI 门禁，不以该范围复签代替整体验收。
+Adversarial recommendation：原 T24 / CI / helper 结论保留，E6、T08 及修复期 REST 回归在对应冻结 blob 与 GREEN 证据上 resolved；可以继续主会话最终真实服务与 CI 门禁，不将本范围复签替代整体验收。

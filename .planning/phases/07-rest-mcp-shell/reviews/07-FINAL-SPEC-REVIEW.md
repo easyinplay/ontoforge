@@ -1,6 +1,6 @@
 # 最终 Spec / Testing 审查
 
-2026-11-03。首轮 NO FINDINGS（confidence ≥80）；后续增量状态见下表。仅静态审查，未运行 Cargo、服务或提交。已调用 planning-with-files，复用 Phase 7 计划。依据指定 design/gaps 文档及相关 PLAN。
+2026-11-04。最终增量复签：N1/N3/T08 CLOSED，无新增 confidence ≥80 finding。仅静态审查与读取既有日志，未运行 Cargo、服务或提交。已调用 planning-with-files，复用 Phase 7 计划。依据指定 design/gaps 文档及相关 PLAN。
 
 真实 HTTP/CLI/SDK 路径、barrier、请求计数、完整持久行及原 receipt 均已核对。E5 限 WireJson；E6 测量窗口无后台 L2 monitor。撤权仅影响后续 snapshot；慢 initialize 不承诺任意 handler join。
 
@@ -13,7 +13,10 @@ T24 23/23、Rust SDK 9/9、TS 17/17 为首轮既有 lane 证据。未执行不�
 | 8913f92 CLI 实际 Initialize、receipt 提取与 N2 | 未发现问题。真实 host session、DELETE 后 404、业务不重发；在线坏 token 为 host 401、业务零请求；302 origin 收到 bearer 后 trap 零连接，stdout 空且退出非零，stderr 无凭据。已读 `target/phase7-bridge-security-cli-r2.log`（11/11）及 `target/phase7-bridge-security-clippy-r4.log`（完成无报错）。 |
 | N1 两主体全链边界 | CLOSED。已按 CC 接受合同复核：Alice 成功链保留；`cli_stdio.rs:107` Mia 经双 transport submit/dryrun/history 明确 NOT_FOUND；MCP 同 command Action replay、HTTP GET result 均不得取得 Alice receipt。每次拒绝后完整持久行不变且 Alice receipt 仍可见。已读 `target/phase7-bridge-security-mia.log`（定向 1/1、8 次拒绝）及 `target/phase7-bridge-security-mia-clippy.log`（通过）。catalog 无 result tool，未新增 API/权限或第二 Action 故事。 |
 | N3 query typed EXPLAIN | query 部分通过。四 ExplainType 实际触发 timeout、GET nextUri barrier 后取消及独立并发，精确核对 DELETE、每请求一次 audit/status/request_id。已读 `target/phase7-explain-query-tests.log`（15/15）。此证据不证明 HTTP 并发数量上限。 |
-| N3 HTTP typed EXPLAIN | OPEN，confidence 100。`07-15-PLAN.md:131` 要求“四format共享timeout/cancel/concurrency上限”，并发层级由 `07-EXPLAIN-EVIDENCE-PLAN.md` 明确在真实 HTTP 验证。`mcp_l2_defaults.rs:414` 在首请求上游 barrier 持续阻塞、max=1 时第二请求实际 200，预期 429；日志 `target/phase7-explain-server-tests-r2.log` 为 0 passed / 1 failed。`context.rs:180` 在 middleware 获得 SSE response 后 take permit，实际 handler 尚在运行，不能据 query 15/15 关闭 N3。主会话已接管 CC 修复决策；本轮不改生产。 |
+| N3 HTTP typed EXPLAIN | CLOSED 于 `adc02278b5cc55111def9a30a1c3b778485e8279`。原 `target/phase7-explain-server-tests-r2.log` 200≠429 为真实 RED；原四格式测试未削弱：首请求进入上游 barrier 后第二请求 429/CONCURRENCY_LIMIT、全上游与 source 零增量；释放后第三成功，每个成功请求恰好一条 audit，拒绝无 audit。已读 `target/phase7-mcp-admission-green-r2.log`，该测试及 L2defaults 10/10 GREEN，满足 `07-15-PLAN.md:131` 与并发层级更正合同。 |
+| T08 guard/control | CLOSED。按 `07-MCP-EXECUTION-ADMISSION-FIX.md`，call_tool 在首次 await 前唯一 take，普通读取以局部 RAII 覆盖实际执行，Action move 至 owned task；REST outer clone 仅 drop。共享业务槽、固定1 control 槽、有界 body/deadline、auth/owner 后原 bytes typed 分类与拒绝重复字段均符合合同。真实 REST↔MCP 双向竞争、满槽 cancel、SSE/DELETE、Action 取消/断连仍持槽、失败释放及慢 body 资源边界已核对。 |
+| 最终本地证据 | `target/phase7-mcp-admission-green-r2.log` 实际 50/50（lib25、admission4、L2defaults10、transport11）；`phase7-mcp-admission-clippy.log` 完成无报错，fmt 日志为空且实施 ledger 记录 exit0。query 15/15 证据与 blob 未变。已逐项校验 `phase7-mcp-admission-fingerprints.txt` 的7个 Git blob/SHA256 均匹配。Staff/security CLOSED 为主会话提供的独立结论，不替代本 Spec 复核。 |
+| 验证边界 | 本次仅复签 guard/control 与实际 typed 断言，不重审全部文件。主会话通知最终 fresh 服务、CI `41669982375` 与 release `41669982362` 仍运行中；本次未查询远端状态，不能据本地 50/50 宣称这些门禁通过。 |
 
 | 增量文件 | blob |
 |---|---|
@@ -22,10 +25,17 @@ T24 23/23、Rust SDK 9/9、TS 17/17 为首轮既有 lane 证据。未执行不�
 | .planning/phases/07-rest-mcp-shell/reviews/07-E3-BRIDGE-DESIGN.md | a984c13de13fd15316813d9ba320113179f0a198 |
 | crates/ontoforge-query/tests/l2_execute.rs | 4813a568f6f54aa9dc4d16c676499217b99a0c21 |
 | crates/ontoforge-server/tests/mcp_l2_defaults.rs | 8d951961ce704772a9135937e6d380e26dd4ecd3 |
+| crates/ontoforge-server/src/context.rs（T08） | 12de800b01837b3b8ec8e26b819c82d382e0ac82 |
+| crates/ontoforge-server/src/mcp.rs（T08） | 7b154b0100f8e9433ab95061369d075cd8d1539e |
+| crates/ontoforge-server/src/lib.rs（T08） | d14d825c8e60199fe983bd472fa4c0e66837c5e1 |
+| crates/ontoforge-server/src/state.rs（T08） | c6a2287eb87f6b06759a8c9a493e7cd8ca4faad0 |
+| crates/ontoforge-server/tests/mcp_execution_admission.rs（T08） | 10090eb81b28be113519b5cfdbfd1393ce2fe64c |
+| crates/ontoforge-server/tests/unit/mcp_admission.test.rs（T08） | d4204f34d83518505c639ae4b0421a20327dddda |
+| crates/ontoforge-server/tests/unit/mcp_sessions.test.rs（T08） | f98955789069fed1e2a27f3d101f45033c666692 |
 
 ## 审查内容指纹
 
-HEAD：`552556e7bf9324c996f347b0960a52a096cfc90f`。以下为工作树 Git blob；后续修改需复核。
+首轮 HEAD：`552556e7bf9324c996f347b0960a52a096cfc90f`。以下为首轮工作树 Git blob；更新文件以上方增量指纹为准，后续修改需复核。
 
 | 文件 | blob |
 |---|---|

@@ -1,16 +1,16 @@
 ---
 phase: 07-rest-mcp-shell
-status: OPEN_THREATS
+status: SECURED
 asvs_level: 1
 block_on: high
-threats_open: 1
-audited_head: b068ff5
-date: 2026-11-03
+threats_open: 0
+audited_head: adc0227
+date: 2026-11-04
 ---
 
 # Phase 7 安全核验
 
-独立 gsd-security-auditor 核对16份 PLAN，去重为48项（44 high、4 medium）；T24及T22修复已独立复签CLOSED。N3真实typed EXPLAIN测试发现MCP SSE头返回提前释放业务permit，T08并发限制重新OPEN，当前47/48 CLOSED、threats_open=1。全部 disposition=mitigate，无 accepted/transfer 风险。初审源码基线e6ae310及b068ff5，T24/T22最终指纹分别见reviews/07-T24-SECURITY-RECHECK.md与reviews/07-E6-SECURITY-RECHECK.md。动态E1–E7及N3未齐备前不关闭Phase。
+独立 gsd-security-auditor 核对16份 PLAN，去重为48项（44 high、4 medium）；T24、T22及N3发现的T08修复均已独立复签CLOSED，当前48/48 CLOSED、threats_open=0。全部 disposition=mitigate，无 accepted/transfer 风险。初审基线e6ae310/b068ff5，增量至adc0227；精确最终指纹见reviews/07-T24-SECURITY-RECHECK.md、07-E6-SECURITY-RECHECK.md、07-T08-SECURITY-RECHECK.md，后者覆盖后续context/mcp/lib/state变更。2026-11-04最终fresh43/43、CI41669982375四必需job和native41669982362全部通过，详07-14-SUMMARY.md；不扩大为实际生产发布安全认证。
 
 ## T24 初审发现与关闭
 
@@ -31,7 +31,7 @@ T-07-24：lib.rs使用独立LocalSessionManager::default，mcp_sessions.rs仅限
 | T-07-05 | E | high | CLOSED | crates/ontoforge-action/src/lib.rs:215,298,312 |
 | T-07-06 | T | high | CLOSED | crates/ontoforge-storage/src/commit.rs:617,632,667,671 |
 | T-07-07 | I | high | CLOSED | crates/ontoforge-server/src/rest.rs:45,52,77,93,796 |
-| T-07-08 | D | high | OPEN blocking | N3真实MCP SSE并发RED：context.rs admit在响应头后take释放permit，实际handler仍执行；详07-EXPLAIN-EVIDENCE |
+| T-07-08 | D | high | CLOSED | 最终context.rs共享RAII执行准入/control有界，mcp.rs执行前唯一take；真实50项GREEN与独立07-T08-SECURITY-RECHECK |
 | T-07-09 | S | high | CLOSED | crates/ontoforge-server/src/context.rs:251,278,286 |
 | T-07-10 | T | high | CLOSED; E1 pending | crates/ontoforge-server/src/rest.rs:457,481; crates/ontoforge-storage/src/commit.rs:617 |
 | T-07-11 | E | high | CLOSED | crates/ontoforge-server/src/rest.rs:529,646; crates/ontoforge-storage/src/history.rs:125,224 |

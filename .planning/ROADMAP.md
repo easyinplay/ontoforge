@@ -17,7 +17,7 @@ Phase 1 定死 IR 契约。2026-10-16 起 Phase 2–7 按 `docs/designs/trino-en
 - [x] **Phase 4: Scoped L0 Read** - Rust 编排叠加读：pk 读、列表、聚合分解、searchAround、keyset 分页、HMAC 版本令牌 (completed 2026-10-23)
 - [x] **Phase 5: Online Action** - Action 鉴权管线 ①-⑨、并发令牌、`command_id`、webhook outbox (completed 2026-10-26)
 - [x] **Phase 6: L2 Raw DQL, Toolsets & Audit** - L2、toolsets 与读审计已验收；详: `.planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md` (completed 2026-10-28)
-- [ ] **Phase 7: REST & MCP Shell** - REST + OpenAPI + clients、MCP toolset（core / full / sql:raw）、`serve --dev`、release
+- [x] **Phase 7: REST & MCP Shell** - REST/MCP、SDK、dev与三平台安装验收完成；详: `.planning/phases/07-rest-mcp-shell/07-VERIFICATION.md` (completed 2026-11-04)
 
 ## Phase Details
 
@@ -251,7 +251,7 @@ Plans:
 
 ### Phase 7: REST & MCP Shell
 
-**Goal**: As a 应用开发者与 agent 使用者, I want to 经 REST（OpenAPI 3.1、Rust / TS client）和 MCP（按主体过滤的 toolset）使用全部能力，以 `ontoforge serve --dev` 单二进制在本机跑通端到端演示，并通过 release workflow 发布 Linux / macOS / Windows 二进制, so that 应用与 agent 能按相同授权使用并验证完整平台能力。
+**Goal**: As a 应用开发者与 agent 使用者, I want to 经 REST（OpenAPI 3.1、Rust / TS client）和 MCP（按主体过滤的 toolset）使用全部能力，以 `ontoforge serve --dev` 单二进制在本机跑通端到端演示，并通过 release workflow 发布 Linux / macOS / Windows 二进制, so that 应用与 agent 能按相同授权使用并验证完整平台能力.
 **Mode:** mvp
 **Depends on**: Phase 6
 **Requirements**: API-01, API-02, API-03, API-04, API-05, MCP-01, MCP-02, MCP-03, MCP-04, MCP-05, MCP-06, MCP-07, MCP-08, DX-01, DX-02, DX-04, L2-04（服务接线与 `/health`）, SCOPE-07（MCP 管理工具限制）
@@ -265,7 +265,7 @@ Plans:
   5. `ontoforge serve --dev`（SQLite 替身 + dev token）在 Windows 本机零外部依赖跑通示例 ontology 的查询 → Action → 历史演示；release workflow 发布 Linux / macOS / Windows 二进制
   6. 服务启动并维持 Phase 6 的 L2 ACL attestation；无法证明或证明过期时 L2 禁用，`/health` 告警并暴露脱敏原因，覆盖失败和恢复的端到端测试（ADR-0028）
 
-**Plans**: 15/16已验收；07-14执行中，2026-11-03；详: `.planning/phases/07-rest-mcp-shell/task_plan.md`
+**Plans**: 16/16 complete，2026-11-04；详: `.planning/phases/07-rest-mcp-shell/07-VERIFICATION.md`
 - [x] 07-01-PLAN.md
 - [x] 07-02-PLAN.md
 - [x] 07-03-PLAN.md
@@ -279,7 +279,7 @@ Plans:
 - [x] 07-11-PLAN.md
 - [x] 07-12-PLAN.md
 - [x] 07-13-PLAN.md
-- [ ] 07-14-PLAN.md
+- [x] 07-14-PLAN.md
 - [x] 07-15-PLAN.md
 - [x] 07-16-PLAN.md
 
@@ -298,4 +298,4 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7（纵切片
 | 4. Scoped L0 Read | 7/7 | Complete    | 2026-10-23 |
 | 5. Online Action | 7/7 | Complete    | 2026-10-26 |
 | 6. L2 Raw DQL, Toolsets & Audit | 11/11 | Complete | 2026-10-28 |
-| 7. REST & MCP Shell | 15/16 | Executing | - |
+| 7. REST & MCP Shell | 16/16 | Complete    | 2026-11-04 |

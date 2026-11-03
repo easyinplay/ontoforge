@@ -4,7 +4,9 @@
 
 ## 当前状态
 
-query/server 测试源码已补齐并通过独立 rustfmt。query 全 suite 15 passed；server typed limiter 暴露真实行为 RED，已回主会话 CC 裁决。生产无修改，任务尚未 COMPLETE。
+2026-11-04 收口：下述为本 lane 原始 RED 记录，已由后继 T08 修复闭合。query 15/15、最终 server 50/50 及独立安全复签通过；实现与最终日志见 `07-MCP-EXECUTION-ADMISSION-IMPLEMENTATION.md`、`07-T08-SECURITY-RECHECK.md`，总体门禁见 `../07-14-SUMMARY.md`。保留以下失败与回流过程，不将历史失败误作当前未解决缺口。
+
+本 lane 原执行时点：query/server 测试源码已补齐并通过独立 rustfmt。query 全 suite 15 passed；server typed limiter 暴露真实行为 RED，已回主会话 CC 裁决。生产无修改，任务尚未 COMPLETE。
 已应用 planning-with-files，以本 ledger 记录 worker 发现与进度；共享 task_plan/progress/findings 由主会话持有。
 既有合同补测试，无需制造生产破坏作为 RED。若发现真实失败，先记录并返回主会话裁决。
 Warp 与 ralph-loop 未暴露，未声称调用。

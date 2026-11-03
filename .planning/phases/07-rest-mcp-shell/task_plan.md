@@ -9,8 +9,8 @@
 - [x] P0：确认 Phase 6 的 owner 状态为 passed，保留 PR #7 不合并约束。
 - [x] P1：完成 GSD discuss。用户决策见 `07-CONTEXT.md`，备选项审计见 `07-DISCUSSION-LOG.md`；已消费临时检查点。
 - [x] P2：工程审查、研究与 rmcp spike 已完成；16 份 PLAN 经第二轮独立 checker 通过，详 `reviews/07-PLAN-CHECK-R2.md`。
-- [ ] P3：按 PLAN 实施，核心授权、状态与数据逻辑强制 TDD，实施交给 subagent。07-11 已选方案 A：生成器隔离 workspace 使用兼容 TypeScript 版本，主 client 保留 TypeScript 7。
-- [ ] P4：验证 REST/MCP 授权一致性、dev 演示、真实 L2 生命周期与健康、三平台 release 构建；通过正式审查和 GSD 验收后关闭阶段。
+- [x] P3：16/16 PLAN 已交付，实施与 TDD 证据见各 SUMMARY。07-11 采用方案 A，生成器隔离 workspace 使用兼容 TypeScript 版本，主 client 保留 TypeScript 7。
+- [x] P4：REST/MCP、SDK、dev、真实 L2/health、三平台包及正式审查通过；GSD VERIFICATION passed、UAT13/13，phase.complete 已完成。
 
 ## Ownership
 
@@ -18,25 +18,25 @@
 
 ## Acceptance
 
-以 ROADMAP Phase 7 六条 Success Criteria 和 REQUIREMENTS 为准。L2-04/SCOPE-07 在 Phase 7 证据齐备前仍 Pending。Phase 6 CI 只证明 `2c9eee6`。
+以 ROADMAP Phase 7 六条 Success Criteria 和 REQUIREMENTS 为准。L2-04/SCOPE-07 已由本阶段新鲜证据验证，详 `07-VERIFICATION.md`。历史 Phase 6 CI 只证明其当时源码，不替代本轮验收。
 
 ## Next Step
 
-07-14三native及aggregate已通过run41648281446，publish skipped。最终安全核验发现T24真实session容量/回收缺口及E1–E7动态证据缺口，先按reviews/07-SECURITY-EVIDENCE-GAPS.md完成修复补测，再复签安全和最终验证。主会话维护共享状态，worker按文件边界执行，Cargo唯一owner/jobs2。不创建Release、不发布npm、不合并PR。
+Phase 7 已关闭：adc0227 fresh43/43、CI41669982375四必需job、release41669982362三native/aggregate全部通过，独立VERIFICATION80/80、UAT13/13。下一步是milestone审计Phase1–6历史fingerprint和既有deferred-items；不自动归档、创建Release、发布npm或合并PR。
 
 ### 最终安全与证据收口
 
 - [x] T24：两轮真实RED，session12/12与transport11/11 GREEN，Clippy/fmt通过，独立security复签CLOSED；详reviews/07-T24-SECURITY-RECHECK.md。
-- [ ] E1/E2：真实REST/MCP Action race、definition fence、snapshot/revoke验收。
+- [x] E1/E2：真实REST/MCP Action race、definition fence、snapshot/revoke验收；adc0227 fresh PG4/4。
 - [x] E3：真实stdio session失效/响应丢失不重发通过，session资源与token到期由T24共验；详07-BRIDGE-SECURITY-EVIDENCE。
 - [x] Nyquist 07-09-2：stdio成功链、双主体、在线badtoken/真实redirect否定均通过，合计stdio11/11与Clippy/fmt；详07-BRIDGE-SECURITY-EVIDENCE。
-- [ ] Nyquist 07-15-2：四typed EXPLAIN真实timeout/cancel/concurrency与单audit，详07-EXPLAIN-EVIDENCE-PLAN。
-- [ ] MCP实际业务并发：N3真实RED确认SSE response头提前释放permit，主会话+CC设计同向，修复handler/task持槽及独立有界取消控制；不放宽429/零发送。
-- [ ] E4/E5/E7：Rust/TS主体隔离、撤权、在途abort、u64、丢响应不重试与显式replay。
+- [x] Nyquist 07-15-2：query15项及typed HTTP四format实际限流通过，详07-EXPLAIN-EVIDENCE与07-T08-SECURITY-RECHECK。
+- [x] MCP实际业务并发：真实RED后修复执行持槽与独立有界control，最终50项/Clippy/fmt及Spec/Staff/security独立复签，提交adc0227。
+- [x] E4/E5/E7：Rust/TS主体隔离、撤权、在途abort、u64、丢响应不重试与显式replay；adc0227 fresh Rust9/9、TS17/17。
 - [x] E6：真实RED后修复预检顺序，L2 11项及最终六工具矩阵GREEN，Clippy/fmt、Staff和security复签通过；详reviews/07-E6-SECURITY-RECHECK.md。
-- [ ] 新head完整CI与native产物复验，security/code review/GSD verification对账。
+- [x] 新head完整CI与native产物复验，security/code review/GSD verification对账。
 
-P3执行中：已验收15/16，07-13已关闭，07-14执行中。Windows方案A与后续修复提交/证据统一见`07-13-SUMMARY.md`，不重新执行已完成的环境诊断。
+P3/P4完成：16/16已验收，07-13/07-14均已关闭。Windows方案A与后续修复证据归`07-13-SUMMARY.md`，最终门禁归`07-14-SUMMARY.md`。
 
 07-11 已完成：`70a9ed9`、`5c76afe`；独立 generator workspace、TypeScript 7 client、无损 codec 与 5 项真实 HTTP contract 均通过。主 package 已移除 `openapi-typescript`，避免 clean install peer 冲突。
 

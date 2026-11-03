@@ -20,11 +20,12 @@ ontoforge 是一个用 Rust 实现、可自托管的开源 Ontology 操作层，
 - online Action（ACTION-01..12）：鉴权、并发令牌、主体作用域幂等与 webhook outbox；详 `.planning/phases/05-online-action/05-VERIFICATION.md`。
 - L2 Raw DQL（L2-01..03）；详 `.planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md`。
 - 读取元数据审计及 fail-closed（AUDIT-01）；详 `.planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md`。
+- REST、OpenAPI 3.1、Rust/TypeScript SDK、MCP toolsets 与持久 dev 演示；验收详 `.planning/phases/07-rest-mcp-shell/07-UAT.md`。
+- L2 ACL 服务生命周期、health 告警与 MCP 管理边界（L2-04、SCOPE-07），三平台发行包与安装验收；详 `.planning/phases/07-rest-mcp-shell/07-14-SUMMARY.md`。
 
 ### Active
 
-- [ ] L2 ACL 服务生命周期与 `/health` 告警、agent MCP 管理边界（L2-04、SCOPE-07） — Phase 7，ADR-0028
-- [ ] REST（OpenAPI 3.1 + Rust / TS client）与 MCP（toolset 分层）两个出口；`serve --dev` 单二进制演示 — ADR-0019
+Phase 1–7 的实现已交付，本轮完成 Phase 7 自动验收；Phase 1–6 历史 fingerprint 与发布前债务仍需 milestone audit，详 STATE 与各阶段 deferred-items。Release、npm 发布及 PR 合并仍未执行。
 
 需求编号与 phase 映射见 `.planning/REQUIREMENTS.md`；方向依据 `docs/designs/trino-engine-sql-tiers.md`。
 
@@ -61,7 +62,7 @@ v2 候选（不在当前 milestone）：interfaces 与 shared properties、struc
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
 | 品牌名 ontoforge（ADR-0001） | 规避 Palantir "Foundry" 商标风险 | — Pending |
-| 应用 + Agent 双出口定位 | 同一核心同时服务业务系统与 AI agent，MCP 是 REST 之上的薄封装 | — Pending |
+| 应用 + Agent 双出口定位 | 同一核心同时服务业务系统与 AI agent，MCP 是 REST 之上的薄封装 | 已由 Phase 7 REST/HTTP/stdio 同权限与持久证据验证；详 Phase 7 UAT |
 | YAML/JSON → 单一 IR（ADR-0003） | LLM 友好、diff 友好、line:col 诊断 | ✓ Good — Phase 1 交付，多文档 YAML 需项目级 yaml.schemas（G-1-2） |
 | Postgres 生产 + SQLite dev/test（ADR-0004） | 单二进制开发体验 + 生产可靠性，conformance 测试保证一致 | ⚠️ Revisited — 被 ADR-0016 取代：业务数据经 Trino，PG 只存系统数据与 edit store |
 | 写入只经 Action + 不可变 edit log（ADR-0004） | 审计与后续 scenario / branch 的基础 | — Pending |
@@ -92,4 +93,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-10-28 after Phase 6 verification*
+*Last updated: 2026-11-04 after Phase 7 automated acceptance*
