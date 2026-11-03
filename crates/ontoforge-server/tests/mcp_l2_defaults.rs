@@ -322,6 +322,41 @@ async fn mcp_l2_errors_are_safe_and_preserve_reserved_audit_ids() {
     }
 }
 
+async fn wait_for_live_cancelled_audit(running: &support::Running, request_id: &str) -> bool {
+    use std::time::Duration;
+    let pool = sqlx::SqlitePool::connect_with(ontoforge_storage::store::sqlite_connect_options(
+        &running.path,
+    ))
+    .await
+    .unwrap();
+    let observed = tokio::time::timeout(Duration::from_secs(3), async {
+        loop {
+            let rows: Vec<(String, String)> =
+                sqlx::query_as("SELECT request_id, status FROM of_read_audit")
+                    .fetch_all(&pool)
+                    .await
+                    .unwrap();
+            if rows.len() == 1 && rows[0].0 == request_id && rows[0].1 == "cancelled" {
+                break;
+            }
+            tokio::time::sleep(Duration::from_millis(20)).await;
+        }
+    })
+    .await
+    .is_ok();
+    pool.close().await;
+    observed
+}
+
+async fn notify_cancelled(running: &support::Running, session: &str) {
+    let response = running.client.post(format!("{}/mcp", running.url))
+        .bearer_auth(&running.token).header("accept", "application/json, text/event-stream")
+        .header("mcp-protocol-version", "2025-03-26").header("mcp-session-id", session)
+        .json(&serde_json::json!({"jsonrpc":"2.0","method":"notifications/cancelled","params":{"requestId":2}}))
+        .send().await.unwrap();
+    assert!(response.status().is_success());
+}
+
 #[tokio::test]
 async fn mcp_l2_cancellation_and_shutdown_keep_reserved_audit_ids() {
     use serde_json::{Value as JsonValue, json};
@@ -346,13 +381,27 @@ async fn mcp_l2_cancellation_and_shutdown_keep_reserved_audit_ids() {
             tokio::time::timeout(Duration::from_secs(3), control.entered.notified())
                 .await
                 .expect("L2 source entered after audit reservation");
+            let audit_id = {
+                let traces = control.traces.lock().unwrap();
+                assert_eq!(traces.len(), 1);
+                traces[0].clone()
+            };
             if !shutdown {
-                let cancelled = running.client.post(format!("{}/mcp", running.url))
-                    .bearer_auth(&running.token).header("accept", "application/json, text/event-stream")
-                    .header("mcp-protocol-version", "2025-03-26").header("mcp-session-id", &session)
-                    .json(&json!({"jsonrpc":"2.0","method":"notifications/cancelled","params":{"requestId":2}}))
-                    .send().await.unwrap();
-                assert!(cancelled.status().is_success());
+                notify_cancelled(&running, &session).await;
+                let cancelled = wait_for_live_cancelled_audit(&running, &audit_id).await;
+                let health = tokio::time::timeout(Duration::from_secs(2), running.get("/health"))
+                    .await
+                    .expect("server must remain online before shutdown");
+                assert!(health.status().is_success());
+                if !cancelled {
+                    running.finish().await;
+                    panic!(
+                        "no unique cancelled audit for {audit_id} while server was running; shutdown cannot supply cancellation evidence"
+                    );
+                }
+                eprintln!(
+                    "{tool}: unique cancelled audit {audit_id} observed before shutdown; health remains online"
+                );
             }
             let stopping = tokio::spawn(running.finish());
             let body = tokio::time::timeout(Duration::from_secs(7), pending)
@@ -374,7 +423,7 @@ async fn mcp_l2_cancellation_and_shutdown_keep_reserved_audit_ids() {
             let audit = stopping.await.unwrap();
             assert_eq!(audit.len(), 1);
             assert_eq!(audit[0]["status"], "cancelled");
-            assert_eq!(audit[0]["request_id"], control.traces.lock().unwrap()[0]);
+            assert_eq!(audit[0]["request_id"], audit_id);
             if let Some(response) = response {
                 assert_eq!(response["error"]["data"]["code"], code, "{response}");
                 assert_eq!(
