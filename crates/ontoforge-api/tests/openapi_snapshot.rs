@@ -16,6 +16,37 @@ fn checked_in_document_matches_static_render() {
 }
 
 #[test]
+fn history_error_responses_match_runtime_contract() {
+    let rendered: Value = serde_json::from_str(&ontoforge_api::openapi::render()).unwrap();
+    for (source, document) in [("rendered", rendered), ("checked-in", checked_in_openapi())] {
+        let responses =
+            document["paths"]["/api/objects/{object_type}/{pk}/history"]["get"]["responses"]
+                .as_object()
+                .unwrap();
+        let mut statuses: Vec<_> = responses.keys().map(String::as_str).collect();
+        statuses.sort_unstable();
+        assert_eq!(
+            statuses,
+            [
+                "200", "400", "401", "403", "404", "408", "409", "503", "504"
+            ],
+            "{source} history response statuses"
+        );
+        for (status, response) in responses {
+            let expected = if status == "200" {
+                "#/components/schemas/HistoryPage"
+            } else {
+                "#/components/schemas/ErrorEnvelope"
+            };
+            assert_eq!(
+                response["content"]["application/json"]["schema"]["$ref"], expected,
+                "{source} history response {status}"
+            );
+        }
+    }
+}
+
+#[test]
 fn health_schema_includes_optional_l2_status_and_reason() {
     let document: Value = serde_json::from_str(&ontoforge_api::openapi::render()).unwrap();
     let schemas = &document["components"]["schemas"];

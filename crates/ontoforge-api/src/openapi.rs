@@ -136,10 +136,14 @@ fn command_result() {}
     ),
     responses(
         (status = 200, body = dto::HistoryPage),
+        (status = 400, body = dto::ErrorEnvelope),
         (status = 401, body = dto::ErrorEnvelope),
         (status = 403, body = dto::ErrorEnvelope),
         (status = 404, body = dto::ErrorEnvelope),
-        (status = 503, body = dto::ErrorEnvelope)
+        (status = 408, body = dto::ErrorEnvelope),
+        (status = 409, body = dto::ErrorEnvelope),
+        (status = 503, body = dto::ErrorEnvelope),
+        (status = 504, body = dto::ErrorEnvelope)
     ),
     security(("bearerAuth" = []))
 )]
