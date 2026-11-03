@@ -193,6 +193,10 @@ async fn initialize_mcp(server: &str, bearer: &str) -> (reqwest::Client, String)
 
 #[tokio::test]
 #[ignore = "requires real Trino and an authenticated ontoforge HTTP server"]
+#[expect(
+    clippy::too_many_lines,
+    reason = "keeps real snapshot locking and cancellation evidence in execution order"
+)]
 async fn trino_http_long_read_releases_snapshot_lock() {
     let trino = support::required("ONTOFORGE_TRINO_URL");
     assert!(trino.starts_with("http://") || trino.starts_with("https://"));
@@ -369,6 +373,10 @@ async fn trino_http_long_read_releases_snapshot_lock() {
 
 #[tokio::test]
 #[ignore = "requires real Trino L2 ACL services and an authenticated ontoforge HTTP server"]
+#[expect(
+    clippy::too_many_lines,
+    reason = "keeps all six tools and four explain formats in one real Trino session"
+)]
 async fn trino_http_and_mcp_six_l2_tools_all_formats() {
     let l2 = support::required("ONTOFORGE_TRINO_L2_URL");
     let loose = support::required("ONTOFORGE_TRINO_L2_LOOSE_URL");
@@ -483,7 +491,7 @@ async fn trino_http_and_mcp_six_l2_tools_all_formats() {
             &DevClaims {
                 sub: subject.to_owned(),
                 groups: vec![],
-                attrs: Default::default(),
+                attrs: serde_json::Map::new(),
                 ttl: Duration::from_secs(600),
             },
         )
