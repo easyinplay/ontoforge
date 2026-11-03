@@ -1,5 +1,9 @@
 # Phase 7 findings
 
+- 2026-11-03 RT03：Ubuntu CI在cli_l2_identity.rs:409的全局is_empty断言失败，合法source-drift metadata被误判为L2发SQL。Claude Code正常exit0/AGREE补强为默认计入、仅完整精确monitor请求排除（POST/当前origin与endpoint/ontology/source-drift/精确metadata SQL），并加逐条件反例；不能只按l2身份计数或用information_schema子串宽泛排除。各负向窗口和正向身份断言仍抓任何身份下业务SQL。仅cli_l2_identity测试修正，生产不变，Cargo排在RT02后。
+
+- 2026-11-03 RT02整合失败归因：CI41634382039的Trino long-read case在reload后立即发第二业务read，新v2尚无精确报告，合法Pending503让source barrier无法进入。Claude Code正常exit0/AGREE，限定测试在第二read前有界轮询health至HTTP200/engine available/healthy或degraded，失败显示末响应；health本身每次snapshot+exact-key，无新增version字段。维持exact2audit与cancel在shutdown前、零业务写，不增加business readiness请求。日志target/phase7-ci-41634382039-services.log与phase7-claude-reload-readiness-review.json，transport修test-only，生产不变。
+
 - 2026-11-03 FT01：Testing专项确认在途旧view单元覆盖未贯通真实listener的第二次source gate，旧单PK barrier测试也只有一次gate。主会话与Claude Code正常exit0/AGREE补一条分页v1请求跨v2报告更新的行为验收：新请求503、旧请求第二source调用成功且audit仍v1，用reload唤醒无需30s；不把Action跨reload成功作为目标（commit fence应拒绝）。这是test-only合同补测，不是已证明生产漏洞，交core单owner追加source_drift.rs。
 
 - 2026-11-03 DC01验收分层：现有source_drift只模拟metadata drop，真实Trino双suite的barrier发生在metadata已完成后，尚未贯通host→monitor→describe_tables→raw tracker→DELETE drain。Claude Code正常exit0/AGREE补两条真实ServerHost/TrinoEngine配受控HTTP上游的确定性测试：延迟DELETE必须等待，失败DELETE必须HostError::Shutdown，audit关闭并有界。不额外锁真实PG catalog制造慢metadata；实际Trino/PG suite仍独立承担兼容与周期/版本证明，报告不能混称环境。

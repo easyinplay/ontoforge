@@ -13,6 +13,8 @@ affects: [API-01, API-03, MCP-01, MCP-06, MCP-07, MCP-08, L2-04, SCOPE-07]
 
 2026-11-03 RF01已提交29375e8，命名CI接线fb814df：最终定向27/27、真实Trino/PG新增2/2、五包Clippy与独立复签通过；完整fresh服务矩阵、HF01夹具修正GREEN及新head CI仍待执行，07-13保持executing。已通过的旧head4d203bf/CI41621274320不覆盖本增量。详`reviews/07-DRIFT-GSTACK-REVIEW.md`与`reviews/07-DRIFT-REAL-SERVICE-TESTS.md`。
 
+整合9e7df9c的CI41634382039随后暴露RT02/RT03两项旧测试适配。RT02提交d49d0ad，真实1/1 GREEN；RT03提交41d142b，最终11/11（含61秒expiry）GREEN；均独立复签clean，生产未变。待最新整合head完整矩阵重验，详对应TEST-RECHECK报告。
+
 ## Implemented
 
 - `29375e8`：RF01单owner/精确版本view/全source出口gate/health及清理；AB01保留Action领域预算；FT01与DC01补齐固定view及DELETE链路，见独立修复与复签报告。
