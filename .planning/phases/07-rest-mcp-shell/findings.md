@@ -1,5 +1,9 @@
 # Phase 7 findings
 
+- 2026-11-03 最终安全核验确认T24：owner map cap256不约束rmcp真实session，owner驱逐未close实际worker；rmcp300秒idle最终回收不等于容量限制。局部修复触发brainstorming/TDD，主会话锁定设计并取Claude Code第二意见后下放。E1–E7只代表动态验收证据不足，不冒称7项生产漏洞；详细事实保存在07-SECURITY及reviews/07-SECURITY-EVIDENCE-GAPS。
+
+- 2026-11-03 CI资源修复：常规CI41648281253 Ubuntu在test链接时No space left on device（尚未执行测试），同Rust上一head全绿。Claude Code REFINE同方向接受test矩阵job关闭DEV/TEST debug symbols与incremental，独立rust-cache prefix-key并cache-targets:false防旧target恢复，保留全部测试/断言/overflow/优化级别/jobs2；不改release和本地Cargo.toml。已核固定action SHA的action.yml定义prefix-key是完整重启命名空间，cache-targets:false只缓存registry。证据target/phase7-ci-41648281253-ubuntu.log、phase7-claude-ci-disk-review.json，需新CI实际验证。
+
 - 2026-11-03 07-14 package CR-01：build的ExpectedCommit原只验证格式并自比manifest，能把当前binary冒标其他SHA。独立review与Claude Code正常exit0/AGREE要求build无条件读actual HEAD，ExpectedCommit只作断言且在Cargo前拒绝，manifest记录actual；VerifyOnly可验指定版本不绑定当前HEAD。当前Rust生产与HEAD一致，暂不扩dirty/worktree框架。证据target/phase7-claude-release-commit-review.json，交原executor修并做错误SHA前置拒绝probe。
 
 - 2026-11-03 07-14按批准PLAN跳过TDD：仅配置/打包/文档接线，无业务逻辑修改，以三native实际release binary/archive/checksum和解包后完整smoke验收。复用Windows private-console helper/Unix SIGINT，不强杀冒称正常关闭。PR产物核实际checkout synthetic merge SHA/GITHUB_SHA，gh下载限定本run且job级actions:read；contents:write只给release published上传job，本轮不触发发布。

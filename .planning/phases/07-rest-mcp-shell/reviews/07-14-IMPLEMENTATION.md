@@ -78,10 +78,22 @@ exit 0，完整日志：`target/phase7-release-smoke.log`。
 - MCP isError 是可选字段，使用 ContainsKey 后再读取；现有 rmcp successful structured response 实际也写 false。见 `07-14-SMOKE-WORKFLOW-REVIEW.md`。
 - 两个 PowerShell 文件最终 parser 检查通过，`git diff --check` 通过。没有新增依赖、stub、skip test 或业务实现修改。
 
+## 三平台 native CI 最终证据
+
+2026-11-03，run `41648281446` completed/success，三个 native job及aggregate均success，publish skipped。保存元数据 `target/phase7-release-ci-41648281446.json`，下载目录 `target/phase7-native-artifacts-41648281446/`。CI source head为 `e6ae31055c17d6d4005226b21c2d5991ac5a34ef`；PR实际打包checkout及三个manifest commit均为 `f315d4650114c449d9f857fccbe0b6db8d80b686`，version均为0.1.0。
+
+| Target | 实际环境 | Archive bytes | SHA256 |
+|---|---|---:|---|
+| aarch64-apple-darwin | macOS 15.8.2 Arm64 | 18137046 | b181417965138557ac033b1fea160d01ee6eef752d7b3cf029404ce5c80efeb9 |
+| x86_64-pc-windows-msvc | Windows 10.0.26100 X64 | 18548325 | b60329a52f0e1713a93518fad9082ee2f3d4760d7606811a82bc124f6b06a5f8 |
+| x86_64-unknown-linux-gnu | Ubuntu 24.04.5 X64, glibc 2.39 | 20231605 | 3b62032e1995e3dab5259e3f30bd6f0f59b3ce8cb27f69c5a173f4729941e841 |
+
+三个实际archive已下载并重算hash，与各自checksum一致。三个native runner均完成实际release build、package验证、无checkout安装smoke及artifact上传，aggregate核同commit/version/target/checksum。该结果替代先前Linux/macOS pending记录。后续T24生产修复仍需新head三平台复验。
+
 ## 交接与未跑项
 
-- Linux x64、macOS arm64、Windows Server 2025 x64 native CI：pending。本机 Windows 结果不替代该三 runner 的结果。
-- tar executable bit、Linux 实际 glibc 和 macOS runner 环境只在其 native job 实测后才能记为通过。
+- Linux x64、macOS arm64、Windows Server 2025 x64 native CI已通过，环境与产物见上节。
+- tar executable bit、Linux glibc及macOS实际安装已由native job实测。
 - workflow 的 Release upload 路径仅静态审查，未实际触发；本轮授权范围禁止创建/上传 Release。PR 和 dispatch 仅构建验收。
-- 无未解决的已复现实现缺陷；整体 07-14 不能标 complete，等待主会话 commit/push 后的三平台真实 CI 与 Phase 正式审查。
+- 发行实现未发现剩余缺陷；Phase最终审查发现T24及E1–E7缺口，主会话收口中，不据native结果关闭整个Phase。
 - 本 lane 未 commit、push、更新共享 STATE/ROADMAP 或生成最终 SUMMARY；主会话拥有这些操作。Cargo 槽已释放。

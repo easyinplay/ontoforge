@@ -22,7 +22,16 @@
 
 ## Next Step
 
-07-13已由10175f6四必需CI成功与本地fresh36/36验收关闭。下一步执行07-14的实际native三平台构建/archive/checksum与无checkout完整安装smoke，范围见07-14-PLAN.md、reviews/07-14-PREFLIGHT.md。主会话维护状态与提交，executor仅拥有四个计划文件和独立实施记录；不创建Release、不发布npm、不合并PR。
+07-14三native及aggregate已通过run41648281446，publish skipped。最终安全核验发现T24真实session容量/回收缺口及E1–E7动态证据缺口，先按reviews/07-SECURITY-EVIDENCE-GAPS.md完成修复补测，再复签安全和最终验证。主会话维护共享状态，worker按文件边界执行，Cargo唯一owner/jobs2。不创建Release、不发布npm、不合并PR。
+
+### 最终安全与证据收口
+
+- [ ] T24：主会话局部设计、Claude Code第二意见、session真实资源TDD修复。
+- [ ] E1/E2：真实REST/MCP Action race、definition fence、snapshot/revoke验收。
+- [ ] E3：真实stdio expiry/响应丢失不重发；session容量/TTL与T24共验。
+- [ ] E4/E5/E7：Rust/TS主体隔离、撤权、在途abort、u64、丢响应不重试与显式replay。
+- [ ] E6：同MCP session真实L2撤权/证明过期拒绝且零上游发送。
+- [ ] 新head完整CI与native产物复验，security/code review/GSD verification对账。
 
 P3执行中：已验收15/16，07-13已关闭，07-14执行中。Windows方案A与后续修复提交/证据统一见`07-13-SUMMARY.md`，不重新执行已完成的环境诊断。
 
