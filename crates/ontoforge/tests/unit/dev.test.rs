@@ -1,6 +1,11 @@
 use super::*;
 
 fn canonical_root(directory: &tempfile::TempDir) -> Utf8PathBuf {
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        fs::set_permissions(directory.path(), fs::Permissions::from_mode(0o700)).unwrap();
+    }
     Utf8PathBuf::from_path_buf(fs::canonicalize(directory.path()).unwrap()).unwrap()
 }
 
