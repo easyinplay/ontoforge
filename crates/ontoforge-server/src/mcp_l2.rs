@@ -90,7 +90,7 @@ pub struct McpL2Tools<'a, E> {
 }
 
 impl<E: Engine + Sync> McpL2Tools<'_, E> {
-    async fn gate(&self) -> Result<L2Policy, McpL2Error> {
+    fn gate(&self) -> Result<L2Policy, McpL2Error> {
         if !self
             .scope
             .toolsets
@@ -98,12 +98,6 @@ impl<E: Engine + Sync> McpL2Tools<'_, E> {
             || !self.scope.sql_levels.contains(&SqlLevel::Raw)
         {
             return Err(McpL2Error::Denied);
-        }
-        if matches!(
-            self.engine.status().await,
-            ontoforge_engine::EngineStatus::Unavailable { .. }
-        ) {
-            return Err(McpL2Error::Unavailable);
         }
         Ok(L2Policy {
             raw_allowed: true,
@@ -114,11 +108,22 @@ impl<E: Engine + Sync> McpL2Tools<'_, E> {
         })
     }
 
+    async fn ensure_available(&self) -> Result<(), McpL2Error> {
+        if matches!(
+            self.engine.status().await,
+            ontoforge_engine::EngineStatus::Unavailable { .. }
+        ) {
+            return Err(McpL2Error::Unavailable);
+        }
+        Ok(())
+    }
+
     async fn run_sql(
         &self,
         tool: &str,
         sql: ontoforge_engine::PrintedSql,
     ) -> Result<JsonValue, McpL2Error> {
+        self.ensure_available().await?;
         let mut audit = self
             .store
             .read_audit()
@@ -158,7 +163,7 @@ impl<E: Engine + Sync> McpL2Tools<'_, E> {
     }
 
     pub async fn execute_query(&self, query: &str) -> Result<JsonValue, McpL2Error> {
-        let policy = self.gate().await?;
+        let policy = self.gate()?;
         let sql = l2::validate_l2(query, &policy)
             .map_err(|error| McpL2Error::Invalid(error.to_string()))?;
         self.run_sql("execute_query", sql).await
@@ -169,7 +174,7 @@ impl<E: Engine + Sync> McpL2Tools<'_, E> {
         query: &str,
         format: Option<&str>,
     ) -> Result<JsonValue, McpL2Error> {
-        let policy = self.gate().await?;
+        let policy = self.gate()?;
         let explain_type = parse_explain_format(format)?;
         let sql = l2::validate_l2(query, &policy)
             .map_err(|error| McpL2Error::Invalid(error.to_string()))?;
@@ -181,14 +186,14 @@ impl<E: Engine + Sync> McpL2Tools<'_, E> {
     }
 
     pub async fn list_catalogs(&self) -> Result<JsonValue, McpL2Error> {
-        let _ = self.gate().await?;
+        let _ = self.gate()?;
         self.run_sql("list_catalogs", l2::list_l2_catalogs())
             .await
             .map(|value| filter_names(&value, |name| self.allowed_catalog(name)))
     }
 
     pub async fn list_schemas(&self, catalog: Option<&str>) -> Result<JsonValue, McpL2Error> {
-        let _ = self.gate().await?;
+        let _ = self.gate()?;
         let catalog = self.resolve_catalog(catalog)?;
         let sql = l2::list_l2_schemas(&catalog)
             .map_err(|error| McpL2Error::Invalid(error.to_string()))?;
@@ -202,7 +207,7 @@ impl<E: Engine + Sync> McpL2Tools<'_, E> {
         catalog: Option<&str>,
         schema: Option<&str>,
     ) -> Result<JsonValue, McpL2Error> {
-        let _ = self.gate().await?;
+        let _ = self.gate()?;
         let (catalog, schema) = self.resolve_schema(catalog, schema)?;
         let sql = l2::list_l2_tables(&catalog, &schema)
             .map_err(|error| McpL2Error::Invalid(error.to_string()))?;
@@ -217,8 +222,9 @@ impl<E: Engine + Sync> McpL2Tools<'_, E> {
         catalog: Option<&str>,
         schema: Option<&str>,
     ) -> Result<JsonValue, McpL2Error> {
-        let _ = self.gate().await?;
+        let _ = self.gate()?;
         let target = self.resolve_table(table, catalog, schema)?;
+        self.ensure_available().await?;
         let audit = self
             .store
             .read_audit()

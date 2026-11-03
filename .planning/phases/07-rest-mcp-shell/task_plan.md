@@ -30,7 +30,7 @@
 - [ ] E1/E2：真实REST/MCP Action race、definition fence、snapshot/revoke验收。
 - [ ] E3：真实stdio expiry/响应丢失不重发；session容量/TTL与T24共验。
 - [ ] E4/E5/E7：Rust/TS主体隔离、撤权、在途abort、u64、丢响应不重试与显式replay。
-- [ ] E6：同MCP session真实L2撤权/证明过期拒绝且零上游发送。
+- [x] E6：真实RED后修复预检顺序，L2 11项及最终六工具矩阵GREEN，Clippy/fmt、Staff和security复签通过；详reviews/07-E6-SECURITY-RECHECK.md。
 - [ ] 新head完整CI与native产物复验，security/code review/GSD verification对账。
 
 P3执行中：已验收15/16，07-13已关闭，07-14执行中。Windows方案A与后续修复提交/证据统一见`07-13-SUMMARY.md`，不重新执行已完成的环境诊断。

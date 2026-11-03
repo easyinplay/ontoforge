@@ -1,3 +1,5 @@
+#[path = "support/security_evidence.rs"]
+mod evidence;
 #[path = "support/mod.rs"]
 mod support;
 
@@ -70,29 +72,101 @@ async fn http_replay_revoke_cross_principal_and_changed_params() {
 }
 
 #[tokio::test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "keep stale submit, stale validation and successful replay in temporal order"
+)]
 async fn http_stale_and_validate_conflicts_never_retry() {
-    let f = fixture().await.start().await;
-    let response = f
-        .post(
-            "/api/actions/delayFlight",
-            &json!({
-                "commandId": "http-stale",
-                "items": [{"params": {"flight": "F-1001", "delayMinutes": 5}}]
-            }),
+    use ontoforge_storage::reload::{ReloadOptions, reload};
+    use ontoforge_storage::store::EditStore;
+    use std::sync::atomic::Ordering;
+    use std::time::Duration;
+
+    let mut f = fixture().await.start().await;
+    f.client = evidence::client();
+    let other = EditStore::open(support::settings(&f.path)).await.unwrap();
+    let before = evidence::counts(&f.path).await;
+    let before_rows = evidence::durable_rows(&f.path).await;
+    for validate_only in [false, true] {
+        evidence::ready(&f.client, &f.url).await;
+        let old = f.store.active_definition().await.unwrap();
+        let calls = f.engine.calls.load(Ordering::SeqCst);
+        f.engine.block.store(true, Ordering::SeqCst);
+        let client = f.client.clone();
+        let url = f.url.clone();
+        let token = f.token.clone();
+        let pending = tokio::spawn(async move {
+            client
+                .post(format!("{url}/api/actions/delayFlight"))
+                .bearer_auth(token)
+                .json(
+                    &json!({"commandId":format!("http-definition-stale-{validate_only}"),
+                    "validateOnly":validate_only,
+                    "items":[{"params":{"flight":"F-1001","delayMinutes":5}}]}),
+                )
+                .send()
+                .await
+                .unwrap()
+        });
+        tokio::time::timeout(Duration::from_secs(5), f.engine.entered.notified())
+            .await
+            .unwrap();
+        let mut changed = old.ontology.clone();
+        changed.description = Some(format!("external-reload-{validate_only}"));
+        tokio::time::timeout(
+            Duration::from_secs(5),
+            reload(&other, &changed, &ReloadOptions::default()),
         )
-        .await;
-    assert_eq!(response.status(), StatusCode::OK);
-    let response = f
-        .post(
-            "/api/actions/delayFlight",
-            &json!({
-                "commandId": "http-stale-dry",
-                "validateOnly": true,
-                "items": [{"params": {"flight": "F-1001", "delayMinutes": 5}}]
-            }),
-        )
-        .await;
-    assert_eq!(response.status(), StatusCode::OK);
-    assert_eq!(response.json::<Value>().await.unwrap()["validated"], true);
+        .await
+        .unwrap()
+        .unwrap();
+        assert_ne!(
+            other.active_definition().await.unwrap().def_version,
+            old.def_version
+        );
+        f.engine.block.store(false, Ordering::SeqCst);
+        f.engine.release.notify_one();
+        let response = tokio::time::timeout(Duration::from_secs(10), pending)
+            .await
+            .unwrap()
+            .unwrap();
+        let status = response.status();
+        let error = response.json::<Value>().await.unwrap();
+        assert_eq!(status, StatusCode::CONFLICT, "{error}");
+        assert_eq!(error["code"], "DEFINITION_STALE", "{error}");
+        assert_eq!(
+            evidence::counts(&f.path).await,
+            before,
+            "stale definition must write no business table"
+        );
+        assert_eq!(evidence::durable_rows(&f.path).await, before_rows);
+        assert_eq!(
+            f.engine.calls.load(Ordering::SeqCst) - calls,
+            1,
+            "the adapter must not retry against the new definition"
+        );
+    }
+    evidence::ready(&f.client, &f.url).await;
+    let body = json!({"commandId":"http-after-stale","items":[{"params":{"flight":"F-1001","delayMinutes":5}}]});
+    let mut validate = body.clone();
+    validate["validateOnly"] = json!(true);
+    assert_eq!(
+        support::success(f.post("/api/actions/delayFlight", &validate).await).await["validated"],
+        true
+    );
+    assert_eq!(evidence::durable_rows(&f.path).await, before_rows);
+    let receipt = support::success(f.post("/api/actions/delayFlight", &body).await).await;
+    let committed_rows = evidence::durable_rows(&f.path).await;
+    evidence::assert_one_flight_commit(&before_rows, &committed_rows);
+    assert_eq!(
+        support::success(f.post("/api/actions/delayFlight", &body).await).await,
+        receipt
+    );
+    assert_eq!(evidence::durable_rows(&f.path).await, committed_rows);
+    assert_eq!(
+        evidence::delta(evidence::counts(&f.path).await, before),
+        [1; 5]
+    );
+    other.read_audit().shutdown().await.unwrap();
     assert_eq!(f.finish_actions().await.len(), 0);
 }

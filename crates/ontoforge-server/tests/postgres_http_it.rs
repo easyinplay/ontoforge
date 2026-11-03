@@ -1,3 +1,5 @@
+#[path = "support/security_evidence.rs"]
+mod evidence;
 #[path = "support/pg_real.rs"]
 mod support;
 
@@ -6,6 +8,118 @@ use std::time::Duration;
 
 use ontoforge_storage::reload::{ReloadOptions, reload};
 use serde_json::json;
+
+async fn pg_durable_rows(
+    running: &support::Running,
+) -> std::collections::BTreeMap<String, serde_json::Value> {
+    let edit_schema = format!("{}_edit", running.schema_sys.strip_suffix("_sys").unwrap());
+    let tables: Vec<(String, String)> = sqlx::query_as(
+        "SELECT table_schema, table_name FROM information_schema.tables WHERE table_schema IN ($1, $2) AND (left(table_name, 7) IN ('of_obj_', 'of_lnk_') OR table_name IN ('of_edit_log','of_edit_log_entry','of_edit_history','of_action_command','of_webhook_outbox')) ORDER BY table_name"
+    ).bind(&edit_schema).bind(&running.schema_sys).fetch_all(&running.side).await.unwrap();
+    let mut state = std::collections::BTreeMap::new();
+    for (schema, table) in tables {
+        let sql = format!(
+            "SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text), '[]'::jsonb) FROM \"{}\".\"{}\" t",
+            schema.replace('"', "\"\""),
+            table.replace('"', "\"\"")
+        );
+        let rows: serde_json::Value = sqlx::query_scalar(sqlx::AssertSqlSafe(sql))
+            .fetch_one(&running.side)
+            .await
+            .unwrap();
+        state.insert(table, rows);
+    }
+    state
+}
+
+#[tokio::test]
+#[ignore = "requires ONTOFORGE_PG_URL and ONTOFORGE_TRINO_URL with aviation source fixtures"]
+async fn pg_http_definition_stale_barrier_has_zero_business_writes() {
+    support::run_case(|mut running| async move {
+        running.client = evidence::client();
+        for validate_only in [false, true] {
+            evidence::ready(&running.client, &running.url).await;
+            let old = running.other.active_definition().await.unwrap();
+            let before = running.counts().await;
+            let before_rows = pg_durable_rows(&running).await;
+            running.engine.pause.store(true, Ordering::SeqCst);
+            let client = running.client.clone();
+            let url = running.url.clone();
+            let token = running.token.clone();
+            let pending = tokio::spawn(async move {
+                client.post(format!("{url}/api/actions/delayFlight")).bearer_auth(token)
+                    .json(&json!({"commandId":format!("pg-definition-stale-{validate_only}"),"validateOnly":validate_only,
+                        "items":[{"params":{"flight":"F-1001","delayMinutes":5}}]}))
+                    .send().await.unwrap()
+            });
+            tokio::time::timeout(Duration::from_secs(5), running.engine.entered.notified()).await.unwrap();
+            let mut changed = old.ontology.clone();
+            changed.description = Some(format!("pg-definition-barrier-{validate_only}"));
+            tokio::time::timeout(Duration::from_secs(5), reload(&running.other, &changed, &ReloadOptions::default()))
+                .await.unwrap().unwrap();
+            assert_ne!(running.other.active_definition().await.unwrap().def_version, old.def_version);
+            running.engine.release.notify_one();
+            let response = tokio::time::timeout(Duration::from_secs(30), pending).await.unwrap().unwrap();
+            assert_eq!(response.status(), reqwest::StatusCode::CONFLICT);
+            let error: serde_json::Value = response.json().await.unwrap();
+            assert_eq!(error["code"], "DEFINITION_STALE", "{error}");
+            assert_eq!(running.counts().await, before, "definition fence cannot retry or mutate business state");
+            assert_eq!(pg_durable_rows(&running).await, before_rows);
+        }
+        running.finish().await;
+    }).await;
+}
+
+#[tokio::test]
+#[ignore = "requires ONTOFORGE_PG_URL and ONTOFORGE_TRINO_URL with aviation source fixtures"]
+async fn pg_mcp_rest_same_command_race_one_persistent_receipt() {
+    support::run_case(|mut running| async move {
+        running.client = evidence::client();
+        let session = evidence::session(&running.client, &running.url, &running.token).await;
+        assert_eq!(running.counts().await, [0; 5]);
+        let before_rows = pg_durable_rows(&running).await;
+        running.engine.pause.store(true, Ordering::SeqCst);
+        let client = running.client.clone();
+        let url = running.url.clone();
+        let token = running.token.clone();
+        let pending = tokio::spawn(async move {
+            client.post(format!("{url}/api/actions/delayFlight")).bearer_auth(token)
+                .json(&json!({"commandId":"pg-cross-transport","items":[{"params":{"flight":"F-1001","delayMinutes":5}}]}))
+                .send().await.unwrap()
+        });
+        tokio::time::timeout(Duration::from_secs(5), running.engine.entered.notified()).await.unwrap();
+        let mcp = tokio::time::timeout(Duration::from_secs(30), evidence::rpc(
+            &running.client, &running.url, &running.token, &session,
+            evidence::action_call(2, "pg-cross-transport", false))).await.unwrap();
+        assert!(mcp.get("error").is_none(), "{mcp}");
+        assert_eq!(running.counts().await, [1; 5], "MCP wins once while REST is in flight");
+        let committed_rows = pg_durable_rows(&running).await;
+        assert_eq!(before_rows["of_obj_flight"], json!([]));
+        let flight = committed_rows["of_obj_flight"].as_array().unwrap();
+        assert_eq!(flight.len(), 1);
+        assert_eq!(flight[0]["of_version"], 1);
+        assert_eq!(flight[0]["status"], "DELAYED");
+        assert_eq!(flight[0]["delay_minutes"], 5);
+        for (table, rows) in &before_rows {
+            if (table.starts_with("of_obj_") || table.starts_with("of_lnk_")) && table != "of_obj_flight" {
+                assert_eq!(&committed_rows[table], rows, "unrelated overlay {table}");
+            }
+        }
+        running.engine.release.notify_one();
+        let response = tokio::time::timeout(Duration::from_secs(30), pending).await.unwrap().unwrap();
+        assert_eq!(response.status(), reqwest::StatusCode::OK);
+        let receipt: serde_json::Value = response.json().await.unwrap();
+        assert!(receipt["eventId"].is_string());
+        assert!(receipt["committedAt"].is_string());
+        assert_eq!(mcp["result"]["structuredContent"]["receipt"], receipt);
+        let replay = evidence::rpc(&running.client, &running.url, &running.token, &session,
+            evidence::action_call(3, "pg-cross-transport", false)).await;
+        assert_eq!(replay["result"]["structuredContent"]["receipt"], receipt);
+        assert_eq!(running.counts().await, [1; 5]);
+        assert_eq!(pg_durable_rows(&running).await, committed_rows);
+        running.finish().await;
+    }).await;
+}
 
 #[tokio::test]
 #[ignore = "requires real PostgreSQL and an authenticated ontoforge HTTP server"]

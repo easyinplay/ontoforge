@@ -3,6 +3,8 @@ use ontoforge_schema::load_from_memory;
 use ontoforge_server::mcp_actions::ActionToolSchema;
 use serde_json::{Value, json};
 
+#[path = "support/security_evidence.rs"]
+mod evidence;
 mod support;
 
 #[test]
@@ -241,11 +243,197 @@ fn mcp_action_envelope_separates_same_named_business_fields() {
     assert!(schema.validate_arguments(args.as_object().unwrap()).is_ok());
 }
 
-#[test]
-fn mcp_rest_same_command_race_and_receipt() {
-    let schema = ActionToolSchema::from_action(&action(), &ontology());
-    assert_eq!(schema.api_name, "renameGate");
-    assert!(!schema.tool_name.contains("admin"));
+#[tokio::test]
+async fn mcp_rest_same_command_race_and_receipt() {
+    use std::sync::atomic::Ordering;
+    use std::time::Duration;
+    let mut running = support::fixture().await.start().await;
+    running.client = evidence::client();
+    let session = evidence::session(&running.client, &running.url, &running.token).await;
+    let before = evidence::counts(&running.path).await;
+    let before_rows = evidence::durable_rows(&running.path).await;
+    running.engine.block.store(true, Ordering::SeqCst);
+    let client = running.client.clone();
+    let url = running.url.clone();
+    let token = running.token.clone();
+    let rest = tokio::spawn(async move {
+        client.post(format!("{url}/api/actions/delayFlight")).bearer_auth(token)
+            .json(&json!({"commandId":"cross-transport-race","items":[{"params":{"flight":"F-1001","delayMinutes":5}}]}))
+            .send().await.unwrap()
+    });
+    tokio::time::timeout(Duration::from_secs(5), running.engine.entered.notified())
+        .await
+        .unwrap();
+    let client = running.client.clone();
+    let url = running.url.clone();
+    let token = running.token.clone();
+    let session_copy = session.clone();
+    let mcp = tokio::spawn(async move {
+        evidence::rpc(
+            &client,
+            &url,
+            &token,
+            &session_copy,
+            evidence::action_call(2, "cross-transport-race", false),
+        )
+        .await
+    });
+    tokio::time::timeout(Duration::from_secs(5), running.engine.entered.notified())
+        .await
+        .unwrap();
+    running.engine.block.store(false, Ordering::SeqCst);
+    running.engine.release.notify_waiters();
+    let rest = tokio::time::timeout(Duration::from_secs(10), rest)
+        .await
+        .unwrap()
+        .unwrap();
+    let receipt = support::success(rest).await;
+    let mcp = tokio::time::timeout(Duration::from_secs(10), mcp)
+        .await
+        .unwrap()
+        .unwrap();
+    assert!(mcp.get("error").is_none(), "{mcp}");
+    assert!(receipt["eventId"].is_string());
+    assert!(receipt["committedAt"].is_string());
+    assert_eq!(mcp["result"]["structuredContent"]["receipt"], receipt);
+    let committed_rows = evidence::durable_rows(&running.path).await;
+    evidence::assert_one_flight_commit(&before_rows, &committed_rows);
+    let replay = evidence::rpc(
+        &running.client,
+        &running.url,
+        &running.token,
+        &session,
+        evidence::action_call(3, "cross-transport-race", false),
+    )
+    .await;
+    assert_eq!(replay["result"]["structuredContent"]["receipt"], receipt);
+    assert_eq!(
+        support::success(running.get("/api/commands/cross-transport-race").await).await,
+        receipt
+    );
+    assert_eq!(
+        evidence::delta(evidence::counts(&running.path).await, before),
+        [1; 5],
+        "REST and MCP must share one log, entry, history, command and outbox commit"
+    );
+    assert_eq!(evidence::durable_rows(&running.path).await, committed_rows);
+    assert!(running.finish_actions().await.is_empty());
+}
+
+#[tokio::test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "keep schema capture, reload and execution assertions in temporal order"
+)]
+async fn mcp_action_schema_execution_keeps_admitted_definition() {
+    use ontoforge_storage::reload::{ReloadOptions, reload};
+    use std::sync::atomic::Ordering;
+    use std::time::Duration;
+    let mut running = support::fixture().await.start().await;
+    running.client = evidence::client();
+    let other = ontoforge_storage::store::EditStore::open(support::settings(&running.path))
+        .await
+        .unwrap();
+    let session = evidence::session(&running.client, &running.url, &running.token).await;
+    let list = |id| json!({"jsonrpc":"2.0","id":id,"method":"tools/list"});
+    let old = evidence::rpc(
+        &running.client,
+        &running.url,
+        &running.token,
+        &session,
+        list(2),
+    )
+    .await;
+    let schema = |value: &Value| {
+        value["result"]["tools"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|tool| tool["name"] == "action_delayFlight")
+            .unwrap()["inputSchema"]
+            .clone()
+    };
+    assert!(
+        schema(&old)["properties"]["params"]["properties"]
+            .get("confirmation")
+            .is_none()
+    );
+    let before = evidence::counts(&running.path).await;
+    let before_rows = evidence::durable_rows(&running.path).await;
+    running.engine.block.store(true, Ordering::SeqCst);
+    let client = running.client.clone();
+    let url = running.url.clone();
+    let token = running.token.clone();
+    let session_copy = session.clone();
+    let pending = tokio::spawn(async move {
+        evidence::rpc(
+            &client,
+            &url,
+            &token,
+            &session_copy,
+            evidence::action_call(3, "mcp-old-schema", false),
+        )
+        .await
+    });
+    tokio::time::timeout(Duration::from_secs(5), running.engine.entered.notified())
+        .await
+        .unwrap();
+    let mut ontology = other.active_definition().await.unwrap().ontology.clone();
+    let action = ontology.action_types.get_mut("delayFlight").unwrap();
+    let mut parameter = action.parameters.get("delayMinutes").unwrap().clone();
+    parameter.required = true;
+    action
+        .parameters
+        .insert("confirmation".to_owned().try_into().unwrap(), parameter);
+    tokio::time::timeout(
+        Duration::from_secs(5),
+        reload(&other, &ontology, &ReloadOptions::default()),
+    )
+    .await
+    .unwrap()
+    .unwrap();
+    running.engine.block.store(false, Ordering::SeqCst);
+    running.engine.release.notify_one();
+    let admitted = tokio::time::timeout(Duration::from_secs(10), pending)
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(
+        admitted["error"]["data"]["code"], "DEFINITION_STALE",
+        "old schema execution must reach its fence: {admitted}"
+    );
+    let current = evidence::rpc(
+        &running.client,
+        &running.url,
+        &running.token,
+        &session,
+        list(4),
+    )
+    .await;
+    assert!(
+        schema(&current)["properties"]["params"]["required"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("confirmation"))
+    );
+    let calls = running.engine.calls.load(Ordering::SeqCst);
+    let invalid = evidence::rpc(
+        &running.client,
+        &running.url,
+        &running.token,
+        &session,
+        evidence::action_call(5, "mcp-new-schema", false),
+    )
+    .await;
+    assert!(
+        invalid["error"].is_object(),
+        "new request must validate the new schema: {invalid}"
+    );
+    assert_eq!(running.engine.calls.load(Ordering::SeqCst), calls);
+    assert_eq!(evidence::counts(&running.path).await, before);
+    assert_eq!(evidence::durable_rows(&running.path).await, before_rows);
+    other.read_audit().shutdown().await.unwrap();
+    assert!(running.finish().await.is_empty());
 }
 
 #[tokio::test]

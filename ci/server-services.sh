@@ -166,7 +166,7 @@ verify() {
   load_env
   require_env ONTOFORGE_PG_URL ONTOFORGE_TRINO_URL ONTOFORGE_TRINO_L2_URL ONTOFORGE_TRINO_L2_LOOSE_URL ONTOFORGE_SERVER_URL ONTOFORGE_TOKEN ONTOFORGE_NO_GRANT_TOKEN ONTOFORGE_L2_TOKEN
   git rev-parse HEAD > "$EVIDENCE_DIR/commit.txt"
-  run_ignored ontoforge-server postgres_http_it pg_http_mixed_snapshot_reload_revoke_and_history pg_http_action_validate_stale_replay_atomicity
+  run_ignored ontoforge-server postgres_http_it pg_http_mixed_snapshot_reload_revoke_and_history pg_http_action_validate_stale_replay_atomicity pg_http_definition_stale_barrier_has_zero_business_writes pg_mcp_rest_same_command_race_one_persistent_receipt
   run_ignored ontoforge-server source_drift_trino_it real_source_drift_periodic_target_isolation_and_recovery real_source_drift_external_reload_does_not_publish_old_metadata
   run_ignored ontoforge-storage request_snapshot snapshot_pg_never_mixes_definition_roles_bindings
   run_ignored ontoforge-server trino_http_it trino_http_long_read_releases_snapshot_lock trino_http_and_mcp_six_l2_tools_all_formats
@@ -174,7 +174,7 @@ verify() {
   run_ignored ontoforge-engine trino_l2_acl_it trino_l2_acl_rejects_existing_outside_and_edit_tables trino_l2_acl_loosened_rule_fails_closed
   local client_tests name
   client_tests=$(cargo test -p ontoforge-client --test contract --locked -- --list | tr -d '\r')
-  for name in rust_client_metadata_pk_query_aggregate_health rust_client_instances_and_concurrent_cancellation_are_isolated rust_client_action_validate_history_result_and_replay rust_client_auth_scope_revoke_stale_and_transport_errors rust_client_wire_numbers_and_all_endpoint_groups; do
+  for name in rust_client_metadata_pk_query_aggregate_health rust_client_instances_and_concurrent_cancellation_are_isolated rust_client_action_validate_history_result_and_replay rust_client_auth_scope_revoke_stale_and_transport_errors rust_client_wire_numbers_and_all_endpoint_groups rust_client_valid_principals_revoke_and_inflight_cancel_are_isolated rust_client_transport_failures_never_retry_and_replay_has_one_durable_commit; do
     grep -Fxq "$name: test" <<< "$client_tests" || die "Rust client did not discover required test $name"
   done
   cargo test -p ontoforge-client --test contract --locked -- --nocapture 2>&1 | tee "$EVIDENCE_DIR/rust-client.log"

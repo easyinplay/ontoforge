@@ -1,5 +1,11 @@
 # Phase 7 progress
 
+- 2026-11-03 E6最终Clippy/fmt与Staff/security独立复签通过，T22关闭，安全48/48 CLOSED。server本地HTTP3/Actions10/contract16/L2 2+9全绿；PG两新入口仍待真实服务。Cargo转交bridge执行stdio，Nyquist开始对32task更新过时映射与证据边界，Phase不提前关闭。
+
+- 2026-11-03 E6生产最小修复已GREEN：mcp_l2 2/2、defaults9/9（含61秒expiry/recovery、真实撤权零上游、取消audit），生产blob667102e12decd2fae4381579202df92c71d0c3e2。末项六工具缺scope否定矩阵及Clippy/fmt收尾中，等待最终指纹复签；不重复已完成Action/SDK回归。stdio/PG及新head完整CI仍pending。
+
+- 2026-11-03 server补测HTTP3/MCP Action10/contract16通过，L2 7通过1失败（真实61秒proof过期恢复通过）。E6发现同步status SELECT1先于allowlist拒绝，endpoint16!=15；Claude Code REFINE同向接受本地预检先于availability的最小修复，见07-E6-PREFLIGHT-FIX.md。这是生产RED，保持Phase未完成；两个PG和stdio仍pending。
+
 - 2026-11-03 T24修复最终session12/12、transport11/11、server all-target Clippy/fmt、跨3crate tests-check通过，独立auditor复签SECURED，48/48实现威胁关闭。Phase仍15/16，E1–E7动态与集成CI待完成；Cargo已交SDK执行Rust，之后server/bridge，详各lane报告。
 
 - 2026-11-03 T24第二RED：阻塞真实map写锁并取消close后，新create令map=2而cap=1，exit101，详target/phase7-t24-close-red.log。Claude Code多轮REFINE与独立auditor同向，采用Notify合并清理及取消安全的双map删除；最终11项session GREEN运行中。E1/E2/E6、E3、Rust SDK代码已冻结待Cargo串行；CI必需discovery已加入2项PG和2项Rust SDK用例，bash -n通过。

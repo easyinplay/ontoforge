@@ -3,6 +3,8 @@ use ontoforge_schema::ir::Toolset;
 use ontoforge_server::mcp_catalog::{AGGREGATE_TOOL, DESCRIBE_TOOL, HISTORY_TOOL, ToolCatalog};
 use serde_json::{Value, json};
 
+#[path = "support/security_evidence.rs"]
+mod evidence;
 mod support;
 
 async fn initialize(running: &support::Running) -> String {
@@ -800,12 +802,80 @@ fn mcp_list_filters_before_keyset_and_direct_call_denies() {
     assert!(!full.allows("scope_apply"));
 }
 
-#[test]
-fn mcp_inflight_snapshot_and_revoke_on_next_call() {
-    let full = ToolCatalog::for_scope(&scope(&[Toolset::Full]));
-    assert!(full.allows(DESCRIBE_TOOL));
-    let revoked = ToolCatalog::for_scope(&scope(&[]));
-    assert!(!revoked.allows(DESCRIBE_TOOL));
+#[tokio::test]
+async fn mcp_inflight_snapshot_and_revoke_on_next_call() {
+    use ontoforge_storage::reload::{ReloadOptions, reload};
+    use std::sync::atomic::Ordering;
+    use std::time::Duration;
+    let mut running = support::fixture().await.start().await;
+    running.client = evidence::client();
+    let other = ontoforge_storage::store::EditStore::open(support::settings(&running.path))
+        .await
+        .unwrap();
+    let old = other.request_snapshot().await.unwrap();
+    let session = initialize(&running).await;
+    let before = evidence::counts(&running.path).await;
+    running.engine.block.store(true, Ordering::SeqCst);
+    let client = running.client.clone();
+    let url = running.url.clone();
+    let token = running.token.clone();
+    let session_copy = session.clone();
+    let pending = tokio::spawn(async move {
+        evidence::rpc(
+            &client,
+            &url,
+            &token,
+            &session_copy,
+            json!({
+                "jsonrpc":"2.0","id":2,"method":"tools/call","params":{
+                    "name":"get_object","arguments":{"objectType":"Flight","pk":"F-1001"}}
+            }),
+        )
+        .await
+    });
+    tokio::time::timeout(Duration::from_secs(5), running.engine.entered.notified())
+        .await
+        .unwrap();
+    let mut next = old.active.ontology.clone();
+    next.description = Some("mcp-next-definition".to_owned());
+    tokio::time::timeout(
+        Duration::from_secs(5),
+        reload(&other, &next, &ReloadOptions::default()),
+    )
+    .await
+    .unwrap()
+    .unwrap();
+    let mut revoked = old.scope.clone();
+    revoked.bindings.clear();
+    evidence::apply_scope(&other, &revoked).await;
+    running.engine.block.store(false, Ordering::SeqCst);
+    running.engine.release.notify_one();
+    let admitted = tokio::time::timeout(Duration::from_secs(10), pending)
+        .await
+        .unwrap()
+        .unwrap();
+    assert!(admitted.get("error").is_none(), "{admitted}");
+    assert_eq!(
+        admitted["result"]["structuredContent"]["properties"]["flightId"],
+        "F-1001"
+    );
+    let calls = running.engine.calls.load(Ordering::SeqCst);
+    let denied = call_read_tool(
+        &running,
+        &session,
+        3,
+        "get_object",
+        json!({"objectType":"Flight","pk":"F-1001"}),
+    )
+    .await;
+    assert!(denied["error"].is_object(), "{denied}");
+    assert_eq!(running.engine.calls.load(Ordering::SeqCst), calls);
+    assert_eq!(evidence::counts(&running.path).await, before);
+    other.read_audit().shutdown().await.unwrap();
+    let audit = running.finish().await;
+    assert_eq!(audit.len(), 1);
+    assert_eq!(audit[0]["def_version"], old.active.def_version);
+    assert_eq!(audit[0]["status"], "success");
 }
 
 #[tokio::test]

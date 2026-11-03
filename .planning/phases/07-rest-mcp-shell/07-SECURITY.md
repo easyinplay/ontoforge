@@ -10,7 +10,7 @@ date: 2026-11-03
 
 # Phase 7 安全核验
 
-独立 gsd-security-auditor 核对16份 PLAN，去重为48项（44 high、4 medium）；初审47 CLOSED、T24 high OPEN，修复后增量独立复签为48/48 CLOSED、threats_open=0。全部 disposition=mitigate，无 accepted/transfer 风险。初审源码基线e6ae310及b068ff5，T24最终11文件指纹见reviews/07-T24-SECURITY-RECHECK.md。CLOSED仅代表ASVS L1实现控制存在；动态验收E1–E7独立见reviews/07-SECURITY-EVIDENCE-GAPS.md，未齐备前不关闭Phase。
+独立 gsd-security-auditor 核对16份 PLAN，去重为48项（44 high、4 medium）；T24及E6发现的T22修复均已独立复签CLOSED，当前48/48 CLOSED、threats_open=0。全部 disposition=mitigate，无 accepted/transfer 风险。初审源码基线e6ae310及b068ff5，T24/T22最终指纹分别见reviews/07-T24-SECURITY-RECHECK.md与reviews/07-E6-SECURITY-RECHECK.md。动态E1–E7见reviews/07-SECURITY-EVIDENCE-GAPS.md，未齐备前不关闭Phase。
 
 ## T24 初审发现与关闭
 
@@ -45,7 +45,7 @@ T-07-24：lib.rs使用独立LocalSessionManager::default，mcp_sessions.rs仅限
 | T-07-19 | E | high | CLOSED | crates/ontoforge-server/src/mcp_catalog.rs:37,66; mcp.rs:556 |
 | T-07-20 | T | high | CLOSED; E2 pending | crates/ontoforge-server/src/mcp.rs:580,587,589,637 |
 | T-07-21 | R | high | CLOSED; E2 pending | crates/ontoforge-server/src/rest.rs:481; mcp.rs:637; crates/ontoforge-storage/src/commit.rs:632 |
-| T-07-22 | E | high | CLOSED; E6 pending | crates/ontoforge-server/src/mcp_l2.rs:93,125,162,174,268,283 |
+| T-07-22 | E | high | CLOSED; E6 GREEN | mcp_l2.rs:93纯gate、:126及:225-231预检后availability；详07-E6-SECURITY-RECHECK |
 | T-07-23 | S | high | CLOSED; E3 pending | crates/ontoforge-server/src/context.rs:339,350,370; mcp.rs:109 |
 | T-07-24 | D | high | CLOSED | 最终mcp_sessions.rs:104,125,171,240; lib.rs:210; context.rs:370,379；详T24复签报告 |
 | T-07-25 | I | high | CLOSED | crates/ontoforge/src/mcp.rs:42,44,54,68,210 |

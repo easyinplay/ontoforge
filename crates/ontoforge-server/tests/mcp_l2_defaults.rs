@@ -1,5 +1,5 @@
 use std::collections::{BTreeMap, BTreeSet};
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 
 use camino::Utf8PathBuf;
@@ -15,7 +15,14 @@ use ontoforge_schema::ir::{SqlLevel, Toolset};
 use ontoforge_server::mcp::mcp_l2::{McpL2Error, McpL2Tools};
 use ontoforge_server::{ServerLimits, state};
 
+#[path = "support/security_evidence.rs"]
+mod evidence;
 mod support;
+
+struct L2Proof {
+    ontology: ontoforge_engine::trino::TrinoEngine,
+    l2: Arc<ontoforge_engine::trino::TrinoEngine>,
+}
 
 #[derive(Default)]
 struct L2Control {
@@ -23,6 +30,8 @@ struct L2Control {
     block: AtomicBool,
     entered: tokio::sync::Notify,
     traces: Mutex<Vec<String>>,
+    proof: std::sync::OnceLock<L2Proof>,
+    all_statements: AtomicUsize,
 }
 
 async fn attested_l2(
@@ -42,6 +51,7 @@ async fn attested_l2(
             let recorded = Arc::clone(&recorded);
             let failure = Arc::clone(&server_failure);
             async move {
+                failure.all_statements.fetch_add(1, Ordering::SeqCst);
                 let l2 = headers["x-trino-user"] == "l2";
                 let tool_request = headers.get("x-trino-client-tags").and_then(|value| value.to_str().ok()).is_some_and(|tags| tags.split(',').any(|tag| tag == "mcp"));
                 if tool_request {
@@ -85,7 +95,16 @@ async fn attested_l2(
         l2.recheck_l2_acl(&engines.ontology, "probe_1").await,
         ontoforge_engine::trino::l2_health::L2HealthStatus::Enabled,
     );
-    state::set_l2_engine(store, l2).unwrap();
+    state::set_l2_engine(store, Arc::clone(&l2)).unwrap();
+    assert!(
+        failure
+            .proof
+            .set(L2Proof {
+                ontology: engines.ontology,
+                l2
+            })
+            .is_ok()
+    );
     statements.lock().unwrap().clear();
     (serving, statements, failure)
 }
@@ -94,6 +113,7 @@ async fn attested_l2(
 struct RecordingEngine {
     sql: Arc<Mutex<Vec<String>>>,
     tables: Arc<Mutex<Vec<TableRef>>>,
+    status_calls: Arc<AtomicUsize>,
     block: Arc<AtomicBool>,
     entered: Arc<tokio::sync::Notify>,
 }
@@ -150,6 +170,7 @@ impl Engine for RecordingEngine {
     }
 
     fn status(&self) -> impl Future<Output = EngineStatus> + Send {
+        self.status_calls.fetch_add(1, Ordering::SeqCst);
         std::future::ready(EngineStatus::Available)
     }
 }
@@ -176,6 +197,102 @@ fn raw_scope() -> PrincipalScope {
         l2_schemas: ["demo.tiny".to_owned()].into_iter().collect(),
         ..PrincipalScope::default()
     }
+}
+
+#[tokio::test]
+async fn mcp_l2_local_rejections_skip_status_execute_and_audit() {
+    let engine = RecordingEngine::default();
+    let fixture = support::fixture().await;
+    let principal = principal();
+    let scope = raw_scope();
+    let tools = McpL2Tools {
+        principal: &principal,
+        scope: &scope,
+        active: fixture.store.active_definition().await.unwrap(),
+        engine: &engine,
+        store: &fixture.store,
+        limits: ServerLimits::default(),
+        on_reserved: None,
+    };
+    let results = [
+        tools.execute_query("DROP TABLE demo.tiny.nation").await,
+        tools.explain_query("SELECT 1", Some("INVALID")).await,
+        tools
+            .explain_query("DELETE FROM demo.tiny.nation", None)
+            .await,
+        tools.list_schemas(None).await,
+        tools.list_tables(Some("demo"), None).await,
+        tools.list_tables(Some("outside"), Some("tiny")).await,
+        tools
+            .get_table_schema("outside.tiny.nation", None, None)
+            .await,
+        tools
+            .get_table_schema("nation; DROP TABLE x", Some("demo"), Some("tiny"))
+            .await,
+    ];
+    assert!(results.iter().all(Result::is_err), "{results:?}");
+    state::set_mcp_defaults(
+        &fixture.store,
+        McpDefaults {
+            catalog: Some("outside".to_owned()),
+            schema: Some("tiny".to_owned()),
+        },
+    );
+    assert!(matches!(
+        tools.get_table_schema("nation", None, None).await,
+        Err(McpL2Error::Denied)
+    ));
+    assert!(matches!(
+        tools.list_schemas(None).await,
+        Err(McpL2Error::Denied)
+    ));
+    for missing_toolset in [true, false] {
+        let mut denied_scope = raw_scope();
+        if missing_toolset {
+            denied_scope.toolsets.clear();
+        } else {
+            denied_scope.sql_levels.clear();
+        }
+        let denied = McpL2Tools {
+            scope: &denied_scope,
+            active: Arc::clone(&tools.active),
+            ..tools
+        };
+        let results = [
+            denied.execute_query("SELECT 1").await,
+            denied.explain_query("SELECT 1", None).await,
+            denied.list_catalogs().await,
+            denied.list_schemas(Some("demo")).await,
+            denied.list_tables(Some("demo"), Some("tiny")).await,
+            denied
+                .get_table_schema("demo.tiny.nation", None, None)
+                .await,
+        ];
+        assert!(
+            results
+                .iter()
+                .all(|result| matches!(result, Err(McpL2Error::Denied)))
+        );
+    }
+    assert_eq!(
+        engine.status_calls.load(Ordering::SeqCst),
+        0,
+        "local validation must precede the network status probe"
+    );
+    assert!(engine.sql.lock().unwrap().is_empty());
+    assert!(engine.tables.lock().unwrap().is_empty());
+    fixture.store.read_audit().shutdown().await.unwrap();
+    let pool = sqlx::SqlitePool::connect_with(ontoforge_storage::store::sqlite_connect_options(
+        &fixture.path,
+    ))
+    .await
+    .unwrap();
+    let audits: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM of_read_audit")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(audits, 0, "local rejections must not reserve read audit");
+    pool.close().await;
 }
 
 async fn l2_request(
@@ -232,6 +349,214 @@ fn authorize_l2_fixture(fixture: &mut support::Fixture) {
             schema: Some("aviation".to_owned()),
         },
     );
+}
+
+#[tokio::test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "keep same-session revoke and recovery matrix together"
+)]
+async fn mcp_l2_same_session_revoke_defaults_and_qualified_zero_send() {
+    use serde_json::json;
+    let mut fixture = support::fixture().await;
+    let (_trino, statements, control) = attested_l2(&fixture.store).await;
+    authorize_l2_fixture(&mut fixture);
+    let original = fixture.store.request_snapshot().await.unwrap().scope;
+    let mut running = fixture.start().await;
+    running.client = evidence::client();
+    let session = evidence::session(&running.client, &running.url, &running.token).await;
+    let before = evidence::counts(&running.path).await;
+    let probes = [
+        ("execute_query", json!({"query":"SELECT 1"})),
+        ("get_table_schema", json!({"table":"aircraft"})),
+        (
+            "get_table_schema",
+            json!({"table":"demo.aviation.aircraft","catalog":"outside","schema":"secret"}),
+        ),
+        ("list_tables", json!({})),
+    ];
+    let mut id = 2;
+    for revoke in ["toolset", "sql_level", "binding", "allowlist"] {
+        let mut scope = original.clone();
+        let role = scope.roles.get_mut("maintenanceLead").unwrap();
+        match revoke {
+            "toolset" => {
+                role.toolsets.retain(|toolset| *toolset != Toolset::SqlRaw);
+            }
+            "sql_level" => {
+                role.sql_levels.clear();
+                role.toolsets.retain(|toolset| *toolset != Toolset::SqlRaw);
+                role.l2.catalogs.clear();
+                role.l2.schemas.clear();
+            }
+            "binding" => {
+                scope.bindings.clear();
+            }
+            "allowlist" => {
+                role.l2.catalogs.clear();
+                role.l2.schemas.clear();
+            }
+            _ => unreachable!(),
+        }
+        evidence::apply_scope(&running.store, &scope).await;
+        let count = statements.lock().unwrap().len();
+        let all_requests = control.all_statements.load(Ordering::SeqCst);
+        let source_calls = running.engine.calls.load(Ordering::SeqCst);
+        for (name, args) in &probes {
+            if revoke == "allowlist" && *name == "execute_query" {
+                continue;
+            }
+            let denied = l2_request(&running, &session, id, name, args.clone()).await;
+            id += 1;
+            assert!(denied["error"].is_object(), "{revoke} {name}: {denied}");
+            assert_eq!(
+                statements.lock().unwrap().len(),
+                count,
+                "{revoke} {name} must reject before send"
+            );
+            assert_eq!(
+                control.all_statements.load(Ordering::SeqCst),
+                all_requests,
+                "{revoke} {name}: all identities and tags must remain silent"
+            );
+            assert_eq!(
+                running.engine.calls.load(Ordering::SeqCst),
+                source_calls,
+                "denied L2 must not reroute to the source engine"
+            );
+        }
+        let health = running
+            .get("/health")
+            .await
+            .json::<serde_json::Value>()
+            .await
+            .unwrap();
+        assert_eq!(
+            health["l2"]["status"], "enabled",
+            "principal revoke must not alter shared ACL proof: {health}"
+        );
+        evidence::apply_scope(&running.store, &original).await;
+        let recovered = l2_request(
+            &running,
+            &session,
+            id,
+            "get_table_schema",
+            json!({"table":"aircraft"}),
+        )
+        .await;
+        id += 1;
+        assert!(recovered.get("error").is_none(), "{revoke}: {recovered}");
+        assert_eq!(
+            statements.lock().unwrap().len(),
+            count + 1,
+            "same session must regain current grant"
+        );
+    }
+    assert_eq!(evidence::counts(&running.path).await, before);
+    let audit = running.finish().await;
+    assert_eq!(audit.len(), 4, "only four recovered calls reserve reads");
+    assert!(audit.iter().all(|row| row["status"] == "success"));
+}
+
+#[tokio::test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "keep real proof expiry and recovery assertions in temporal order"
+)]
+async fn mcp_l2_same_session_real_proof_expiry_zero_send_and_recovery() {
+    use ontoforge_engine::trino::l2_health::L2HealthStatus;
+    use serde_json::json;
+    let mut fixture = support::fixture().await;
+    let (_trino, statements, control) = attested_l2(&fixture.store).await;
+    authorize_l2_fixture(&mut fixture);
+    let mut running = fixture.start().await;
+    running.client = evidence::client();
+    let session = evidence::session(&running.client, &running.url, &running.token).await;
+    let admitted = l2_request(
+        &running,
+        &session,
+        2,
+        "execute_query",
+        json!({"query":"SELECT 1"}),
+    )
+    .await;
+    assert!(admitted.get("error").is_none(), "{admitted}");
+    assert_eq!(statements.lock().unwrap().len(), 1);
+    let health = running
+        .get("/health")
+        .await
+        .json::<serde_json::Value>()
+        .await
+        .unwrap();
+    assert_eq!(health["l2"]["status"], "enabled");
+    // Production attestation uses std::time::Instant and a fixed sixty-second TTL.
+    tokio::time::sleep(std::time::Duration::from_secs(61)).await;
+    let health = running
+        .get("/health")
+        .await
+        .json::<serde_json::Value>()
+        .await
+        .unwrap();
+    assert_eq!(health["status"], "degraded", "{health}");
+    assert_eq!(health["l2"]["reason"], "EXPIRED", "{health}");
+    assert_eq!(health["engineStatus"], "available", "{health}");
+    let count = statements.lock().unwrap().len();
+    let all_requests = control.all_statements.load(Ordering::SeqCst);
+    let source_calls = running.engine.calls.load(Ordering::SeqCst);
+    for (offset, (name, args)) in [
+        ("execute_query", json!({"query":"SELECT 1"})),
+        ("list_tables", json!({})),
+        (
+            "get_table_schema",
+            json!({"table":"demo.aviation.aircraft"}),
+        ),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let denied = l2_request(&running, &session, offset as u64 + 3, name, args).await;
+        assert_eq!(
+            denied["error"]["data"]["code"], "SOURCE_UNAVAILABLE",
+            "{denied}"
+        );
+        assert_eq!(
+            statements.lock().unwrap().len(),
+            count,
+            "expired production proof must prevent MCP upstream sends"
+        );
+        assert_eq!(
+            control.all_statements.load(Ordering::SeqCst),
+            all_requests,
+            "proof expiry must prevent requests with any identity or tags"
+        );
+        assert_eq!(running.engine.calls.load(Ordering::SeqCst), source_calls);
+    }
+    let proof = control.proof.get().unwrap();
+    assert_eq!(
+        proof.l2.recheck_l2_acl(&proof.ontology, "probe_1").await,
+        L2HealthStatus::Enabled
+    );
+    let health = running
+        .get("/health")
+        .await
+        .json::<serde_json::Value>()
+        .await
+        .unwrap();
+    assert_eq!(health["status"], "healthy", "{health}");
+    assert_eq!(health["l2"]["status"], "enabled");
+    let recovered = l2_request(
+        &running,
+        &session,
+        6,
+        "get_table_schema",
+        json!({"table":"demo.aviation.aircraft"}),
+    )
+    .await;
+    assert!(recovered.get("error").is_none(), "{recovered}");
+    assert_eq!(statements.lock().unwrap().len(), count + 1);
+    let audit = running.finish().await;
+    assert_eq!(audit.len(), 2, "only admitted calls reserve reads");
+    assert!(audit.iter().all(|row| row["status"] == "success"));
 }
 
 #[tokio::test]
