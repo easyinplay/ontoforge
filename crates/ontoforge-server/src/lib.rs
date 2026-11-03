@@ -1,6 +1,6 @@
 //! Authenticated HTTP host sharing the ontology services and durable read audit.
 
-use std::future::Future;
+use std::future::{Future, IntoFuture};
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -99,6 +99,18 @@ pub enum HostError {
     Shutdown,
 }
 
+impl From<lifecycle::LifecycleError> for HostError {
+    fn from(error: lifecycle::LifecycleError) -> Self {
+        match error {
+            lifecycle::LifecycleError::Audit => Self::AuditDrain,
+            lifecycle::LifecycleError::Timeout
+            | lifecycle::LifecycleError::Action
+            | lifecycle::LifecycleError::Monitor(_)
+            | lifecycle::LifecycleError::Cancellation(_) => Self::Shutdown,
+        }
+    }
+}
+
 impl<E: Engine + Send + Sync + 'static> ServerHost<E> {
     pub fn new(
         store: Arc<EditStore>,
@@ -132,19 +144,31 @@ impl<E: Engine + Send + Sync + 'static> ServerHost<E> {
         limits: ServerLimits,
     ) -> Result<(), HostError> {
         let limits = limits.validate()?;
+        let server_state = state::for_host(&self);
         let admission = (
             Arc::new(Semaphore::new(limits.max_concurrent_requests)),
             limits.deadline,
+            Arc::clone(&server_state),
         );
         let mcp_host = Arc::clone(&self);
+        let mcp_state = Arc::clone(&server_state);
         let mcp_service = StreamableHttpService::new(
-            move || Ok(mcp::OntologyMcpHandler::new(Arc::clone(&mcp_host))),
+            move || {
+                Ok(mcp::OntologyMcpHandler {
+                    host: Arc::clone(&mcp_host),
+                    limits,
+                    state: Arc::clone(&mcp_state),
+                })
+            },
             Arc::new(LocalSessionManager::default()),
             StreamableHttpServerConfig::default()
+                .with_cancellation_token(server_state.read_cancellation.clone())
                 .with_max_request_body_bytes(limits.max_body_bytes),
         );
-        let router = Router::new()
-            .nest_service("/mcp", mcp_service)
+        let mcp_router = Router::new().nest_service("/mcp", mcp_service).layer(
+            axum::middleware::from_fn_with_state(Arc::clone(&self), context::authenticate_mcp::<E>),
+        );
+        let router = mcp_router
             .route("/health", axum::routing::get(health::endpoint::<E>))
             .route("/api/ontology", axum::routing::get(rest::ontology::<E>))
             .route(
@@ -173,17 +197,46 @@ impl<E: Engine + Send + Sync + 'static> ServerHost<E> {
                 context::admit,
             ))
             .with_state(Arc::clone(&self));
-        let served = axum::serve(listener, router)
-            .with_graceful_shutdown(shutdown)
+        let stopping = tokio_util::sync::CancellationToken::new();
+        let stopped = stopping.clone();
+        let shutdown_host = Arc::clone(&self);
+        let shutdown_state = Arc::clone(&server_state);
+        let serve = axum::serve(listener, router)
+            .with_graceful_shutdown(async move {
+                shutdown.await;
+                context::stop_admission(&shutdown_host);
+                stopped.cancel();
+                shutdown_state.read_cancellation.cancelled().await;
+            })
+            .into_future();
+        tokio::pin!(serve);
+        let early = tokio::select! {
+            result = &mut serve => Some(result),
+            () = stopping.cancelled() => None,
+        };
+        let deadline = tokio::time::Instant::now() + lifecycle::SHUTDOWN_TIMEOUT;
+        context::stop_admission(&self);
+        let actions = tokio::time::timeout_at(
+            deadline - Duration::from_secs(5),
+            context::wait_actions(&self),
+        )
+        .await
+        .map_err(|_| HostError::Shutdown)
+        .and_then(|result| result.map_err(|_| HostError::Shutdown));
+        server_state.cancel_reads();
+        let served = match early {
+            Some(result) => result.map_err(|_| HostError::Listener),
+            None => tokio::time::timeout_at(deadline - Duration::from_secs(5), &mut serve)
+                .await
+                .map_err(|_| HostError::Shutdown)
+                .and_then(|result| result.map_err(|_| HostError::Listener)),
+        };
+        let lifecycle = lifecycle::ServerLifecycle::new(&self)
+            .shutdown_before(deadline)
             .await;
-        let lifecycle = lifecycle::ServerLifecycle::new(&self).shutdown().await;
-        served.map_err(|_| HostError::Listener)?;
-        lifecycle.map_err(|error| match error {
-            lifecycle::LifecycleError::Audit | lifecycle::LifecycleError::Monitor(_) => {
-                HostError::AuditDrain
-            }
-            lifecycle::LifecycleError::Timeout => HostError::Shutdown,
-        })
+        actions?;
+        served?;
+        lifecycle.map_err(HostError::from)
     }
 
     #[must_use]

@@ -36,14 +36,17 @@ pub mod mcp_sessions;
 pub struct OntologyMcpHandler<E> {
     pub host: Arc<ServerHost<E>>,
     pub limits: ServerLimits,
+    pub(crate) state: Arc<crate::state::ServerState>,
 }
 
 impl<E> OntologyMcpHandler<E> {
     #[must_use]
     pub fn new(host: Arc<ServerHost<E>>) -> Self {
+        let state = crate::state::for_host(&host);
         Self {
             host,
             limits: ServerLimits::default(),
+            state,
         }
     }
 }
@@ -68,7 +71,7 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
             .and_then(|value| value.to_str().ok())
         {
             mcp_sessions::global()
-                .admit(session, ctx.principal.id.as_str())
+                .verify(session, ctx.principal.id.as_str())
                 .map_err(|_| ErrorData::invalid_request("session owner mismatch", None))?;
         }
         Ok((ctx, request_id))
@@ -408,8 +411,9 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
                     )
                     .await
                     .map_err(|error| error.to_string())?;
+                let next = history.last().map(|entry| entry.seq);
                 Ok(
-                    json!({"entries": history, "truncated": false, "nextBeforeSeq": history.last().map(|entry| entry.seq)}),
+                    json!({"entries": history.into_iter().map(crate::rest::history_entry).collect::<Vec<_>>(), "truncated": false, "nextBeforeSeq": next}),
                 )
             }
             _ => Err("tool unavailable".to_owned()),
@@ -440,13 +444,22 @@ impl<E: Engine + Send + Sync + 'static> ServerHandler for OntologyMcpHandler<E> 
         Ok(result)
     }
 
+    #[expect(
+        clippy::too_many_lines,
+        reason = "keeps authenticated dispatch and owned Action admission at one boundary"
+    )]
     async fn call_tool(
         &self,
         request: CallToolRequestParams,
         context: RequestContext<RoleServer>,
     ) -> Result<CallToolResponse, ErrorData> {
+        let server_state = Arc::clone(&self.state);
+        let _request = server_state.read_tasks.token();
         let tool_name = request.name.to_string();
         let (ctx, _) = self.request_context(&context, &tool_name).await?;
+        if !server_state.accepting() {
+            return Err(ErrorData::internal_error("server shutting down", None));
+        }
         let catalog = Self::catalog(&ctx);
         let Some(_tool) = catalog.all().iter().find(|tool| tool.name == tool_name) else {
             return Err(ErrorData::invalid_request("tool unavailable", None));
@@ -461,9 +474,12 @@ impl<E: Engine + Send + Sync + 'static> ServerHandler for OntologyMcpHandler<E> 
                 | mcp_catalog::LIST_TABLES_TOOL
                 | mcp_catalog::GET_TABLE_SCHEMA_TOOL
         ) {
-            let result = self
-                .call_l2(&tool_name, &args, &ctx)
-                .await
+            let result = tokio::select! {
+                biased;
+                () = context.ct.cancelled() => return Err(ErrorData::internal_error("request cancelled", None)),
+                () = server_state.read_cancellation.cancelled() => return Err(ErrorData::internal_error("server shutting down", None)),
+                result = self.call_l2(&tool_name, &args, &ctx) => result,
+            }
                 .map_err(|error| ErrorData::invalid_params(error, None))?;
             return Ok(CallToolResult::structured(result).into());
         }
@@ -493,38 +509,63 @@ impl<E: Engine + Send + Sync + 'static> ServerHandler for OntologyMcpHandler<E> 
                 .filter(|(key, _)| *key != "validateOnly" && *key != "commandId")
                 .map(|(key, value)| (key.clone(), value.clone()))
                 .collect();
-            let result = ActionService::new(
-                &self.host.store,
-                ActionLimits::new(256, 256, self.limits.max_body_bytes)
-                    .map_err(|_| ErrorData::internal_error("action unavailable", None))?,
-                &self.host.tokens,
-            )
-            .with_engine(&*self.host.engine)
-            .execute_with_snapshot(
-                &ctx.principal,
-                &ctx.scope,
-                &ctx.active,
-                ActionRequest {
-                    action: action_name.to_owned(),
-                    command_id,
-                    items: vec![ActionItem {
-                        params,
-                        expected_versions: std::collections::BTreeMap::default(),
-                    }],
-                    validate_only,
-                },
-            )
-            .await
-            .map_err(|error| ErrorData::invalid_params(error.to_string(), None))?;
+            let action_name = action_name.to_owned();
+            let host = Arc::clone(&self.host);
+            let limits = self.limits;
+            let owned_permit = context
+                .extensions
+                .get::<Parts>()
+                .and_then(|parts| parts.extensions.get::<context::AdmissionPermit>())
+                .and_then(|permit| permit.0.lock().unwrap().take());
+            let (sender, receiver) = tokio::sync::oneshot::channel();
+            context::spawn_action(&self.host, async move {
+                let _permit = owned_permit;
+                let result = async {
+                    ActionService::new(
+                        &host.store,
+                        ActionLimits::new(256, 256, limits.max_body_bytes)
+                            .map_err(|_| ErrorData::internal_error("action unavailable", None))?,
+                        &host.tokens,
+                    )
+                    .with_engine(&*host.engine)
+                    .execute_with_snapshot(
+                        &ctx.principal,
+                        &ctx.scope,
+                        &ctx.active,
+                        ActionRequest {
+                            action: action_name,
+                            command_id,
+                            items: vec![ActionItem {
+                                params,
+                                expected_versions: std::collections::BTreeMap::default(),
+                            }],
+                            validate_only,
+                        },
+                    )
+                    .await
+                    .map_err(|error| ErrorData::invalid_params(error.to_string(), None))
+                }
+                .await;
+                let _ = sender.send(result);
+            })
+            .map_err(|()| ErrorData::internal_error("server shutting down", None))?;
+            let result = receiver
+                .await
+                .map_err(|_| ErrorData::internal_error("action task failed", None))??;
             let value = match result {
-                ActionOutcome::Committed(receipt) => json!({"receipt": receipt}),
+                ActionOutcome::Committed(receipt) => {
+                    json!({"receipt": crate::rest::receipt_json(&receipt)})
+                }
                 ActionOutcome::Validated => json!({"validated": true}),
             };
             return Ok(CallToolResult::structured(value).into());
         }
-        let result = self
-            .call_read(&tool_name, &args, &ctx)
-            .await
+        let result = tokio::select! {
+            biased;
+            () = context.ct.cancelled() => return Err(ErrorData::internal_error("request cancelled", None)),
+            () = server_state.read_cancellation.cancelled() => return Err(ErrorData::internal_error("server shutting down", None)),
+            result = self.call_read(&tool_name, &args, &ctx) => result,
+        }
             .map_err(|error| ErrorData::invalid_params(error, None))?;
         Ok(CallToolResult::structured(result).into())
     }

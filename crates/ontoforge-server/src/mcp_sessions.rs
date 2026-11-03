@@ -14,6 +14,12 @@ pub enum SessionAdmission {
 #[error("session owner binding unavailable")]
 pub struct SessionOwnerError;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SessionVerifyError {
+    Missing,
+    Mismatched,
+}
+
 #[derive(Debug)]
 pub struct SessionOwners {
     entries: Mutex<HashMap<String, Entry>>,
@@ -67,6 +73,23 @@ impl SessionOwners {
             },
         );
         Ok(SessionAdmission::Bound)
+    }
+
+    pub fn verify(&self, session: &str, owner: &str) -> Result<(), SessionVerifyError> {
+        let mut entries = self
+            .entries
+            .lock()
+            .map_err(|_| SessionVerifyError::Missing)?;
+        let now = Instant::now();
+        entries.retain(|_, entry| now.duration_since(entry.touched) <= self.ttl);
+        let entry = entries
+            .get_mut(session)
+            .ok_or(SessionVerifyError::Missing)?;
+        if entry.owner != owner {
+            return Err(SessionVerifyError::Mismatched);
+        }
+        entry.touched = now;
+        Ok(())
     }
 
     pub fn remove(&self, session: &str) {

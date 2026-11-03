@@ -57,16 +57,27 @@ pub(crate) fn stop_admission<E>(host: &ServerHost<E>) {
     crate::state::for_host(host).stop_admission();
 }
 
-pub async fn wait_actions<E>(host: &ServerHost<E>) {
+pub async fn wait_actions<E>(host: &ServerHost<E>) -> Result<(), tokio::task::JoinError> {
     let key = Arc::as_ptr(&host.store) as usize;
     let tasks = task_registry()
         .lock()
         .unwrap()
         .remove(&key)
         .unwrap_or_default();
+    let mut failure = None;
     for task in tasks {
-        let _ = task.await;
+        if let Err(error) = task.await {
+            failure = Some(error);
+        }
     }
+    failure.map_or(Ok(()), Err)
+}
+
+pub(crate) fn detach_actions<E>(host: &ServerHost<E>) {
+    task_registry()
+        .lock()
+        .unwrap()
+        .remove(&(Arc::as_ptr(&host.store) as usize));
 }
 
 #[derive(Clone)]
@@ -114,14 +125,24 @@ impl RequestTrace {
 }
 
 pub async fn admit(
-    axum::extract::State((slots, deadline)): axum::extract::State<(
+    axum::extract::State((slots, deadline, server_state)): axum::extract::State<(
         Arc<tokio::sync::Semaphore>,
         Duration,
+        Arc<crate::state::ServerState>,
     )>,
     mut request: axum::extract::Request,
     next: axum::middleware::Next,
 ) -> Response {
     let trace = RequestTrace::new();
+    let _read = server_state.read_tasks.token();
+    if !server_state.accepting() {
+        return error::wire(
+            StatusCode::SERVICE_UNAVAILABLE,
+            "SHUTTING_DOWN",
+            "server",
+            &trace.id(),
+        );
+    }
     let api_name = request
         .uri()
         .path()
@@ -142,14 +163,18 @@ pub async fn admit(
         .extensions_mut()
         .insert(AdmissionPermit(Arc::clone(&permit_slot)));
     request.extensions_mut().insert(trace.clone());
-    let response = match tokio::time::timeout(deadline, next.run(request)).await {
-        Ok(response) => response,
-        Err(_) => error::wire(
+    let response = tokio::select! {
+        biased;
+        () = server_state.read_cancellation.cancelled() => error::wire(StatusCode::SERVICE_UNAVAILABLE, "SHUTTING_DOWN", &api_name, &trace.id()),
+        result = tokio::time::timeout(deadline, next.run(request)) => match result {
+            Ok(response) => response,
+            Err(_) => error::wire(
             StatusCode::GATEWAY_TIMEOUT,
             "DEADLINE_EXCEEDED",
             &api_name,
             &trace.id(),
-        ),
+            ),
+        },
     };
     let _ = permit_slot.lock().unwrap().take();
     response
@@ -283,4 +308,53 @@ pub async fn context_from_headers<E: Engine + Send + Sync + 'static>(
         ));
     }
     build(host, &headers, api_name).await
+}
+
+pub async fn authenticate_mcp<E: Engine + Send + Sync + 'static>(
+    axum::extract::State(host): axum::extract::State<Arc<ServerHost<E>>>,
+    request: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> Response {
+    let (ctx, id) = match context_from_headers(&host, request.headers().clone(), "mcp").await {
+        Ok(context) => context,
+        Err(response) => return response,
+    };
+    let owners = crate::mcp::mcp_sessions::global();
+    let session = request
+        .headers()
+        .get("mcp-session-id")
+        .and_then(|value| value.to_str().ok())
+        .map(str::to_owned);
+    if let Some(session) = &session
+        && let Err(reason) = owners.verify(session, ctx.principal.id.as_str())
+    {
+        let status = match reason {
+            crate::mcp::mcp_sessions::SessionVerifyError::Missing => StatusCode::NOT_FOUND,
+            crate::mcp::mcp_sessions::SessionVerifyError::Mismatched => StatusCode::FORBIDDEN,
+        };
+        return error::wire(status, "SESSION_OWNER_UNAVAILABLE", "mcp", &id);
+    }
+    let deleting = request.method() == axum::http::Method::DELETE;
+    let response = next.run(request).await;
+    if response.status().is_success() {
+        if deleting {
+            if let Some(session) = session {
+                owners.remove(&session);
+            }
+        } else if session.is_none()
+            && let Some(created) = response
+                .headers()
+                .get("mcp-session-id")
+                .and_then(|value| value.to_str().ok())
+            && owners.admit(created, ctx.principal.id.as_str()).is_err()
+        {
+            return error::wire(
+                StatusCode::SERVICE_UNAVAILABLE,
+                "SESSION_OWNER_UNAVAILABLE",
+                "mcp",
+                &id,
+            );
+        }
+    }
+    response
 }
