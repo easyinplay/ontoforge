@@ -20,6 +20,10 @@ env:
 
 jobs:
   test:
+    env:
+      CARGO_PROFILE_DEV_DEBUG: "0"
+      CARGO_PROFILE_TEST_DEBUG: "0"
+      CARGO_INCREMENTAL: "0"
     strategy:
       fail-fast: false
       matrix:
@@ -33,6 +37,9 @@ jobs:
           toolchain: "1.98.0"
           components: "clippy, rustfmt"
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          prefix-key: ci-test-no-debug-v1
+          cache-targets: false
       - run: cargo fmt --all --check
       # A second TLS / crypto stack widens the supply chain and makes Linux CI need system
       # headers; postgresql_embedded pulls native-tls unless its default features are off
