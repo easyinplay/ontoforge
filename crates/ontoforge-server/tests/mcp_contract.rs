@@ -309,6 +309,169 @@ async fn full_read_fixture() -> support::Fixture {
     fixture
 }
 
+async fn append_history_group(fixture: &support::Fixture, names: &[String]) {
+    use ontoforge_storage::commit::{Actor, Commit, Edit, ObjectOp};
+    use ontoforge_storage::value::PropertyValue;
+    let active = fixture.store.active_definition().await.unwrap();
+    fixture
+        .store
+        .commit(Commit {
+            actor: Actor::Principal("ontoforge-dev|alice".to_owned()),
+            action: "history-contract".to_owned(),
+            def_version: active.def_version,
+            params: json!({"private":"must-not-leak"}),
+            edits: names
+                .iter()
+                .map(|name| Edit::Object {
+                    type_name: "Airport".to_owned().try_into().unwrap(),
+                    pk: PropertyValue::String("BER".to_owned()),
+                    op: ObjectOp::Set(std::collections::BTreeMap::from([(
+                        "name".to_owned().try_into().unwrap(),
+                        PropertyValue::String(name.clone()),
+                    )])),
+                })
+                .collect(),
+        })
+        .await
+        .unwrap();
+}
+
+#[tokio::test]
+async fn mcp_history_pages_match_rest_and_preserve_complete_records() {
+    let fixture = full_read_fixture().await;
+    append_history_group(&fixture, &["first".to_owned(), "second".to_owned()]).await;
+    let running = fixture.start().await;
+    let session = initialize(&running).await;
+    let rest = support::success(
+        running
+            .get("/api/objects/Airport/BER/history?limit=1")
+            .await,
+    )
+    .await;
+    let response = call_read_tool(
+        &running,
+        &session,
+        2,
+        "history",
+        json!({"objectType":"Airport","pk":"BER","limit":1}),
+    )
+    .await;
+    let first = &response["result"]["structuredContent"];
+    assert_eq!(first, &rest);
+    assert_eq!(first["entries"].as_array().unwrap().len(), 2);
+    assert_eq!(first["truncated"], true);
+    let next = first["nextBeforeSeq"].as_i64().unwrap();
+    assert!(
+        first["entries"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|entry| entry["seq"] == next)
+    );
+    let rest = support::success(
+        running
+            .get(&format!(
+                "/api/objects/Airport/BER/history?limit=1&beforeSeq={next}"
+            ))
+            .await,
+    )
+    .await;
+    let response = call_read_tool(
+        &running,
+        &session,
+        3,
+        "history",
+        json!({"objectType":"Airport","pk":"BER","limit":1,"beforeSeq":next}),
+    )
+    .await;
+    let last = &response["result"]["structuredContent"];
+    assert_eq!(last, &rest);
+    assert_eq!(last["entries"].as_array().unwrap().len(), 1);
+    assert_eq!(last["truncated"], false);
+    assert!(last["nextBeforeSeq"].is_null());
+    assert!(!response.to_string().contains("must-not-leak"));
+    assert_eq!(running.finish_actions().await.len(), 4);
+}
+
+#[tokio::test]
+async fn mcp_history_byte_budget_matches_rest_without_partial_records() {
+    for budget in [1024, 10_000] {
+        let fixture = full_read_fixture().await;
+        append_history_group(
+            &fixture,
+            &["secret-history-payload北京".repeat(100), "short".to_owned()],
+        )
+        .await;
+        let mut limits = ontoforge_server::ServerLimits::default();
+        limits.execution.max_decoded_bytes = budget;
+        let running = fixture.start_with_limits(limits).await;
+        let session = initialize(&running).await;
+        let rest_response = running
+            .get("/api/objects/Airport/BER/history?limit=100")
+            .await;
+        let status = rest_response.status();
+        let rest: Value = rest_response.json().await.unwrap();
+        let response = call_read_tool(
+            &running,
+            &session,
+            2,
+            "history",
+            json!({"objectType":"Airport","pk":"BER","limit":100}),
+        )
+        .await;
+        if budget == 1024 {
+            assert_eq!(status, reqwest::StatusCode::BAD_REQUEST);
+            assert_eq!(rest["code"], "COST_EXCEEDED");
+            assert_eq!(
+                response["error"]["data"]["code"], rest["code"],
+                "{response}"
+            );
+            assert!(response["result"].is_null());
+            assert!(!response.to_string().contains("secret-history-payload"));
+        } else {
+            assert_eq!(status, reqwest::StatusCode::OK);
+            assert_eq!(response["result"]["structuredContent"], rest);
+            assert_eq!(rest["entries"].as_array().unwrap().len(), 3);
+            assert!(serde_json::to_vec(&rest).unwrap().len() <= budget);
+        }
+        let audit = running.finish_actions().await;
+        assert_eq!(audit.len(), 2);
+        if budget == 1024 {
+            assert!(
+                audit
+                    .iter()
+                    .any(|row| row["request_id"] == response["error"]["data"]["request_id"])
+            );
+        }
+    }
+}
+
+#[tokio::test]
+async fn mcp_action_criteria_failure_retains_safe_domain_diagnostics() {
+    let running = support::fixture().await.start().await;
+    let session = initialize(&running).await;
+    let response = call_read_tool(
+        &running,
+        &session,
+        2,
+        "action_delayFlight",
+        json!({
+            "flight":"F-1001", "delayMinutes":0, "validateOnly":true, "commandId":"criteria-error"
+        }),
+    )
+    .await;
+    assert_eq!(
+        response["error"]["data"]["code"], "CRITERIA_FAILED",
+        "{response}"
+    );
+    assert_eq!(
+        response["error"]["data"]["message"],
+        "Delay must be positive and cancelled flights cannot be delayed"
+    );
+    assert!(response["error"]["data"]["parameterErrors"].is_null());
+    running.finish().await;
+}
+
 #[tokio::test]
 async fn mcp_read_tools_use_declared_argument_shapes() {
     let fixture = full_read_fixture().await;

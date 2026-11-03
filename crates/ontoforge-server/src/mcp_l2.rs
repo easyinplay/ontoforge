@@ -24,10 +24,59 @@ pub enum McpL2Error {
     Invalid(String),
     #[error("missing trusted L2 context: {0}")]
     MissingContext(String),
-    #[error("L2 source failed: {0}")]
-    Source(String),
+    #[error("L2 source failed")]
+    Source(EngineError),
     #[error("read audit unavailable")]
     AuditUnavailable,
+    #[error("{error}")]
+    Audited {
+        error: Box<Self>,
+        request_id: String,
+    },
+}
+
+impl McpL2Error {
+    #[must_use]
+    pub fn code(&self) -> &'static str {
+        match self {
+            Self::Denied => "NOT_FOUND",
+            Self::Unavailable => "SOURCE_UNAVAILABLE",
+            Self::Invalid(_) | Self::MissingContext(_) => "INVALID_REQUEST",
+            Self::AuditUnavailable => "AUDIT_UNAVAILABLE",
+            Self::Audited { error, .. } => error.code(),
+            Self::Source(error) => match error {
+                EngineError::Timeout { .. } => "DEADLINE_EXCEEDED",
+                EngineError::Cancelled => "CANCELLED",
+                EngineError::Unavailable { .. }
+                | EngineError::Unauthorized { .. }
+                | EngineError::Query { .. }
+                | EngineError::Protocol(_)
+                | EngineError::Print(_)
+                | EngineError::Config(_)
+                | EngineError::Fixture(_) => "SOURCE_UNAVAILABLE",
+            },
+        }
+    }
+
+    #[must_use]
+    pub fn request_id(&self) -> Option<&str> {
+        match self {
+            Self::Audited { request_id, .. } => Some(request_id),
+            Self::Denied
+            | Self::Unavailable
+            | Self::Invalid(_)
+            | Self::MissingContext(_)
+            | Self::Source(_)
+            | Self::AuditUnavailable => None,
+        }
+    }
+
+    fn audited(self, request_id: &str) -> Self {
+        Self::Audited {
+            error: Box::new(self),
+            request_id: request_id.to_owned(),
+        }
+    }
 }
 
 pub struct McpL2Tools<'a, E> {
@@ -37,6 +86,7 @@ pub struct McpL2Tools<'a, E> {
     pub engine: &'a E,
     pub store: &'a EditStore,
     pub limits: ServerLimits,
+    pub on_reserved: Option<&'a (dyn Fn(&str) + Sync)>,
 }
 
 impl<E: Engine + Sync> McpL2Tools<'_, E> {
@@ -81,6 +131,10 @@ impl<E: Engine + Sync> McpL2Tools<'_, E> {
                 def_version: self.active.def_version,
             })
             .map_err(|_| McpL2Error::AuditUnavailable)?;
+        let request_id = audit.request_id().to_owned();
+        if let Some(observer) = self.on_reserved {
+            observer(&request_id);
+        }
         audit.observe_sql(sql.as_str());
         let ctx = QueryContext {
             trace_token: audit.request_id().to_owned(),
@@ -98,8 +152,8 @@ impl<E: Engine + Sync> McpL2Tools<'_, E> {
         };
         audit
             .finish(status, rows)
-            .map_err(|_| McpL2Error::AuditUnavailable)?;
-        let output = result.map_err(|error| McpL2Error::Source(error.to_string()))?;
+            .map_err(|_| McpL2Error::AuditUnavailable.audited(&request_id))?;
+        let output = result.map_err(|error| McpL2Error::Source(error).audited(&request_id))?;
         Ok(output_json(output))
     }
 
@@ -177,6 +231,10 @@ impl<E: Engine + Sync> McpL2Tools<'_, E> {
                 def_version: self.active.def_version,
             })
             .map_err(|_| McpL2Error::AuditUnavailable)?;
+        let request_id = audit.request_id().to_owned();
+        if let Some(observer) = self.on_reserved {
+            observer(&request_id);
+        }
         let ctx = QueryContext {
             trace_token: audit.request_id().to_owned(),
             client_tags: vec!["mcp".to_owned(), "get_table_schema".to_owned()],
@@ -197,9 +255,9 @@ impl<E: Engine + Sync> McpL2Tools<'_, E> {
         };
         audit
             .finish(status, rows)
-            .map_err(|_| McpL2Error::AuditUnavailable)?;
+            .map_err(|_| McpL2Error::AuditUnavailable.audited(&request_id))?;
         let columns = result
-            .map_err(|error| McpL2Error::Source(error.to_string()))?
+            .map_err(|error| McpL2Error::Source(error).audited(&request_id))?
             .remove(&target)
             .unwrap_or_default();
         Ok(

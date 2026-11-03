@@ -32,6 +32,43 @@ pub mod mcp_l2;
 #[path = "mcp_sessions.rs"]
 pub mod mcp_sessions;
 
+async fn context_failure(
+    response: axum::response::Response,
+    api_name: &str,
+    fallback_id: &str,
+) -> ErrorData {
+    let request_id = response
+        .headers()
+        .get("x-request-id")
+        .and_then(|id| id.to_str().ok())
+        .filter(|id| ulid::Ulid::from_string(id).is_ok())
+        .unwrap_or(fallback_id)
+        .to_owned();
+    let value = axum::body::to_bytes(response.into_body(), 4096)
+        .await
+        .ok()
+        .and_then(|bytes| serde_json::from_slice::<Value>(&bytes).ok());
+    let code = match value
+        .as_ref()
+        .and_then(|value| value.get("code"))
+        .and_then(Value::as_str)
+    {
+        Some("UNAUTHENTICATED") => "UNAUTHENTICATED",
+        Some("INVALID_REQUEST") => "INVALID_REQUEST",
+        Some("STORE_UNAVAILABLE") => "STORE_UNAVAILABLE",
+        Some("SCOPE_UNAVAILABLE") => "SCOPE_UNAVAILABLE",
+        _ => "INTERNAL_ERROR",
+    };
+    context_error(code, api_name, &request_id)
+}
+
+fn context_error(code: &'static str, api_name: &str, request_id: &str) -> ErrorData {
+    ErrorData::invalid_request(
+        code,
+        Some(json!({"code":code,"apiName":api_name,"request_id":request_id})),
+    )
+}
+
 #[derive(Clone)]
 pub struct OntologyMcpHandler<E> {
     pub host: Arc<ServerHost<E>>,
@@ -57,14 +94,28 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
         request: &RequestContext<RoleServer>,
         api_name: &str,
     ) -> Result<(context::RequestContext, String), ErrorData> {
+        let fallback_id = request
+            .extensions
+            .get::<Parts>()
+            .and_then(|parts| parts.extensions.get::<context::RequestTrace>())
+            .map_or_else(
+                || ulid::Ulid::generate().to_string(),
+                context::RequestTrace::id,
+            );
         let parts = request
             .extensions
             .get::<Parts>()
-            .ok_or_else(|| ErrorData::invalid_request("authentication required", None))?;
-        let (ctx, request_id) =
-            context::context_from_headers(&self.host, parts.headers.clone(), api_name)
-                .await
-                .map_err(|_| ErrorData::invalid_request("authentication required", None))?;
+            .ok_or_else(|| context_error("UNAUTHENTICATED", api_name, &fallback_id))?;
+        let (ctx, request_id) = match context::context_from_headers(
+            &self.host,
+            parts.headers.clone(),
+            api_name,
+        )
+        .await
+        {
+            Ok(context) => context,
+            Err(response) => return Err(context_failure(response, api_name, &fallback_id).await),
+        };
         if let Some(session) = parts
             .headers
             .get("mcp-session-id")
@@ -72,7 +123,7 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
         {
             mcp_sessions::global()
                 .verify(session, ctx.principal.id.as_str())
-                .map_err(|_| ErrorData::invalid_request("session owner mismatch", None))?;
+                .map_err(|_| context_error("UNAUTHENTICATED", api_name, &request_id))?;
         }
         Ok((ctx, request_id))
     }
@@ -86,14 +137,23 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
         name: &str,
         args: &Map<String, Value>,
         ctx: &context::RequestContext,
-    ) -> Result<Value, String> {
+        trace: &context::RequestTrace,
+    ) -> Result<Value, ErrorData> {
+        let failure = |error: mcp_l2::McpL2Error| {
+            crate::error::mcp(
+                error.code(),
+                name,
+                error.request_id().unwrap_or(&trace.id()),
+            )
+        };
         let engine = crate::state::for_host(&self.host)
             .l2_engine()
             .filter(|engine| {
                 engine.l2_status()
                     == Some(ontoforge_engine::trino::l2_health::L2HealthStatus::Enabled)
             })
-            .ok_or_else(|| "L2 unavailable".to_owned())?;
+            .ok_or_else(|| failure(mcp_l2::McpL2Error::Unavailable))?;
+        let on_reserved = |id: &str| trace.reserved(id);
         let tools = mcp_l2::McpL2Tools {
             principal: &ctx.principal,
             scope: &ctx.scope,
@@ -101,51 +161,49 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
             engine: &*engine,
             store: &self.host.store,
             limits: self.limits,
+            on_reserved: Some(&on_reserved),
         };
         match name {
             mcp_catalog::EXECUTE_QUERY_TOOL => tools
                 .execute_query(
                     args.get("query")
                         .and_then(Value::as_str)
-                        .ok_or_else(|| "query is required".to_owned())?,
+                        .ok_or_else(|| crate::error::mcp("INVALID_REQUEST", name, &trace.id()))?,
                 )
                 .await
-                .map_err(|error| error.to_string()),
+                .map_err(failure),
             mcp_catalog::EXPLAIN_QUERY_TOOL => tools
                 .explain_query(
                     args.get("query")
                         .and_then(Value::as_str)
-                        .ok_or_else(|| "query is required".to_owned())?,
+                        .ok_or_else(|| crate::error::mcp("INVALID_REQUEST", name, &trace.id()))?,
                     args.get("format").and_then(Value::as_str),
                 )
                 .await
-                .map_err(|error| error.to_string()),
-            mcp_catalog::LIST_CATALOGS_TOOL => tools
-                .list_catalogs()
-                .await
-                .map_err(|error| error.to_string()),
+                .map_err(failure),
+            mcp_catalog::LIST_CATALOGS_TOOL => tools.list_catalogs().await.map_err(failure),
             mcp_catalog::LIST_SCHEMAS_TOOL => tools
                 .list_schemas(args.get("catalog").and_then(Value::as_str))
                 .await
-                .map_err(|error| error.to_string()),
+                .map_err(failure),
             mcp_catalog::LIST_TABLES_TOOL => tools
                 .list_tables(
                     args.get("catalog").and_then(Value::as_str),
                     args.get("schema").and_then(Value::as_str),
                 )
                 .await
-                .map_err(|error| error.to_string()),
+                .map_err(failure),
             mcp_catalog::GET_TABLE_SCHEMA_TOOL => tools
                 .get_table_schema(
                     args.get("table")
                         .and_then(Value::as_str)
-                        .ok_or_else(|| "table is required".to_owned())?,
+                        .ok_or_else(|| crate::error::mcp("INVALID_REQUEST", name, &trace.id()))?,
                     args.get("catalog").and_then(Value::as_str),
                     args.get("schema").and_then(Value::as_str),
                 )
                 .await
-                .map_err(|error| error.to_string()),
-            _ => Err("tool unavailable".to_owned()),
+                .map_err(failure),
+            _ => Err(crate::error::mcp("NOT_FOUND", name, &trace.id())),
         }
     }
 
@@ -416,38 +474,27 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
                     .iter()
                     .map(|(name, value)| (name.clone(), ontoforge_query::scope_scalar(value)))
                     .collect::<std::collections::BTreeMap<_, _>>();
-                let history = self
-                    .host
-                    .store
-                    .history_with_snapshot(
-                        &HistoryRequest {
-                            type_name: &object_type_name,
-                            pk: &pk,
-                            scope: Some(type_scope),
-                            attrs: &ctx.principal.attrs,
-                            current_row: Some(&current),
-                            caller: CallerKind::Ordinary,
-                            limit: u32::try_from(
-                                args.get("limit").and_then(Value::as_u64).unwrap_or(100),
-                            )
-                            .unwrap_or(u32::MAX),
-                            before_seq: args.get("beforeSeq").and_then(Value::as_i64),
-                        },
-                        &ctx.active,
-                    )
-                    .await
-                    .map_err(|error| {
-                        failure(match error {
-                            ontoforge_storage::history::HistoryError::NotFound => "NOT_FOUND",
-                            ontoforge_storage::history::HistoryError::Store(_) => {
-                                "STORE_UNAVAILABLE"
-                            }
-                        })
-                    })?;
-                let next = history.last().map(|entry| entry.seq);
-                Ok(
-                    json!({"entries": history.into_iter().map(crate::rest::history_entry).collect::<Vec<_>>(), "truncated": false, "nextBeforeSeq": next}),
+                let history = crate::history_page::read_history_page(
+                    &self.host.store,
+                    HistoryRequest {
+                        type_name: &object_type_name,
+                        pk: &pk,
+                        scope: Some(type_scope),
+                        attrs: &ctx.principal.attrs,
+                        current_row: Some(&current),
+                        caller: CallerKind::Ordinary,
+                        limit: u32::try_from(
+                            args.get("limit").and_then(Value::as_u64).unwrap_or(100),
+                        )
+                        .unwrap_or(u32::MAX),
+                        before_seq: args.get("beforeSeq").and_then(Value::as_i64),
+                    },
+                    &ctx.active,
+                    self.limits.execution.max_decoded_bytes,
                 )
+                .await
+                .map_err(|error| failure(error.code()))?;
+                Ok(json!(history))
             }
             _ => Err(failure("NOT_FOUND")),
         }
@@ -490,7 +537,12 @@ impl<E: Engine + Send + Sync + 'static> ServerHandler for OntologyMcpHandler<E> 
         let _request = server_state.read_tasks.token();
         let tool_name = request.name.to_string();
         let (ctx, request_id) = self.request_context(&context, &tool_name).await?;
-        let trace = context::RequestTrace::new();
+        let trace = context
+            .extensions
+            .get::<Parts>()
+            .and_then(|parts| parts.extensions.get::<context::RequestTrace>())
+            .cloned()
+            .unwrap_or_else(context::RequestTrace::new);
         trace.reserved(&request_id);
         if !server_state.accepting() {
             return Err(crate::error::mcp(
@@ -515,11 +567,10 @@ impl<E: Engine + Send + Sync + 'static> ServerHandler for OntologyMcpHandler<E> 
         ) {
             let result = tokio::select! {
                 biased;
-                () = context.ct.cancelled() => return Err(ErrorData::internal_error("request cancelled", None)),
-                () = server_state.read_cancellation.cancelled() => return Err(ErrorData::internal_error("server shutting down", None)),
-                result = self.call_l2(&tool_name, &args, &ctx) => result,
-            }
-                .map_err(|error| ErrorData::invalid_params(error, None))?;
+                () = context.ct.cancelled() => return Err(crate::error::mcp("CANCELLED", &tool_name, &trace.id())),
+                () = server_state.read_cancellation.cancelled() => return Err(crate::error::mcp("SERVER_SHUTTING_DOWN", &tool_name, &trace.id())),
+                result = self.call_l2(&tool_name, &args, &ctx, &trace) => result,
+            }?;
             return Ok(CallToolResult::structured(result).into());
         }
         if tool_name.starts_with("action_") {
@@ -590,10 +641,13 @@ impl<E: Engine + Send + Sync + 'static> ServerHandler for OntologyMcpHandler<E> 
                     )
                     .await
                     .map_err(|error| {
-                        crate::error::mcp(
+                        ErrorData::invalid_params(
                             crate::error::action_code(&error),
-                            &action_tool,
-                            &action_trace.id(),
+                            Some(json!(crate::error::action_envelope(
+                                &error,
+                                &action_tool,
+                                &action_trace.id()
+                            ))),
                         )
                     })
                 }
@@ -619,5 +673,69 @@ impl<E: Engine + Send + Sync + 'static> ServerHandler for OntologyMcpHandler<E> 
             result = self.call_read(&tool_name, &args, &ctx, &trace) => result,
         }?;
         Ok(CallToolResult::structured(result).into())
+    }
+}
+
+#[cfg(test)]
+mod error_tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn context_error_preserves_safe_code_and_existing_id_only() {
+        for code in [
+            "UNAUTHENTICATED",
+            "INVALID_REQUEST",
+            "STORE_UNAVAILABLE",
+            "SCOPE_UNAVAILABLE",
+        ] {
+            let id = ulid::Ulid::generate().to_string();
+            let response = crate::error::response(
+                axum::http::StatusCode::SERVICE_UNAVAILABLE,
+                &id,
+                json!({"code":code,"request_id":"untrusted-body-id","details":"physical_relation secret_token"}),
+            );
+            let error = context_failure(response, "history", "fallback").await;
+            assert_eq!(error.code, rmcp::model::ErrorCode::INVALID_REQUEST);
+            assert_eq!(
+                error.data.unwrap(),
+                json!({"code":code,"apiName":"history","request_id":id})
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn context_error_bounds_and_filters_body_without_losing_header_id() {
+        for body in [
+            "not json".to_owned(),
+            "x".repeat(4097),
+            "{\"code\":\"physical_relation secret_token\"}".to_owned(),
+        ] {
+            let id = ulid::Ulid::generate().to_string();
+            let response = axum::response::Response::builder()
+                .header("x-request-id", &id)
+                .body(axum::body::Body::from(body))
+                .unwrap();
+            let error = context_failure(response, "history", "fallback").await;
+            assert_eq!(
+                error.data.unwrap(),
+                json!({"code":"INTERNAL_ERROR","apiName":"history","request_id":id})
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn context_error_without_valid_header_id_uses_transport_id() {
+        let id = ulid::Ulid::generate().to_string();
+        for header in [None, Some("invalid-id")] {
+            let mut response = axum::response::Response::builder();
+            if let Some(header) = header {
+                response = response.header("x-request-id", header);
+            }
+            let response = response
+                .body(axum::body::Body::from("{}".to_owned()))
+                .unwrap();
+            let error = context_failure(response, "describe", &id).await;
+            assert_eq!(error.data.unwrap()["request_id"], id);
+        }
     }
 }
