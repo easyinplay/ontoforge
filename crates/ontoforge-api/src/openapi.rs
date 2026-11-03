@@ -193,7 +193,8 @@ fn health() {}
             dto::EditSummary,
             dto::ActionReceipt,
             dto::ValidationResponse,
-            dto::HealthResponse
+            dto::HealthResponse,
+            dto::L2Health
         )
     ),
     modifiers(&SecurityModifier)

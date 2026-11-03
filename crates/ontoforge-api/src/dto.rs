@@ -373,4 +373,13 @@ pub struct ValidationResponse {
 pub struct HealthResponse {
     pub status: String,
     pub engine_status: EngineAvailability,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub l2: Option<L2Health>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct L2Health {
+    pub status: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
 }

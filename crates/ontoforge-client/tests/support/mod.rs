@@ -209,6 +209,14 @@ pub struct Running {
 }
 
 impl Fixture {
+    pub fn with_l2_status(
+        mut self,
+        status: ontoforge_engine::trino::l2_health::L2HealthStatus,
+    ) -> Self {
+        self.host = self.host.with_l2_status_provider(move || Some(status));
+        self
+    }
+
     pub async fn start(self) -> Running {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
         let url = format!("http://{}", listener.local_addr().unwrap());

@@ -51,6 +51,13 @@ Ctrl+C 停止接收新连接，等待活跃请求结束，并显式 drain 读取
 失败返回非零退出码。启动前使用既有 CLI 命令准备 definition、scope 和持久 edit store。
 完整开发数据 seed 与 reset 属于计划 `07-12`。
 
+## Health wire 合同
+
+`GET /health` 返回 `status` 和 `engineStatus`。配置了 L2 时，可选 `l2` 对象保留
+`status`，禁用时还包含稳定原因码 `reason`，例如 `EXPIRED`。启用时返回
+`{"status":"enabled"}`，未配置 L2 时省略 `l2`。Rust DTO 与 TypeScript 生成类型均
+保留这些字段，`reason` 可选；健康状态判定沿用服务端现有规则。
+
 ## Action 回执与历史 wire 合同
 
 Action 提交、同 `commandId` 重放和 command result 返回同一完整回执。

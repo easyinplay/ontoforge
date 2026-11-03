@@ -16,6 +16,25 @@ fn checked_in_document_matches_static_render() {
 }
 
 #[test]
+fn health_schema_includes_optional_l2_status_and_reason() {
+    let document: Value = serde_json::from_str(&ontoforge_api::openapi::render()).unwrap();
+    let schemas = &document["components"]["schemas"];
+    assert!(schemas["HealthResponse"]["properties"].get("l2").is_some());
+    assert!(
+        !schemas["HealthResponse"]["required"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("l2"))
+    );
+    assert_eq!(
+        schemas["L2Health"]["properties"]["status"]["type"],
+        "string"
+    );
+    assert!(schemas["L2Health"]["properties"].get("reason").is_some());
+    assert_eq!(schemas["L2Health"]["required"], json!(["status"]));
+}
+
+#[test]
 fn openapi_31_all_operations_and_security() {
     let document = checked_in_openapi();
     assert_eq!(document["openapi"], "3.1.0");

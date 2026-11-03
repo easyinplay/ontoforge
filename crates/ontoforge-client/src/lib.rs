@@ -437,6 +437,8 @@ fn decode_health(value: &Value) -> Result<dto::HealthResponse, ClientError> {
         Ok(dto::HealthResponse {
             status: string_field(value, "status"),
             engine_status: decode_engine_status(value, "engineStatus")?,
+            l2: serde_json::from_value(value.get("l2").cloned().unwrap_or(Value::Null))
+                .map_err(|error| error.to_string())?,
         })
     })
 }

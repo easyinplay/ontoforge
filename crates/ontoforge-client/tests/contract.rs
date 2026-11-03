@@ -66,7 +66,53 @@ async fn rust_client_metadata_pk_query_aggregate_health() {
 
     let health = api.health().await.unwrap();
     assert_eq!(health.status, "healthy");
+    assert!(serde_json::to_value(health).unwrap().get("l2").is_none());
     f.finish().await;
+}
+
+#[tokio::test]
+async fn rust_client_health_preserves_l2_status_and_disable_reason() {
+    use ontoforge_engine::trino::l2_health::{L2DisableReason, L2HealthStatus};
+
+    let cases = [
+        (
+            L2HealthStatus::Enabled,
+            "healthy",
+            Some(json!({"status": "enabled"})),
+        ),
+        (
+            L2HealthStatus::Disabled {
+                reason: L2DisableReason::Expired,
+            },
+            "degraded",
+            Some(json!({"status": "disabled", "reason": "EXPIRED"})),
+        ),
+        (
+            L2HealthStatus::Disabled {
+                reason: L2DisableReason::NotConfigured,
+            },
+            "healthy",
+            None,
+        ),
+    ];
+    for (status, expected_status, expected_l2) in cases {
+        let f = fixture().await.with_l2_status(status).start().await;
+        let wire: Value = reqwest::get(format!("{}/health", f.url))
+            .await
+            .unwrap()
+            .json()
+            .await
+            .unwrap();
+        let decoded = client(&f.url, &f.token).health().await.unwrap();
+        let decoded = serde_json::to_value(decoded).unwrap();
+        f.finish().await;
+        assert_eq!(wire["status"], expected_status);
+        assert_eq!(wire.get("l2"), expected_l2.as_ref());
+        assert_eq!(
+            decoded, wire,
+            "typed health must retain the actual HTTP response"
+        );
+    }
 }
 
 #[tokio::test]

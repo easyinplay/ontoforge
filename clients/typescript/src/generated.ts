@@ -220,6 +220,7 @@ export interface components {
         };
         HealthResponse: {
             engineStatus: components["schemas"]["EngineAvailability"];
+            l2?: components["schemas"]["L2Health"] | null;
             status: string;
         };
         HistoryEntry: {
@@ -249,6 +250,10 @@ export interface components {
             edits: components["schemas"]["EditSummary"][];
             /** Format: int32 */
             itemOrdinal: bigint;
+        };
+        L2Health: {
+            reason?: string | null;
+            status: string;
         };
         /** @enum {string} */
         LinkDirection: "fromTo" | "toFrom";

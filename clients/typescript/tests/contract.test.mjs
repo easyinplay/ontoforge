@@ -116,6 +116,25 @@ test('ts_client_generated_metadata_pk_query_aggregate_health', async () => {
   assert.ok(aggregate.buckets.length > 0);
   const health = await client.health();
   assert.equal(health.engineStatus, 'available');
+  assert.equal(health.status, 'healthy');
+  assert.equal(Object.hasOwn(health, 'l2'), false);
+});
+
+test('ts_client_health_l2_types_and_decode_preserve_optional_reason', async () => {
+  run(process.execPath, [
+    join(repoRoot, 'clients/typescript/node_modules/typescript/bin/tsc'),
+    '--noEmit', '--module', 'NodeNext', '--moduleResolution', 'NodeNext',
+    '--target', 'ES2022', '--strict',
+    'clients/typescript/tests/health-types.ts',
+  ]);
+  const { createOntoforgeClient } = await import('../dist/index.js');
+  for (const health of [
+    { status: 'healthy', engineStatus: 'available', l2: { status: 'enabled' } },
+    { status: 'degraded', engineStatus: 'available', l2: { status: 'disabled', reason: 'EXPIRED' } },
+  ]) {
+    const api = createOntoforgeClient({ baseUrl, fetch: async () => new Response(JSON.stringify(health)) });
+    assert.deepEqual(await api.health(), health);
+  }
 });
 
 test('ts_client_typecheck_generation_and_instance_abort', async () => {

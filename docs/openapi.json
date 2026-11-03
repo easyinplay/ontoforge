@@ -978,6 +978,16 @@
           "engineStatus": {
             "$ref": "#/components/schemas/EngineAvailability"
           },
+          "l2": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/L2Health"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "status": {
             "type": "string"
           }
@@ -1085,6 +1095,23 @@
             "type": "integer",
             "format": "int32",
             "minimum": 0
+          }
+        }
+      },
+      "L2Health": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string"
           }
         }
       },
