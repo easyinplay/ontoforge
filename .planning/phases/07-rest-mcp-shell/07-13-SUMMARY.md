@@ -24,6 +24,7 @@ affects: [API-01, API-03, MCP-01, MCP-06, MCP-07, MCP-08, L2-04, SCOPE-07]
 - `9e6d858`、`7fa2401`：Rust receipt序号checked conversion、15项client lint和history分页参数修复，最终4 unit+6 HTTP contract通过。
 - `c0abe96`：CLI纯lint最小修改已提交；本地完整Clippy/既有行为回归仍待结果。
 - `ec15dd2`、`77382e7`：取消读任务清理及精确audit断言、容器内seed、Windows网络/运行binary隔离接线与Cargo jobs=2。
+- `02a9c4e`：Windows私有隐藏console owner/stop helper，验证PID与创建时间、精确console成员、Job异常回收、真实退出码和Bash非零归一；9项真实进程回归通过，已接入Windows CI。完整服务复验与独立review待收齐。
 
 ## Earlier Local Verification (2026-10-31)
 

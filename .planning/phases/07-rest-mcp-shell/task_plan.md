@@ -22,6 +22,8 @@
 
 ## Next Step
 
+用户已确认Windows收尾方案A：接入私有隐藏console helper（仅CI工具层），以真实Ctrl+C关闭server，保留原始退出码/超时失败、验证进程身份及console成员；先正式回归，再完整server-services验收。Rust/API不改，完成后继续07-14。
+
 P3执行中：07-01至07-12、07-15、07-16共14/16完成。当前先完成07-13取消读真实测试、完整服务脚本及远程Linux CI，再执行依赖它的07-14。复用现有PLAN，不新建重复规划文档；最新证据进入07-13-SUMMARY.md。
 
 07-11 已完成：`70a9ed9`、`5c76afe`；独立 generator workspace、TypeScript 7 client、无损 codec 与 5 项真实 HTTP contract 均通过。主 package 已移除 `openapi-typescript`，避免 clean install peer 冲突。

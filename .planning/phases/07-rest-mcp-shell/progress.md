@@ -1,5 +1,11 @@
 # Phase 7 progress
 
+- 2026-11-03 helper冻结`02a9c4e`，最终9/9 GREEN（12.545s），包含原生17/130/137/256和Bash低8位截断回归；bash-n/diffcheck通过。独立review已启动，尚未将完整服务脚本判GREEN；待冻结复签后重跑完整Docker脚本，推送后远程CI确认新增Windows回归。
+
+- 2026-11-03 Windows helper正式回归9/9 GREEN（11.636s，原始日志`target/phase7-windows-helper-tests.log`）：真实binary优雅退出、Bash cleanup接线、非零码传播、陈旧身份/无关PID拒绝、多console成员拒绝、超时清理与owner异常退出回收。等待冻结提交与独立review，再重跑完整本地服务脚本。
+
+- 2026-11-03 用户选择A，解除Windows helper接入的决策等待；实施交transport lane，主会话维护共享planning。先将成功probe转为正式start/stop及回归，再独立review和完整本地服务脚本；原始CI/workspace结果继续有效，只有实际受影响门禁重跑。
+
 - 2026-11-03 收尾诊断闭合：POSIX INT路径2/2失败；私有隐藏console CTRL_C路径2/2成功（真实exit0、端口关闭、约1.36s、无强杀）。Grok第二轮正常返回支持A，已向用户提出A Windows helper / B WSL验收选择；当前等待路径选择，07-13仍未关闭，无后台Cargo或服务遗留。
 
 - 2026-11-03 本地完整服务脚本所有named suites通过（Rust19、TS9，0失败/skip），但收尾exit1，不能标完整GREEN；四测试容器已清理，server.log为空。进入最小复现诊断，优先核查Git Bash对原生Windows进程的SIGINT/退出码处理；不修改运行中的脚本，不重跑已通过workspace。07-13继续执行，07-14未放行。
