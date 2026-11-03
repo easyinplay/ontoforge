@@ -51,6 +51,19 @@ Ctrl+C 停止接收新连接，等待活跃请求结束，并显式 drain 读取
 失败返回非零退出码。启动前使用既有 CLI 命令准备 definition、scope 和持久 edit store。
 完整开发数据 seed 与 reset 属于计划 `07-12`。
 
+## Action 回执与历史 wire 合同
+
+Action 提交、同 `commandId` 重放和 command result 返回同一完整回执。
+`items` 中每项为 `{itemOrdinal, edits}`，`edits` 保留全部规则产生的编辑，允许空数组。
+每条 edit 包含 `ruleOrdinal`、`editOrdinal`、`kind`、`typeName`、`pk`、`operation`、
+`versionAfter`；不会将多个编辑折叠为首个对象。ordinal 为 `uint32`，版本与 `logSeq`
+为 `int64`，TypeScript SDK 将 JSON 整数解码为 `bigint`。
+
+history 使用 `eventId`、`committedAt`、`maskedChanges` 等 camelCase 字段。
+历史内容按当前 scope 遮蔽：`maskedChanges` 只含被遮蔽的属性名，普通调用者不获得原始
+Action params。Rust 与 TypeScript SDK 对回执和历史的必需字段执行类型检查；缺字段或
+类型错误会拒绝响应，不能当作空字符串、空数组或 `false` 继续成功返回。
+
 ## MCP HTTP 与 stdio
 
 `serve` 同时提供 `POST /mcp` 的 Streamable HTTP MCP endpoint。stdio 客户端必须先

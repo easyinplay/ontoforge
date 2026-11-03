@@ -190,6 +190,7 @@ fn health() {}
             dto::HistoryEntry,
             dto::HistoryPage,
             dto::ItemReceipt,
+            dto::EditSummary,
             dto::ActionReceipt,
             dto::ValidationResponse,
             dto::HealthResponse

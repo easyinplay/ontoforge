@@ -904,6 +904,44 @@
           "desc"
         ]
       },
+      "EditSummary": {
+        "type": "object",
+        "required": [
+          "ruleOrdinal",
+          "editOrdinal",
+          "kind",
+          "typeName",
+          "pk",
+          "operation",
+          "versionAfter"
+        ],
+        "properties": {
+          "editOrdinal": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "kind": {
+            "type": "string"
+          },
+          "operation": {
+            "type": "string"
+          },
+          "pk": {},
+          "ruleOrdinal": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "typeName": {
+            "type": "string"
+          },
+          "versionAfter": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
       "EngineAvailability": {
         "type": "string",
         "enum": [
@@ -1034,22 +1072,19 @@
         "type": "object",
         "required": [
           "itemOrdinal",
-          "objectType",
-          "pk",
-          "version"
+          "edits"
         ],
         "properties": {
+          "edits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EditSummary"
+            }
+          },
           "itemOrdinal": {
             "type": "integer",
             "format": "int32",
             "minimum": 0
-          },
-          "objectType": {
-            "type": "string"
-          },
-          "pk": {},
-          "version": {
-            "type": "string"
           }
         }
       },

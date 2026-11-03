@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawn } from 'node:child_process';
-import { mkdtemp, rm, access } from 'node:fs/promises';
+import { mkdtemp, rm, access, readFile, writeFile } from 'node:fs/promises';
 import { constants } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -75,6 +75,14 @@ before(async () => {
     }
   });
   const config = join(dataDir, 'server.toml');
+  const actionsPath = join(dataDir, 'ontology', 'actions.yaml');
+  const actions = await readFile(actionsPath, 'utf8');
+  assert.ok(actions.includes('      delayMinutes: { param: delayMinutes }'));
+  await writeFile(actionsPath, actions.replace(
+    '      delayMinutes: { param: delayMinutes }',
+    '  - kind: modifyObject\n    object: flight\n    properties:\n      delayMinutes: { param: delayMinutes }',
+  ));
+  run(binary, ['reload', join(dataDir, 'ontology'), '--server-config', config]);
   bearer = run(binary, ['dev-token', '--server-config', config, '--sub', 'alice', '--groups', 'dispatchers']).trim();
   client = (await import('../dist/index.js')).createOntoforgeClient({ baseUrl, bearer });
   child._ontoforgeStderr = () => stderr;
@@ -145,6 +153,11 @@ test('ts_client_action_validate_history_result_and_replay', async () => {
     items: [{ params: { flight: 'F-1001', delayMinutes: 15 } }],
   });
   assert.equal(typeof first.commandId, 'string');
+  assert.equal(first.items[0].itemOrdinal, 0n);
+  assert.equal(first.items[0].edits.length, 2);
+  assert.deepEqual(first.items[0].edits.map((edit) => edit.ruleOrdinal), [0n, 1n]);
+  assert.deepEqual(first.items[0].edits.map((edit) => edit.editOrdinal), [0n, 1n]);
+  assert.ok(first.items[0].edits.every((edit) => edit.kind === 'object' && edit.operation === 'set' && edit.typeName === 'Flight' && edit.pk === 'F-1001' && typeof edit.versionAfter === 'bigint' && edit.versionAfter > 0n));
   const replay = await client.action('delayFlight', {
     commandId,
     items: [{ params: { flight: 'F-1001', delayMinutes: 15 } }],
@@ -152,7 +165,10 @@ test('ts_client_action_validate_history_result_and_replay', async () => {
   assert.deepEqual(replay, first);
   assert.deepEqual(await client.commandResult(commandId), first);
   const history = await client.history('Flight', 'F-1001', { limit: 20n });
-  assert.equal(history.entries.filter((entry) => entry.action === 'delayFlight').length, 1);
+  assert.equal(history.entries.filter((entry) => entry.action === 'delayFlight').length, 2);
+  assert.equal(history.entries[0].eventId, first.eventId);
+  assert.equal(history.entries[0].committedAt, first.committedAt);
+  assert.deepEqual(history.entries[0].maskedChanges, []);
 });
 
 test('ts_client_auth_scope_stale_errors_limits_and_runtime_capability', async () => {
@@ -263,12 +279,46 @@ test('ts_client_public_endpoints_preserve_bigint_without_raw_escape', async () =
     () => losslessClient.query({ set: { kind: 'type', object_type: 'Flight' } }),
     () => losslessClient.aggregate({ set: { kind: 'type', object_type: 'Flight' }, measures: [{ op: 'count' }] }),
     () => losslessClient.health(),
-    () => losslessClient.action('delayFlight', { items: [{ params: { flight: 'F-1001', delayMinutes: 1 } }] }),
-    () => losslessClient.validate('delayFlight', { items: [{ params: { flight: 'F-1001', delayMinutes: 1 } }] }),
-    () => losslessClient.commandResult('lossless-result'),
-    () => losslessClient.history('Flight', 'F-1001'),
   ];
   for (const request of requests) {
     assert.equal((await request()).defVersion, 9007199254740993n);
   }
+});
+
+test('ts_client_rejects_malformed_receipt_history_and_validation', async () => {
+  const { createOntoforgeClient, encodeWire } = await import('../dist/index.js');
+  const receipt = {
+    commandId: 'c', eventId: 'e', logSeq: 9007199254740993n,
+    committedAt: '2026-11-03T00:00:00Z', chosenCurrentTime: '2026-11-03T00:00:00Z',
+    items: [{ itemOrdinal: 0n, edits: [{ ruleOrdinal: 0n, editOrdinal: 0n, kind: 'object', typeName: 'Flight', pk: 'F-1001', operation: 'set', versionAfter: 1n }] }],
+  };
+  const history = { entries: [{ seq: 1n, eventId: 'e', actor: 'a', action: 'delayFlight', committedAt: 'now', op: 'set', version: 1n, values: {}, unset: [], maskedChanges: ['secret'], params: null }], truncated: false, nextBeforeSeq: 1n };
+  const apiFor = (body) => createOntoforgeClient({ baseUrl, fetch: async () => new Response(encodeWire(body)) });
+  assert.equal((await apiFor(receipt).commandResult('c')).logSeq, 9007199254740993n);
+  assert.deepEqual((await apiFor(history).history('Flight', 'F-1001')).entries[0].maskedChanges, ['secret']);
+  assert.deepEqual((await apiFor({ ...receipt, items: [{ itemOrdinal: 0n, edits: [] }] }).commandResult('c')).items[0].edits, []);
+  for (const field of ['commandId', 'eventId', 'committedAt', 'chosenCurrentTime', 'logSeq', 'items']) {
+    const missing = structuredClone(receipt);
+    delete missing[field];
+    await assert.rejects(() => apiFor(missing).commandResult('c'), /response/);
+  }
+  for (const field of ['ruleOrdinal', 'editOrdinal', 'kind', 'typeName', 'pk', 'operation', 'versionAfter']) {
+    const missing = structuredClone(receipt);
+    delete missing.items[0].edits[0][field];
+    await assert.rejects(() => apiFor(missing).commandResult('c'), /response/);
+  }
+  for (const field of ['eventId', 'committedAt', 'maskedChanges', 'unset', 'values', 'seq', 'version', 'actor', 'action', 'op']) {
+    const missing = structuredClone(history);
+    delete missing.entries[0][field];
+    await assert.rejects(() => apiFor(missing).history('Flight', 'F-1001'), /response/);
+  }
+  for (const ordinal of [-1n, 4294967296n, '0']) {
+    const malformed = structuredClone(receipt);
+    malformed.items[0].itemOrdinal = ordinal;
+    await assert.rejects(() => apiFor(malformed).commandResult('c'), /response/);
+  }
+  await assert.rejects(() => apiFor({ ...history, truncated: 'false' }).history('Flight', 'F-1001'), /response/);
+  await assert.rejects(() => apiFor({ validated: 'true' }).validate('delayFlight', { items: [] }), /response/);
+  await assert.rejects(() => apiFor(receipt).validate('delayFlight', { items: [] }), /response/);
+  await assert.rejects(() => apiFor({ validated: true }).action('delayFlight', { items: [] }), /response/);
 });

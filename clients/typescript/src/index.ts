@@ -49,6 +49,67 @@ export class OntoforgeHttpError extends Error {
 
 type CallOptions = { signal?: AbortSignal };
 
+function responseObject(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Invalid response object');
+  return value as Record<string, unknown>;
+}
+
+function responseField(value: Record<string, unknown>, key: string, type: 'string' | 'bigint' | 'boolean'): void {
+  if (typeof value[key] !== type) throw new Error(`Invalid response field ${key}: expected ${type}`);
+  if (type === 'bigint' && ((value[key] as bigint) < -9223372036854775808n || (value[key] as bigint) > 9223372036854775807n)) {
+    throw new Error(`Invalid response integer ${key}`);
+  }
+}
+
+function responseArray(value: Record<string, unknown>, key: string): unknown[] {
+  if (!Array.isArray(value[key])) throw new Error(`Invalid response array ${key}`);
+  return value[key];
+}
+
+function responseOrdinal(value: Record<string, unknown>, key: string): void {
+  responseField(value, key, 'bigint');
+  if ((value[key] as bigint) < 0n || (value[key] as bigint) > 4294967295n) throw new Error(`Invalid response ordinal ${key}`);
+}
+
+function receiptResponse(value: unknown): ActionReceipt {
+  const receipt = responseObject(value);
+  for (const field of ['commandId', 'eventId', 'committedAt', 'chosenCurrentTime']) responseField(receipt, field, 'string');
+  responseField(receipt, 'logSeq', 'bigint');
+  for (const rawItem of responseArray(receipt, 'items')) {
+    const item = responseObject(rawItem);
+    responseOrdinal(item, 'itemOrdinal');
+    for (const rawEdit of responseArray(item, 'edits')) {
+      const edit = responseObject(rawEdit);
+      for (const field of ['ruleOrdinal', 'editOrdinal']) responseOrdinal(edit, field);
+      for (const field of ['kind', 'typeName', 'operation']) responseField(edit, field, 'string');
+      responseField(edit, 'versionAfter', 'bigint');
+      if (!Object.hasOwn(edit, 'pk')) throw new Error('Invalid response: missing pk');
+    }
+  }
+  return value as ActionReceipt;
+}
+
+function validationResponse(value: unknown): ValidationResponse {
+  if (responseObject(value).validated !== true) throw new Error('Invalid validation response');
+  return value as ValidationResponse;
+}
+
+function historyResponse(value: unknown): HistoryPage {
+  const page = responseObject(value);
+  responseField(page, 'truncated', 'boolean');
+  if (page.nextBeforeSeq !== undefined && page.nextBeforeSeq !== null) responseField(page, 'nextBeforeSeq', 'bigint');
+  for (const rawEntry of responseArray(page, 'entries')) {
+    const entry = responseObject(rawEntry);
+    for (const field of ['eventId', 'actor', 'action', 'committedAt', 'op']) responseField(entry, field, 'string');
+    for (const field of ['seq', 'version']) responseField(entry, field, 'bigint');
+    responseObject(entry.values);
+    for (const field of ['unset', 'maskedChanges']) {
+      if (!responseArray(entry, field).every((item) => typeof item === 'string')) throw new Error(`Invalid response array ${field}`);
+    }
+  }
+  return value as HistoryPage;
+}
+
 function asWireJson(value: unknown): WireJson {
   return value as WireJson;
 }
@@ -112,27 +173,27 @@ export function createOntoforgeClient(options: OntoforgeClientOptions): Ontoforg
       parseAs: 'text',
     })),
     health: (callOptions = {}) => call<HealthResponse>(raw.GET('/health', { ...callOptions, parseAs: 'text' })),
-    action: (action, body, callOptions = {}) => call<ActionReceipt | ValidationResponse>(raw.POST('/api/actions/{action}', {
+    action: (action, body, callOptions = {}) => call<unknown>(raw.POST('/api/actions/{action}', {
       ...callOptions,
       params: { path: { action } },
       body,
       parseAs: 'text',
-    })),
-    validate: (action, body, callOptions = {}) => call<ValidationResponse>(raw.POST('/api/actions/{action}', {
+    })).then((value) => body.validateOnly ? validationResponse(value) : receiptResponse(value)),
+    validate: (action, body, callOptions = {}) => call<unknown>(raw.POST('/api/actions/{action}', {
       ...callOptions,
       params: { path: { action } },
       body: { ...body, validateOnly: true },
       parseAs: 'text',
-    })),
-    commandResult: (commandId, callOptions = {}) => call<ActionReceipt>(raw.GET('/api/commands/{command_id}', {
+    })).then(validationResponse),
+    commandResult: (commandId, callOptions = {}) => call<unknown>(raw.GET('/api/commands/{command_id}', {
       ...callOptions,
       params: { path: { command_id: commandId } },
       parseAs: 'text',
-    })),
-    history: (objectType, pk, params = {}, callOptions = {}) => call<HistoryPage>(raw.GET('/api/objects/{object_type}/{pk}/history', {
+    })).then(receiptResponse),
+    history: (objectType, pk, params = {}, callOptions = {}) => call<unknown>(raw.GET('/api/objects/{object_type}/{pk}/history', {
       ...callOptions,
       params: { path: { object_type: objectType, pk }, query: params },
       parseAs: 'text',
-    })),
+    })).then(historyResponse),
   };
 }

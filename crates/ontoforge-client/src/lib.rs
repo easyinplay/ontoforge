@@ -164,7 +164,13 @@ impl OntoforgeClient {
     ) -> Result<ActionResponse, ClientError> {
         let path = format!("/api/actions/{}", encode_path(action_name));
         let value = self.send_json(Method::POST, &path, request).await?;
-        if value.get("validated").and_then(Value::as_bool) == Some(true) {
+        if request.validate_only {
+            if value.get("validated").and_then(Value::as_bool) != Some(true) {
+                return Err(ClientError::Decode {
+                    api_name: action_name.to_owned(),
+                    message: "validateOnly response must contain validated: true".to_owned(),
+                });
+            }
             return Ok(ActionResponse::Validated(dto::ValidationResponse {
                 validated: true,
             }));
@@ -436,72 +442,12 @@ fn decode_health(value: &Value) -> Result<dto::HealthResponse, ClientError> {
 }
 fn decode_history_page(value: &Value) -> Result<dto::HistoryPage, ClientError> {
     decode("history", || {
-        Ok(dto::HistoryPage {
-            entries: value
-                .get("entries")
-                .and_then(Value::as_array)
-                .ok_or_else(|| "entries must be an array".to_owned())?
-                .iter()
-                .map(decode_history_entry)
-                .collect::<Result<_, String>>()?,
-            truncated: bool_field(value, "truncated"),
-            next_before_seq: value.get("nextBeforeSeq").and_then(Value::as_i64),
-        })
-    })
-}
-fn decode_history_entry(value: &Value) -> Result<dto::HistoryEntry, String> {
-    Ok(dto::HistoryEntry {
-        seq: integer_field(value, "seq")?,
-        event_id: string_field(value, "eventId"),
-        actor: string_field(value, "actor"),
-        action: string_field(value, "action"),
-        committed_at: string_field(value, "committedAt"),
-        op: string_field(value, "op"),
-        version: integer_field(value, "version")?,
-        values: object_field(value, "values")?,
-        unset: string_array_default(value, "unset")?,
-        masked_changes: string_array_default(value, "maskedChanges")?,
-        params: value.get("params").cloned(),
+        serde_json::from_value(value.clone()).map_err(|error| error.to_string())
     })
 }
 fn decode_action_receipt(value: &Value) -> Result<dto::ActionReceipt, ClientError> {
     decode("commands", || {
-        Ok(dto::ActionReceipt {
-            command_id: string_field(value, "commandId"),
-            event_id: string_field(value, "eventId"),
-            log_seq: integer_field(value, "logSeq")?,
-            committed_at: string_field(value, "committedAt"),
-            chosen_current_time: string_field(value, "chosenCurrentTime"),
-            items: value
-                .get("items")
-                .and_then(Value::as_array)
-                .ok_or_else(|| "items must be an array".to_owned())?
-                .iter()
-                .map(|item| {
-                    let edit = item
-                        .get("edits")
-                        .and_then(Value::as_array)
-                        .and_then(|edits| edits.first())
-                        .ok_or_else(|| "receipt item must contain an edit".to_owned())?;
-                    Ok(dto::ItemReceipt {
-                        item_ordinal: u32::try_from(integer_field_any(
-                            item,
-                            &["itemOrdinal", "item_ordinal"],
-                        )?)
-                        .map_err(|_| {
-                            "itemOrdinal must be an integer in 0..=4294967295".to_owned()
-                        })?,
-                        object_type: string_field_any(edit, &["typeName", "type_name"]),
-                        pk: edit
-                            .get("pk")
-                            .cloned()
-                            .ok_or_else(|| "receipt edit pk is required".to_owned())?,
-                        version: integer_field_any(edit, &["versionAfter", "version_after"])?
-                            .to_string(),
-                    })
-                })
-                .collect::<Result<_, String>>()?,
-        })
+        serde_json::from_value(value.clone()).map_err(|error| error.to_string())
     })
 }
 fn decode_engine_status(value: &Value, field: &str) -> Result<dto::EngineAvailability, String> {
@@ -533,25 +479,6 @@ fn optional_string(value: &Value, field: &str) -> Option<String> {
 fn bool_field(value: &Value, field: &str) -> bool {
     value.get(field).and_then(Value::as_bool).unwrap_or(false)
 }
-fn integer_field(value: &Value, field: &str) -> Result<i64, String> {
-    value
-        .get(field)
-        .and_then(Value::as_i64)
-        .ok_or_else(|| format!("{field} must be an integer"))
-}
-fn integer_field_any(value: &Value, fields: &[&str]) -> Result<i64, String> {
-    fields
-        .iter()
-        .find_map(|field| value.get(*field).and_then(Value::as_i64))
-        .ok_or_else(|| format!("{} must be an integer", fields.join(" or ")))
-}
-fn string_field_any(value: &Value, fields: &[&str]) -> String {
-    fields
-        .iter()
-        .find_map(|field| value.get(*field).and_then(Value::as_str))
-        .unwrap_or_default()
-        .to_owned()
-}
 fn string_array(value: &Value, field: &str) -> Result<Vec<String>, String> {
     value
         .get(field)
@@ -564,12 +491,6 @@ fn string_array(value: &Value, field: &str) -> Result<Vec<String>, String> {
                 .ok_or_else(|| format!("{field} must contain strings"))
         })
         .collect()
-}
-fn string_array_default(value: &Value, field: &str) -> Result<Vec<String>, String> {
-    if value.get(field).is_none_or(Value::is_null) {
-        return Ok(Vec::new());
-    }
-    string_array(value, field)
 }
 fn object_field(value: &Value, field: &str) -> Result<BTreeMap<String, Value>, String> {
     value
@@ -619,7 +540,7 @@ mod tests {
             "committedAt": "2026-10-31T00:00:00Z",
             "chosenCurrentTime": "2026-10-31T00:00:00Z",
             "items": [{
-                "edits": [{"typeName": "Airport", "pk": "BER", "versionAfter": 1}]
+                "edits": [{"ruleOrdinal": 0, "editOrdinal": 0, "kind": "object", "typeName": "Airport", "pk": "BER", "operation": "set", "versionAfter": 1}]
             }]
         });
         value["items"][0][field] = json!(ordinal);
@@ -649,11 +570,80 @@ mod tests {
 
     #[test]
     fn receipt_preserves_item_ordinal_u32_boundaries() {
-        for field in ["itemOrdinal", "item_ordinal"] {
-            for (ordinal, expected) in [(0, 0), (4_294_967_295, u32::MAX)] {
-                let receipt = decode_action_receipt(&receipt_with_ordinal(field, ordinal)).unwrap();
-                assert_eq!(receipt.items[0].item_ordinal, expected);
-            }
+        for (ordinal, expected) in [(0, 0), (4_294_967_295, u32::MAX)] {
+            let receipt =
+                decode_action_receipt(&receipt_with_ordinal("itemOrdinal", ordinal)).unwrap();
+            assert_eq!(receipt.items[0].item_ordinal, expected);
+        }
+    }
+
+    #[test]
+    fn receipt_requires_complete_edits_and_preserves_empty_items() {
+        let receipt = receipt_with_ordinal("itemOrdinal", 0);
+        for field in [
+            "commandId",
+            "eventId",
+            "logSeq",
+            "committedAt",
+            "chosenCurrentTime",
+            "items",
+        ] {
+            let mut malformed = receipt.clone();
+            malformed.as_object_mut().unwrap().remove(field);
+            assert!(decode_action_receipt(&malformed).is_err(), "{field}");
+        }
+        for field in [
+            "ruleOrdinal",
+            "editOrdinal",
+            "kind",
+            "typeName",
+            "pk",
+            "operation",
+            "versionAfter",
+        ] {
+            let mut malformed = receipt.clone();
+            malformed["items"][0]["edits"][0]
+                .as_object_mut()
+                .unwrap()
+                .remove(field);
+            assert!(decode_action_receipt(&malformed).is_err(), "{field}");
+        }
+        let mut empty = receipt;
+        empty["items"][0]["edits"] = json!([]);
+        assert!(
+            decode_action_receipt(&empty).unwrap().items[0]
+                .edits
+                .is_empty()
+        );
+    }
+
+    #[test]
+    fn history_requires_fields_and_rejects_wrong_types() {
+        let history = json!({"entries": [{"seq": 1, "eventId": "event", "actor": "alice", "action": "delayFlight", "committedAt": "now", "op": "set", "version": 1, "values": {}, "unset": [], "maskedChanges": ["secret"]}], "truncated": false, "nextBeforeSeq": 1});
+        assert_eq!(
+            super::decode_history_page(&history).unwrap().entries[0].masked_changes,
+            ["secret"]
+        );
+        for field in [
+            "seq",
+            "eventId",
+            "actor",
+            "action",
+            "committedAt",
+            "op",
+            "version",
+            "values",
+            "unset",
+            "maskedChanges",
+        ] {
+            let mut malformed = history.clone();
+            malformed["entries"][0]
+                .as_object_mut()
+                .unwrap()
+                .remove(field);
+            assert!(super::decode_history_page(&malformed).is_err(), "{field}");
+            malformed["entries"][0][field] = json!(false);
+            assert!(super::decode_history_page(&malformed).is_err(), "{field}");
         }
     }
 }

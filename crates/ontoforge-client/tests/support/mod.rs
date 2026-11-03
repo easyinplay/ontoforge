@@ -44,6 +44,14 @@ pub struct Fixture {
 }
 
 pub async fn fixture() -> Fixture {
+    fixture_with_edits(false).await
+}
+
+pub async fn multi_edit_fixture() -> Fixture {
+    fixture_with_edits(true).await
+}
+
+async fn fixture_with_edits(multiple_edits: bool) -> Fixture {
     let dir = tempfile::tempdir().unwrap();
     let path = Utf8PathBuf::from_path_buf(dir.path().join("edit.db")).unwrap();
     let key_path = Utf8PathBuf::from_path_buf(dir.path().join("token.key")).unwrap();
@@ -55,7 +63,10 @@ pub async fn fixture() -> Fixture {
     };
     let store = Arc::new(EditStore::open(settings).await.unwrap());
     let loaded = load_dir(Utf8Path::new(AVIATION));
-    let ontology = loaded.ontology.unwrap();
+    let mut ontology = loaded.ontology.unwrap();
+    if multiple_edits {
+        split_delay_flight_edits(&mut ontology);
+    }
     reload(&store, &ontology, &ReloadOptions::default())
         .await
         .unwrap();
@@ -131,6 +142,21 @@ pub async fn fixture() -> Fixture {
         token,
         host,
     }
+}
+
+fn split_delay_flight_edits(ontology: &mut ontoforge_schema::ir::Ontology) {
+    let action = ontology.action_types.get_mut("delayFlight").unwrap();
+    let ontoforge_schema::ir::Rule::ModifyObject(rule) = &mut action.rules[0] else {
+        panic!("delayFlight must modify a flight");
+    };
+    let mut second = rule.clone();
+    rule.properties.retain(|name, _| name.as_str() == "status");
+    second
+        .properties
+        .retain(|name, _| name.as_str() == "delayMinutes");
+    action
+        .rules
+        .push(ontoforge_schema::ir::Rule::ModifyObject(second));
 }
 
 async fn put_airports(store: &EditStore) {

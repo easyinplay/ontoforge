@@ -199,6 +199,18 @@ export interface components {
         };
         /** @enum {string} */
         Direction: "asc" | "desc";
+        EditSummary: {
+            /** Format: int32 */
+            editOrdinal: bigint;
+            kind: string;
+            operation: string;
+            pk: unknown;
+            /** Format: int32 */
+            ruleOrdinal: bigint;
+            typeName: string;
+            /** Format: int64 */
+            versionAfter: bigint;
+        };
         /** @enum {string} */
         EngineAvailability: "available" | "unavailable";
         ErrorEnvelope: {
@@ -234,11 +246,9 @@ export interface components {
             truncated: boolean;
         };
         ItemReceipt: {
+            edits: components["schemas"]["EditSummary"][];
             /** Format: int32 */
             itemOrdinal: bigint;
-            objectType: string;
-            pk: unknown;
-            version: string;
         };
         /** @enum {string} */
         LinkDirection: "fromTo" | "toFrom";

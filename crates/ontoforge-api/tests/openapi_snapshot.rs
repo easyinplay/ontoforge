@@ -76,3 +76,44 @@ fn wire_numbers_unicode_and_variant_names() {
     assert_eq!(value["object_type"], "订单");
     assert_eq!(value["pk"], 9_007_199_254_740_993_i64);
 }
+
+#[test]
+fn receipt_schema_preserves_every_edit_and_requires_wire_fields() {
+    let document: Value = serde_json::from_str(&ontoforge_api::openapi::render()).unwrap();
+    let schemas = &document["components"]["schemas"];
+    assert_eq!(
+        schemas["ItemReceipt"]["properties"]["edits"]["items"]["$ref"],
+        "#/components/schemas/EditSummary"
+    );
+    assert!(
+        schemas["ItemReceipt"]["properties"]
+            .get("objectType")
+            .is_none()
+    );
+    for field in [
+        "ruleOrdinal",
+        "editOrdinal",
+        "kind",
+        "typeName",
+        "pk",
+        "operation",
+        "versionAfter",
+    ] {
+        assert!(
+            schemas["EditSummary"]["required"]
+                .as_array()
+                .unwrap()
+                .contains(&json!(field)),
+            "{field}"
+        );
+    }
+    for field in ["eventId", "committedAt", "maskedChanges"] {
+        assert!(
+            schemas["HistoryEntry"]["required"]
+                .as_array()
+                .unwrap()
+                .contains(&json!(field)),
+            "{field}"
+        );
+    }
+}

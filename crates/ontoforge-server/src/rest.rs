@@ -639,17 +639,48 @@ pub async fn history<E: Engine + Send + Sync + 'static>(
         .history_with_snapshot(&request, &ctx.active)
         .await
     {
-        Ok(entries) => error::response(
-            StatusCode::OK,
-            &request_id,
-            json!({"entries": entries, "truncated": entries.len() >= limit as usize, "nextBeforeSeq": entries.last().map(|entry| entry.seq)}),
-        ),
+        Ok(entries) => {
+            let page = wire::HistoryPage {
+                truncated: entries.len() >= limit as usize,
+                next_before_seq: entries.last().map(|entry| entry.seq),
+                entries: entries.into_iter().map(history_entry).collect(),
+            };
+            error::response(StatusCode::OK, &request_id, json!(page))
+        }
         Err(_) => error::wire(
             StatusCode::NOT_FOUND,
             "NOT_FOUND",
             &object_type,
             &request_id,
         ),
+    }
+}
+
+pub(crate) fn history_entry(entry: ontoforge_storage::history::HistoryEntry) -> wire::HistoryEntry {
+    wire::HistoryEntry {
+        seq: entry.seq,
+        event_id: entry.event_id,
+        actor: entry.actor,
+        action: entry.action,
+        committed_at: entry.committed_at,
+        op: entry.op.as_str().to_owned(),
+        version: entry.version,
+        values: entry
+            .values
+            .into_iter()
+            .map(|(name, value)| (name.to_string(), value))
+            .collect(),
+        unset: entry
+            .unset
+            .into_iter()
+            .map(|name| name.to_string())
+            .collect(),
+        masked_changes: entry
+            .masked_changes
+            .into_iter()
+            .map(|name| name.to_string())
+            .collect(),
+        params: entry.params,
     }
 }
 
@@ -678,22 +709,37 @@ fn action_response(
     }
 }
 
-fn receipt_json(receipt: &ontoforge_action::ActionReceipt) -> Value {
-    let mut value = serde_json::to_value(receipt).expect("ActionReceipt is serializable");
-    if let Some(object) = value.as_object_mut() {
-        for (from, to) in [
-            ("command_id", "commandId"),
-            ("event_id", "eventId"),
-            ("log_seq", "logSeq"),
-            ("committed_at", "committedAt"),
-            ("chosen_current_time", "chosenCurrentTime"),
-        ] {
-            if let Some(value) = object.remove(from) {
-                object.insert(to.to_owned(), value);
-            }
-        }
-    }
-    value
+pub(crate) fn receipt_json(receipt: &ontoforge_action::ActionReceipt) -> Value {
+    json!(wire::ActionReceipt {
+        command_id: receipt.command_id.clone(),
+        event_id: receipt.event_id.clone(),
+        log_seq: receipt.log_seq,
+        committed_at: receipt.committed_at.clone(),
+        chosen_current_time: receipt.chosen_current_time.clone(),
+        items: receipt
+            .items
+            .iter()
+            .map(|item| wire::ItemReceipt {
+                item_ordinal: u32::try_from(item.item_ordinal)
+                    .expect("bounded action item ordinal"),
+                edits: item
+                    .edits
+                    .iter()
+                    .map(|edit| wire::EditSummary {
+                        rule_ordinal: u32::try_from(edit.rule_ordinal)
+                            .expect("bounded action rule ordinal"),
+                        edit_ordinal: u32::try_from(edit.edit_ordinal)
+                            .expect("bounded action edit ordinal"),
+                        kind: edit.kind.clone(),
+                        type_name: edit.type_name.clone(),
+                        pk: edit.pk.clone(),
+                        operation: edit.operation.clone(),
+                        version_after: edit.version_after,
+                    })
+                    .collect(),
+            })
+            .collect(),
+    })
 }
 
 fn url_query(query: Option<&str>) -> BTreeMap<String, String> {

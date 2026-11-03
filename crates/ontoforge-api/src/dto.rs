@@ -309,7 +309,7 @@ pub struct AggregateResult {
     pub buckets: Vec<AggregateBucket>,
 }
 
-#[derive(Debug, Clone, Serialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct HistoryEntry {
     pub seq: i64,
@@ -325,7 +325,7 @@ pub struct HistoryEntry {
     pub params: Option<Value>,
 }
 
-#[derive(Debug, Clone, Serialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct HistoryPage {
     pub entries: Vec<HistoryEntry>,
@@ -333,16 +333,26 @@ pub struct HistoryPage {
     pub next_before_seq: Option<i64>,
 }
 
-#[derive(Debug, Clone, Serialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct ItemReceipt {
     pub item_ordinal: u32,
-    pub object_type: String,
-    pub pk: Value,
-    pub version: String,
+    pub edits: Vec<EditSummary>,
 }
 
-#[derive(Debug, Clone, Serialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct EditSummary {
+    pub rule_ordinal: u32,
+    pub edit_ordinal: u32,
+    pub kind: String,
+    pub type_name: String,
+    pub pk: Value,
+    pub operation: String,
+    pub version_after: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct ActionReceipt {
     pub command_id: String,

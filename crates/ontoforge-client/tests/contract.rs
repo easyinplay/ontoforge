@@ -106,7 +106,7 @@ async fn rust_client_instances_and_concurrent_cancellation_are_isolated() {
 
 #[tokio::test]
 async fn rust_client_action_validate_history_result_and_replay() {
-    let f = fixture().await.start().await;
+    let f = support::multi_edit_fixture().await.start().await;
     let api = client(&f.url, &f.token);
     let request = ActionRequest {
         command_id: Some("client-replay".to_owned()),
@@ -125,14 +125,38 @@ async fn rust_client_action_validate_history_result_and_replay() {
     let ActionResponse::Committed(first_receipt) = first else {
         panic!("expected committed receipt");
     };
+    let receipt_wire = serde_json::to_value(&first_receipt).unwrap();
+    assert_eq!(
+        receipt_wire["items"][0]["edits"].as_array().map(Vec::len),
+        Some(2)
+    );
+    assert_eq!(first_receipt.items[0].item_ordinal, 0);
+    for (ordinal, edit) in first_receipt.items[0].edits.iter().enumerate() {
+        assert_eq!(edit.rule_ordinal as usize, ordinal);
+        assert_eq!(edit.edit_ordinal as usize, ordinal);
+        assert_eq!(edit.kind, "object");
+        assert_eq!(edit.type_name, "Flight");
+        assert_eq!(edit.pk, json!("F-1001"));
+        assert_eq!(edit.operation, "set");
+        assert!(edit.version_after > 0);
+    }
     let replay = api.get_command_result("client-replay").await.unwrap();
     assert_eq!(replay.event_id, first_receipt.event_id);
     assert_eq!(replay.log_seq, first_receipt.log_seq);
+    assert_eq!(serde_json::to_value(&replay).unwrap(), receipt_wire);
+    let ActionResponse::Committed(replayed) =
+        api.execute_action("delayFlight", &request).await.unwrap()
+    else {
+        panic!("expected replayed receipt");
+    };
+    assert_eq!(serde_json::to_value(&replayed).unwrap(), receipt_wire);
     let history = api
         .history("Flight", &json!("F-1001"), Some(100), None)
         .await
         .unwrap();
     assert!(!history.entries.is_empty());
+    assert_eq!(history.entries[0].event_id, first_receipt.event_id);
+    assert_eq!(history.entries[0].committed_at, first_receipt.committed_at);
     f.finish_actions().await;
 }
 
