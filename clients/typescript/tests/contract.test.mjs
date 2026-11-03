@@ -7,6 +7,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { before, after, test } from 'node:test';
 import { createServer } from 'node:net';
+import { createServer as createHttpServer } from 'node:http';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 const binary = process.env.ONTOFORGE_BIN ?? join(repoRoot, 'target', 'debug', process.platform === 'win32' ? 'ontoforge.exe' : 'ontoforge');
@@ -134,6 +135,112 @@ test('ts_client_health_l2_types_and_decode_preserve_optional_reason', async () =
   ]) {
     const api = createOntoforgeClient({ baseUrl, fetch: async () => new Response(JSON.stringify(health)) });
     assert.deepEqual(await api.health(), health);
+  }
+});
+
+test('ts_client_action_error_diagnostics_survive_real_http', async () => {
+  for (const validateOnly of [true, false]) {
+    await assert.rejects(() => client.action('delayFlight', {
+      commandId: `ts-diagnostics-params-${validateOnly}`,
+      validateOnly,
+      items: [{ params: { delayMinutes: 'wrong' } }],
+    }), (error) => {
+      assert.equal(error.code, 'INVALID_PARAMETERS');
+      assert.equal(error.message, 'INVALID_PARAMETERS (400)');
+      assert.deepEqual(error.body.parameterErrors, [
+        { itemOrdinal: 0n, name: 'delayMinutes', reason: 'expected an integer, found a string' },
+        { itemOrdinal: 0n, name: 'flight', reason: 'required parameter is missing' },
+      ]);
+      assert.deepEqual(error.envelope.parameterErrors, error.body.parameterErrors);
+      assert.equal(error.envelope.message, undefined);
+      return true;
+    });
+    await assert.rejects(() => client.action('delayFlight', {
+      commandId: `ts-diagnostics-criteria-${validateOnly}`,
+      validateOnly,
+      items: [{ params: { flight: 'F-1001', delayMinutes: 0n } }],
+    }), (error) => {
+      assert.equal(error.code, 'CRITERIA_FAILED');
+      assert.equal(error.message, 'CRITERIA_FAILED (400)');
+      assert.equal(error.envelope.message, 'Delay must be positive and cancelled flights cannot be delayed');
+      assert.equal(error.envelope.message, error.body.message);
+      assert.equal(error.envelope.parameterErrors, undefined);
+      return true;
+    });
+  }
+});
+
+test('ts_client_action_error_diagnostics_types', () => {
+  run(process.execPath, [
+    join(repoRoot, 'clients/typescript/node_modules/typescript/bin/tsc'),
+    '--noEmit', '--module', 'NodeNext', '--moduleResolution', 'NodeNext',
+    '--target', 'ES2022', '--strict',
+    'clients/typescript/tests/error-types.ts',
+  ]);
+});
+
+test('ts_client_action_error_diagnostics_reject_malformed_fields', async () => {
+  const { createOntoforgeClient, OntoforgeHttpError, encodeWire } = await import('../dist/index.js');
+  for (const diagnostic of [
+    { parameterErrors: 'wrong' },
+    { parameterErrors: [{}] },
+    { parameterErrors: [{ itemOrdinal: -1n, name: 'flight', reason: 'bad' }] },
+    { parameterErrors: [{ itemOrdinal: 4294967296n, name: 'flight', reason: 'bad' }] },
+    { parameterErrors: [{ itemOrdinal: 0n, name: 1n, reason: 'bad' }] },
+    { parameterErrors: [{ itemOrdinal: 0n, name: 'flight', reason: false }] },
+    { message: 42n },
+  ]) {
+    const api = createOntoforgeClient({
+      baseUrl,
+      fetch: async () => new Response(encodeWire({
+        code: 'INVALID_PARAMETERS', apiName: 'delayFlight', request_id: 'request-1', ...diagnostic,
+      }), { status: 400 }),
+    });
+    await assert.rejects(() => api.metadata(), (error) => {
+      assert.equal(error instanceof OntoforgeHttpError, false);
+      assert.match(error.message, /response/i);
+      return true;
+    });
+  }
+});
+
+test('ts_client_recognizes_envelope_before_validating_diagnostics', async () => {
+  const { createOntoforgeClient, OntoforgeHttpError } = await import('../dist/index.js');
+  let body;
+  const server = createHttpServer((request, response) => {
+    response.writeHead(502, { 'Content-Type': 'application/json', Connection: 'close' });
+    response.end(JSON.stringify(body));
+  });
+  await new Promise((resolvePromise) => server.listen(0, '127.0.0.1', resolvePromise));
+  try {
+    const peer = createOntoforgeClient({ baseUrl: `http://127.0.0.1:${server.address().port}` });
+    for (const ordinaryBody of [
+      { message: { reason: 'upstream' } },
+      { parameterErrors: 'upstream' },
+      { code: 'UPSTREAM', message: { reason: 'upstream' } },
+      { code: 'UPSTREAM', apiName: 'gateway', message: { reason: 'upstream' } },
+      { code: 'UPSTREAM', apiName: 'gateway', request_id: false, message: { reason: 'upstream' } },
+    ]) {
+      body = ordinaryBody;
+      await assert.rejects(() => peer.metadata(), (error) => {
+        assert.ok(error instanceof OntoforgeHttpError);
+        assert.equal(error.status, 502);
+        assert.deepEqual(error.body, ordinaryBody);
+        assert.equal(error.envelope, undefined);
+        assert.equal(error.message, ordinaryBody.code ? 'UPSTREAM (502)' : 'Ontoforge request failed with HTTP 502');
+        return true;
+      });
+    }
+    for (const diagnostics of [{ message: { reason: 'upstream' } }, { parameterErrors: 'wrong' }]) {
+      body = { code: 'CRITERIA_FAILED', apiName: 'delayFlight', request_id: 'request-1', ...diagnostics };
+      await assert.rejects(() => peer.metadata(), (error) => {
+        assert.equal(error instanceof OntoforgeHttpError, false);
+        assert.match(error.message, /response/i);
+        return true;
+      });
+    }
+  } finally {
+    await new Promise((resolvePromise) => server.close(resolvePromise));
   }
 });
 

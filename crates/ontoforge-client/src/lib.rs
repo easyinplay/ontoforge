@@ -273,29 +273,43 @@ impl OntoforgeClient {
         if !status.is_success() {
             return Err(ClientError::HttpStatus {
                 status,
-                envelope: decode_error_envelope(&value),
+                envelope: decode_error_envelope(&value, &api_name)?,
             });
         }
         Ok(value)
     }
 }
 
-fn decode_error_envelope(value: &Value) -> dto::ErrorEnvelope {
-    dto::ErrorEnvelope {
-        code: string_field(value, "code"),
-        api_name: value
-            .get("apiName")
-            .or_else(|| value.get("api_name"))
-            .and_then(Value::as_str)
-            .unwrap_or("unknown")
-            .to_owned(),
-        request_id: value
-            .get("request_id")
-            .or_else(|| value.get("requestId"))
-            .and_then(Value::as_str)
-            .unwrap_or_default()
-            .to_owned(),
-    }
+fn decode_error_envelope(value: &Value, api_name: &str) -> Result<dto::ErrorEnvelope, ClientError> {
+    let code = value.get("code").and_then(Value::as_str);
+    let wire_api_name = value
+        .get("apiName")
+        .or_else(|| value.get("api_name"))
+        .and_then(Value::as_str);
+    let request_id = value
+        .get("request_id")
+        .or_else(|| value.get("requestId"))
+        .and_then(Value::as_str);
+    let recognized = code.is_some() && wire_api_name.is_some() && request_id.is_some();
+    decode(api_name, || {
+        let mut envelope = dto::ErrorEnvelope {
+            code: code.unwrap_or_default().to_owned(),
+            api_name: wire_api_name.unwrap_or("unknown").to_owned(),
+            request_id: request_id.unwrap_or_default().to_owned(),
+            parameter_errors: None,
+            message: None,
+        };
+        if recognized {
+            envelope.parameter_errors = serde_json::from_value(
+                value.get("parameterErrors").cloned().unwrap_or(Value::Null),
+            )
+            .map_err(|error| error.to_string())?;
+            envelope.message =
+                serde_json::from_value(value.get("message").cloned().unwrap_or(Value::Null))
+                    .map_err(|error| error.to_string())?;
+        }
+        Ok(envelope)
+    })
 }
 fn decode_metadata(value: &Value) -> Result<dto::Metadata, ClientError> {
     decode("ontology", || {

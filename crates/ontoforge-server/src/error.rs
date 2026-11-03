@@ -75,6 +75,38 @@ pub fn action_status(error: &ActionError) -> StatusCode {
     }
 }
 
+pub fn action_envelope(
+    error: &ActionError,
+    api_name: &str,
+    request_id: &str,
+) -> ontoforge_api::dto::ErrorEnvelope {
+    let (parameter_errors, message) = match error {
+        ActionError::ParameterErrors(problems) => (
+            Some(
+                problems
+                    .iter()
+                    .map(|problem| ontoforge_api::dto::ParameterError {
+                        item_ordinal: u32::try_from(problem.item_ordinal)
+                            .expect("bounded action item ordinal"),
+                        name: problem.name.clone(),
+                        reason: problem.reason.clone(),
+                    })
+                    .collect(),
+            ),
+            None,
+        ),
+        ActionError::CriteriaFailed(message) => (None, Some(message.clone())),
+        _ => (None, None),
+    };
+    ontoforge_api::dto::ErrorEnvelope {
+        code: action_code(error).to_owned(),
+        api_name: api_name.to_owned(),
+        request_id: request_id.to_owned(),
+        parameter_errors,
+        message,
+    }
+}
+
 pub fn action_code(error: &ActionError) -> &'static str {
     match error {
         ActionError::VersionConflict => "VERSION_CONFLICT",

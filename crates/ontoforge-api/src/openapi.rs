@@ -131,7 +131,7 @@ fn command_result() {}
     params(
         ("object_type" = String, Path, description = "Logical object type API name"),
         ("pk" = String, Path, description = "JSON or string primary key"),
-        ("limit" = Option<u32>, Query, description = "Maximum history entries"),
+        ("limit" = Option<u32>, Query, description = "Soft entry target normalized to 1..500; complete commit groups may exceed it and are never split"),
         ("beforeSeq" = Option<i64>, Query, description = "Return entries before sequence")
     ),
     responses(
@@ -181,6 +181,7 @@ fn health() {}
             dto::LinkMetadata,
             dto::ActionMetadata,
             dto::ErrorEnvelope,
+            dto::ParameterError,
             dto::ActionRequest,
             dto::ActionItem,
             dto::ObjectRow,

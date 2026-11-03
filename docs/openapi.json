@@ -373,7 +373,7 @@
           {
             "name": "limit",
             "in": "query",
-            "description": "Maximum history entries",
+            "description": "Soft entry target normalized to 1..500; complete commit groups may exceed it and are never split",
             "required": false,
             "schema": {
               "type": "integer",
@@ -963,6 +963,21 @@
           "code": {
             "type": "string"
           },
+          "message": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "parameterErrors": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/ParameterError"
+            }
+          },
           "request_id": {
             "type": "string"
           }
@@ -1550,6 +1565,27 @@
           }
         },
         "additionalProperties": false
+      },
+      "ParameterError": {
+        "type": "object",
+        "required": [
+          "itemOrdinal",
+          "name",
+          "reason"
+        ],
+        "properties": {
+          "itemOrdinal": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "name": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
       },
       "PropertyMetadata": {
         "type": "object",

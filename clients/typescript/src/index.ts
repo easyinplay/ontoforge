@@ -17,6 +17,7 @@ type ActionReceipt = components['schemas']['ActionReceipt'];
 type HistoryPage = components['schemas']['HistoryPage'];
 type HealthResponse = components['schemas']['HealthResponse'];
 type ValidationResponse = components['schemas']['ValidationResponse'];
+type ErrorEnvelope = components['schemas']['ErrorEnvelope'];
 
 export interface OntoforgeClientOptions {
   baseUrl: string;
@@ -30,6 +31,7 @@ export class OntoforgeHttpError extends Error {
   readonly code?: string;
   readonly requestId?: string;
   readonly body: unknown;
+  readonly envelope?: ErrorEnvelope;
 
   constructor(response: Response, body: unknown) {
     const envelope = body && typeof body === 'object' ? body as Record<string, unknown> : undefined;
@@ -44,6 +46,7 @@ export class OntoforgeHttpError extends Error {
     this.code = typeof envelope?.code === 'string' ? envelope.code : undefined;
     this.requestId = typeof envelope?.request_id === 'string' ? envelope.request_id : undefined;
     this.body = body;
+    this.envelope = errorEnvelope(body);
   }
 }
 
@@ -69,6 +72,22 @@ function responseArray(value: Record<string, unknown>, key: string): unknown[] {
 function responseOrdinal(value: Record<string, unknown>, key: string): void {
   responseField(value, key, 'bigint');
   if ((value[key] as bigint) < 0n || (value[key] as bigint) > 4294967295n) throw new Error(`Invalid response ordinal ${key}`);
+}
+
+function errorEnvelope(value: unknown): ErrorEnvelope | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
+  const envelope = value as Record<string, unknown>;
+  if (['code', 'apiName', 'request_id'].some((field) => typeof envelope[field] !== 'string')) return undefined;
+  if (envelope.message !== undefined && envelope.message !== null) responseField(envelope, 'message', 'string');
+  if (envelope.parameterErrors !== undefined && envelope.parameterErrors !== null) {
+    for (const rawProblem of responseArray(envelope, 'parameterErrors')) {
+      const problem = responseObject(rawProblem);
+      responseOrdinal(problem, 'itemOrdinal');
+      responseField(problem, 'name', 'string');
+      responseField(problem, 'reason', 'string');
+    }
+  }
+  return value as ErrorEnvelope;
 }
 
 function receiptResponse(value: unknown): ActionReceipt {
@@ -135,23 +154,22 @@ export function createOntoforgeClient(options: OntoforgeClientOptions): Ontoforg
     bodySerializer: (body) => encodeWire(asWireJson(body)),
     fetch: async (request) => {
       assertLosslessRuntime();
-      return fetcher(request);
+      const response = await fetcher(request);
+      if (!response.ok) {
+        let body: unknown = await response.text();
+        try {
+          body = decodeWire(body as string);
+        } catch {
+          // Keep the original response text in the typed error.
+        }
+        throw new OntoforgeHttpError(response, body);
+      }
+      return response;
     },
   });
 
   async function call<T>(response: Promise<{ data?: string; error?: unknown; response: Response }>): Promise<T> {
     const result = await response;
-    if (!result.response.ok) {
-      let body: unknown = result.error;
-      if (typeof body === 'string') {
-        try {
-          body = decodeWire(body);
-        } catch {
-          // Keep the original response text in the typed error.
-        }
-      }
-      throw new OntoforgeHttpError(result.response, body);
-    }
     return (result.data === undefined ? undefined : decodeWire(result.data)) as T;
   }
 

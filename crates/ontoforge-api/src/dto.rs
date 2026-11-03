@@ -258,6 +258,18 @@ pub struct ErrorEnvelope {
     #[serde(rename = "apiName")]
     pub api_name: String,
     pub request_id: String,
+    #[serde(rename = "parameterErrors", skip_serializing_if = "Option::is_none")]
+    pub parameter_errors: Option<Vec<ParameterError>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub message: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct ParameterError {
+    pub item_ordinal: u32,
+    pub name: String,
+    pub reason: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]

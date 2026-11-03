@@ -71,6 +71,20 @@ history 使用 `eventId`、`committedAt`、`maskedChanges` 等 camelCase 字段�
 Action params。Rust 与 TypeScript SDK 对回执和历史的必需字段执行类型检查；缺字段或
 类型错误会拒绝响应，不能当作空字符串、空数组或 `false` 继续成功返回。
 
+Action 参数校验失败的错误 envelope 可包含 `parameterErrors`，每项提供
+`itemOrdinal`、`name`、`reason`；ordinal 为 `uint32`，TypeScript 解码为 `bigint`。
+criteria 失败时可包含配置的 `failureMessage`，wire 字段名为 `message`。其余错误
+省略这两个可选字段，不输出 `InvalidRequest`、Store 或 Commit 的底层异常文本。
+参数 `reason` 可包含调用者提交的非法字面量。Rust 的 `ClientError::envelope()` 和
+TypeScript 的 `OntoforgeHttpError.envelope` 保留诊断；TypeScript 的 `Error.message`
+继续显示 code/status，`body` 保留原始解码响应。SDK 拒绝类型不正确的诊断字段。
+
+history 的 `limit` 归一化到 `1..500`，表示 entry 条数软目标。同一 `seq` 的完整
+commit 组不拆分，因此返回条数可超过该目标。页预算按规范化 `HistoryPage` JSON 的
+UTF-8 字节数计算，包含 metadata 开销，不计 MCP transport 外壳。终页返回
+`truncated=false`、`nextBeforeSeq=null`；首个完整 commit 组即超过页预算时返回
+`COST_EXCEEDED`，不会跳过该组。
+
 ## MCP HTTP 与 stdio
 
 `serve` 同时提供 `POST /mcp` 的 Streamable HTTP MCP endpoint。stdio 客户端必须先

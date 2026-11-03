@@ -685,11 +685,10 @@ fn action_response(
         Ok(ActionOutcome::Validated) => {
             error::response(StatusCode::OK, request_id, json!({"validated": true}))
         }
-        Err(error) => error::wire(
+        Err(error) => error::response(
             error::action_status(&error),
-            error::action_code(&error),
-            api_name,
             request_id,
+            json!(error::action_envelope(&error, api_name, request_id)),
         ),
     }
 }

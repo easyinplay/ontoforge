@@ -216,6 +216,8 @@ export interface components {
         ErrorEnvelope: {
             apiName: string;
             code: string;
+            message?: string | null;
+            parameterErrors?: components["schemas"]["ParameterError"][] | null;
             request_id: string;
         };
         HealthResponse: {
@@ -354,6 +356,12 @@ export interface components {
             after?: string | null;
             /** Format: int64 */
             first: bigint;
+        };
+        ParameterError: {
+            /** Format: int32 */
+            itemOrdinal: bigint;
+            name: string;
+            reason: string;
         };
         PropertyMetadata: {
             apiName: string;
@@ -713,7 +721,7 @@ export interface operations {
     history: {
         parameters: {
             query?: {
-                /** @description Maximum history entries */
+                /** @description Soft entry target normalized to 1..500; complete commit groups may exceed it and are never split */
                 limit?: bigint;
                 /** @description Return entries before sequence */
                 beforeSeq?: bigint;

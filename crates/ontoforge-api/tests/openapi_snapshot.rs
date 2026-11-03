@@ -54,6 +54,33 @@ fn openapi_31_all_operations_and_security() {
 }
 
 #[test]
+fn action_error_schema_preserves_optional_diagnostics() {
+    let document: Value = serde_json::from_str(&ontoforge_api::openapi::render()).unwrap();
+    let schemas = &document["components"]["schemas"];
+    for field in ["message", "parameterErrors"] {
+        assert!(
+            schemas["ErrorEnvelope"]["properties"].get(field).is_some(),
+            "{field}"
+        );
+        assert!(
+            !schemas["ErrorEnvelope"]["required"]
+                .as_array()
+                .unwrap()
+                .contains(&json!(field))
+        );
+    }
+    let parameter = &schemas["ParameterError"];
+    assert_eq!(
+        parameter["required"],
+        json!(["itemOrdinal", "name", "reason"])
+    );
+    assert_eq!(parameter["properties"]["itemOrdinal"]["type"], "integer");
+    assert_eq!(parameter["properties"]["itemOrdinal"]["minimum"], 0);
+    assert_eq!(parameter["properties"]["name"]["type"], "string");
+    assert_eq!(parameter["properties"]["reason"]["type"], "string");
+}
+
+#[test]
 fn openapi_recursive_nullable_required_and_unknown_fields() {
     let nested = ObjectSet::Where {
         object_type: "文档".into(),
