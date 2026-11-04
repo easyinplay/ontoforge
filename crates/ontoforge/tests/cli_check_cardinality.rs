@@ -1,5 +1,6 @@
-//! Explicit source OneToOne checks through the real CLI and SQLite fixture engine.
+//! Explicit source `OneToOne` checks through the real CLI and SQLite fixture engine.
 
+use std::fmt::Write as _;
 use std::path::Path;
 use std::process::{Command, Output};
 
@@ -124,7 +125,10 @@ fn info_rows() -> Value {
 }
 
 fn page(columns: Value, rows: Value) -> Value {
-    json!({"id":"q1", "columns":columns, "data":rows, "stats":{"state":"FINISHED"}})
+    let mut page = json!({"id":"q1", "stats":{"state":"FINISHED"}});
+    page["columns"] = columns;
+    page["data"] = rows;
+    page
 }
 
 fn result_page(rows: Value) -> Value {
@@ -334,7 +338,7 @@ fn long_sample_values_are_bounded() {
     let mut csv = String::from("record_id,aircraft_id\n");
     for i in 0..22 {
         let value = format!("{i:02}{}", "界".repeat(80));
-        csv.push_str(&format!("M{i}a,{value}\nM{i}b,{value}\n"));
+        writeln!(csv, "M{i}a,{value}\nM{i}b,{value}").expect("write CSV");
     }
     let dir = ontology(&csv);
     let out = run(dir.path(), "json");
@@ -359,7 +363,7 @@ fn three_targets() -> TempDir {
         ("BackupRecord", "betaMaintenance", "backup", "records_b"),
         ("OtherRecord", "gammaMaintenance", "other", "records_c"),
     ] {
-        objects.push_str(&format!("---\nkind: ObjectType\napiName: {object}\nprimaryKey: id\nproperties:\n  id: {{ type: string, required: true }}\n  aircraftId: {{ type: string }}\nbacking: source\n---\nkind: LinkType\napiName: {link}\ncardinality: oneToOne\nfrom: {{ objectType: Aircraft, apiName: {accessor} }}\nto: {{ objectType: {object}, apiName: aircraft, foreignKey: aircraftId }}\n"));
+        writeln!(objects, "---\nkind: ObjectType\napiName: {object}\nprimaryKey: id\nproperties:\n  id: {{ type: string, required: true }}\n  aircraftId: {{ type: string }}\nbacking: source\n---\nkind: LinkType\napiName: {link}\ncardinality: oneToOne\nfrom: {{ objectType: Aircraft, apiName: {accessor} }}\nto: {{ objectType: {object}, apiName: aircraft, foreignKey: aircraftId }}").expect("write ontology");
         write(
             dir.path(),
             &format!("bindings/dev/{table}.yaml"),

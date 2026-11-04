@@ -707,6 +707,7 @@ fn binding_diagnostics(
 
 #[cfg(test)]
 mod tests {
+    use std::fmt::Write as _;
     use std::time::Duration;
 
     use ontoforge_engine::config::parse_server_config;
@@ -801,22 +802,24 @@ mod tests {
             })
         }
 
-        async fn describe_tables(
+        fn describe_tables(
             &self,
             _tables: &[ontoforge_engine::TableRef],
             _ctx: &ontoforge_engine::QueryContext,
-        ) -> Result<
-            std::collections::BTreeMap<
-                ontoforge_engine::TableRef,
-                Vec<ontoforge_engine::PhysicalColumn>,
+        ) -> impl Future<
+            Output = Result<
+                std::collections::BTreeMap<
+                    ontoforge_engine::TableRef,
+                    Vec<ontoforge_engine::PhysicalColumn>,
+                >,
+                ontoforge_engine::EngineError,
             >,
-            ontoforge_engine::EngineError,
         > {
-            Ok(std::collections::BTreeMap::new())
+            std::future::ready(Ok(std::collections::BTreeMap::new()))
         }
 
-        async fn status(&self) -> ontoforge_engine::EngineStatus {
-            ontoforge_engine::EngineStatus::Available
+        fn status(&self) -> impl Future<Output = ontoforge_engine::EngineStatus> {
+            std::future::ready(ontoforge_engine::EngineStatus::Available)
         }
     }
 
@@ -829,7 +832,7 @@ mod tests {
             "kind: ObjectType\napiName: Origin\nprimaryKey: id\nproperties:\n  id: { type: string, required: true }\nbacking: editOnly\n---\nkind: ObjectType\napiName: Target\nprimaryKey: id\nproperties:\n  id: { type: string, required: true }\n  originId: { type: string }\nbacking: source\n",
         );
         for name in ["alpha", "beta", "gamma"] {
-            objects.push_str(&format!("---\nkind: LinkType\napiName: {name}\ncardinality: oneToOne\nfrom: {{ objectType: Origin, apiName: {name}Target }}\nto: {{ objectType: Target, apiName: {name}Origin, foreignKey: originId }}\n"));
+            writeln!(objects, "---\nkind: LinkType\napiName: {name}\ncardinality: oneToOne\nfrom: {{ objectType: Origin, apiName: {name}Target }}\nto: {{ objectType: Target, apiName: {name}Origin, foreignKey: originId }}").expect("write ontology");
         }
         let out = ontoforge_schema::load_from_memory(&[
             ("ontology.yaml", "apiName: demo\ndefaultProfile: dev\n"),
@@ -852,7 +855,7 @@ mod tests {
         (out, profile, vec![key])
     }
 
-    #[tokio::test]
+    #[tokio::test(start_paused = true)]
     async fn cardinality_total_deadline_is_shared() {
         let (out, profile, keys) = cardinality_input();
         let engine = BudgetEngine {
@@ -894,7 +897,7 @@ mod tests {
         assert!(found.iter().any(|diag| diag.code == "ONT-V19"));
     }
 
-    #[tokio::test]
+    #[tokio::test(start_paused = true)]
     async fn cardinality_total_deadline_configuration() {
         let (out, profile, keys) = cardinality_input();
         let config = parse_server_config("[trino]\nurl = \"http://127.0.0.1:8080\"\nquery_timeout_ms = 12000\n[trino.identities.ontology]\nuser = \"u\"\n").expect("config");
@@ -957,42 +960,45 @@ mod tests {
         fn dialect(&self) -> ontoforge_engine::Dialect {
             ontoforge_engine::Dialect::Sqlite
         }
-        async fn execute(
+        fn execute(
             &self,
             _sql: &ontoforge_engine::PrintedSql,
             _ctx: &ontoforge_engine::QueryContext,
-        ) -> Result<ontoforge_engine::QueryOutput, ontoforge_engine::EngineError> {
-            Ok(ontoforge_engine::QueryOutput {
+        ) -> impl Future<Output = Result<ontoforge_engine::QueryOutput, ontoforge_engine::EngineError>>
+        {
+            std::future::ready(Ok(ontoforge_engine::QueryOutput {
                 columns: Vec::new(),
                 rows: vec![vec![
                     ontoforge_engine::Value::String("A".to_owned()),
                     ontoforge_engine::Value::Long(2),
                 ]],
                 truncated: false,
-            })
+            }))
         }
-        async fn describe_tables(
+        fn describe_tables(
             &self,
             _tables: &[ontoforge_engine::TableRef],
             _ctx: &ontoforge_engine::QueryContext,
-        ) -> Result<
-            std::collections::BTreeMap<
-                ontoforge_engine::TableRef,
-                Vec<ontoforge_engine::PhysicalColumn>,
+        ) -> impl Future<
+            Output = Result<
+                std::collections::BTreeMap<
+                    ontoforge_engine::TableRef,
+                    Vec<ontoforge_engine::PhysicalColumn>,
+                >,
+                ontoforge_engine::EngineError,
             >,
-            ontoforge_engine::EngineError,
         > {
-            if self.metadata_fails {
+            std::future::ready(if self.metadata_fails {
                 Err(ontoforge_engine::EngineError::Unavailable {
                     retryable: false,
                     reason: "metadata unavailable".to_owned(),
                 })
             } else {
                 Ok(std::collections::BTreeMap::new())
-            }
+            })
         }
-        async fn status(&self) -> ontoforge_engine::EngineStatus {
-            ontoforge_engine::EngineStatus::Available
+        fn status(&self) -> impl Future<Output = ontoforge_engine::EngineStatus> {
+            std::future::ready(ontoforge_engine::EngineStatus::Available)
         }
         async fn drain_cancellations(&self) -> Result<(), ontoforge_engine::EngineError> {
             tokio::time::sleep(Duration::from_millis(1)).await;

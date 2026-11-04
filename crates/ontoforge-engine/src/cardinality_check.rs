@@ -1,4 +1,4 @@
-//! Explicit source OneToOne checks. This checks FK uniqueness, not referential integrity.
+//! Explicit source `OneToOne` checks. This checks FK uniqueness, not referential integrity.
 
 use ontoforge_schema::ir::{
     Backing, BindingTarget, Cardinality, LinkTypeName, Ontology, ProfileName,
@@ -29,7 +29,7 @@ pub struct CardinalityFinding {
     pub more: bool,
 }
 
-/// Select source-backed OneToOne to-objects with a usable binding in this profile.
+/// Select source-backed `OneToOne` to-objects with a usable binding in this profile.
 #[must_use]
 pub fn cardinality_targets(
     ontology: &Ontology,

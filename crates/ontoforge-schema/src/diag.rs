@@ -181,7 +181,7 @@ pub fn did_you_mean<'a>(
 /// downgraded in `ontoforge.toml`, but scope, row-predicate and destructive-change
 /// failures must never be silenced (SCOPE-06, D-07, STORE-02).
 pub mod codes {
-    /// Online source OneToOne foreign key shared by distinct objects; not an offline lint.
+    /// Online source `OneToOne` foreign key shared by distinct objects; not an offline lint.
     pub const W18: &str = "ONT-W18";
     /// Syntax error, duplicate key, budget exceeded, or non-UTF-8 input.
     pub const V01: &str = "ONT-V01";

@@ -1,6 +1,7 @@
 //! Real SQLite checks of logical object cardinality, including physical duplicate rows.
 
 use std::collections::BTreeMap;
+use std::fmt::Write;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use camino::Utf8Path;
@@ -300,7 +301,7 @@ async fn mapped_to_binding_is_the_only_source() {
 fn grouped_csv(groups: usize) -> String {
     let mut text = String::from("record_id,aircraft_id\n");
     for i in (0..groups).rev() {
-        text.push_str(&format!("M{i}a,A{i:03}\nM{i}b,A{i:03}\n"));
+        writeln!(text, "M{i}a,A{i:03}\nM{i}b,A{i:03}").expect("CSV text");
     }
     text
 }
@@ -428,22 +429,22 @@ impl Engine for ReplyEngine {
     fn dialect(&self) -> Dialect {
         Dialect::Sqlite
     }
-    async fn execute(
+    fn execute(
         &self,
         _sql: &PrintedSql,
         _ctx: &QueryContext,
-    ) -> Result<QueryOutput, EngineError> {
-        Ok(self.0.clone())
+    ) -> impl Future<Output = Result<QueryOutput, EngineError>> {
+        std::future::ready(Ok(self.0.clone()))
     }
-    async fn describe_tables(
+    fn describe_tables(
         &self,
         _tables: &[TableRef],
         _ctx: &QueryContext,
-    ) -> Result<BTreeMap<TableRef, Vec<PhysicalColumn>>, EngineError> {
-        Ok(BTreeMap::new())
+    ) -> impl Future<Output = Result<BTreeMap<TableRef, Vec<PhysicalColumn>>, EngineError>> {
+        std::future::ready(Ok(BTreeMap::new()))
     }
-    async fn status(&self) -> EngineStatus {
-        EngineStatus::Available
+    fn status(&self) -> impl Future<Output = EngineStatus> {
+        std::future::ready(EngineStatus::Available)
     }
 }
 
@@ -511,15 +512,15 @@ impl Engine for IndexedSqlite {
             truncated: false,
         })
     }
-    async fn describe_tables(
+    fn describe_tables(
         &self,
         _tables: &[TableRef],
         _ctx: &QueryContext,
-    ) -> Result<BTreeMap<TableRef, Vec<PhysicalColumn>>, EngineError> {
-        Ok(BTreeMap::new())
+    ) -> impl Future<Output = Result<BTreeMap<TableRef, Vec<PhysicalColumn>>, EngineError>> {
+        std::future::ready(Ok(BTreeMap::new()))
     }
-    async fn status(&self) -> EngineStatus {
-        EngineStatus::Available
+    fn status(&self) -> impl Future<Output = EngineStatus> {
+        std::future::ready(EngineStatus::Available)
     }
 }
 
