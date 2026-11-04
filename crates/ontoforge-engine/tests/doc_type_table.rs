@@ -194,7 +194,11 @@ fn doc_diagnostic_codes_exist() {
         codes::V19,
         codes::V20,
     ];
-    let known: BTreeSet<&str> = validate_codes.into_iter().chain(KNOWN_RULE_IDS).collect();
+    let known: BTreeSet<&str> = validate_codes
+        .into_iter()
+        .chain(KNOWN_RULE_IDS)
+        .chain([codes::W18])
+        .collect();
     for code in &mentioned {
         assert!(
             known.contains(code),
@@ -208,6 +212,7 @@ fn doc_diagnostic_codes_exist() {
         codes::V18,
         codes::V19,
         codes::V20,
+        codes::W18,
         "ONT-E13",
         "ONT-E14",
         "ONT-E15",
