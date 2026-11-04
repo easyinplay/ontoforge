@@ -578,7 +578,12 @@ async fn count_alias_cannot_change_indexed_fk_sample_order() {
             );
             for dialect in [Dialect::Sqlite, Dialect::Trino] {
                 let query = cardinality_query(&target, dialect).expect("typed query");
-                assert!(query.as_str().contains("\"fk\" ASC NULLS LAST"), "{query}");
+                assert!(
+                    query
+                        .as_str()
+                        .contains("\"n\" DESC NULLS LAST, \"fk\" ASC NULLS LAST"),
+                    "{query}"
+                );
             }
         }
     }

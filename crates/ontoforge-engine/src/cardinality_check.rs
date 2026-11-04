@@ -106,12 +106,12 @@ pub fn cardinality_query(
             }),
             order_by: vec![
                 OrderItem {
-                    expr: count,
+                    expr: Expr::Column("n".to_owned()),
                     descending: true,
                     nulls_first: false,
                 },
                 OrderItem {
-                    expr: fk,
+                    expr: Expr::Column("fk".to_owned()),
                     descending: false,
                     nulls_first: false,
                 },
