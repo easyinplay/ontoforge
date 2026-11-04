@@ -51,10 +51,16 @@ SOURCE = "9e49d5e7a648f00e26f2246f4dc28e6b07f8c84a"
 BUILDER = "docker.io/library/golang:1.24.8-bookworm@sha256:39e2f344b68e61144a5de3d3bd166ea746ee8e1965e6fc2ad046df5cd6c8369e"
 IMAGE = "ontoforge-minio:" + SOURCE
 PG = "postgres:17.11@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3"
-TRINO = {"483": "trinodb/trino:483@sha256:db58cc93e593a2706553745f276bb119c9810e69918be56ecde088ba7ccb0534"}
+TRINO = {
+    "483": "trinodb/trino:483@sha256:db58cc93e593a2706553745f276bb119c9810e69918be56ecde088ba7ccb0534",
+    "484": "trinodb/trino:484@sha256:2704eb53935af5e582d63d6033e9bf99d20c325e9b0e30b1016ef59a4773979f",
+}
 LABEL = "ontoforge.iceberg.owner"
 END = time.monotonic() + 3300
 CHILD = None
+IMPLEMENTATION_HASHES = {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in (
+    "ci/iceberg-services.sh", "ci/minio/Dockerfile", "ci/minio/bucket.go", "ci/trino/iceberg/iceberg.properties",
+    "crates/ontoforge-engine/tests/trino_it.rs")}
 
 
 class Failure(Exception):
@@ -168,7 +174,8 @@ def private(path, directory=False):
 def write_json(path, value):
     path = Path(path)
     tmp = path.with_name(path.name + ".new")
-    tmp.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
+    with os.fdopen(os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), "w", encoding="utf-8") as output:
+        output.write(json.dumps(value, indent=2) + "\n")
     tmp.replace(path)
 
 
@@ -188,32 +195,69 @@ def owner_lock():
         lock.rmdir()
 
 
-def exact(directory):
+def exact(directory, suffix=""):
     require(os.environ.get("ONTOFORGE_TRINO_ICEBERG") == "1", "Iceberg environment guard failed")
     require(bool(os.environ.get("ONTOFORGE_TRINO_URL", "").strip()), "Trino URL guard failed")
     directory.mkdir(parents=True, exist_ok=True)
     command = ["cargo", "test", "-p", "ontoforge-engine", "--test", "trino_it", "--locked",
                "iceberg_table_is_readable", "--", "--ignored", "--exact"]
-    _, found, _ = call(command + ["--list"], limit=900, log=directory / "iceberg-discovery.log")
+    _, found, _ = call(command + ["--list"], limit=900, log=directory / ("iceberg-discovery" + suffix + ".log"))
     require(re.findall(r"^(.+): test\r?$", found, re.M) == ["iceberg_table_is_readable"],
             "exact discovery must contain exactly one target")
-    _, result, _ = call(command + ["--nocapture"], limit=900, log=directory / "iceberg-exact.log")
+    _, result, _ = call(command + ["--nocapture"], limit=900, log=directory / ("iceberg-exact" + suffix + ".log"))
     require(len(re.findall(r"^test result: ok\. 1 passed; 0 failed; 0 ignored;", result, re.M)) == 1,
             "exact execution did not pass one unignored test")
 
 
-def validate(directory):
-    counts = json.loads((directory / "counts-before.json").read_text())
+def validate(directory, phase="before"):
+    counts = json.loads((directory / ("counts-" + phase + ".json")).read_text())
     require(counts == {"source": 29, "copied": 29}, "row counts must both equal 29")
-    locations = (directory / "metadata-locations.txt").read_text().splitlines()
+    locations = (directory / ("metadata-locations.txt" if phase == "before" else "metadata-locations-after.txt")).read_text().splitlines()
     require(len(locations) == 1 and locations[0].startswith("s3://warehouse/"), "metadata must use S3")
     location = locations[0][len("s3://warehouse/"):]
     require("/metadata/" in location, "invalid metadata object")
     prefix = location.split("/metadata/")[0] + "/"
-    objects = json.loads((directory / "objects-before.json").read_text())
+    objects = json.loads((directory / ("objects-" + phase + ".json")).read_text())
     require(any(o["key"] == location and o["size"] > 0 for o in objects), "metadata object is absent or empty")
     require(any(o["key"].startswith(prefix + "data/") and o["size"] > 0 for o in objects),
             "table data objects are absent or empty")
+
+
+def run_corpus(directory):
+    suites = [
+        ("action-atomicity", ["-p", "ontoforge-storage", "--features", "test-support", "--test", "conformance_pg", "--locked", "action_atomic"], True),
+        ("action-races", ["-p", "ontoforge-action", "--features", "test-support", "--test", "action_pg", "--locked"], True),
+        ("action-idempotency", ["-p", "ontoforge-action", "--features", "test-support", "--test", "idempotency_pg", "--locked"], True),
+        ("action-webhook-pg", ["-p", "ontoforge-action", "--test", "outbox_pg", "--locked"], True),
+        ("action-source", ["-p", "ontoforge-action", "--test", "trino_action_it", "--locked"], True),
+        ("action-outbox", ["-p", "ontoforge-action", "--test", "outbox", "--locked"], False),
+        ("action-entrypoints", ["-p", "ontoforge-action", "--test", "entrypoints", "--locked"], False),
+        ("engine", ["-p", "ontoforge-engine", "--test", "trino_it", "--locked"], True),
+        ("cli", ["-p", "ontoforge", "--test", "cli_trino_it", "--locked"], True),
+    ]
+    records = []
+    for name, options, ignored in suites:
+        args = ["cargo", "test", *options, "--", *(["--ignored"] if ignored else [])]
+        code, found, _ = call(args + ["--list"], limit=900, log=directory / (name + "-discovery.log"), check=False)
+        targets = [options[i + 1] for i, option in enumerate(options) if option == "--test"]
+        record = {"name": name, "targets": targets, "discovered": len(re.findall(r"^.+: test\r?$", found, re.M)),
+                  "passed": 0, "failed": 0, "ignored": 0, "exit_code": code, "stage": "discovery"}
+        records.append(record)
+        write_json(directory / "corpus.json", records)
+        if code:
+            raise Failure("corpus discovery failed: " + name, code)
+        require(record["discovered"] > 0, "corpus discovery was empty: " + name)
+        code, output, _ = call(args + ["--nocapture"], limit=900, log=directory / (name + ".log"), check=False)
+        summaries = re.findall(r"^test result: (?:ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) ignored;", output, re.M)
+        record.update(stage="execution", exit_code=code, passed=sum(int(s[0]) for s in summaries),
+                      failed=sum(int(s[1]) for s in summaries), ignored=sum(int(s[2]) for s in summaries),
+                      summaries=len(summaries))
+        write_json(directory / "corpus.json", records)
+        if code:
+            raise Failure("corpus execution failed: " + name, code)
+        require(len(summaries) == len(targets) and record["passed"] == record["discovered"]
+                and record["passed"] > 0 and record["failed"] == record["ignored"] == 0,
+                "corpus execution count mismatch: " + name)
 
 
 def scan(raw, credentials):
@@ -278,8 +322,11 @@ def cleanup(state):
     return {"ok": not failed and remaining == 0, "remaining": remaining}
 
 
-def contract(version):
+def contract(version, nightly=False):
     require(version in TRINO, "unsupported Trino version")
+    fault = os.environ.get("ONTOFORGE_ICEBERG_FAULT", "")
+    require(fault in ("", "after-pg", "readiness-timeout"), "unsupported fault injection")
+    require(not fault or os.environ.get("ONTOFORGE_ICEBERG_LIVE") == "1", "fault injection requires explicit live opt-in")
     owner = "iceberg-" + secrets.token_hex(12)
     runtime = Path(tempfile.gettempdir()) / owner
     runtime.mkdir(mode=0o700)
@@ -296,8 +343,9 @@ def contract(version):
     private(state_path)
     credentials = [secrets.token_hex(24) for _ in range(3)]
     (runtime / "secrets.json").write_text(json.dumps(credentials))
-    status, cleanup_result = 0, {"ok": False, "remaining": -1}
+    status, cleanup_result, scan_passed = 0, {"ok": False, "remaining": -1}, False
     baseline, hashes = None, catalog_hashes()
+    statements = []
 
     def resource(kind, name, args):
         # The persisted owner permits recovery if creation succeeds but ledger writing fails.
@@ -307,12 +355,14 @@ def contract(version):
         write_json(state_path, state)
         return identifier
 
-    def helper(operation, log=None):
+    def helper(operation, log=None, check=True):
         return docker("run", "--rm", "--network", owner, "--label", LABEL + "=" + owner,
                       "--env-file", runtime / "minio.env", "--entrypoint", "/bucket", IMAGE,
-                      operation, "--bucket", "warehouse", limit=40, log=log)
+                      operation, "--bucket", "warehouse", limit=40, log=log, check=check)
 
     def sql(statement):
+        statements.append(statement)
+        write_json(raw / "sql-statements.json", statements)
         return docker("exec", owner + "-trino", "trino", "--output-format", "CSV_UNQUOTED",
                       "--execute", statement, limit=120)[1].strip()
 
@@ -327,9 +377,30 @@ def contract(version):
             require(time.monotonic() < deadline, "service readiness timeout")
             time.sleep(2)
 
+    def collect(phase):
+        write_json(raw / ("counts-" + phase + ".json"), {"source": int(sql("SELECT count(*) FROM demo.aviation.flights")),
+                                                       "copied": int(sql("SELECT count(*) FROM iceberg.aviation.flights"))})
+        metadata = docker("exec", pgname, "psql", "-U", "postgres", "-d", "iceberg_catalog", "-At", "-c",
+                          "SELECT metadata_location FROM iceberg_tables WHERE catalog_name='ontoforge_ci' "
+                          "AND table_namespace='aviation' AND table_name='flights'")[1]
+        name = "metadata-locations.txt" if phase == "before" else "metadata-locations-after.txt"
+        (raw / name).write_text(metadata)
+        helper("list", raw / ("objects-" + phase + ".json"))
+        validate(raw, phase)
+        return metadata
+
+    def identity():
+        _, containers, _ = docker("inspect", owner + "-pg", owner + "-minio", owner + "-trino")
+        _, volumes, _ = docker("volume", "inspect", owner + "-pg", owner + "-minio")
+        return {"containers": {o["Name"]: o["Id"] for o in json.loads(containers)},
+                "volumes": {o["Name"]: {"created": o.get("CreatedAt"), "mountpoint": o.get("Mountpoint")}
+                            for o in json.loads(volumes)}}
+
     try:
         baseline = snapshot()
         write_json(raw / "containers-before.json", baseline)
+        if fault:
+            write_json(raw / "fault.json", {"injected": fault, "natural_service_failure": False})
         call(["docker", "build", "--platform", "linux/amd64", "-t", IMAGE, "ci/minio"],
              limit=1800, log=raw / "build.log")
         _, image_info, _ = docker("image", "inspect", IMAGE)
@@ -345,6 +416,7 @@ def contract(version):
                    "image_id": image_id, "versions": versions, "sha256": (runtime / "SHA256SUMS").read_text(),
                    "build_exit": 0, "git_head": call(["git", "rev-parse", "HEAD"])[1].strip(),
                    "run_id": owner, "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                   "implementation_sha256": IMPLEMENTATION_HASHES,
                    "artifact": "self-built DEVELOPMENT; no bit reproducibility claim"})
         resource("network", owner, ["network", "create", "--label", LABEL + "=" + owner, owner])
         for suffix in ("pg", "minio"):
@@ -371,7 +443,10 @@ def contract(version):
         resource("container", pgname, ["run", "-d", "--name", pgname, *common, "--network-alias", "postgres",
                  "--env-file", runtime / "pg.env", "-p", "127.0.0.1::5432", "-v", owner + "-pg:/var/lib/postgresql/data",
                  "-v", str(ROOT / "examples/ontologies/aviation/bindings/dev/fixtures") + ":/fixtures:ro", PG])
-        wait_for(lambda: docker("exec", pgname, "pg_isready", "-U", "postgres", check=False)[0] == 0)
+        if fault == "after-pg":
+            raise Failure("injected failure after PostgreSQL creation", 42)
+        wait_for(lambda: docker("exec", pgname, "pg_isready", "-U", "postgres", check=False)[0] == 0
+                 and fault != "readiness-timeout")
         for database in ("demo", "editstore", "iceberg_catalog"):
             docker("exec", pgname, "createdb", "-U", "postgres", database)
         for database, filename, extra in [("demo", "seed.sql", ["-v", "fixtures=/fixtures"]),
@@ -414,14 +489,26 @@ def contract(version):
             "tail_number, CAST(scheduled_departure AS timestamp(6)) AS scheduled_departure, status, delay_minutes, tags "
             "FROM demo.aviation.flights")
         exact(raw)
-        write_json(raw / "counts-before.json", {"source": int(sql("SELECT count(*) FROM demo.aviation.flights")),
-                                               "copied": int(sql("SELECT count(*) FROM iceberg.aviation.flights"))})
-        metadata = docker("exec", pgname, "psql", "-U", "postgres", "-d", "iceberg_catalog", "-At", "-c",
-                          "SELECT metadata_location FROM iceberg_tables WHERE catalog_name='ontoforge_ci' "
-                          "AND table_namespace='aviation' AND table_name='flights'")[1]
-        (raw / "metadata-locations.txt").write_text(metadata)
-        helper("list", raw / "objects-before.json")
-        validate(raw)
+        metadata_before = collect("before")
+        before = identity()
+        boundary = len(statements)
+        docker("restart", owner + "-minio", owner + "-trino", limit=120)
+        port_after = docker("port", owner + "-trino", "8080/tcp")[1].strip()
+        require(re.fullmatch(r"127\.0\.0\.1:\d+", port_after), "non-loopback restarted Trino port")
+        os.environ["ONTOFORGE_TRINO_URL"] = "http://" + port_after
+        wait_for(lambda: helper("list", check=False)[0] == 0)
+        wait_for(ready)
+        metadata_after = collect("after")
+        exact(raw, "-after")
+        after = identity()
+        require(before == after, "restart changed container or volume identity")
+        require(metadata_before == metadata_after, "restart changed table metadata location")
+        require(not any(s.startswith("CREATE ") for s in statements[boundary:]), "restart recreated the table")
+        write_json(raw / "restart.json", {"before": before, "after": after,
+                   "metadata_unchanged": True, "statements_after_restart": statements[boundary:], "ctas_after_restart": 0,
+                   "host_port_before": port, "host_port_after": port_after})
+        if nightly:
+            run_corpus(raw)
     except Failure as error:
         status = error.code
         print(str(error), file=sys.stderr)
@@ -445,6 +532,7 @@ def contract(version):
         try:
             require(logs_complete, "service log collection failed")
             scan(raw, credentials)
+            scan_passed = True
             evidence.mkdir(parents=True)
             for path in raw.iterdir():
                 shutil.copy2(path, evidence / path.name)
@@ -477,7 +565,8 @@ def contract(version):
             evidence.mkdir(parents=True, exist_ok=True)
             write_json(evidence / "cleanup.json", cleanup_result)
             write_json(evidence / "result.json", {"status": "pass" if status == 0 else "fail", "exit_code": status,
-                       "run_id": owner, "trino": version, "state": str(state_path) if not cleanup_result["ok"] else None})
+                       "run_id": owner, "trino": version, "scan_passed": scan_passed,
+                       "state": str(state_path) if not cleanup_result["ok"] else None})
             print("Iceberg result: " + str(evidence / "result.json"))
         except Exception:
             status = status or 1
@@ -532,9 +621,9 @@ def helper_test():
 
 def main():
     args = sys.argv[1:]
-    if len(args) == 3 and args[:2] == ["contract", "--trino"]:
+    if len(args) == 3 and args[0] in ("contract", "nightly") and args[1] == "--trino":
         with owner_lock():
-            return contract(args[2])
+            return contract(args[2], nightly=args[0] == "nightly")
     if args == ["helper-test"]:
         with owner_lock():
             return helper_test()
@@ -552,6 +641,8 @@ def main():
         return 0
     if len(args) == 3 and args[:2] == ["cleanup", "--state"]:
         state_path = Path(args[2])
+        if not state_path.exists():
+            return 0
         state = json.loads(state_path.read_text())
         result = cleanup(state)
         if result["ok"]:
@@ -566,7 +657,7 @@ def main():
                 lock.rmdir()
         print(json.dumps(result))
         return 0 if result["ok"] else 1
-    raise Failure("usage: iceberg-services.sh contract --trino 483 | cleanup --state PATH | exact DIR | validate DIR", 2)
+    raise Failure("usage: iceberg-services.sh {contract|nightly} --trino {483|484} | helper-test | cleanup --state PATH", 2)
 
 
 try:

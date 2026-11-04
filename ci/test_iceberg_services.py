@@ -483,7 +483,8 @@ class NightlyContract(unittest.TestCase):
             ["-p", "ontoforge-action", "--features", "test-support", "--test", "idempotency_pg", "--locked"],
             ["-p", "ontoforge-action", "--test", "outbox_pg", "--locked"],
             ["-p", "ontoforge-action", "--test", "trino_action_it", "--locked"],
-            ["-p", "ontoforge-action", "--test", "outbox", "--test", "entrypoints", "--locked"],
+            ["-p", "ontoforge-action", "--test", "outbox", "--locked"],
+            ["-p", "ontoforge-action", "--test", "entrypoints", "--locked"],
             ["-p", "ontoforge-engine", "--test", "trino_it", "--locked"],
             ["-p", "ontoforge", "--test", "cli_trino_it", "--locked"],
         ]
@@ -493,7 +494,7 @@ class NightlyContract(unittest.TestCase):
             self.assertIn("--list", selected[0])
             self.assertNotIn("--list", selected[1])
         corpus = json.loads((self.directory / "evidence/corpus.json").read_text())
-        self.assertEqual(len(corpus), 8)
+        self.assertEqual(len(corpus), 9)
         self.assertTrue(all(row["passed"] > 0 and row["failed"] == 0 and row["ignored"] == 0 for row in corpus))
 
     def test_corpus_zero_discovery_zero_execution_and_failure_cannot_pass(self):
