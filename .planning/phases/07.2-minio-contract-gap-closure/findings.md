@@ -10,3 +10,4 @@
 - 首轮483真实source/copied=23，原因是runner只运行seed.sql。历史29来自ci/query-services.sh seed中的query_corpus.sql固定Q-0001..Q-0006，并非Action副作用；应复用seed.sql→rowpred_corpus.sql→query_corpus.sql原顺序，不改29断言。
 - 首轮trino.log命中临时秘密，扫描已拒绝公开证据；cleanup Docker filter漏label=为明确实现bug，executor修复并核对owner资源归零，不能将首轮判pass。
 - 日志第二意见采用源头修复：Trino通过私有env的AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY获取默认SDK凭据，不写catalog静态S3凭据键；483/484官方S3FileSystemLoader已核对provider分支，实际鉴权/全量日志扫描仍待运行。保留严格扫描和真实原始日志边界。
+- 新增测试必须进入持续验证：nightly显式RunnerContract/NightlyContract和helper-test，避免仅本地测试后无人运行。Linux唯一平台例外为Windows ACE拒绝测试（已有Windows真GREEN），跨平台权限正例及其他目标仍必须执行；不默认发现LiveFault。
