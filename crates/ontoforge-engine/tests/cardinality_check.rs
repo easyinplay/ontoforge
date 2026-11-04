@@ -420,3 +420,68 @@ async fn independent_runs_observe_current_source() {
     assert!(second.samples.is_empty());
     assert_eq!(rows(&changed, &target).await.rows.len(), 2);
 }
+
+struct ReplyEngine(QueryOutput);
+
+impl Engine for ReplyEngine {
+    fn dialect(&self) -> Dialect {
+        Dialect::Sqlite
+    }
+    async fn execute(
+        &self,
+        _sql: &PrintedSql,
+        _ctx: &QueryContext,
+    ) -> Result<QueryOutput, EngineError> {
+        Ok(self.0.clone())
+    }
+    async fn describe_tables(
+        &self,
+        _tables: &[TableRef],
+        _ctx: &QueryContext,
+    ) -> Result<BTreeMap<TableRef, Vec<PhysicalColumn>>, EngineError> {
+        Ok(BTreeMap::new())
+    }
+    async fn status(&self) -> EngineStatus {
+        EngineStatus::Available
+    }
+}
+
+#[tokio::test]
+async fn incomplete_or_malformed_results_are_not_clean() {
+    let (_dir, _engine, target) = fixture("record_id,aircraft_id\nM1,A1\nM2,A1\n").await;
+    for output in [
+        QueryOutput {
+            columns: Vec::new(),
+            rows: Vec::new(),
+            truncated: true,
+        },
+        QueryOutput {
+            columns: Vec::new(),
+            rows: vec![Vec::new()],
+            truncated: true,
+        },
+    ] {
+        let error = check_cardinality(&ReplyEngine(output), &target, &ctx())
+            .await
+            .expect_err("truncated is incomplete even with zero rows or a malformed row");
+        assert!(error.to_string().contains("truncated"));
+    }
+    for row in [
+        Vec::new(),
+        vec![string("A1")],
+        vec![string("A1"), Value::Long(1)],
+        vec![Value::Null, Value::Long(2)],
+        vec![string("A1"), string("2")],
+        vec![string("A1"), Value::Long(2), Value::Null],
+    ] {
+        let output = QueryOutput {
+            columns: Vec::new(),
+            rows: vec![row],
+            truncated: false,
+        };
+        let error = check_cardinality(&ReplyEngine(output), &target, &ctx())
+            .await
+            .expect_err("invalid aggregate row");
+        assert!(matches!(error, EngineError::Protocol(_)), "{error}");
+    }
+}

@@ -1,0 +1,10 @@
+   Compiling ontoforge v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 25.55s
+     Running unittests src\lib.rs (target\debug\deps\ontoforge-9d7911bca446a24a.exe)
+
+running 2 tests
+test online::tests::cardinality_total_deadline_configuration ... ok
+test online::tests::cardinality_total_deadline_is_shared ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 23 filtered out; finished in 0.22s
+

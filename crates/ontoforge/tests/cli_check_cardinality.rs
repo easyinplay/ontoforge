@@ -658,6 +658,72 @@ async fn cardinality_budget_starts_after_precheck_and_pk() {
     assert_eq!(server.received_requests().await.expect("requests").len(), 4);
 }
 
+#[tokio::test(flavor = "multi_thread")]
+async fn cleanup_transport_failure_is_reported() {
+    for metadata_failure in [true, false] {
+        let server = MockServer::start().await;
+        if !metadata_failure {
+            mount_info(&server, info_rows()).await;
+        }
+        let next = "/v1/statement/executing/cleanup/1";
+        let fragment = if metadata_failure {
+            "\"information_schema\""
+        } else {
+            "count(DISTINCT"
+        };
+        Mock::given(method("POST")).and(body_string_contains(fragment))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!({"id":"pending","nextUri":format!("{}{next}",server.uri()),"stats":{"state":"QUEUED"}})))
+            .mount(&server).await;
+        Mock::given(method("GET"))
+            .and(path(next))
+            .respond_with(ResponseTemplate::new(401))
+            .mount(&server)
+            .await;
+        Mock::given(method("DELETE"))
+            .and(path(next))
+            .respond_with(ResponseTemplate::new(500))
+            .mount(&server)
+            .await;
+        let dir = ontology("record_id,aircraft_id\nM1,A1\nM2,A1\n");
+        let config = server_config(dir.path(), &server.uri(), "");
+        let out = run_remote(dir.path(), &config, &["--check-cardinality"]).await;
+        assert_eq!(out.status.code(), Some(3));
+        let diags = diagnostics(&out);
+        let failures: Vec<_> = diags.iter().filter(|d| d["code"] == "ONT-V19").collect();
+        assert_eq!(
+            failures.len(),
+            2,
+            "original error and cleanup failure: {diags:?}"
+        );
+        assert!(failures.iter().any(|d| {
+            d["message"]
+                .as_str()
+                .expect("message")
+                .contains("authentication")
+        }));
+        assert!(failures.iter().any(|d| {
+            d["message"]
+                .as_str()
+                .expect("message")
+                .contains("cancellation cleanup failed")
+        }));
+        assert_eq!(
+            cardinality_requests(&server).await,
+            usize::from(!metadata_failure)
+        );
+        assert_eq!(
+            server
+                .received_requests()
+                .await
+                .expect("requests")
+                .iter()
+                .filter(|r| r.method == wiremock::http::Method::DELETE)
+                .count(),
+            1
+        );
+    }
+}
+
 #[test]
 fn cardinality_tracer_reports_conflict() {
     let dir = ontology("record_id,aircraft_id\nM1,A1\nM2,A1\n");

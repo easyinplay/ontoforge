@@ -81,16 +81,20 @@ pub fn run_online(args: &ValidateArgs) -> OnlineRun {
     if !has_errors(&out.diagnostics) {
         out.ontology = Some(ontology);
     }
-    let code = if out.diagnostics.iter().any(|d| d.code == codes::V19) {
-        EXIT_ENGINE
-    } else {
-        render::exit_code(&out.diagnostics, deny_warnings)
-    };
+    let code = online_exit_code(&out.diagnostics, deny_warnings);
     OnlineRun {
         out,
         code,
         profile: Some(profile),
         bindings,
+    }
+}
+
+fn online_exit_code(diagnostics: &[Diagnostic], deny_warnings: bool) -> u8 {
+    if diagnostics.iter().any(|d| d.code == codes::V19) {
+        EXIT_ENGINE
+    } else {
+        render::exit_code(diagnostics, deny_warnings)
     }
 }
 
@@ -245,11 +249,20 @@ async fn compare_all(
 ) -> Result<(Vec<Diagnostic>, usize), Diagnostic> {
     let result = compare_bindings(engine, ctx, check, check_pk, check_cardinality).await;
     if check_cardinality {
-        if let Err(error) = engine.drain_cancellations().await {
-            let (mut found, count) = result.unwrap_or_else(|failure| (vec![failure], 0));
-            found.push(engine_error_diagnostic(&error, MANIFEST));
-            return Ok((found, count));
-        }
+        finish_cardinality_check(engine, result).await
+    } else {
+        result
+    }
+}
+
+async fn finish_cardinality_check(
+    engine: &impl Engine,
+    result: Result<(Vec<Diagnostic>, usize), Diagnostic>,
+) -> Result<(Vec<Diagnostic>, usize), Diagnostic> {
+    if let Err(error) = engine.drain_cancellations().await {
+        let (mut found, count) = result.unwrap_or_else(|failure| (vec![failure], 0));
+        found.push(engine_error_diagnostic(&error, MANIFEST));
+        return Ok((found, count));
     }
     result
 }
@@ -293,8 +306,23 @@ async fn check_cardinalities(
     keys: &[BindingKey],
 ) -> Vec<Diagnostic> {
     let mut found = Vec::new();
+    let started = tokio::time::Instant::now();
     for target in cardinality_targets(check.ontology, check.profile, keys) {
-        match check_cardinality(engine, &target, ctx).await {
+        let remaining = ctx.timeout.saturating_sub(started.elapsed());
+        if remaining.is_zero() {
+            found.push(engine_error_diagnostic(
+                &EngineError::Timeout {
+                    after_ms: u64::try_from(ctx.timeout.as_millis()).unwrap_or(u64::MAX),
+                },
+                MANIFEST,
+            ));
+            break;
+        }
+        let target_ctx = QueryContext {
+            timeout: remaining,
+            ..ctx.clone()
+        };
+        match check_cardinality(engine, &target, &target_ctx).await {
             Ok(finding) if !finding.samples.is_empty() => {
                 found.push(cardinality_diagnostic(&finding, check));
             }
@@ -303,7 +331,12 @@ async fn check_cardinalities(
                 found.push(engine_error_diagnostic(&error, MANIFEST));
                 break;
             }
-            Err(error) => found.push(binding_failure(&target.key, &error, check.sources)),
+            Err(error) => {
+                found.push(binding_failure(&target.key, &error, check.sources));
+                if started.elapsed() >= ctx.timeout {
+                    break;
+                }
+            }
         }
     }
     found
@@ -859,5 +892,173 @@ mod tests {
             1
         );
         assert!(found.iter().any(|diag| diag.code == "ONT-V19"));
+    }
+
+    #[tokio::test]
+    async fn cardinality_total_deadline_configuration() {
+        let (out, profile, keys) = cardinality_input();
+        let config = parse_server_config("[trino]\nurl = \"http://127.0.0.1:8080\"\nquery_timeout_ms = 12000\n[trino.identities.ontology]\nuser = \"u\"\n").expect("config");
+        let trino = config.trino.expect("trino");
+        for (ctx, expected) in [
+            (query_context(None, None), 30000),
+            (query_context(Some(&trino), None), 12000),
+            (query_context(Some(&trino), Some(1000)), 1000),
+        ] {
+            assert_eq!(ctx.timeout, Duration::from_millis(expected));
+            let engine = BudgetEngine {
+                contexts: std::sync::Mutex::new(Vec::new()),
+                delays: Vec::new(),
+            };
+            let check = super::Check {
+                ontology: out.ontology.as_ref().expect("ontology"),
+                sources: &out.sources,
+                profile: &profile,
+            };
+            let findings = super::check_cardinalities(&engine, &ctx, check, &keys).await;
+            assert_eq!(findings.len(), 3);
+            let contexts = engine.contexts.lock().expect("contexts");
+            assert_eq!(contexts.len(), 3);
+            assert!(contexts[0].timeout <= ctx.timeout && contexts[0].timeout > ctx.timeout / 2);
+            assert!(
+                contexts
+                    .windows(2)
+                    .all(|pair| pair[1].timeout <= pair[0].timeout)
+            );
+            assert_eq!(
+                ctx.timeout,
+                Duration::from_millis(expected),
+                "original context is unchanged"
+            );
+        }
+        let engine = BudgetEngine {
+            contexts: std::sync::Mutex::new(Vec::new()),
+            delays: Vec::new(),
+        };
+        let check = super::Check {
+            ontology: out.ontology.as_ref().expect("ontology"),
+            sources: &out.sources,
+            profile: &profile,
+        };
+        let expired = ontoforge_engine::QueryContext {
+            timeout: Duration::ZERO,
+            ..query_context(None, None)
+        };
+        let findings = super::check_cardinalities(&engine, &expired, check, &keys).await;
+        assert!(engine.contexts.lock().expect("contexts").is_empty());
+        assert_eq!(super::online_exit_code(&findings, false), 3);
+    }
+
+    struct CleanupEngine {
+        metadata_fails: bool,
+        drained: std::sync::atomic::AtomicBool,
+    }
+
+    impl ontoforge_engine::Engine for CleanupEngine {
+        fn dialect(&self) -> ontoforge_engine::Dialect {
+            ontoforge_engine::Dialect::Sqlite
+        }
+        async fn execute(
+            &self,
+            _sql: &ontoforge_engine::PrintedSql,
+            _ctx: &ontoforge_engine::QueryContext,
+        ) -> Result<ontoforge_engine::QueryOutput, ontoforge_engine::EngineError> {
+            Ok(ontoforge_engine::QueryOutput {
+                columns: Vec::new(),
+                rows: vec![vec![
+                    ontoforge_engine::Value::String("A".to_owned()),
+                    ontoforge_engine::Value::Long(2),
+                ]],
+                truncated: false,
+            })
+        }
+        async fn describe_tables(
+            &self,
+            _tables: &[ontoforge_engine::TableRef],
+            _ctx: &ontoforge_engine::QueryContext,
+        ) -> Result<
+            std::collections::BTreeMap<
+                ontoforge_engine::TableRef,
+                Vec<ontoforge_engine::PhysicalColumn>,
+            >,
+            ontoforge_engine::EngineError,
+        > {
+            if self.metadata_fails {
+                Err(ontoforge_engine::EngineError::Unavailable {
+                    retryable: false,
+                    reason: "metadata unavailable".to_owned(),
+                })
+            } else {
+                Ok(std::collections::BTreeMap::new())
+            }
+        }
+        async fn status(&self) -> ontoforge_engine::EngineStatus {
+            ontoforge_engine::EngineStatus::Available
+        }
+        async fn drain_cancellations(&self) -> Result<(), ontoforge_engine::EngineError> {
+            tokio::time::sleep(Duration::from_millis(1)).await;
+            self.drained
+                .store(true, std::sync::atomic::Ordering::SeqCst);
+            Err(ontoforge_engine::EngineError::Unavailable {
+                retryable: false,
+                reason: "cleanup failed".to_owned(),
+            })
+        }
+    }
+
+    #[tokio::test]
+    async fn cardinality_cleanup_failure_after_success() {
+        let (out, profile, keys) = cardinality_input();
+        let engine = CleanupEngine {
+            metadata_fails: false,
+            drained: std::sync::atomic::AtomicBool::new(false),
+        };
+        let check = super::Check {
+            ontology: out.ontology.as_ref().expect("ontology"),
+            sources: &out.sources,
+            profile: &profile,
+        };
+        let found =
+            super::check_cardinalities(&engine, &query_context(None, None), check, &keys).await;
+        assert_eq!(found.len(), 3);
+        let (after, count) = super::finish_cardinality_check(&engine, Ok((found.clone(), 1)))
+            .await
+            .expect("diagnostics");
+        assert_eq!(after[..3], found);
+        assert_eq!(count, 1);
+        assert!(
+            engine.drained.load(std::sync::atomic::Ordering::SeqCst),
+            "cleanup future must finish before return"
+        );
+        assert!(
+            after
+                .last()
+                .expect("cleanup diagnostic")
+                .message
+                .contains("cleanup failed")
+        );
+        assert_eq!(super::online_exit_code(&after, false), 3);
+    }
+
+    #[tokio::test]
+    async fn cardinality_cleanup_failure_after_metadata_error() {
+        use ontoforge_engine::Engine;
+        let engine = CleanupEngine {
+            metadata_fails: true,
+            drained: std::sync::atomic::AtomicBool::new(false),
+        };
+        let error = engine
+            .describe_tables(&[], &query_context(None, None))
+            .await
+            .expect_err("metadata failure");
+        let original = super::engine_error_diagnostic(&error, super::MANIFEST);
+        let (after, count) = super::finish_cardinality_check(&engine, Err(original.clone()))
+            .await
+            .expect("both diagnostics");
+        assert_eq!(after.len(), 2);
+        assert_eq!(after[0], original);
+        assert_eq!(count, 0);
+        assert!(engine.drained.load(std::sync::atomic::Ordering::SeqCst));
+        assert!(after[1].message.contains("cleanup failed"));
+        assert_eq!(super::online_exit_code(&after, false), 3);
     }
 }
