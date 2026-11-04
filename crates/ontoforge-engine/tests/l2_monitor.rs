@@ -472,6 +472,7 @@ async fn monitor_cancelled_startup_cleans_up_and_stays_disabled() {
         .expect("active probe")
         .clone();
     assert!(!startup.is_finished(), "startup must still be in progress");
+    let deletes_before_cancel = fixture.deletes.load(Ordering::SeqCst);
     startup.abort();
     let Err(cancelled) = startup.await else {
         panic!("startup must be cancelled");
@@ -485,7 +486,13 @@ async fn monitor_cancelled_startup_cleans_up_and_stays_disabled() {
     )
     .await;
     tokio::time::timeout(Duration::from_secs(1), async {
-        while fixture.deletes.load(Ordering::SeqCst) == 0 {
+        while fixture.deletes.load(Ordering::SeqCst) <= deletes_before_cancel
+            || fixture
+                .queries
+                .lock()
+                .expect("queries")
+                .contains_key(&active_probe)
+        {
             tokio::time::sleep(Duration::from_millis(5)).await;
         }
     })
