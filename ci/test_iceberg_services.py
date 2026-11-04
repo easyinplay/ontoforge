@@ -1,7 +1,9 @@
 """Black-box contracts for the isolated Iceberg fixture."""
 
 import os
+import ast
 import json
+import secrets
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 import subprocess
@@ -118,15 +120,32 @@ class RunnerContract(unittest.TestCase):
                 pass
 
             def do_GET(self):
+                if mode == "port-change" and self.server.server_port == server.server_port:
+                    if json.loads(Path(self_outer.env["TEST_DB"]).read_text()).get("restarted"):
+                        self.send_response(503)
+                        self.end_headers()
+                        return
                 self.send_response(200)
                 self.end_headers()
                 self.wfile.write(json.dumps({"starting": False, "nodeVersion": {"version": version}}).encode())
 
+        self_outer = self
         server = ThreadingHTTPServer(("127.0.0.1", 0), Trino)
         threading.Thread(target=lambda: server.serve_forever(poll_interval=0.02), daemon=True).start()
         self.addCleanup(server.server_close)
         self.addCleanup(server.shutdown)
         self.env["TEST_PORT"] = str(server.server_port)
+        if mode == "port-change":
+            second = ThreadingHTTPServer(("127.0.0.1", 0), Trino)
+            threading.Thread(target=lambda: second.serve_forever(poll_interval=0.02), daemon=True).start()
+            self.addCleanup(second.server_close)
+            self.addCleanup(second.shutdown)
+            self.env["TEST_PORT_AFTER"] = str(second.server_port)
+
+    def test_restart_refreshes_dynamic_host_port(self):
+        self.full_fixture("port-change")
+        result = self.run_cli("contract", "--trino", "483")
+        self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_both_versions_restart_without_recreating_the_table(self):
         for version in ("483", "484"):
@@ -359,6 +378,152 @@ class RunnerContract(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0, "missing Iceberg environment must fail before Cargo")
 
 
+class LiveFaultContract(unittest.TestCase):
+    def setUp(self):
+        self.assertEqual(os.environ.get("ONTOFORGE_ICEBERG_LIVE"), "1", "live Docker tests require explicit opt-in")
+
+    def snapshot(self):
+        ids = subprocess.check_output(["docker", "ps", "-aq"], text=True).split()
+        if not ids:
+            return {}
+        data = json.loads(subprocess.check_output(["docker", "inspect", *ids], text=True))
+        return {o["Id"]: {"name": o["Name"], "status": o["State"]["Status"], "started": o["State"]["StartedAt"]}
+                for o in data}
+
+    def check_fault(self, fault, expected):
+        baseline = self.snapshot()
+        evidence = ROOT / "target/phase072-minio/faults" / (fault + "-" + secrets.token_hex(6))
+        with tempfile.TemporaryDirectory(prefix="iceberg-live-") as directory:
+            state_path = Path(directory) / "state.json"
+            pid_path = Path(directory) / "pid"
+            env = dict(os.environ, ONTOFORGE_ICEBERG_STATE=str(state_path),
+                       ONTOFORGE_ICEBERG_EVIDENCE_DIR=str(evidence), ONTOFORGE_ICEBERG_READINESS_SECONDS="2",
+                       ICEBERG_TEST_PID=str(pid_path))
+            env.pop("ONTOFORGE_ICEBERG_FAULT", None)
+            if fault != "term":
+                env["ONTOFORGE_ICEBERG_FAULT"] = fault
+            command = 'bash ci/iceberg-services.sh contract --trino 483 & child=$!; '
+            command += 'printf "%s" "$child" > "$ICEBERG_TEST_PID"; wait "$child"'
+            process = subprocess.Popen([bash_path(), "--noprofile", "--norc", "-c", command],
+                                       cwd=ROOT, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            state, signalled = None, False
+            deadline = time.monotonic() + 180
+            try:
+                while process.poll() is None:
+                    self.assertLess(time.monotonic(), deadline, "live fault exceeded deadline")
+                    try:
+                        state = json.loads(state_path.read_text())
+                    except (FileNotFoundError, json.JSONDecodeError):
+                        pass
+                    if fault == "term" and not signalled and state and any(
+                            r["kind"] == "container" and r["name"].endswith("-pg") for r in state["resources"]):
+                        subprocess.run([bash_path(), "--noprofile", "--norc", "-c",
+                                        'kill -TERM "$(cat "$ICEBERG_TEST_PID")"'], env=env, check=True)
+                        signalled = True
+                    time.sleep(0.1)
+                out, err = process.communicate(timeout=10)
+                self.assertEqual(process.returncode, expected, out + err)
+                self.assertIsNotNone(state, "run must publish owner before starting resources")
+                if fault == "term":
+                    self.assertTrue(signalled, "TERM must be sent after actual PG creation")
+                proof = json.loads((evidence / "result.json").read_text())
+                clean = json.loads((evidence / "cleanup.json").read_text())
+                self.assertEqual(proof["exit_code"], expected)
+                self.assertTrue(clean["ok"])
+                self.assertEqual(clean["remaining"], 0)
+                self.assertFalse(Path(state["runtime"]).exists())
+                self.assertFalse(state_path.exists())
+                for args in (["ps", "-aq"], ["network", "ls", "-q"], ["volume", "ls", "-q"]):
+                    remaining = subprocess.check_output(["docker", *args, "--filter",
+                                "label=ontoforge.iceberg.owner=" + state["owner"]], text=True)
+                    self.assertEqual(remaining.strip(), "")
+                self.assertEqual(self.snapshot(), baseline)
+                (evidence / "fault-verification.json").write_text(json.dumps({"fault": fault,
+                    "exit_code": process.returncode, "resources_before": baseline, "resources_after": self.snapshot(),
+                    "private_runtime_removed": True, "owner": state["owner"], "injected": True}, indent=2))
+            finally:
+                if process.poll() is None:
+                    subprocess.run([bash_path(), "--noprofile", "--norc", "-c",
+                                    'kill -TERM "$(cat "$ICEBERG_TEST_PID")"'], env=env, check=False)
+                    process.communicate(timeout=70)
+                if state_path.exists():
+                    subprocess.run([bash_path(), str(RUNNER), "cleanup", "--state", str(state_path)],
+                                   capture_output=True, timeout=70)
+
+    def test_after_pg_failure_leaves_no_owner_resources(self):
+        self.check_fault("after-pg", 42)
+
+    def test_readiness_timeout_leaves_no_owner_resources(self):
+        self.check_fault("readiness-timeout", 1)
+
+    def test_term_after_creation_leaves_no_owner_resources(self):
+        self.check_fault("term", 143)
+
+
+class NightlyContract(unittest.TestCase):
+    setUp = RunnerContract.setUp
+    run_cli = RunnerContract.run_cli
+    fake_tool = RunnerContract.fake_tool
+    full_fixture = RunnerContract.full_fixture
+
+    def nightly_fixture(self, mode="success"):
+        self.full_fixture("success")
+        self.env["TEST_CARGO_MODE"] = mode
+        self.fake_tool("cargo", 'exec "' + sys.executable.replace("\\", "/") + '" "'
+                       + Path(__file__).as_posix() + '" --fake-cargo "$@"\n')
+
+    def test_nightly_keeps_every_existing_target_filter_and_feature(self):
+        self.nightly_fixture()
+        result = self.run_cli("nightly", "--trino", "483")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        calls = json.loads(Path(self.env["TEST_DB"]).read_text())["cargo_calls"]
+        expected = [
+            ["-p", "ontoforge-storage", "--features", "test-support", "--test", "conformance_pg", "--locked", "action_atomic"],
+            ["-p", "ontoforge-action", "--features", "test-support", "--test", "action_pg", "--locked"],
+            ["-p", "ontoforge-action", "--features", "test-support", "--test", "idempotency_pg", "--locked"],
+            ["-p", "ontoforge-action", "--test", "outbox_pg", "--locked"],
+            ["-p", "ontoforge-action", "--test", "trino_action_it", "--locked"],
+            ["-p", "ontoforge-action", "--test", "outbox", "--test", "entrypoints", "--locked"],
+            ["-p", "ontoforge-engine", "--test", "trino_it", "--locked"],
+            ["-p", "ontoforge", "--test", "cli_trino_it", "--locked"],
+        ]
+        for args in expected:
+            selected = [call for call in calls if call[1:len(args)+1] == args and call[len(args)+1] == "--"]
+            self.assertEqual(len(selected), 2, args)
+            self.assertIn("--list", selected[0])
+            self.assertNotIn("--list", selected[1])
+        corpus = json.loads((self.directory / "evidence/corpus.json").read_text())
+        self.assertEqual(len(corpus), 8)
+        self.assertTrue(all(row["passed"] > 0 and row["failed"] == 0 and row["ignored"] == 0 for row in corpus))
+
+    def test_corpus_zero_discovery_zero_execution_and_failure_cannot_pass(self):
+        for mode in ("zero-discovery", "zero-execution", "failure"):
+            with self.subTest(mode=mode):
+                self.env["ONTOFORGE_ICEBERG_EVIDENCE_DIR"] = str(self.directory / mode)
+                self.nightly_fixture(mode)
+                result = self.run_cli("nightly", "--trino", "483")
+                self.assertNotEqual(result.returncode, 0)
+                self.assertEqual(json.loads(Path(self.env["TEST_DB"]).read_text())["resources"], {})
+
+    def test_manual_failure_never_enables_report_job(self):
+        workflow = (ROOT / ".github/workflows/nightly.yml").read_text()
+        report = workflow.split("  report-failure:", 1)[1]
+        expression = next(line.split("if:", 1)[1].strip() for line in report.splitlines() if line.strip().startswith("if:"))
+        for event, failed, expected in [("workflow_dispatch", True, False), ("workflow_dispatch", False, False),
+                                        ("schedule", False, False), ("schedule", True, True)]:
+            with self.subTest(event=event, failed=failed):
+                code = expression.removeprefix("${{").removesuffix("}}").strip()
+                code = code.replace("github.event_name", repr(event)).replace("failure()", repr(failed)).replace("&&", "and")
+                parsed = ast.parse(code, mode="eval")
+                self.assertTrue(all(isinstance(n, (ast.Expression, ast.BoolOp, ast.And, ast.Compare, ast.Eq, ast.Constant))
+                                    for n in ast.walk(parsed)))
+                self.assertEqual(eval(compile(parsed, "workflow-condition", "eval"), {"__builtins__": {}}), expected)
+
+    def test_missing_cleanup_state_is_safe_noop(self):
+        result = self.run_cli("cleanup", "--state", self.directory / "missing.json")
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+
 class BucketClientContract(unittest.TestCase):
     def setUp(self):
         self.binary = os.environ["ONTOFORGE_BUCKET_BINARY"]
@@ -575,7 +740,8 @@ def fake_fixture(args):
         elif "-At" in args:
             output = "s3://warehouse/aviation/flights-id/metadata/a.json"
     elif args[0] == "port":
-        output = "127.0.0.1:" + (os.environ["TEST_PORT"] if args[-1] == "8080/tcp" else "15432")
+        port = os.environ.get("TEST_PORT_AFTER", os.environ["TEST_PORT"]) if db.get("restarted") else os.environ["TEST_PORT"]
+        output = "127.0.0.1:" + (port if args[-1] == "8080/tcp" else "15432")
     elif args[0] == "restart":
         db["restarted"] = True
     else:
@@ -585,6 +751,27 @@ def fake_fixture(args):
     return code
 
 
+def fake_cargo(args):
+    path = Path(os.environ["TEST_DB"])
+    db = json.loads(path.read_text())
+    db.setdefault("cargo_calls", []).append(args)
+    path.write_text(json.dumps(db))
+    exact = "iceberg_table_is_readable" in args
+    mode = os.environ.get("TEST_CARGO_MODE", "success")
+    if "--list" in args:
+        if exact:
+            print("iceberg_table_is_readable: test")
+        elif mode != "zero-discovery":
+            print("first_case: test\nsecond_case: test")
+        return 0
+    if not exact and mode == "failure":
+        print("test result: FAILED. 0 passed; 1 failed; 0 ignored;")
+        return 42
+    passed = 1 if exact else (0 if mode == "zero-execution" else 2)
+    print(f"test result: ok. {passed} passed; 0 failed; 0 ignored;")
+    return 0
+
+
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1].startswith("--fake-"):
         sys.stdout.reconfigure(newline="\n")
@@ -592,4 +779,6 @@ if __name__ == "__main__":
         sys.exit(fake_cleanup(sys.argv[2:]))
     if len(sys.argv) > 1 and sys.argv[1] == "--fake-fixture":
         sys.exit(fake_fixture(sys.argv[2:]))
+    if len(sys.argv) > 1 and sys.argv[1] == "--fake-cargo":
+        sys.exit(fake_cargo(sys.argv[2:]))
     unittest.main()
