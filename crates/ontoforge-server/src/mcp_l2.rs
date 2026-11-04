@@ -84,6 +84,7 @@ pub struct McpL2Tools<'a, E> {
     pub scope: &'a PrincipalScope,
     pub active: Arc<ActiveDefinition>,
     pub engine: &'a E,
+    pub edit_catalog: &'a str,
     pub store: &'a EditStore,
     pub limits: ServerLimits,
     pub on_reserved: Option<&'a (dyn Fn(&str) + Sync)>,
@@ -103,7 +104,7 @@ impl<E: Engine + Sync> McpL2Tools<'_, E> {
             raw_allowed: true,
             catalogs: self.scope.l2_catalogs.clone(),
             schemas: self.scope.l2_schemas.clone(),
-            edit_catalog: "editstore".to_owned(),
+            edit_catalog: self.edit_catalog.to_owned(),
             max_rows: self.limits.execution.max_raw_candidates as u64,
         })
     }
@@ -186,20 +187,20 @@ impl<E: Engine + Sync> McpL2Tools<'_, E> {
     }
 
     pub async fn list_catalogs(&self) -> Result<JsonValue, McpL2Error> {
-        let _ = self.gate()?;
+        let policy = self.gate()?;
         self.run_sql("list_catalogs", l2::list_l2_catalogs())
             .await
-            .map(|value| filter_names(&value, |name| self.allowed_catalog(name)))
+            .map(|value| filter_names(&value, |name| Self::allowed_catalog(&policy, name)))
     }
 
     pub async fn list_schemas(&self, catalog: Option<&str>) -> Result<JsonValue, McpL2Error> {
-        let _ = self.gate()?;
-        let catalog = self.resolve_catalog(catalog)?;
+        let policy = self.gate()?;
+        let catalog = self.resolve_catalog(&policy, catalog)?;
         let sql = l2::list_l2_schemas(&catalog)
             .map_err(|error| McpL2Error::Invalid(error.to_string()))?;
         self.run_sql("list_schemas", sql)
             .await
-            .map(|value| filter_names(&value, |name| self.allowed_schema(&catalog, name)))
+            .map(|value| filter_names(&value, |name| Self::allowed_schema(&policy, &catalog, name)))
     }
 
     pub async fn list_tables(
@@ -207,8 +208,8 @@ impl<E: Engine + Sync> McpL2Tools<'_, E> {
         catalog: Option<&str>,
         schema: Option<&str>,
     ) -> Result<JsonValue, McpL2Error> {
-        let _ = self.gate()?;
-        let (catalog, schema) = self.resolve_schema(catalog, schema)?;
+        let policy = self.gate()?;
+        let (catalog, schema) = self.resolve_schema(&policy, catalog, schema)?;
         let sql = l2::list_l2_tables(&catalog, &schema)
             .map_err(|error| McpL2Error::Invalid(error.to_string()))?;
         self.run_sql("list_tables", sql)
@@ -222,8 +223,8 @@ impl<E: Engine + Sync> McpL2Tools<'_, E> {
         catalog: Option<&str>,
         schema: Option<&str>,
     ) -> Result<JsonValue, McpL2Error> {
-        let _ = self.gate()?;
-        let target = self.resolve_table(table, catalog, schema)?;
+        let policy = self.gate()?;
+        let target = self.resolve_table(&policy, table, catalog, schema)?;
         self.ensure_available().await?;
         let audit = self
             .store
@@ -271,61 +272,63 @@ impl<E: Engine + Sync> McpL2Tools<'_, E> {
         )
     }
 
-    fn allowed_catalog(&self, name: &str) -> bool {
+    fn allowed_catalog(policy: &L2Policy, name: &str) -> bool {
         !name.eq_ignore_ascii_case("system")
-            && !name.eq_ignore_ascii_case("editstore")
-            && (self
-                .scope
-                .l2_catalogs
+            && !name.eq_ignore_ascii_case(&policy.edit_catalog)
+            && (policy
+                .catalogs
                 .iter()
                 .any(|value| value.eq_ignore_ascii_case(name))
-                || self.scope.l2_schemas.iter().any(|value| {
+                || policy.schemas.iter().any(|value| {
                     value
                         .split_once('.')
                         .is_some_and(|(catalog, _)| catalog.eq_ignore_ascii_case(name))
                 }))
     }
 
-    fn allowed_schema(&self, catalog: &str, schema: &str) -> bool {
-        self.allowed_catalog(catalog)
+    fn allowed_schema(policy: &L2Policy, catalog: &str, schema: &str) -> bool {
+        Self::allowed_catalog(policy, catalog)
             && !schema.eq_ignore_ascii_case("system")
             && !schema.eq_ignore_ascii_case("information_schema")
-            && (self
-                .scope
-                .l2_catalogs
+            && (policy
+                .catalogs
                 .iter()
                 .any(|value| value.eq_ignore_ascii_case(catalog))
-                || self
-                    .scope
-                    .l2_schemas
+                || policy
+                    .schemas
                     .iter()
                     .any(|value| value.eq_ignore_ascii_case(&format!("{catalog}.{schema}"))))
     }
 
-    fn resolve_catalog(&self, catalog: Option<&str>) -> Result<String, McpL2Error> {
+    fn resolve_catalog(
+        &self,
+        policy: &L2Policy,
+        catalog: Option<&str>,
+    ) -> Result<String, McpL2Error> {
         let defaults = self.defaults();
         let value = catalog
             .map(str::to_owned)
             .or(defaults.catalog)
             .ok_or_else(|| missing_context("catalog"))?;
         let value = resolve_component(&value)?;
-        self.allowed_catalog(&value)
+        Self::allowed_catalog(policy, &value)
             .then_some(value)
             .ok_or(McpL2Error::Denied)
     }
 
     fn resolve_schema(
         &self,
+        policy: &L2Policy,
         catalog: Option<&str>,
         schema: Option<&str>,
     ) -> Result<(String, String), McpL2Error> {
-        let catalog = self.resolve_catalog(catalog)?;
+        let catalog = self.resolve_catalog(policy, catalog)?;
         let value = schema
             .map(str::to_owned)
             .or_else(|| self.defaults().schema)
             .ok_or_else(|| missing_context("schema"))?;
         let value = resolve_component(&value)?;
-        self.allowed_schema(&catalog, &value)
+        Self::allowed_schema(policy, &catalog, &value)
             .then_some((catalog, value))
             .ok_or(McpL2Error::Denied)
     }
@@ -336,6 +339,7 @@ impl<E: Engine + Sync> McpL2Tools<'_, E> {
 
     fn resolve_table(
         &self,
+        policy: &L2Policy,
         table: &str,
         catalog: Option<&str>,
         schema: Option<&str>,
@@ -350,7 +354,7 @@ impl<E: Engine + Sync> McpL2Tools<'_, E> {
         if target.table.is_empty() || target.table.contains('$') {
             return Err(McpL2Error::Invalid("invalid table identifier".to_owned()));
         }
-        self.allowed_schema(&target.catalog, &target.schema)
+        Self::allowed_schema(policy, &target.catalog, &target.schema)
             .then_some(target)
             .ok_or(McpL2Error::Denied)
     }

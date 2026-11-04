@@ -42,6 +42,17 @@ async fn attested_l2(
     Arc<Mutex<Vec<String>>>,
     Arc<L2Control>,
 ) {
+    attested_l2_catalog(store, "editstore").await
+}
+
+async fn attested_l2_catalog(
+    store: &ontoforge_storage::store::EditStore,
+    edit_catalog: &'static str,
+) -> (
+    tokio_util::task::AbortOnDropHandle<()>,
+    Arc<Mutex<Vec<String>>>,
+    Arc<L2Control>,
+) {
     let statements = Arc::new(Mutex::new(Vec::<String>::new()));
     let recorded = Arc::clone(&statements);
     let failure = Arc::new(L2Control::default());
@@ -67,8 +78,14 @@ async fn attested_l2(
                     serde_json::json!({"error":{"errorName":"INTERNAL_ERROR","message":"physical_relation SELECT secret_token=sentinel"}})
                 } else if sql.contains("query_id") {
                     serde_json::json!({"columns":[{"name":"query_id","type":"varchar"},{"name":"state","type":"varchar"}],"data":if l2 {serde_json::json!([])} else {serde_json::json!([["probe_1","RUNNING"]])}})
-                } else if l2 && (sql.contains("\"outside\"") || sql.contains("\"editstore\"")) {
+                } else if l2 && !tool_request && (sql.contains("\"outside\"") || sql.contains(&format!("\"{edit_catalog}\""))) {
                     serde_json::json!({"error":{"errorName":"PERMISSION_DENIED","message":"denied"}})
+                } else if sql == "SHOW CATALOGS" {
+                    serde_json::json!({"columns":[{"name":"Catalog","type":"varchar"}],"data":[["demo"],[edit_catalog],[edit_catalog.to_uppercase()],["system"],["outside"]]})
+                } else if sql.starts_with("SHOW SCHEMAS") {
+                    serde_json::json!({"columns":[{"name":"Schema","type":"varchar"}],"data":[["aviation"],["information_schema"],["system"]]})
+                } else if sql.starts_with("SHOW TABLES") {
+                    serde_json::json!({"columns":[{"name":"Table","type":"varchar"}],"data":[["aircraft"],["aircraft$history"]]})
                 } else if sql.contains("information_schema") {
                     serde_json::json!({"columns":[],"data":[]})
                 } else {
@@ -85,7 +102,7 @@ async fn attested_l2(
     }));
     let config = ontoforge_engine::config::parse_server_config(&format!(
         "[trino]\nurl = \"{url}\"\n[trino.identities.ontology]\nuser = \"ontology\"\n[trino.identities.l2]\nuser = \"l2\"\n[trino.l2_acl.allowed]\ncatalog = \"demo\"\nschema = \"tiny\"\ntable = \"nation\"\n[trino.l2_acl.outside]\ncatalog = \"outside\"\nschema = \"tiny\"\ntable = \"nation\"\n[trino.l2_acl.edit]\ncatalog = \"editstore\"\nschema = \"tiny\"\ntable = \"nation\"\n"
-    )).unwrap().trino.unwrap();
+    ).replace("catalog = \"editstore\"", &format!("catalog = \"{edit_catalog}\""))).unwrap().trino.unwrap();
     let engines =
         ontoforge_engine::config::build_trino_engines(&config, camino::Utf8Path::new("."), &|_| {
             None
@@ -211,6 +228,7 @@ async fn mcp_l2_local_rejections_skip_status_execute_and_audit() {
         scope: &scope,
         active: fixture.store.active_definition().await.unwrap(),
         engine: &engine,
+        edit_catalog: "editstore",
         store: &fixture.store,
         limits: ServerLimits::default(),
         on_reserved: None,
@@ -350,6 +368,192 @@ fn authorize_l2_fixture(fixture: &mut support::Fixture) {
             schema: Some("aviation".to_owned()),
         },
     );
+}
+
+async fn grant_edit_catalog(fixture: &support::Fixture, catalog: &str) {
+    let mut scope = fixture.store.request_snapshot().await.unwrap().scope;
+    let role = scope.roles.get_mut("maintenanceLead").unwrap();
+    role.l2.catalogs.push(catalog.to_owned());
+    role.l2.schemas.push(format!("{catalog}.aviation"));
+    evidence::apply_scope(&fixture.store, &scope).await;
+}
+
+#[tokio::test]
+async fn mcp_l2_custom_edit_catalog_denies_before_any_upstream_request() {
+    edit_catalog_denials("private_edits").await;
+}
+
+#[tokio::test]
+async fn mcp_l2_default_edit_catalog_denies_before_any_upstream_request() {
+    edit_catalog_denials("editstore").await;
+}
+
+async fn edit_catalog_denials(edit_catalog: &'static str) {
+    use serde_json::json;
+    let mut fixture = support::fixture().await;
+    let (_trino, statements, control) = attested_l2_catalog(&fixture.store, edit_catalog).await;
+    authorize_l2_fixture(&mut fixture);
+    grant_edit_catalog(&fixture, edit_catalog).await;
+    state::set_mcp_defaults(
+        &fixture.store,
+        McpDefaults {
+            catalog: Some(edit_catalog.to_owned()),
+            schema: Some("aviation".to_owned()),
+        },
+    );
+    let mut running = fixture.start().await;
+    running.client = evidence::client();
+    evidence::ready(&running.client, &running.url).await;
+    let session = initialize_l2(&running).await;
+    let probes = [
+        (
+            "execute_query",
+            json!({"query":format!("SELECT * FROM {edit_catalog}.aviation.aircraft")}),
+            "INVALID_REQUEST",
+        ),
+        (
+            "execute_query",
+            json!({"query":format!("SELECT * FROM \"{}\".other.other_table", edit_catalog.to_uppercase())}),
+            "INVALID_REQUEST",
+        ),
+        (
+            "explain_query",
+            json!({"query":format!("SELECT * FROM {edit_catalog}.other.other_table")}),
+            "INVALID_REQUEST",
+        ),
+        ("list_schemas", json!({"catalog":edit_catalog}), "NOT_FOUND"),
+        ("list_schemas", json!({}), "NOT_FOUND"),
+        (
+            "list_tables",
+            json!({"catalog":edit_catalog,"schema":"other"}),
+            "NOT_FOUND",
+        ),
+        ("list_tables", json!({}), "NOT_FOUND"),
+        (
+            "get_table_schema",
+            json!({"table":format!("{edit_catalog}.other.other_table"),"catalog":"demo","schema":"aviation"}),
+            "NOT_FOUND",
+        ),
+        ("get_table_schema", json!({"table":"aircraft"}), "NOT_FOUND"),
+    ];
+    let mut failures = Vec::new();
+    for (index, (tool, args, code)) in probes.into_iter().enumerate() {
+        let before = control.all_statements.load(Ordering::SeqCst);
+        let business_before = statements.lock().unwrap().len();
+        let source_before = running.engine.calls.load(Ordering::SeqCst);
+        let response = l2_request(&running, &session, index as u64 + 2, tool, args).await;
+        let upstream = control.all_statements.load(Ordering::SeqCst) - before;
+        let business = statements.lock().unwrap().len() - business_before;
+        if response["error"]["data"]["code"] != code || upstream != 0 || business != 0 {
+            failures.push(format!("{tool}: expected {code}, upstream={upstream}, business={business}, response={response}"));
+        }
+        assert_eq!(running.engine.calls.load(Ordering::SeqCst), source_before);
+    }
+    let audit = running.finish().await;
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    assert!(audit.is_empty(), "local rejections must not reserve reads");
+}
+
+#[tokio::test]
+async fn mcp_l2_custom_edit_catalog_filtered_and_read_catalog_still_works() {
+    edit_catalog_metadata("private_edits").await;
+}
+
+#[tokio::test]
+async fn mcp_l2_default_edit_catalog_filtered_and_read_catalog_still_works() {
+    edit_catalog_metadata("editstore").await;
+}
+
+async fn edit_catalog_metadata(edit_catalog: &'static str) {
+    use serde_json::json;
+    let mut fixture = support::fixture().await;
+    let (_trino, statements, control) = attested_l2_catalog(&fixture.store, edit_catalog).await;
+    authorize_l2_fixture(&mut fixture);
+    grant_edit_catalog(&fixture, edit_catalog).await;
+    let mut running = fixture.start().await;
+    running.client = evidence::client();
+    evidence::ready(&running.client, &running.url).await;
+    let session = initialize_l2(&running).await;
+    let before = control.all_statements.load(Ordering::SeqCst);
+    let source_before = running.engine.calls.load(Ordering::SeqCst);
+    let probes = [
+        ("list_catalogs", json!({}), "names", json!(["demo"])),
+        ("list_schemas", json!({}), "names", json!(["aviation"])),
+        ("list_tables", json!({}), "names", json!(["aircraft"])),
+        (
+            "get_table_schema",
+            json!({"table":"aircraft"}),
+            "columns",
+            json!([]),
+        ),
+        (
+            "execute_query",
+            json!({"query":"SELECT * FROM demo.aviation.aircraft"}),
+            "rows",
+            json!([[1]]),
+        ),
+        (
+            "explain_query",
+            json!({"query":"SELECT * FROM demo.aviation.aircraft"}),
+            "rows",
+            json!([[1]]),
+        ),
+    ];
+    let mut failures = Vec::new();
+    for (index, (tool, args, field, expected)) in probes.into_iter().enumerate() {
+        let response = l2_request(&running, &session, index as u64 + 2, tool, args).await;
+        if response.get("error").is_some()
+            || response["result"]["structuredContent"][field] != expected
+        {
+            failures.push(format!(
+                "{tool}: expected {field}={expected}, response={response}"
+            ));
+        }
+    }
+    assert_eq!(statements.lock().unwrap().len(), 6);
+    assert_eq!(control.all_statements.load(Ordering::SeqCst), before + 12);
+    assert_eq!(running.engine.calls.load(Ordering::SeqCst), source_before);
+    let sql = statements.lock().unwrap().clone();
+    assert_eq!(sql[0], "SHOW CATALOGS");
+    assert_eq!(sql[1], "SHOW SCHEMAS FROM \"demo\"");
+    assert_eq!(sql[2], "SHOW TABLES FROM \"demo\".\"aviation\"");
+    assert!(sql[3].contains("\"demo\".\"information_schema\".\"columns\""));
+    assert!(sql.iter().all(|sql| !sql.contains(edit_catalog)));
+    let audit = running.finish().await;
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    assert_eq!(audit.len(), 6);
+    assert!(audit.iter().all(|row| row["status"] == "success"));
+}
+
+#[tokio::test]
+async fn mcp_l2_without_trino_remains_unavailable_for_all_six_tools() {
+    use serde_json::json;
+    let mut fixture = support::fixture().await;
+    authorize_l2_fixture(&mut fixture);
+    let mut running = fixture.start().await;
+    running.client = evidence::client();
+    evidence::ready(&running.client, &running.url).await;
+    let session = initialize_l2(&running).await;
+    let source_before = running.engine.calls.load(Ordering::SeqCst);
+    for (index, (tool, args)) in [
+        ("execute_query", json!({"query":"SELECT 1"})),
+        ("explain_query", json!({"query":"SELECT 1"})),
+        ("list_catalogs", json!({})),
+        ("list_schemas", json!({})),
+        ("list_tables", json!({})),
+        ("get_table_schema", json!({"table":"aircraft"})),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let response = l2_request(&running, &session, index as u64 + 2, tool, args).await;
+        assert_eq!(
+            response["error"]["data"]["code"], "SOURCE_UNAVAILABLE",
+            "{tool}: {response}"
+        );
+        assert_eq!(running.engine.calls.load(Ordering::SeqCst), source_before);
+    }
+    assert!(running.finish().await.is_empty());
 }
 
 #[tokio::test]
@@ -907,6 +1111,7 @@ async fn l2_reservation_observer_runs_before_source_await_and_survives_drop() {
             scope: &scope,
             active,
             engine: &engine,
+            edit_catalog: "editstore",
             store: &fixture.store,
             limits: ServerLimits::default(),
             on_reserved: Some(&record_id),
@@ -958,6 +1163,7 @@ async fn mcp_l2_optional_context_defaults_and_qualified_override() {
         scope: &scope,
         active,
         engine: &engine,
+        edit_catalog: "editstore",
         store: &fixture.store,
         limits: ServerLimits::default(),
         on_reserved: None,
@@ -1020,6 +1226,7 @@ async fn mcp_l2_missing_context_and_outside_allowlist_deny_before_send() {
         scope: &scope,
         active,
         engine: &engine,
+        edit_catalog: "editstore",
         store: &fixture.store,
         limits: ServerLimits::default(),
         on_reserved: None,

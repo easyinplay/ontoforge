@@ -140,6 +140,15 @@ impl TrinoEngine {
         self.l2_health.as_ref().map(|health| health.status())
     }
 
+    /// Deployment-owned exclusion from the same config used for ACL attestation.
+    pub fn l2_edit_catalog(&self) -> Option<&str> {
+        self.l2_health
+            .as_ref()?
+            .config
+            .as_ref()
+            .map(|config| config.edit.catalog.as_str())
+    }
+
     /// Attest the configured ACL against a known, still-active query of another identity.
     pub async fn recheck_l2_acl(
         &self,

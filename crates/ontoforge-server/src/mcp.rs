@@ -154,12 +154,16 @@ impl<E: Engine + Send + Sync + 'static> OntologyMcpHandler<E> {
                     == Some(ontoforge_engine::trino::l2_health::L2HealthStatus::Enabled)
             })
             .ok_or_else(|| failure(mcp_l2::McpL2Error::Unavailable))?;
+        let edit_catalog = engine
+            .l2_edit_catalog()
+            .ok_or_else(|| failure(mcp_l2::McpL2Error::Unavailable))?;
         let on_reserved = |id: &str| trace.reserved(id);
         let tools = mcp_l2::McpL2Tools {
             principal: &ctx.principal,
             scope: &ctx.scope,
             active: Arc::clone(&ctx.active),
             engine: &*engine,
+            edit_catalog,
             store: &self.host.store,
             limits: self.limits,
             on_reserved: Some(&on_reserved),
