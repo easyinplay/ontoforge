@@ -38,6 +38,7 @@ pub enum Expr {
         otherwise: Box<Expr>,
     },
     CountStar,
+    CountDistinct(Box<Expr>),
     Aggregate {
         func: AggregateFunc,
         arg: Box<Expr>,

@@ -229,6 +229,9 @@ pub struct ValidateArgs {
     /// explicit only).
     #[arg(long, requires = "online")]
     pub check_pk: bool,
+    /// Report source OneToOne foreign keys shared by distinct objects (full table scan).
+    #[arg(long, requires = "online")]
+    pub check_cardinality: bool,
     /// Server configuration with the Trino connection and the profile to engine mapping.
     #[arg(long, value_name = "FILE", requires = "online")]
     pub server_config: Option<Utf8PathBuf>,

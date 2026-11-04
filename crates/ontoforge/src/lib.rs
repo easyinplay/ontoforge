@@ -120,8 +120,18 @@ fn validate_online(args: &ValidateArgs) -> u8 {
     let run = online::run_online(args);
     print_diagnostics(&run.out, &args.output);
     if args.output.format == Format::Human {
+        let warnings = run
+            .out
+            .diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Warning)
+            .count();
         let summary = match (&run.out.ontology, &run.profile) {
             _ if run.code == 3 => engine_summary(&run.out),
+            (Some(ontology), Some(profile)) if run.code == 0 && warnings > 0 => format!(
+                "ontology `{}`, profile `{profile}`, {} binding(s) checked online; {warnings} warning(s) found",
+                ontology.api_name, run.bindings
+            ),
             (Some(ontology), Some(profile)) if run.code == 0 => format!(
                 "ok: ontology `{}`, profile `{profile}`, {} binding(s) checked online",
                 ontology.api_name, run.bindings

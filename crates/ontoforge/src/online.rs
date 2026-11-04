@@ -15,6 +15,9 @@ use camino::Utf8Path;
 use ontoforge_engine::bind_check::{
     BindingKey, DescribedBinding, compare_binding, describe_bindings,
 };
+use ontoforge_engine::cardinality_check::{
+    CardinalityFinding, cardinality_targets, check_cardinality,
+};
 use ontoforge_engine::config::{
     ConfigError, EngineKind, ServerConfig, TrinoConfig, build_trino_engines, load_server_config,
 };
@@ -23,7 +26,7 @@ use ontoforge_engine::pk_check::{
 };
 use ontoforge_engine::sqlite::SqliteEngine;
 use ontoforge_engine::sqlite::fixture::{FixtureError, plan_fixture_tables};
-use ontoforge_engine::{AnyEngine, EngineError, QueryContext};
+use ontoforge_engine::{AnyEngine, Engine, EngineError, QueryContext};
 use ontoforge_schema::LoadOutput;
 use ontoforge_schema::diag::{
     Diagnostic, Severity, SourceLocation, codes, has_errors, offset_to_line_col, sort_diagnostics,
@@ -198,7 +201,15 @@ fn check_online(
     runtime.block_on(async {
         match (backend, fixtures) {
             (Backend::Trino(trino), _) => {
-                match compare_all(&trino.engine, &trino.ctx, check, args.check_pk).await {
+                match compare_all(
+                    &trino.engine,
+                    &trino.ctx,
+                    check,
+                    args.check_pk,
+                    args.check_cardinality,
+                )
+                .await
+                {
                     Ok((compared, count)) => {
                         let mut found = ignored_fixtures(ontology, sources, profile);
                         found.extend(compared);
@@ -214,7 +225,7 @@ fn check_online(
                     Err(errors) => return (fixture_diagnostics(&errors), 0),
                 };
                 let ctx = query_context(None, args.timeout);
-                compare_all(&engine, &ctx, check, args.check_pk)
+                compare_all(&engine, &ctx, check, args.check_pk, args.check_cardinality)
                     .await
                     .unwrap_or_else(|failure| (vec![failure], 0))
             }
@@ -230,6 +241,25 @@ async fn compare_all(
     ctx: &QueryContext,
     check: Check<'_>,
     check_pk: bool,
+    check_cardinality: bool,
+) -> Result<(Vec<Diagnostic>, usize), Diagnostic> {
+    let result = compare_bindings(engine, ctx, check, check_pk, check_cardinality).await;
+    if check_cardinality {
+        if let Err(error) = engine.drain_cancellations().await {
+            let (mut found, count) = result.unwrap_or_else(|failure| (vec![failure], 0));
+            found.push(engine_error_diagnostic(&error, MANIFEST));
+            return Ok((found, count));
+        }
+    }
+    result
+}
+
+async fn compare_bindings(
+    engine: &AnyEngine,
+    ctx: &QueryContext,
+    check: Check<'_>,
+    check_pk: bool,
+    check_cardinality: bool,
 ) -> Result<(Vec<Diagnostic>, usize), Diagnostic> {
     let described = describe_bindings(engine, check.ontology, check.profile, ctx)
         .await
@@ -250,7 +280,68 @@ async fn compare_all(
         // so far instead of replacing it (WR-C02).
         found.extend(check_keys(engine, ctx, check, &pk_keys).await);
     }
+    if check_cardinality {
+        found.extend(check_cardinalities(engine, ctx, check, &pk_keys).await);
+    }
     Ok((found, described.len()))
+}
+
+async fn check_cardinalities(
+    engine: &impl Engine,
+    ctx: &QueryContext,
+    check: Check<'_>,
+    keys: &[BindingKey],
+) -> Vec<Diagnostic> {
+    let mut found = Vec::new();
+    for target in cardinality_targets(check.ontology, check.profile, keys) {
+        match check_cardinality(engine, &target, ctx).await {
+            Ok(finding) if !finding.samples.is_empty() => {
+                found.push(cardinality_diagnostic(&finding, check));
+            }
+            Ok(_) => {}
+            Err(error) if error.is_engine_wide() => {
+                found.push(engine_error_diagnostic(&error, MANIFEST));
+                break;
+            }
+            Err(error) => found.push(binding_failure(&target.key, &error, check.sources)),
+        }
+    }
+    found
+}
+
+fn cardinality_diagnostic(finding: &CardinalityFinding, check: Check<'_>) -> Diagnostic {
+    let target = &finding.target;
+    let logical_fk = check
+        .ontology
+        .link_types
+        .get(&target.link)
+        .and_then(|link| link.to.foreign_key.as_ref());
+    let path = match (binding_of(check.ontology, &target.key), logical_fk) {
+        (Some(binding), Some(fk)) if binding.columns.contains_key(fk.as_str()) => vec![
+            Seg::Key("columns".to_owned()),
+            Seg::Key(fk.to_string()),
+            Seg::Key("column".to_owned()),
+        ],
+        _ => vec![Seg::Key("source".to_owned()), Seg::Key("table".to_owned())],
+    };
+    let at = check
+        .sources
+        .locate(&source_key(&target.key), &path, Part::Value);
+    let samples = finding
+        .samples
+        .iter()
+        .map(|(value, count)| format!("`{}`: {count} distinct objects", display_value(value)))
+        .collect::<Vec<_>>()
+        .join(", ");
+    let more = if finding.more {
+        ", and more (showing up to 20)"
+    } else {
+        ""
+    };
+    Diagnostic::new(codes::W18, Severity::Warning, format!(
+        "OneToOne link `{}` has {} conflicting foreign key group(s) in `{}.{}.{}` column `{}`: {samples}{more}",
+        target.link, finding.samples.len(), target.table.catalog, target.table.schema, target.table.table, target.foreign_key,
+    ), &at).with_help("only foreign key uniqueness was checked; referential integrity (whether referenced objects exist) was not checked")
 }
 
 /// What the online check runs over.
