@@ -1,0 +1,13 @@
+   Compiling ontoforge-schema v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-schema)
+   Compiling ontoforge-engine v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 55.66s
+     Running tests\cardinality_check.rs (target\debug\deps\cardinality_check-b9d4f4de23a855fd.exe)
+
+running 4 tests
+test distinct_objects_sharing_fk_are_reported ... ok
+test repeated_check_is_read_only ... ok
+test duplicate_physical_rows_are_one_object ... ok
+test null_keys_and_clean_links_have_no_finding ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+

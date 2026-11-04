@@ -126,3 +126,56 @@ fn cardinality_tracer_reports_conflict() {
         "warning must not be summarized as clean: {text}"
     );
 }
+
+fn file_snapshot(root: &Path) -> Vec<(std::path::PathBuf, Vec<u8>)> {
+    fn collect(root: &Path, dir: &Path, files: &mut Vec<(std::path::PathBuf, Vec<u8>)>) {
+        for entry in std::fs::read_dir(dir).expect("read directory") {
+            let path = entry.expect("entry").path();
+            if path.is_dir() {
+                collect(root, &path, files);
+            } else {
+                files.push((
+                    path.strip_prefix(root).expect("relative").to_owned(),
+                    std::fs::read(path).expect("read file"),
+                ));
+            }
+        }
+    }
+    let mut files = Vec::new();
+    collect(root, root, &mut files);
+    files.sort_by(|a, b| a.0.cmp(&b.0));
+    files
+}
+
+#[test]
+fn repeated_check_is_read_only() {
+    let dir = ontology("record_id,aircraft_id\nM4,B\nM2,A\nM1,A\nM3,B\nM5,C\nM6,C\nM7,C\nM1,A\n");
+    let before = file_snapshot(dir.path());
+    let first = run(dir.path(), "json");
+    let second = run(dir.path(), "json");
+    assert_eq!(
+        first.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&first.stderr)
+    );
+    assert_eq!(second.status.code(), Some(0));
+    assert_eq!(first.stdout, second.stdout);
+    assert_eq!(first.stderr, second.stderr);
+    let diagnostics: Vec<Value> = serde_json::from_slice(&first.stdout).expect("JSON");
+    let warning = diagnostics
+        .iter()
+        .find(|d| d["code"] == "ONT-W18")
+        .expect("warning");
+    let message = warning["message"].as_str().expect("message");
+    assert!(
+        message
+            .contains("`C`: 3 distinct objects, `A`: 2 distinct objects, `B`: 2 distinct objects"),
+        "{message}"
+    );
+    assert_eq!(
+        before,
+        file_snapshot(dir.path()),
+        "no source changes or edit store files"
+    );
+}
