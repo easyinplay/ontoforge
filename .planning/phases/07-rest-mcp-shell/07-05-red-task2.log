@@ -1,0 +1,124 @@
+ Downloading crates ...
+  Downloaded icu_locale_fallback_data v2.4.0
+  Downloaded icu_locale_fallback v2.4.0
+  Downloaded ctutils v0.4.7
+  Downloaded globset v0.4.21
+  Downloaded annotate-snippets v0.12.17
+  Downloaded backtrace v0.3.77
+  Downloaded webpki-roots v1.0.11
+  Downloaded unicode-width v0.2.3
+  Downloaded aws-lc-rs v1.19.0
+  Downloaded icu_segmenter_data v2.4.0
+  Downloaded icu_segmenter v2.4.0
+  Downloaded aws-lc-sys v0.47.0
+   Compiling find-msvc-tools v0.1.15
+   Compiling zerovec-derive v0.11.7
+   Compiling cc v1.10.0
+   Compiling smallvec v1.16.4
+   Compiling cmake v0.1.58
+   Compiling yoke v0.8.4
+   Compiling aws-lc-sys v0.47.0
+   Compiling icu_properties_data v2.4.0
+   Compiling icu_normalizer_data v2.4.0
+   Compiling zerovec v0.11.9
+   Compiling tokio v1.54.1
+   Compiling tinystr v0.8.5
+   Compiling icu_locale_core v2.4.0
+   Compiling potential_utf v0.1.6
+   Compiling zerotrie v0.2.5
+   Compiling icu_provider v2.4.0
+   Compiling icu_collections v2.4.0
+   Compiling aws-lc-rs v1.19.0
+   Compiling libc v0.2.191
+   Compiling icu_properties v2.4.0
+   Compiling icu_normalizer v2.4.0
+   Compiling ctutils v0.4.7
+   Compiling idna_adapter v1.2.2
+   Compiling digest v0.11.3
+   Compiling idna v1.1.0
+   Compiling parking_lot_core v0.9.12
+   Compiling parking_lot v0.12.5
+   Compiling url v2.5.8
+   Compiling tokio-util v0.7.20
+   Compiling h2 v0.4.20
+   Compiling hyper v1.12.0
+   Compiling tokio-stream v0.1.19
+   Compiling futures-intrusive v0.5.0
+   Compiling webpki-roots v1.0.11
+   Compiling hmac v0.13.0
+   Compiling libsqlite3-sys v0.37.0
+   Compiling hyper-util v0.1.21
+   Compiling hkdf v0.13.0
+   Compiling md-5 v0.11.0
+   Compiling sha2 v0.11.1
+   Compiling unicode-width v0.2.3
+   Compiling psm v0.1.32
+   Compiling tower v0.5.3
+   Compiling stacker v0.1.25
+   Compiling granit-parser v2.0.0
+   Compiling rustls v0.23.46
+   Compiling rustls-webpki v0.103.16
+   Compiling sqlx-core v0.9.0
+   Compiling sqlx-sqlite v0.9.0
+   Compiling sqlx-postgres v0.9.0
+   Compiling tokio-rustls v0.26.6
+   Compiling annotate-snippets v0.12.17
+   Compiling sqlx-macros-core v0.9.0
+   Compiling uuid v1.29.0
+   Compiling serde-saphyr v2.0.0
+   Compiling globset v0.4.21
+   Compiling sqlx-macros v0.9.0
+   Compiling hyper-rustls v0.27.10
+   Compiling rustls-platform-verifier v0.7.1
+   Compiling tower-http v0.6.11
+   Compiling antlr4rust v0.6.0
+   Compiling recursive v0.1.1
+   Compiling reqwest v0.13.5
+   Compiling ontoforge-schema v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-schema)
+   Compiling sqlx v0.9.0
+   Compiling sqlparser v0.63.0
+   Compiling cel v0.15.0
+   Compiling icu_locale_fallback_data v2.4.0
+   Compiling jsonwebtoken v11.1.0
+   Compiling ontoforge-engine v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-engine)
+   Compiling ontoforge-expr v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-expr)
+   Compiling icu_segmenter_data v2.4.0
+   Compiling sea-query-sqlx v0.9.1
+   Compiling ontoforge-auth v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-auth)
+   Compiling ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+   Compiling icu_locale_fallback v2.4.0
+   Compiling backtrace v0.3.77
+   Compiling axum v0.8.9
+   Compiling icu_segmenter v2.4.0
+   Compiling ontoforge-query v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-query)
+   Compiling deadpool v0.12.3
+   Compiling console v0.16.6
+   Compiling rmcp v3.8.0
+   Compiling ontoforge-action v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-action)
+   Compiling textwrap v0.16.4
+   Compiling utoipa-axum v0.3.0
+   Compiling backtrace-ext v0.2.1
+   Compiling ontoforge-api v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-api)
+   Compiling miette v7.6.0
+   Compiling insta v1.49.0
+   Compiling wiremock v0.6.5
+   Compiling ontoforge-server v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-server)
+   Compiling ontoforge v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 13m 18s
+     Running unittests src\lib.rs (target\debug\deps\ontoforge-c02384feb0606b85.exe)
+
+running 1 test
+
+thread 'serve::tests::openapi_export_without_store_is_deterministic' (20900) panicked at crates\ontoforge\src\..\tests\unit\serve.test.rs:460:5:
+serve must accept --export-openapi FILE
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test serve::tests::openapi_export_without_store_is_deterministic ... FAILED
+
+failures:
+
+failures:
+    serve::tests::openapi_export_without_store_is_deterministic
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 16 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p ontoforge --lib`

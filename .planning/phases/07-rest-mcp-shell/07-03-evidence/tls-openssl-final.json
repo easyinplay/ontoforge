@@ -1,0 +1,8 @@
+{
+  "command": "cargo tree -i openssl-sys --workspace --locked",
+  "exitCode": 101,
+  "runStartedAt": "2026-10-29T03:57:58.6127868Z",
+  "runFinishedAt": "2026-10-29T03:57:58.9950511Z",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07-rest-mcp-shell\\07-03-evidence\\tls-openssl-final.log"
+}

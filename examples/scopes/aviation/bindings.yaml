@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../../schemas/ontoforge-scope.schema.json
+# A binding attaches a role to subjects: `group` names a group from the token's `groups`
+# claim (membership is never stored); `user` is a principal id, `<issuer>|<subject>`.
+kind: RoleBinding
+role: dispatcher
+subjects:
+  - group: dispatchers
+---
+# yaml-language-server: $schema=../../../schemas/ontoforge-scope.schema.json
+kind: RoleBinding
+role: crewScheduler
+subjects:
+  - group: crew-schedulers
+---
+# yaml-language-server: $schema=../../../schemas/ontoforge-scope.schema.json
+kind: RoleBinding
+role: maintenanceLead
+subjects:
+  - user: "ontoforge-dev|mia"

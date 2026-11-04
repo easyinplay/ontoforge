@@ -1,0 +1,7 @@
+[
+  { "code": "NRD", "name": "Northfield Regional", "city": "Northfield", "country": "Freedonia", "location": { "lat": 50.03, "lon": 8.57 } },
+  { "code": "SVK", "name": "Silverkeep International", "city": "Silverkeep", "country": "Freedonia", "location": { "lat": 48.35, "lon": 11.79 } },
+  { "code": "HLM", "name": "Helmsgate Airfield", "country": "Freedonia", "location": { "lat": 52.31, "lon": 13.24 } },
+  { "code": "PBR", "name": "Porthaven Bay", "city": "Porthaven", "country": "Sylvania", "location": { "lat": 41.30, "lon": 2.08 } },
+  { "code": "LKV", "name": "Lakeview Municipal", "city": "Lakeview", "country": "Sylvania", "location": { "lat": 45.46, "lon": 9.28 } }
+]

@@ -1,0 +1,26 @@
+   Compiling ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+   Compiling ontoforge-query v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-query)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 41s
+     Running tests\audit_pk.rs (target\debug\deps\audit_pk-f86d44635d7f6a10.exe)
+
+running 3 tests
+
+thread 'audit_pk_execution_returns_durable_id_for_success_and_denial' (10232) panicked at crates\ontoforge-query\tests\audit_pk.rs:286:5:
+successful query must return its audit guard ID
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test audit_pk_execution_reserve_failure_has_no_audit_id ... ok
+test audit_pk_execution_returns_durable_id_for_success_and_denial ... FAILED
+
+thread 'audit_pk_execution_finish_failure_retains_reserved_id' (61516) panicked at crates\ontoforge-query\tests\audit_pk.rs:364:5:
+finish failure must retain the audit guard ID
+test audit_pk_execution_finish_failure_retains_reserved_id ... FAILED
+
+failures:
+
+failures:
+    audit_pk_execution_finish_failure_retains_reserved_id
+    audit_pk_execution_returns_durable_id_for_success_and_denial
+
+test result: FAILED. 1 passed; 2 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.12s
+
+error: test failed, to rerun pass `-p ontoforge-query --test audit_pk`

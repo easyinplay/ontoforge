@@ -1,0 +1,13 @@
+    Checking ontoforge-action v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-action)
+    Checking ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+error: this expression creates a reference which is immediately dereferenced by the compiler
+  --> crates\ontoforge-storage\tests\frozen_history.rs:67:28
+   |
+67 |     let published = reload(&external, &changed, &ReloadOptions::default())
+   |                            ^^^^^^^^^ help: change this to: `external`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#needless_borrow
+   = note: `-D clippy::needless-borrow` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::needless_borrow)]`
+
+error: could not compile `ontoforge-storage` (test "frozen_history") due to 1 previous error

@@ -66,6 +66,11 @@ pub struct PropertyDef {
     /// Number of digits after the decimal point of a `decimal` (or of an `array`
     /// of `decimal`). Defaults to 10 (ADR-0015, ADR-0021).
     pub scale: Option<u32>,
+    /// Create an index on this property's edit store column (ADR-0016). Defaults
+    /// to false. The primary key column always has an index, so it needs no
+    /// declaration.
+    #[serde(default)]
+    pub indexed: bool,
 }
 
 /// Precision of a `decimal` that does not write `precision`.
@@ -100,6 +105,7 @@ mod tests {
             items: None,
             precision,
             scale,
+            indexed: false,
         }
     }
 

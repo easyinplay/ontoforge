@@ -337,6 +337,11 @@
           ],
           "format": "uint32",
           "minimum": 0
+        },
+        "indexed": {
+          "description": "Create an index on this property's edit store column (ADR-0016). Defaults\nto false. The primary key column always has an index, so it needs no\ndeclaration.",
+          "type": "boolean",
+          "default": false
         }
       },
       "additionalProperties": false,
@@ -594,6 +599,25 @@
             },
             "object": {
               "description": "Name of an `objectReference` parameter holding the object to delete.",
+              "$ref": "#/$defs/ParameterName"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "object"
+          ]
+        },
+        {
+          "description": "Restore the source view by clearing the edit overlay.",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "releaseObject"
+            },
+            "object": {
+              "description": "Name of an `objectReference` parameter for a source-backed object.",
               "$ref": "#/$defs/ParameterName"
             }
           },

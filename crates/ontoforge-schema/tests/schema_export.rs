@@ -1,6 +1,8 @@
 //! The exported JSON Schemas stay in step with the IR and accept the examples.
 
-use ontoforge_schema::schema_export::{definition_schema, manifest_schema, rendered_schemas};
+use ontoforge_schema::schema_export::{
+    definition_schema, manifest_schema, rendered_schemas, scope_schema,
+};
 use serde_json::Value;
 
 const ROOT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../..");
@@ -52,7 +54,7 @@ fn consts(value: &Value, out: &mut Vec<String>) {
 
 #[test]
 fn definition_schema_is_draft_2020_12() {
-    for schema in [definition_schema(), manifest_schema()] {
+    for schema in [definition_schema(), manifest_schema(), scope_schema()] {
         assert_eq!(
             schema["$schema"],
             "https://json-schema.org/draft/2020-12/schema"
@@ -430,4 +432,113 @@ fn aviation_bindings_validate() {
         .map(|e| format!("{e} at {}", e.instance_path()))
         .collect();
     assert!(errors.is_empty(), "bindings.json: {errors:#?}");
+}
+
+fn scope_example_dir() -> std::path::PathBuf {
+    std::path::Path::new(ROOT).join("examples/scopes/aviation")
+}
+
+#[test]
+fn scope_schema_is_the_third_exported_file() {
+    let names: Vec<&str> = rendered_schemas().iter().map(|(name, _)| *name).collect();
+    assert_eq!(
+        names,
+        [
+            "ontoforge-definition.schema.json",
+            "ontoforge-manifest.schema.json",
+            "ontoforge-scope.schema.json",
+        ]
+    );
+}
+
+#[test]
+fn scope_variants_are_discriminated_by_kind() {
+    let schema = scope_schema();
+    let branches = schema["$defs"]["ScopeDefinition"]["oneOf"]
+        .as_array()
+        .expect("ScopeDefinition is a oneOf");
+    let mut found = Vec::new();
+    for branch in branches {
+        let kind = branch["properties"]["kind"]["const"]
+            .as_str()
+            .expect("every branch pins `kind` with a const");
+        found.push(kind.to_owned());
+        assert_eq!(
+            branch["additionalProperties"],
+            Value::Bool(false),
+            "branch {kind} rejects unknown fields"
+        );
+    }
+    found.sort();
+    assert_eq!(found, ["Role", "RoleBinding"]);
+}
+
+const SCOPE_MODELINE: &str =
+    "# yaml-language-server: $schema=../../../schemas/ontoforge-scope.schema.json";
+
+#[test]
+fn aviation_scope_documents_validate() {
+    let scope = validator(&scope_schema());
+    let mut checked = 0;
+    for name in ["roles.yaml", "bindings.yaml"] {
+        let path = scope_example_dir().join(name);
+        let text = read(&path);
+        let documents = yaml_documents(&path);
+        for (i, doc) in documents.iter().enumerate() {
+            let errors: Vec<String> = scope
+                .iter_errors(doc)
+                .map(|e| format!("{e} at {}", e.instance_path()))
+                .collect();
+            assert!(errors.is_empty(), "{name} document {i}: {errors:#?}");
+            checked += 1;
+        }
+        let modelines = text.lines().filter(|l| *l == SCOPE_MODELINE).count();
+        assert_eq!(
+            modelines,
+            documents.len(),
+            "{name} needs one scope modeline per YAML document"
+        );
+    }
+    assert_eq!(checked, 6, "three roles and three bindings");
+    assert!(
+        scope_example_dir()
+            .join(SCOPE_MODELINE.split_once("$schema=").unwrap().1)
+            .is_file(),
+        "the modeline schema path resolves from examples/scopes/aviation"
+    );
+}
+
+#[test]
+fn invalid_scope_documents_fail_schema() {
+    let scope = validator(&scope_schema());
+    let cases = [
+        // A misspelled key must not pass: it would silently drop the row filter.
+        "kind: Role
+apiName: dispatcher
+objectTypes:
+  Flight:
+    properties: [flightId]
+    rowfilter: \"true\"
+",
+        "kind: Role
+apiName: dispatcher
+toolsets: [sql]
+",
+        "kind: RoleBinding
+role: dispatcher
+subjects:
+  - users: bob
+",
+        "kind: RoleBinding
+role: Dispatcher
+subjects: []
+",
+        "kind: ObjectType
+apiName: Airport
+",
+    ];
+    for text in cases {
+        let doc: Value = serde_saphyr::from_str(text).expect("the case is valid YAML");
+        assert!(!scope.is_valid(&doc), "unexpectedly valid: {text}");
+    }
 }

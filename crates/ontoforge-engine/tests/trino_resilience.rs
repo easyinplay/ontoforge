@@ -678,6 +678,122 @@ async fn dropped_future_sends_delete() {
     );
 }
 
+async fn pending_cancellation(
+    server: &MockServer,
+    delete_status: u16,
+    delete_delay: Duration,
+    cancel_now: bool,
+) -> Arc<ontoforge_engine::AnyEngine> {
+    mount_submit(server).await;
+    mount_get_always(
+        server,
+        ResponseTemplate::new(200)
+            .set_body_json(done_page())
+            .set_delay(Duration::from_secs(5)),
+    )
+    .await;
+    Mock::given(method("DELETE"))
+        .respond_with(ResponseTemplate::new(delete_status).set_delay(delete_delay))
+        .mount(server)
+        .await;
+    let engine = Arc::new(ontoforge_engine::AnyEngine::Trino(engine_for(server)));
+    let runner = Arc::clone(&engine);
+    let mut context = ctx();
+    if cancel_now {
+        context.timeout = Duration::from_millis(50);
+    }
+    let task = tokio::spawn(async move { runner.execute(&select_one(), &context).await });
+    let stage = if cancel_now { "DELETE" } else { "GET" };
+    assert_eq!(wait_for_requests(server, stage, 1).await.len(), 1);
+    task.abort();
+    assert!(task.await.expect_err("caller cancelled").is_cancelled());
+    engine
+}
+
+#[tokio::test]
+async fn cancellation_drain_waits_for_delete_and_is_instance_local() {
+    let server = MockServer::start().await;
+    let engine = pending_cancellation(&server, 204, Duration::from_millis(400), false).await;
+    let idle = engine_for(&server);
+    tokio::time::timeout(Duration::from_millis(100), idle.drain_cancellations())
+        .await
+        .expect("another instance must not wait")
+        .expect("idle drain");
+    assert!(
+        tokio::time::timeout(Duration::from_millis(100), engine.drain_cancellations())
+            .await
+            .is_err()
+    );
+    let (first, second) = tokio::time::timeout(Duration::from_secs(1), async {
+        tokio::join!(engine.drain_cancellations(), engine.drain_cancellations())
+    })
+    .await
+    .expect("all drain waiters must be notified");
+    first.expect("cancelled drain waiter must not lose pending cleanup");
+    second.expect("concurrent drain");
+    assert_eq!(count(&server, "DELETE").await, 1);
+}
+
+#[tokio::test]
+async fn cancellation_drain_survives_cancel_now_waiter_drop() {
+    let server = MockServer::start().await;
+    let engine = pending_cancellation(&server, 204, Duration::from_millis(400), true).await;
+    assert!(
+        tokio::time::timeout(Duration::from_millis(100), engine.drain_cancellations())
+            .await
+            .is_err()
+    );
+    engine
+        .drain_cancellations()
+        .await
+        .expect("DELETE outlives the timeout caller");
+    assert_eq!(count(&server, "DELETE").await, 1);
+}
+
+#[tokio::test]
+async fn cancellation_drain_rejects_failed_or_timed_out_delete_and_accepts_gone() {
+    for (status, delay, success) in [
+        (404, Duration::ZERO, true),
+        (500, Duration::ZERO, false),
+        (204, Duration::from_secs(3), false),
+    ] {
+        let server = MockServer::start().await;
+        let engine = pending_cancellation(&server, status, delay, false).await;
+        let result = engine.drain_cancellations().await;
+        assert_eq!(
+            result.is_ok(),
+            success,
+            "DELETE {status} after {delay:?}: {result:?}"
+        );
+        assert_eq!(count(&server, "DELETE").await, 1, "cleanup must not retry");
+    }
+}
+
+#[tokio::test]
+async fn cancellation_drain_preserves_original_timeout_error() {
+    let server = MockServer::start().await;
+    mount_submit(&server).await;
+    mount_get_always(
+        &server,
+        ResponseTemplate::new(200)
+            .set_body_json(done_page())
+            .set_delay(Duration::from_secs(5)),
+    )
+    .await;
+    Mock::given(method("DELETE"))
+        .respond_with(ResponseTemplate::new(500))
+        .mount(&server)
+        .await;
+    let engine = engine_for(&server);
+    let mut context = ctx();
+    context.timeout = Duration::from_millis(50);
+    assert_eq!(
+        engine.execute(&select_one(), &context).await,
+        Err(EngineError::Timeout { after_ms: 50 })
+    );
+    assert!(engine.drain_cancellations().await.is_err());
+}
+
 #[tokio::test]
 async fn finished_query_sends_no_delete() {
     let server = MockServer::start().await;

@@ -1,0 +1,47 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.49s
+────────────
+ Nextest run ID 5b869ec0-6af3-4f74-89fe-72b8ec98724d with nextest profile: gsd
+    Starting 2 tests across 1 binary (12 tests skipped)
+        FAIL [   0.022s] (1/2) ontoforge serve::tests::serve_args_validate_config_and_address
+  stdout ───
+
+    running 1 test
+    test serve::tests::serve_args_validate_config_and_address ... FAILED
+
+    failures:
+
+    failures:
+        serve::tests::serve_args_validate_config_and_address
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 13 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'serve::tests::serve_args_validate_config_and_address' (7128) panicked at crates\ontoforge\src\serve.test.rs:118:5:
+    valid serve args must dispatch to the HTTP host
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   2.140s] (2/2) ontoforge serve::tests::serve_real_listener_auth_and_shutdown
+  stdout ───
+
+    running 1 test
+    test serve::tests::serve_real_listener_auth_and_shutdown ... FAILED
+
+    failures:
+
+    failures:
+        serve::tests::serve_real_listener_auth_and_shutdown
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 13 filtered out; finished in 2.12s
+
+  stderr ───
+
+    thread 'serve::tests::serve_real_listener_auth_and_shutdown' (9548) panicked at crates\ontoforge\src\serve.test.rs:147:5:
+    serve must start a real authenticated listener
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   2.141s] 2 tests run: 0 passed, 2 failed, 12 skipped
+        FAIL [   0.022s] (1/2) ontoforge serve::tests::serve_args_validate_config_and_address
+        FAIL [   2.140s] (2/2) ontoforge serve::tests::serve_real_listener_auth_and_shutdown
+error: test run failed

@@ -1,4 +1,7 @@
 /target/
+/clients/typescript/node_modules/
+/clients/typescript/dist/
+/tools/openapi-gen/node_modules/
 .ruff_cache/
 *.sqlite
 *.db

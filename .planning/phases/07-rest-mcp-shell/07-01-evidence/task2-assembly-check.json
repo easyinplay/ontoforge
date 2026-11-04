@@ -1,0 +1,8 @@
+{
+  "command": "cargo check -p ontoforge --locked",
+  "exitCode": 0,
+  "runStartedAt": "2026-10-28T23:58:06.3670870Z",
+  "runFinishedAt": "2026-10-28T23:58:55.4176400Z",
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07-rest-mcp-shell\\07-01-evidence\\task2-assembly-check.log",
+  "cwd": "D:\\DataSpellProjects\\ontoforge"
+}

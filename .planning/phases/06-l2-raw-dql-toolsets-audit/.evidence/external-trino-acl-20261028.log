@@ -1,0 +1,69 @@
+2026-10-28T03:33:54.1975915Z
+c674e32af766eefa7042936bd8edde9a4c8b4d30
+e81127fa41099365c44c2c42750024efad6653cb 2026-10-28T10:20:29+08:00
+
+FullName         : D:\DataSpellProjects\ontoforge\target\debug\deps\trino_l2_acl_it-0af57445ba4215b1.exe
+Length           : 23417344
+LastWriteTimeUtc : 2026/10/28 2:48:44
+
+
+Algorithm : SHA256
+Hash      : C4DEC5B77F8188264AB76734436B0B90650F2B1881283587622119E06EC14DAF
+Path      : D:\DataSpellProjects\ontoforge\target\debug\deps\trino_l2_acl_it-0af57445ba4215b1.exe
+
+{"nodeId":"3738891665a2","state":"ACTIVE","nodeVersion":{"version":"483"},"environment":"docker","coordinator":true,"coordinatorId":"qrhud","starting":false,"uptime":"1.07m"}
+{"nodeId":"bbb8d2815a4c","state":"ACTIVE","nodeVersion":{"version":"483"},"environment":"docker","coordinator":true,"coordinatorId":"hjvsn","starting":false,"uptime":"46.15s"}
+command: target/debug/deps/trino_l2_acl_it-0af57445ba4215b1.exe --ignored --list
+trino_l2_acl_hides_known_active_other_query_and_attests_engine: test
+trino_l2_acl_loosened_rule_fails_closed: test
+trino_l2_acl_rejects_existing_outside_and_edit_tables: test
+trino_l2_monitor_loose_acl_fails_closed: test
+trino_l2_monitor_short_query_does_not_prove_active_isolation: test
+trino_l2_monitor_startup_cancels_real_active_probe: test
+
+6 tests, 0 benchmarks
+command: target/debug/deps/trino_l2_acl_it-0af57445ba4215b1.exe --ignored --nocapture (default parallelism)
+
+running 6 tests
+test trino_l2_acl_rejects_existing_outside_and_edit_tables ... ok
+test trino_l2_monitor_loose_acl_fails_closed ... ok
+test trino_l2_acl_loosened_rule_fails_closed ... ok
+test trino_l2_monitor_short_query_does_not_prove_active_isolation ... ok
+test trino_l2_monitor_startup_cancels_real_active_probe ... ok
+G01: FINISHED, 1 row(s)
+G02: FINISHED, 1 row(s)
+G03: FINISHED, 1 row(s)
+G04: FINISHED, 3 row(s)
+G05: FINISHED, 1 row(s)
+G09: FINISHED, 1 row(s)
+G12: FINISHED, 1 row(s)
+G13: FINISHED, 1 row(s)
+G14: FINISHED, 1 row(s)
+G15: FINISHED, 1 row(s)
+G16: FINISHED, 0 row(s)
+G17: FINISHED, 1 row(s)
+G18: FINISHED, 2 row(s)
+G20: FINISHED, 1 row(s)
+G21: FINISHED, 1 row(s)
+G22: FINISHED, 0 row(s)
+G24: FINISHED, 1 row(s)
+G26: FINISHED, 1 row(s)
+G28: FINISHED, 1 row(s)
+G31: FINISHED, 1 row(s)
+G32: FINISHED, 1 row(s)
+G33: FINISHED, 1 row(s)
+G34: FINISHED, 1 row(s)
+G35: FINISHED, 1 row(s)
+G36: FINISHED, 1 row(s)
+G38: FINISHED, 1 row(s)
+G39: FINISHED, 1 row(s)
+G40: FINISHED, 1 row(s)
+G42: FINISHED, 1 row(s)
+G47: FINISHED, 1 row(s)
+B51: FINISHED, 1 row(s)
+B53: FINISHED, 1 row(s)
+test trino_l2_acl_hides_known_active_other_query_and_attests_engine ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 9.91s
+
+test_exit_code=0

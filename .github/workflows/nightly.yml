@@ -43,6 +43,7 @@ jobs:
       PGHOST: localhost
       PGUSER: postgres
       PGPASSWORD: ontoforge-ci-only
+      ONTOFORGE_PG_URL: postgres://postgres:ontoforge-ci-only@localhost:5432/editstore
     steps:
       # Third-party actions are pinned to full commit SHAs, the same ones as ci.yml.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -84,6 +85,38 @@ jobs:
         run: |
           docker exec trino trino --execute "CREATE SCHEMA iceberg.aviation"
           docker exec trino trino --execute "CREATE TABLE iceberg.aviation.flights AS SELECT flight_id, flight_no, departure_airport, arrival_airport, tail_number, CAST(scheduled_departure AS timestamp(6)) AS scheduled_departure, status, delay_minutes, tags FROM demo.aviation.flights"
+      - name: Action PostgreSQL atomicity and complete race corpus
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${ONTOFORGE_PG_URL:?PostgreSQL URL is required}"
+          run_ignored() {
+            local name="$1"; shift
+            local output count
+            output=$(cargo test "$@" -- --ignored --list)
+            count=$(printf '%s\n' "$output" | awk '/: test$/ { n++ } END { print n+0 }')
+            echo "$name: $count ignored tests discovered"
+            if [ "$count" -eq 0 ]; then echo "::error::$name discovered zero tests"; exit 1; fi
+            cargo test "$@" -- --ignored --nocapture
+          }
+          run_ignored action-atomicity -p ontoforge-storage --features test-support --test conformance_pg --locked action_atomic
+          run_ignored action-races -p ontoforge-action --features test-support --test action_pg --locked
+          run_ignored action-idempotency -p ontoforge-action --features test-support --test idempotency_pg --locked
+          run_ignored action-webhook-pg -p ontoforge-action --test outbox_pg --locked
+      - name: Action source and webhook corpus (Trino + PostgreSQL)
+        env:
+          ONTOFORGE_TRINO_URL: http://localhost:8080
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${ONTOFORGE_PG_URL:?PostgreSQL URL is required}"
+          : "${ONTOFORGE_TRINO_URL:?Trino URL is required}"
+          output=$(cargo test -p ontoforge-action --test trino_action_it --locked -- --ignored --list)
+          count=$(printf '%s\n' "$output" | awk '/: test$/ { n++ } END { print n+0 }')
+          echo "trino_action_it: $count ignored tests discovered"
+          if [ "$count" -eq 0 ]; then echo "::error::trino_action_it discovered zero tests"; exit 1; fi
+          cargo test -p ontoforge-action --test trino_action_it --locked -- --ignored --nocapture
+          cargo test -p ontoforge-action --test outbox --test entrypoints --locked -- --nocapture
       - name: Engine integration tests (with Iceberg)
         env:
           ONTOFORGE_TRINO_URL: http://localhost:8080

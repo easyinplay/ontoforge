@@ -1,0 +1,19 @@
+   Compiling ontoforge-engine v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 34.48s
+     Running tests\server_config.rs (target\debug\deps\server_config-9da25301fea02e19.exe)
+
+running 1 test
+
+thread 'query_signing_key_reference_is_optional_and_trusted' (4408) panicked at crates\ontoforge-engine\tests\server_config.rs:24:5:
+trusted query signing key file must be accepted
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test query_signing_key_reference_is_optional_and_trusted ... FAILED
+
+failures:
+
+failures:
+    query_signing_key_reference_is_optional_and_trusted
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 34 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p ontoforge-engine --test server_config`

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="nextest-run" tests="3" skipped="0" failures="3" errors="0" uuid="522dd89d-c722-41b4-a508-bb3d14dbf98e" timestamp="2026-10-29T07:41:23.035+08:00" time="2.130">
+    <testsuite name="ontoforge-server" tests="3" skipped="0" errors="0" failures="3">
+        <testcase name="tracer_tests::tracer_authenticated_pk_is_durable_after_shutdown" classname="ontoforge-server" timestamp="2026-10-29T07:41:23.035+08:00" time="0.124">
+            <failure message="thread &apos;tracer_tests::tracer_authenticated_pk_is_durable_after_shutdown&apos; (53076) panicked at crates\ontoforge-server\src\tracer.test.rs:125:5" type="test failure with exit code 101">thread &apos;tracer_tests::tracer_authenticated_pk_is_durable_after_shutdown&apos; (53076) panicked at crates\ontoforge-server\src\tracer.test.rs:125:5:
+assertion `left == right` failed: authenticated pk read must reach QueryService
+  left: 404
+ right: 200
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace</failure>
+            <system-out>
+running 1 test
+test tracer_tests::tracer_authenticated_pk_is_durable_after_shutdown ... FAILED
+
+failures:
+
+failures:
+    tracer_tests::tracer_authenticated_pk_is_durable_after_shutdown
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.11s
+
+</system-out>
+            <system-err>
+thread &apos;tracer_tests::tracer_authenticated_pk_is_durable_after_shutdown&apos; (53076) panicked at crates\ontoforge-server\src\tracer.test.rs:125:5:
+assertion `left == right` failed: authenticated pk read must reach QueryService
+  left: 404
+ right: 200
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+</system-err>
+        </testcase>
+        <testcase name="tracer_tests::tracer_unauthenticated_and_forged_context_are_denied" classname="ontoforge-server" timestamp="2026-10-29T07:41:23.035+08:00" time="0.146">
+            <failure message="thread &apos;tracer_tests::tracer_unauthenticated_and_forged_context_are_denied&apos; (36304) panicked at crates\ontoforge-server\src\tracer.test.rs:155:9" type="test failure with exit code 101">thread &apos;tracer_tests::tracer_unauthenticated_and_forged_context_are_denied&apos; (36304) panicked at crates\ontoforge-server\src\tracer.test.rs:155:9:
+assertion `left == right` failed: untrusted bearer must be rejected before read
+  left: 404
+ right: 401
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace</failure>
+            <system-out>
+running 1 test
+test tracer_tests::tracer_unauthenticated_and_forged_context_are_denied ... FAILED
+
+failures:
+
+failures:
+    tracer_tests::tracer_unauthenticated_and_forged_context_are_denied
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.12s
+
+</system-out>
+            <system-err>
+thread &apos;tracer_tests::tracer_unauthenticated_and_forged_context_are_denied&apos; (36304) panicked at crates\ontoforge-server\src\tracer.test.rs:155:9:
+assertion `left == right` failed: untrusted bearer must be rejected before read
+  left: 404
+ right: 401
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+</system-err>
+        </testcase>
+        <testcase name="tracer_tests::tracer_snapshot_releases_lock_before_source" classname="ontoforge-server" timestamp="2026-10-29T07:41:23.035+08:00" time="2.129">
+            <failure message="thread &apos;tracer_tests::tracer_snapshot_releases_lock_before_source&apos; (13028) panicked at crates\ontoforge-server\src\tracer.test.rs:215:5" type="test failure with exit code 101">thread &apos;tracer_tests::tracer_snapshot_releases_lock_before_source&apos; (13028) panicked at crates\ontoforge-server\src\tracer.test.rs:215:5:
+authenticated source request must reach the source barrier
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace</failure>
+            <system-out>
+running 1 test
+test tracer_tests::tracer_snapshot_releases_lock_before_source ... FAILED
+
+failures:
+
+failures:
+    tracer_tests::tracer_snapshot_releases_lock_before_source
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 2.11s
+
+</system-out>
+            <system-err>
+thread &apos;tracer_tests::tracer_snapshot_releases_lock_before_source&apos; (13028) panicked at crates\ontoforge-server\src\tracer.test.rs:215:5:
+authenticated source request must reach the source barrier
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+</system-err>
+        </testcase>
+    </testsuite>
+</testsuites>

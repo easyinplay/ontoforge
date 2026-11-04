@@ -1,6 +1,6 @@
 # ADR-0018 授权：用户 / 组 / 角色、scope 模型与 SQL 级别
 
-- status: accepted
+- status: accepted（「缺失属性求值为 false」一句 superseded by ADR-0025，2026-10-20；其余不变）
 - date: 2026-10-16
 - supersedes: ADR-0008 的 AuthZ 部分（AuthN 部分保留：OIDC JWT + 自写 JWKS 缓存、dev 本地 token）
 - 依据：`docs/designs/trino-engine-sql-tiers.md` §3、§4；Eng Review D5 / D12 / D13 / D21

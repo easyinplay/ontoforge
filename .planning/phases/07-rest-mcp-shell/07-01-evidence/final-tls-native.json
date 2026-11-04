@@ -1,0 +1,8 @@
+{
+  "command": "cargo tree --workspace --locked --features ontoforge-storage/embedded-pg -e normal,build,dev -i native-tls",
+  "exitCode": 101,
+  "runStartedAt": "2026-10-29T00:14:58.7587660Z",
+  "runFinishedAt": "2026-10-29T00:14:59.4697307Z",
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07-rest-mcp-shell\\07-01-evidence\\final-tls-native.log",
+  "cwd": "D:\\DataSpellProjects\\ontoforge"
+}

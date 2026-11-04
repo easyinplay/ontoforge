@@ -15,15 +15,17 @@ ontoforge 是一个用 Rust 实现、可自托管的开源 Ontology 操作层，
 - ✓ ontology-as-code：YAML/JSON → 单一 IR，line:col 诊断，导出 JSON Schema 供编辑器补全 — Phase 1
 - ✓ lint 引擎：E 级规则 + W01–W11，human / JSON 双格式，`ontoforge.toml` 配置 — Phase 1
 - ✓ 数据源绑定与 Trino 连接（BIND-01..03、ENGINE-01..05）：`SourceBinding` 文件与必填 `backing`、类型契约 lint、`validate --online` / `--check-pk`、自写 Trino client、自有 SQL printer、SQLite 替身、Linux CI Trino + PG 与 nightly Iceberg；ontoforge 只带连接能力，不打包 Trino（ADR-0015、ADR-0017、ADR-0021） — Phase 2
+- ✓ edit store、edit log 与 scope 模型（SCOPE-01..06 等） — Phase 3，详 `.planning/phases/03-edit-store-scope-model/`
+- ✓ scoped L0 读取（QUERY-01..10）：Rust 编排 source/edit 叠加、行列授权与单表 Trino 查询 — Phase 4，详 `.planning/phases/04-scoped-l0-read/`
+- online Action（ACTION-01..12）：鉴权、并发令牌、主体作用域幂等与 webhook outbox；详 `.planning/phases/05-online-action/05-VERIFICATION.md`。
+- L2 Raw DQL（L2-01..03）；详 `.planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md`。
+- 读取元数据审计及 fail-closed（AUDIT-01）；详 `.planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md`。
+- REST、OpenAPI 3.1、Rust/TypeScript SDK、MCP toolsets 与持久 dev 演示；验收详 `.planning/phases/07-rest-mcp-shell/07-UAT.md`。
+- L2 ACL 服务生命周期、health 告警与 MCP 管理边界（L2-04、SCOPE-07），三平台发行包与安装验收；详 `.planning/phases/07-rest-mcp-shell/07-14-SUMMARY.md`。
 
 ### Active
 
-- [ ] edit store 按 object type 强类型分表、按属性 patch，不可变 edit log — ADR-0016
-- [ ] 用户 / 组 / 角色与 scope 模型（行列级安全提前进 v1）、Action 鉴权管线 — ADR-0018
-- [ ] scoped L0 读：Rust 编排叠加，Trino 只跑单表查询 — ADR-0020
-- [ ] online Action：并发令牌、`command_id`、webhook outbox
-- [ ] L2 Raw DQL（AST 白名单 + Trino 侧权限自检）与全级别读审计
-- [ ] REST（OpenAPI 3.1 + Rust / TS client）与 MCP（toolset 分层）两个出口；`serve --dev` 单二进制演示 — ADR-0019
+Phase 1–7 的既有计划已实施；milestone审计发现INT-01集成缺口（已修、重验中）及STORE-05 source报告缺口（Phase7.1补齐）。历史fingerprint与发布前债务核查见STATE与各阶段deferred-items。Release、npm发布及PR合并仍未执行。
 
 需求编号与 phase 映射见 `.planning/REQUIREMENTS.md`；方向依据 `docs/designs/trino-engine-sql-tiers.md`。
 
@@ -37,7 +39,7 @@ ontoforge 是一个用 Rust 实现、可自托管的开源 Ontology 操作层，
 - 外部系统原生 writeback 连接器：MVP 只留 webhook side effect 扩展点
 - GraphQL：MVP 只做 REST + MCP（ADR-0007）
 
-v2 候选（不在当前 milestone）：interfaces 与 shared properties、struct、value types、runtime 派生属性、行 / 列级安全、vector + KNN、scenarios、functions 运行时、WebSocket 订阅、schema branching + proposals、ontology 级强类型 SDK codegen。
+v2 候选（不在当前 milestone）：interfaces 与 shared properties、struct、value types、runtime 派生属性、vector + KNN、scenarios、functions 运行时、WebSocket 订阅、schema branching + proposals、ontology 级强类型 SDK codegen。
 
 ## Context
 
@@ -60,7 +62,7 @@ v2 候选（不在当前 milestone）：interfaces 与 shared properties、struc
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
 | 品牌名 ontoforge（ADR-0001） | 规避 Palantir "Foundry" 商标风险 | — Pending |
-| 应用 + Agent 双出口定位 | 同一核心同时服务业务系统与 AI agent，MCP 是 REST 之上的薄封装 | — Pending |
+| 应用 + Agent 双出口定位 | 同一核心同时服务业务系统与 AI agent，MCP 是 REST 之上的薄封装 | 已由 Phase 7 REST/HTTP/stdio 同权限与持久证据验证；详 Phase 7 UAT |
 | YAML/JSON → 单一 IR（ADR-0003） | LLM 友好、diff 友好、line:col 诊断 | ✓ Good — Phase 1 交付，多文档 YAML 需项目级 yaml.schemas（G-1-2） |
 | Postgres 生产 + SQLite dev/test（ADR-0004） | 单二进制开发体验 + 生产可靠性，conformance 测试保证一致 | ⚠️ Revisited — 被 ADR-0016 取代：业务数据经 Trino，PG 只存系统数据与 edit store |
 | 写入只经 Action + 不可变 edit log（ADR-0004） | 审计与后续 scenario / branch 的基础 | — Pending |
@@ -91,4 +93,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-10-19 after Phase 2*
+*Last updated: 2026-11-04 after Phase 7 automated acceptance*

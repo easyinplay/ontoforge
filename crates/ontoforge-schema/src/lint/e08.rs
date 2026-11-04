@@ -116,6 +116,21 @@ fn check_action(cx: &LintCx<'_>, action: &ActionType, out: &mut Vec<Finding>) {
                     deleted.insert(r.object.as_str(), i);
                 }
             }
+            Rule::ReleaseObject(r) => {
+                if let Some(&j) = deleted.get(r.object.as_str()) {
+                    out.push(finding(
+                        i,
+                        "object",
+                        format!(
+                            "`{}` is released here but rules[{j}] already removes it",
+                            r.object
+                        ),
+                        None,
+                    ));
+                } else {
+                    deleted.insert(r.object.as_str(), i);
+                }
+            }
             Rule::CreateObject(r) => {
                 if let Some(j) = duplicate_create(cx, r, &created) {
                     let message = format!(

@@ -1,0 +1,128 @@
+name: release
+
+on:
+  pull_request:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CARGO_BUILD_JOBS: "2"
+
+jobs:
+  native:
+    name: native (${{ matrix.target }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            target: x86_64-unknown-linux-gnu
+          - os: macos-15
+            target: aarch64-apple-darwin
+          - os: windows-2025
+            target: x86_64-pc-windows-msvc
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      RELEASE_TARGET: ${{ matrix.target }}
+      RELEASE_DIST: target/release-dist/${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # v1
+        with:
+          toolchain: "1.98.0"
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          key: release-${{ matrix.target }}
+      - name: Build, package and reopen native archive
+        run: ./ci/release-package.ps1 -Target $env:RELEASE_TARGET -OutDir $env:RELEASE_DIST -ExpectedCommit $env:GITHUB_SHA
+      - name: Install actual archive and exercise dev lifecycle and stdio
+        run: ./ci/release-smoke.ps1 -ArtifactDir $env:RELEASE_DIST -ExpectedTarget $env:RELEASE_TARGET -ExpectedCommit $env:GITHUB_SHA
+      - name: Upload verified native package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-${{ matrix.target }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/release-dist/${{ matrix.target }}/*
+          if-no-files-found: error
+          retention-days: 14
+
+  aggregate:
+    name: verify all release packages
+    needs: native
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Download this run's three exact artifacts and verify identities
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          $targets = @('x86_64-unknown-linux-gnu', 'aarch64-apple-darwin', 'x86_64-pc-windows-msvc')
+          foreach ($target in $targets) {
+            $name = "release-$target-$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT"
+            $directory = Join-Path $env:RUNNER_TEMP "release-aggregate/$target"
+            gh run download $env:GITHUB_RUN_ID --repo $env:GITHUB_REPOSITORY --name $name --dir $directory
+            ./ci/release-package.ps1 -VerifyOnly -Target $target -OutDir $directory -ExpectedCommit $env:GITHUB_SHA
+          }
+          "All three native packages verified for $env:GITHUB_SHA" >> $env:GITHUB_STEP_SUMMARY
+
+  publish:
+    name: upload assets to the published release
+    needs: [native, aggregate]
+    if: ${{ !cancelled() && needs.native.result == 'success' && needs.aggregate.result == 'success' && github.event_name == 'release' && github.event.action == 'published' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify all packages and reject existing asset names before upload
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          $targets = @('x86_64-unknown-linux-gnu', 'aarch64-apple-darwin', 'x86_64-pc-windows-msvc')
+          $assets = @()
+          foreach ($target in $targets) {
+            $name = "release-$target-$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT"
+            $directory = Join-Path $env:RUNNER_TEMP "release-publish/$target"
+            gh run download $env:GITHUB_RUN_ID --repo $env:GITHUB_REPOSITORY --name $name --dir $directory
+            ./ci/release-package.ps1 -VerifyOnly -Target $target -OutDir $directory -ExpectedCommit $env:GITHUB_SHA
+            $manifest = Get-Content (Get-ChildItem $directory -Filter '*.manifest.json').FullName -Raw | ConvertFrom-Json
+            if ($env:RELEASE_TAG -cne "v$($manifest.version)" -and $env:RELEASE_TAG -cne $manifest.version) { throw 'Release tag does not match package version' }
+            $assets += @(Get-ChildItem $directory -File | ForEach-Object { $_.FullName })
+          }
+          if ($assets.Count -ne 9) { throw 'Expected exactly nine release assets' }
+          $release = gh release view $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY --json tagName,isDraft,assets | ConvertFrom-Json
+          if ($release.isDraft -or $release.tagName -cne $env:RELEASE_TAG) { throw 'Release is not the requested published release' }
+          foreach ($asset in $assets) {
+            if ([IO.Path]::GetFileName($asset) -cin @($release.assets.name)) { throw 'Release asset already exists; refusing to overwrite' }
+          }
+          gh release upload $env:RELEASE_TAG @assets --repo $env:GITHUB_REPOSITORY

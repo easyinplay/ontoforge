@@ -1,0 +1,43 @@
+   Compiling ontoforge-engine v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 31.49s
+     Running tests\server_config.rs (target\debug\deps\server_config-9da25301fea02e19.exe)
+
+running 35 tests
+test accepts_trusted_webhook_worker_config ... ok
+test dev_auth_key_file ... ok
+test oidc_issuer_rules ... ok
+test basic_over_http_is_rejected ... ok
+test basic_requires_exactly_one_secret_ref ... ok
+test oidc_numeric_bounds ... ok
+test oidc_rejects_symmetric_and_none_algorithms ... ok
+test library_rejects_credentials_over_http ... ok
+test library_rejects_cross_scheme_origin ... ok
+test parses_full_example ... ok
+test oidc_two_issuers_with_defaults ... ok
+test plaintext_password_is_rejected ... ok
+test principal_attrs_types ... ok
+test profile_engine_has_no_library_path ... ok
+test engine_debug_names_the_identity_user ... ok
+test profile_key_must_be_profile_name ... ok
+test query_context_from_config ... ok
+test query_signing_key_reference_is_optional_and_trusted ... ok
+test rejects_invalid_webhook_worker_limits_and_target ... ok
+test secret_from_env ... ok
+test secret_written_into_a_reference_key_is_never_echoed ... ok
+test store_and_auth_are_optional ... ok
+test store_plaintext_url_is_rejected ... ok
+test store_postgres_requires_exactly_one_url_source ... ok
+test store_postgres_with_trino_catalog ... ok
+test store_schema_names_are_validated ... ok
+test store_sqlite_defaults ... ok
+test store_sqlite_rejects_url_and_postgres_rejects_path ... ok
+test trino_profile_needs_trino_section ... ok
+test unknown_key_in_store_or_auth_is_v20 ... ok
+test unknown_key_is_rejected ... ok
+test secret_never_in_debug_or_errors ... ok
+test secret_from_file_follows_symlink_and_trims ... ok
+test load_server_config_reads_the_file ... ok
+test ca_file_is_loaded ... ok
+
+test result: ok. 35 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+

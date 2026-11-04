@@ -1,0 +1,8 @@
+    Updating crates.io index
+     Locking 441 packages to latest Rust 1.98 compatible versions
+      Adding base64 v0.22.1 (available: v0.23.1)
+      Adding generic-array v0.14.7 (available: v0.14.9)
+      Adding jsonschema v0.58.6 (available: v0.60.2)
+      Adding matchit v0.8.4 (available: v0.8.6)
+      Adding postgresql_embedded v0.21.0 (available: v0.22.0)
+      Adding sha2 v0.10.9 (available: v0.11.1)

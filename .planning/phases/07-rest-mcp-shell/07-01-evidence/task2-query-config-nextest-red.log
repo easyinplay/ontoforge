@@ -1,0 +1,27 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.41s
+────────────
+ Nextest run ID c5bcf789-5618-47fc-bc92-155aef17f498 with nextest profile: gsd
+    Starting 1 test across 1 binary (34 tests skipped)
+        FAIL [   0.014s] (1/1) ontoforge-engine::server_config query_signing_key_reference_is_optional_and_trusted
+  stdout ───
+
+    running 1 test
+    test query_signing_key_reference_is_optional_and_trusted ... FAILED
+
+    failures:
+
+    failures:
+        query_signing_key_reference_is_optional_and_trusted
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 34 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'query_signing_key_reference_is_optional_and_trusted' (26700) panicked at crates\ontoforge-engine\tests\server_config.rs:24:5:
+    trusted query signing key file must be accepted
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.015s] 1 test run: 0 passed, 1 failed, 34 skipped
+        FAIL [   0.014s] (1/1) ontoforge-engine::server_config query_signing_key_reference_is_optional_and_trusted
+error: test run failed

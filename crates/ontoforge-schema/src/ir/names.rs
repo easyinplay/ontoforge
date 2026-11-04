@@ -198,6 +198,10 @@ api_name!(
     ActionTypeName, Initial::Lower, "action type", "^[a-z][A-Za-z0-9]{0,99}$"
 );
 api_name!(
+    /// Role apiName (scope documents, D-01), `camelCase`.
+    RoleName, Initial::Lower, "role", "^[a-z][A-Za-z0-9]{0,99}$"
+);
+api_name!(
     /// Action parameter apiName, `camelCase`, not a CEL keyword.
     ParameterName, Initial::Lower, "parameter", "^[a-z][A-Za-z0-9]{0,99}$", &CEL_RESERVED_WORDS
 );

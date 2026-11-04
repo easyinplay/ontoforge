@@ -1,0 +1,9 @@
+{
+  "command": "cargo clippy -p ontoforge-storage --features embedded-pg --all-targets --locked -- -D warnings",
+  "exitCode": 0,
+  "runStartedAt": "2026-10-29T05:02:28.7308354Z",
+  "runFinishedAt": "2026-10-29T05:02:35.7975381Z",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07-rest-mcp-shell\\07-02-evidence\\embedded-pg-clippy.log",
+  "cargoBuildJobs": 2
+}

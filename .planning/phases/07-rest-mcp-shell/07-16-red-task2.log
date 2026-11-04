@@ -1,0 +1,8 @@
+command: $env:CARGO_BUILD_JOBS='2'; cargo test -p ontoforge-server --test mcp_l2_defaults --locked mcp_l2_missing_context_and_outside_allowlist_deny_before_send -- --nocapture
+exit_code: 1
+target_test: mcp_l2_missing_context_and_outside_allowlist_deny_before_send
+semanticAssessment: valid RED; the target executed and failed on the planned structured-error assertion. The adapter still wrapped missing context as `invalid L2 request: trusted L2 qualification context is missing: catalog`; GREEN must expose a dedicated missing-context error display. No compile, collection, fixture, or zero-test failure occurred.
+
+running 1 test
+thread 'mcp_l2_missing_context_and_outside_allowlist_deny_before_send' panicked: left `invalid L2 request: trusted L2 qualification context is missing: catalog`, right `missing trusted L2 context: catalog`
+test result: FAILED. 0 passed; 0 ignored

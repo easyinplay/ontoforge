@@ -1,0 +1,300 @@
+{
+  "sourceCommit": "f8851ca073fed34e80e605f0ac91880259df7e12",
+  "planningCommit": "a6efc1157aa7d091d6d7a58e80f4f2470e7d97c2",
+  "coveredDigest": "v4:sha256:2653bcf9d8651491b658036144b9685eb0e82adbf83b235e75f0d74464cd2f68",
+  "files": [
+    {
+      "path": "target/l2-catalog-clippy.log",
+      "bytes": 1106,
+      "sha256": "b4b6afe70abafb290fd066d19442df6c93f2292715a20de0872f6e5e5eff0b89"
+    },
+    {
+      "path": "target/l2-catalog-green.log",
+      "bytes": 1009,
+      "sha256": "269e46fe7ec7104e840f57bdaa84f33c51819d2c58d30d7f6d59490932399cd8"
+    },
+    {
+      "path": "target/l2-catalog-red.log",
+      "bytes": 4105,
+      "sha256": "a29db81cde48f2b705963d1e9c65cc016f77e385d28c45b5cb83b990e6df94c6"
+    },
+    {
+      "path": "target/l2-catalog-server-regression.log",
+      "bytes": 7833,
+      "sha256": "66d825f7fcc953c369ff353274b2338131f3ceeee9b6ba1c0e33200b17f48fe7"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/cleanup.log",
+      "bytes": 31,
+      "sha256": "10b63d8a55268ca2404f713f603d7804b0ade45cdf81f8329afc278a83fef237"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/commit.txt",
+      "bytes": 41,
+      "sha256": "bf7166380025be447303b854d84caeae3f67ab88029d2de83f78cd39694d04e0"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/final-check.log",
+      "bytes": 361,
+      "sha256": "4480be4a3312dddf3e5436dbd0c0db02772c88b6c564332af0d9a3c7b2237424"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/health_trino_it.discovery.log",
+      "bytes": 135,
+      "sha256": "016d562c408d600d615889cd4865a18a1d763b69ce4e68ca729af88298e2270c"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/health_trino_it.log",
+      "bytes": 406,
+      "sha256": "5eada813d7d66cc1d3a26ca918873c98a4d9107537a8be04d835ab08b2a93966"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/postgres_http_it.discovery.log",
+      "bytes": 254,
+      "sha256": "80a0906a96c58314434fe11fd931469c1fbce770ba4a13a790e466725dc13008"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/postgres_http_it.log",
+      "bytes": 538,
+      "sha256": "3c621462ea4d9271872d3d88601f07561e2d04955f5f00d2fd24886cbf097466"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/request_snapshot.discovery.log",
+      "bytes": 78,
+      "sha256": "6621920044c8a662c9651cdca37f9c0b7fce1c9ab6b8f5761af24dbba9c1260b"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/request_snapshot.log",
+      "bytes": 344,
+      "sha256": "9922e1b462bc57b33dbe865d1da5c3dc01d60feda42503f4eeb7b1e63b580f7c"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/runner.log",
+      "bytes": 20078,
+      "sha256": "700ab13b12c2ad22e81ea2b14feede204d47fcfbf433c5af91bac76820119151"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/rust-client.log",
+      "bytes": 905,
+      "sha256": "c9fdab187fa16fe88b6fc2d6115dd3ff1ed9360d5f9a41f7d0fcdc157c5fa84e"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/server-cleanup.log",
+      "bytes": 30,
+      "sha256": "86442e7d25527d5837343323762c3bcb8bb84dd57344a717f40e3120e5682c30"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/source-equivalence.diff",
+      "bytes": 648,
+      "sha256": "76a60b330a343f1aab750e0192999d4c9a0541c9f87d546a6b83c85da9ba9c0a"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/source-guard.log",
+      "bytes": 1985,
+      "sha256": "871bf528ec12d40b444acfaaddd6b36b5a78ccf4d5567a533824943c60fb7678"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/source_drift_trino_it.discovery.log",
+      "bytes": 156,
+      "sha256": "93dec1d8ea1a73750e3ebab36a191d80ad8803f5f5a577e962ee741906100158"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/source_drift_trino_it.log",
+      "bytes": 439,
+      "sha256": "b355b3590d9a8821a7b0f89ee57b73b9c922e3ebef1267f04f00b422bfd52f72"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/sqlite-action-atomic.log",
+      "bytes": 813,
+      "sha256": "0bd91dc680d7470a057637ed06619c23ec5681a9f8b870510f1108cdefbd07f8"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/start-commit.txt",
+      "bytes": 41,
+      "sha256": "2f7b3e7b360935f762b7317ffe46874172c20b7f678380dd2c87ebf500d5ae67"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/trino-483-ctas.log",
+      "bytes": 36,
+      "sha256": "a87f652b6c27483a8fc19d696c0992f16a5796b6444f57601b801cb6d37b201a"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/trino-483-fixture.log",
+      "bytes": 61,
+      "sha256": "221fdf6dee83e59fd6edc27794ebb7b76c122d83f459f4bc557e656e2b4dd961"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/trino-483-iceberg.log",
+      "bytes": 400,
+      "sha256": "d250dc030e611fcd937d2bfc811dafc43487c6d1e0a51e14646ff4c16a72bb24"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/trino-484-ctas.log",
+      "bytes": 36,
+      "sha256": "a87f652b6c27483a8fc19d696c0992f16a5796b6444f57601b801cb6d37b201a"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/trino-484-fixture.log",
+      "bytes": 61,
+      "sha256": "c1676f4ae720350aa4e09f6224d925df8483a2944002f4755d2fd7f723ec7b64"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/trino-484-iceberg.log",
+      "bytes": 305,
+      "sha256": "1c589143bf0eb5db09d9f8eb6fc4390405ad6bedd40cd02d01b53705399ef24e"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/trino_http_it.discovery.log",
+      "bytes": 123,
+      "sha256": "69d687813c716685ab3797f694523a322236aa2e6e10aeb0ca62c5e4d10e9a48"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/trino_http_it.log",
+      "bytes": 389,
+      "sha256": "2b8f877091e7af6507263d4f2c89816f31554df6f873bee4256cf1b3525a7863"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/trino_l2_acl_it.discovery.log",
+      "bytes": 368,
+      "sha256": "ac82d1082bc17edb4cdc3aea8efc9068b779e7bd5521bd40467ddc289cec8807"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/trino_l2_acl_it.log",
+      "bytes": 1430,
+      "sha256": "676cd510f5b7781cfb236ef705cbfb105fa839c15572ae6c7057c7e01266c576"
+    },
+    {
+      "path": "target/milestone-audit-evidence-20261104/typescript-contract.log",
+      "bytes": 1992,
+      "sha256": "7ae04010724155ccf162ccfe73684bd9688073ce939eca09bfc416b017a11762"
+    },
+    {
+      "path": "target/milestone-ci-41759804733-integration.log",
+      "bytes": 114556,
+      "sha256": "6ecde94b35302e75b4484d4268281d5216fb09f8f2856013075d081050ca6f25"
+    },
+    {
+      "path": "target/milestone-ci-41759804733-ubuntu.log",
+      "bytes": 330741,
+      "sha256": "dd5f4c4165adb6792daa3889c85418d50a14821adf2171352492d57775b27975"
+    },
+    {
+      "path": "target/milestone-ci-41759804733-windows.log",
+      "bytes": 338621,
+      "sha256": "b6ecb8fa1fb5c4459c9e7c8e01074d99c142456d65ab76afd66ccac613679eaa"
+    },
+    {
+      "path": "target/milestone-ci-41759804733.json",
+      "bytes": 16412,
+      "sha256": "240d3479c078b5f02767fda6ef01ea921f773e1dd1d026d026a242849c5f1085"
+    },
+    {
+      "path": "target/milestone-release-41759804768/packaged-commit.json",
+      "bytes": 2623,
+      "sha256": "0f0124b58767c2f4db41f9d0b86664282f98841a6133009effde66ac92030525"
+    },
+    {
+      "path": "target/milestone-release-41759804768/run.json",
+      "bytes": 8150,
+      "sha256": "f3611395139b0a1d82c60bbd3288688d8b4ebc98cd8238a4d9d8d95e75e1744a"
+    },
+    {
+      "path": "target/milestone-release-41759804768/run.log",
+      "bytes": 328139,
+      "sha256": "8b08cadb0f3e49dd7d5b0cb4fc9160dc4e98d734b95da5050fb320d9084fa25a"
+    },
+    {
+      "path": "target/milestone-release-41759804768/source-commit.json",
+      "bytes": 1140,
+      "sha256": "1636e1daeb9e66dd3f806422c869ec08fbc4b53a39c3dd35a7eb1e9bbc33e548"
+    },
+    {
+      "path": "target/milestone-release-41759804768/verification.json",
+      "bytes": 3736,
+      "sha256": "a769bb94748da73843e9570bb8d93b88180b294874e7cd5344f7e19ca1092d23"
+    },
+    {
+      "path": "target/milestone-tls-real-tree.log",
+      "bytes": 17,
+      "sha256": "d85b34db57686dd2e011c96e312cd595ed5add4879cf34f2c7266eda53f5af0a"
+    },
+    {
+      "path": "target/phase7-bridge-security-cli-r2.log",
+      "bytes": 1164,
+      "sha256": "b7c3f32c0268b84f8f9210b051e541b79618b9bc194b4519a17c87117070bc42"
+    },
+    {
+      "path": "target/phase7-bridge-security-mia.log",
+      "bytes": 438,
+      "sha256": "d7859fe4e8267f0aafd0993a084f6afbe174fef90280d7016fb9f5e23ee495ff"
+    },
+    {
+      "path": "target/phase7-ci-41669982375-ubuntu-counts.json",
+      "bytes": 84,
+      "sha256": "56fc82a01d5a1c69ebe34301aa3c5de1b32abbb615b0aebd0e6a267e9b22535f"
+    },
+    {
+      "path": "target/phase7-ci-41669982375-windows-counts.json",
+      "bytes": 84,
+      "sha256": "e1ffa59c685754992c5035e8dee2f89f8e755fa07afe9e6c6ab888a205b72b99"
+    },
+    {
+      "path": "target/phase7-ci-41669982375.json",
+      "bytes": 15623,
+      "sha256": "fc71f9f34d910e8c39f8cc1b59db9060d29a4615d26436106c03476a72f04f6d"
+    },
+    {
+      "path": "target/phase7-explain-query-tests.log",
+      "bytes": 1654,
+      "sha256": "d1ec1ba8dd012ba988450a57d31f1a47a75d04f00692b6b936c0fa9a67907613"
+    },
+    {
+      "path": "target/phase7-mcp-admission-green-r2.log",
+      "bytes": 5415,
+      "sha256": "9c62e63b0c972e53b6932e6a53a913ba501c2d17be5aafe1ed63402467f148c2"
+    },
+    {
+      "path": "target/phase7-native-artifacts-41669982362-verification.json",
+      "bytes": 1209,
+      "sha256": "d01f6031e1d852c930db6d6f63c33b5f3e6f81bf2d94cf4148333246340bb764"
+    },
+    {
+      "path": "target/phase7-pr7-final-status.json",
+      "bytes": 95,
+      "sha256": "93567fdc2fd5798ef1aad822e345cf06e20e1d3229a348fee23fbe9ca73f41bf"
+    },
+    {
+      "path": "target/phase7-pr8-final-status.json",
+      "bytes": 92,
+      "sha256": "50ff29516476cfbe54d4bd3bc3c69d73c268314acfd301732d40a44d1822c207"
+    },
+    {
+      "path": "target/phase7-release-ci-41669982362.json",
+      "bytes": 8080,
+      "sha256": "821b47083c55d4e53fbed7dfbf14088d802475f36addade957d9895b18971b74"
+    },
+    {
+      "path": "target/phase7-services/evidence/commit.txt",
+      "bytes": 41,
+      "sha256": "1d8d64d3b132c825e7935eaa7d22f9df3cbbb5725282c9d387b818d5225a3aa4"
+    },
+    {
+      "path": "target/phase7-services/evidence/final-adc0227-verify.log",
+      "bytes": 10843,
+      "sha256": "32c0b116425afab56240d2713f43af09630de5d7a853055bdec0faecf79ed725"
+    },
+    {
+      "path": "target/phase7-verify-pre-api-coverage.json",
+      "bytes": 242,
+      "sha256": "0c19610edd38bdc4d65a9f70f631420b501244c142b9d76bb145b4b8ef2b2366"
+    }
+  ],
+  "nativeVerification": "passed",
+  "uat": "14/14; native uat-passed true",
+  "reportOrFingerprintChanged": false
+}

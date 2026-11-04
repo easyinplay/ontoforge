@@ -10,6 +10,8 @@ use thiserror::Error;
 /// Why a [`crate::printer`] AST could not be turned into SQL text.
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
 pub enum PrintError {
+    #[error("dialect does not support this statement")]
+    UnsupportedDialect,
     /// A string literal contained a NUL character.
     #[error("string literal contains a NUL character")]
     NulInString,

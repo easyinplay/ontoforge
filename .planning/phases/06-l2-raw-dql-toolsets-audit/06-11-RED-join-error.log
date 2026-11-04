@@ -1,0 +1,21 @@
+   Compiling ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 26.60s
+     Running unittests src\lib.rs (target\debug\deps\ontoforge_storage-eb801a59b105838d.exe)
+
+running 1 test
+
+thread 'read_audit::tests::audit_shutdown_join_error_is_sticky' (59196) panicked at crates\ontoforge-storage\src\read_audit.rs:451:9:
+assertion `left == right` failed: repeat shutdown must preserve the worker join failure
+  left: Ok(())
+ right: Err(AuditUnavailable)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test read_audit::tests::audit_shutdown_join_error_is_sticky ... FAILED
+
+failures:
+
+failures:
+    read_audit::tests::audit_shutdown_join_error_is_sticky
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 48 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p ontoforge-storage --lib`

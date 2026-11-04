@@ -2,4 +2,4 @@
 source: crates/ontoforge-engine/src/printer/tests.rs
 expression: sqlite.as_str()
 ---
-SELECT "id", count(*) AS "n", max("x") FROM "demo__aviation"."flights" WHERE ("status" = 'ok') AND ("id" IN (1, 2)) AND ("x" IS NOT NULL) AND (NOT ("d" > '1.50')) GROUP BY "id" HAVING count(*) > 1 ORDER BY "n" DESC NULLS LAST, "id" ASC NULLS FIRST LIMIT 21
+SELECT "id", count(*) AS "n", max("x"), CASE WHEN ("owner" = 'alice') THEN ("x") ELSE (NULL) END AS "masked" FROM "demo__aviation"."flights" WHERE ("status" = 'ok') AND ("id" IN (1, 2)) AND ("x" IS NOT NULL) AND (NOT ("d" > '1.50')) GROUP BY "id" HAVING count(*) > 1 ORDER BY "n" DESC NULLS LAST, "id" ASC NULLS FIRST LIMIT 21

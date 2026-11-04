@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="nextest-run" tests="1" skipped="0" failures="1" errors="0" uuid="7e0e2efd-9f36-459d-91a2-1b782d43e226" timestamp="2026-10-29T11:29:36.348+08:00" time="0.212">
+    <testsuite name="ontoforge-server" tests="1" skipped="0" errors="0" failures="1">
+        <testcase name="rest_tests::rest_metadata_and_all_l0_operations" classname="ontoforge-server" timestamp="2026-10-29T11:29:36.353+08:00" time="0.193">
+            <failure message="thread &apos;rest_tests::rest_metadata_and_all_l0_operations&apos; (58644) panicked at crates\ontoforge-server\src\..\tests\unit\rest.test.rs:50:5" type="test failure with exit code 101">thread &apos;rest_tests::rest_metadata_and_all_l0_operations&apos; (58644) panicked at crates\ontoforge-server\src\..\tests\unit\rest.test.rs:50:5:
+HTTP query ID must match its durable audit reservation
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace</failure>
+            <system-out>
+running 1 test
+test rest_tests::rest_metadata_and_all_l0_operations ... FAILED
+
+failures:
+
+failures:
+    rest_tests::rest_metadata_and_all_l0_operations
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.17s
+
+</system-out>
+            <system-err>
+thread &apos;rest_tests::rest_metadata_and_all_l0_operations&apos; (58644) panicked at crates\ontoforge-server\src\..\tests\unit\rest.test.rs:50:5:
+HTTP query ID must match its durable audit reservation
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+</system-err>
+        </testcase>
+    </testsuite>
+</testsuites>

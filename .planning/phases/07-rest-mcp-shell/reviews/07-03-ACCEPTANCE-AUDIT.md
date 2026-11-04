@@ -1,0 +1,43 @@
+# 07-03 Task 03-1 验收抽查
+
+- 日期：2026-10-29。
+- 范围：真实 REST 测试与 `d31cf91` audited wrappers，只读核查；本审查未运行测试。
+- 结论：1 项验收缺口；所查查询路径未发现可证明的 production bug。03-2 observed/deadline 改动仍在施工，不属于本轮通过结论。
+
+## 首轮发现
+
+- `07-03-PLAN.md:136` 要求 metadata 提供引擎脱敏状态。`ontoforge-api/src/dto.rs:188` Metadata 与 `ontoforge-server/src/rest.rs:98` ontology 响应没有字段，`tests/unit/rest.test.rs:19` 无断言。补稳定逻辑状态 DTO，仅可用/不可用，不暴露 `EngineStatus::Unavailable.reason`；真实 listener 断言状态及敏感 reason 不泄漏。
+
+## 已核查覆盖
+
+| 合同 | 证据 |
+|------|------|
+| 真实认证 listener/source/store | server `tests/support/mod.rs:76-147`、`:205-242` 创建持久 store、真实 SQLite source、verifier、TCP listener 并发送 Bearer HTTP。 |
+| 全部 L0 操作 | `tests/unit/rest.test.rs:31-68` 对 pk/filter/search/searchAround/union/intersect/subtract/aggregate 断言具体值、PK 或分桶。 |
+| 排序与分页 | 同文件 `:88-143` 验证相等排序、nullable、空/单项、三页 cursor；9 MiB 真实对象产生短页并继续读取下一页。 |
+| reload/revoke/inflight | 同文件 `:151-222` 用 Engine Notify 固定次序，旧请求成功且审计保留旧 def_version，新请求撤权；管理事务受 timeout 检查。 |
+| audited wrappers | `d31cf91` execute/aggregate 各单次 reserve，旧入口透传 result，保留 status/finish/Drop；REST 断言八次数据操作对应八条审计及 list ID。 |
+| 实际 GREEN | `../07-03-evidence/rest-green.log` 三个指定测试，3 passed、0 failed、0 ignored；对应 JSON exitCode 0。本轮仅读取，未重跑。 |
+
+在途用例 reload 只修改 description；固定版本证据为持久审计 def_version 以及 context/QueryService 传递同一 active 的源码路径。此处不扩大为字段语义变化的实测结论。
+
+## 03-2 施工期抽查
+
+- 已核查真实HTTP覆盖framework拒绝、UTF-8/空错误/16并发ID/脱敏、rows与byte等值/越界、32准入、三个Query入口deadline、真实TCP断开，以及observer成功一次/失败不调用。`http-admission-fault-green`、`http-budget-boundaries`、`http-deadline-cancel`为exit0；后续修改须最终重跑。
+- 发现405缺统一envelope，已交executor；必须保留Allow和header/body ID并断言零audit准入。
+- 发现PK忽略QueryPage.truncated而将空rows映404。Airport fixture为`editOnly`（`examples/ontologies/aviation/objects.yaml:15`），跳过Engine，因此budget=1时源码可达该路径；不是source-backed的普遍复现，source_pk已有Engine truncated -> CostExceeded。交executor落实真实RED/GREEN与精确边界。
+- 批准PK仅改REST为既有400 COST_EXCEEDED；Query审计仍记其原bounded结果success/0，不将HTTP状态强加为Query审计状态。此边界需在测试和SUMMARY明确。
+- metadata状态及reason sentinel已在源码补齐，等待最新REST GREEN。
+- partial-body停滞本轮未见真实HTTP用例，不计为已实测；middleware timer/to_bytes覆盖源码路径。
+
+## 93fad96 收口
+
+三项发现均resolved，所查生产/测试文件与该commit无差异；本轮只读，无重复测试执行。
+
+| 发现 | 修复与实际GREEN证据 |
+|------|--------------------|
+| metadata | rest.rs:107、dto.rs:201仅available/unavailable；rest.test.rs:21真实响应含状态且无reason sentinel；rest-final.log指定测试通过。 |
+| 405 | lib.rs:137/error.rs:73统一fallback；http_contract.test.rs:92保留POST和GET,HEAD的Allow，共用断言校验header/body ID，Engine/audit零准入；http-final.log通过。 |
+| PK截断 | rest.rs:181映400 COST_EXCEEDED；http_contract.test.rs:288以真实响应测byte，再测等值成功/少一byte拒绝及原success/0审计；http-final.log对应测试通过。 |
+
+rest-final/http-final各3 passed、0 failed、0 ignored，JSON exitCode0。此收口不构成workspace门禁通过结论；workspace与all-features clippy须分别记录。

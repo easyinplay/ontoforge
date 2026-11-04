@@ -1,226 +1,168 @@
 ---
 phase: 01-workspace-schema-lint
-verified: 2026-10-16T12:00:00Z
-status: passed
-score: 10/11 must-haves verified
-covered_files:
-
-  - ".github/workflows/ci.yml"
-  - ".planning/REQUIREMENTS.md"
-  - ".planning/phases/01-workspace-schema-lint/01-01-PLAN.md"
-  - ".planning/phases/01-workspace-schema-lint/01-01-SUMMARY.md"
-  - ".planning/phases/01-workspace-schema-lint/01-02-PLAN.md"
-  - ".planning/phases/01-workspace-schema-lint/01-02-SUMMARY.md"
-  - ".planning/phases/01-workspace-schema-lint/01-03-PLAN.md"
-  - ".planning/phases/01-workspace-schema-lint/01-03-SUMMARY.md"
-  - ".planning/phases/01-workspace-schema-lint/01-04-PLAN.md"
-  - ".planning/phases/01-workspace-schema-lint/01-04-SUMMARY.md"
-  - ".planning/phases/01-workspace-schema-lint/01-05-PLAN.md"
-  - ".planning/phases/01-workspace-schema-lint/01-05-SUMMARY.md"
-  - ".planning/phases/01-workspace-schema-lint/01-06-PLAN.md"
-  - ".planning/phases/01-workspace-schema-lint/01-06-SUMMARY.md"
-  - ".planning/phases/01-workspace-schema-lint/01-07-PLAN.md"
-  - ".planning/phases/01-workspace-schema-lint/01-07-SUMMARY.md"
-  - ".planning/phases/01-workspace-schema-lint/01-08-PLAN.md"
-  - ".planning/phases/01-workspace-schema-lint/01-08-SUMMARY.md"
-  - ".planning/phases/01-workspace-schema-lint/01-09-PLAN.md"
-  - ".planning/phases/01-workspace-schema-lint/01-09-SUMMARY.md"
-  - ".planning/phases/01-workspace-schema-lint/01-10-PLAN.md"
-  - ".planning/phases/01-workspace-schema-lint/01-10-SUMMARY.md"
-  - ".planning/phases/01-workspace-schema-lint/01-11-PLAN.md"
-  - ".planning/phases/01-workspace-schema-lint/01-11-SUMMARY.md"
-  - ".planning/phases/01-workspace-schema-lint/01-12-PLAN.md"
-  - ".planning/phases/01-workspace-schema-lint/01-12-SUMMARY.md"
-  - ".planning/phases/01-workspace-schema-lint/01-13-PLAN.md"
-  - ".planning/phases/01-workspace-schema-lint/01-13-SUMMARY.md"
-  - ".planning/phases/01-workspace-schema-lint/01-14-PLAN.md"
-  - ".planning/phases/01-workspace-schema-lint/01-14-SUMMARY.md"
-  - ".vscode/settings.json"
-  - ".zed/settings.json"
-  - "CONTRIBUTING.md"
-  - "Cargo.toml"
-  - "crates/ontoforge-schema/src/lib.rs"
-  - "crates/ontoforge-schema/tests/schema_export.rs"
-  - "crates/ontoforge/src/main.rs"
-  - "examples/ontologies/aviation/actions.yaml"
-  - "examples/ontologies/aviation/links.yaml"
-  - "examples/ontologies/aviation/objects.yaml"
-  - "schemas/ontoforge-definition.schema.json"
-  - "schemas/ontoforge-manifest.schema.json"
-
-covered_digest: "v1:sha256:1a414b08d4af61b1cd0d346d4046b65a0b722b773e66152720b97eaec55ae165"
+verified: 2026-11-04T02:55:02Z
+status: human_needed
+score: 11/11 must-haves verified
+covered_files: [".gitattributes",".github/workflows/ci.yml",".planning/adr/0002-naming-convention.md",".planning/adr/0003-ontology-definition-format.md",".planning/adr/0006-expression-language.md",".planning/adr/0011-workspace-layout.md",".planning/adr/0012-definition-document-shape.md",".planning/phases/01-workspace-schema-lint/01-01-PLAN.md",".planning/phases/01-workspace-schema-lint/01-01-SUMMARY.md",".planning/phases/01-workspace-schema-lint/01-02-PLAN.md",".planning/phases/01-workspace-schema-lint/01-02-SUMMARY.md",".planning/phases/01-workspace-schema-lint/01-03-PLAN.md",".planning/phases/01-workspace-schema-lint/01-03-SUMMARY.md",".planning/phases/01-workspace-schema-lint/01-04-PLAN.md",".planning/phases/01-workspace-schema-lint/01-04-SUMMARY.md",".planning/phases/01-workspace-schema-lint/01-05-PLAN.md",".planning/phases/01-workspace-schema-lint/01-05-SUMMARY.md",".planning/phases/01-workspace-schema-lint/01-06-PLAN.md",".planning/phases/01-workspace-schema-lint/01-06-SUMMARY.md",".planning/phases/01-workspace-schema-lint/01-07-PLAN.md",".planning/phases/01-workspace-schema-lint/01-07-SUMMARY.md",".planning/phases/01-workspace-schema-lint/01-08-PLAN.md",".planning/phases/01-workspace-schema-lint/01-08-SUMMARY.md",".planning/phases/01-workspace-schema-lint/01-09-PLAN.md",".planning/phases/01-workspace-schema-lint/01-09-SUMMARY.md",".planning/phases/01-workspace-schema-lint/01-10-PLAN.md",".planning/phases/01-workspace-schema-lint/01-10-SUMMARY.md",".planning/phases/01-workspace-schema-lint/01-11-PLAN.md",".planning/phases/01-workspace-schema-lint/01-11-SUMMARY.md",".planning/phases/01-workspace-schema-lint/01-12-PLAN.md",".planning/phases/01-workspace-schema-lint/01-12-SUMMARY.md",".planning/phases/01-workspace-schema-lint/01-13-PLAN.md",".planning/phases/01-workspace-schema-lint/01-13-SUMMARY.md",".planning/phases/01-workspace-schema-lint/01-14-PLAN.md",".planning/phases/01-workspace-schema-lint/01-14-SUMMARY.md",".planning/phases/01-workspace-schema-lint/01-CONTEXT.md",".planning/phases/01-workspace-schema-lint/01-UAT.md",".planning/phases/01-workspace-schema-lint/01-VALIDATION.md",".vscode/settings.json",".zed/settings.json","CONTRIBUTING.md","Cargo.lock","Cargo.toml","ci/check-tls-deps.sh","ci/test_tls_deps.py","crates/ontoforge-expr/src/analyze.rs","crates/ontoforge-expr/src/check.rs","crates/ontoforge-expr/src/infer.rs","crates/ontoforge-expr/src/lib.rs","crates/ontoforge-expr/src/limits.rs","crates/ontoforge-expr/src/rowpred/eval.rs","crates/ontoforge-expr/src/rowpred/ir.rs","crates/ontoforge-expr/src/rowpred/mod.rs","crates/ontoforge-expr/src/rowpred/parse.rs","crates/ontoforge-expr/src/rowpred/value.rs","crates/ontoforge-expr/src/walk.rs","crates/ontoforge-expr/tests/analyze.rs","crates/ontoforge-expr/tests/criteria.rs","crates/ontoforge-schema/Cargo.toml","crates/ontoforge-schema/src/diag.rs","crates/ontoforge-schema/src/ir/action.rs","crates/ontoforge-schema/src/ir/attrs.rs","crates/ontoforge-schema/src/ir/basetype.rs","crates/ontoforge-schema/src/ir/binding.rs","crates/ontoforge-schema/src/ir/link.rs","crates/ontoforge-schema/src/ir/manifest.rs","crates/ontoforge-schema/src/ir/mod.rs","crates/ontoforge-schema/src/ir/names.rs","crates/ontoforge-schema/src/ir/object.rs","crates/ontoforge-schema/src/ir/scope.rs","crates/ontoforge-schema/src/lib.rs","crates/ontoforge-schema/src/lint/binding/e13.rs","crates/ontoforge-schema/src/lint/binding/e14.rs","crates/ontoforge-schema/src/lint/binding/e15.rs","crates/ontoforge-schema/src/lint/binding/e16.rs","crates/ontoforge-schema/src/lint/binding/mod.rs","crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e13__tests__clean.snap","crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e13__tests__triggers.snap","crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e14__tests__clean.snap","crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e14__tests__triggers.snap","crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e15__tests__clean.snap","crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e15__tests__triggers.snap","crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e16__tests__clean.snap","crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e16__tests__triggers.snap","crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__w17__tests__clean.snap","crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__w17__tests__triggers.snap","crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__w17__tests__unreadable.snap","crates/ontoforge-schema/src/lint/binding/w17.rs","crates/ontoforge-schema/src/lint/config.rs","crates/ontoforge-schema/src/lint/e08.rs","crates/ontoforge-schema/src/lint/e09.rs","crates/ontoforge-schema/src/lint/mod.rs","crates/ontoforge-schema/src/lint/naming/mod.rs","crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w01__tests__clean.snap","crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w01__tests__triggers.snap","crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w02__tests__clean.snap","crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w02__tests__triggers.snap","crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w03__tests__clean.snap","crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w03__tests__triggers.snap","crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w04__tests__clean.snap","crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w04__tests__triggers.snap","crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w05__tests__clean.snap","crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w05__tests__triggers.snap","crates/ontoforge-schema/src/lint/naming/w01.rs","crates/ontoforge-schema/src/lint/naming/w02.rs","crates/ontoforge-schema/src/lint/naming/w03.rs","crates/ontoforge-schema/src/lint/naming/w04.rs","crates/ontoforge-schema/src/lint/naming/w05.rs","crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e08__tests__clean.snap","crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e08__tests__triggers.snap","crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e09__tests__clean.snap","crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e09__tests__triggers.snap","crates/ontoforge-schema/src/lint/structure/mod.rs","crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w06__tests__clean.snap","crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w06__tests__triggers.snap","crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w07__tests__clean.snap","crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w07__tests__triggers.snap","crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w08__tests__clean.snap","crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w08__tests__triggers.snap","crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w09__tests__clean.snap","crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w09__tests__triggers.snap","crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w10__tests__clean.snap","crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w10__tests__triggers.snap","crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w11__tests__clean.snap","crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w11__tests__triggers.snap","crates/ontoforge-schema/src/lint/structure/w06.rs","crates/ontoforge-schema/src/lint/structure/w07.rs","crates/ontoforge-schema/src/lint/structure/w08.rs","crates/ontoforge-schema/src/lint/structure/w09.rs","crates/ontoforge-schema/src/lint/structure/w10.rs","crates/ontoforge-schema/src/lint/structure/w11.rs","crates/ontoforge-schema/src/lint/words.rs","crates/ontoforge-schema/src/loader/discover.rs","crates/ontoforge-schema/src/loader/dispatch.rs","crates/ontoforge-schema/src/loader/fixture.rs","crates/ontoforge-schema/src/loader/mod.rs","crates/ontoforge-schema/src/loader/parse.rs","crates/ontoforge-schema/src/loader/scope.rs","crates/ontoforge-schema/src/loader/sourcemap.rs","crates/ontoforge-schema/src/schema_export.rs","crates/ontoforge-schema/src/validate/actions.rs","crates/ontoforge-schema/src/validate/bindings.rs","crates/ontoforge-schema/src/validate/links.rs","crates/ontoforge-schema/src/validate/mod.rs","crates/ontoforge-schema/src/validate/objects.rs","crates/ontoforge-schema/tests/action_types.rs","crates/ontoforge-schema/tests/bindings.rs","crates/ontoforge-schema/tests/diagnostics.rs","crates/ontoforge-schema/tests/link_types.rs","crates/ontoforge-schema/tests/lint_examples.rs","crates/ontoforge-schema/tests/load_examples.rs","crates/ontoforge-schema/tests/loader.rs","crates/ontoforge-schema/tests/object_types.rs","crates/ontoforge-schema/tests/schema_export.rs","crates/ontoforge-schema/tests/scope_documents.rs","crates/ontoforge-schema/tests/snapshots/scope_documents__scope_diagnostics.snap","crates/ontoforge/Cargo.toml","crates/ontoforge/src/cli.rs","crates/ontoforge/src/lib.rs","crates/ontoforge/src/lint_cmd.rs","crates/ontoforge/src/main.rs","crates/ontoforge/src/pipeline.rs","crates/ontoforge/src/render.rs","crates/ontoforge/tests/cli.rs","crates/ontoforge/tests/cli_color.rs","crates/ontoforge/tests/cli_lint.rs","crates/ontoforge/tests/cli_schema.rs","crates/ontoforge/tests/invalid_examples.rs","crates/ontoforge/tests/snapshots/cli__validate_unknown_field_human.snap","crates/ontoforge/tests/snapshots/cli_lint__e08_human.snap","crates/ontoforge/tests/snapshots/cli_lint__e14_human.snap","crates/ontoforge/tests/snapshots/cli_online__online_missing_column_human.snap","crates/ontoforge/tests/snapshots/cli_online_trino__unavailable_human.snap","crates/ontoforge/tests/snapshots/invalid_examples__v01-json-trailing-comma.snap","crates/ontoforge/tests/snapshots/invalid_examples__v01-yaml-duplicate-key.snap","crates/ontoforge/tests/snapshots/invalid_examples__v02-missing-kind.snap","crates/ontoforge/tests/snapshots/invalid_examples__v03-function-rule.snap","crates/ontoforge/tests/snapshots/invalid_examples__v03-reserved-kind.snap","crates/ontoforge/tests/snapshots/invalid_examples__v04-unknown-field.snap","crates/ontoforge/tests/snapshots/invalid_examples__v05-missing-backing.snap","crates/ontoforge/tests/snapshots/invalid_examples__v05-missing-primary-key.snap","crates/ontoforge/tests/snapshots/invalid_examples__v06-precision-on-string.snap","crates/ontoforge/tests/snapshots/invalid_examples__v06-unknown-base-type.snap","crates/ontoforge/tests/snapshots/invalid_examples__v07-bad-object-type-name.snap","crates/ontoforge/tests/snapshots/invalid_examples__v08-duplicate-binding.snap","crates/ontoforge/tests/snapshots/invalid_examples__v08-duplicate-object-type.snap","crates/ontoforge/tests/snapshots/invalid_examples__v08-link-end-clashes-property.snap","crates/ontoforge/tests/snapshots/invalid_examples__v09-binding-unknown-target.snap","crates/ontoforge/tests/snapshots/invalid_examples__v09-link-unknown-object-type.snap","crates/ontoforge/tests/snapshots/invalid_examples__v09-rule-unknown-property.snap","crates/ontoforge/tests/snapshots/invalid_examples__v10-float-primary-key.snap","crates/ontoforge/tests/snapshots/invalid_examples__v10-primary-key-not-required.snap","crates/ontoforge/tests/snapshots/invalid_examples__v11-backing-on-one-to-many.snap","crates/ontoforge/tests/snapshots/invalid_examples__v11-foreign-key-type-mismatch.snap","crates/ontoforge/tests/snapshots/invalid_examples__v11-many-to-many-with-foreign-key.snap","crates/ontoforge/tests/snapshots/invalid_examples__v12-create-missing-primary-key.snap","crates/ontoforge/tests/snapshots/invalid_examples__v12-current-time-on-string.snap","crates/ontoforge/tests/snapshots/invalid_examples__v12-modify-assigns-primary-key.snap","crates/ontoforge/tests/snapshots/invalid_examples__v12-value-source-type-mismatch.snap","crates/ontoforge/tests/snapshots/invalid_examples__v13-comparison-type-mismatch.snap","crates/ontoforge/tests/snapshots/invalid_examples__v13-non-boolean-condition.snap","crates/ontoforge/tests/snapshots/invalid_examples__v13-objects-not-object-reference.snap","crates/ontoforge/tests/snapshots/invalid_examples__v13-syntax-error.snap","crates/ontoforge/tests/snapshots/invalid_examples__v13-unknown-parameter.snap","crates/ontoforge/tests/snapshots/invalid_examples__v14-include-escapes-root.snap","crates/ontoforge/tests/snapshots/invalid_examples__v16-binding-outside-bindings-dir.snap","crates/ontoforge/tests/snapshots/invalid_examples__v16-fixture-escapes-root.snap","crates/ontoforge/tests/snapshots/invalid_examples__v16-source-without-binding.snap","examples/ontologies/aviation-json/actions.json","examples/ontologies/aviation-json/bindings/dev/bindings.json","examples/ontologies/aviation-json/bindings/dev/fixtures/aircraft.csv","examples/ontologies/aviation-json/bindings/dev/fixtures/flight_crew.csv","examples/ontologies/aviation-json/bindings/dev/fixtures/flights.csv","examples/ontologies/aviation-json/bindings/dev/fixtures/maintenance_records.csv","examples/ontologies/aviation-json/bindings/dev/fixtures/pilots.csv","examples/ontologies/aviation-json/links.json","examples/ontologies/aviation-json/objects.json","examples/ontologies/aviation-json/ontology.yaml","examples/ontologies/aviation/actions.yaml","examples/ontologies/aviation/bindings/dev/aircraft.yaml","examples/ontologies/aviation/bindings/dev/fixtures/aircraft.csv","examples/ontologies/aviation/bindings/dev/fixtures/flight_crew.csv","examples/ontologies/aviation/bindings/dev/fixtures/flights.csv","examples/ontologies/aviation/bindings/dev/fixtures/maintenance_records.csv","examples/ontologies/aviation/bindings/dev/fixtures/pilots.csv","examples/ontologies/aviation/bindings/dev/flight-crew.yaml","examples/ontologies/aviation/bindings/dev/flight.yaml","examples/ontologies/aviation/bindings/dev/maintenance-record.yaml","examples/ontologies/aviation/bindings/dev/pilot.yaml","examples/ontologies/aviation/links.yaml","examples/ontologies/aviation/objects.yaml","examples/ontologies/aviation/ontology.yaml","examples/ontologies/invalid/v01-json-trailing-comma/objects.json","examples/ontologies/invalid/v01-json-trailing-comma/ontology.yaml","examples/ontologies/invalid/v01-yaml-duplicate-key/objects.yaml","examples/ontologies/invalid/v01-yaml-duplicate-key/ontology.yaml","examples/ontologies/invalid/v02-missing-kind/objects.yaml","examples/ontologies/invalid/v02-missing-kind/ontology.yaml","examples/ontologies/invalid/v03-function-rule/defs.yaml","examples/ontologies/invalid/v03-function-rule/ontology.yaml","examples/ontologies/invalid/v03-reserved-kind/objects.yaml","examples/ontologies/invalid/v03-reserved-kind/ontology.yaml","examples/ontologies/invalid/v04-unknown-field/objects.yaml","examples/ontologies/invalid/v04-unknown-field/ontology.yaml","examples/ontologies/invalid/v05-missing-backing/objects.yaml","examples/ontologies/invalid/v05-missing-backing/ontology.yaml","examples/ontologies/invalid/v05-missing-primary-key/objects.yaml","examples/ontologies/invalid/v05-missing-primary-key/ontology.yaml","examples/ontologies/invalid/v06-precision-on-string/objects.yaml","examples/ontologies/invalid/v06-precision-on-string/ontology.yaml","examples/ontologies/invalid/v06-unknown-base-type/objects.yaml","examples/ontologies/invalid/v06-unknown-base-type/ontology.yaml","examples/ontologies/invalid/v07-bad-object-type-name/objects.yaml","examples/ontologies/invalid/v07-bad-object-type-name/ontology.yaml","examples/ontologies/invalid/v08-duplicate-binding/bindings/dev/a.yaml","examples/ontologies/invalid/v08-duplicate-binding/bindings/dev/b.yaml","examples/ontologies/invalid/v08-duplicate-binding/objects.yaml","examples/ontologies/invalid/v08-duplicate-binding/ontology.yaml","examples/ontologies/invalid/v08-duplicate-object-type/a.yaml","examples/ontologies/invalid/v08-duplicate-object-type/b.yaml","examples/ontologies/invalid/v08-duplicate-object-type/ontology.yaml","examples/ontologies/invalid/v08-link-end-clashes-property/defs.yaml","examples/ontologies/invalid/v08-link-end-clashes-property/ontology.yaml","examples/ontologies/invalid/v09-binding-unknown-target/bindings/dev/flight.yaml","examples/ontologies/invalid/v09-binding-unknown-target/objects.yaml","examples/ontologies/invalid/v09-binding-unknown-target/ontology.yaml","examples/ontologies/invalid/v09-link-unknown-object-type/defs.yaml","examples/ontologies/invalid/v09-link-unknown-object-type/ontology.yaml","examples/ontologies/invalid/v09-rule-unknown-property/defs.yaml","examples/ontologies/invalid/v09-rule-unknown-property/ontology.yaml","examples/ontologies/invalid/v10-float-primary-key/objects.yaml","examples/ontologies/invalid/v10-float-primary-key/ontology.yaml","examples/ontologies/invalid/v10-primary-key-not-required/objects.yaml","examples/ontologies/invalid/v10-primary-key-not-required/ontology.yaml","examples/ontologies/invalid/v11-backing-on-one-to-many/defs.yaml","examples/ontologies/invalid/v11-backing-on-one-to-many/ontology.yaml","examples/ontologies/invalid/v11-foreign-key-type-mismatch/defs.yaml","examples/ontologies/invalid/v11-foreign-key-type-mismatch/ontology.yaml","examples/ontologies/invalid/v11-many-to-many-with-foreign-key/defs.yaml","examples/ontologies/invalid/v11-many-to-many-with-foreign-key/ontology.yaml","examples/ontologies/invalid/v12-create-missing-primary-key/defs.yaml","examples/ontologies/invalid/v12-create-missing-primary-key/ontology.yaml","examples/ontologies/invalid/v12-current-time-on-string/defs.yaml","examples/ontologies/invalid/v12-current-time-on-string/ontology.yaml","examples/ontologies/invalid/v12-modify-assigns-primary-key/defs.yaml","examples/ontologies/invalid/v12-modify-assigns-primary-key/ontology.yaml","examples/ontologies/invalid/v12-value-source-type-mismatch/defs.yaml","examples/ontologies/invalid/v12-value-source-type-mismatch/ontology.yaml","examples/ontologies/invalid/v13-comparison-type-mismatch/defs.yaml","examples/ontologies/invalid/v13-comparison-type-mismatch/ontology.yaml","examples/ontologies/invalid/v13-non-boolean-condition/defs.yaml","examples/ontologies/invalid/v13-non-boolean-condition/ontology.yaml","examples/ontologies/invalid/v13-objects-not-object-reference/defs.yaml","examples/ontologies/invalid/v13-objects-not-object-reference/ontology.yaml","examples/ontologies/invalid/v13-syntax-error/defs.yaml","examples/ontologies/invalid/v13-syntax-error/ontology.yaml","examples/ontologies/invalid/v13-unknown-parameter/defs.yaml","examples/ontologies/invalid/v13-unknown-parameter/ontology.yaml","examples/ontologies/invalid/v14-include-escapes-root/ontology.yaml","examples/ontologies/invalid/v16-binding-outside-bindings-dir/flight-binding.yaml","examples/ontologies/invalid/v16-binding-outside-bindings-dir/objects.yaml","examples/ontologies/invalid/v16-binding-outside-bindings-dir/ontology.yaml","examples/ontologies/invalid/v16-fixture-escapes-root/bindings/dev/flight.yaml","examples/ontologies/invalid/v16-fixture-escapes-root/objects.yaml","examples/ontologies/invalid/v16-fixture-escapes-root/ontology.yaml","examples/ontologies/invalid/v16-source-without-binding/bindings/dev/flight.yaml","examples/ontologies/invalid/v16-source-without-binding/objects.yaml","examples/ontologies/invalid/v16-source-without-binding/ontology.yaml","rust-toolchain.toml","schemas/ontoforge-definition.schema.json","schemas/ontoforge-manifest.schema.json","schemas/ontoforge-scope.schema.json","target/milestone-ci-41759804733-integration.log","target/milestone-ci-41759804733-ubuntu.log","target/milestone-ci-41759804733-windows.log"]
+covered_digest: "v4:sha256:ab5ef91bd70deeaba8abb80fd7352d53165111c05d99b47edda07a0ccb904a6c"
 behavior_unverified: 0
-overrides_applied: 0
+overrides_applied: 1
+human_verification:
+  - test: "明确接受或进一步核查01-01原创出处禁止项"
+    expected: "确认没有参考仓库代码复制或标识符沿用；现有禁名扫描范围与原创出处不能完备证明的限制已知"
+    why_human: "judgment-tier prohibition仅有NON-AUTHORITATIVE自动判断，历史AGREE不是逐项人工resolution"
+  - test: "明确接受或进一步核查01-01路径与用户名禁止项"
+    expected: "接受相对路径链路、测试与产品快照扫描的证据范围，或要求补查未覆盖产物"
+    why_human: "局部确定性证据存在，但原合同verification为judgment，不能静默当作人工确认"
+  - test: "明确接受或进一步核查01-08不得降级ONT-V禁止项"
+    expected: "确认结构校验先于配置，ONT-V ID配置被拒绝；具名negative test已通过"
+    why_human: "有行为证据支撑，但原judgment-tier处置需要显式resolution；自动授权不等同人工观察"
+decision_coverage:
+  honored: 18
+  total: 18
+  not_honored: []
 re_verification:
-  previous_status: human_needed
-  previous_score: 4/4 must-haves verified
-  trigger: "UAT Test 2 报告 gap G-1-2；执行了 gap-closure plan 01-14"
+  previous_status: passed
+  previous_score: 10/11
+  trigger: "当前源码、canonical stale、实际测试与原始CI日志重新验证"
   gaps_closed:
-    - "G-1-2：多文档 YAML 的第 2 个及之后的 document 没有 schema 关联（代码与配置层面已关闭；真实编辑器内复测待人工）"
+    - "历史fingerprint覆盖不足与过期，已按真实实现重新建立证据"
+    - "旧CI TLS guard fail-open，已由真实workflow hermetic负测及真实tree查询关闭"
   gaps_remaining: []
   regressions: []
-human_verification:
-
-  - test: "UAT Test 2 复测（Zed，Windows）：在 Zed 中打开仓库根目录（已打开则执行 `editor: restart language server` 让 `.zed/settings.json` 生效），打开 `examples/ontologies/aviation/objects.yaml`，在文件末尾追加一行 `---` 和一行 `kind: ` 后按 Ctrl+Space；再在该 document 中加一行 `bogus: 1`；最后打开 `examples/ontologies/aviation-json/ontology.yaml`"
-    expected: "补全列出 ObjectType、LinkType、ActionType；`bogus` 字段被标红；`aviation-json/ontology.yaml` 没有 schema 错误提示。选 ObjectType 后在新行按 Ctrl+Space，只出现 ObjectType 的字段（apiName、primaryKey、properties 等）"
-    why_human: "补全弹窗与编辑器内诊断只能在真实编辑器中观察。本次 headless 驱动与 Zed 同版本的 yaml-language-server 1.25.0 已证明服务端行为正确，但 Zed 是否把 `.zed/settings.json` 的 `lsp.yaml-language-server.settings` 传给服务端、`./schemas/...` 相对路径在 Zed 内是否按工作区根解析，只有真实 Zed 能确认。通过后把 01-UAT.md Test 2 的 result 从 issue 改为 pass"
-  - test: "（可选，VS Code）装有 Red Hat YAML 扩展时打开仓库，重复上一条的追加 document 操作"
-    expected: "与 Zed 相同的补全与标红；`aviation-json/ontology.yaml` 无误报"
-    why_human: "依赖 IDE 与扩展。`.vscode/settings.json` 与 Zed 配置经测试断言逐字相同，但 VS Code 侧未实机观察"
+overrides:
+  - must_have: "G-1-2：aviation 的任意 YAML document 输入 kind 可补全并标红未知字段"
+    reason: "01-UAT Test 2 用户明确接受pass；只观察到新增document关联schema，补全弹窗、bogus标红、JSON manifest无误报未逐项观察，保留该限制"
+    accepted_by: "user (01-UAT.md Test 2)"
+    accepted_at: "2026-10-16T12:56:06Z"
+prohibition_review:
+  disposition: autonomous_flagged
+  authority: "历史同向第二意见授权与Claude Code AGREE；并非逐项人工resolution"
+  non_authoritative: true
+  judgment_items: 3
+  unresolved_human_items: 3
+  evidence: "target/milestone-tls-and-judgment-review.json"
+  limitation: "unverified-prohibition — human review recommended：grep不能完全证明原创出处，自动接受不等同于完备出处证明"
 ---
 
 # Phase 1: Workspace, Schema & Lint 验证报告
 
-**Phase Goal:** 开发者可以用 YAML/JSON 编写 ontology，并通过 `ontoforge validate` / `ontoforge lint` 得到带源码定位的诊断；仓库在 Windows 本机 `cargo test` 全绿
-**Verified:** 2026-10-16
-**Status:** human_needed（所有可自动化验证的项通过；G-1-2 在代码与配置层面关闭，剩 UAT Test 2 的真实编辑器复测）
-**Re-verification:** 是，gap-closure plan 01-14 之后。上一份报告 4/4，人工项 3 个；其中 miette 渲染与 CI 双平台两项已在 UAT 中 pass（CI 引用 PR #1 run 38834599192），未再列入。
+**Phase Goal:** As a ontology 开发者, I want to 用 YAML/JSON 编写 ontology，并通过 `ontoforge validate` / `ontoforge lint` 得到带源码定位的诊断，且仓库在 Windows 本机 `cargo test` 全绿, so that 我能在本机可靠地编写和验证定义.
 
-## 结论
+**结论：human_needed。** 本次重新核对当前源码、实际接线和原始运行日志；11 条既有合并 truth 中 10 条 VERIFIED，编辑器用户体验一条沿用用户明确接受的 override。没有剩余功能 gap。三项judgment-tier prohibition保留NON-AUTHORITATIVE与unverified-prohibition标记，按verifier规则进入human_needed；11/11行为truth不变，不伪称功能回归或逐项人工观察。完整审计过程与共用证据见 `.planning/milestones/v1.0-audit/PHASE-01-03-REVERIFY.md`。
 
-阶段目标在代码库中达成。G-1-2 的根因（yaml-language-server 的 modeline 只作用于所在 document）已由 01-14 在三处同时处理：项目级 `yaml.schemas`（Zed 与 VS Code）、aviation 每个 document 的 modeline、两个回归测试。本次未依赖 SUMMARY 叙述，结论来自本次在主 checkout 上实际执行的命令，包括用与 Zed 相同版本的 yaml-language-server 做的 headless LSP 复现。
+本次为历史合同 re-verification。旧报告 frontmatter 为 passed、正文仍为 human_needed，已按真实 UAT 接受记录统一；不重开用户已收口的 Test 2。ROADMAP现已整理为合法User Story，下面追踪实际Outcome，保留原用户接受与未观察限制。
 
-未发现 gap，未发现 debt marker（`TBD` / `FIXME` / `XXX` 在 CONTRIBUTING.md、`.zed`、`.vscode`、`schema_export.rs`、aviation 示例中零命中）。无 regression。
+## User Flow Coverage
 
-## 本次实测记录
+| Step | Expected | Evidence | Status |
+|---|---|---|---|
+| 编写定义并validate | YAML/JSON同IR，有效定义无错 | pipeline/loader真实aviation与等价测试 | VERIFIED |
+| 检查错误与lint | 文件line:col、非零退出码、可配置规则 | diagnostics/invalid_examples/cli_lint与CLI实际输出 | VERIFIED |
+| 导出schema辅助编写 | schema有效、编辑器关联 | schema_export真实配置测试，编辑器三项未观察沿既有用户override | VERIFIED / accepted boundary |
+| Outcome：本机可靠编写和验证 | Windows无外部服务workspace通过 | 新W1496passed；CLI/snapshot命名GREEN与既有UAT | VERIFIED |
 
-| 项 | 命令 | 结果 |
-|----|------|------|
-| 工作区测试 | `cargo test --workspace --locked` | exit 0，35 个 `test result` 汇总行，**299 passed / 0 failed / 0 ignored**（上次 297，增加的正是 01-14 的 2 个新测试） |
-| 新测试 | 日志检索 | `editor_configs_associate_definition_schema_with_examples ... ok`、`aviation_definition_documents_start_with_modeline ... ok` |
-| validate YAML / JSON | `validate examples/ontologies/aviation`、`aviation-json` | 均 exit 0，`ok: ontology aviation with 5 object type(s)` |
-| lint | `lint examples/ontologies/aviation --deny-warnings --format json` | `[]`，exit 0 |
-| schema 导出一致性 | `schema export --out-dir <temp>` 后 `diff -r` 对 `schemas/` | 逐字节一致 |
-| 快照 | `git status --porcelain` 于两个 snapshots 目录 | 空（insta 快照无变更） |
-| 工作树 | `git status --porcelain` | 仅 `?? docs/`（与任务开始时相同，非本 phase 产物） |
+## 2026-11-04 最终源码复签
 
-clippy 与 fmt 本次未重跑；上一份报告已记录 exit 0，01-14 只改了一个测试文件（经 `cargo test` 编译通过），SUMMARY 称两者通过。此处如实标注为「未独立重跑」。
+核验HEAD `f8851ca073fed34e80e605f0ac91880259df7e12`。CI41759804733已独立查询为completed/success，Windows、Ubuntu、integration、phase7-real-services四必需job全部success；合成merge为22913c8e79ae98b6604109d6e05a15f27cd50292。亲读 `target/milestone-ci-41759804733-{windows,ubuntu,integration}.log`，workspace分别150组1496/0/117、150组1503/0/117；ignored不计PASS，后续fault/corpus不重复累计。
+
+新cli_color测试在双平台实际通过；TLS hermetic各6/6，真实helperstep成功。SQLite fault5、PG source_guard1均实际执行。01/03受核生产模块相对adc0227无变更，共享CI与cli_color增量已由新run覆盖。旧41669982375仅作历史。
+
+动态51passed的原runner因HEAD改变确实exit1；独立final-check exit0证明唯一变化是测试type alias、动态输入相同、凭证扫描及自有资源清理成功，不改写原runner结果。本轮仅核证和文档复签，没有运行Cargo、服务或提交。历史Claude Code同向意见保留为历史NON-AUTHORITATIVE依据，未新增沿用旧提示协议的第二意见。
 
 ## Goal Achievement
 
 ### Observable Truths
 
-来源：ROADMAP Success Criteria 1-5（合同），加 01-14 PLAN `must_haves.truths`（6 条，其中第 1 条为 G-1-2 的编辑器 truth）。
+按 ROADMAP SC1–5 及旧报告的 01-14 合同保持 11 条；01-01..13 的细项在后面的 PLAN coverage 逐组对应到这些 SC，未因旧报告只列 gap closure 而跳过基础能力。
 
-| # | Truth | Status | Evidence |
-|---|-------|--------|----------|
-| 1 | SC1：10 个 `ontoforge-*` crate、edition 2024、resolver 3、rust-version 1.98，Windows 本机无 Docker 执行 `cargo test --workspace` 全部通过 | VERIFIED | 本次 `cargo test --workspace --locked` exit 0，299 passed / 0 failed。crate 结构与 workspace 配置见上一份报告，未变化 |
-| 2 | SC2：多文件 YAML 合并为单一 IR，YAML 与 JSON 写法同 IR | VERIFIED | 本次 `validate` 对 `aviation`、`aviation-json` 均 exit 0；`aviation_yaml_and_json_produce_identical_ir` 在全套测试中通过。01-14 加的 10 行 modeline 是注释，`git diff --numstat b56e2dd HEAD -- examples/ontologies` 为 `2 0` / `4 0` / `4 0`（仅新增，无删除），IR 不变 |
-| 3 | SC3：定义有错时输出文件名与 line:col，退出码非 0 | VERIFIED | invalid 样例快照测试全部通过且快照目录无变更；上一份报告实测 27 个样例逐个 exit 1 并带 line:col，01-14 未触碰这些文件 |
-| 4 | SC4：`lint` 运行 E / W 规则，两种输出格式，E 级退出码非 0，配置可关闭或调严重级 | VERIFIED | 本次 `lint aviation --deny-warnings --format json` 输出 `[]` exit 0；lint 规则测试在全套中通过。规则实测记录见上一份报告，未回退 |
-| 5 | SC5：可导出 JSON Schema，示例通过该 Schema 校验 | VERIFIED | `schema export` 产物与入库 `schemas/` 逐字节一致；`aviation_documents_validate` 等 schema_export 测试通过 |
-| 6 | G-1-2 核心 truth：aviation 的 objects / links / actions 任意 document（含文件末尾新追加的）输入 `kind:` 可补全 ObjectType / LinkType / ActionType，未知字段被标红 | VERIFIED（服务端层面）；真实编辑器待人工 | headless LSP 驱动 yaml-language-server 1.25.0（Zed 实装版本）加载提交的 `.zed/settings.json` 的 `yaml.schemas`：`objects_append_kind` 用例（UAT 复现场景）得到 3 项补全 `ObjectType \| LinkType \| ActionType` 与 5 条诊断；`single_key_narrow` 补全收窄为 9 个 ObjectType 字段。剥除所有 modeline、只留 settings 关联时结果相同，证明 settings 本身足以覆盖追加的 document。真实 Zed 的复测见 human_verification |
-| 7 | `.zed/settings.json` 与 `.vscode/settings.json` 是严格 JSON，`yaml.schemas` 映射相同，键为 `./schemas/ontoforge-definition.schema.json`，第一个 glob 为 `examples/ontologies/**/*.yaml` | VERIFIED | 两文件内容已读。`jq -e` 对两份文件的映射断言均 `true`、rc=0；`keys == ["lsp"]` 与 `keys == ["yaml.schemas"]` 均 true；`git ls-files` 列出两文件，`git check-ignore` 均 rc=1（未被忽略）；`schemas/ontoforge-definition.schema.json` 存在 |
-| 8 | 所有 `ontology.yaml` 不被关联到定义 schema（排除 glob），`aviation/ontology.yaml` 仍由自己的 manifest modeline 校验，无 modeline 的 manifest 不出现误报 | VERIFIED | 用规划期的 `probe.js`（真实文件名 `ontology.yaml`）在当前仓库副本上重跑：带排除项时 `aviation-json/ontology.yaml`（无 modeline）0 诊断、`other/ontology.yaml`（无 modeline，含 bogus 键）0 诊断、`aviation/ontology.yaml` 仍报 `bogusManifestKey is not allowed`（由 manifest schema）。去掉排除项的对照组：无 modeline 的 manifest 各出现 4 条定义 schema 误报。排除项有效，且 REVIEW 的 IN-02（globset 不等于 yaml-language-server 语义）被此实测覆盖 |
-| 9 | aviation 每个 YAML document 第一行都是定义 modeline（objects 5、links 5、actions 3，共 13，新增 10），validate / lint --deny-warnings 仍 clean，YAML / JSON IR 等价 | VERIFIED | `rg -c` 得 modeline 5 / 5 / 3，`^---$` 为 4 / 4 / 2；每个 `---` 的下一行均为定义 modeline（rg -A1 输出核对）；`aviation/ontology.yaml` 第 1 行为 manifest modeline；validate / lint 结果见上表 |
-| 10 | CONTRIBUTING.md 有「编辑器接入」一节，写明 modeline 只作用于所在 document（vscode-yaml#1066）、多文档靠项目 `yaml.schemas`、JetBrains 的 JSON Schema Mappings、`kind: ` 后需 Ctrl+Space | VERIFIED | `## 编辑器接入` 位于第 45 行（共 7 个 `## ` 节）；第 48 行含 issues/1066 链接，第 49 行含 `.zed/settings.json`、`.vscode/settings.json` 与排除 glob，第 52 行含 JSON Schema Mappings，第 53 行含 Ctrl+Space；引用的两个测试名在 `schema_export.rs` 中真实存在（220、332 行） |
-| 11 | 回归测试守住配置与 modeline：配置改坏、schema 改名、glob 漏示例、新 document 漏 modeline 都使 `cargo test` 失败 | VERIFIED | 读了两个测试的全部源码。配置测试：`serde_json` 严格解析；`only_key` 逐层断言键集合恰为 lsp → yaml-language-server → settings → yaml → schemas，及 `yaml.schemas`（防可执行设置混入，T-01-42）；两份映射 `assert_eq`；每个键须以 `./schemas/` 开头、文件存在且在 `rendered_schemas()` 内（防远程 URL，T-01-43）；第一个 glob 恰为锁定值；walkdir 遍历 `examples/ontologies` 全部 `.yaml`，`ontology.yaml` 必须不被覆盖、其余必须被覆盖，并断言 aviation 三文件在覆盖集合内（防空遍历）。modeline 测试：首行、每个 `---` 的下一行、modeline 数等于 `yaml_documents().len()`、manifest 首行、两个相对路径可解析（T-01-44）。测试在全套中通过，断言有实质内容，非占位 |
+| # | Truth | Status | 当前证据 |
+|---|---|---|---|
+| 1 | SC1：ADR-0011 的 10 个 crate、edition 2024、resolver 3、Rust 1.98；Windows 无 Docker workspace 测试通过 | VERIFIED | Cargo 配置仍符合；原 10 crate 均在，后继新增 engine 不构成回退。原始 CI 41669982375 的 workspace step 1490 passed / 0 failed / 117 ignored；Ubuntu 1497/0/117。新 HEAD 的完整回归由 orchestrator 另行记录，不把旧 run 当作新修复结果 |
+| 2 | SC2：多文件 object/link/action 合并为 IR，YAML/JSON 等价 | VERIFIED | `pipeline.rs:23` 起调用 `load_dir`；loader 实际 discover/parse/dispatch/validate。真实例子测试比较完整 IR 与 5 object / 5 link / 3 action，CI windows.log:3295 通过；本次既有 CLI validate aviation 返回 `[]`、exit 0 |
+| 3 | SC3：错误带文件名及 line:col、退出码非零 | VERIFIED | dispatch → SourceMap.locate → Diagnostic → render；本次 CLI invalid/v04 输出 ONT-V04、objects.yaml、3:1、span 34/9、primaryKey 建议、exit 1；CI diagnostics/invalid_examples 为值级和快照断言 |
+| 4 | SC4：v1 E/W01–W11、human/JSON、E 退出非零、规则级配置 | VERIFIED | `lint_cmd.rs:20` 先结构校验再 config+registry；registry 汇入 e08/e09、naming、structure，配置覆盖 severity；CLI 正负测试和规则测试通过；本次 lint aviation --deny-warnings 输出 `[]`、exit 0 |
+| 5 | SC5：导出 JSON Schema 且真实例子通过 | VERIFIED | schema_export 生成真实 IR schema；tests/schema_export 读取入库 schema 和例子校验，不返回静态成功；CI windows.log:3373 等证明入库一致、valid/invalid 对照 |
+| 6 | G-1-2：新增 YAML document 能补全 kind、收窄字段并标红未知字段 | PASSED (override) | 01-UAT Test 2：用户明确“要不这个先pass吧”；截图只证实新 document 已关联 schema。补全弹窗、bogus 标红、aviation-json manifest 无误报未逐项观察；历史 headless LSP 结果不伪称编辑器实机观察 |
+| 7 | Zed / VS Code 严格 JSON、相同本地 yaml.schemas 映射 | VERIFIED | 真实两个 settings 文件被 schema_export 测试读取，only_key、assert_eq、本地路径与 exported schemas 断言；CI windows.log:3376 通过 |
+| 8 | manifest 不被误关联到 definition schema | VERIFIED | 映射含 manifest 排除；测试遍历真实例子断言 ontology.yaml 不覆盖。yaml-language-server 1.25.0 的历史 headless 正反对照保留；本轮配置与该验证后未发生语义变化，用户接受边界见 T6 |
+| 9 | aviation 每 document modeline 与 clean / IR 等价保持 | VERIFIED | tests/schema_export 对首行、每个 --- 的下一行、document 数量、schema 可解析路径逐一断言；CI windows.log:3370/3295，本次 validate/lint 都 clean |
+| 10 | CONTRIBUTING 编辑器说明准确 | VERIFIED | 编辑器接入章节包含单 document modeline、项目映射、manifest 排除、JetBrains JSON Schema Mappings 与 Ctrl+Space；与实际 settings 和 schema 路径一致 |
+| 11 | 配置/schema/modeline 错误有实质回归断言 | VERIFIED | 配置测试逐层 strict JSON、known schema、本地文件、实际遍历非空、全部示例覆盖；modeline 测试逐 document 比对。不是仅检查文件存在 |
 
-**Score:** 10/11（truth 6 在服务端层面 VERIFIED，真实编辑器内行为按 Step 8 计为待人工，不计入 verified）。0 个 behavior-unverified。
+**Score：11/11（含 1 个用户接受 override），behavior_unverified：0。** T6 是显式接受的观察边界，不算一次本轮实机测试。
 
-注：上一份报告只列了 SC1-4，把 SC5 并入「SCHEMA-07」小节说明。本次按 ROADMAP 把 SC5 单列为 truth 5。
+### PLAN / Requirements Coverage
 
-### Data-Flow / Wiring（01-14 范围）
+| PLAN | 需求与新增细项 | 实现 / 测试证据 | 状态 |
+|---|---|---|---|
+| 01-01 / 02 | SCHEMA-01/06、DX-03；manifest、kind、命名、诊断JSON、workspace/CI | loader/dispatch/sourcemap/diag、CLI/render、Cargo/CI；cli/diagnostics/invalid_examples；ADR-0012 accepted | VERIFIED |
+| 01-03 | SCHEMA-01/06；glob、路径逃逸、symlink、4 MiB、严格JSON、栈隔离、BOM/CRLF/中文列、顺序 | loader/discover/parse/mod；34 个 loader 测试及 diagnostics；内部 32 MiB spawn_scoped、调用方 1 MiB 测试 | VERIFIED |
+| 01-04 | SCHEMA-02/03；完整 object 字段、13 base types、required、PK/title约束 | ir/object/basetype、validate/objects；object_types、load_examples、invalid fixtures | VERIFIED |
+| 01-05 | SCHEMA-04；3 种 link cardinality、端字段、FK类型/访问器唯一性 | ir/link、validate/links；link_types 21、真实5 links | VERIFIED |
+| 01-06 / 07 / 12 | SCHEMA-05/06；参数/规则/值来源、CEL预检/作用域遍历/类型推断、ONT-V13 | validate/actions + expr analyze/limits/walk/criteria；action_types 28、analyze 21、criteria 20；长度/深度/词法/闭包隔离的实际断言 | VERIFIED |
+| 01-08 | LINT-01/03/04；E08/E09、退出码、配置拒绝未知/ONT-V ID | lint_cmd、lint/config/e08/e09；cli_lint 17、配置单元测试 | VERIFIED |
+| 01-09 / 14 | SCHEMA-07；schema导出、编辑器关联 | schema_export 14、cli_schema 4、真实配置/fixtures；编辑器限制 T6 | VERIFIED / accepted boundary |
+| 01-10 / 11 | LINT-02/04、DX-03；W01–W11、阈值选项、clean例子 | lint/naming/structure 全部注册且有触发/clean/override测试；lint_examples | VERIFIED |
+| 01-13 | LINT-04、SCHEMA-06、LINT-03；DeTable、heck、anstream、共享行列换算 | 实际调用已读；旧私有 RawVisitor/DATETIME_KEY 移除；`cli_color` 本 verifier 单项执行 1/1；字节/中文列 tests 与历史提交差异 | VERIFIED |
 
-| 链路 | 状态 | 说明 |
-|------|------|------|
-| `.zed/settings.json` → `schemas/ontoforge-definition.schema.json` | WIRED | 键相对工作区根；测试断言文件存在；headless LSP 实测解析成功 |
-| `.vscode/settings.json` → 同上 | WIRED | 与 Zed 映射逐字相同（`assert_eq` 守住） |
-| `schema_export.rs` 测试 → 两份配置、aviation 文件 | WIRED | 测试读取真实文件，walkdir 遍历真实目录 |
-| aviation 每个 document 的 modeline → schema | WIRED | 相对路径 `../../../schemas/...` 从 `examples/ontologies/aviation` 解析到存在文件（测试断言） |
-| 导出 schema → 与入库 `schemas/` | WIRED | `diff -r` 一致；`committed_schemas_are_up_to_date` 守住 |
+12 个 requirement ID 全部由 PLAN 声明；与 REQUIREMENTS 对照无 orphan。历史格式 checkpoint 是已接受决策，不当作运行时测试。01-13 的“无新增下载”按该计划历史锁文件/提交语境理解，不要求后继 phase 禁止增加依赖。
 
-### Requirements Coverage
+### Required Artifacts / Key Links / Data Flow
 
-PLAN frontmatter 的 requirement ID 并集：DX-03、SCHEMA-01..07、LINT-01..04，共 12 个。01-14 声明 `requirements: [SCHEMA-07]`。ROADMAP 声明同样 12 个，REQUIREMENTS.md Traceability 表中 Phase 1 的 12 项均为 Complete。无遗漏，无 orphan。
+`query verify.artifacts`、`query verify.key-links` 对 14 份 PLAN 本次实际运行：58/58 artifact 声明、32/32 key link 声明通过；01-13 没有 artifact/key_links block，N/A，不计作通过项。另手工追踪：
 
-| Requirement | Source Plan | Status | Evidence |
-|-------------|-------------|--------|----------|
-| SCHEMA-01 | 01-01、01-03、01-06 | SATISFIED | 多文件加 include glob 合并，YAML / JSON 同 IR（本次 validate 与 IR 等价测试） |
-| SCHEMA-02 | 01-04 | SATISFIED | object type 全部字段，invalid 样例快照通过 |
-| SCHEMA-03 | 01-04 | SATISFIED | 13 个 base type 与 required |
-| SCHEMA-04 | 01-05 | SATISFIED | 三种基数 |
-| SCHEMA-05 | 01-06、01-07、01-12 | SATISFIED | 参数、rule、CEL submission criteria |
-| SCHEMA-06 | 01-01、01-03、01-04、01-05、01-06、01-12、01-13 | SATISFIED | 全部 invalid 样例带 line:col |
-| SCHEMA-07 | 01-09、**01-14** | SATISFIED（代码 / 配置层面）；编辑器内复测待人工 | 导出 schema 与入库一致；01-14 让多文档 YAML 的每个 document 在编辑器服务端关联到 schema，补全「用于编辑器补全」的承诺。UAT Test 2 未在真实 Zed 重跑，故该需求的编辑器用途以人工项收口 |
-| LINT-01 | 01-08 | SATISFIED | E08 / E09 |
-| LINT-02 | 01-10、01-11 | SATISFIED | W01..W11 |
-| LINT-03 | 01-08、01-13 | SATISFIED | miette 与 JSON 两种格式；UAT Test 1 pass |
-| LINT-04 | 01-08、01-13 | SATISFIED | `ontoforge.toml` `[lint]` |
-| DX-03 | 01-01、01-02、01-11 | SATISFIED | 本次 `cargo test --workspace --locked` 299 passed，无 Docker |
+| 起点 | 实际路径 | 结果 |
+|---|---|---|
+| CLI validate | main/lib → pipeline → schema loader → expr.check_ontology → Diagnostic | WIRED；真实文件数据 |
+| lint | pipeline errors early return → load_config → registry.run → SourceMap.locate | WIRED；结构错误不可配置绕过 |
+| 输出 | Diagnostic + sources.text → JSON serialization / miette NamedSource | FLOWING；不是硬编码空结果，clean时 [] 是真实零诊断 |
+| schema export | IR/schema_export → 入库 schema → 例子校验 → 编辑器映射 | WIRED；真实导出与配置读取 |
+| 栈与位置 | loader/analyze spawn_scoped；diag.offset_to_line_col → parse/config/walk | WIRED；非独立未调用 helper |
 
-### Required Artifacts（01-14）
+### Behavioral Spot-Checks
 
-| Artifact | Expected | Status | Details |
-|----------|----------|--------|---------|
-| `.zed/settings.json` | Zed 项目级 `yaml.schemas` | VERIFIED | 存在、实质内容、入库、被测试读取 |
-| `.vscode/settings.json` | VS Code 项目级 `yaml.schemas` | VERIFIED | 同上 |
-| `crates/ontoforge-schema/tests/schema_export.rs` | 两个回归测试 | VERIFIED | 215 行新增，断言实质 |
-| aviation `objects` / `links` / `actions.yaml` | 每 document 头部 modeline | VERIFIED | 5 / 5 / 3 |
-| `CONTRIBUTING.md` | 「编辑器接入」一节 | VERIFIED | 6 条要点齐全，与配置一致 |
+本 verifier 不运行 Cargo 或服务。本次直接执行已有编译产物：
 
-提交核对：`a839ac2`、`3908f7b`、`82ca319` 在 `git log` 中存在；`git diff --stat b56e2dd HEAD`（排除 `.planning`）为 7 个文件、259 行新增，与 PLAN 的 `files_modified` 完全一致，无计划外文件。未改 `Cargo.toml` / `Cargo.lock`。
+| 命令 | 结果 |
+|---|---|
+| `target/debug/deps/cli_color-4d01ddf867a0fcb3.exe --exact color_environment_controls_human_output_and_never_colors_json --nocapture` | exit 0，1 passed / 0 failed / 0 ignored，0.64s；6 个颜色环境场景及 JSON 无ANSI |
+| `target/debug/ontoforge.exe validate examples/ontologies/aviation --format json` | `[]`，exit 0 |
+| `target/debug/ontoforge.exe validate examples/ontologies/invalid/v04-unknown-field --format json` | ONT-V04 / objects.yaml / 3:1，exit 1 |
+| `target/debug/ontoforge.exe lint examples/ontologies/aviation --deny-warnings --format json` | `[]`，exit 0 |
 
-### Anti-Patterns Found
+源码主体自 `adc0227` 无 Phase01 功能差异；`81788e4` 的颜色测试新增由本轮单项执行覆盖。01-VALIDATION 的 451 passed 是 Nyquist 执行单元的运行，复用而非本 verifier 重跑；新完整 workspace、TLS guard 与 INT-01 验证边界单独记录于共享审计。
 
-无。01-14 范围内的 debt marker 零命中。REVIEW 的 IN-02 指出的脆弱性（`only_key` 要求每层只有一个键，日后在两份配置里加别的项目级设置会使测试失败）是 PLAN 里 T-01-42 的刻意取舍，CONTRIBUTING 已说明意图，不构成 gap。
+### Test Quality / Anti-Patterns
 
-### 关于 01-REVIEW.md（增量复审：0 critical / 7 warning / 3 info）
+schema/expr 需求测试未找到 ignore；真实 invalid fixture 与 expected code/line/column/JSON keys/IR 数量断言达到值级。schema 导出比较的是独立入库契约并校验实际例子，不把新输出即时写成 expected。无未引用 TBD/FIXME/XXX。symlink/非UTF-8分支在不支持的平台可提前返回，本机 ok 不扩大解释为已覆盖该系统能力；Ubuntu CI 有对应运行结果。
 
-按任务要求视为 advisory，逐条核对是否破坏 must-have：
+### Prohibitions
 
-- WR-01（单文件超 1024 个 document 的消息映射）、WR-03（任意非 UTF-8 文件名变 V14）、WR-04（`Recursion limit of` 子串误判）、WR-06（V07 建议名可能是 CEL 关键字）：规则边角与健壮性问题，不影响 SC1-5 与 12 个 requirement 的验收路径。
-- WR-02、WR-07、IN-03：性能与输出量放大（W08 输出、渲染开销、W07 两两比较），输入需构造到数十万类型或数 MB，不在 v1 示例范围，不影响 must-have。
-- WR-05：`sanitize` 保留 `\n`，Linux 文件名含换行时可伪造报告头。这是 CR-04 修复的残余，属于安全加固，不破坏 Windows 本机验收；建议后续 phase 或 quick 任务处理。
-- IN-01：symlink / 非 UTF-8 测试在环境不支持时静默通过；CI 已在 ubuntu-latest 实跑通过（UAT Test 3）。
-- IN-02：已由本次 headless 实测补足（见 truth 8）。
+原字段已复核：01-01-PLAN.md:104（DX-03）、:111（SCHEMA-06）、01-08-PLAN.md:81（LINT-04）均为 `verification: "judgment"`。三者的 `status: "resolved"` 是规划决策状态，非人工验收完成。路径与ONT-V已有明确自动行为证据；源码原创出处只有限定范围扫描。这3个flag表示judgment处置未闭环，不能误写为3个功能测试缺口。
 
-结论：无一条使 must-have 失败。7 个 warning 建议在合适的时机登记为技术债，但不阻塞 Phase 1。
+| PLAN / 禁止项 | 证据与处置 |
+|---|---|
+| 01-01：不沿用参考库标识符、不复制其代码 | 对列举产品目录和文件扫描禁名零命中；原创出处无法仅凭 grep 完全证明。NON-AUTHORITATIVE 自动判断；unverified-prohibition，历史同向授权不等同逐项人工resolution |
+| 01-01：诊断/快照/生成产物不含本机绝对路径或用户名 | 相对文件生成链路、CLI/loader路径断言与快照扫描；NON-AUTHORITATIVE 自动判断，保留扫描范围，不将构建日志路径混同产品输出 |
+| 01-08：配置/CLI不得关闭降级ONT-V | lint先校验；配置拒绝V ID；`validate_codes_cannot_be_turned_off_by_config` 值级 negative test；NON-AUTHORITATIVE 自动判断有确定行为支持 |
+| 01-13 backstop：诊断 code/位置/JSON形状与既有快照不因该refactor变化 | `git diff --name-only d021687 07a0e06 -- ':(glob)**/*.snap'` 零输出；diag模型未改变，位置换算有独立文字坐标断言，当前快照tests通过；VERIFIED |
 
-### Deferred Items
+第二意见原始记录：`target/milestone-tls-and-judgment-review.json`，结果 `AGREE`。判断项保留“unverified-prohibition — human review recommended”的非权威证据标识，历史同向自动推进授权保留，但不能替代逐项人工resolution；本次按高优先级verifier规则显式标human_needed，不把自动判断写成完备原创性证明。
 
-无需要登记的 deferred gap。W06 空值率检测属 CONTEXT 已登记的有意推迟。
+### Decision Coverage / Probe / Human Verification
 
-### Probe Execution
+Decision coverage 本次工具实跑 18/18 honored，0 not_honored。无本 Phase 声明的 shell probe，Probe Execution N/A。01-UAT Test1/Test3 pass，Test2用户明确接受，其三个编辑器未观察项沿既有override，不重开。另有3项judgment-tier prohibition在frontmatter列为human_verification；它们是自动判断处置边界，不能由旧UAT代替。
 
-SKIPPED：PLAN 与 SUMMARY 没有声明 `probe-*.sh`，仓库中也没有 `scripts/*/tests/probe-*.sh`。
+### Advisory（re-verification）
 
-### Behavioral Spot-Checks（含 headless LSP）
+历史 loader/W07/W08 性能、特殊文件名净化、strict编辑器配置键约束的风险仍为 advisory，不从已通过SC推导“任何输入都安全”。旧报告的 warning 并未在本次全部重跑或声称修复。新 TLS guard 的真实问题已由本轮共享 CI 加固处理：本 verifier 实跑 hermetic 6/6（0.439s），bash -n、diff-check通过；主会话真实tree helper日志 tls_real_exit=0。其两个OS新CI已经通过hermetic与真实helper，旧guard只作历史缺陷。
 
-| Behavior | Command | Result | Status |
-|----------|---------|--------|--------|
-| 工作区测试 | `cargo test --workspace --locked` | 299 passed / 0 failed | PASS |
-| validate / lint 示例 | `ontoforge validate`、`lint --deny-warnings --format json` | exit 0，`[]` | PASS |
-| schema 导出一致 | `schema export` 后 `diff -r` | 无差异 | PASS |
-| UAT 复现场景 | `drive.js`（yaml-language-server 1.25.0，settings 取自提交的 `.zed/settings.json`）`append_kind` | 3 项补全、5 条诊断 | PASS |
-| 追加 document 的未知字段 | `append_unknown` | `Property primaryKy is not allowed.` | PASS |
-| 既有 document 的未知字段 | `doc1_doc2_unknown`（剥除 modeline 后同样） | bogusDoc1、bogusDoc2 均被报 | PASS |
-| 按 kind 收窄 | `single_key_narrow` | 9 个 ObjectType 字段 | PASS |
-| manifest 排除 | `probe.js`，带 / 不带排除项对照 | 带：无 modeline 的 manifest 0 误报；不带：各 4 条误报 | PASS |
+### 历史证据与覆盖边界
 
-说明：LSP 驱动脚本在 `C:/tmp/of-yamlls`、`C:/tmp/of-planner-probe`（仓库外，不属于 phase 产物）。第一次用 `drive.js` 测排除项时，该脚本把用例写到 `case_*.yaml` 而不是 `ontology.yaml`，排除 glob 不会命中，得到的「仍有误报」是测法错误，不是配置缺陷；改用按真实文件名建用例的 `probe.js` 后结果正确，上表采用后者。服务端 `completionProvider` 无 `triggerCharacters`，所以 `kind: ` 后需要 Ctrl+Space，CONTRIBUTING 已写明。
-
-## Human Verification Required
-
-### 1. UAT Test 2 复测：Zed 中的 YAML 补全与标红
-
-**Test:** 在 Zed 中打开仓库根目录（已打开则执行 `editor: restart language server`），打开 `examples/ontologies/aviation/objects.yaml`，在末尾追加 `---` 和 `kind: `，按 Ctrl+Space；再在该 document 中加 `bogus: 1`；最后打开 `examples/ontologies/aviation-json/ontology.yaml`。
-**Expected:** 补全列出 ObjectType、LinkType、ActionType；`bogus` 被标红；`aviation-json/ontology.yaml` 无 schema 错误。选 ObjectType 后新行 Ctrl+Space 只出现 ObjectType 字段。
-**Why human:** 补全弹窗与编辑器内诊断只能在真实编辑器观察；Zed 对 `.zed/settings.json` 的实际加载与相对路径解析无法在命令行验证。通过后把 01-UAT.md Test 2 改为 pass，并归档 `.planning/debug/g-1-2-yaml-schema-completion.md`（01-14 明确不处理归档）。
-
-### 2. （可选）VS Code 同样复测
-
-**Test:** 装有 Red Hat YAML 扩展，重复上述操作。
-**Expected:** 同 Zed。
-**Why human:** 依赖 IDE 与扩展。
-
-## Gaps Summary
-
-无 gap。G-1-2 要求的四项缺失（项目级 `yaml.schemas` 配置、每个 `---` 后的 modeline、CONTRIBUTING 说明、回归测试）全部在代码库中存在且被测试守住；12 个 requirement ID 全部有证据；ROADMAP 5 条 Success Criteria 全部通过；全套 299 个测试通过。仅剩真实 Zed 中的 UAT Test 2 复测，因此状态为 `human_needed` 而非 `passed`。
-
-簿记提醒（不属于 gap，由 orchestrator 处理）：`.planning/debug/g-1-2-yaml-schema-completion.md` 的 status 仍为 diagnosed，待复测通过后归档；01-UAT.md 的 Test 2 与 G-1-2 状态待复测后更新。
+2026-10-16 的 299 passed、yaml-language-server 1.25.0 headless 对照与 UAT 是历史证据；本次分清其来源，避免旧“10/11但passed”矛盾。canonical fingerprint 覆盖本阶段真实实现、fixture、测试、约束ADR、UAT/VALIDATION、Cargo与CI；自动加入自身PLAN/SUMMARY。只做概览digest的全局ROADMAP/STATE/REQUIREMENTS不入指纹，其SC/需求本轮已读取并在本报告列明。当前新CI入口已经41759804733实际执行。
 
 ---
 
-_Verified: 2026-10-16_
-_Verifier: Claude (gsd-verifier)_
+_Verified: 2026-11-04T02:55:02Z_
+_Verifier: gsd-verifier_

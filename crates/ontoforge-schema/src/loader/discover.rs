@@ -292,6 +292,24 @@ pub fn select(
     Selection { files, diagnostics }
 }
 
+/// The scope documents among `candidates` (normalized relative paths), in a
+/// deterministic order. A scope directory has no manifest, so every YAML or JSON file
+/// that may hold documents at all is selected (D-01).
+pub fn select_scope(candidates: Vec<String>) -> Vec<String> {
+    let mut files: Vec<String> = candidates
+        .into_iter()
+        .filter(|p| {
+            is_candidate(p)
+                && Utf8Path::new(p)
+                    .extension()
+                    .is_some_and(|e| matches!(e, "yaml" | "yml" | "json"))
+        })
+        .collect();
+    files.sort();
+    files.dedup();
+    files
+}
+
 fn escapes_root(pattern: &str) -> bool {
     pattern.starts_with(['/', '\\'])
         || pattern.as_bytes().get(1) == Some(&b':')
@@ -319,6 +337,25 @@ mod tests {
         assert!(!is_candidate(".github/ci.yml"));
         assert!(!is_candidate("a/target/x.yaml"));
         assert!(!is_candidate("node_modules/p/package.json"));
+    }
+
+    #[test]
+    fn scope_selection_takes_yaml_and_json_candidates() {
+        let picked = select_scope(
+            [
+                "b.yaml",
+                "a/c.JSON",
+                "a/c.json",
+                "x.yml",
+                "notes.md",
+                ".hidden/r.yaml",
+                "ontoforge.toml",
+                "b.yaml",
+            ]
+            .map(String::from)
+            .to_vec(),
+        );
+        assert_eq!(picked, ["a/c.json", "b.yaml", "x.yml"]);
     }
 
     #[test]

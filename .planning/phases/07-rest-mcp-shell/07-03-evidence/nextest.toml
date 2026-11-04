@@ -1,0 +1,8 @@
+[profile.gsd]
+retries = 0
+fail-fast = false
+
+[profile.gsd.junit]
+path = "D:/DataSpellProjects/ontoforge/.planning/phases/07-rest-mcp-shell/07-03-evidence/junit.xml"
+store-success-output = true
+store-failure-output = true

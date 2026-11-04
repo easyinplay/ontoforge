@@ -1,0 +1,20 @@
+   Compiling ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 11.52s
+     Running tests\conformance_pg.rs (target\debug\deps\conformance_pg-41bc46fdd1426706.exe)
+
+running 9 tests
+test audit_shutdown_drains_inflight_guard ... ok
+test audit_concurrent_shutdown_waits_for_durability ... ok
+test audit_cancelled_shutdown_retry_waits_for_durability ... ok
+test audit_batch_retention_parity ... ok
+test audit_pg_connection_interruption_recovers ... ok
+test audit_sink_failure_rejects_inflight_finish ... ok
+read audit sink did not recover before the pending age limit
+test audit_shutdown_failure_is_sticky ... ok
+read audit sink did not recover before the pending age limit
+test audit_cleanup_rejection_rolls_back_batch ... ok
+read audit sink did not recover before the pending age limit
+test audit_batch_rejection_is_atomic ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 36 filtered out; finished in 1.48s
+

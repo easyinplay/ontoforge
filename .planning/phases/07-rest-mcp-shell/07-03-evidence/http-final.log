@@ -1,0 +1,11 @@
+   Compiling ontoforge-server v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-server)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 11.19s
+     Running tests\http_contract.rs (target\debug\deps\http_contract-cdb57e7cfa4361e9.exe)
+
+running 3 tests
+test contracts::http_framework_rejections_are_structured ... ok
+test contracts::http_error_utf8_ids_and_l0_redaction ... ok
+test contracts::http_rows_bytes_concurrency_timeout_and_audit_fail_closed ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.67s
+

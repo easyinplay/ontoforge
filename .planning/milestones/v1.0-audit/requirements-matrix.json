@@ -1,0 +1,5833 @@
+{
+  "audited_utc": "2026-11-04T01:47:59.954959+00:00",
+  "head": "fa81ca0271fb1d620e8217824a0bf2619e3235ed",
+  "scope": "requirements three-source document audit; no source or integration verification",
+  "counts": {
+    "requirements": 79,
+    "summaries": 88,
+    "verification_reports": 7,
+    "checkbox_checked": 78,
+    "historical_verification_table_coverage": 79,
+    "historical_three_source_claim_coverage": 64,
+    "metadata_gap_requirements": 15,
+    "summary_field_absent": 6,
+    "summary_field_explicit_empty": 27,
+    "current_fresh_complete_assigned_phase_coverage": 0,
+    "current_three_source_satisfied": 0,
+    "current_proof_pending": 78,
+    "orphans": 0,
+    "canonical_unpassed_requirements": 79,
+    "current_confirmed_unsatisfied": 1,
+    "current_integration_related_partial": 1
+  },
+  "missing_completed_ids": [
+    "STORE-02",
+    "STORE-04",
+    "STORE-05",
+    "SCOPE-01",
+    "SCOPE-02",
+    "SCOPE-03",
+    "SCOPE-05",
+    "L2-01",
+    "L2-02",
+    "L2-03",
+    "API-02",
+    "MCP-02",
+    "MCP-03",
+    "MCP-04",
+    "MCP-05"
+  ],
+  "missing_summary_fields": [
+    "07-04",
+    "07-05",
+    "07-06",
+    "07-07",
+    "07-10",
+    "07-13"
+  ],
+  "explicit_empty_summary_fields": [
+    "03-01",
+    "03-02",
+    "03-03",
+    "03-04",
+    "03-05",
+    "03-06",
+    "03-08",
+    "03-09",
+    "03-10",
+    "03-11",
+    "03-14",
+    "03-15",
+    "03-16",
+    "03-17",
+    "05-01",
+    "05-04",
+    "06-01",
+    "06-02",
+    "06-03",
+    "06-04",
+    "06-05",
+    "06-06",
+    "06-07",
+    "06-08",
+    "06-09",
+    "06-10",
+    "07-01"
+  ],
+  "requirements": [
+    {
+      "id": "SCHEMA-01",
+      "assigned": "Phase 1",
+      "phases": [
+        1
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 181,
+      "checked": true,
+      "description": "开发者可以用 YAML（或等价 JSON）在多个文件中定义一个 ontology，`ontoforge validate` 把它们合并加载为单一 IR",
+      "line": 12,
+      "verification_rows": [
+        {
+          "id": "SCHEMA-01",
+          "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+          "line": 139,
+          "phase": 1,
+          "status": "SATISFIED",
+          "evidence": "多文件加 include glob 合并，YAML / JSON 同 IR（本次 validate 与 IR 等价测试）",
+          "source_row": "| SCHEMA-01 | 01-01、01-03、01-06 | SATISFIED | 多文件加 include glob 合并，YAML / JSON 同 IR（本次 validate 与 IR 等价测试） |"
+        }
+      ],
+      "summary_completed": [
+        "01-01",
+        "01-03",
+        "01-06"
+      ],
+      "summary_refs": [
+        ".planning/phases/01-workspace-schema-lint/01-01-SUMMARY.md",
+        ".planning/phases/01-workspace-schema-lint/01-03-SUMMARY.md",
+        ".planning/phases/01-workspace-schema-lint/01-06-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "1": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "SCHEMA-02",
+      "assigned": "Phase 1",
+      "phases": [
+        1
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 182,
+      "checked": true,
+      "description": "开发者可以定义 object type：`apiName`、primary key、title key、displayName、description、aliases、hidden",
+      "line": 13,
+      "verification_rows": [
+        {
+          "id": "SCHEMA-02",
+          "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+          "line": 140,
+          "phase": 1,
+          "status": "SATISFIED",
+          "evidence": "object type 全部字段，invalid 样例快照通过",
+          "source_row": "| SCHEMA-02 | 01-04 | SATISFIED | object type 全部字段，invalid 样例快照通过 |"
+        }
+      ],
+      "summary_completed": [
+        "01-04"
+      ],
+      "summary_refs": [
+        ".planning/phases/01-workspace-schema-lint/01-04-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "1": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "SCHEMA-03",
+      "assigned": "Phase 1",
+      "phases": [
+        1
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 183,
+      "checked": true,
+      "description": "开发者可以为属性选择 base type：Byte / Short / Integer / Long / Float / Double / Decimal、String、Boolean、Date、Timestamp、Array、Geopoint，并声明 required",
+      "line": 14,
+      "verification_rows": [
+        {
+          "id": "SCHEMA-03",
+          "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+          "line": 141,
+          "phase": 1,
+          "status": "SATISFIED",
+          "evidence": "13 个 base type 与 required",
+          "source_row": "| SCHEMA-03 | 01-04 | SATISFIED | 13 个 base type 与 required |"
+        }
+      ],
+      "summary_completed": [
+        "01-04"
+      ],
+      "summary_refs": [
+        ".planning/phases/01-workspace-schema-lint/01-04-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "1": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "SCHEMA-04",
+      "assigned": "Phase 1",
+      "phases": [
+        1
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 184,
+      "checked": true,
+      "description": "开发者可以定义 link type：1:1、1:N（外键属性）、M:N（join 定义），两个方向各有 apiName",
+      "line": 15,
+      "verification_rows": [
+        {
+          "id": "SCHEMA-04",
+          "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+          "line": 142,
+          "phase": 1,
+          "status": "SATISFIED",
+          "evidence": "三种基数",
+          "source_row": "| SCHEMA-04 | 01-05 | SATISFIED | 三种基数 |"
+        }
+      ],
+      "summary_completed": [
+        "01-05"
+      ],
+      "summary_refs": [
+        ".planning/phases/01-workspace-schema-lint/01-05-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "1": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "SCHEMA-05",
+      "assigned": "Phase 1",
+      "phases": [
+        1
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 185,
+      "checked": true,
+      "description": "开发者可以定义 action type：参数（类型、required、默认值）、rules（create / modify / delete object，add / remove link）、submission criteria（CEL）",
+      "line": 16,
+      "verification_rows": [
+        {
+          "id": "SCHEMA-05",
+          "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+          "line": 143,
+          "phase": 1,
+          "status": "SATISFIED",
+          "evidence": "参数、rule、CEL submission criteria",
+          "source_row": "| SCHEMA-05 | 01-06、01-07、01-12 | SATISFIED | 参数、rule、CEL submission criteria |"
+        }
+      ],
+      "summary_completed": [
+        "01-06",
+        "01-07",
+        "01-12"
+      ],
+      "summary_refs": [
+        ".planning/phases/01-workspace-schema-lint/01-06-SUMMARY.md",
+        ".planning/phases/01-workspace-schema-lint/01-07-SUMMARY.md",
+        ".planning/phases/01-workspace-schema-lint/01-12-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "1": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "SCHEMA-06",
+      "assigned": "Phase 1",
+      "phases": [
+        1
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 186,
+      "checked": true,
+      "description": "定义有错时，开发者看到带文件名与 line:col 的诊断信息",
+      "line": 17,
+      "verification_rows": [
+        {
+          "id": "SCHEMA-06",
+          "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+          "line": 144,
+          "phase": 1,
+          "status": "SATISFIED",
+          "evidence": "全部 invalid 样例带 line:col",
+          "source_row": "| SCHEMA-06 | 01-01、01-03、01-04、01-05、01-06、01-12、01-13 | SATISFIED | 全部 invalid 样例带 line:col |"
+        }
+      ],
+      "summary_completed": [
+        "01-01",
+        "01-03",
+        "01-04",
+        "01-05",
+        "01-06",
+        "01-12",
+        "01-13"
+      ],
+      "summary_refs": [
+        ".planning/phases/01-workspace-schema-lint/01-01-SUMMARY.md",
+        ".planning/phases/01-workspace-schema-lint/01-03-SUMMARY.md",
+        ".planning/phases/01-workspace-schema-lint/01-04-SUMMARY.md",
+        ".planning/phases/01-workspace-schema-lint/01-05-SUMMARY.md",
+        ".planning/phases/01-workspace-schema-lint/01-06-SUMMARY.md",
+        ".planning/phases/01-workspace-schema-lint/01-12-SUMMARY.md",
+        ".planning/phases/01-workspace-schema-lint/01-13-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "1": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "SCHEMA-07",
+      "assigned": "Phase 1",
+      "phases": [
+        1
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 187,
+      "checked": true,
+      "description": "开发者可以导出 ontology 定义的 JSON Schema，用于编辑器补全与 LLM 生成",
+      "line": 18,
+      "verification_rows": [
+        {
+          "id": "SCHEMA-07",
+          "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+          "line": 145,
+          "phase": 1,
+          "status": "SATISFIED（代码 / 配置层面）；编辑器内复测待人工",
+          "evidence": "导出 schema 与入库一致；01-14 让多文档 YAML 的每个 document 在编辑器服务端关联到 schema，补全「用于编辑器补全」的承诺。UAT Test 2 未在真实 Zed 重跑，故该需求的编辑器用途以人工项收口",
+          "source_row": "| SCHEMA-07 | 01-09、**01-14** | SATISFIED（代码 / 配置层面）；编辑器内复测待人工 | 导出 schema 与入库一致；01-14 让多文档 YAML 的每个 document 在编辑器服务端关联到 schema，补全「用于编辑器补全」的承诺。UAT Test 2 未在真实 Zed 重跑，故该需求的编辑器用途以人工项收口 |"
+        }
+      ],
+      "summary_completed": [
+        "01-09",
+        "01-14"
+      ],
+      "summary_refs": [
+        ".planning/phases/01-workspace-schema-lint/01-09-SUMMARY.md",
+        ".planning/phases/01-workspace-schema-lint/01-14-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "1": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "LINT-01",
+      "assigned": "Phase 1",
+      "phases": [
+        1
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 188,
+      "checked": true,
+      "description": "`ontoforge lint` 对 ontology 运行 E 级规则（适用于 v1 schema 范围的 ONT-E 规则），有 E 级问题时退出码非 0",
+      "line": 22,
+      "verification_rows": [
+        {
+          "id": "LINT-01",
+          "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+          "line": 146,
+          "phase": 1,
+          "status": "SATISFIED",
+          "evidence": "E08 / E09",
+          "source_row": "| LINT-01 | 01-08 | SATISFIED | E08 / E09 |"
+        }
+      ],
+      "summary_completed": [
+        "01-08"
+      ],
+      "summary_refs": [
+        ".planning/phases/01-workspace-schema-lint/01-08-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "1": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "LINT-02",
+      "assigned": "Phase 1",
+      "phases": [
+        1
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 189,
+      "checked": true,
+      "description": "`ontoforge lint` 运行 W01–W11 命名与结构警告",
+      "line": 23,
+      "verification_rows": [
+        {
+          "id": "LINT-02",
+          "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+          "line": 147,
+          "phase": 1,
+          "status": "SATISFIED",
+          "evidence": "W01..W11",
+          "source_row": "| LINT-02 | 01-10、01-11 | SATISFIED | W01..W11 |"
+        }
+      ],
+      "summary_completed": [
+        "01-10",
+        "01-11"
+      ],
+      "summary_refs": [
+        ".planning/phases/01-workspace-schema-lint/01-10-SUMMARY.md",
+        ".planning/phases/01-workspace-schema-lint/01-11-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "1": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "LINT-03",
+      "assigned": "Phase 1",
+      "phases": [
+        1
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 190,
+      "checked": true,
+      "description": "lint 结果可输出为人类可读格式（带源码定位）和 JSON 格式",
+      "line": 24,
+      "verification_rows": [
+        {
+          "id": "LINT-03",
+          "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+          "line": 148,
+          "phase": 1,
+          "status": "SATISFIED",
+          "evidence": "miette 与 JSON 两种格式；UAT Test 1 pass",
+          "source_row": "| LINT-03 | 01-08、01-13 | SATISFIED | miette 与 JSON 两种格式；UAT Test 1 pass |"
+        }
+      ],
+      "summary_completed": [
+        "01-08",
+        "01-13"
+      ],
+      "summary_refs": [
+        ".planning/phases/01-workspace-schema-lint/01-08-SUMMARY.md",
+        ".planning/phases/01-workspace-schema-lint/01-13-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "1": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "LINT-04",
+      "assigned": "Phase 1",
+      "phases": [
+        1
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 191,
+      "checked": true,
+      "description": "开发者可以在配置中按规则 ID 关闭或调整严重级",
+      "line": 25,
+      "verification_rows": [
+        {
+          "id": "LINT-04",
+          "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+          "line": 149,
+          "phase": 1,
+          "status": "SATISFIED",
+          "evidence": "`ontoforge.toml` `[lint]`",
+          "source_row": "| LINT-04 | 01-08、01-13 | SATISFIED | `ontoforge.toml` `[lint]` |"
+        }
+      ],
+      "summary_completed": [
+        "01-08",
+        "01-13"
+      ],
+      "summary_refs": [
+        ".planning/phases/01-workspace-schema-lint/01-08-SUMMARY.md",
+        ".planning/phases/01-workspace-schema-lint/01-13-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "1": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "DX-03",
+      "assigned": "Phase 1",
+      "phases": [
+        1
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 192,
+      "checked": true,
+      "description": "Windows 本机 `cargo test` 不依赖 Docker 即可全部通过",
+      "line": 119,
+      "verification_rows": [
+        {
+          "id": "DX-03",
+          "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+          "line": 150,
+          "phase": 1,
+          "status": "SATISFIED",
+          "evidence": "本次 `cargo test --workspace --locked` 299 passed，无 Docker",
+          "source_row": "| DX-03 | 01-01、01-02、01-11 | SATISFIED | 本次 `cargo test --workspace --locked` 299 passed，无 Docker |"
+        }
+      ],
+      "summary_completed": [
+        "01-01",
+        "01-02",
+        "01-11"
+      ],
+      "summary_refs": [
+        ".planning/phases/01-workspace-schema-lint/01-01-SUMMARY.md",
+        ".planning/phases/01-workspace-schema-lint/01-02-SUMMARY.md",
+        ".planning/phases/01-workspace-schema-lint/01-11-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "1": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "BIND-01",
+      "assigned": "Phase 2",
+      "phases": [
+        2
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 193,
+      "checked": true,
+      "description": "开发者在独立的 `SourceBinding` 绑定文件（按 profile 分目录）中为 object type 与 M:N link 声明 source 绑定（catalog / schema / table / columns），定义中以 `backing: source | editOnly` 显式声明数据来源（ADR-0021）",
+      "line": 29,
+      "verification_rows": [
+        {
+          "id": "BIND-01",
+          "path": ".planning/phases/02-source-binding-engine/02-VERIFICATION.md",
+          "line": 254,
+          "phase": 2,
+          "status": "✓ SATISFIED",
+          "evidence": "truth 1、6、8",
+          "source_row": "| BIND-01 | 02-01、02-03 | 独立 `SourceBinding` 文件 + 必填 `backing` | ✓ SATISFIED | truth 1、6、8 |"
+        }
+      ],
+      "summary_completed": [
+        "02-01",
+        "02-03"
+      ],
+      "summary_refs": [
+        ".planning/phases/02-source-binding-engine/02-01-SUMMARY.md",
+        ".planning/phases/02-source-binding-engine/02-03-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "2": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "BIND-02",
+      "assigned": "Phase 2",
+      "phases": [
+        2
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 194,
+      "checked": true,
+      "description": "绑定遵守类型契约（decimal 精度、无时区 timestamp 的 `timezone`、可选 collation、geopoint 不支持），违反时 lint 报 E",
+      "line": 30,
+      "verification_rows": [
+        {
+          "id": "BIND-02",
+          "path": ".planning/phases/02-source-binding-engine/02-VERIFICATION.md",
+          "line": 255,
+          "phase": 2,
+          "status": "✓ SATISFIED",
+          "evidence": "truth 1、12、13",
+          "source_row": "| BIND-02 | 02-03、02-07、02-08 | 类型契约违反时 lint 报 E | ✓ SATISFIED | truth 1、12、13 |"
+        }
+      ],
+      "summary_completed": [
+        "02-03",
+        "02-07",
+        "02-08"
+      ],
+      "summary_refs": [
+        ".planning/phases/02-source-binding-engine/02-03-SUMMARY.md",
+        ".planning/phases/02-source-binding-engine/02-07-SUMMARY.md",
+        ".planning/phases/02-source-binding-engine/02-08-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "2": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "BIND-03",
+      "assigned": "Phase 2（validate --online、--check-pk、drift 库函数与降级状态模型）+ Phase 7（启动 / 定时 drift 执行）",
+      "phases": [
+        2,
+        7
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 195,
+      "checked": true,
+      "description": "`ontoforge validate --online` 对 Trino 校验绑定，`--check-pk` 查重；启动与定时 drift 校验不匹配时该 object type 降级（`SourceSchemaDrift`），其余照常",
+      "line": 31,
+      "verification_rows": [
+        {
+          "id": "BIND-03",
+          "path": ".planning/phases/02-source-binding-engine/02-VERIFICATION.md",
+          "line": 256,
+          "phase": 2,
+          "status": "✓ SATISFIED（Phase 2 范围）",
+          "evidence": "truth 2、10、13、14；启动 / 定时 drift 执行按 traceability 属 Phase 7",
+          "source_row": "| BIND-03 | 02-05、02-08、02-09 | `validate --online`、`--check-pk`、drift 降级模型 | ✓ SATISFIED（Phase 2 范围） | truth 2、10、13、14；启动 / 定时 drift 执行按 traceability 属 Phase 7 |"
+        },
+        {
+          "id": "BIND-03",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 268,
+          "phase": 7,
+          "status": "SATISFIED，source_drift真实目标隔离/恢复/外部reload2/2",
+          "evidence": "SATISFIED，source_drift真实目标隔离/恢复/外部reload2/2",
+          "source_row": "| BIND-03（继承服务部分） | 13 | 启动/周期drift执行 | SATISFIED，source_drift真实目标隔离/恢复/外部reload2/2 |"
+        }
+      ],
+      "summary_completed": [
+        "02-05",
+        "02-08",
+        "02-09"
+      ],
+      "summary_refs": [
+        ".planning/phases/02-source-binding-engine/02-05-SUMMARY.md",
+        ".planning/phases/02-source-binding-engine/02-08-SUMMARY.md",
+        ".planning/phases/02-source-binding-engine/02-09-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "2": "stale",
+        "7": "gaps_found"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "ENGINE-01",
+      "assigned": "Phase 2",
+      "phases": [
+        2
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 196,
+      "checked": true,
+      "description": "服务经自写 Trino client 连接部署方已有的 Trino（不打包、不托管），支持超时、断连取消、trace token 与两个服务身份",
+      "line": 32,
+      "verification_rows": [
+        {
+          "id": "ENGINE-01",
+          "path": ".planning/phases/02-source-binding-engine/02-VERIFICATION.md",
+          "line": 257,
+          "phase": 2,
+          "status": "✓ SATISFIED",
+          "evidence": "truth 3、9、11；真实 Trino 服务端取消 `timeout_cancels_server_query` 在 CI 通过",
+          "source_row": "| ENGINE-01 | 02-04、02-06、02-09、02-10 | 自写 Trino client、超时、断连取消、trace token、两个身份 | ✓ SATISFIED | truth 3、9、11；真实 Trino 服务端取消 `timeout_cancels_server_query` 在 CI 通过 |"
+        }
+      ],
+      "summary_completed": [
+        "02-04",
+        "02-06",
+        "02-09",
+        "02-10"
+      ],
+      "summary_refs": [
+        ".planning/phases/02-source-binding-engine/02-04-SUMMARY.md",
+        ".planning/phases/02-source-binding-engine/02-06-SUMMARY.md",
+        ".planning/phases/02-source-binding-engine/02-09-SUMMARY.md",
+        ".planning/phases/02-source-binding-engine/02-10-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "2": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "ENGINE-02",
+      "assigned": "Phase 2（错误分类与 status()）+ Phase 7（/health 与 describe 暴露，API-01）",
+      "phases": [
+        2,
+        7
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 197,
+      "checked": true,
+      "description": "Trino 不可用时，需要 Trino 的读写 fail-closed（`EngineUnavailable`），`/health` 与 describe 暴露引擎状态",
+      "line": 33,
+      "verification_rows": [
+        {
+          "id": "ENGINE-02",
+          "path": ".planning/phases/02-source-binding-engine/02-VERIFICATION.md",
+          "line": 258,
+          "phase": 2,
+          "status": "✓ SATISFIED（Phase 2 范围）",
+          "evidence": "truth 3、11；`/health` 与 describe 暴露按 traceability 属 Phase 7 API-01",
+          "source_row": "| ENGINE-02 | 02-04、02-06、02-09 | fail-closed `EngineUnavailable` | ✓ SATISFIED（Phase 2 范围） | truth 3、11；`/health` 与 describe 暴露按 traceability 属 Phase 7 API-01 |"
+        },
+        {
+          "id": "ENGINE-02",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 269,
+          "phase": 7,
+          "status": "SATISFIED，metadata/describe真实状态、core503/L2degraded合同",
+          "evidence": "SATISFIED，metadata/describe真实状态、core503/L2degraded合同",
+          "source_row": "| ENGINE-02（继承服务部分） | 06 | /health与describe暴露引擎状态 | SATISFIED，metadata/describe真实状态、core503/L2degraded合同 |"
+        }
+      ],
+      "summary_completed": [
+        "02-04",
+        "02-06",
+        "02-09"
+      ],
+      "summary_refs": [
+        ".planning/phases/02-source-binding-engine/02-04-SUMMARY.md",
+        ".planning/phases/02-source-binding-engine/02-06-SUMMARY.md",
+        ".planning/phases/02-source-binding-engine/02-09-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "2": "stale",
+        "7": "gaps_found"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "ENGINE-03",
+      "assigned": "Phase 2",
+      "phases": [
+        2
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 198,
+      "checked": true,
+      "description": "发往 Trino / SQLite 的 SQL 由自有 printer 生成，值只经转义函数输出，注入防护由 proptest 与真实执行验证",
+      "line": 34,
+      "verification_rows": [
+        {
+          "id": "ENGINE-03",
+          "path": ".planning/phases/02-source-binding-engine/02-VERIFICATION.md",
+          "line": 259,
+          "phase": 2,
+          "status": "✓ SATISFIED",
+          "evidence": "truth 4；`printer_corpus_round_trips` 在真实 Trino 上通过",
+          "source_row": "| ENGINE-03 | 02-02、02-10 | 自有 printer，proptest 与真实执行验证 | ✓ SATISFIED | truth 4；`printer_corpus_round_trips` 在真实 Trino 上通过 |"
+        }
+      ],
+      "summary_completed": [
+        "02-02",
+        "02-10"
+      ],
+      "summary_refs": [
+        ".planning/phases/02-source-binding-engine/02-02-SUMMARY.md",
+        ".planning/phases/02-source-binding-engine/02-10-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "2": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "ENGINE-04",
+      "assigned": "Phase 2（SQLite 替身支撑 Windows cargo test）+ Phase 7（serve --dev，DX-01）",
+      "phases": [
+        2,
+        7
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 199,
+      "checked": true,
+      "description": "SQLite 替身引擎支撑 Windows 本机 `cargo test` 与 `serve --dev`（不承诺生产）",
+      "line": 35,
+      "verification_rows": [
+        {
+          "id": "ENGINE-04",
+          "path": ".planning/phases/02-source-binding-engine/02-VERIFICATION.md",
+          "line": 260,
+          "phase": 2,
+          "status": "✓ SATISFIED（Phase 2 范围）",
+          "evidence": "595 passed / 0 failed；`serve --dev` 属 Phase 7 DX-01",
+          "source_row": "| ENGINE-04 | 02-02、02-05 | SQLite 替身支撑 Windows `cargo test` | ✓ SATISFIED（Phase 2 范围） | 595 passed / 0 failed；`serve --dev` 属 Phase 7 DX-01 |"
+        },
+        {
+          "id": "ENGINE-04",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 270,
+          "phase": 7,
+          "status": "SATISFIED，dev lifecycle及三native安装",
+          "evidence": "SATISFIED，dev lifecycle及三native安装",
+          "source_row": "| ENGINE-04（继承服务部分） | 12 | serve --dev SQLite宿主 | SATISFIED，dev lifecycle及三native安装 |"
+        }
+      ],
+      "summary_completed": [
+        "02-02",
+        "02-05"
+      ],
+      "summary_refs": [
+        ".planning/phases/02-source-binding-engine/02-02-SUMMARY.md",
+        ".planning/phases/02-source-binding-engine/02-05-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "2": "stale",
+        "7": "gaps_found"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "ENGINE-05",
+      "assigned": "Phase 2",
+      "phases": [
+        2
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 200,
+      "checked": true,
+      "description": "Linux CI 跑 Trino + PG 集成测试，nightly 加跑 Iceberg；SQL Server 由私有 fixture 验证",
+      "line": 36,
+      "verification_rows": [
+        {
+          "id": "ENGINE-05",
+          "path": ".planning/phases/02-source-binding-engine/02-VERIFICATION.md",
+          "line": 261,
+          "phase": 2,
+          "status": "✓ SATISFIED",
+          "evidence": "truth 5；私有 fixture 入口 `private_fixtures.rs` 与 CONTRIBUTING.md 存在。SQL Server 实测依赖仓库外私有数据，按设计不进公开仓库，本报告无该运行记录（见 Info）",
+          "source_row": "| ENGINE-05 | 02-10 | Linux CI Trino + PG，nightly Iceberg，私有 fixture 入口 | ✓ SATISFIED | truth 5；私有 fixture 入口 `private_fixtures.rs` 与 CONTRIBUTING.md 存在。SQL Server 实测依赖仓库外私有数据，按设计不进公开仓库，本报告无该运行记录（见 Info） |"
+        }
+      ],
+      "summary_completed": [
+        "02-10"
+      ],
+      "summary_refs": [
+        ".planning/phases/02-source-binding-engine/02-10-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "2": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "STORE-01",
+      "assigned": "Phase 3",
+      "phases": [
+        3
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 201,
+      "checked": true,
+      "description": "edit store 在 PostgreSQL（生产）或 SQLite（dev / test）上运行，两个后端通过同一套 conformance 测试",
+      "line": 40,
+      "verification_rows": [
+        {
+          "id": "STORE-01",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 180,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "SQLite/PostgreSQL 同一 conformance；PG 值域校验也进入共享用例。",
+          "source_row": "| STORE-01 | 03-01, 03-03, 03-04, 03-08, 03-09, 03-13, 03-20, 03-21 | ticked | SATISFIED | SQLite/PostgreSQL 同一 conformance；PG 值域校验也进入共享用例。 |"
+        }
+      ],
+      "summary_completed": [
+        "03-20",
+        "03-21"
+      ],
+      "summary_refs": [
+        ".planning/phases/03-edit-store-scope-model/03-20-SUMMARY.md",
+        ".planning/phases/03-edit-store-scope-model/03-21-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "3": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "STORE-02",
+      "assigned": "Phase 3",
+      "phases": [
+        3
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 202,
+      "checked": true,
+      "description": "新增类定义变更在 reload 时自动生成 DDL；破坏性变更被 lint 拦下，经 `ontoforge migrate --plan/--apply` 完成并归档旧列；reload 原子生效（Trino 元数据可见后才切换、`lock_timeout`、`def_version` 栅栏）",
+      "line": 41,
+      "verification_rows": [
+        {
+          "id": "STORE-02",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 181,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "自动 DDL、ONT-V25、migrate 归档、栅栏、`lock_timeout`、pending/probe/active 均有测试；缓存隔离红绿实测与 run 39710470956 integration 的 `reload_trino_it` 3/3 关闭第 8 条 truth。",
+          "source_row": "| STORE-02 | 03-02, 03-03, 03-04, 03-10, 03-15, 03-18, 03-20 | unticked | SATISFIED | 自动 DDL、ONT-V25、migrate 归档、栅栏、`lock_timeout`、pending/probe/active 均有测试；缓存隔离红绿实测与 run 39710470956 integration 的 `reload_trino_it` 3/3 关闭第 8 条 truth。 |"
+        }
+      ],
+      "summary_completed": [],
+      "summary_refs": [],
+      "canonical_by_phase": {
+        "3": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": true,
+      "historical_three_source": "partial (metadata gap)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending; metadata gap",
+      "canonical_passed": false
+    },
+    {
+      "id": "STORE-03",
+      "assigned": "Phase 3",
+      "phases": [
+        3
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 203,
+      "checked": true,
+      "description": "每次成功提交的写入都追加到不可变 edit log，记录 actor、action、时间、参数与 edits",
+      "line": 42,
+      "verification_rows": [
+        {
+          "id": "STORE-03",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 182,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "每次提交一条不可变 log；追加专用触发器；decimal 保真。",
+          "source_row": "| STORE-03 | 03-08, 03-09, 03-21 | ticked | SATISFIED | 每次提交一条不可变 log；追加专用触发器；decimal 保真。 |"
+        }
+      ],
+      "summary_completed": [
+        "03-21"
+      ],
+      "summary_refs": [
+        ".planning/phases/03-edit-store-scope-model/03-21-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "3": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "STORE-04",
+      "assigned": "Phase 3",
+      "phases": [
+        3
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 204,
+      "checked": true,
+      "description": "客户端可以查询某个对象的变更历史",
+      "line": 43,
+      "verification_rows": [
+        {
+          "id": "STORE-04",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 183,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "`EditStore::history` 带 D-13 掩码，`history_masking` 12 通过；REST/MCP 外壳属 Phase 7。",
+          "source_row": "| STORE-04 | 03-17 | unticked | SATISFIED | `EditStore::history` 带 D-13 掩码，`history_masking` 12 通过；REST/MCP 外壳属 Phase 7。 |"
+        }
+      ],
+      "summary_completed": [],
+      "summary_refs": [],
+      "canonical_by_phase": {
+        "3": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": true,
+      "historical_three_source": "partial (metadata gap)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending; metadata gap",
+      "canonical_passed": false
+    },
+    {
+      "id": "STORE-05",
+      "assigned": "Phase 3",
+      "phases": [
+        3
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 205,
+      "checked": true,
+      "description": "link 基数（1:1、1:N）在 edit store 写入时强制；source 数据的基数由 lint / 校验查询报告，不阻塞读取",
+      "line": 44,
+      "verification_rows": [
+        {
+          "id": "STORE-05",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 184,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "一对一部分唯一索引、`CardinalityViolation`、PG `concurrent_fk_claims_one_wins`。",
+          "source_row": "| STORE-05 | 03-10, 03-13 | unticked | SATISFIED | 一对一部分唯一索引、`CardinalityViolation`、PG `concurrent_fk_claims_one_wins`。 |"
+        }
+      ],
+      "summary_completed": [],
+      "summary_refs": [],
+      "canonical_by_phase": {
+        "3": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": true,
+      "historical_three_source": "partial (metadata gap)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending; metadata gap",
+      "canonical_passed": false
+    },
+    {
+      "id": "STORE-06",
+      "assigned": "Phase 3",
+      "phases": [
+        3
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 206,
+      "checked": true,
+      "description": "开发者可以用 `ontoforge import` 导入 edit-only 对象与替身引擎数据，导入作为系统 edit 记入 edit log；业务数据摄取由 Trino ETL（L3）负责",
+      "line": 45,
+      "verification_rows": [
+        {
+          "id": "STORE-06",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 185,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "`ontoforge import` 作为 `system:import` 提交；JSON/CSV decimal 逐字保存。",
+          "source_row": "| STORE-06 | 03-19, 03-21 | ticked | SATISFIED | `ontoforge import` 作为 `system:import` 提交；JSON/CSV decimal 逐字保存。 |"
+        }
+      ],
+      "summary_completed": [
+        "03-19",
+        "03-21"
+      ],
+      "summary_refs": [
+        ".planning/phases/03-edit-store-scope-model/03-19-SUMMARY.md",
+        ".planning/phases/03-edit-store-scope-model/03-21-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "3": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "STORE-07",
+      "assigned": "Phase 3",
+      "phases": [
+        3
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 207,
+      "checked": true,
+      "description": "叠加按属性 patch：edit 只存设置过的属性，未设置的属性跟随 source；tombstone 不复活，release 显式且版本单调递增",
+      "line": 46,
+      "verification_rows": [
+        {
+          "id": "STORE-07",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 186,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "`model_prop` 与 conformance 转换用例通过。",
+          "source_row": "| STORE-07 | 03-08, 03-13 | unticked，traceability 仍为 Gaps Found | SATISFIED | `model_prop` 与 conformance 转换用例通过。 |"
+        }
+      ],
+      "summary_completed": [
+        "03-13"
+      ],
+      "summary_refs": [
+        ".planning/phases/03-edit-store-scope-model/03-13-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "3": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "SCOPE-01",
+      "assigned": "Phase 3",
+      "phases": [
+        3
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 208,
+      "checked": true,
+      "description": "管理员可以管理用户、组（可同步自 OIDC `groups` claim）与角色，角色绑定到用户或组",
+      "line": 50,
+      "verification_rows": [
+        {
+          "id": "SCOPE-01",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 187,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "`of_user`、`of_role`、`of_role_binding`、`scope plan/apply`、JWT `groups`；`cli_scope` 8、`scope_store` 11。",
+          "source_row": "| SCOPE-01 | 03-06, 03-07, 03-14, 03-16 | unticked | SATISFIED | `of_user`、`of_role`、`of_role_binding`、`scope plan/apply`、JWT `groups`；`cli_scope` 8、`scope_store` 11。 |"
+        }
+      ],
+      "summary_completed": [],
+      "summary_refs": [],
+      "canonical_by_phase": {
+        "3": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": true,
+      "historical_three_source": "partial (metadata gap)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending; metadata gap",
+      "canonical_passed": false
+    },
+    {
+      "id": "SCOPE-02",
+      "assigned": "Phase 3",
+      "phases": [
+        3
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 209,
+      "checked": true,
+      "description": "角色可授予可见 object type、属性 allow-list、CEL 行谓词（只引用同行属性与 `principal.attrs`）、action 执行权、SQL 级别与 MCP toolset",
+      "line": 51,
+      "verification_rows": [
+        {
+          "id": "SCOPE-02",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 188,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "role schema 与编译快照测试。",
+          "source_row": "| SCOPE-02 | 03-02, 03-05, 03-06, 03-11, 03-14, 03-16 | unticked | SATISFIED | role schema 与编译快照测试。 |"
+        }
+      ],
+      "summary_completed": [],
+      "summary_refs": [],
+      "canonical_by_phase": {
+        "3": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": true,
+      "historical_three_source": "partial (metadata gap)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending; metadata gap",
+      "canonical_passed": false
+    },
+    {
+      "id": "SCOPE-03",
+      "assigned": "Phase 3",
+      "phases": [
+        3
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 210,
+      "checked": true,
+      "description": "多角色合并为 scoped 基关系（行 = 各角色谓词之 OR，列按授予它的角色谓词遮蔽），所有表达式只能绑定到该关系，不产生跨角色列 × 行泄露",
+      "line": 52,
+      "verification_rows": [
+        {
+          "id": "SCOPE-03",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 189,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "`merge.rs` 与 `scope_merge` 9。",
+          "source_row": "| SCOPE-03 | 03-11 | unticked | SATISFIED | `merge.rs` 与 `scope_merge` 9。 |"
+        }
+      ],
+      "summary_completed": [],
+      "summary_refs": [],
+      "canonical_by_phase": {
+        "3": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": true,
+      "historical_three_source": "partial (metadata gap)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending; metadata gap",
+      "canonical_passed": false
+    },
+    {
+      "id": "SCOPE-04",
+      "assigned": "Phase 3",
+      "phases": [
+        3
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 211,
+      "checked": true,
+      "description": "同一 CEL 行谓词编译成 SQL 与在 Rust 中对单行求值的结果一致（差分测试覆盖）",
+      "line": 53,
+      "verification_rows": [
+        {
+          "id": "SCOPE-04",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 190,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "Rust 对 SQLite 本地 6 通过；run 39710470956 的 Trino 483 行谓词语料测试 3/3 通过。",
+          "source_row": "| SCOPE-04 | 03-05, 03-11, 03-20 | unticked，traceability 仍为 Gaps Found | SATISFIED | Rust 对 SQLite 本地 6 通过；run 39710470956 的 Trino 483 行谓词语料测试 3/3 通过。 |"
+        }
+      ],
+      "summary_completed": [
+        "03-20"
+      ],
+      "summary_refs": [
+        ".planning/phases/03-edit-store-scope-model/03-20-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "3": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "SCOPE-05",
+      "assigned": "Phase 3",
+      "phases": [
+        3
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 212,
+      "checked": true,
+      "description": "无授权 = 不可见（fail-closed）；缺失的主体属性使相关谓词为 false；无法编译的谓词在 validate 时报错",
+      "line": 54,
+      "verification_rows": [
+        {
+          "id": "SCOPE-05",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 191,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "无授权不可见、缺失属性为 Unknown、不可编译谓词在 plan/apply/reload 为 ONT-V22。",
+          "source_row": "| SCOPE-05 | 03-05, 03-11, 03-14 | unticked | SATISFIED | 无授权不可见、缺失属性为 Unknown、不可编译谓词在 plan/apply/reload 为 ONT-V22。 |"
+        }
+      ],
+      "summary_completed": [],
+      "summary_refs": [],
+      "canonical_by_phase": {
+        "3": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": true,
+      "historical_three_source": "partial (metadata gap)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending; metadata gap",
+      "canonical_passed": false
+    },
+    {
+      "id": "SCOPE-06",
+      "assigned": "Phase 3",
+      "phases": [
+        3
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 213,
+      "checked": true,
+      "description": "定义 reload 与角色变更时，被授予某 action 的角色列集必须覆盖其 criteria 引用的列，否则报错不生效",
+      "line": 55,
+      "verification_rows": [
+        {
+          "id": "SCOPE-06",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 192,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "reload、scope apply、migrate --apply 三处复核；整对象读取已拦。",
+          "source_row": "| SCOPE-06 | 03-14, 03-16, 03-18, 03-22 | ticked | SATISFIED | reload、scope apply、migrate --apply 三处复核；整对象读取已拦。 |"
+        }
+      ],
+      "summary_completed": [
+        "03-18",
+        "03-22"
+      ],
+      "summary_refs": [
+        ".planning/phases/03-edit-store-scope-model/03-18-SUMMARY.md",
+        ".planning/phases/03-edit-store-scope-model/03-22-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "3": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "SCOPE-07",
+      "assigned": "Phase 3（管理写入与审计）+ Phase 6（请求版本固定）+ Phase 7（MCP 工具限制）",
+      "phases": [
+        3,
+        6,
+        7
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 214,
+      "checked": true,
+      "description": "角色 / scope 只能经管理通道或 L3 修改并审计；ontology 定义只经部署方 reload；agent MCP 无变更工具；每个请求固定使用开始时的定义版本",
+      "line": 56,
+      "verification_rows": [
+        {
+          "id": "SCOPE-07",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 193,
+          "phase": 3,
+          "status": "PARTIAL; remainder deferred",
+          "evidence": "请求固定定义版本（读侧）与 MCP 无变更工具属 Phase 6/7；Phase 3 完成写侧栅栏与 scope 审计。",
+          "source_row": "| SCOPE-07 | 03-16, 03-18 | unticked | PARTIAL; remainder deferred | 请求固定定义版本（读侧）与 MCP 无变更工具属 Phase 6/7；Phase 3 完成写侧栅栏与 scope 审计。 |"
+        },
+        {
+          "id": "SCOPE-07",
+          "path": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md",
+          "line": 184,
+          "phase": 6,
+          "status": "当前阶段SATISFIED；整体Pending",
+          "evidence": "#5/#19及竞争测试；MCP无变更工具限制属Phase7。",
+          "source_row": "| SCOPE-07 | 06-09 | 管理变更审计与请求固定版本 | 当前阶段SATISFIED；整体Pending | #5/#19及竞争测试；MCP无变更工具限制属Phase7。 |"
+        },
+        {
+          "id": "SCOPE-07",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 267,
+          "phase": 7,
+          "status": "SATISFIED，request_snapshot共同锁+PG混代测试、MCP无管理入口",
+          "evidence": "SATISFIED，request_snapshot共同锁+PG混代测试、MCP无管理入口",
+          "source_row": "| SCOPE-07 | 01,02,04,07–09,13,16 | 管理通道限制、每请求固定定义 | SATISFIED，request_snapshot共同锁+PG混代测试、MCP无管理入口 |"
+        }
+      ],
+      "summary_completed": [
+        "07-02",
+        "07-08",
+        "07-09",
+        "07-16"
+      ],
+      "summary_refs": [
+        ".planning/phases/07-rest-mcp-shell/07-02-SUMMARY.md",
+        ".planning/phases/07-rest-mcp-shell/07-08-SUMMARY.md",
+        ".planning/phases/07-rest-mcp-shell/07-09-SUMMARY.md",
+        ".planning/phases/07-rest-mcp-shell/07-16-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "3": "stale",
+        "6": "stale",
+        "7": "gaps_found"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "AUTH-01",
+      "assigned": "Phase 3",
+      "phases": [
+        3
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 215,
+      "checked": true,
+      "description": "客户端可以用 OIDC 签发的 JWT 认证（JWKS 自动拉取与缓存）",
+      "line": 57,
+      "verification_rows": [
+        {
+          "id": "AUTH-01",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 194,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "`oidc` 31 通过。",
+          "source_row": "| AUTH-01 | 03-01, 03-02, 03-07 | unticked，traceability 仍为 Gaps Found | SATISFIED | `oidc` 31 通过。 |"
+        }
+      ],
+      "summary_completed": [
+        "03-07"
+      ],
+      "summary_refs": [
+        ".planning/phases/03-edit-store-scope-model/03-07-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "3": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "AUTH-02",
+      "assigned": "Phase 3",
+      "phases": [
+        3
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 216,
+      "checked": true,
+      "description": "dev 模式下开发者可以用 CLI 生成本地 token，无需外部 IdP",
+      "line": 58,
+      "verification_rows": [
+        {
+          "id": "AUTH-02",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 195,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "全新树上的 `dev-token` 与 `reload` 测试通过；commit `1df4a7f` 的 Ubuntu job success，Unix 0700 断言在该 commit 上运行。",
+          "source_row": "| AUTH-02 | 03-12, 03-23 | ticked | SATISFIED | 全新树上的 `dev-token` 与 `reload` 测试通过；commit `1df4a7f` 的 Ubuntu job success，Unix 0700 断言在该 commit 上运行。 |"
+        }
+      ],
+      "summary_completed": [
+        "03-12",
+        "03-23"
+      ],
+      "summary_refs": [
+        ".planning/phases/03-edit-store-scope-model/03-12-SUMMARY.md",
+        ".planning/phases/03-edit-store-scope-model/03-23-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "3": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "QUERY-01",
+      "assigned": "Phase 4",
+      "phases": [
+        4
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 217,
+      "checked": true,
+      "description": "客户端可以按 primary key 获取单个对象（已编辑对象 PG 直读，未编辑对象 Trino 单表查询），并可指定返回的属性子集",
+      "line": 62,
+      "verification_rows": [
+        {
+          "id": "QUERY-01",
+          "path": ".planning/phases/04-scoped-l0-read/04-VERIFICATION.md",
+          "line": 77,
+          "phase": 4,
+          "status": "SATISFIED",
+          "evidence": "`pk_read`, `trino_query_it::fixed_semantics_and_cursor_refill`",
+          "source_row": "| QUERY-01 | SATISFIED | `pk_read`, `trino_query_it::fixed_semantics_and_cursor_refill` |"
+        }
+      ],
+      "summary_completed": [
+        "04-01"
+      ],
+      "summary_refs": [
+        ".planning/phases/04-scoped-l0-read/04-01-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "4": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "QUERY-02",
+      "assigned": "Phase 4",
+      "phases": [
+        4
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 218,
+      "checked": true,
+      "description": "客户端可以用 WhereClause（eq / gt / gte / lt / lte / isNull / in / startsWith / containsAnyTerm / containsAllTerms / and / or / not）过滤对象",
+      "line": 63,
+      "verification_rows": [
+        {
+          "id": "QUERY-02",
+          "path": ".planning/phases/04-scoped-l0-read/04-VERIFICATION.md",
+          "line": 78,
+          "phase": 4,
+          "status": "SATISFIED",
+          "evidence": "`sqlite_query` 全运算符 test，真实 `where_search_set_and_relationship_corpus`",
+          "source_row": "| QUERY-02 | SATISFIED | `sqlite_query` 全运算符 test，真实 `where_search_set_and_relationship_corpus` |"
+        }
+      ],
+      "summary_completed": [
+        "04-02"
+      ],
+      "summary_refs": [
+        ".planning/phases/04-scoped-l0-read/04-02-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "4": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "QUERY-03",
+      "assigned": "Phase 4",
+      "phases": [
+        4
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 219,
+      "checked": true,
+      "description": "客户端可以对 String 属性做 token 匹配搜索（Trino 上无相关度排序）",
+      "line": 64,
+      "verification_rows": [
+        {
+          "id": "QUERY-03",
+          "path": ".planning/phases/04-scoped-l0-read/04-VERIFICATION.md",
+          "line": 79,
+          "phase": 4,
+          "status": "SATISFIED",
+          "evidence": "`sqlite_query` any/all token test，真实搜索 corpus",
+          "source_row": "| QUERY-03 | SATISFIED | `sqlite_query` any/all token test，真实搜索 corpus |"
+        }
+      ],
+      "summary_completed": [
+        "04-02"
+      ],
+      "summary_refs": [
+        ".planning/phases/04-scoped-l0-read/04-02-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "4": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "QUERY-04",
+      "assigned": "Phase 4",
+      "phases": [
+        4
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 220,
+      "checked": true,
+      "description": "客户端可以对结果排序，并用 keyset 游标分页遍历（`has_more` 判定结束）",
+      "line": 65,
+      "verification_rows": [
+        {
+          "id": "QUERY-04",
+          "path": ".planning/phases/04-scoped-l0-read/04-VERIFICATION.md",
+          "line": 80,
+          "phase": 4,
+          "status": "SATISFIED",
+          "evidence": "`security` cursor/refill tests，`overlay_prop` reference",
+          "source_row": "| QUERY-04 | SATISFIED | `security` cursor/refill tests，`overlay_prop` reference |"
+        }
+      ],
+      "summary_completed": [
+        "04-03",
+        "04-04"
+      ],
+      "summary_refs": [
+        ".planning/phases/04-scoped-l0-read/04-03-SUMMARY.md",
+        ".planning/phases/04-scoped-l0-read/04-04-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "4": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "QUERY-05",
+      "assigned": "Phase 4",
+      "phases": [
+        4
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 221,
+      "checked": true,
+      "description": "客户端可以沿 link 遍历（searchAround），也可以获取单个对象的关联对象",
+      "line": 66,
+      "verification_rows": [
+        {
+          "id": "QUERY-05",
+          "path": ".planning/phases/04-scoped-l0-read/04-VERIFICATION.md",
+          "line": 81,
+          "phase": 4,
+          "status": "SATISFIED",
+          "evidence": "`search_around` FK/M:N tests，真实 relationship corpus",
+          "source_row": "| QUERY-05 | SATISFIED | `search_around` FK/M:N tests，真实 relationship corpus |"
+        }
+      ],
+      "summary_completed": [
+        "04-03",
+        "04-05"
+      ],
+      "summary_refs": [
+        ".planning/phases/04-scoped-l0-read/04-03-SUMMARY.md",
+        ".planning/phases/04-scoped-l0-read/04-05-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "4": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "QUERY-06",
+      "assigned": "Phase 4",
+      "phases": [
+        4
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 222,
+      "checked": true,
+      "description": "客户端可以对 object set 做 union / intersect / subtract",
+      "line": 67,
+      "verification_rows": [
+        {
+          "id": "QUERY-06",
+          "path": ".planning/phases/04-scoped-l0-read/04-VERIFICATION.md",
+          "line": 82,
+          "phase": 4,
+          "status": "SATISFIED",
+          "evidence": "`set_ops` fixed/proptest，真实 set corpus",
+          "source_row": "| QUERY-06 | SATISFIED | `set_ops` fixed/proptest，真实 set corpus |"
+        }
+      ],
+      "summary_completed": [
+        "04-05"
+      ],
+      "summary_refs": [
+        ".planning/phases/04-scoped-l0-read/04-05-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "4": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "QUERY-07",
+      "assigned": "Phase 4",
+      "phases": [
+        4
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 223,
+      "checked": true,
+      "description": "客户端可以对 object set 做聚合（count / sum / avg / min / max / distinct），支持 groupBy",
+      "line": 68,
+      "verification_rows": [
+        {
+          "id": "QUERY-07",
+          "path": ".planning/phases/04-scoped-l0-read/04-VERIFICATION.md",
+          "line": 83,
+          "phase": 4,
+          "status": "SATISFIED",
+          "evidence": "`aggregate` independent reference、TopN、group/distinct tests，真实 aggregate corpus",
+          "source_row": "| QUERY-07 | SATISFIED | `aggregate` independent reference、TopN、group/distinct tests，真实 aggregate corpus |"
+        }
+      ],
+      "summary_completed": [
+        "04-06"
+      ],
+      "summary_refs": [
+        ".planning/phases/04-scoped-l0-read/04-06-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "4": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "QUERY-08",
+      "assigned": "Phase 4",
+      "phases": [
+        4
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 224,
+      "checked": true,
+      "description": "Rust 叠加实现对照内存参考模型的 proptest 通过，SQLite 替身与 Trino 的单表查询语义一致",
+      "line": 69,
+      "verification_rows": [
+        {
+          "id": "QUERY-08",
+          "path": ".planning/phases/04-scoped-l0-read/04-VERIFICATION.md",
+          "line": 84,
+          "phase": 4,
+          "status": "SATISFIED",
+          "evidence": "SQLite differential、proptest；真实 PG 2/2、Trino/PG 5/5",
+          "source_row": "| QUERY-08 | SATISFIED | SQLite differential、proptest；真实 PG 2/2、Trino/PG 5/5 |"
+        }
+      ],
+      "summary_completed": [
+        "04-01",
+        "04-02",
+        "04-03",
+        "04-04",
+        "04-05",
+        "04-06",
+        "04-07"
+      ],
+      "summary_refs": [
+        ".planning/phases/04-scoped-l0-read/04-01-SUMMARY.md",
+        ".planning/phases/04-scoped-l0-read/04-02-SUMMARY.md",
+        ".planning/phases/04-scoped-l0-read/04-03-SUMMARY.md",
+        ".planning/phases/04-scoped-l0-read/04-04-SUMMARY.md",
+        ".planning/phases/04-scoped-l0-read/04-05-SUMMARY.md",
+        ".planning/phases/04-scoped-l0-read/04-06-SUMMARY.md",
+        ".planning/phases/04-scoped-l0-read/04-07-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "4": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "QUERY-09",
+      "assigned": "Phase 4",
+      "phases": [
+        4
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 225,
+      "checked": true,
+      "description": "读结果带不透明的 HMAC `_version` 令牌；L0 输入、输出与错误不含物理名；结果按行数与字节上限截断并标 `truncated`",
+      "line": 70,
+      "verification_rows": [
+        {
+          "id": "QUERY-09",
+          "path": ".planning/phases/04-scoped-l0-read/04-VERIFICATION.md",
+          "line": 85,
+          "phase": 4,
+          "status": "SATISFIED",
+          "evidence": "`security` 与真实多 role、token replay、physical-error tests",
+          "source_row": "| QUERY-09 | SATISFIED | `security` 与真实多 role、token replay、physical-error tests |"
+        }
+      ],
+      "summary_completed": [
+        "04-01",
+        "04-02",
+        "04-03",
+        "04-04",
+        "04-05",
+        "04-06",
+        "04-07"
+      ],
+      "summary_refs": [
+        ".planning/phases/04-scoped-l0-read/04-01-SUMMARY.md",
+        ".planning/phases/04-scoped-l0-read/04-02-SUMMARY.md",
+        ".planning/phases/04-scoped-l0-read/04-03-SUMMARY.md",
+        ".planning/phases/04-scoped-l0-read/04-04-SUMMARY.md",
+        ".planning/phases/04-scoped-l0-read/04-05-SUMMARY.md",
+        ".planning/phases/04-scoped-l0-read/04-06-SUMMARY.md",
+        ".planning/phases/04-scoped-l0-read/04-07-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "4": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "QUERY-10",
+      "assigned": "Phase 4",
+      "phases": [
+        4
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 226,
+      "checked": true,
+      "description": "每条 Trino 查询单表、≤ 2 fragment；安静或隔离集群下 pk 读 p95 < 500ms、列表 p95 < 1s、聚合 p95 < 1.5s、已编辑对象 PG 直读 p95 < 50ms",
+      "line": 71,
+      "verification_rows": [
+        {
+          "id": "QUERY-10",
+          "path": ".planning/phases/04-scoped-l0-read/04-VERIFICATION.md",
+          "line": 86,
+          "phase": 4,
+          "status": "SATISFIED",
+          "evidence": "`sql_shape`、137 distributed plans、isolated timings",
+          "source_row": "| QUERY-10 | SATISFIED | `sql_shape`、137 distributed plans、isolated timings |"
+        }
+      ],
+      "summary_completed": [
+        "04-02",
+        "04-06",
+        "04-07"
+      ],
+      "summary_refs": [
+        ".planning/phases/04-scoped-l0-read/04-02-SUMMARY.md",
+        ".planning/phases/04-scoped-l0-read/04-06-SUMMARY.md",
+        ".planning/phases/04-scoped-l0-read/04-07-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "4": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "ACTION-01",
+      "assigned": "Phase 5",
+      "phases": [
+        5
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 227,
+      "checked": true,
+      "description": "客户端提交 action 时，参数按类型、required 与约束校验，失败时返回逐参数的错误",
+      "line": 75,
+      "verification_rows": [
+        {
+          "id": "ACTION-01",
+          "path": ".planning/phases/05-online-action/05-VERIFICATION.md",
+          "line": 75,
+          "phase": 5,
+          "status": "SATISFIED",
+          "evidence": "参数、规则、批次、validate-only 与 PG 原子性测试。",
+          "source_row": "| ACTION-01..06 | SATISFIED | 参数、规则、批次、validate-only 与 PG 原子性测试。 |"
+        }
+      ],
+      "summary_completed": [
+        "05-02"
+      ],
+      "summary_refs": [
+        ".planning/phases/05-online-action/05-02-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "5": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "ACTION-02",
+      "assigned": "Phase 5",
+      "phases": [
+        5
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 228,
+      "checked": true,
+      "description": "action 的 rules 在单个事务内执行，生成 create / modify / delete object 与 add / remove link 的 edits",
+      "line": 76,
+      "verification_rows": [
+        {
+          "id": "ACTION-02",
+          "path": ".planning/phases/05-online-action/05-VERIFICATION.md",
+          "line": 75,
+          "phase": 5,
+          "status": "SATISFIED",
+          "evidence": "参数、规则、批次、validate-only 与 PG 原子性测试。",
+          "source_row": "| ACTION-01..06 | SATISFIED | 参数、规则、批次、validate-only 与 PG 原子性测试。 |"
+        }
+      ],
+      "summary_completed": [
+        "05-02"
+      ],
+      "summary_refs": [
+        ".planning/phases/05-online-action/05-02-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "5": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "ACTION-03",
+      "assigned": "Phase 5",
+      "phases": [
+        5
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 229,
+      "checked": true,
+      "description": "submission criteria 不满足时 action 被拒绝并返回配置的失败信息；criteria 只在调用者的遮蔽视图上求值",
+      "line": 77,
+      "verification_rows": [
+        {
+          "id": "ACTION-03",
+          "path": ".planning/phases/05-online-action/05-VERIFICATION.md",
+          "line": 75,
+          "phase": 5,
+          "status": "SATISFIED",
+          "evidence": "参数、规则、批次、validate-only 与 PG 原子性测试。",
+          "source_row": "| ACTION-01..06 | SATISFIED | 参数、规则、批次、validate-only 与 PG 原子性测试。 |"
+        }
+      ],
+      "summary_completed": [
+        "05-02"
+      ],
+      "summary_refs": [
+        ".planning/phases/05-online-action/05-02-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "5": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "ACTION-04",
+      "assigned": "Phase 5",
+      "phases": [
+        5
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 230,
+      "checked": true,
+      "description": "客户端可以用 validate-only 模式提交 action，只得到校验结果，不产生写入",
+      "line": 78,
+      "verification_rows": [
+        {
+          "id": "ACTION-04",
+          "path": ".planning/phases/05-online-action/05-VERIFICATION.md",
+          "line": 75,
+          "phase": 5,
+          "status": "SATISFIED",
+          "evidence": "参数、规则、批次、validate-only 与 PG 原子性测试。",
+          "source_row": "| ACTION-01..06 | SATISFIED | 参数、规则、批次、validate-only 与 PG 原子性测试。 |"
+        }
+      ],
+      "summary_completed": [
+        "05-02"
+      ],
+      "summary_refs": [
+        ".planning/phases/05-online-action/05-02-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "5": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "ACTION-05",
+      "assigned": "Phase 5",
+      "phases": [
+        5
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 231,
+      "checked": true,
+      "description": "客户端可以批量提交同一 action，全部成功或全部回滚",
+      "line": 79,
+      "verification_rows": [
+        {
+          "id": "ACTION-05",
+          "path": ".planning/phases/05-online-action/05-VERIFICATION.md",
+          "line": 75,
+          "phase": 5,
+          "status": "SATISFIED",
+          "evidence": "参数、规则、批次、validate-only 与 PG 原子性测试。",
+          "source_row": "| ACTION-01..06 | SATISFIED | 参数、规则、批次、validate-only 与 PG 原子性测试。 |"
+        }
+      ],
+      "summary_completed": [
+        "05-02"
+      ],
+      "summary_refs": [
+        ".planning/phases/05-online-action/05-02-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "5": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "ACTION-06",
+      "assigned": "Phase 5",
+      "phases": [
+        5
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 232,
+      "checked": true,
+      "description": "action 成功后返回标准化的 edits 摘要（新增 / 修改 / 删除的对象与 link）",
+      "line": 80,
+      "verification_rows": [
+        {
+          "id": "ACTION-06",
+          "path": ".planning/phases/05-online-action/05-VERIFICATION.md",
+          "line": 75,
+          "phase": 5,
+          "status": "SATISFIED",
+          "evidence": "参数、规则、批次、validate-only 与 PG 原子性测试。",
+          "source_row": "| ACTION-01..06 | SATISFIED | 参数、规则、批次、validate-only 与 PG 原子性测试。 |"
+        }
+      ],
+      "summary_completed": [
+        "05-02"
+      ],
+      "summary_refs": [
+        ".planning/phases/05-online-action/05-02-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "5": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "ACTION-07",
+      "assigned": "Phase 5",
+      "phases": [
+        5
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 233,
+      "checked": true,
+      "description": "对象只能经 action（或可审计的导入）写入，没有其他写入途径",
+      "line": 81,
+      "verification_rows": [
+        {
+          "id": "ACTION-07",
+          "path": ".planning/phases/05-online-action/05-VERIFICATION.md",
+          "line": 76,
+          "phase": 5,
+          "status": "SATISFIED within repository",
+          "evidence": "production 写入入口扫描仅允许 Action 与 audited import；无法约束仓库外自建 host。",
+          "source_row": "| ACTION-07 | SATISFIED within repository | production 写入入口扫描仅允许 Action 与 audited import；无法约束仓库外自建 host。 |"
+        }
+      ],
+      "summary_completed": [
+        "05-07"
+      ],
+      "summary_refs": [
+        ".planning/phases/05-online-action/05-07-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "5": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "ACTION-08",
+      "assigned": "Phase 5",
+      "phases": [
+        5
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 234,
+      "checked": true,
+      "description": "写字段必须在调用者对该行的可见列内且非系统字段；写后状态（含 link 两端与 release）必须对调用者可见，否则 `ScopeDenied`，错误不泄露对象状态",
+      "line": 82,
+      "verification_rows": [
+        {
+          "id": "ACTION-08",
+          "path": ".planning/phases/05-online-action/05-VERIFICATION.md",
+          "line": 77,
+          "phase": 5,
+          "status": "SATISFIED",
+          "evidence": "scope/link/release 与令牌测试，新增同 RowKey 后别名三目标通过。",
+          "source_row": "| ACTION-08..09 | SATISFIED | scope/link/release 与令牌测试，新增同 RowKey 后别名三目标通过。 |"
+        }
+      ],
+      "summary_completed": [
+        "05-06"
+      ],
+      "summary_refs": [
+        ".planning/phases/05-online-action/05-06-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "5": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "ACTION-09",
+      "assigned": "Phase 5",
+      "phases": [
+        5
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 235,
+      "checked": true,
+      "description": "客户端可附带读取时的 `_version` 令牌，不一致返回 `VersionConflict`；edit 读集在事务内按稳定顺序加锁",
+      "line": 83,
+      "verification_rows": [
+        {
+          "id": "ACTION-09",
+          "path": ".planning/phases/05-online-action/05-VERIFICATION.md",
+          "line": 77,
+          "phase": 5,
+          "status": "SATISFIED",
+          "evidence": "scope/link/release 与令牌测试，新增同 RowKey 后别名三目标通过。",
+          "source_row": "| ACTION-08..09 | SATISFIED | scope/link/release 与令牌测试，新增同 RowKey 后别名三目标通过。 |"
+        }
+      ],
+      "summary_completed": [
+        "05-03",
+        "05-06"
+      ],
+      "summary_refs": [
+        ".planning/phases/05-online-action/05-03-SUMMARY.md",
+        ".planning/phases/05-online-action/05-06-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "5": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "ACTION-10",
+      "assigned": "Phase 5",
+      "phases": [
+        5
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 236,
+      "checked": true,
+      "description": "`command_id` 以主体为作用域幂等：重放前重新鉴权，同键异参报 `CommandIdReused`，响应丢失后可凭同键查询结果",
+      "line": 84,
+      "verification_rows": [
+        {
+          "id": "ACTION-10",
+          "path": ".planning/phases/05-online-action/05-VERIFICATION.md",
+          "line": 78,
+          "phase": 5,
+          "status": "SATISFIED",
+          "evidence": "SQLite/PG 幂等、失权和响应丢失重试目标已运行。",
+          "source_row": "| ACTION-10 | SATISFIED | SQLite/PG 幂等、失权和响应丢失重试目标已运行。 |"
+        }
+      ],
+      "summary_completed": [
+        "05-05"
+      ],
+      "summary_refs": [
+        ".planning/phases/05-online-action/05-05-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "5": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "ACTION-11",
+      "assigned": "Phase 5",
+      "phases": [
+        5
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 237,
+      "checked": true,
+      "description": "提交成功后经事务性 outbox 向下游 webhook 至少投递一次带 `event_id` 的事件",
+      "line": 85,
+      "verification_rows": [
+        {
+          "id": "ACTION-11",
+          "path": ".planning/phases/05-online-action/05-VERIFICATION.md",
+          "line": 79,
+          "phase": 5,
+          "status": "SATISFIED in development",
+          "evidence": "CLI 常驻 worker 发送、重试、重启恢复；CI run 40000699036 的 PG webhook 2/2 与 Trino Action 4/4 通过。WSL 临时 receiver 503 -> 204 且 event_id 稳定；真实部署前提见 WEBHOOK-WORKER.md。",
+          "source_row": "| ACTION-11 | SATISFIED in development | CLI 常驻 worker 发送、重试、重启恢复；CI run 40000699036 的 PG webhook 2/2 与 Trino Action 4/4 通过。WSL 临时 receiver 503 -> 204 且 event_id 稳定；真实部署前提见 WEBHOOK-WORKER.md。 |"
+        }
+      ],
+      "summary_completed": [
+        "05-07"
+      ],
+      "summary_refs": [
+        ".planning/phases/05-online-action/05-07-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "5": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "ACTION-12",
+      "assigned": "Phase 5",
+      "phases": [
+        5
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 238,
+      "checked": true,
+      "description": "Action 只在目标或读集需要 Trino 时依赖 Trino；本次 Action 从 source 读取并观测到重复 pk 时返回 `AmbiguousObject` 且拒绝写入；无需 source 内容的已编辑对象可在 Trino 不可用时执行",
+      "line": 86,
+      "verification_rows": [
+        {
+          "id": "ACTION-12",
+          "path": ".planning/phases/05-online-action/05-VERIFICATION.md",
+          "line": 80,
+          "phase": 5,
+          "status": "SATISFIED",
+          "evidence": "真实 Trino duplicate/offline 目标先前通过；后别名按需采样本轮通过。",
+          "source_row": "| ACTION-12 | SATISFIED | 真实 Trino duplicate/offline 目标先前通过；后别名按需采样本轮通过。 |"
+        }
+      ],
+      "summary_completed": [
+        "05-06"
+      ],
+      "summary_refs": [
+        ".planning/phases/05-online-action/05-06-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "5": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "L2-01",
+      "assigned": "Phase 6",
+      "phases": [
+        6
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 239,
+      "checked": true,
+      "description": "被授予 `sql:raw` 的主体可以执行只读 Trino DQL 并列举 allow-list 内的 catalog / schema / 表",
+      "line": 90,
+      "verification_rows": [
+        {
+          "id": "L2-01",
+          "path": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md",
+          "line": 179,
+          "phase": 6,
+          "status": "SATISFIED（库级与远端CI）",
+          "evidence": "#13-18，六操作有源数据/授权/审计接线。",
+          "source_row": "| L2-01 | 06-06/07/08/09 | raw DQL与allow-list discovery | SATISFIED（库级与远端CI） | #13-18，六操作有源数据/授权/审计接线。 |"
+        }
+      ],
+      "summary_completed": [],
+      "summary_refs": [],
+      "canonical_by_phase": {
+        "6": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": true,
+      "historical_three_source": "partial (metadata gap)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending; metadata gap",
+      "canonical_passed": false
+    },
+    {
+      "id": "L2-02",
+      "assigned": "Phase 6",
+      "phases": [
+        6
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 240,
+      "checked": true,
+      "description": "L2 SQL 经 AST 白名单校验（只允许 SELECT / WITH，拒绝表函数、CALL、EXECUTE、多语句、会话与事务语句），执行时发送重序列化后的 SQL",
+      "line": 91,
+      "verification_rows": [
+        {
+          "id": "L2-02",
+          "path": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md",
+          "line": 180,
+          "phase": 6,
+          "status": "SATISFIED（gate与真实483）；远端CI已验证",
+          "evidence": "#1，104-ID生产gate亲跑；明确等价新语料而非原文。",
+          "source_row": "| L2-02 | 06-03/06/08 | AST白名单与Display | SATISFIED（gate与真实483）；远端CI已验证 | #1，104-ID生产gate亲跑；明确等价新语料而非原文。 |"
+        }
+      ],
+      "summary_completed": [],
+      "summary_refs": [],
+      "canonical_by_phase": {
+        "6": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": true,
+      "historical_three_source": "partial (metadata gap)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending; metadata gap",
+      "canonical_passed": false
+    },
+    {
+      "id": "L2-03",
+      "assigned": "Phase 6 + Phase 7（MCP传输接线）",
+      "phases": [
+        6,
+        7
+      ],
+      "traceability_status": "Gap INT-01",
+      "traceability_line": 241,
+      "checked": false,
+      "description": "L2 只能访问 catalog / schema allow-list，硬排除 edit store catalog 与 `system` 元数据表",
+      "line": 92,
+      "verification_rows": [
+        {
+          "id": "L2-03",
+          "path": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md",
+          "line": 181,
+          "phase": 6,
+          "status": "SATISFIED（库级与真实ACL）；远端CI已验证",
+          "evidence": "#2/#10/#15。",
+          "source_row": "| L2-03 | 06-03/04/06/07/08/10 | catalog/schema allow-list，硬排除system/edit | SATISFIED（库级与真实ACL）；远端CI已验证 | #2/#10/#15。 |"
+        }
+      ],
+      "summary_completed": [],
+      "summary_refs": [],
+      "canonical_by_phase": {
+        "6": "stale",
+        "7": "gaps_found"
+      },
+      "orphaned": false,
+      "metadata_gap": true,
+      "historical_three_source": "partial (metadata gap)",
+      "current_proof_pending": false,
+      "current_judgment": "unsatisfied (INT-01); metadata gap",
+      "canonical_passed": false,
+      "current_gap": {
+        "id": "INT-01",
+        "source": ".planning/milestones/v1.0-audit/INTEGRATION.md",
+        "phase7_addendum": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md:25-27"
+      }
+    },
+    {
+      "id": "L2-04",
+      "assigned": "Phase 6（库级启动与周期 attestation、fail-closed 状态）+ Phase 7（服务生命周期接线及 `/health` 告警，ADR-0028）",
+      "phases": [
+        6,
+        7
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 242,
+      "checked": true,
+      "description": "启动自检无法证明 L2 身份在 Trino 侧受限时禁用 L2 并告警（fail-closed）",
+      "line": 93,
+      "verification_rows": [
+        {
+          "id": "L2-04",
+          "path": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md",
+          "line": 182,
+          "phase": 6,
+          "status": "库级SATISFIED；整体Pending",
+          "evidence": "#3/#20/#21；H2/H3均已验证。服务持有handle、优雅关闭及HTTP `/health` 按ADR-0028由Phase7验收。",
+          "source_row": "| L2-04 | 06-04/06/07/08/10 | 启动/周期fail-closed、健康原因 | 库级SATISFIED；整体Pending | #3/#20/#21；H2/H3均已验证。服务持有handle、优雅关闭及HTTP `/health` 按ADR-0028由Phase7验收。 |"
+        },
+        {
+          "id": "L2-04",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 266,
+          "phase": 7,
+          "status": "SATISFIED，monitor持有、真实health61s过期/恢复、宽松ACL对照",
+          "evidence": "SATISFIED，monitor持有、真实health61s过期/恢复、宽松ACL对照",
+          "source_row": "| L2-04 | 06,08,13 | 启动与持续ACL证明、fail-closed/health | SATISFIED，monitor持有、真实health61s过期/恢复、宽松ACL对照 |"
+        }
+      ],
+      "summary_completed": [
+        "07-08"
+      ],
+      "summary_refs": [
+        ".planning/phases/07-rest-mcp-shell/07-08-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "6": "stale",
+        "7": "gaps_found"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "AUDIT-01",
+      "assigned": "Phase 6",
+      "phases": [
+        6
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 243,
+      "checked": true,
+      "description": "所有级别的读取记录元数据审计（不含结果数据），异步落库，积压或持续失败时读请求 fail-closed；保留期可配",
+      "line": 94,
+      "verification_rows": [
+        {
+          "id": "AUDIT-01",
+          "path": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md",
+          "line": 183,
+          "phase": 6,
+          "status": "SATISFIED",
+          "evidence": "#4/#6-9/#11-18 的原证据保留；#22 的并发/取消/成功及失败终态合同已由真实 RED/GREEN 与新 HEAD CI 证明。",
+          "source_row": "| AUDIT-01 | 06-01/02/05/06/07/08/09/11 | 全读取元数据审计、背压、保留期及可靠排空 | SATISFIED | #4/#6-9/#11-18 的原证据保留；#22 的并发/取消/成功及失败终态合同已由真实 RED/GREEN 与新 HEAD CI 证明。 |"
+        }
+      ],
+      "summary_completed": [
+        "06-11"
+      ],
+      "summary_refs": [
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "6": "stale"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "API-01",
+      "assigned": "Phase 7",
+      "phases": [
+        7
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 244,
+      "checked": true,
+      "description": "服务暴露 REST API，覆盖 ontology 元数据、对象读取、object set 查询、action 提交与 edit 历史",
+      "line": 98,
+      "verification_rows": [
+        {
+          "id": "API-01",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 250,
+          "phase": 7,
+          "status": "SATISFIED，R1/R4、八路由与真实HTTP/PG/SDK",
+          "evidence": "SATISFIED，R1/R4、八路由与真实HTTP/PG/SDK",
+          "source_row": "| API-01 | 01–07,13 | REST metadata、对象、object set、Action、history | SATISFIED，R1/R4、八路由与真实HTTP/PG/SDK |"
+        }
+      ],
+      "summary_completed": [
+        "07-02",
+        "07-03"
+      ],
+      "summary_refs": [
+        ".planning/phases/07-rest-mcp-shell/07-02-SUMMARY.md",
+        ".planning/phases/07-rest-mcp-shell/07-03-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "7": "gaps_found"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "API-02",
+      "assigned": "Phase 7",
+      "phases": [
+        7
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 245,
+      "checked": true,
+      "description": "服务导出 OpenAPI 3.1 文档，并纳入快照测试",
+      "line": 99,
+      "verification_rows": [
+        {
+          "id": "API-02",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 251,
+          "phase": 7,
+          "status": "SATISFIED，P05、静态render/独立schema断言/CLI导出",
+          "evidence": "SATISFIED，P05、静态render/独立schema断言/CLI导出",
+          "source_row": "| API-02 | 05 | OpenAPI3.1与snapshot | SATISFIED，P05、静态render/独立schema断言/CLI导出 |"
+        }
+      ],
+      "summary_completed": [],
+      "summary_refs": [],
+      "canonical_by_phase": {
+        "7": "gaps_found"
+      },
+      "orphaned": false,
+      "metadata_gap": true,
+      "historical_three_source": "partial (metadata gap)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending; metadata gap",
+      "canonical_passed": false
+    },
+    {
+      "id": "API-03",
+      "assigned": "Phase 7",
+      "phases": [
+        7
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 246,
+      "checked": true,
+      "description": "错误响应统一为结构化错误码 + apiName 级描述 + request_id；L0 不含物理名",
+      "line": 100,
+      "verification_rows": [
+        {
+          "id": "API-03",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 252,
+          "phase": 7,
+          "status": "SATISFIED，error mapping、http_contract、MCP/SDK错误及audit关联",
+          "evidence": "SATISFIED，error mapping、http_contract、MCP/SDK错误及audit关联",
+          "source_row": "| API-03 | 01,03–06,13 | code/apiName/request_id与L0脱敏 | SATISFIED，error mapping、http_contract、MCP/SDK错误及audit关联 |"
+        }
+      ],
+      "summary_completed": [
+        "07-03"
+      ],
+      "summary_refs": [
+        ".planning/phases/07-rest-mcp-shell/07-03-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "7": "gaps_found"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "API-04",
+      "assigned": "Phase 7",
+      "phases": [
+        7
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 247,
+      "checked": true,
+      "description": "Rust 开发者可以用 `ontoforge-client` 调用全部 REST 能力",
+      "line": 101,
+      "verification_rows": [
+        {
+          "id": "API-04",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 253,
+          "phase": 7,
+          "status": "SATISFIED，P10、真实contract9",
+          "evidence": "SATISFIED，P10、真实contract9",
+          "source_row": "| API-04 | 10,14 | Rust全部REST能力 | SATISFIED，P10、真实contract9 |"
+        }
+      ],
+      "summary_completed": [
+        "07-14"
+      ],
+      "summary_refs": [
+        ".planning/phases/07-rest-mcp-shell/07-14-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "7": "gaps_found"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "API-05",
+      "assigned": "Phase 7",
+      "phases": [
+        7
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 248,
+      "checked": true,
+      "description": "TypeScript 开发者可以使用由 OpenAPI 生成的平台层 client 调用全部 REST 能力",
+      "line": 102,
+      "verification_rows": [
+        {
+          "id": "API-05",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 254,
+          "phase": 7,
+          "status": "SATISFIED，P11、fresh17/17、严格生成/类型门",
+          "evidence": "SATISFIED，P11、fresh17/17、严格生成/类型门",
+          "source_row": "| API-05 | 11,14 | OpenAPI生成TS callable client | SATISFIED，P11、fresh17/17、严格生成/类型门 |"
+        }
+      ],
+      "summary_completed": [
+        "07-11",
+        "07-14"
+      ],
+      "summary_refs": [
+        ".planning/phases/07-rest-mcp-shell/07-11-SUMMARY.md",
+        ".planning/phases/07-rest-mcp-shell/07-14-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "7": "gaps_found"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "MCP-01",
+      "assigned": "Phase 7",
+      "phases": [
+        7
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 249,
+      "checked": true,
+      "description": "agent 可以通过 stdio 或 streamable HTTP 连接 MCP server",
+      "line": 106,
+      "verification_rows": [
+        {
+          "id": "MCP-01",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 255,
+          "phase": 7,
+          "status": "SATISFIED，T24/T08真实HTTP和CLI进程",
+          "evidence": "SATISFIED，T24/T08真实HTTP和CLI进程",
+          "source_row": "| MCP-01 | 07–09,13 | stdio及streamable HTTP | SATISFIED，T24/T08真实HTTP和CLI进程 |"
+        }
+      ],
+      "summary_completed": [
+        "07-08",
+        "07-09"
+      ],
+      "summary_refs": [
+        ".planning/phases/07-rest-mcp-shell/07-08-SUMMARY.md",
+        ".planning/phases/07-rest-mcp-shell/07-09-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "7": "gaps_found"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "MCP-02",
+      "assigned": "Phase 7",
+      "phases": [
+        7
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 250,
+      "checked": true,
+      "description": "agent 可以调用 describe 工具获取 ontology 结构（object types、属性、links、actions 及其描述）",
+      "line": 107,
+      "verification_rows": [
+        {
+          "id": "MCP-02",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 256,
+          "phase": 7,
+          "status": "SATISFIED，mcp_describe与scoped REST真实内容一致",
+          "evidence": "SATISFIED，mcp_describe与scoped REST真实内容一致",
+          "source_row": "| MCP-02 | 07 | describe ontology结构/属性/links/Action描述 | SATISFIED，mcp_describe与scoped REST真实内容一致 |"
+        }
+      ],
+      "summary_completed": [],
+      "summary_refs": [],
+      "canonical_by_phase": {
+        "7": "gaps_found"
+      },
+      "orphaned": false,
+      "metadata_gap": true,
+      "historical_three_source": "partial (metadata gap)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending; metadata gap",
+      "canonical_passed": false
+    },
+    {
+      "id": "MCP-03",
+      "assigned": "Phase 7",
+      "phases": [
+        7
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 251,
+      "checked": true,
+      "description": "agent 可以通过查询工具执行 object set 查询（filter / search / searchAround / aggregate）",
+      "line": 108,
+      "verification_rows": [
+        {
+          "id": "MCP-03",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 257,
+          "phase": 7,
+          "status": "SATISFIED，call_read→QueryService及声明参数形状实测",
+          "evidence": "SATISFIED，call_read→QueryService及声明参数形状实测",
+          "source_row": "| MCP-03 | 07 | filter/search/searchAround/aggregate | SATISFIED，call_read→QueryService及声明参数形状实测 |"
+        }
+      ],
+      "summary_completed": [],
+      "summary_refs": [],
+      "canonical_by_phase": {
+        "7": "gaps_found"
+      },
+      "orphaned": false,
+      "metadata_gap": true,
+      "historical_three_source": "partial (metadata gap)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending; metadata gap",
+      "canonical_passed": false
+    },
+    {
+      "id": "MCP-04",
+      "assigned": "Phase 7",
+      "phases": [
+        7
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 252,
+      "checked": true,
+      "description": "每个 action type 自动暴露为一个 MCP 工具，输入 schema 由参数定义派生",
+      "line": 109,
+      "verification_rows": [
+        {
+          "id": "MCP-04",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 258,
+          "phase": 7,
+          "status": "SATISFIED，ActionToolSchema、numeric refs/default/nullable/动态切换",
+          "evidence": "SATISFIED，ActionToolSchema、numeric refs/default/nullable/动态切换",
+          "source_row": "| MCP-04 | 07 | 每Action真实参数派生工具schema | SATISFIED，ActionToolSchema、numeric refs/default/nullable/动态切换 |"
+        }
+      ],
+      "summary_completed": [],
+      "summary_refs": [],
+      "canonical_by_phase": {
+        "7": "gaps_found"
+      },
+      "orphaned": false,
+      "metadata_gap": true,
+      "historical_three_source": "partial (metadata gap)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending; metadata gap",
+      "canonical_passed": false
+    },
+    {
+      "id": "MCP-05",
+      "assigned": "Phase 7",
+      "phases": [
+        7
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 253,
+      "checked": true,
+      "description": "agent 可以以 validate-only 方式调用 action 工具（dry run）",
+      "line": 110,
+      "verification_rows": [
+        {
+          "id": "MCP-05",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 259,
+          "phase": 7,
+          "status": "SATISFIED，SQLite/PG/stdio成功与失败路径完整持久行不变",
+          "evidence": "SATISFIED，SQLite/PG/stdio成功与失败路径完整持久行不变",
+          "source_row": "| MCP-05 | 07 | validate-only dryrun | SATISFIED，SQLite/PG/stdio成功与失败路径完整持久行不变 |"
+        }
+      ],
+      "summary_completed": [],
+      "summary_refs": [],
+      "canonical_by_phase": {
+        "7": "gaps_found"
+      },
+      "orphaned": false,
+      "metadata_gap": true,
+      "historical_three_source": "partial (metadata gap)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending; metadata gap",
+      "canonical_passed": false
+    },
+    {
+      "id": "MCP-06",
+      "assigned": "Phase 7",
+      "phases": [
+        7
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 254,
+      "checked": true,
+      "description": "agent 通过 MCP 的读写与 REST 走同一套授权与 edit log",
+      "line": 111,
+      "verification_rows": [
+        {
+          "id": "MCP-06",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 260,
+          "phase": 7,
+          "status": "SATISFIED，R4、跨transport竞争与双主体反例",
+          "evidence": "SATISFIED，R4、跨transport竞争与双主体反例",
+          "source_row": "| MCP-06 | 02,04,07–09,13 | REST/MCP同授权/edit log | SATISFIED，R4、跨transport竞争与双主体反例 |"
+        }
+      ],
+      "summary_completed": [
+        "07-02",
+        "07-08",
+        "07-09"
+      ],
+      "summary_refs": [
+        ".planning/phases/07-rest-mcp-shell/07-02-SUMMARY.md",
+        ".planning/phases/07-rest-mcp-shell/07-08-SUMMARY.md",
+        ".planning/phases/07-rest-mcp-shell/07-09-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "7": "gaps_found"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "MCP-07",
+      "assigned": "Phase 7",
+      "phases": [
+        7
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 255,
+      "checked": true,
+      "description": "`list_tools` 按主体过滤 toolset（core / full / sql:raw）；L2 的 6 个工具名称与参数对齐 mcp-trino",
+      "line": 112,
+      "verification_rows": [
+        {
+          "id": "MCP-07",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 261,
+          "phase": 7,
+          "status": "SATISFIED，catalog白名单、真实六工具/四formats、defaults/allow-list",
+          "evidence": "SATISFIED，catalog白名单、真实六工具/四formats、defaults/allow-list",
+          "source_row": "| MCP-07 | 07–09,13,15,16 | 主体toolset与六L2名称参数 | SATISFIED，catalog白名单、真实六工具/四formats、defaults/allow-list |"
+        }
+      ],
+      "summary_completed": [
+        "07-08",
+        "07-09",
+        "07-15",
+        "07-16"
+      ],
+      "summary_refs": [
+        ".planning/phases/07-rest-mcp-shell/07-08-SUMMARY.md",
+        ".planning/phases/07-rest-mcp-shell/07-09-SUMMARY.md",
+        ".planning/phases/07-rest-mcp-shell/07-15-SUMMARY.md",
+        ".planning/phases/07-rest-mcp-shell/07-16-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "7": "gaps_found"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "partial (INT-01 related); current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "MCP-08",
+      "assigned": "Phase 7",
+      "phases": [
+        7
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 256,
+      "checked": true,
+      "description": "L3 与任何定义 / 授权变更工具不出现在 agent MCP 中",
+      "line": 113,
+      "verification_rows": [
+        {
+          "id": "MCP-08",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 262,
+          "phase": 7,
+          "status": "SATISFIED，list/call同catalog、猜名拒绝、reload/revoke不缓存授权",
+          "evidence": "SATISFIED，list/call同catalog、猜名拒绝、reload/revoke不缓存授权",
+          "source_row": "| MCP-08 | 07,08,13 | agent无L3或定义/授权管理工具 | SATISFIED，list/call同catalog、猜名拒绝、reload/revoke不缓存授权 |"
+        }
+      ],
+      "summary_completed": [
+        "07-08"
+      ],
+      "summary_refs": [
+        ".planning/phases/07-rest-mcp-shell/07-08-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "7": "gaps_found"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "DX-01",
+      "assigned": "Phase 7",
+      "phases": [
+        7
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 257,
+      "checked": true,
+      "description": "开发者用一个二进制 `ontoforge serve --dev` 即可在本机（含 Windows）启动完整服务（SQLite 替身引擎 + dev token），无需 Trino",
+      "line": 117,
+      "verification_rows": [
+        {
+          "id": "DX-01",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 263,
+          "phase": 7,
+          "status": "SATISFIED，嵌入assets、真实Windows native安装smoke",
+          "evidence": "SATISFIED，嵌入assets、真实Windows native安装smoke",
+          "source_row": "| DX-01 | 12,14 | Windows单binary dev SQLite/token零外部依赖 | SATISFIED，嵌入assets、真实Windows native安装smoke |"
+        }
+      ],
+      "summary_completed": [
+        "07-12",
+        "07-14"
+      ],
+      "summary_refs": [
+        ".planning/phases/07-rest-mcp-shell/07-12-SUMMARY.md",
+        ".planning/phases/07-rest-mcp-shell/07-14-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "7": "gaps_found"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "DX-02",
+      "assigned": "Phase 7",
+      "phases": [
+        7
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 258,
+      "checked": true,
+      "description": "仓库附带至少一个示例 ontology，可完成查询、执行 action、查看历史的端到端演示",
+      "line": 118,
+      "verification_rows": [
+        {
+          "id": "DX-02",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 264,
+          "phase": 7,
+          "status": "SATISFIED，aviation真实业务值/receipt/history/重启",
+          "evidence": "SATISFIED，aviation真实业务值/receipt/history/重启",
+          "source_row": "| DX-02 | 12,14 | 示例ontology query→Action→history | SATISFIED，aviation真实业务值/receipt/history/重启 |"
+        }
+      ],
+      "summary_completed": [
+        "07-12",
+        "07-14"
+      ],
+      "summary_refs": [
+        ".planning/phases/07-rest-mcp-shell/07-12-SUMMARY.md",
+        ".planning/phases/07-rest-mcp-shell/07-14-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "7": "gaps_found"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    },
+    {
+      "id": "DX-04",
+      "assigned": "Phase 7",
+      "phases": [
+        7
+      ],
+      "traceability_status": "Complete",
+      "traceability_line": 259,
+      "checked": true,
+      "description": "release workflow 发布 Linux / macOS / Windows 单二进制到 GitHub Releases",
+      "line": 120,
+      "verification_rows": [
+        {
+          "id": "DX-04",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 265,
+          "phase": 7,
+          "status": "SATISFIED，3实际native artifacts+smoke，release.published授权上传接线；本轮按禁止项不触发发布",
+          "evidence": "SATISFIED，3实际native artifacts+smoke，release.published授权上传接线；本轮按禁止项不触发发布",
+          "source_row": "| DX-04 | 14 | 三平台单binary发行workflow | SATISFIED，3实际native artifacts+smoke，release.published授权上传接线；本轮按禁止项不触发发布 |"
+        }
+      ],
+      "summary_completed": [
+        "07-14"
+      ],
+      "summary_refs": [
+        ".planning/phases/07-rest-mcp-shell/07-14-SUMMARY.md"
+      ],
+      "canonical_by_phase": {
+        "7": "gaps_found"
+      },
+      "orphaned": false,
+      "metadata_gap": false,
+      "historical_three_source": "satisfied (historical claims)",
+      "current_proof_pending": true,
+      "current_judgment": "current-proof pending",
+      "canonical_passed": false
+    }
+  ],
+  "verifications": [
+    {
+      "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+      "phase": 1,
+      "verified": "2026-10-16T12:00:00Z",
+      "historical_status": "passed",
+      "score": "10/11 must-haves verified",
+      "covered_digest": "v1:sha256:1a414b08d4af61b1cd0d346d4046b65a0b722b773e66152720b97eaec55ae165",
+      "canonical": {
+        "status": "stale",
+        "next_action": "Verification is stale — covered source files changed after the verifier last ran: \".github/workflows/ci.yml\", \".planning/REQUIREMENTS.md\", \"CONTRIBUTING.md\", \"Cargo.toml\", \"crates/ontoforge-schema/src/lib.rs\" and 3 more. Re-run execute-phase for this phase: it resumes at the verification gates and re-runs the verifier, regenerating VERIFICATION.md and its digest. verify-work alone cannot refresh a stale report.",
+        "next_command": "$gsd-execute-phase 01",
+        "route": "execute-phase",
+        "moved_files": [
+          ".github/workflows/ci.yml",
+          ".planning/REQUIREMENTS.md",
+          "CONTRIBUTING.md",
+          "Cargo.toml",
+          "crates/ontoforge-schema/src/lib.rs",
+          "crates/ontoforge-schema/tests/schema_export.rs",
+          "examples/ontologies/aviation/objects.yaml",
+          "schemas/ontoforge-definition.schema.json"
+        ]
+      },
+      "rows": [
+        {
+          "id": "SCHEMA-01",
+          "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+          "line": 139,
+          "phase": 1,
+          "status": "SATISFIED",
+          "evidence": "多文件加 include glob 合并，YAML / JSON 同 IR（本次 validate 与 IR 等价测试）",
+          "source_row": "| SCHEMA-01 | 01-01、01-03、01-06 | SATISFIED | 多文件加 include glob 合并，YAML / JSON 同 IR（本次 validate 与 IR 等价测试） |"
+        },
+        {
+          "id": "SCHEMA-02",
+          "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+          "line": 140,
+          "phase": 1,
+          "status": "SATISFIED",
+          "evidence": "object type 全部字段，invalid 样例快照通过",
+          "source_row": "| SCHEMA-02 | 01-04 | SATISFIED | object type 全部字段，invalid 样例快照通过 |"
+        },
+        {
+          "id": "SCHEMA-03",
+          "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+          "line": 141,
+          "phase": 1,
+          "status": "SATISFIED",
+          "evidence": "13 个 base type 与 required",
+          "source_row": "| SCHEMA-03 | 01-04 | SATISFIED | 13 个 base type 与 required |"
+        },
+        {
+          "id": "SCHEMA-04",
+          "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+          "line": 142,
+          "phase": 1,
+          "status": "SATISFIED",
+          "evidence": "三种基数",
+          "source_row": "| SCHEMA-04 | 01-05 | SATISFIED | 三种基数 |"
+        },
+        {
+          "id": "SCHEMA-05",
+          "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+          "line": 143,
+          "phase": 1,
+          "status": "SATISFIED",
+          "evidence": "参数、rule、CEL submission criteria",
+          "source_row": "| SCHEMA-05 | 01-06、01-07、01-12 | SATISFIED | 参数、rule、CEL submission criteria |"
+        },
+        {
+          "id": "SCHEMA-06",
+          "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+          "line": 144,
+          "phase": 1,
+          "status": "SATISFIED",
+          "evidence": "全部 invalid 样例带 line:col",
+          "source_row": "| SCHEMA-06 | 01-01、01-03、01-04、01-05、01-06、01-12、01-13 | SATISFIED | 全部 invalid 样例带 line:col |"
+        },
+        {
+          "id": "SCHEMA-07",
+          "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+          "line": 145,
+          "phase": 1,
+          "status": "SATISFIED（代码 / 配置层面）；编辑器内复测待人工",
+          "evidence": "导出 schema 与入库一致；01-14 让多文档 YAML 的每个 document 在编辑器服务端关联到 schema，补全「用于编辑器补全」的承诺。UAT Test 2 未在真实 Zed 重跑，故该需求的编辑器用途以人工项收口",
+          "source_row": "| SCHEMA-07 | 01-09、**01-14** | SATISFIED（代码 / 配置层面）；编辑器内复测待人工 | 导出 schema 与入库一致；01-14 让多文档 YAML 的每个 document 在编辑器服务端关联到 schema，补全「用于编辑器补全」的承诺。UAT Test 2 未在真实 Zed 重跑，故该需求的编辑器用途以人工项收口 |"
+        },
+        {
+          "id": "LINT-01",
+          "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+          "line": 146,
+          "phase": 1,
+          "status": "SATISFIED",
+          "evidence": "E08 / E09",
+          "source_row": "| LINT-01 | 01-08 | SATISFIED | E08 / E09 |"
+        },
+        {
+          "id": "LINT-02",
+          "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+          "line": 147,
+          "phase": 1,
+          "status": "SATISFIED",
+          "evidence": "W01..W11",
+          "source_row": "| LINT-02 | 01-10、01-11 | SATISFIED | W01..W11 |"
+        },
+        {
+          "id": "LINT-03",
+          "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+          "line": 148,
+          "phase": 1,
+          "status": "SATISFIED",
+          "evidence": "miette 与 JSON 两种格式；UAT Test 1 pass",
+          "source_row": "| LINT-03 | 01-08、01-13 | SATISFIED | miette 与 JSON 两种格式；UAT Test 1 pass |"
+        },
+        {
+          "id": "LINT-04",
+          "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+          "line": 149,
+          "phase": 1,
+          "status": "SATISFIED",
+          "evidence": "`ontoforge.toml` `[lint]`",
+          "source_row": "| LINT-04 | 01-08、01-13 | SATISFIED | `ontoforge.toml` `[lint]` |"
+        },
+        {
+          "id": "DX-03",
+          "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+          "line": 150,
+          "phase": 1,
+          "status": "SATISFIED",
+          "evidence": "本次 `cargo test --workspace --locked` 299 passed，无 Docker",
+          "source_row": "| DX-03 | 01-01、01-02、01-11 | SATISFIED | 本次 `cargo test --workspace --locked` 299 passed，无 Docker |"
+        }
+      ]
+    },
+    {
+      "path": ".planning/phases/02-source-binding-engine/02-VERIFICATION.md",
+      "phase": 2,
+      "verified": "2026-10-19T08:32:39Z",
+      "historical_status": "passed",
+      "score": "15/15 must-haves verified",
+      "covered_digest": "v1:sha256:4379f0c1c1541bb8eb26bac831830f9ede8fc410f9e2ac2ad5b0487b36b24e39",
+      "canonical": {
+        "status": "stale",
+        "next_action": "Verification is stale — covered source files changed after the verifier last ran: \".github/workflows/ci.yml\", \".github/workflows/nightly.yml\", \".planning/REQUIREMENTS.md\", \"CONTRIBUTING.md\", \"Cargo.toml\" and 40 more. Re-run execute-phase for this phase: it resumes at the verification gates and re-runs the verifier, regenerating VERIFICATION.md and its digest. verify-work alone cannot refresh a stale report.",
+        "next_command": "$gsd-execute-phase 02",
+        "route": "execute-phase",
+        "moved_files": [
+          ".github/workflows/ci.yml",
+          ".github/workflows/nightly.yml",
+          ".planning/REQUIREMENTS.md",
+          "CONTRIBUTING.md",
+          "Cargo.toml",
+          "ci/trino/catalog/editstore.properties",
+          "crates/ontoforge-engine/Cargo.toml",
+          "crates/ontoforge-engine/src/bind_check.rs",
+          "crates/ontoforge-engine/src/config.rs",
+          "crates/ontoforge-engine/src/error.rs",
+          "crates/ontoforge-engine/src/lib.rs",
+          "crates/ontoforge-engine/src/printer/ast.rs",
+          "crates/ontoforge-engine/src/printer/dialect.rs",
+          "crates/ontoforge-engine/src/printer/escape.rs",
+          "crates/ontoforge-engine/src/printer/mod.rs",
+          "crates/ontoforge-engine/src/printer/sqlite_ddl.rs",
+          "crates/ontoforge-engine/src/printer/tests.rs",
+          "crates/ontoforge-engine/src/sqlite/fixture.rs",
+          "crates/ontoforge-engine/src/sqlite/mod.rs",
+          "crates/ontoforge-engine/src/trino/cancel.rs",
+          "crates/ontoforge-engine/src/trino/decode.rs",
+          "crates/ontoforge-engine/src/trino/mod.rs",
+          "crates/ontoforge-engine/tests/printer_prop.rs",
+          "crates/ontoforge-engine/tests/server_config.rs",
+          "crates/ontoforge-engine/tests/sql_text_only_from_printer.rs",
+          "crates/ontoforge-engine/tests/trino_client.rs",
+          "crates/ontoforge-engine/tests/trino_resilience.rs",
+          "crates/ontoforge-schema/src/diag.rs",
+          "crates/ontoforge-schema/src/ir/mod.rs",
+          "crates/ontoforge-schema/src/ir/names.rs",
+          "crates/ontoforge-schema/src/ir/object.rs",
+          "crates/ontoforge-schema/src/lint/e08.rs",
+          "crates/ontoforge-schema/src/loader/discover.rs",
+          "crates/ontoforge-schema/src/loader/dispatch.rs",
+          "crates/ontoforge-schema/src/loader/mod.rs",
+          "crates/ontoforge-schema/src/loader/sourcemap.rs",
+          "crates/ontoforge-schema/src/schema_export.rs",
+          "crates/ontoforge-schema/tests/action_types.rs",
+          "crates/ontoforge-schema/tests/object_types.rs",
+          "crates/ontoforge-schema/tests/schema_export.rs",
+          "crates/ontoforge/Cargo.toml",
+          "crates/ontoforge/src/cli.rs",
+          "crates/ontoforge/src/lib.rs",
+          "crates/ontoforge/src/online.rs",
+          "schemas/ontoforge-definition.schema.json"
+        ]
+      },
+      "rows": [
+        {
+          "id": "BIND-01",
+          "path": ".planning/phases/02-source-binding-engine/02-VERIFICATION.md",
+          "line": 254,
+          "phase": 2,
+          "status": "✓ SATISFIED",
+          "evidence": "truth 1、6、8",
+          "source_row": "| BIND-01 | 02-01、02-03 | 独立 `SourceBinding` 文件 + 必填 `backing` | ✓ SATISFIED | truth 1、6、8 |"
+        },
+        {
+          "id": "BIND-02",
+          "path": ".planning/phases/02-source-binding-engine/02-VERIFICATION.md",
+          "line": 255,
+          "phase": 2,
+          "status": "✓ SATISFIED",
+          "evidence": "truth 1、12、13",
+          "source_row": "| BIND-02 | 02-03、02-07、02-08 | 类型契约违反时 lint 报 E | ✓ SATISFIED | truth 1、12、13 |"
+        },
+        {
+          "id": "BIND-03",
+          "path": ".planning/phases/02-source-binding-engine/02-VERIFICATION.md",
+          "line": 256,
+          "phase": 2,
+          "status": "✓ SATISFIED（Phase 2 范围）",
+          "evidence": "truth 2、10、13、14；启动 / 定时 drift 执行按 traceability 属 Phase 7",
+          "source_row": "| BIND-03 | 02-05、02-08、02-09 | `validate --online`、`--check-pk`、drift 降级模型 | ✓ SATISFIED（Phase 2 范围） | truth 2、10、13、14；启动 / 定时 drift 执行按 traceability 属 Phase 7 |"
+        },
+        {
+          "id": "ENGINE-01",
+          "path": ".planning/phases/02-source-binding-engine/02-VERIFICATION.md",
+          "line": 257,
+          "phase": 2,
+          "status": "✓ SATISFIED",
+          "evidence": "truth 3、9、11；真实 Trino 服务端取消 `timeout_cancels_server_query` 在 CI 通过",
+          "source_row": "| ENGINE-01 | 02-04、02-06、02-09、02-10 | 自写 Trino client、超时、断连取消、trace token、两个身份 | ✓ SATISFIED | truth 3、9、11；真实 Trino 服务端取消 `timeout_cancels_server_query` 在 CI 通过 |"
+        },
+        {
+          "id": "ENGINE-02",
+          "path": ".planning/phases/02-source-binding-engine/02-VERIFICATION.md",
+          "line": 258,
+          "phase": 2,
+          "status": "✓ SATISFIED（Phase 2 范围）",
+          "evidence": "truth 3、11；`/health` 与 describe 暴露按 traceability 属 Phase 7 API-01",
+          "source_row": "| ENGINE-02 | 02-04、02-06、02-09 | fail-closed `EngineUnavailable` | ✓ SATISFIED（Phase 2 范围） | truth 3、11；`/health` 与 describe 暴露按 traceability 属 Phase 7 API-01 |"
+        },
+        {
+          "id": "ENGINE-03",
+          "path": ".planning/phases/02-source-binding-engine/02-VERIFICATION.md",
+          "line": 259,
+          "phase": 2,
+          "status": "✓ SATISFIED",
+          "evidence": "truth 4；`printer_corpus_round_trips` 在真实 Trino 上通过",
+          "source_row": "| ENGINE-03 | 02-02、02-10 | 自有 printer，proptest 与真实执行验证 | ✓ SATISFIED | truth 4；`printer_corpus_round_trips` 在真实 Trino 上通过 |"
+        },
+        {
+          "id": "ENGINE-04",
+          "path": ".planning/phases/02-source-binding-engine/02-VERIFICATION.md",
+          "line": 260,
+          "phase": 2,
+          "status": "✓ SATISFIED（Phase 2 范围）",
+          "evidence": "595 passed / 0 failed；`serve --dev` 属 Phase 7 DX-01",
+          "source_row": "| ENGINE-04 | 02-02、02-05 | SQLite 替身支撑 Windows `cargo test` | ✓ SATISFIED（Phase 2 范围） | 595 passed / 0 failed；`serve --dev` 属 Phase 7 DX-01 |"
+        },
+        {
+          "id": "ENGINE-05",
+          "path": ".planning/phases/02-source-binding-engine/02-VERIFICATION.md",
+          "line": 261,
+          "phase": 2,
+          "status": "✓ SATISFIED",
+          "evidence": "truth 5；私有 fixture 入口 `private_fixtures.rs` 与 CONTRIBUTING.md 存在。SQL Server 实测依赖仓库外私有数据，按设计不进公开仓库，本报告无该运行记录（见 Info）",
+          "source_row": "| ENGINE-05 | 02-10 | Linux CI Trino + PG，nightly Iceberg，私有 fixture 入口 | ✓ SATISFIED | truth 5；私有 fixture 入口 `private_fixtures.rs` 与 CONTRIBUTING.md 存在。SQL Server 实测依赖仓库外私有数据，按设计不进公开仓库，本报告无该运行记录（见 Info） |"
+        }
+      ]
+    },
+    {
+      "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+      "phase": 3,
+      "verified": "2026-10-22T02:33:07Z",
+      "historical_status": "passed",
+      "score": "8/8 must-haves verified",
+      "covered_digest": "v3:sha256:c1225c01a7cee2cc9522a2cd1093d344b4ea55cc6ae5ac93090746d506a4d345",
+      "canonical": {
+        "status": "stale",
+        "next_action": "Verification is stale — covered source files changed after the verifier last ran: \".github/workflows/ci.yml\". Re-run execute-phase for this phase: it resumes at the verification gates and re-runs the verifier, regenerating VERIFICATION.md and its digest. verify-work alone cannot refresh a stale report.",
+        "next_command": "$gsd-execute-phase 03",
+        "route": "execute-phase",
+        "moved_files": [
+          ".github/workflows/ci.yml"
+        ]
+      },
+      "rows": [
+        {
+          "id": "STORE-01",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 180,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "SQLite/PostgreSQL 同一 conformance；PG 值域校验也进入共享用例。",
+          "source_row": "| STORE-01 | 03-01, 03-03, 03-04, 03-08, 03-09, 03-13, 03-20, 03-21 | ticked | SATISFIED | SQLite/PostgreSQL 同一 conformance；PG 值域校验也进入共享用例。 |"
+        },
+        {
+          "id": "STORE-02",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 181,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "自动 DDL、ONT-V25、migrate 归档、栅栏、`lock_timeout`、pending/probe/active 均有测试；缓存隔离红绿实测与 run 39710470956 integration 的 `reload_trino_it` 3/3 关闭第 8 条 truth。",
+          "source_row": "| STORE-02 | 03-02, 03-03, 03-04, 03-10, 03-15, 03-18, 03-20 | unticked | SATISFIED | 自动 DDL、ONT-V25、migrate 归档、栅栏、`lock_timeout`、pending/probe/active 均有测试；缓存隔离红绿实测与 run 39710470956 integration 的 `reload_trino_it` 3/3 关闭第 8 条 truth。 |"
+        },
+        {
+          "id": "STORE-03",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 182,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "每次提交一条不可变 log；追加专用触发器；decimal 保真。",
+          "source_row": "| STORE-03 | 03-08, 03-09, 03-21 | ticked | SATISFIED | 每次提交一条不可变 log；追加专用触发器；decimal 保真。 |"
+        },
+        {
+          "id": "STORE-04",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 183,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "`EditStore::history` 带 D-13 掩码，`history_masking` 12 通过；REST/MCP 外壳属 Phase 7。",
+          "source_row": "| STORE-04 | 03-17 | unticked | SATISFIED | `EditStore::history` 带 D-13 掩码，`history_masking` 12 通过；REST/MCP 外壳属 Phase 7。 |"
+        },
+        {
+          "id": "STORE-05",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 184,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "一对一部分唯一索引、`CardinalityViolation`、PG `concurrent_fk_claims_one_wins`。",
+          "source_row": "| STORE-05 | 03-10, 03-13 | unticked | SATISFIED | 一对一部分唯一索引、`CardinalityViolation`、PG `concurrent_fk_claims_one_wins`。 |"
+        },
+        {
+          "id": "STORE-06",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 185,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "`ontoforge import` 作为 `system:import` 提交；JSON/CSV decimal 逐字保存。",
+          "source_row": "| STORE-06 | 03-19, 03-21 | ticked | SATISFIED | `ontoforge import` 作为 `system:import` 提交；JSON/CSV decimal 逐字保存。 |"
+        },
+        {
+          "id": "STORE-07",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 186,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "`model_prop` 与 conformance 转换用例通过。",
+          "source_row": "| STORE-07 | 03-08, 03-13 | unticked，traceability 仍为 Gaps Found | SATISFIED | `model_prop` 与 conformance 转换用例通过。 |"
+        },
+        {
+          "id": "SCOPE-01",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 187,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "`of_user`、`of_role`、`of_role_binding`、`scope plan/apply`、JWT `groups`；`cli_scope` 8、`scope_store` 11。",
+          "source_row": "| SCOPE-01 | 03-06, 03-07, 03-14, 03-16 | unticked | SATISFIED | `of_user`、`of_role`、`of_role_binding`、`scope plan/apply`、JWT `groups`；`cli_scope` 8、`scope_store` 11。 |"
+        },
+        {
+          "id": "SCOPE-02",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 188,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "role schema 与编译快照测试。",
+          "source_row": "| SCOPE-02 | 03-02, 03-05, 03-06, 03-11, 03-14, 03-16 | unticked | SATISFIED | role schema 与编译快照测试。 |"
+        },
+        {
+          "id": "SCOPE-03",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 189,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "`merge.rs` 与 `scope_merge` 9。",
+          "source_row": "| SCOPE-03 | 03-11 | unticked | SATISFIED | `merge.rs` 与 `scope_merge` 9。 |"
+        },
+        {
+          "id": "SCOPE-04",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 190,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "Rust 对 SQLite 本地 6 通过；run 39710470956 的 Trino 483 行谓词语料测试 3/3 通过。",
+          "source_row": "| SCOPE-04 | 03-05, 03-11, 03-20 | unticked，traceability 仍为 Gaps Found | SATISFIED | Rust 对 SQLite 本地 6 通过；run 39710470956 的 Trino 483 行谓词语料测试 3/3 通过。 |"
+        },
+        {
+          "id": "SCOPE-05",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 191,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "无授权不可见、缺失属性为 Unknown、不可编译谓词在 plan/apply/reload 为 ONT-V22。",
+          "source_row": "| SCOPE-05 | 03-05, 03-11, 03-14 | unticked | SATISFIED | 无授权不可见、缺失属性为 Unknown、不可编译谓词在 plan/apply/reload 为 ONT-V22。 |"
+        },
+        {
+          "id": "SCOPE-06",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 192,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "reload、scope apply、migrate --apply 三处复核；整对象读取已拦。",
+          "source_row": "| SCOPE-06 | 03-14, 03-16, 03-18, 03-22 | ticked | SATISFIED | reload、scope apply、migrate --apply 三处复核；整对象读取已拦。 |"
+        },
+        {
+          "id": "SCOPE-07",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 193,
+          "phase": 3,
+          "status": "PARTIAL; remainder deferred",
+          "evidence": "请求固定定义版本（读侧）与 MCP 无变更工具属 Phase 6/7；Phase 3 完成写侧栅栏与 scope 审计。",
+          "source_row": "| SCOPE-07 | 03-16, 03-18 | unticked | PARTIAL; remainder deferred | 请求固定定义版本（读侧）与 MCP 无变更工具属 Phase 6/7；Phase 3 完成写侧栅栏与 scope 审计。 |"
+        },
+        {
+          "id": "AUTH-01",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 194,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "`oidc` 31 通过。",
+          "source_row": "| AUTH-01 | 03-01, 03-02, 03-07 | unticked，traceability 仍为 Gaps Found | SATISFIED | `oidc` 31 通过。 |"
+        },
+        {
+          "id": "AUTH-02",
+          "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+          "line": 195,
+          "phase": 3,
+          "status": "SATISFIED",
+          "evidence": "全新树上的 `dev-token` 与 `reload` 测试通过；commit `1df4a7f` 的 Ubuntu job success，Unix 0700 断言在该 commit 上运行。",
+          "source_row": "| AUTH-02 | 03-12, 03-23 | ticked | SATISFIED | 全新树上的 `dev-token` 与 `reload` 测试通过；commit `1df4a7f` 的 Ubuntu job success，Unix 0700 断言在该 commit 上运行。 |"
+        }
+      ]
+    },
+    {
+      "path": ".planning/phases/04-scoped-l0-read/04-VERIFICATION.md",
+      "phase": 4,
+      "verified": "2026-10-23T00:45:51Z",
+      "historical_status": "passed",
+      "score": "36/36 must-haves verified",
+      "covered_digest": "v3:sha256:7e19156409807f2d6749524e9219007517de8d4088c3ac1ac0460310d9f8143e",
+      "canonical": {
+        "status": "stale",
+        "next_action": "Verification is stale — covered source files changed after the verifier last ran: \".github/workflows/ci.yml\", \"ci/query-services.sh\", \"crates/ontoforge-engine/src/printer/mod.rs\", \"crates/ontoforge-query/src/aggregate.rs\", \"crates/ontoforge-query/src/cursor.rs\" and 3 more. Re-run execute-phase for this phase: it resumes at the verification gates and re-runs the verifier, regenerating VERIFICATION.md and its digest. verify-work alone cannot refresh a stale report.",
+        "next_command": "$gsd-execute-phase 04",
+        "route": "execute-phase",
+        "moved_files": [
+          ".github/workflows/ci.yml",
+          "ci/query-services.sh",
+          "crates/ontoforge-engine/src/printer/mod.rs",
+          "crates/ontoforge-query/src/aggregate.rs",
+          "crates/ontoforge-query/src/cursor.rs",
+          "crates/ontoforge-query/src/execute.rs",
+          "crates/ontoforge-query/src/lib.rs",
+          "crates/ontoforge-query/src/link.rs"
+        ]
+      },
+      "rows": [
+        {
+          "id": "QUERY-01",
+          "path": ".planning/phases/04-scoped-l0-read/04-VERIFICATION.md",
+          "line": 77,
+          "phase": 4,
+          "status": "SATISFIED",
+          "evidence": "`pk_read`, `trino_query_it::fixed_semantics_and_cursor_refill`",
+          "source_row": "| QUERY-01 | SATISFIED | `pk_read`, `trino_query_it::fixed_semantics_and_cursor_refill` |"
+        },
+        {
+          "id": "QUERY-02",
+          "path": ".planning/phases/04-scoped-l0-read/04-VERIFICATION.md",
+          "line": 78,
+          "phase": 4,
+          "status": "SATISFIED",
+          "evidence": "`sqlite_query` 全运算符 test，真实 `where_search_set_and_relationship_corpus`",
+          "source_row": "| QUERY-02 | SATISFIED | `sqlite_query` 全运算符 test，真实 `where_search_set_and_relationship_corpus` |"
+        },
+        {
+          "id": "QUERY-03",
+          "path": ".planning/phases/04-scoped-l0-read/04-VERIFICATION.md",
+          "line": 79,
+          "phase": 4,
+          "status": "SATISFIED",
+          "evidence": "`sqlite_query` any/all token test，真实搜索 corpus",
+          "source_row": "| QUERY-03 | SATISFIED | `sqlite_query` any/all token test，真实搜索 corpus |"
+        },
+        {
+          "id": "QUERY-04",
+          "path": ".planning/phases/04-scoped-l0-read/04-VERIFICATION.md",
+          "line": 80,
+          "phase": 4,
+          "status": "SATISFIED",
+          "evidence": "`security` cursor/refill tests，`overlay_prop` reference",
+          "source_row": "| QUERY-04 | SATISFIED | `security` cursor/refill tests，`overlay_prop` reference |"
+        },
+        {
+          "id": "QUERY-05",
+          "path": ".planning/phases/04-scoped-l0-read/04-VERIFICATION.md",
+          "line": 81,
+          "phase": 4,
+          "status": "SATISFIED",
+          "evidence": "`search_around` FK/M:N tests，真实 relationship corpus",
+          "source_row": "| QUERY-05 | SATISFIED | `search_around` FK/M:N tests，真实 relationship corpus |"
+        },
+        {
+          "id": "QUERY-06",
+          "path": ".planning/phases/04-scoped-l0-read/04-VERIFICATION.md",
+          "line": 82,
+          "phase": 4,
+          "status": "SATISFIED",
+          "evidence": "`set_ops` fixed/proptest，真实 set corpus",
+          "source_row": "| QUERY-06 | SATISFIED | `set_ops` fixed/proptest，真实 set corpus |"
+        },
+        {
+          "id": "QUERY-07",
+          "path": ".planning/phases/04-scoped-l0-read/04-VERIFICATION.md",
+          "line": 83,
+          "phase": 4,
+          "status": "SATISFIED",
+          "evidence": "`aggregate` independent reference、TopN、group/distinct tests，真实 aggregate corpus",
+          "source_row": "| QUERY-07 | SATISFIED | `aggregate` independent reference、TopN、group/distinct tests，真实 aggregate corpus |"
+        },
+        {
+          "id": "QUERY-08",
+          "path": ".planning/phases/04-scoped-l0-read/04-VERIFICATION.md",
+          "line": 84,
+          "phase": 4,
+          "status": "SATISFIED",
+          "evidence": "SQLite differential、proptest；真实 PG 2/2、Trino/PG 5/5",
+          "source_row": "| QUERY-08 | SATISFIED | SQLite differential、proptest；真实 PG 2/2、Trino/PG 5/5 |"
+        },
+        {
+          "id": "QUERY-09",
+          "path": ".planning/phases/04-scoped-l0-read/04-VERIFICATION.md",
+          "line": 85,
+          "phase": 4,
+          "status": "SATISFIED",
+          "evidence": "`security` 与真实多 role、token replay、physical-error tests",
+          "source_row": "| QUERY-09 | SATISFIED | `security` 与真实多 role、token replay、physical-error tests |"
+        },
+        {
+          "id": "QUERY-10",
+          "path": ".planning/phases/04-scoped-l0-read/04-VERIFICATION.md",
+          "line": 86,
+          "phase": 4,
+          "status": "SATISFIED",
+          "evidence": "`sql_shape`、137 distributed plans、isolated timings",
+          "source_row": "| QUERY-10 | SATISFIED | `sql_shape`、137 distributed plans、isolated timings |"
+        }
+      ]
+    },
+    {
+      "path": ".planning/phases/05-online-action/05-VERIFICATION.md",
+      "phase": 5,
+      "verified": "2026-10-26T03:44:25Z",
+      "historical_status": "passed",
+      "score": "5/5 must-haves verified",
+      "covered_digest": "v3:sha256:4ab7346c79d476e07d74153ded15b4ecfbb69a80e6de0a9616e68486c9a440df",
+      "canonical": {
+        "status": "stale",
+        "next_action": "Verification is stale — covered source files changed after the verifier last ran: \".github/workflows/ci.yml\", \"Cargo.lock\", \"crates/ontoforge-action/src/lib.rs\", \"crates/ontoforge-action/src/source.rs\", \"crates/ontoforge-action/tests/entrypoints.rs\" and 9 more. Re-run execute-phase for this phase: it resumes at the verification gates and re-runs the verifier, regenerating VERIFICATION.md and its digest. verify-work alone cannot refresh a stale report.",
+        "next_command": "$gsd-execute-phase 05",
+        "route": "execute-phase",
+        "moved_files": [
+          ".github/workflows/ci.yml",
+          "Cargo.lock",
+          "crates/ontoforge-action/src/lib.rs",
+          "crates/ontoforge-action/src/source.rs",
+          "crates/ontoforge-action/tests/entrypoints.rs",
+          "crates/ontoforge-action/tests/idempotency_pg.rs",
+          "crates/ontoforge-engine/src/config.rs",
+          "crates/ontoforge-query/Cargo.toml",
+          "crates/ontoforge-query/src/lib.rs",
+          "crates/ontoforge-query/tests/security.rs",
+          "crates/ontoforge-storage/tests/conformance/mod.rs",
+          "crates/ontoforge-storage/tests/reload_pg.rs",
+          "crates/ontoforge/src/cli.rs",
+          "crates/ontoforge/src/lib.rs"
+        ]
+      },
+      "rows": [
+        {
+          "id": "ACTION-01",
+          "path": ".planning/phases/05-online-action/05-VERIFICATION.md",
+          "line": 75,
+          "phase": 5,
+          "status": "SATISFIED",
+          "evidence": "参数、规则、批次、validate-only 与 PG 原子性测试。",
+          "source_row": "| ACTION-01..06 | SATISFIED | 参数、规则、批次、validate-only 与 PG 原子性测试。 |"
+        },
+        {
+          "id": "ACTION-02",
+          "path": ".planning/phases/05-online-action/05-VERIFICATION.md",
+          "line": 75,
+          "phase": 5,
+          "status": "SATISFIED",
+          "evidence": "参数、规则、批次、validate-only 与 PG 原子性测试。",
+          "source_row": "| ACTION-01..06 | SATISFIED | 参数、规则、批次、validate-only 与 PG 原子性测试。 |"
+        },
+        {
+          "id": "ACTION-03",
+          "path": ".planning/phases/05-online-action/05-VERIFICATION.md",
+          "line": 75,
+          "phase": 5,
+          "status": "SATISFIED",
+          "evidence": "参数、规则、批次、validate-only 与 PG 原子性测试。",
+          "source_row": "| ACTION-01..06 | SATISFIED | 参数、规则、批次、validate-only 与 PG 原子性测试。 |"
+        },
+        {
+          "id": "ACTION-04",
+          "path": ".planning/phases/05-online-action/05-VERIFICATION.md",
+          "line": 75,
+          "phase": 5,
+          "status": "SATISFIED",
+          "evidence": "参数、规则、批次、validate-only 与 PG 原子性测试。",
+          "source_row": "| ACTION-01..06 | SATISFIED | 参数、规则、批次、validate-only 与 PG 原子性测试。 |"
+        },
+        {
+          "id": "ACTION-05",
+          "path": ".planning/phases/05-online-action/05-VERIFICATION.md",
+          "line": 75,
+          "phase": 5,
+          "status": "SATISFIED",
+          "evidence": "参数、规则、批次、validate-only 与 PG 原子性测试。",
+          "source_row": "| ACTION-01..06 | SATISFIED | 参数、规则、批次、validate-only 与 PG 原子性测试。 |"
+        },
+        {
+          "id": "ACTION-06",
+          "path": ".planning/phases/05-online-action/05-VERIFICATION.md",
+          "line": 75,
+          "phase": 5,
+          "status": "SATISFIED",
+          "evidence": "参数、规则、批次、validate-only 与 PG 原子性测试。",
+          "source_row": "| ACTION-01..06 | SATISFIED | 参数、规则、批次、validate-only 与 PG 原子性测试。 |"
+        },
+        {
+          "id": "ACTION-07",
+          "path": ".planning/phases/05-online-action/05-VERIFICATION.md",
+          "line": 76,
+          "phase": 5,
+          "status": "SATISFIED within repository",
+          "evidence": "production 写入入口扫描仅允许 Action 与 audited import；无法约束仓库外自建 host。",
+          "source_row": "| ACTION-07 | SATISFIED within repository | production 写入入口扫描仅允许 Action 与 audited import；无法约束仓库外自建 host。 |"
+        },
+        {
+          "id": "ACTION-08",
+          "path": ".planning/phases/05-online-action/05-VERIFICATION.md",
+          "line": 77,
+          "phase": 5,
+          "status": "SATISFIED",
+          "evidence": "scope/link/release 与令牌测试，新增同 RowKey 后别名三目标通过。",
+          "source_row": "| ACTION-08..09 | SATISFIED | scope/link/release 与令牌测试，新增同 RowKey 后别名三目标通过。 |"
+        },
+        {
+          "id": "ACTION-09",
+          "path": ".planning/phases/05-online-action/05-VERIFICATION.md",
+          "line": 77,
+          "phase": 5,
+          "status": "SATISFIED",
+          "evidence": "scope/link/release 与令牌测试，新增同 RowKey 后别名三目标通过。",
+          "source_row": "| ACTION-08..09 | SATISFIED | scope/link/release 与令牌测试，新增同 RowKey 后别名三目标通过。 |"
+        },
+        {
+          "id": "ACTION-10",
+          "path": ".planning/phases/05-online-action/05-VERIFICATION.md",
+          "line": 78,
+          "phase": 5,
+          "status": "SATISFIED",
+          "evidence": "SQLite/PG 幂等、失权和响应丢失重试目标已运行。",
+          "source_row": "| ACTION-10 | SATISFIED | SQLite/PG 幂等、失权和响应丢失重试目标已运行。 |"
+        },
+        {
+          "id": "ACTION-11",
+          "path": ".planning/phases/05-online-action/05-VERIFICATION.md",
+          "line": 79,
+          "phase": 5,
+          "status": "SATISFIED in development",
+          "evidence": "CLI 常驻 worker 发送、重试、重启恢复；CI run 40000699036 的 PG webhook 2/2 与 Trino Action 4/4 通过。WSL 临时 receiver 503 -> 204 且 event_id 稳定；真实部署前提见 WEBHOOK-WORKER.md。",
+          "source_row": "| ACTION-11 | SATISFIED in development | CLI 常驻 worker 发送、重试、重启恢复；CI run 40000699036 的 PG webhook 2/2 与 Trino Action 4/4 通过。WSL 临时 receiver 503 -> 204 且 event_id 稳定；真实部署前提见 WEBHOOK-WORKER.md。 |"
+        },
+        {
+          "id": "ACTION-12",
+          "path": ".planning/phases/05-online-action/05-VERIFICATION.md",
+          "line": 80,
+          "phase": 5,
+          "status": "SATISFIED",
+          "evidence": "真实 Trino duplicate/offline 目标先前通过；后别名按需采样本轮通过。",
+          "source_row": "| ACTION-12 | SATISFIED | 真实 Trino duplicate/offline 目标先前通过；后别名按需采样本轮通过。 |"
+        }
+      ]
+    },
+    {
+      "path": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md",
+      "phase": 6,
+      "verified": "2026-10-28T12:08:10Z",
+      "historical_status": "passed",
+      "score": "22/22 must-haves verified",
+      "covered_digest": "v3:sha256:0d99b15cfcb570bfbf1a832323aa7f3aee81bb4060873ffd4bb34875df990fe3",
+      "canonical": {
+        "status": "stale",
+        "next_action": "Verification is stale — covered source files changed after the verifier last ran: \".github/workflows/ci.yml\", \"Cargo.lock\", \"ci/query-services.sh\", \"crates/ontoforge-engine/Cargo.toml\", \"crates/ontoforge-engine/src/config.rs\" and 11 more. Re-run execute-phase for this phase: it resumes at the verification gates and re-runs the verifier, regenerating VERIFICATION.md and its digest. verify-work alone cannot refresh a stale report.",
+        "next_command": "$gsd-execute-phase 06",
+        "route": "execute-phase",
+        "moved_files": [
+          ".github/workflows/ci.yml",
+          "Cargo.lock",
+          "ci/query-services.sh",
+          "crates/ontoforge-engine/Cargo.toml",
+          "crates/ontoforge-engine/src/config.rs",
+          "crates/ontoforge-engine/src/printer/l2.rs",
+          "crates/ontoforge-engine/src/trino/l2_monitor.rs",
+          "crates/ontoforge-engine/src/trino/mod.rs",
+          "crates/ontoforge-engine/tests/l2_monitor.rs",
+          "crates/ontoforge-query/src/aggregate.rs",
+          "crates/ontoforge-query/src/execute.rs",
+          "crates/ontoforge-query/src/l2.rs",
+          "crates/ontoforge-query/src/lib.rs",
+          "crates/ontoforge-query/tests/audit_pk.rs",
+          "crates/ontoforge-query/tests/l2_execute.rs",
+          "crates/ontoforge-storage/src/lib.rs"
+        ]
+      },
+      "rows": [
+        {
+          "id": "L2-01",
+          "path": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md",
+          "line": 179,
+          "phase": 6,
+          "status": "SATISFIED（库级与远端CI）",
+          "evidence": "#13-18，六操作有源数据/授权/审计接线。",
+          "source_row": "| L2-01 | 06-06/07/08/09 | raw DQL与allow-list discovery | SATISFIED（库级与远端CI） | #13-18，六操作有源数据/授权/审计接线。 |"
+        },
+        {
+          "id": "L2-02",
+          "path": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md",
+          "line": 180,
+          "phase": 6,
+          "status": "SATISFIED（gate与真实483）；远端CI已验证",
+          "evidence": "#1，104-ID生产gate亲跑；明确等价新语料而非原文。",
+          "source_row": "| L2-02 | 06-03/06/08 | AST白名单与Display | SATISFIED（gate与真实483）；远端CI已验证 | #1，104-ID生产gate亲跑；明确等价新语料而非原文。 |"
+        },
+        {
+          "id": "L2-03",
+          "path": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md",
+          "line": 181,
+          "phase": 6,
+          "status": "SATISFIED（库级与真实ACL）；远端CI已验证",
+          "evidence": "#2/#10/#15。",
+          "source_row": "| L2-03 | 06-03/04/06/07/08/10 | catalog/schema allow-list，硬排除system/edit | SATISFIED（库级与真实ACL）；远端CI已验证 | #2/#10/#15。 |"
+        },
+        {
+          "id": "L2-04",
+          "path": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md",
+          "line": 182,
+          "phase": 6,
+          "status": "库级SATISFIED；整体Pending",
+          "evidence": "#3/#20/#21；H2/H3均已验证。服务持有handle、优雅关闭及HTTP `/health` 按ADR-0028由Phase7验收。",
+          "source_row": "| L2-04 | 06-04/06/07/08/10 | 启动/周期fail-closed、健康原因 | 库级SATISFIED；整体Pending | #3/#20/#21；H2/H3均已验证。服务持有handle、优雅关闭及HTTP `/health` 按ADR-0028由Phase7验收。 |"
+        },
+        {
+          "id": "AUDIT-01",
+          "path": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md",
+          "line": 183,
+          "phase": 6,
+          "status": "SATISFIED",
+          "evidence": "#4/#6-9/#11-18 的原证据保留；#22 的并发/取消/成功及失败终态合同已由真实 RED/GREEN 与新 HEAD CI 证明。",
+          "source_row": "| AUDIT-01 | 06-01/02/05/06/07/08/09/11 | 全读取元数据审计、背压、保留期及可靠排空 | SATISFIED | #4/#6-9/#11-18 的原证据保留；#22 的并发/取消/成功及失败终态合同已由真实 RED/GREEN 与新 HEAD CI 证明。 |"
+        },
+        {
+          "id": "SCOPE-07",
+          "path": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md",
+          "line": 184,
+          "phase": 6,
+          "status": "当前阶段SATISFIED；整体Pending",
+          "evidence": "#5/#19及竞争测试；MCP无变更工具限制属Phase7。",
+          "source_row": "| SCOPE-07 | 06-09 | 管理变更审计与请求固定版本 | 当前阶段SATISFIED；整体Pending | #5/#19及竞争测试；MCP无变更工具限制属Phase7。 |"
+        }
+      ]
+    },
+    {
+      "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+      "phase": 7,
+      "verified": "2026-11-03T16:34:44Z",
+      "historical_status": "gaps_found",
+      "score": "80/80 must-haves verified",
+      "covered_digest": "v4:sha256:38a0994eba86841a50afa74d9c9607597f9f0a69b559cb5cc2d9212f54d59c47",
+      "canonical": {
+        "status": "gaps_found",
+        "next_action": "Gaps found. Plan the fixes, then re-run execute-phase before shipping.",
+        "next_command": "$gsd-plan-phase 07 --gaps",
+        "route": "plan-phase"
+      },
+      "rows": [
+        {
+          "id": "API-01",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 250,
+          "phase": 7,
+          "status": "SATISFIED，R1/R4、八路由与真实HTTP/PG/SDK",
+          "evidence": "SATISFIED，R1/R4、八路由与真实HTTP/PG/SDK",
+          "source_row": "| API-01 | 01–07,13 | REST metadata、对象、object set、Action、history | SATISFIED，R1/R4、八路由与真实HTTP/PG/SDK |"
+        },
+        {
+          "id": "API-02",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 251,
+          "phase": 7,
+          "status": "SATISFIED，P05、静态render/独立schema断言/CLI导出",
+          "evidence": "SATISFIED，P05、静态render/独立schema断言/CLI导出",
+          "source_row": "| API-02 | 05 | OpenAPI3.1与snapshot | SATISFIED，P05、静态render/独立schema断言/CLI导出 |"
+        },
+        {
+          "id": "API-03",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 252,
+          "phase": 7,
+          "status": "SATISFIED，error mapping、http_contract、MCP/SDK错误及audit关联",
+          "evidence": "SATISFIED，error mapping、http_contract、MCP/SDK错误及audit关联",
+          "source_row": "| API-03 | 01,03–06,13 | code/apiName/request_id与L0脱敏 | SATISFIED，error mapping、http_contract、MCP/SDK错误及audit关联 |"
+        },
+        {
+          "id": "API-04",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 253,
+          "phase": 7,
+          "status": "SATISFIED，P10、真实contract9",
+          "evidence": "SATISFIED，P10、真实contract9",
+          "source_row": "| API-04 | 10,14 | Rust全部REST能力 | SATISFIED，P10、真实contract9 |"
+        },
+        {
+          "id": "API-05",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 254,
+          "phase": 7,
+          "status": "SATISFIED，P11、fresh17/17、严格生成/类型门",
+          "evidence": "SATISFIED，P11、fresh17/17、严格生成/类型门",
+          "source_row": "| API-05 | 11,14 | OpenAPI生成TS callable client | SATISFIED，P11、fresh17/17、严格生成/类型门 |"
+        },
+        {
+          "id": "MCP-01",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 255,
+          "phase": 7,
+          "status": "SATISFIED，T24/T08真实HTTP和CLI进程",
+          "evidence": "SATISFIED，T24/T08真实HTTP和CLI进程",
+          "source_row": "| MCP-01 | 07–09,13 | stdio及streamable HTTP | SATISFIED，T24/T08真实HTTP和CLI进程 |"
+        },
+        {
+          "id": "MCP-02",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 256,
+          "phase": 7,
+          "status": "SATISFIED，mcp_describe与scoped REST真实内容一致",
+          "evidence": "SATISFIED，mcp_describe与scoped REST真实内容一致",
+          "source_row": "| MCP-02 | 07 | describe ontology结构/属性/links/Action描述 | SATISFIED，mcp_describe与scoped REST真实内容一致 |"
+        },
+        {
+          "id": "MCP-03",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 257,
+          "phase": 7,
+          "status": "SATISFIED，call_read→QueryService及声明参数形状实测",
+          "evidence": "SATISFIED，call_read→QueryService及声明参数形状实测",
+          "source_row": "| MCP-03 | 07 | filter/search/searchAround/aggregate | SATISFIED，call_read→QueryService及声明参数形状实测 |"
+        },
+        {
+          "id": "MCP-04",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 258,
+          "phase": 7,
+          "status": "SATISFIED，ActionToolSchema、numeric refs/default/nullable/动态切换",
+          "evidence": "SATISFIED，ActionToolSchema、numeric refs/default/nullable/动态切换",
+          "source_row": "| MCP-04 | 07 | 每Action真实参数派生工具schema | SATISFIED，ActionToolSchema、numeric refs/default/nullable/动态切换 |"
+        },
+        {
+          "id": "MCP-05",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 259,
+          "phase": 7,
+          "status": "SATISFIED，SQLite/PG/stdio成功与失败路径完整持久行不变",
+          "evidence": "SATISFIED，SQLite/PG/stdio成功与失败路径完整持久行不变",
+          "source_row": "| MCP-05 | 07 | validate-only dryrun | SATISFIED，SQLite/PG/stdio成功与失败路径完整持久行不变 |"
+        },
+        {
+          "id": "MCP-06",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 260,
+          "phase": 7,
+          "status": "SATISFIED，R4、跨transport竞争与双主体反例",
+          "evidence": "SATISFIED，R4、跨transport竞争与双主体反例",
+          "source_row": "| MCP-06 | 02,04,07–09,13 | REST/MCP同授权/edit log | SATISFIED，R4、跨transport竞争与双主体反例 |"
+        },
+        {
+          "id": "MCP-07",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 261,
+          "phase": 7,
+          "status": "SATISFIED，catalog白名单、真实六工具/四formats、defaults/allow-list",
+          "evidence": "SATISFIED，catalog白名单、真实六工具/四formats、defaults/allow-list",
+          "source_row": "| MCP-07 | 07–09,13,15,16 | 主体toolset与六L2名称参数 | SATISFIED，catalog白名单、真实六工具/四formats、defaults/allow-list |"
+        },
+        {
+          "id": "MCP-08",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 262,
+          "phase": 7,
+          "status": "SATISFIED，list/call同catalog、猜名拒绝、reload/revoke不缓存授权",
+          "evidence": "SATISFIED，list/call同catalog、猜名拒绝、reload/revoke不缓存授权",
+          "source_row": "| MCP-08 | 07,08,13 | agent无L3或定义/授权管理工具 | SATISFIED，list/call同catalog、猜名拒绝、reload/revoke不缓存授权 |"
+        },
+        {
+          "id": "DX-01",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 263,
+          "phase": 7,
+          "status": "SATISFIED，嵌入assets、真实Windows native安装smoke",
+          "evidence": "SATISFIED，嵌入assets、真实Windows native安装smoke",
+          "source_row": "| DX-01 | 12,14 | Windows单binary dev SQLite/token零外部依赖 | SATISFIED，嵌入assets、真实Windows native安装smoke |"
+        },
+        {
+          "id": "DX-02",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 264,
+          "phase": 7,
+          "status": "SATISFIED，aviation真实业务值/receipt/history/重启",
+          "evidence": "SATISFIED，aviation真实业务值/receipt/history/重启",
+          "source_row": "| DX-02 | 12,14 | 示例ontology query→Action→history | SATISFIED，aviation真实业务值/receipt/history/重启 |"
+        },
+        {
+          "id": "DX-04",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 265,
+          "phase": 7,
+          "status": "SATISFIED，3实际native artifacts+smoke，release.published授权上传接线；本轮按禁止项不触发发布",
+          "evidence": "SATISFIED，3实际native artifacts+smoke，release.published授权上传接线；本轮按禁止项不触发发布",
+          "source_row": "| DX-04 | 14 | 三平台单binary发行workflow | SATISFIED，3实际native artifacts+smoke，release.published授权上传接线；本轮按禁止项不触发发布 |"
+        },
+        {
+          "id": "L2-04",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 266,
+          "phase": 7,
+          "status": "SATISFIED，monitor持有、真实health61s过期/恢复、宽松ACL对照",
+          "evidence": "SATISFIED，monitor持有、真实health61s过期/恢复、宽松ACL对照",
+          "source_row": "| L2-04 | 06,08,13 | 启动与持续ACL证明、fail-closed/health | SATISFIED，monitor持有、真实health61s过期/恢复、宽松ACL对照 |"
+        },
+        {
+          "id": "SCOPE-07",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 267,
+          "phase": 7,
+          "status": "SATISFIED，request_snapshot共同锁+PG混代测试、MCP无管理入口",
+          "evidence": "SATISFIED，request_snapshot共同锁+PG混代测试、MCP无管理入口",
+          "source_row": "| SCOPE-07 | 01,02,04,07–09,13,16 | 管理通道限制、每请求固定定义 | SATISFIED，request_snapshot共同锁+PG混代测试、MCP无管理入口 |"
+        },
+        {
+          "id": "BIND-03",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 268,
+          "phase": 7,
+          "status": "SATISFIED，source_drift真实目标隔离/恢复/外部reload2/2",
+          "evidence": "SATISFIED，source_drift真实目标隔离/恢复/外部reload2/2",
+          "source_row": "| BIND-03（继承服务部分） | 13 | 启动/周期drift执行 | SATISFIED，source_drift真实目标隔离/恢复/外部reload2/2 |"
+        },
+        {
+          "id": "ENGINE-02",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 269,
+          "phase": 7,
+          "status": "SATISFIED，metadata/describe真实状态、core503/L2degraded合同",
+          "evidence": "SATISFIED，metadata/describe真实状态、core503/L2degraded合同",
+          "source_row": "| ENGINE-02（继承服务部分） | 06 | /health与describe暴露引擎状态 | SATISFIED，metadata/describe真实状态、core503/L2degraded合同 |"
+        },
+        {
+          "id": "ENGINE-04",
+          "path": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+          "line": 270,
+          "phase": 7,
+          "status": "SATISFIED，dev lifecycle及三native安装",
+          "evidence": "SATISFIED，dev lifecycle及三native安装",
+          "source_row": "| ENGINE-04（继承服务部分） | 12 | serve --dev SQLite宿主 | SATISFIED，dev lifecycle及三native安装 |"
+        }
+      ]
+    }
+  ],
+  "summaries": [
+    {
+      "path": ".planning/phases/01-workspace-schema-lint/01-01-SUMMARY.md",
+      "plan": "01-01",
+      "phase": 1,
+      "field_present": true,
+      "completed_ids": [
+        "DX-03",
+        "SCHEMA-01",
+        "SCHEMA-06"
+      ],
+      "date_evidence": [
+        {
+          "line": 102,
+          "text": "completed: 2026-10-15"
+        },
+        {
+          "line": 113,
+          "text": "- **Completed:** 2026-10-15"
+        }
+      ],
+      "extractor_stdout": "DX-03,SCHEMA-01,SCHEMA-06"
+    },
+    {
+      "path": ".planning/phases/01-workspace-schema-lint/01-02-SUMMARY.md",
+      "plan": "01-02",
+      "phase": 1,
+      "field_present": true,
+      "completed_ids": [
+        "DX-03"
+      ],
+      "date_evidence": [
+        {
+          "line": 81,
+          "text": "completed: 2026-10-15"
+        }
+      ],
+      "extractor_stdout": "DX-03"
+    },
+    {
+      "path": ".planning/phases/01-workspace-schema-lint/01-03-SUMMARY.md",
+      "plan": "01-03",
+      "phase": 1,
+      "field_present": true,
+      "completed_ids": [
+        "SCHEMA-01",
+        "SCHEMA-06"
+      ],
+      "date_evidence": [
+        {
+          "line": 97,
+          "text": "completed: 2026-10-15"
+        }
+      ],
+      "extractor_stdout": "SCHEMA-01,SCHEMA-06"
+    },
+    {
+      "path": ".planning/phases/01-workspace-schema-lint/01-04-SUMMARY.md",
+      "plan": "01-04",
+      "phase": 1,
+      "field_present": true,
+      "completed_ids": [
+        "SCHEMA-02",
+        "SCHEMA-03",
+        "SCHEMA-06"
+      ],
+      "date_evidence": [
+        {
+          "line": 106,
+          "text": "completed: 2026-10-15"
+        }
+      ],
+      "extractor_stdout": "SCHEMA-02,SCHEMA-03,SCHEMA-06"
+    },
+    {
+      "path": ".planning/phases/01-workspace-schema-lint/01-05-SUMMARY.md",
+      "plan": "01-05",
+      "phase": 1,
+      "field_present": true,
+      "completed_ids": [
+        "SCHEMA-04",
+        "SCHEMA-06"
+      ],
+      "date_evidence": [
+        {
+          "line": 122,
+          "text": "completed: 2026-10-15"
+        }
+      ],
+      "extractor_stdout": "SCHEMA-04,SCHEMA-06"
+    },
+    {
+      "path": ".planning/phases/01-workspace-schema-lint/01-06-SUMMARY.md",
+      "plan": "01-06",
+      "phase": 1,
+      "field_present": true,
+      "completed_ids": [
+        "SCHEMA-05",
+        "SCHEMA-01",
+        "SCHEMA-06"
+      ],
+      "date_evidence": [
+        {
+          "line": 121,
+          "text": "completed: 2026-10-15"
+        },
+        {
+          "line": 133,
+          "text": "- **Completed:** 2026-10-15T15:15Z"
+        }
+      ],
+      "extractor_stdout": "SCHEMA-05,SCHEMA-01,SCHEMA-06"
+    },
+    {
+      "path": ".planning/phases/01-workspace-schema-lint/01-07-SUMMARY.md",
+      "plan": "01-07",
+      "phase": 1,
+      "field_present": true,
+      "completed_ids": [
+        "SCHEMA-05"
+      ],
+      "date_evidence": [
+        {
+          "line": 82,
+          "text": "completed: 2026-10-15"
+        },
+        {
+          "line": 93,
+          "text": "- **Completed:** 2026-10-15T23:02+08:00"
+        }
+      ],
+      "extractor_stdout": "SCHEMA-05"
+    },
+    {
+      "path": ".planning/phases/01-workspace-schema-lint/01-08-SUMMARY.md",
+      "plan": "01-08",
+      "phase": 1,
+      "field_present": true,
+      "completed_ids": [
+        "LINT-01",
+        "LINT-03",
+        "LINT-04"
+      ],
+      "date_evidence": [
+        {
+          "line": 116,
+          "text": "completed: 2026-10-15"
+        }
+      ],
+      "extractor_stdout": "LINT-01,LINT-03,LINT-04"
+    },
+    {
+      "path": ".planning/phases/01-workspace-schema-lint/01-09-SUMMARY.md",
+      "plan": "01-09",
+      "phase": 1,
+      "field_present": true,
+      "completed_ids": [
+        "SCHEMA-07"
+      ],
+      "date_evidence": [],
+      "extractor_stdout": "SCHEMA-07"
+    },
+    {
+      "path": ".planning/phases/01-workspace-schema-lint/01-10-SUMMARY.md",
+      "plan": "01-10",
+      "phase": 1,
+      "field_present": true,
+      "completed_ids": [
+        "LINT-02"
+      ],
+      "date_evidence": [
+        {
+          "line": 98,
+          "text": "completed: 2026-10-16"
+        }
+      ],
+      "extractor_stdout": "LINT-02"
+    },
+    {
+      "path": ".planning/phases/01-workspace-schema-lint/01-11-SUMMARY.md",
+      "plan": "01-11",
+      "phase": 1,
+      "field_present": true,
+      "completed_ids": [
+        "LINT-02",
+        "DX-03"
+      ],
+      "date_evidence": [
+        {
+          "line": 111,
+          "text": "completed: 2026-10-16"
+        }
+      ],
+      "extractor_stdout": "LINT-02,DX-03"
+    },
+    {
+      "path": ".planning/phases/01-workspace-schema-lint/01-12-SUMMARY.md",
+      "plan": "01-12",
+      "phase": 1,
+      "field_present": true,
+      "completed_ids": [
+        "SCHEMA-05",
+        "SCHEMA-06"
+      ],
+      "date_evidence": [
+        {
+          "line": 109,
+          "text": "completed: 2026-10-15"
+        },
+        {
+          "line": 120,
+          "text": "- **Completed:** 2026-10-15"
+        }
+      ],
+      "extractor_stdout": "SCHEMA-05,SCHEMA-06"
+    },
+    {
+      "path": ".planning/phases/01-workspace-schema-lint/01-13-SUMMARY.md",
+      "plan": "01-13",
+      "phase": 1,
+      "field_present": true,
+      "completed_ids": [
+        "LINT-04",
+        "SCHEMA-06",
+        "LINT-03"
+      ],
+      "date_evidence": [
+        {
+          "line": 87,
+          "text": "completed: 2026-10-16"
+        }
+      ],
+      "extractor_stdout": "LINT-04,SCHEMA-06,LINT-03"
+    },
+    {
+      "path": ".planning/phases/01-workspace-schema-lint/01-14-SUMMARY.md",
+      "plan": "01-14",
+      "phase": 1,
+      "field_present": true,
+      "completed_ids": [
+        "SCHEMA-07"
+      ],
+      "date_evidence": [
+        {
+          "line": 83,
+          "text": "completed: 2026-10-16"
+        },
+        {
+          "line": 95,
+          "text": "- **Completed:** 2026-10-16T02:06Z"
+        }
+      ],
+      "extractor_stdout": "SCHEMA-07"
+    },
+    {
+      "path": ".planning/phases/02-source-binding-engine/02-01-SUMMARY.md",
+      "plan": "02-01",
+      "phase": 2,
+      "field_present": true,
+      "completed_ids": [
+        "BIND-01"
+      ],
+      "date_evidence": [
+        {
+          "line": 131,
+          "text": "completed: 2026-10-17"
+        },
+        {
+          "line": 143,
+          "text": "- **Completed:** 2026-10-16T18:45Z（本机时间 2026-10-17 02:45 +08:00）"
+        },
+        {
+          "line": 310,
+          "text": "*Completed: 2026-10-17*"
+        }
+      ],
+      "extractor_stdout": "BIND-01"
+    },
+    {
+      "path": ".planning/phases/02-source-binding-engine/02-02-SUMMARY.md",
+      "plan": "02-02",
+      "phase": 2,
+      "field_present": true,
+      "completed_ids": [
+        "ENGINE-03",
+        "ENGINE-04"
+      ],
+      "date_evidence": [
+        {
+          "line": 177,
+          "text": "completed: 2026-10-17"
+        },
+        {
+          "line": 189,
+          "text": "- **Completed:** 2026-10-16T19:03:17Z（实现与最终门；SUMMARY 提交在其后）"
+        },
+        {
+          "line": 314,
+          "text": "*Completed: 2026-10-17*"
+        }
+      ],
+      "extractor_stdout": "ENGINE-03,ENGINE-04"
+    },
+    {
+      "path": ".planning/phases/02-source-binding-engine/02-03-SUMMARY.md",
+      "plan": "02-03",
+      "phase": 2,
+      "field_present": true,
+      "completed_ids": [
+        "BIND-01",
+        "BIND-02"
+      ],
+      "date_evidence": [
+        {
+          "line": 191,
+          "text": "completed: 2026-10-17"
+        },
+        {
+          "line": 203,
+          "text": "- **Completed:** 2026-10-16T19:43:39Z（实现与最终门；SUMMARY 提交在其后）"
+        },
+        {
+          "line": 328,
+          "text": "*Completed: 2026-10-17*"
+        }
+      ],
+      "extractor_stdout": "BIND-01,BIND-02"
+    },
+    {
+      "path": ".planning/phases/02-source-binding-engine/02-04-SUMMARY.md",
+      "plan": "02-04",
+      "phase": 2,
+      "field_present": true,
+      "completed_ids": [
+        "ENGINE-01",
+        "ENGINE-02"
+      ],
+      "date_evidence": [
+        {
+          "line": 191,
+          "text": "completed: 2026-10-17"
+        },
+        {
+          "line": 203,
+          "text": "- **Completed:** 2026-10-16T20:07:43Z（实现与最终门；SUMMARY 提交在其后）"
+        },
+        {
+          "line": 336,
+          "text": "*Completed: 2026-10-17*"
+        }
+      ],
+      "extractor_stdout": "ENGINE-01,ENGINE-02"
+    },
+    {
+      "path": ".planning/phases/02-source-binding-engine/02-05-SUMMARY.md",
+      "plan": "02-05",
+      "phase": 2,
+      "field_present": true,
+      "completed_ids": [
+        "BIND-03",
+        "ENGINE-04"
+      ],
+      "date_evidence": [
+        {
+          "line": 195,
+          "text": "completed: 2026-10-17"
+        },
+        {
+          "line": 207,
+          "text": "- **Completed:** 2026-10-16T20:40:48Z（实现与最终门；SUMMARY 提交在其后）"
+        },
+        {
+          "line": 341,
+          "text": "*Completed: 2026-10-17*"
+        }
+      ],
+      "extractor_stdout": "BIND-03,ENGINE-04"
+    },
+    {
+      "path": ".planning/phases/02-source-binding-engine/02-06-SUMMARY.md",
+      "plan": "02-06",
+      "phase": 2,
+      "field_present": true,
+      "completed_ids": [
+        "ENGINE-01",
+        "ENGINE-02"
+      ],
+      "date_evidence": [
+        {
+          "line": 175,
+          "text": "completed: 2026-10-17"
+        },
+        {
+          "line": 187,
+          "text": "- **Completed:** 2026-10-16T20:57:26Z（实现与最终门；SUMMARY 提交在其后）"
+        },
+        {
+          "line": 299,
+          "text": "*Completed: 2026-10-17*"
+        }
+      ],
+      "extractor_stdout": "ENGINE-01,ENGINE-02"
+    },
+    {
+      "path": ".planning/phases/02-source-binding-engine/02-07-SUMMARY.md",
+      "plan": "02-07",
+      "phase": 2,
+      "field_present": true,
+      "completed_ids": [
+        "BIND-02"
+      ],
+      "date_evidence": [
+        {
+          "line": 140,
+          "text": "completed: 2026-10-17"
+        },
+        {
+          "line": 152,
+          "text": "- **Completed:** 2026-10-16T21:27Z（实现与最终门；SUMMARY 提交在其后）"
+        },
+        {
+          "line": 260,
+          "text": "*Completed: 2026-10-17*"
+        }
+      ],
+      "extractor_stdout": "BIND-02"
+    },
+    {
+      "path": ".planning/phases/02-source-binding-engine/02-08-SUMMARY.md",
+      "plan": "02-08",
+      "phase": 2,
+      "field_present": true,
+      "completed_ids": [
+        "BIND-03",
+        "BIND-02"
+      ],
+      "date_evidence": [
+        {
+          "line": 154,
+          "text": "completed: 2026-10-17"
+        },
+        {
+          "line": 166,
+          "text": "- **Completed:** 2026-10-16T21:49Z（实现与最终门；SUMMARY 提交在其后）"
+        },
+        {
+          "line": 289,
+          "text": "*Completed: 2026-10-17*"
+        }
+      ],
+      "extractor_stdout": "BIND-03,BIND-02"
+    },
+    {
+      "path": ".planning/phases/02-source-binding-engine/02-09-SUMMARY.md",
+      "plan": "02-09",
+      "phase": 2,
+      "field_present": true,
+      "completed_ids": [
+        "BIND-03",
+        "ENGINE-01",
+        "ENGINE-02"
+      ],
+      "date_evidence": [
+        {
+          "line": 163,
+          "text": "completed: 2026-10-17"
+        },
+        {
+          "line": 175,
+          "text": "- **Completed:** 2026-10-17T00:47:13Z"
+        },
+        {
+          "line": 285,
+          "text": "*Completed: 2026-10-17*"
+        }
+      ],
+      "extractor_stdout": "BIND-03,ENGINE-01,ENGINE-02"
+    },
+    {
+      "path": ".planning/phases/02-source-binding-engine/02-10-SUMMARY.md",
+      "plan": "02-10",
+      "phase": 2,
+      "field_present": true,
+      "completed_ids": [
+        "ENGINE-05",
+        "ENGINE-01",
+        "ENGINE-03"
+      ],
+      "date_evidence": [
+        {
+          "line": 125,
+          "text": "completed: 2026-10-17"
+        },
+        {
+          "line": 137,
+          "text": "- **Completed:** 2026-10-17T01:05:49Z（实现与最终门；SUMMARY 提交在其后）"
+        },
+        {
+          "line": 271,
+          "text": "*Completed: 2026-10-17*"
+        }
+      ],
+      "extractor_stdout": "ENGINE-05,ENGINE-01,ENGINE-03"
+    },
+    {
+      "path": ".planning/phases/03-edit-store-scope-model/03-01-SUMMARY.md",
+      "plan": "03-01",
+      "phase": 3,
+      "field_present": true,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 107,
+          "text": "completed: 2026-10-20"
+        },
+        {
+          "line": 118,
+          "text": "- **Completed:** 2026-10-20"
+        },
+        {
+          "line": 201,
+          "text": "*Completed: 2026-10-20*"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/03-edit-store-scope-model/03-02-SUMMARY.md",
+      "plan": "03-02",
+      "phase": 3,
+      "field_present": true,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 152,
+          "text": "completed: 2026-10-20"
+        },
+        {
+          "line": 163,
+          "text": "- **Completed:** 2026-10-20"
+        },
+        {
+          "line": 264,
+          "text": "*Completed: 2026-10-20*"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/03-edit-store-scope-model/03-03-SUMMARY.md",
+      "plan": "03-03",
+      "phase": 3,
+      "field_present": true,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 136,
+          "text": "completed: 2026-10-20"
+        },
+        {
+          "line": 147,
+          "text": "- **Completed:** 2026-10-20"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/03-edit-store-scope-model/03-04-SUMMARY.md",
+      "plan": "03-04",
+      "phase": 3,
+      "field_present": true,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 140,
+          "text": "completed: 2026-10-20"
+        },
+        {
+          "line": 151,
+          "text": "- **Completed:** 2026-10-20"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/03-edit-store-scope-model/03-05-SUMMARY.md",
+      "plan": "03-05",
+      "phase": 3,
+      "field_present": true,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 160,
+          "text": "completed: 2026-10-20"
+        },
+        {
+          "line": 171,
+          "text": "- **Completed:** 2026-10-20"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/03-edit-store-scope-model/03-06-SUMMARY.md",
+      "plan": "03-06",
+      "phase": 3,
+      "field_present": true,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 163,
+          "text": "completed: 2026-10-19"
+        },
+        {
+          "line": 175,
+          "text": "- **Completed:** 2026-10-19T19:08:48Z"
+        },
+        {
+          "line": 272,
+          "text": "*Completed: 2026-10-19*"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/03-edit-store-scope-model/03-07-SUMMARY.md",
+      "plan": "03-07",
+      "phase": 3,
+      "field_present": true,
+      "completed_ids": [
+        "AUTH-01"
+      ],
+      "date_evidence": [
+        {
+          "line": 162,
+          "text": "completed: 2026-10-19"
+        },
+        {
+          "line": 173,
+          "text": "- **Completed:** 2026-10-19"
+        },
+        {
+          "line": 260,
+          "text": "*Completed: 2026-10-19*"
+        }
+      ],
+      "extractor_stdout": "AUTH-01"
+    },
+    {
+      "path": ".planning/phases/03-edit-store-scope-model/03-08-SUMMARY.md",
+      "plan": "03-08",
+      "phase": 3,
+      "field_present": true,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 133,
+          "text": "completed: 2026-10-20"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/03-edit-store-scope-model/03-09-SUMMARY.md",
+      "plan": "03-09",
+      "phase": 3,
+      "field_present": true,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 122,
+          "text": "completed: 2026-10-20"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/03-edit-store-scope-model/03-10-SUMMARY.md",
+      "plan": "03-10",
+      "phase": 3,
+      "field_present": true,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 144,
+          "text": "completed: 2026-10-20"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/03-edit-store-scope-model/03-11-SUMMARY.md",
+      "plan": "03-11",
+      "phase": 3,
+      "field_present": true,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 130,
+          "text": "completed: 2026-10-20"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/03-edit-store-scope-model/03-12-SUMMARY.md",
+      "plan": "03-12",
+      "phase": 3,
+      "field_present": true,
+      "completed_ids": [
+        "AUTH-02"
+      ],
+      "date_evidence": [
+        {
+          "line": 137,
+          "text": "completed: 2026-10-20"
+        },
+        {
+          "line": 149,
+          "text": "- **Completed:** 2026-10-20T04:20Z"
+        }
+      ],
+      "extractor_stdout": "AUTH-02"
+    },
+    {
+      "path": ".planning/phases/03-edit-store-scope-model/03-13-SUMMARY.md",
+      "plan": "03-13",
+      "phase": 3,
+      "field_present": true,
+      "completed_ids": [
+        "STORE-07"
+      ],
+      "date_evidence": [],
+      "extractor_stdout": "STORE-07"
+    },
+    {
+      "path": ".planning/phases/03-edit-store-scope-model/03-14-SUMMARY.md",
+      "plan": "03-14",
+      "phase": 3,
+      "field_present": true,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 170,
+          "text": "completed: 2026-10-20"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/03-edit-store-scope-model/03-15-SUMMARY.md",
+      "plan": "03-15",
+      "phase": 3,
+      "field_present": true,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 190,
+          "text": "completed: 2026-10-20"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/03-edit-store-scope-model/03-16-SUMMARY.md",
+      "plan": "03-16",
+      "phase": 3,
+      "field_present": true,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 181,
+          "text": "completed: 2026-10-20"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/03-edit-store-scope-model/03-17-SUMMARY.md",
+      "plan": "03-17",
+      "phase": 3,
+      "field_present": true,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 130,
+          "text": "completed: 2026-10-20"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/03-edit-store-scope-model/03-18-SUMMARY.md",
+      "plan": "03-18",
+      "phase": 3,
+      "field_present": true,
+      "completed_ids": [
+        "SCOPE-06"
+      ],
+      "date_evidence": [
+        {
+          "line": 203,
+          "text": "completed: 2026-10-21"
+        }
+      ],
+      "extractor_stdout": "SCOPE-06"
+    },
+    {
+      "path": ".planning/phases/03-edit-store-scope-model/03-19-SUMMARY.md",
+      "plan": "03-19",
+      "phase": 3,
+      "field_present": true,
+      "completed_ids": [
+        "STORE-06"
+      ],
+      "date_evidence": [
+        {
+          "line": 210,
+          "text": "completed: 2026-10-21"
+        }
+      ],
+      "extractor_stdout": "STORE-06"
+    },
+    {
+      "path": ".planning/phases/03-edit-store-scope-model/03-20-SUMMARY.md",
+      "plan": "03-20",
+      "phase": 3,
+      "field_present": true,
+      "completed_ids": [
+        "STORE-01",
+        "SCOPE-04"
+      ],
+      "date_evidence": [],
+      "extractor_stdout": "STORE-01,SCOPE-04"
+    },
+    {
+      "path": ".planning/phases/03-edit-store-scope-model/03-21-SUMMARY.md",
+      "plan": "03-21",
+      "phase": 3,
+      "field_present": true,
+      "completed_ids": [
+        "STORE-03",
+        "STORE-06",
+        "STORE-01"
+      ],
+      "date_evidence": [
+        {
+          "line": 93,
+          "text": "completed: 2026-10-21"
+        },
+        {
+          "line": 104,
+          "text": "- **Completed:** 2026-10-21T07:55Z"
+        }
+      ],
+      "extractor_stdout": "STORE-03,STORE-06,STORE-01"
+    },
+    {
+      "path": ".planning/phases/03-edit-store-scope-model/03-22-SUMMARY.md",
+      "plan": "03-22",
+      "phase": 3,
+      "field_present": true,
+      "completed_ids": [
+        "SCOPE-06"
+      ],
+      "date_evidence": [
+        {
+          "line": 83,
+          "text": "completed: 2026-10-21"
+        },
+        {
+          "line": 94,
+          "text": "- **Completed:** 2026-10-21"
+        }
+      ],
+      "extractor_stdout": "SCOPE-06"
+    },
+    {
+      "path": ".planning/phases/03-edit-store-scope-model/03-23-SUMMARY.md",
+      "plan": "03-23",
+      "phase": 3,
+      "field_present": true,
+      "completed_ids": [
+        "AUTH-02"
+      ],
+      "date_evidence": [
+        {
+          "line": 94,
+          "text": "completed: 2026-10-21"
+        },
+        {
+          "line": 106,
+          "text": "- **Completed:** 2026-10-21T08:48Z"
+        },
+        {
+          "line": 207,
+          "text": "*Completed: 2026-10-21*"
+        }
+      ],
+      "extractor_stdout": "AUTH-02"
+    },
+    {
+      "path": ".planning/phases/04-scoped-l0-read/04-01-SUMMARY.md",
+      "plan": "04-01",
+      "phase": 4,
+      "field_present": true,
+      "completed_ids": [
+        "QUERY-01",
+        "QUERY-08",
+        "QUERY-09"
+      ],
+      "date_evidence": [
+        {
+          "line": 64,
+          "text": "completed: 2026-10-22"
+        }
+      ],
+      "extractor_stdout": "QUERY-01,QUERY-08,QUERY-09"
+    },
+    {
+      "path": ".planning/phases/04-scoped-l0-read/04-02-SUMMARY.md",
+      "plan": "04-02",
+      "phase": 4,
+      "field_present": true,
+      "completed_ids": [
+        "QUERY-02",
+        "QUERY-03",
+        "QUERY-08",
+        "QUERY-09",
+        "QUERY-10"
+      ],
+      "date_evidence": [
+        {
+          "line": 68,
+          "text": "completed: 2026-10-22"
+        }
+      ],
+      "extractor_stdout": "QUERY-02,QUERY-03,QUERY-08,QUERY-09,QUERY-10"
+    },
+    {
+      "path": ".planning/phases/04-scoped-l0-read/04-03-SUMMARY.md",
+      "plan": "04-03",
+      "phase": 4,
+      "field_present": true,
+      "completed_ids": [
+        "QUERY-04",
+        "QUERY-05",
+        "QUERY-08",
+        "QUERY-09"
+      ],
+      "date_evidence": [
+        {
+          "line": 65,
+          "text": "completed: 2026-10-22"
+        }
+      ],
+      "extractor_stdout": "QUERY-04,QUERY-05,QUERY-08,QUERY-09"
+    },
+    {
+      "path": ".planning/phases/04-scoped-l0-read/04-04-SUMMARY.md",
+      "plan": "04-04",
+      "phase": 4,
+      "field_present": true,
+      "completed_ids": [
+        "QUERY-04",
+        "QUERY-08",
+        "QUERY-09"
+      ],
+      "date_evidence": [
+        {
+          "line": 69,
+          "text": "completed: 2026-10-22"
+        }
+      ],
+      "extractor_stdout": "QUERY-04,QUERY-08,QUERY-09"
+    },
+    {
+      "path": ".planning/phases/04-scoped-l0-read/04-05-SUMMARY.md",
+      "plan": "04-05",
+      "phase": 4,
+      "field_present": true,
+      "completed_ids": [
+        "QUERY-05",
+        "QUERY-06",
+        "QUERY-08",
+        "QUERY-09"
+      ],
+      "date_evidence": [
+        {
+          "line": 86,
+          "text": "completed: 2026-10-22"
+        }
+      ],
+      "extractor_stdout": "QUERY-05,QUERY-06,QUERY-08,QUERY-09"
+    },
+    {
+      "path": ".planning/phases/04-scoped-l0-read/04-06-SUMMARY.md",
+      "plan": "04-06",
+      "phase": 4,
+      "field_present": true,
+      "completed_ids": [
+        "QUERY-07",
+        "QUERY-08",
+        "QUERY-09",
+        "QUERY-10"
+      ],
+      "date_evidence": [
+        {
+          "line": 82,
+          "text": "completed: 2026-10-22"
+        }
+      ],
+      "extractor_stdout": "QUERY-07,QUERY-08,QUERY-09,QUERY-10"
+    },
+    {
+      "path": ".planning/phases/04-scoped-l0-read/04-07-SUMMARY.md",
+      "plan": "04-07",
+      "phase": 4,
+      "field_present": true,
+      "completed_ids": [
+        "QUERY-08",
+        "QUERY-09",
+        "QUERY-10"
+      ],
+      "date_evidence": [
+        {
+          "line": 65,
+          "text": "completed: 2026-10-23"
+        }
+      ],
+      "extractor_stdout": "QUERY-08,QUERY-09,QUERY-10"
+    },
+    {
+      "path": ".planning/phases/05-online-action/05-01-SUMMARY.md",
+      "plan": "05-01",
+      "phase": 5,
+      "field_present": true,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 65,
+          "text": "completed: 2026-10-23"
+        },
+        {
+          "line": 76,
+          "text": "- Completed: 2026-10-23T07:11:23Z"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/05-online-action/05-02-SUMMARY.md",
+      "plan": "05-02",
+      "phase": 5,
+      "field_present": true,
+      "completed_ids": [
+        "ACTION-01",
+        "ACTION-02",
+        "ACTION-03",
+        "ACTION-04",
+        "ACTION-05",
+        "ACTION-06"
+      ],
+      "date_evidence": [
+        {
+          "line": 67,
+          "text": "completed: 2026-10-23"
+        }
+      ],
+      "extractor_stdout": "ACTION-01,ACTION-02,ACTION-03,ACTION-04,ACTION-05,ACTION-06"
+    },
+    {
+      "path": ".planning/phases/05-online-action/05-03-SUMMARY.md",
+      "plan": "05-03",
+      "phase": 5,
+      "field_present": true,
+      "completed_ids": [
+        "ACTION-09"
+      ],
+      "date_evidence": [
+        {
+          "line": 63,
+          "text": "completed: 2026-10-23"
+        }
+      ],
+      "extractor_stdout": "ACTION-09"
+    },
+    {
+      "path": ".planning/phases/05-online-action/05-04-SUMMARY.md",
+      "plan": "05-04",
+      "phase": 5,
+      "field_present": true,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 62,
+          "text": "completed: 2026-10-23"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/05-online-action/05-05-SUMMARY.md",
+      "plan": "05-05",
+      "phase": 5,
+      "field_present": true,
+      "completed_ids": [
+        "ACTION-10"
+      ],
+      "date_evidence": [
+        {
+          "line": 56,
+          "text": "completed: 2026-10-23"
+        }
+      ],
+      "extractor_stdout": "ACTION-10"
+    },
+    {
+      "path": ".planning/phases/05-online-action/05-06-SUMMARY.md",
+      "plan": "05-06",
+      "phase": 5,
+      "field_present": true,
+      "completed_ids": [
+        "ACTION-08",
+        "ACTION-09",
+        "ACTION-12"
+      ],
+      "date_evidence": [
+        {
+          "line": 71,
+          "text": "completed: 2026-10-23"
+        }
+      ],
+      "extractor_stdout": "ACTION-08,ACTION-09,ACTION-12"
+    },
+    {
+      "path": ".planning/phases/05-online-action/05-07-SUMMARY.md",
+      "plan": "05-07",
+      "phase": 5,
+      "field_present": true,
+      "completed_ids": [
+        "ACTION-07",
+        "ACTION-11"
+      ],
+      "date_evidence": [
+        {
+          "line": 69,
+          "text": "completed: 2026-10-23"
+        }
+      ],
+      "extractor_stdout": "ACTION-07,ACTION-11"
+    },
+    {
+      "path": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-01-SUMMARY.md",
+      "plan": "06-01",
+      "phase": 6,
+      "field_present": true,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 58,
+          "text": "completed: 2026-10-26"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-02-SUMMARY.md",
+      "plan": "06-02",
+      "phase": 6,
+      "field_present": true,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 55,
+          "text": "completed: 2026-10-26"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-03-SUMMARY.md",
+      "plan": "06-03",
+      "phase": 6,
+      "field_present": true,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 60,
+          "text": "completed: 2026-10-26"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-04-SUMMARY.md",
+      "plan": "06-04",
+      "phase": 6,
+      "field_present": true,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 56,
+          "text": "completed: 2026-10-26"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-05-SUMMARY.md",
+      "plan": "06-05",
+      "phase": 6,
+      "field_present": true,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 61,
+          "text": "completed: 2026-10-26"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-06-SUMMARY.md",
+      "plan": "06-06",
+      "phase": 6,
+      "field_present": true,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 69,
+          "text": "completed: 2026-10-28"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-07-SUMMARY.md",
+      "plan": "06-07",
+      "phase": 6,
+      "field_present": true,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 56,
+          "text": "completed: 2026-10-28"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-08-SUMMARY.md",
+      "plan": "06-08",
+      "phase": 6,
+      "field_present": true,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 59,
+          "text": "completed: 2026-10-28"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-09-SUMMARY.md",
+      "plan": "06-09",
+      "phase": 6,
+      "field_present": true,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 60,
+          "text": "completed: 2026-10-28"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-10-SUMMARY.md",
+      "plan": "06-10",
+      "phase": 6,
+      "field_present": true,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 45,
+          "text": "completed: 2026-10-28"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-SUMMARY.md",
+      "plan": "06-11",
+      "phase": 6,
+      "field_present": true,
+      "completed_ids": [
+        "AUDIT-01"
+      ],
+      "date_evidence": [
+        {
+          "line": 70,
+          "text": "completed: 2026-10-28"
+        }
+      ],
+      "extractor_stdout": "AUDIT-01"
+    },
+    {
+      "path": ".planning/phases/07-rest-mcp-shell/07-01-SUMMARY.md",
+      "plan": "07-01",
+      "phase": 7,
+      "field_present": true,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 93,
+          "text": "completed: 2026-10-29"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/07-rest-mcp-shell/07-02-SUMMARY.md",
+      "plan": "07-02",
+      "phase": 7,
+      "field_present": true,
+      "completed_ids": [
+        "SCOPE-07",
+        "API-01",
+        "MCP-06"
+      ],
+      "date_evidence": [
+        {
+          "line": 75,
+          "text": "completed: 2026-10-29"
+        }
+      ],
+      "extractor_stdout": "SCOPE-07,API-01,MCP-06"
+    },
+    {
+      "path": ".planning/phases/07-rest-mcp-shell/07-03-SUMMARY.md",
+      "plan": "07-03",
+      "phase": 7,
+      "field_present": true,
+      "completed_ids": [
+        "API-01",
+        "API-03"
+      ],
+      "date_evidence": [
+        {
+          "line": 65,
+          "text": "completed: 2026-10-29"
+        }
+      ],
+      "extractor_stdout": "API-01,API-03"
+    },
+    {
+      "path": ".planning/phases/07-rest-mcp-shell/07-04-SUMMARY.md",
+      "plan": "07-04",
+      "phase": 7,
+      "field_present": false,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 35,
+          "text": "completed_date: \"2026-10-29\""
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/07-rest-mcp-shell/07-05-SUMMARY.md",
+      "plan": "07-05",
+      "phase": 7,
+      "field_present": false,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 31,
+          "text": "completed: 2026-10-29"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/07-rest-mcp-shell/07-06-SUMMARY.md",
+      "plan": "07-06",
+      "phase": 7,
+      "field_present": false,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 28,
+          "text": "completed: 2026-10-29"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/07-rest-mcp-shell/07-07-SUMMARY.md",
+      "plan": "07-07",
+      "phase": 7,
+      "field_present": false,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 28,
+          "text": "completed: 2026-10-30"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/07-rest-mcp-shell/07-08-SUMMARY.md",
+      "plan": "07-08",
+      "phase": 7,
+      "field_present": true,
+      "completed_ids": [
+        "MCP-01",
+        "MCP-06",
+        "MCP-07",
+        "MCP-08",
+        "L2-04",
+        "SCOPE-07"
+      ],
+      "date_evidence": [
+        {
+          "line": 75,
+          "text": "completed: 2026-10-29"
+        },
+        {
+          "line": 87,
+          "text": "- **Completed:** 2026-10-29T16:15:28Z"
+        },
+        {
+          "line": 155,
+          "text": "*Completed: 2026-10-29*"
+        }
+      ],
+      "extractor_stdout": "MCP-01,MCP-06,MCP-07,MCP-08,L2-04,SCOPE-07"
+    },
+    {
+      "path": ".planning/phases/07-rest-mcp-shell/07-09-SUMMARY.md",
+      "plan": "07-09",
+      "phase": 7,
+      "field_present": true,
+      "completed_ids": [
+        "MCP-01",
+        "MCP-06",
+        "MCP-07",
+        "SCOPE-07"
+      ],
+      "date_evidence": [
+        {
+          "line": 68,
+          "text": "completed: 2026-10-30"
+        },
+        {
+          "line": 80,
+          "text": "- **Completed:** 2026-10-30T01:51:00+08:00"
+        },
+        {
+          "line": 174,
+          "text": "*Completed: 2026-10-30*"
+        }
+      ],
+      "extractor_stdout": "MCP-01,MCP-06,MCP-07,SCOPE-07"
+    },
+    {
+      "path": ".planning/phases/07-rest-mcp-shell/07-10-SUMMARY.md",
+      "plan": "07-10",
+      "phase": 7,
+      "field_present": false,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 26,
+          "text": "completed: 2026-10-29"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/07-rest-mcp-shell/07-11-SUMMARY.md",
+      "plan": "07-11",
+      "phase": 7,
+      "field_present": true,
+      "completed_ids": [
+        "API-05"
+      ],
+      "date_evidence": [
+        {
+          "line": 97,
+          "text": "- **Completed:** 2026-10-30T03:55:03Z"
+        },
+        {
+          "line": 171,
+          "text": "*Completed: 2026-10-30*"
+        }
+      ],
+      "extractor_stdout": "API-05"
+    },
+    {
+      "path": ".planning/phases/07-rest-mcp-shell/07-12-SUMMARY.md",
+      "plan": "07-12",
+      "phase": 7,
+      "field_present": true,
+      "completed_ids": [
+        "DX-01",
+        "DX-02"
+      ],
+      "date_evidence": [
+        {
+          "line": 78,
+          "text": "completed: 2026-10-30"
+        },
+        {
+          "line": 90,
+          "text": "- **Completed:** 2026-10-29T18:26:00Z"
+        },
+        {
+          "line": 147,
+          "text": "*Completed: 2026-10-30*"
+        }
+      ],
+      "extractor_stdout": "DX-01,DX-02"
+    },
+    {
+      "path": ".planning/phases/07-rest-mcp-shell/07-13-SUMMARY.md",
+      "plan": "07-13",
+      "phase": 7,
+      "field_present": false,
+      "completed_ids": [],
+      "date_evidence": [
+        {
+          "line": 14,
+          "text": "2026-11-03 07-13验收完成"
+        }
+      ],
+      "extractor_stdout": ""
+    },
+    {
+      "path": ".planning/phases/07-rest-mcp-shell/07-14-SUMMARY.md",
+      "plan": "07-14",
+      "phase": 7,
+      "field_present": true,
+      "completed_ids": [
+        "DX-04",
+        "DX-01",
+        "DX-02",
+        "API-04",
+        "API-05"
+      ],
+      "date_evidence": [
+        {
+          "line": 21,
+          "text": "completed: 2026-11-04"
+        }
+      ],
+      "extractor_stdout": "DX-04,DX-01,DX-02,API-04,API-05"
+    },
+    {
+      "path": ".planning/phases/07-rest-mcp-shell/07-15-SUMMARY.md",
+      "plan": "07-15",
+      "phase": 7,
+      "field_present": true,
+      "completed_ids": [
+        "MCP-07"
+      ],
+      "date_evidence": [
+        {
+          "line": 75,
+          "text": "completed: 2026-10-29"
+        },
+        {
+          "line": 87,
+          "text": "- **Completed:** 2026-10-29T14:49:00Z"
+        },
+        {
+          "line": 190,
+          "text": "*Completed: 2026-10-29*"
+        }
+      ],
+      "extractor_stdout": "MCP-07"
+    },
+    {
+      "path": ".planning/phases/07-rest-mcp-shell/07-16-SUMMARY.md",
+      "plan": "07-16",
+      "phase": 7,
+      "field_present": true,
+      "completed_ids": [
+        "MCP-07",
+        "SCOPE-07"
+      ],
+      "date_evidence": [
+        {
+          "line": 78,
+          "text": "completed: 2026-10-30"
+        },
+        {
+          "line": 90,
+          "text": "- **Completed:** 2026-10-30T01:08:00+08:00"
+        },
+        {
+          "line": 185,
+          "text": "*Completed: 2026-10-30*"
+        }
+      ],
+      "extractor_stdout": "MCP-07,SCOPE-07"
+    }
+  ],
+  "snapshot_note": "Frozen at audited_utc after INT-01 discovery and before its in-progress fix; do not infer fix completion.",
+  "initial_sample": {
+    "phase7_canonical": "passed",
+    "checkbox_checked": 79,
+    "current_three_source_satisfied": 11,
+    "current_proof_pending": 63,
+    "timing": "earlier tool samples in the same audit; exact timestamp not retained"
+  },
+  "integration_findings": [
+    {
+      "id": "INT-01",
+      "source": ".planning/milestones/v1.0-audit/INTEGRATION.md",
+      "requirement": "L2-03",
+      "status": "unsatisfied",
+      "related": [
+        "MCP-07"
+      ],
+      "evidence": "MCP L2 policy hardcodes editstore instead of trusted deployment edit catalog; six-tool local exclusion contract is broken for custom catalogs. Static independent audit; no exploit or data leak claimed."
+    }
+  ]
+}

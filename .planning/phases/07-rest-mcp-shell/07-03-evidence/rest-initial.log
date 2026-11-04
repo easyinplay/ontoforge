@@ -1,0 +1,11 @@
+   Compiling ontoforge-server v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-server)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 03s
+     Running unittests src\lib.rs (target\debug\deps\ontoforge_server-ceb9cd1c5d033352.exe)
+
+running 3 tests
+test rest_tests::rest_equal_sort_keys_empty_nullable_and_pagination ... ok
+test rest_tests::rest_reload_and_revoke_freeze_inflight_only ... ok
+test rest_tests::rest_metadata_and_all_l0_operations ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.21s
+

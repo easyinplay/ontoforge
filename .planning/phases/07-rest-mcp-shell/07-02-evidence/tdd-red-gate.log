@@ -1,0 +1,31 @@
+{
+  "passed": true,
+  "block": false,
+  "verdict": "RED_EVIDENCE_OK",
+  "reason": "target_test_failed",
+  "evidence": {
+    "command": "C:\\Users\\easyi\\AppData\\Local\\Temp/ontoforge-phase07-nextest/cargo-nextest.exe nextest run --config-file .planning/phases/07-rest-mcp-shell/07-02-evidence/nextest.toml --profile gsd -p ontoforge-action --test frozen_definition --locked -E test(=frozen_replay_uses_current_grant_keeps_original_receipt)",
+    "exit_code": 100,
+    "target_test": "frozen_replay_uses_current_grant_keeps_original_receipt",
+    "tests": 1,
+    "pass": 0,
+    "fail": 1,
+    "failing_tests": [
+      "ontoforge-action::frozen_definition#frozen_replay_uses_current_grant_keeps_original_receipt"
+    ],
+    "matched_test": "ontoforge-action::frozen_definition#frozen_replay_uses_current_grant_keeps_original_receipt",
+    "format": "junit",
+    "report_errors": []
+  },
+  "record": {
+    "command": "C:\\Users\\easyi\\AppData\\Local\\Temp/ontoforge-phase07-nextest/cargo-nextest.exe nextest run --config-file .planning/phases/07-rest-mcp-shell/07-02-evidence/nextest.toml --profile gsd -p ontoforge-action --test frozen_definition --locked -E test(=frozen_replay_uses_current_grant_keeps_original_receipt)",
+    "exit_code": 100,
+    "failing_test": "ontoforge-action::frozen_definition#frozen_replay_uses_current_grant_keeps_original_receipt",
+    "target_test": "frozen_replay_uses_current_grant_keeps_original_receipt",
+    "expected": "snapshot replay returns original receipt after external Action removal",
+    "actual": "execute_with_snapshot returned ScopeDenied after external Action removal",
+    "verdict": "RED_EVIDENCE_OK",
+    "reason": "target_test_failed"
+  },
+  "message": "RED evidence verified: target test \"frozen_replay_uses_current_grant_keeps_original_receipt\" failed as expected (exit 100). GREEN authorized."
+}

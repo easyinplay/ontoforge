@@ -1,0 +1,16 @@
+[workspace]
+
+[package]
+name = "ontoforge-rmcp-shell-spike"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+axum = "=0.8.9"
+rmcp = { version = "=3.8.0", default-features = false, features = ["server", "client", "transport-io", "transport-streamable-http-server", "transport-streamable-http-client-reqwest", "reqwest"] }
+reqwest = { version = "=0.13.5", default-features = false, features = ["rustls", "json", "stream"] }
+serde_json = "1.0"
+tokio = { version = "1.53.3", features = ["full"] }
+tokio-util = "0.7"
+

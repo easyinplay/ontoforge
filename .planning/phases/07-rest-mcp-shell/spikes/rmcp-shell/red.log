@@ -1,0 +1,201 @@
+    Updating crates.io index
+     Locking 205 packages to latest Rust 1.98.0 compatible versions
+      Adding matchit v0.8.4 (available: v0.8.6)
+ Downloading crates ...
+  Downloaded axum-core v0.5.6
+  Downloaded icu_collections v2.4.0
+  Downloaded icu_locale_core v2.4.0
+  Downloaded icu_normalizer_data v2.4.0
+  Downloaded icu_properties_data v2.4.0
+  Downloaded icu_provider v2.4.0
+  Downloaded icu_properties v2.4.0
+  Downloaded icu_normalizer v2.4.0
+  Downloaded matchit v0.8.4
+  Downloaded mime v0.3.17
+  Downloaded rustls-webpki v0.103.16
+  Downloaded smallvec v1.16.4
+  Downloaded sse-stream v0.2.6
+  Downloaded tinystr v0.8.5
+  Downloaded tokio v1.54.1
+  Downloaded uuid v1.29.0
+  Downloaded yoke v0.8.4
+  Downloaded zerovec v0.11.9
+  Downloaded zerovec-derive v0.11.7
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.27
+   Compiling cfg-if v1.0.5
+   Compiling pin-project-lite v0.2.17
+   Compiling windows-link v0.2.1
+   Compiling smallvec v1.16.4
+   Compiling getrandom v0.4.3
+   Compiling futures-core v0.3.34
+   Compiling bytes v1.12.1
+   Compiling stable_deref_trait v1.2.1
+   Compiling itoa v1.0.18
+   Compiling find-msvc-tools v0.1.15
+   Compiling parking_lot_core v0.9.12
+   Compiling shlex v2.0.1
+   Compiling scopeguard v1.2.0
+   Compiling windows-sys v0.61.2
+   Compiling dunce v1.0.5
+   Compiling futures-sink v0.3.34
+   Compiling once_cell v1.21.4
+   Compiling lock_api v0.4.14
+   Compiling fs_extra v1.3.0
+   Compiling memchr v2.8.3
+   Compiling serde_core v1.0.229
+   Compiling futures-channel v0.3.34
+   Compiling futures-task v0.3.34
+   Compiling slab v0.4.12
+   Compiling futures-io v0.3.34
+   Compiling litemap v0.8.3
+   Compiling log v0.4.34
+   Compiling aws-lc-rs v1.18.2
+   Compiling http v1.5.0
+   Compiling writeable v0.6.4
+   Compiling tracing-core v0.1.36
+   Compiling zeroize v1.9.1
+   Compiling percent-encoding v2.3.2
+   Compiling icu_properties_data v2.4.0
+   Compiling utf8_iter v1.0.4
+   Compiling icu_normalizer_data v2.4.0
+   Compiling httparse v1.10.1
+   Compiling serde v1.0.229
+   Compiling tower-service v0.3.3
+   Compiling rustls-pki-types v1.15.1
+   Compiling libc v0.2.191
+   Compiling jobserver v0.1.35
+   Compiling parking_lot v0.12.5
+   Compiling zmij v1.0.23
+   Compiling try-lock v0.2.5
+   Compiling rustls v0.23.46
+   Compiling untrusted v0.9.0
+   Compiling cc v1.10.0
+   Compiling want v0.3.2
+   Compiling http-body v1.1.0
+   Compiling form_urlencoded v1.2.2
+   Compiling sync_wrapper v1.0.2
+   Compiling httpdate v1.0.3
+   Compiling atomic-waker v1.1.2
+   Compiling subtle v2.6.1
+   Compiling tower-layer v0.3.3
+   Compiling autocfg v1.5.1
+   Compiling serde_json v1.0.154
+   Compiling ipnet v2.12.2
+   Compiling http-body-util v0.1.5
+   Compiling base64 v0.23.1
+   Compiling syn v3.0.9
+   Compiling syn v2.0.119
+   Compiling rand_core v0.10.1
+   Compiling cmake v0.1.58
+   Compiling ref-cast v1.0.27
+   Compiling bitflags v2.13.2
+   Compiling num-traits v0.2.19
+   Compiling thiserror v2.0.21
+   Compiling cpufeatures v0.3.1
+   Compiling rmcp v3.8.0
+   Compiling mime v0.3.17
+   Compiling hashbrown v0.17.1
+   Compiling ryu v1.0.23
+   Compiling dyn-clone v1.0.20
+   Compiling aws-lc-sys v0.46.0
+   Compiling chacha20 v0.10.2
+   Compiling equivalent v1.0.3
+   Compiling uuid v1.29.0
+   Compiling serde_path_to_error v0.1.20
+   Compiling pastey v0.2.3
+   Compiling matchit v0.8.4
+   Compiling rand v0.10.3
+   Compiling indexmap v2.14.2
+   Compiling tracing-attributes v0.1.31
+   Compiling synstructure v0.14.0
+   Compiling serde_derive_internals v0.30.0
+   Compiling tracing v0.1.44
+   Compiling axum-core v0.5.6
+   Compiling mio v1.2.4
+   Compiling socket2 v0.6.5
+   Compiling zerofrom-derive v0.1.8
+   Compiling yoke-derive v0.8.4
+   Compiling zerovec-derive v0.11.7
+   Compiling displaydoc v0.2.7
+   Compiling tokio-macros v2.7.2
+   Compiling futures-macro v0.3.34
+   Compiling serde_derive v1.0.229
+   Compiling ref-cast-impl v1.0.27
+   Compiling schemars_derive v1.2.3
+   Compiling thiserror-impl v2.0.21
+   Compiling async-trait v0.1.92
+   Compiling zerofrom v0.1.8
+   Compiling yoke v0.8.4
+   Compiling futures-util v0.3.34
+   Compiling tokio v1.54.1
+   Compiling zerovec v0.11.9
+   Compiling zerotrie v0.2.5
+   Compiling tinystr v0.8.5
+   Compiling potential_utf v0.1.6
+   Compiling icu_locale_core v2.4.0
+   Compiling icu_collections v2.4.0
+   Compiling chrono v0.4.45
+   Compiling icu_provider v2.4.0
+   Compiling serde_urlencoded v0.7.1
+   Compiling icu_properties v2.4.0
+   Compiling icu_normalizer v2.4.0
+   Compiling schemars v1.2.3
+   Compiling idna_adapter v1.2.2
+   Compiling idna v1.1.0
+   Compiling url v2.5.8
+   Compiling hyper v1.12.0
+   Compiling tokio-util v0.7.20
+   Compiling tokio-stream v0.1.19
+   Compiling rustls-webpki v0.103.16
+   Compiling tower v0.5.3
+   Compiling hyper-util v0.1.21
+   Compiling futures-executor v0.3.34
+   Compiling sse-stream v0.2.6
+   Compiling futures v0.3.34
+   Compiling tower-http v0.6.11
+   Compiling axum v0.8.9
+   Compiling tokio-rustls v0.26.6
+   Compiling rustls-platform-verifier v0.7.1
+   Compiling hyper-rustls v0.27.10
+   Compiling reqwest v0.13.5
+   Compiling ontoforge-rmcp-shell-spike v0.0.0 (D:\DataSpellProjects\ontoforge\.planning\phases\07-rest-mcp-shell\spikes\rmcp-shell)
+warning: unused import: `time::Duration`
+ --> src\lib.rs:1:53
+  |
+1 | use std::{collections::HashMap, sync::{Arc, Mutex}, time::Duration};
+  |                                                     ^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused imports: `Value` and `json`
+ --> src\lib.rs:5:18
+  |
+5 | use serde_json::{Value, json};
+  |                  ^^^^^  ^^^^
+
+warning: `ontoforge-rmcp-shell-spike` (lib) generated 2 warnings (run `cargo fix --lib -p ontoforge-rmcp-shell-spike` to apply 2 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 48s
+     Running unittests src\lib.rs (.planning/phases/07-rest-mcp-shell/spikes/rmcp-shell/target\debug\deps\ontoforge_rmcp_shell_spike-a267057fc6b06e8b.exe)
+
+running 1 test
+test tests::dynamic_tools_are_principal_scoped_and_schema_is_runtime_data ... FAILED
+
+failures:
+
+---- tests::dynamic_tools_are_principal_scoped_and_schema_is_runtime_data stdout ----
+
+thread 'tests::dynamic_tools_are_principal_scoped_and_schema_is_runtime_data' (53504) panicked at src\lib.rs:98:9:
+assertion `left == right` failed
+  left: Null
+ right: "action_launch"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    tests::dynamic_tools_are_principal_scoped_and_schema_is_runtime_data
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `--lib`

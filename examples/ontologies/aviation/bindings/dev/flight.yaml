@@ -6,13 +6,14 @@ target: { objectType: Flight }
 source: { catalog: demo, schema: aviation, table: flights }
 columns:
   flightId: { column: flight_id }
-  flightNumber: { column: flight_no }
+  # Flight numbers compare ignoring case. `status` stays case sensitive on purpose: the
+  # example dispatcher role filters on it, and a row filter cannot read a case-insensitive
+  # column (ONT-V22, D-08).
+  flightNumber: { column: flight_no, collation: caseInsensitive }
   departureAirportCode: { column: departure_airport }
   arrivalAirportCode: { column: arrival_airport }
   aircraftTailNumber: { column: tail_number }
   # The column has no time zone, so the wall-clock values are read in this zone.
   scheduledDeparture: { column: scheduled_departure, timezone: Europe/Berlin }
-  # Same column name, but comparisons ignore case.
-  status: { collation: caseInsensitive }
   delayMinutes: { column: delay_minutes }
 fixture: { file: fixtures/flights.csv }

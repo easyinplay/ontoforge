@@ -1,0 +1,48 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.42s
+────────────
+ Nextest run ID fbf96a3a-82eb-4b9f-96d5-3eee3499f809 with nextest profile: gsd
+    Starting 3 tests across 1 binary (9 tests skipped)
+        PASS [   0.100s] (1/3) ontoforge-query::audit_pk audit_pk_execution_reserve_failure_has_no_audit_id
+        FAIL [   0.120s] (2/3) ontoforge-query::audit_pk audit_pk_execution_returns_durable_id_for_success_and_denial
+  stdout ───
+
+    running 1 test
+    test audit_pk_execution_returns_durable_id_for_success_and_denial ... FAILED
+
+    failures:
+
+    failures:
+        audit_pk_execution_returns_durable_id_for_success_and_denial
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 11 filtered out; finished in 0.09s
+
+  stderr ───
+
+    thread 'audit_pk_execution_returns_durable_id_for_success_and_denial' (22712) panicked at crates\ontoforge-query\tests\audit_pk.rs:286:5:
+    successful query must return its audit guard ID
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.122s] (3/3) ontoforge-query::audit_pk audit_pk_execution_finish_failure_retains_reserved_id
+  stdout ───
+
+    running 1 test
+    test audit_pk_execution_finish_failure_retains_reserved_id ... FAILED
+
+    failures:
+
+    failures:
+        audit_pk_execution_finish_failure_retains_reserved_id
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 11 filtered out; finished in 0.11s
+
+  stderr ───
+
+    thread 'audit_pk_execution_finish_failure_retains_reserved_id' (5400) panicked at crates\ontoforge-query\tests\audit_pk.rs:364:5:
+    finish failure must retain the audit guard ID
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.123s] 3 tests run: 1 passed, 2 failed, 9 skipped
+        FAIL [   0.120s] (2/3) ontoforge-query::audit_pk audit_pk_execution_returns_durable_id_for_success_and_denial
+        FAIL [   0.122s] (3/3) ontoforge-query::audit_pk audit_pk_execution_finish_failure_retains_reserved_id
+error: test run failed

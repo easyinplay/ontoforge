@@ -33,91 +33,91 @@
 - [x] **ENGINE-02**: Trino 不可用时，需要 Trino 的读写 fail-closed（`EngineUnavailable`），`/health` 与 describe 暴露引擎状态
 - [x] **ENGINE-03**: 发往 Trino / SQLite 的 SQL 由自有 printer 生成，值只经转义函数输出，注入防护由 proptest 与真实执行验证
 - [x] **ENGINE-04**: SQLite 替身引擎支撑 Windows 本机 `cargo test` 与 `serve --dev`（不承诺生产）
-- [x] **ENGINE-05**: Linux CI 跑 Trino + PG 集成测试，nightly 加跑 Iceberg；SQL Server 由私有 fixture 验证
+- [ ] **ENGINE-05**: Linux CI 跑 Trino + PG 集成测试，nightly 加跑 Iceberg；SQL Server 由私有 fixture 验证
 
 ### Edit store 与 edit log
 
-- [ ] **STORE-01**: edit store 在 PostgreSQL（生产）或 SQLite（dev / test）上运行，两个后端通过同一套 conformance 测试
-- [ ] **STORE-02**: 新增类定义变更在 reload 时自动生成 DDL；破坏性变更被 lint 拦下，经 `ontoforge migrate --plan/--apply` 完成并归档旧列；reload 原子生效（Trino 元数据可见后才切换、`lock_timeout`、`def_version` 栅栏）
-- [ ] **STORE-03**: 每次成功提交的写入都追加到不可变 edit log，记录 actor、action、时间、参数与 edits
-- [ ] **STORE-04**: 客户端可以查询某个对象的变更历史
+- [x] **STORE-01**: edit store 在 PostgreSQL（生产）或 SQLite（dev / test）上运行，两个后端通过同一套 conformance 测试
+- [x] **STORE-02**: 新增类定义变更在 reload 时自动生成 DDL；破坏性变更被 lint 拦下，经 `ontoforge migrate --plan/--apply` 完成并归档旧列；reload 原子生效（Trino 元数据可见后才切换、`lock_timeout`、`def_version` 栅栏）
+- [x] **STORE-03**: 每次成功提交的写入都追加到不可变 edit log，记录 actor、action、时间、参数与 edits
+- [x] **STORE-04**: 客户端可以查询某个对象的变更历史
 - [ ] **STORE-05**: link 基数（1:1、1:N）在 edit store 写入时强制；source 数据的基数由 lint / 校验查询报告，不阻塞读取
-- [ ] **STORE-06**: 开发者可以用 `ontoforge import` 导入 edit-only 对象与替身引擎数据，导入作为系统 edit 记入 edit log；业务数据摄取由 Trino ETL（L3）负责
-- [ ] **STORE-07**: 叠加按属性 patch：edit 只存设置过的属性，未设置的属性跟随 source；tombstone 不复活，release 显式且版本单调递增
+- [x] **STORE-06**: 开发者可以用 `ontoforge import` 导入 edit-only 对象与替身引擎数据，导入作为系统 edit 记入 edit log；业务数据摄取由 Trino ETL（L3）负责
+- [x] **STORE-07**: 叠加按属性 patch：edit 只存设置过的属性，未设置的属性跟随 source；tombstone 不复活，release 显式且版本单调递增
 
 ### Scope 与认证
 
-- [ ] **SCOPE-01**: 管理员可以管理用户、组（可同步自 OIDC `groups` claim）与角色，角色绑定到用户或组
-- [ ] **SCOPE-02**: 角色可授予可见 object type、属性 allow-list、CEL 行谓词（只引用同行属性与 `principal.attrs`）、action 执行权、SQL 级别与 MCP toolset
-- [ ] **SCOPE-03**: 多角色合并为 scoped 基关系（行 = 各角色谓词之 OR，列按授予它的角色谓词遮蔽），所有表达式只能绑定到该关系，不产生跨角色列 × 行泄露
-- [ ] **SCOPE-04**: 同一 CEL 行谓词编译成 SQL 与在 Rust 中对单行求值的结果一致（差分测试覆盖）
-- [ ] **SCOPE-05**: 无授权 = 不可见（fail-closed）；缺失的主体属性使相关谓词为 false；无法编译的谓词在 validate 时报错
-- [ ] **SCOPE-06**: 定义 reload 与角色变更时，被授予某 action 的角色列集必须覆盖其 criteria 引用的列，否则报错不生效
-- [ ] **SCOPE-07**: 角色 / scope 只能经管理通道或 L3 修改并审计；ontology 定义只经部署方 reload；agent MCP 无变更工具；每个请求固定使用开始时的定义版本
-- [ ] **AUTH-01**: 客户端可以用 OIDC 签发的 JWT 认证（JWKS 自动拉取与缓存）
-- [ ] **AUTH-02**: dev 模式下开发者可以用 CLI 生成本地 token，无需外部 IdP
+- [x] **SCOPE-01**: 管理员可以管理用户、组（可同步自 OIDC `groups` claim）与角色，角色绑定到用户或组
+- [x] **SCOPE-02**: 角色可授予可见 object type、属性 allow-list、CEL 行谓词（只引用同行属性与 `principal.attrs`）、action 执行权、SQL 级别与 MCP toolset
+- [x] **SCOPE-03**: 多角色合并为 scoped 基关系（行 = 各角色谓词之 OR，列按授予它的角色谓词遮蔽），所有表达式只能绑定到该关系，不产生跨角色列 × 行泄露
+- [x] **SCOPE-04**: 同一 CEL 行谓词编译成 SQL 与在 Rust 中对单行求值的结果一致（差分测试覆盖）
+- [x] **SCOPE-05**: 无授权 = 不可见（fail-closed）；缺失的主体属性使相关谓词为 false；无法编译的谓词在 validate 时报错
+- [x] **SCOPE-06**: 定义 reload 与角色变更时，被授予某 action 的角色列集必须覆盖其 criteria 引用的列，否则报错不生效
+- [x] **SCOPE-07**: 角色 / scope 只能经管理通道或 L3 修改并审计；ontology 定义只经部署方 reload；agent MCP 无变更工具；每个请求固定使用开始时的定义版本
+- [x] **AUTH-01**: 客户端可以用 OIDC 签发的 JWT 认证（JWKS 自动拉取与缓存）
+- [x] **AUTH-02**: dev 模式下开发者可以用 CLI 生成本地 token，无需外部 IdP
 
 ### Object set 查询（L0）
 
-- [ ] **QUERY-01**: 客户端可以按 primary key 获取单个对象（已编辑对象 PG 直读，未编辑对象 Trino 单表查询），并可指定返回的属性子集
-- [ ] **QUERY-02**: 客户端可以用 WhereClause（eq / gt / gte / lt / lte / isNull / in / startsWith / containsAnyTerm / containsAllTerms / and / or / not）过滤对象
-- [ ] **QUERY-03**: 客户端可以对 String 属性做 token 匹配搜索（Trino 上无相关度排序）
-- [ ] **QUERY-04**: 客户端可以对结果排序，并用 keyset 游标分页遍历（`has_more` 判定结束）
-- [ ] **QUERY-05**: 客户端可以沿 link 遍历（searchAround），也可以获取单个对象的关联对象
-- [ ] **QUERY-06**: 客户端可以对 object set 做 union / intersect / subtract
-- [ ] **QUERY-07**: 客户端可以对 object set 做聚合（count / sum / avg / min / max / distinct），支持 groupBy
-- [ ] **QUERY-08**: Rust 叠加实现对照内存参考模型的 proptest 通过，SQLite 替身与 Trino 的单表查询语义一致
-- [ ] **QUERY-09**: 读结果带不透明的 HMAC `_version` 令牌；L0 输入、输出与错误不含物理名；结果按行数与字节上限截断并标 `truncated`
-- [ ] **QUERY-10**: 每条 Trino 查询单表、≤ 2 fragment；安静或隔离集群下 pk 读 p95 < 500ms、列表 p95 < 1s、聚合 p95 < 1.5s、已编辑对象 PG 直读 p95 < 50ms
+- [x] **QUERY-01**: 客户端可以按 primary key 获取单个对象（已编辑对象 PG 直读，未编辑对象 Trino 单表查询），并可指定返回的属性子集
+- [x] **QUERY-02**: 客户端可以用 WhereClause（eq / gt / gte / lt / lte / isNull / in / startsWith / containsAnyTerm / containsAllTerms / and / or / not）过滤对象
+- [x] **QUERY-03**: 客户端可以对 String 属性做 token 匹配搜索（Trino 上无相关度排序）
+- [x] **QUERY-04**: 客户端可以对结果排序，并用 keyset 游标分页遍历（`has_more` 判定结束）
+- [x] **QUERY-05**: 客户端可以沿 link 遍历（searchAround），也可以获取单个对象的关联对象
+- [x] **QUERY-06**: 客户端可以对 object set 做 union / intersect / subtract
+- [x] **QUERY-07**: 客户端可以对 object set 做聚合（count / sum / avg / min / max / distinct），支持 groupBy
+- [x] **QUERY-08**: Rust 叠加实现对照内存参考模型的 proptest 通过，SQLite 替身与 Trino 的单表查询语义一致
+- [x] **QUERY-09**: 读结果带不透明的 HMAC `_version` 令牌；L0 输入、输出与错误不含物理名；结果按行数与字节上限截断并标 `truncated`
+- [x] **QUERY-10**: 每条 Trino 查询单表、≤ 2 fragment；安静或隔离集群下 pk 读 p95 < 500ms、列表 p95 < 1s、聚合 p95 < 1.5s、已编辑对象 PG 直读 p95 < 50ms
 
 ### Action
 
-- [ ] **ACTION-01**: 客户端提交 action 时，参数按类型、required 与约束校验，失败时返回逐参数的错误
-- [ ] **ACTION-02**: action 的 rules 在单个事务内执行，生成 create / modify / delete object 与 add / remove link 的 edits
-- [ ] **ACTION-03**: submission criteria 不满足时 action 被拒绝并返回配置的失败信息；criteria 只在调用者的遮蔽视图上求值
-- [ ] **ACTION-04**: 客户端可以用 validate-only 模式提交 action，只得到校验结果，不产生写入
-- [ ] **ACTION-05**: 客户端可以批量提交同一 action，全部成功或全部回滚
-- [ ] **ACTION-06**: action 成功后返回标准化的 edits 摘要（新增 / 修改 / 删除的对象与 link）
-- [ ] **ACTION-07**: 对象只能经 action（或可审计的导入）写入，没有其他写入途径
-- [ ] **ACTION-08**: 写字段必须在调用者对该行的可见列内且非系统字段；写后状态（含 link 两端与 release）必须对调用者可见，否则 `ScopeDenied`，错误不泄露对象状态
-- [ ] **ACTION-09**: 客户端可附带读取时的 `_version` 令牌，不一致返回 `VersionConflict`；edit 读集在事务内按稳定顺序加锁
-- [ ] **ACTION-10**: `command_id` 以主体为作用域幂等：重放前重新鉴权，同键异参报 `CommandIdReused`，响应丢失后可凭同键查询结果
-- [ ] **ACTION-11**: 提交成功后经事务性 outbox 向下游 webhook 至少投递一次带 `event_id` 的事件
-- [ ] **ACTION-12**: Action 只在目标或读集需要 Trino 时依赖 Trino；source 重复 pk 的对象返回 `AmbiguousObject` 且拒绝写入
+- [x] **ACTION-01**: 客户端提交 action 时，参数按类型、required 与约束校验，失败时返回逐参数的错误
+- [x] **ACTION-02**: action 的 rules 在单个事务内执行，生成 create / modify / delete object 与 add / remove link 的 edits
+- [x] **ACTION-03**: submission criteria 不满足时 action 被拒绝并返回配置的失败信息；criteria 只在调用者的遮蔽视图上求值
+- [x] **ACTION-04**: 客户端可以用 validate-only 模式提交 action，只得到校验结果，不产生写入
+- [x] **ACTION-05**: 客户端可以批量提交同一 action，全部成功或全部回滚
+- [x] **ACTION-06**: action 成功后返回标准化的 edits 摘要（新增 / 修改 / 删除的对象与 link）
+- [x] **ACTION-07**: 对象只能经 action（或可审计的导入）写入，没有其他写入途径
+- [x] **ACTION-08**: 写字段必须在调用者对该行的可见列内且非系统字段；写后状态（含 link 两端与 release）必须对调用者可见，否则 `ScopeDenied`，错误不泄露对象状态
+- [x] **ACTION-09**: 客户端可附带读取时的 `_version` 令牌，不一致返回 `VersionConflict`；edit 读集在事务内按稳定顺序加锁
+- [x] **ACTION-10**: `command_id` 以主体为作用域幂等：重放前重新鉴权，同键异参报 `CommandIdReused`，响应丢失后可凭同键查询结果
+- [x] **ACTION-11**: 提交成功后经事务性 outbox 向下游 webhook 至少投递一次带 `event_id` 的事件
+- [x] **ACTION-12**: Action 只在目标或读集需要 Trino 时依赖 Trino；本次 Action 从 source 读取并观测到重复 pk 时返回 `AmbiguousObject` 且拒绝写入；无需 source 内容的已编辑对象可在 Trino 不可用时执行
 
 ### L2 与审计
 
-- [ ] **L2-01**: 被授予 `sql:raw` 的主体可以执行只读 Trino DQL 并列举 allow-list 内的 catalog / schema / 表
-- [ ] **L2-02**: L2 SQL 经 AST 白名单校验（只允许 SELECT / WITH，拒绝表函数、CALL、EXECUTE、多语句、会话与事务语句），执行时发送重序列化后的 SQL
-- [ ] **L2-03**: L2 只能访问 catalog / schema allow-list，硬排除 edit store catalog 与 `system` 元数据表
-- [ ] **L2-04**: 启动自检无法证明 L2 身份在 Trino 侧受限时禁用 L2 并告警（fail-closed）
-- [ ] **AUDIT-01**: 所有级别的读取记录元数据审计（不含结果数据），异步落库，积压或持续失败时读请求 fail-closed；保留期可配
+- [x] **L2-01**: 被授予 `sql:raw` 的主体可以执行只读 Trino DQL 并列举 allow-list 内的 catalog / schema / 表
+- [x] **L2-02**: L2 SQL 经 AST 白名单校验（只允许 SELECT / WITH，拒绝表函数、CALL、EXECUTE、多语句、会话与事务语句），执行时发送重序列化后的 SQL
+- [x] **L2-03**: L2 只能访问 catalog / schema allow-list，硬排除 edit store catalog 与 `system` 元数据表
+- [x] **L2-04**: 启动自检无法证明 L2 身份在 Trino 侧受限时禁用 L2 并告警（fail-closed）
+- [x] **AUDIT-01**: 所有级别的读取记录元数据审计（不含结果数据），异步落库，积压或持续失败时读请求 fail-closed；保留期可配
 
 ### API 与客户端
 
-- [ ] **API-01**: 服务暴露 REST API，覆盖 ontology 元数据、对象读取、object set 查询、action 提交与 edit 历史
-- [ ] **API-02**: 服务导出 OpenAPI 3.1 文档，并纳入快照测试
-- [ ] **API-03**: 错误响应统一为结构化错误码 + apiName 级描述 + request_id；L0 不含物理名
-- [ ] **API-04**: Rust 开发者可以用 `ontoforge-client` 调用全部 REST 能力
-- [ ] **API-05**: TypeScript 开发者可以使用由 OpenAPI 生成的平台层 client 调用全部 REST 能力
+- [x] **API-01**: 服务暴露 REST API，覆盖 ontology 元数据、对象读取、object set 查询、action 提交与 edit 历史
+- [x] **API-02**: 服务导出 OpenAPI 3.1 文档，并纳入快照测试
+- [x] **API-03**: 错误响应统一为结构化错误码 + apiName 级描述 + request_id；L0 不含物理名
+- [x] **API-04**: Rust 开发者可以用 `ontoforge-client` 调用全部 REST 能力
+- [x] **API-05**: TypeScript 开发者可以使用由 OpenAPI 生成的平台层 client 调用全部 REST 能力
 
 ### MCP
 
-- [ ] **MCP-01**: agent 可以通过 stdio 或 streamable HTTP 连接 MCP server
-- [ ] **MCP-02**: agent 可以调用 describe 工具获取 ontology 结构（object types、属性、links、actions 及其描述）
-- [ ] **MCP-03**: agent 可以通过查询工具执行 object set 查询（filter / search / searchAround / aggregate）
-- [ ] **MCP-04**: 每个 action type 自动暴露为一个 MCP 工具，输入 schema 由参数定义派生
-- [ ] **MCP-05**: agent 可以以 validate-only 方式调用 action 工具（dry run）
-- [ ] **MCP-06**: agent 通过 MCP 的读写与 REST 走同一套授权与 edit log
-- [ ] **MCP-07**: `list_tools` 按主体过滤 toolset（core / full / sql:raw）；L2 的 6 个工具名称与参数对齐 mcp-trino
-- [ ] **MCP-08**: L3 与任何定义 / 授权变更工具不出现在 agent MCP 中
+- [x] **MCP-01**: agent 可以通过 stdio 或 streamable HTTP 连接 MCP server
+- [x] **MCP-02**: agent 可以调用 describe 工具获取 ontology 结构（object types、属性、links、actions 及其描述）
+- [x] **MCP-03**: agent 可以通过查询工具执行 object set 查询（filter / search / searchAround / aggregate）
+- [x] **MCP-04**: 每个 action type 自动暴露为一个 MCP 工具，输入 schema 由参数定义派生
+- [x] **MCP-05**: agent 可以以 validate-only 方式调用 action 工具（dry run）
+- [x] **MCP-06**: agent 通过 MCP 的读写与 REST 走同一套授权与 edit log
+- [x] **MCP-07**: `list_tools` 按主体过滤 toolset（core / full / sql:raw）；L2 的 6 个工具名称与参数对齐 mcp-trino
+- [x] **MCP-08**: L3 与任何定义 / 授权变更工具不出现在 agent MCP 中
 
 ### 开发者体验
 
-- [ ] **DX-01**: 开发者用一个二进制 `ontoforge serve --dev` 即可在本机（含 Windows）启动完整服务（SQLite 替身引擎 + dev token），无需 Trino
-- [ ] **DX-02**: 仓库附带至少一个示例 ontology，可完成查询、执行 action、查看历史的端到端演示
+- [x] **DX-01**: 开发者用一个二进制 `ontoforge serve --dev` 即可在本机（含 Windows）启动完整服务（SQLite 替身引擎 + dev token），无需 Trino
+- [x] **DX-02**: 仓库附带至少一个示例 ontology，可完成查询、执行 action、查看历史的端到端演示
 - [x] **DX-03**: Windows 本机 `cargo test` 不依赖 Docker 即可全部通过
-- [ ] **DX-04**: release workflow 发布 Linux / macOS / Windows 单二进制到 GitHub Releases
+- [x] **DX-04**: release workflow 发布 Linux / macOS / Windows 单二进制到 GitHub Releases
 
 ## v2 Requirements
 
@@ -197,66 +197,66 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ENGINE-02 | Phase 2（错误分类与 status()）+ Phase 7（/health 与 describe 暴露，API-01） | Complete |
 | ENGINE-03 | Phase 2 | Complete |
 | ENGINE-04 | Phase 2（SQLite 替身支撑 Windows cargo test）+ Phase 7（serve --dev，DX-01） | Complete |
-| ENGINE-05 | Phase 2 | Complete |
-| STORE-01 | Phase 3 | Pending |
-| STORE-02 | Phase 3 | Pending |
-| STORE-03 | Phase 3 | Pending |
-| STORE-04 | Phase 3 | Pending |
-| STORE-05 | Phase 3 | Pending |
-| STORE-06 | Phase 3 | Pending |
-| STORE-07 | Phase 3 | Pending |
-| SCOPE-01 | Phase 3 | Pending |
-| SCOPE-02 | Phase 3 | Pending |
-| SCOPE-03 | Phase 3 | Pending |
-| SCOPE-04 | Phase 3 | Pending |
-| SCOPE-05 | Phase 3 | Pending |
-| SCOPE-06 | Phase 3 | Pending |
-| SCOPE-07 | Phase 3 | Pending |
-| AUTH-01 | Phase 3 | Pending |
-| AUTH-02 | Phase 3 | Pending |
-| QUERY-01 | Phase 4 | Pending |
-| QUERY-02 | Phase 4 | Pending |
-| QUERY-03 | Phase 4 | Pending |
-| QUERY-04 | Phase 4 | Pending |
-| QUERY-05 | Phase 4 | Pending |
-| QUERY-06 | Phase 4 | Pending |
-| QUERY-07 | Phase 4 | Pending |
-| QUERY-08 | Phase 4 | Pending |
-| QUERY-09 | Phase 4 | Pending |
-| QUERY-10 | Phase 4 | Pending |
-| ACTION-01 | Phase 5 | Pending |
-| ACTION-02 | Phase 5 | Pending |
-| ACTION-03 | Phase 5 | Pending |
-| ACTION-04 | Phase 5 | Pending |
-| ACTION-05 | Phase 5 | Pending |
-| ACTION-06 | Phase 5 | Pending |
-| ACTION-07 | Phase 5 | Pending |
-| ACTION-08 | Phase 5 | Pending |
-| ACTION-09 | Phase 5 | Pending |
-| ACTION-10 | Phase 5 | Pending |
-| ACTION-11 | Phase 5 | Pending |
-| ACTION-12 | Phase 5 | Pending |
-| L2-01 | Phase 6 | Pending |
-| L2-02 | Phase 6 | Pending |
-| L2-03 | Phase 6 | Pending |
-| L2-04 | Phase 6 | Pending |
-| AUDIT-01 | Phase 6 | Pending |
-| API-01 | Phase 7 | Pending |
-| API-02 | Phase 7 | Pending |
-| API-03 | Phase 7 | Pending |
-| API-04 | Phase 7 | Pending |
-| API-05 | Phase 7 | Pending |
-| MCP-01 | Phase 7 | Pending |
-| MCP-02 | Phase 7 | Pending |
-| MCP-03 | Phase 7 | Pending |
-| MCP-04 | Phase 7 | Pending |
-| MCP-05 | Phase 7 | Pending |
-| MCP-06 | Phase 7 | Pending |
-| MCP-07 | Phase 7 | Pending |
-| MCP-08 | Phase 7 | Pending |
-| DX-01 | Phase 7 | Pending |
-| DX-02 | Phase 7 | Pending |
-| DX-04 | Phase 7 | Pending |
+| ENGINE-05 | Phase 2 | Partial: local Iceberg verified; ADR-0017 MinIO fixture deviation unresolved |
+| STORE-01 | Phase 3 | Complete |
+| STORE-02 | Phase 3 | Complete |
+| STORE-03 | Phase 3 | Complete |
+| STORE-04 | Phase 3 | Complete |
+| STORE-05 | Phase 3（edit写入约束）+ Phase 7.1（source报告补齐） | Partial: source cardinality report missing |
+| STORE-06 | Phase 3 | Complete |
+| STORE-07 | Phase 3 | Complete |
+| SCOPE-01 | Phase 3 | Complete |
+| SCOPE-02 | Phase 3 | Complete |
+| SCOPE-03 | Phase 3 | Complete |
+| SCOPE-04 | Phase 3 | Complete |
+| SCOPE-05 | Phase 3 | Complete |
+| SCOPE-06 | Phase 3 | Complete |
+| SCOPE-07 | Phase 3（管理写入与审计）+ Phase 6（请求版本固定）+ Phase 7（MCP 工具限制） | Complete |
+| AUTH-01 | Phase 3 | Complete |
+| AUTH-02 | Phase 3 | Complete |
+| QUERY-01 | Phase 4 | Complete |
+| QUERY-02 | Phase 4 | Complete |
+| QUERY-03 | Phase 4 | Complete |
+| QUERY-04 | Phase 4 | Complete |
+| QUERY-05 | Phase 4 | Complete |
+| QUERY-06 | Phase 4 | Complete |
+| QUERY-07 | Phase 4 | Complete |
+| QUERY-08 | Phase 4 | Complete |
+| QUERY-09 | Phase 4 | Complete |
+| QUERY-10 | Phase 4 | Complete |
+| ACTION-01 | Phase 5 | Complete |
+| ACTION-02 | Phase 5 | Complete |
+| ACTION-03 | Phase 5 | Complete |
+| ACTION-04 | Phase 5 | Complete |
+| ACTION-05 | Phase 5 | Complete |
+| ACTION-06 | Phase 5 | Complete |
+| ACTION-07 | Phase 5 | Complete |
+| ACTION-08 | Phase 5 | Complete |
+| ACTION-09 | Phase 5 | Complete |
+| ACTION-10 | Phase 5 | Complete |
+| ACTION-11 | Phase 5 | Complete |
+| ACTION-12 | Phase 5 | Complete |
+| L2-01 | Phase 6 | Complete |
+| L2-02 | Phase 6 | Complete |
+| L2-03 | Phase 6 + Phase 7（MCP传输接线） | Complete: INT-01 fixed and independently reverified 2026-11-04 |
+| L2-04 | Phase 6（库级启动与周期 attestation、fail-closed 状态）+ Phase 7（服务生命周期接线及 `/health` 告警，ADR-0028） | Complete |
+| AUDIT-01 | Phase 6 | Complete |
+| API-01 | Phase 7 | Complete |
+| API-02 | Phase 7 | Complete |
+| API-03 | Phase 7 | Complete |
+| API-04 | Phase 7 | Complete |
+| API-05 | Phase 7 | Complete |
+| MCP-01 | Phase 7 | Complete |
+| MCP-02 | Phase 7 | Complete |
+| MCP-03 | Phase 7 | Complete |
+| MCP-04 | Phase 7 | Complete |
+| MCP-05 | Phase 7 | Complete |
+| MCP-06 | Phase 7 | Complete |
+| MCP-07 | Phase 7 | Complete |
+| MCP-08 | Phase 7 | Complete |
+| DX-01 | Phase 7 | Complete |
+| DX-02 | Phase 7 | Complete |
+| DX-04 | Phase 7 | Complete |
 
 **Coverage:**
 
@@ -266,4 +266,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-10-15*
-*Last updated: 2026-10-19 after Phase 2*
+*Last updated: 2026-10-28 after Phase 6 verification; evidence: `.planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md`*

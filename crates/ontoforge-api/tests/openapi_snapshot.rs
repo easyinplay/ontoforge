@@ -1,0 +1,196 @@
+use serde_json::{Value, json};
+
+use ontoforge_api::dto::{ActionRequest, ObjectSet, WhereClause};
+
+fn checked_in_openapi() -> Value {
+    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../docs/openapi.json");
+    let text = std::fs::read_to_string(path).expect("checked-in OpenAPI document");
+    serde_json::from_str(&text).expect("valid OpenAPI JSON")
+}
+
+#[test]
+fn checked_in_document_matches_static_render() {
+    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../docs/openapi.json");
+    let checked_in = std::fs::read_to_string(path).expect("checked-in OpenAPI document");
+    assert_eq!(checked_in, ontoforge_api::openapi::render());
+}
+
+#[test]
+fn history_error_responses_match_runtime_contract() {
+    let rendered: Value = serde_json::from_str(&ontoforge_api::openapi::render()).unwrap();
+    for (source, document) in [("rendered", rendered), ("checked-in", checked_in_openapi())] {
+        let responses =
+            document["paths"]["/api/objects/{object_type}/{pk}/history"]["get"]["responses"]
+                .as_object()
+                .unwrap();
+        let mut statuses: Vec<_> = responses.keys().map(String::as_str).collect();
+        statuses.sort_unstable();
+        assert_eq!(
+            statuses,
+            [
+                "200", "400", "401", "403", "404", "408", "409", "503", "504"
+            ],
+            "{source} history response statuses"
+        );
+        for (status, response) in responses {
+            let expected = if status == "200" {
+                "#/components/schemas/HistoryPage"
+            } else {
+                "#/components/schemas/ErrorEnvelope"
+            };
+            assert_eq!(
+                response["content"]["application/json"]["schema"]["$ref"], expected,
+                "{source} history response {status}"
+            );
+        }
+    }
+}
+
+#[test]
+fn health_schema_includes_optional_l2_status_and_reason() {
+    let document: Value = serde_json::from_str(&ontoforge_api::openapi::render()).unwrap();
+    let schemas = &document["components"]["schemas"];
+    assert!(schemas["HealthResponse"]["properties"].get("l2").is_some());
+    assert!(
+        !schemas["HealthResponse"]["required"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("l2"))
+    );
+    assert_eq!(
+        schemas["L2Health"]["properties"]["status"]["type"],
+        "string"
+    );
+    assert!(schemas["L2Health"]["properties"].get("reason").is_some());
+    assert_eq!(schemas["L2Health"]["required"], json!(["status"]));
+}
+
+#[test]
+fn openapi_31_all_operations_and_security() {
+    let document = checked_in_openapi();
+    assert_eq!(document["openapi"], "3.1.0");
+    let paths = document["paths"].as_object().expect("paths object");
+    for path in [
+        "/api/ontology",
+        "/api/objects/{object_type}/{pk}",
+        "/api/query",
+        "/api/aggregate",
+        "/api/actions/{action}",
+        "/api/commands/{command_id}",
+        "/api/objects/{object_type}/{pk}/history",
+    ] {
+        assert!(paths.contains_key(path), "missing path {path}");
+    }
+    assert!(document["components"]["securitySchemes"]["bearerAuth"].is_object());
+}
+
+#[test]
+fn action_error_schema_preserves_optional_diagnostics() {
+    let document: Value = serde_json::from_str(&ontoforge_api::openapi::render()).unwrap();
+    let schemas = &document["components"]["schemas"];
+    for field in ["message", "parameterErrors"] {
+        assert!(
+            schemas["ErrorEnvelope"]["properties"].get(field).is_some(),
+            "{field}"
+        );
+        assert!(
+            !schemas["ErrorEnvelope"]["required"]
+                .as_array()
+                .unwrap()
+                .contains(&json!(field))
+        );
+    }
+    let parameter = &schemas["ParameterError"];
+    assert_eq!(
+        parameter["required"],
+        json!(["itemOrdinal", "name", "reason"])
+    );
+    assert_eq!(parameter["properties"]["itemOrdinal"]["type"], "integer");
+    assert_eq!(parameter["properties"]["itemOrdinal"]["minimum"], 0);
+    assert_eq!(parameter["properties"]["name"]["type"], "string");
+    assert_eq!(parameter["properties"]["reason"]["type"], "string");
+}
+
+#[test]
+fn openapi_recursive_nullable_required_and_unknown_fields() {
+    let nested = ObjectSet::Where {
+        object_type: "文档".into(),
+        predicate: WhereClause::And {
+            clauses: vec![WhereClause::IsNull {
+                property: "备注".into(),
+            }],
+        },
+    };
+    let encoded = serde_json::to_value(&nested).expect("serialize recursive union");
+    assert_eq!(encoded["kind"], "where");
+    assert_eq!(encoded["predicate"]["op"], "and");
+    assert!(
+        serde_json::from_value::<ObjectSet>(json!({
+            "kind": "type",
+            "object_type": "文档",
+            "unknown": true
+        }))
+        .is_err()
+    );
+    assert!(
+        serde_json::from_value::<ActionRequest>(json!({
+            "items": [],
+            "validateOnly": false,
+            "unknown": true
+        }))
+        .is_err()
+    );
+}
+
+#[test]
+fn wire_numbers_unicode_and_variant_names() {
+    let value = serde_json::to_value(ObjectSet::Pk {
+        object_type: "订单".into(),
+        pk: json!(9_007_199_254_740_993_i64),
+    })
+    .expect("serialize pk");
+    assert_eq!(value["kind"], "pk");
+    assert_eq!(value["object_type"], "订单");
+    assert_eq!(value["pk"], 9_007_199_254_740_993_i64);
+}
+
+#[test]
+fn receipt_schema_preserves_every_edit_and_requires_wire_fields() {
+    let document: Value = serde_json::from_str(&ontoforge_api::openapi::render()).unwrap();
+    let schemas = &document["components"]["schemas"];
+    assert_eq!(
+        schemas["ItemReceipt"]["properties"]["edits"]["items"]["$ref"],
+        "#/components/schemas/EditSummary"
+    );
+    assert!(
+        schemas["ItemReceipt"]["properties"]
+            .get("objectType")
+            .is_none()
+    );
+    for field in [
+        "ruleOrdinal",
+        "editOrdinal",
+        "kind",
+        "typeName",
+        "pk",
+        "operation",
+        "versionAfter",
+    ] {
+        assert!(
+            schemas["EditSummary"]["required"]
+                .as_array()
+                .unwrap()
+                .contains(&json!(field)),
+            "{field}"
+        );
+    }
+    for field in ["eventId", "committedAt", "maskedChanges"] {
+        assert!(
+            schemas["HistoryEntry"]["required"]
+                .as_array()
+                .unwrap()
+                .contains(&json!(field)),
+            "{field}"
+        );
+    }
+}

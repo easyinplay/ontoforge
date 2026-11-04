@@ -1,0 +1,104 @@
+# Phase 7 task plan
+
+## Goal
+
+交付 ROADMAP Phase 7 的 REST、OpenAPI、Rust/TS client、MCP、serve --dev、release 与跨阶段 L2-04/SCOPE-07 验收。范围与需求真相源为 `.planning/ROADMAP.md`、`.planning/REQUIREMENTS.md`；本文件跟踪顺序与阶段验收。
+
+## Tasks
+
+- [x] P0：确认 Phase 6 的 owner 状态为 passed，保留 PR #7 不合并约束。
+- [x] P1：完成 GSD discuss。用户决策见 `07-CONTEXT.md`，备选项审计见 `07-DISCUSSION-LOG.md`；已消费临时检查点。
+- [x] P2：工程审查、研究与 rmcp spike 已完成；16 份 PLAN 经第二轮独立 checker 通过，详 `reviews/07-PLAN-CHECK-R2.md`。
+- [x] P3：16/16 PLAN 已交付，实施与 TDD 证据见各 SUMMARY。07-11 采用方案 A，生成器隔离 workspace 使用兼容 TypeScript 版本，主 client 保留 TypeScript 7。
+- [x] P4：REST/MCP、SDK、dev、真实 L2/health、三平台包及正式审查通过；GSD VERIFICATION passed、UAT13/13，phase.complete 已完成。
+
+## Ownership
+
+主会话拥有共享计划、STATE、ROADMAP、REQUIREMENTS；每份 PLAN 的 files_modified 由单一 executor 负责。workflow.use_worktrees=false，所有 PLAN 顺序执行。
+
+## Acceptance
+
+以 ROADMAP Phase 7 六条 Success Criteria 和 REQUIREMENTS 为准。L2-04/SCOPE-07 已由本阶段新鲜证据验证，详 `07-VERIFICATION.md`。历史 Phase 6 CI 只证明其当时源码，不替代本轮验收。
+
+## Next Step
+
+Phase 7 已关闭：adc0227 fresh43/43、CI41669982375四必需job、release41669982362三native/aggregate全部通过，独立VERIFICATION80/80、UAT13/13。下一步是milestone审计Phase1–6历史fingerprint和既有deferred-items；不自动归档、创建Release、发布npm或合并PR。
+
+### 最终安全与证据收口
+
+- [x] T24：两轮真实RED，session12/12与transport11/11 GREEN，Clippy/fmt通过，独立security复签CLOSED；详reviews/07-T24-SECURITY-RECHECK.md。
+- [x] E1/E2：真实REST/MCP Action race、definition fence、snapshot/revoke验收；adc0227 fresh PG4/4。
+- [x] E3：真实stdio session失效/响应丢失不重发通过，session资源与token到期由T24共验；详07-BRIDGE-SECURITY-EVIDENCE。
+- [x] Nyquist 07-09-2：stdio成功链、双主体、在线badtoken/真实redirect否定均通过，合计stdio11/11与Clippy/fmt；详07-BRIDGE-SECURITY-EVIDENCE。
+- [x] Nyquist 07-15-2：query15项及typed HTTP四format实际限流通过，详07-EXPLAIN-EVIDENCE与07-T08-SECURITY-RECHECK。
+- [x] MCP实际业务并发：真实RED后修复执行持槽与独立有界control，最终50项/Clippy/fmt及Spec/Staff/security独立复签，提交adc0227。
+- [x] E4/E5/E7：Rust/TS主体隔离、撤权、在途abort、u64、丢响应不重试与显式replay；adc0227 fresh Rust9/9、TS17/17。
+- [x] E6：真实RED后修复预检顺序，L2 11项及最终六工具矩阵GREEN，Clippy/fmt、Staff和security复签通过；详reviews/07-E6-SECURITY-RECHECK.md。
+- [x] 新head完整CI与native产物复验，security/code review/GSD verification对账。
+
+P3/P4完成：16/16已验收，07-13/07-14均已关闭。Windows方案A与后续修复证据归`07-13-SUMMARY.md`，最终门禁归`07-14-SUMMARY.md`。
+
+07-11 已完成：`70a9ed9`、`5c76afe`；独立 generator workspace、TypeScript 7 client、无损 codec 与 5 项真实 HTTP contract 均通过。主 package 已移除 `openapi-typescript`，避免 clean install peer 冲突。
+
+## 07-13 当前验收清单
+
+- [x] GT-01：客户端取消在shutdown前独立对账audit，mutation RED→6/6 GREEN、Clippy通过且独立复签clean；详reviews/07-CANCEL-CAUSALITY-FIX.md。
+- [x] API WR-01：history OpenAPI9状态合同RED→API8项GREEN、生成/typecheck/build/lint通过，独立复签clean。
+- [x] Staff CR-01：独立L2执行身份与proof准入接线，真实生产assembly回归。
+- [x] Staff CR-02/03/04：MCP全transport认证、初始owner绑定、定向取消和有界SSE shutdown。
+- [x] 关闭补强：原子Action准入/注册、按07-06既定顺序排空、等待Trino取消任务且清理失败可见。
+- [x] Staff CR-05：完整多edit receipt与history显式wire转换，OpenAPI/Rust/TS真实合同一致。
+- [x] 修复workspace历史测试RowValues + Sync类型回归并完成整体验证。
+- [x] SDK无损JSON capability与公开入口修复，8项contract及生成/typecheck/build通过。
+- [x] MCP参数schema修复，新增真实回归及相邻14项测试通过。
+- [x] Rust client数值边界修复，4 unit与5 HTTP contract、client Clippy通过。
+- [x] Rust history分页参数修复及真实HTTP分页回归（`7fa2401`，4 unit+6 HTTP contract）。
+- [x] CLI与全workspace Clippy、embedded-pg Clippy、workspace回归（1373 passed / 0 failed / 113 ignored）。
+- [x] 完整服务脚本（包括取消读audit、Rust/TS、credential scan与cleanup）真实通过（`fd24beb`，unset OS，exit0，Windows state exit0）。
+- [x] SDK/MCP/client交叉复签无剩余blocker（最终冻结`f835752`；整体动态门禁另计）。
+- [x] Phase 7 Draft PR #8的旧head0a3e359全部4必需CI job通过（run41600147824），包括dev Unix权限实际运行。
+- [x] 双轴审查11/12修复已定向验证、独立复签并提交，RF05为0b4a661；详修复合同与SUMMARY。
+- [x] 整合head972c7be的Windows/Linux CI与真实服务门禁通过（41608551893）；后续实现仍需新head门禁。
+- [x] RF-05 MCP参数信封按ADR0029实施，36项通过且独立复签clean。
+- [x] RF-01 drift按ADR0030与工程审查实施及验收，最终27项、本地fresh36项和10175f6四必需CI通过。
+
+## 07-05 Execution
+
+- [x] 05-1 RED: add OpenAPI/serde contract tests and capture semantic failure (`e73623a`)
+- [x] 05-1 GREEN: add shared DTO schemas and OpenAPI document generation (`44cac2d`)
+- [x] 05-1 REFACTOR: rerun focused API contract tests and clean schema registration (`487073b`)
+- [x] 05-2 RED: add deterministic export tests for `serve --export-openapi` (`f5e547e`)
+- [x] 05-2 GREEN: add static export path and checked-in `docs/openapi.json` (`3fafb7f`)
+- [x] 05-2 REFACTOR: rerun export and API snapshot tests (`487073b`)
+
+Verification:
+
+- `cargo test -p ontoforge --lib --locked openapi_ -- --nocapture`: exit 0, 1 passed, 0 failed.
+- `cargo test -p ontoforge-api --test openapi_snapshot --locked -- --nocapture`: exit 0, 4 passed, 0 failed.
+- `cargo fmt --all -- --check`: exit 0 after formatting.
+
+## Execution Order
+
+以下为 PLAN frontmatter 派生的 12 个 wave，详细依赖与跨切合同留在各 PLAN 中，不复制到 ROADMAP。
+
+| Wave | Plans | 能力 |
+|------|-------|------|
+| 1 | 01 | 认证 HTTP 读取 tracer 与 serve |
+| 2 | 02 | 原子 snapshot、Action/history 固定定义 |
+| 3 | 03 | REST 读取与统一错误 |
+| 4 | 04 | REST Action 与历史 |
+| 5 | 05 | OpenAPI 与共享 wire 合同 |
+| 6 | 06,15 | health/shutdown；typed L2 EXPLAIN |
+| 7 | 07,10,11 | MCP 工具；Rust/TS clients |
+| 8 | 08 | MCP L2 与 HTTP transport 安全 |
+| 9 | 16 | MCP 可信默认值与 qualified 参数 |
+| 10 | 09 | 真实 stdio 桥接 |
+| 11 | 12,13 | 持久 dev 演示；真实 PG/Trino 验收 |
+| 12 | 14 | 三平台发行产物与 smoke |
+
+## Errors Encountered
+
+- Grok session 91385 在 55 秒上限返回 ETIMEDOUT / SIGTERM；部分正文仅作第二意见，未当作完整审查。
+- `C:/Users/easyi/.codex/rules/web-search.md` 不存在；已找到并读取 `C:/Users/easyi/.claude/rules/web-search.md`。
+- GSD query commit 跳过已删除的检查点路径；通过显式 git add -u 单独记录删除，避免旧检查点留在仓库。
+- `07-TEST-PLAN.md` 被 GSD 按 `*-PLAN.md` 误计为执行计划，已改名 `07-TEST-MATRIX.md` 并同步指针；没有把测试规划文件当作可执行 PLAN。

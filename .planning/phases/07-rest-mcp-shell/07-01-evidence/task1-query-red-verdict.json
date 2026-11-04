@@ -1,0 +1,32 @@
+{
+  "passed": true,
+  "block": false,
+  "verdict": "RED_EVIDENCE_OK",
+  "reason": "target_test_failed",
+  "evidence": {
+    "command": "C:\\Users\\easyi\\AppData\\Local\\Temp/ontoforge-phase07-nextest/cargo-nextest.exe nextest run --config-file .planning/phases/07-rest-mcp-shell/07-01-evidence/nextest.toml --profile gsd --color never -p ontoforge-query --test audit_pk --locked -E test(audit_pk_execution_)",
+    "exit_code": 100,
+    "target_test": "audit_pk_execution_returns_durable_id_for_success_and_denial",
+    "tests": 3,
+    "pass": 1,
+    "fail": 2,
+    "failing_tests": [
+      "ontoforge-query::audit_pk#audit_pk_execution_returns_durable_id_for_success_and_denial",
+      "ontoforge-query::audit_pk#audit_pk_execution_finish_failure_retains_reserved_id"
+    ],
+    "matched_test": "ontoforge-query::audit_pk#audit_pk_execution_returns_durable_id_for_success_and_denial",
+    "format": "junit",
+    "report_errors": []
+  },
+  "record": {
+    "command": "C:\\Users\\easyi\\AppData\\Local\\Temp/ontoforge-phase07-nextest/cargo-nextest.exe nextest run --config-file .planning/phases/07-rest-mcp-shell/07-01-evidence/nextest.toml --profile gsd --color never -p ontoforge-query --test audit_pk --locked -E test(audit_pk_execution_)",
+    "exit_code": 100,
+    "failing_test": "ontoforge-query::audit_pk#audit_pk_execution_returns_durable_id_for_success_and_denial",
+    "target_test": "audit_pk_execution_returns_durable_id_for_success_and_denial",
+    "expected": "Some request_id identifying the same durable audit record",
+    "actual": "None from the minimal compatibility skeleton",
+    "verdict": "RED_EVIDENCE_OK",
+    "reason": "target_test_failed"
+  },
+  "message": "RED evidence verified: target test \"audit_pk_execution_returns_durable_id_for_success_and_denial\" failed as expected (exit 100). GREEN authorized."
+}

@@ -1,0 +1,11 @@
+{
+  "command": "RUSTC_BOOTSTRAP=1 cargo test -p ontoforge-query --test l2_execute --locked l2_execute_rejections_are_audited_without_post -- -Z unstable-options --format junit --color never",
+  "exitCode": 101,
+  "output": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"test\" package=\"test\" id=\"0\" errors=\"0\" failures=\"1\" tests=\"1\" skipped=\"0\" ><testcase classname=\"integration\" name=\"l2_execute_rejections_are_audited_without_post\" time=\"0\"><failure type=\"assert\"/><system-out><![CDATA[]]>&#xA;<![CDATA[thread 'l2_execute_rejections_are_audited_without_post' (48004) panicked at crates\\ontoforge-query\\tests\\l2_execute.rs:168:5:]]>&#xA;<![CDATA[assertion failed: matches!(f.service().execute_query(\"SELECT 1 FROM demo.tiny.nation\").await,]]>&#xA;<![CDATA[    Err(L2Error::Denied))]]>&#xA;<![CDATA[note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace]]>&#xA;<![CDATA[]]></system-out></testcase><system-out/><system-err/></testsuite></testsuites>\n",
+  "targetTest": "l2_execute_rejections_are_audited_without_post",
+  "targetFile": "crates/ontoforge-query/tests/l2_execute.rs",
+  "expected": "missing sql:raw returns Denied with no Trino POST",
+  "actual": "stub returned InvalidSql at denied assertion",
+  "runStartedAt": "2026-10-27T16:37:43.906Z",
+  "semanticAssessment": "The target test executed and failed at its planned missing-grant denial assertion after ACL fixture attestation."
+}

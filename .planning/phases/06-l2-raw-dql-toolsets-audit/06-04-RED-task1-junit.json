@@ -1,0 +1,13 @@
+{
+  "command": "RUSTC_BOOTSTRAP=1 cargo test -p ontoforge-engine --test l2_health --locked l2_health_ -- -Z unstable-options --format junit --color never",
+  "exitCode": 101,
+  "output": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"test\" package=\"test\" id=\"0\" errors=\"0\" failures=\"2\" tests=\"2\" skipped=\"0\" ><testcase classname=\"integration\" name=\"l2_health_rejects_reused_ontology_identity\" time=\"0\"><failure type=\"assert\"/><system-out><![CDATA[]]>&#xA;<![CDATA[thread 'l2_health_rejects_reused_ontology_identity' (45288) panicked at crates\\ontoforge-engine\\tests\\l2_health.rs:52:5:]]>&#xA;<![CDATA[ontology and L2 must have different identities]]>&#xA;<![CDATA[note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace]]>&#xA;<![CDATA[]]></system-out></testcase><testcase classname=\"integration\" name=\"l2_health_unverified_identity_never_submits_a_statement\" time=\"0\"><failure type=\"assert\"/><system-out><![CDATA[]]>&#xA;<![CDATA[thread 'l2_health_unverified_identity_never_submits_a_statement' (38276) panicked at crates\\ontoforge-engine\\tests\\l2_health.rs:39:5:]]>&#xA;<![CDATA[unverified L2 must be disabled, got Err(Protocol(\"unexpected HTTP status 404\"))]]>&#xA;<![CDATA[]]></system-out></testcase><system-out/><system-err/></testsuite></testsuites>\n",
+  "targetTest": "l2_health_unverified_identity_never_submits_a_statement",
+  "targetFile": "crates/ontoforge-engine/tests/l2_health.rs",
+  "expected": "unverified L2 disabled without a statement POST",
+  "actual": "the L2 engine submitted SQL and received HTTP 404",
+  "reportPath": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-04-RED-task1.xml",
+  "runStartedAt": "2026-10-26T08:53:21.7482793Z",
+  "reportModifiedAt": "2026-10-26T08:53:22.2708523Z",
+  "semanticAssessment": "JUnit target executed and failed its planned fail-closed assertion; the distinct-identity test also executed and failed its intended assertion."
+}

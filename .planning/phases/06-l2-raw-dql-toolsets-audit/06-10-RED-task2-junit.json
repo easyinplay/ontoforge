@@ -1,0 +1,13 @@
+{
+  "command": "target/debug/deps/l2_monitor-cd662f87f457d9e9.exe monitor_startup_owns_fresh_probe_limits_and_cleanup -Z unstable-options --format junit (RUSTC_BOOTSTRAP=1; compiled by cargo test -p ontoforge-engine --test l2_monitor --locked -j 2 --no-run)",
+  "exitCode": 101,
+  "output": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"test\" package=\"test\" id=\"0\" errors=\"0\" failures=\"1\" tests=\"1\" skipped=\"0\" ><testcase classname=\"integration\" name=\"monitor_startup_owns_fresh_probe_limits_and_cleanup\" time=\"0\"><failure type=\"assert\"/><system-out><![CDATA[]]>&#xA;<![CDATA[thread 'monitor_startup_owns_fresh_probe_limits_and_cleanup' (53152) panicked at crates\\ontoforge-engine\\tests\\l2_monitor.rs:151:5:]]>&#xA;<![CDATA[assertion `left == right` failed]]>&#xA;<![CDATA[  left: Some(Disabled { reason: NotVerified })]]>&#xA;<![CDATA[ right: Some(Enabled)]]>&#xA;<![CDATA[note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace]]>&#xA;<![CDATA[]]></system-out></testcase><system-out/><system-err/></testsuite></testsuites>\n",
+  "targetTest": "monitor_startup_owns_fresh_probe_limits_and_cleanup",
+  "targetFile": "crates/ontoforge-engine/tests/l2_monitor.rs",
+  "expected": "Startup awaits attestation, returns Enabled after fresh query limits/cleanup",
+  "actual": "Some(Disabled { reason: NotVerified })",
+  "reportPath": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-10-RED-task2.xml",
+  "runStartedAt": "2026-10-28T00:36:55.3988189Z",
+  "reportModifiedAt": "2026-10-28T00:36:55.4325732Z",
+  "semanticAssessment": "The compiled new API scaffold returned a disabled handle; the named real wiremock behavior test failed its intended startup-enabled assertion. No compile or fixture failure authorized GREEN."
+}

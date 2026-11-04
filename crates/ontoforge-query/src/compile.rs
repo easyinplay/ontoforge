@@ -1,0 +1,995 @@
+use std::cmp::Ordering;
+use std::collections::{BTreeMap, BTreeSet};
+
+use ontoforge_auth::scope::{RowVisibility, TypeScope};
+use ontoforge_engine::printer::ast::{
+    AggregateFunc, CompareOp, Expr, Literal, MatchKind, OrderItem, Select, SelectItem,
+};
+use ontoforge_expr::{Attrs, Tri};
+use ontoforge_schema::ir::{
+    BaseType, Collation, ObjectType, Ontology, PropertyDef, PropertyName, SourceBinding,
+};
+use ontoforge_storage::value::PropertyValue;
+use serde_json::Value;
+
+use crate::aggregate::AggregateCapabilities;
+use crate::ast::{AggregateMeasure, AggregateRequest};
+use crate::ast::{
+    Direction, Nulls, ObjectSet, OrderBy, PageSpec, QueryLiteral, TermMode, WhereClause,
+};
+use crate::{QueryError, QueryRequest};
+
+#[derive(Debug, Clone, Copy)]
+pub struct CompileLimits {
+    pub max_depth: usize,
+    pub max_nodes: usize,
+    pub max_in_values: usize,
+    pub max_selected: usize,
+    pub max_order: usize,
+    pub max_page: u64,
+}
+
+impl Default for CompileLimits {
+    fn default() -> Self {
+        Self {
+            max_depth: 64,
+            max_nodes: 4096,
+            max_in_values: 256,
+            max_selected: 256,
+            max_order: 8,
+            max_page: 10_000,
+        }
+    }
+}
+
+/// A query that has passed ontology, scope, and complexity validation.
+///
+/// Callers outside this crate cannot bypass validation by constructing or
+/// mutating the query directly.
+///
+/// ```compile_fail
+/// use ontoforge_query::ast::{OrderBy, PageSpec};
+/// use ontoforge_query::compile::ValidatedQuery;
+/// use ontoforge_query::QueryRequest;
+///
+/// fn bypass(request: QueryRequest, order_by: Vec<OrderBy>, page: PageSpec) -> ValidatedQuery {
+///     ValidatedQuery { request, order_by, page }
+/// }
+/// ```
+///
+/// ```compile_fail
+/// use ontoforge_query::compile::ValidatedQuery;
+/// use ontoforge_query::QueryRequest;
+///
+/// fn replace_request(mut query: ValidatedQuery, request: QueryRequest) {
+///     query.request = request;
+/// }
+/// ```
+#[derive(Debug)]
+pub struct ValidatedQuery {
+    pub(crate) request: QueryRequest,
+    pub(crate) order_by: Vec<OrderBy>,
+    pub(crate) page: PageSpec,
+}
+
+impl ValidatedQuery {
+    #[allow(
+        clippy::too_many_lines,
+        reason = "keeps the existing query validation path together"
+    )]
+    pub fn new(
+        request: QueryRequest,
+        order_by: Vec<OrderBy>,
+        page: PageSpec,
+        ontology: &Ontology,
+        scope: &TypeScope,
+        limits: CompileLimits,
+    ) -> Result<Self, QueryError> {
+        if limits.max_page == 0
+            || page.first > limits.max_page
+            || [
+                limits.max_depth,
+                limits.max_nodes,
+                limits.max_in_values,
+                limits.max_selected,
+                limits.max_order,
+            ]
+            .contains(&0)
+            || request.select.len() > limits.max_selected
+            || order_by.len() > limits.max_order
+            || page.first == 0
+        {
+            return Err(QueryError::QueryTooComplex);
+        }
+        let ty = ontology
+            .object_types
+            .get(request.set.object_type())
+            .ok_or(QueryError::InvalidQuery)?;
+        for property in request
+            .select
+            .iter()
+            .chain(order_by.iter().map(|o| &o.property))
+        {
+            check_property(ty, scope, property)?;
+        }
+        match &request.set {
+            ObjectSet::Pk { pk, .. } => {
+                let def = ty
+                    .properties
+                    .get(&ty.primary_key)
+                    .ok_or(QueryError::InvalidQuery)?;
+                PropertyValue::from_json(def, pk).map_err(|_| QueryError::InvalidQuery)?;
+            }
+            ObjectSet::Type { .. } => {}
+            ObjectSet::Search {
+                property, query, ..
+            } => {
+                validate_string(ty, scope, property)?;
+                check_terms(query)?;
+            }
+            ObjectSet::Where { predicate, .. } => {
+                let mut stack = vec![(predicate, 1usize)];
+                let mut nodes = 0usize;
+                while let Some((part, depth)) = stack.pop() {
+                    nodes = nodes.checked_add(1).ok_or(QueryError::QueryTooComplex)?;
+                    if depth > limits.max_depth || nodes > limits.max_nodes {
+                        return Err(QueryError::QueryTooComplex);
+                    }
+                    match part {
+                        WhereClause::Eq { property, value } => {
+                            validate_atom(ty, scope, property, value, true)?;
+                        }
+                        WhereClause::Gt { property, value }
+                        | WhereClause::Gte { property, value }
+                        | WhereClause::Lt { property, value }
+                        | WhereClause::Lte { property, value } => {
+                            validate_atom(ty, scope, property, value, false)?;
+                        }
+                        WhereClause::IsNull { property } => {
+                            check_property(ty, scope, property)?;
+                        }
+                        WhereClause::In { property, values } => {
+                            if values.len() > limits.max_in_values {
+                                return Err(QueryError::QueryTooComplex);
+                            }
+                            check_property(ty, scope, property)?;
+                            for value in values {
+                                validate_atom(ty, scope, property, value, true)?;
+                            }
+                        }
+                        WhereClause::StartsWith { property, value } => {
+                            validate_string(ty, scope, property)?;
+                            check_text(value)?;
+                        }
+                        WhereClause::ContainsAnyTerm { property, value }
+                        | WhereClause::ContainsAllTerms { property, value } => {
+                            validate_string(ty, scope, property)?;
+                            check_terms(value)?;
+                        }
+                        WhereClause::And { clauses } | WhereClause::Or { clauses } => {
+                            if clauses.is_empty() {
+                                return Err(QueryError::InvalidQuery);
+                            }
+                            if clauses.len() > limits.max_nodes.saturating_sub(nodes) {
+                                return Err(QueryError::QueryTooComplex);
+                            }
+                            stack.extend(clauses.iter().map(|p| (p, depth + 1)));
+                        }
+                        WhereClause::Not { clause } => stack.push((clause, depth + 1)),
+                    }
+                }
+            }
+            ObjectSet::Union { .. }
+            | ObjectSet::Intersect { .. }
+            | ObjectSet::Subtract { .. }
+            | ObjectSet::SearchAround { .. } => {
+                validate_nested_set(&request, &order_by, &page, ontology, scope, limits)?;
+            }
+        }
+        Ok(Self {
+            request,
+            order_by,
+            page,
+        })
+    }
+}
+
+#[allow(
+    clippy::too_many_lines,
+    reason = "one traversal shares depth and node accounting across sets and predicates"
+)]
+fn validate_nested_set(
+    request: &QueryRequest,
+    order_by: &[OrderBy],
+    page: &PageSpec,
+    ontology: &Ontology,
+    scope: &TypeScope,
+    limits: CompileLimits,
+) -> Result<(), QueryError> {
+    let root_type = request.set.object_type();
+    let mut stack = vec![(&request.set, 1usize, root_type.clone())];
+    let mut nodes = 0usize;
+    let mut operands = 0usize;
+    while let Some((set, depth, expected_type)) = stack.pop() {
+        nodes = nodes.checked_add(1).ok_or(QueryError::QueryTooComplex)?;
+        if nodes > limits.max_nodes || depth > limits.max_depth {
+            return Err(QueryError::QueryTooComplex);
+        }
+        if set.object_type() != &expected_type {
+            return Err(QueryError::InvalidQuery);
+        }
+        match set {
+            ObjectSet::Union { sets, .. } | ObjectSet::Intersect { sets, .. } => {
+                if sets.is_empty() {
+                    return Err(QueryError::InvalidQuery);
+                }
+                if sets.len() > limits.max_in_values {
+                    return Err(QueryError::QueryTooComplex);
+                }
+                stack.extend(
+                    sets.iter()
+                        .map(|child| (child, depth + 1, expected_type.clone())),
+                );
+            }
+            ObjectSet::Subtract { left, right, .. } => {
+                stack.push((left, depth + 1, expected_type.clone()));
+                stack.push((right, depth + 1, expected_type));
+            }
+            ObjectSet::SearchAround {
+                base,
+                link,
+                direction,
+                ..
+            } => {
+                let definition = ontology
+                    .link_types
+                    .get(link)
+                    .ok_or(QueryError::InvalidQuery)?;
+                let (base_type, target_type) = match direction {
+                    crate::ast::LinkDirection::FromTo => {
+                        (&definition.from.object_type, &definition.to.object_type)
+                    }
+                    crate::ast::LinkDirection::ToFrom => {
+                        (&definition.to.object_type, &definition.from.object_type)
+                    }
+                };
+                if set.object_type() != target_type {
+                    return Err(QueryError::InvalidQuery);
+                }
+                stack.push((base, depth + 1, base_type.clone()));
+            }
+            leaf => {
+                operands = operands.checked_add(1).ok_or(QueryError::QueryTooComplex)?;
+                if operands > limits.max_in_values {
+                    return Err(QueryError::QueryTooComplex);
+                }
+                if let ObjectSet::Where { predicate, .. } = leaf {
+                    let mut predicates = vec![(predicate, depth + 1)];
+                    while let Some((part, predicate_depth)) = predicates.pop() {
+                        nodes = nodes.checked_add(1).ok_or(QueryError::QueryTooComplex)?;
+                        if nodes > limits.max_nodes || predicate_depth > limits.max_depth {
+                            return Err(QueryError::QueryTooComplex);
+                        }
+                        match part {
+                            WhereClause::And { clauses } | WhereClause::Or { clauses } => {
+                                predicates.extend(
+                                    clauses.iter().map(|child| (child, predicate_depth + 1)),
+                                );
+                            }
+                            WhereClause::Not { clause } => {
+                                predicates.push((clause, predicate_depth + 1));
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+                let ty = ontology
+                    .object_types
+                    .get(leaf.object_type())
+                    .ok_or(QueryError::InvalidQuery)?;
+                let synthetic_scope = TypeScope {
+                    row: ontoforge_expr::Pred::Const(true),
+                    columns: ty
+                        .properties
+                        .keys()
+                        .cloned()
+                        .map(|name| (name, ontoforge_expr::Pred::Const(true)))
+                        .collect(),
+                };
+                let same_type = leaf.object_type() == root_type;
+                ValidatedQuery::new(
+                    QueryRequest {
+                        set: leaf.clone(),
+                        select: if same_type {
+                            request.select.clone()
+                        } else {
+                            Vec::new()
+                        },
+                    },
+                    if same_type {
+                        order_by.to_vec()
+                    } else {
+                        Vec::new()
+                    },
+                    page.clone(),
+                    ontology,
+                    if same_type { scope } else { &synthetic_scope },
+                    limits,
+                )?;
+            }
+        }
+    }
+    Ok(())
+}
+
+fn check_property<'a>(
+    ty: &'a ObjectType,
+    scope: &TypeScope,
+    property: &PropertyName,
+) -> Result<&'a PropertyDef, QueryError> {
+    if !scope.columns.contains_key(property) {
+        return Err(QueryError::InvalidQuery);
+    }
+    ty.properties.get(property).ok_or(QueryError::InvalidQuery)
+}
+
+fn validate_atom(
+    ty: &ObjectType,
+    scope: &TypeScope,
+    property: &PropertyName,
+    value: &QueryLiteral,
+    eq: bool,
+) -> Result<(), QueryError> {
+    let def = check_property(ty, scope, property)?;
+    if matches!(def.base_type, BaseType::Array | BaseType::Geopoint)
+        || (!eq && def.base_type == BaseType::Boolean)
+        || value.0.is_null()
+    {
+        return Err(QueryError::InvalidQuery);
+    }
+    PropertyValue::from_json(def, &value.0).map_err(|_| QueryError::InvalidQuery)?;
+    Ok(())
+}
+
+fn validate_string(
+    ty: &ObjectType,
+    scope: &TypeScope,
+    property: &PropertyName,
+) -> Result<(), QueryError> {
+    if check_property(ty, scope, property)?.base_type != BaseType::String {
+        return Err(QueryError::InvalidQuery);
+    }
+    Ok(())
+}
+
+fn check_text(text: &str) -> Result<(), QueryError> {
+    if text.contains('\0') {
+        Err(QueryError::InvalidQuery)
+    } else {
+        Ok(())
+    }
+}
+
+fn check_terms(text: &str) -> Result<(), QueryError> {
+    check_text(text)?;
+    if text.split_whitespace().next().is_none() {
+        Err(QueryError::InvalidQuery)
+    } else {
+        Ok(())
+    }
+}
+
+pub struct SourceSelect {
+    pub select: Select,
+    pub required_columns: Vec<PropertyName>,
+    pub final_recheck: bool,
+    pub logical_order: Vec<OrderBy>,
+}
+
+#[allow(
+    clippy::too_many_lines,
+    reason = "typed aggregate projection shares one authorization lowering"
+)]
+pub fn compile_aggregate_partial(
+    request: &AggregateRequest,
+    ontology: &Ontology,
+    binding: &SourceBinding,
+    scope: &TypeScope,
+    attrs: &Attrs,
+    capabilities: AggregateCapabilities,
+) -> Result<Option<Select>, QueryError> {
+    if !capabilities.count
+        || !capabilities.case_when
+        || (!request.group_by.is_empty() && !capabilities.group_by)
+        || request.group_by.iter().any(|p| is_ci(binding, p))
+        || !match &request.set {
+            ObjectSet::Type { .. } | ObjectSet::Pk { .. } => true,
+            ObjectSet::Where { predicate, .. } => can_push(predicate, binding),
+            _ => false,
+        }
+    {
+        return Ok(None);
+    }
+    let ty = ontology
+        .object_types
+        .get(request.set.object_type())
+        .ok_or(QueryError::InvalidQuery)?;
+    for measure in &request.measures {
+        if matches!(
+            measure,
+            AggregateMeasure::Min { .. }
+                | AggregateMeasure::Max { .. }
+                | AggregateMeasure::Distinct { .. }
+        ) {
+            return Ok(None);
+        }
+        if matches!(
+            measure,
+            AggregateMeasure::Sum { .. } | AggregateMeasure::Avg { .. }
+        ) {
+            let def = ty
+                .properties
+                .get(measure.property().ok_or(QueryError::InvalidQuery)?)
+                .ok_or(QueryError::InvalidQuery)?;
+            let supported = match def.base_type {
+                BaseType::Integer => capabilities.sum_integer,
+                BaseType::Double => capabilities.sum_double,
+                _ => false,
+            };
+            if !supported {
+                return Ok(None);
+            }
+        }
+    }
+    let selected = request
+        .group_by
+        .iter()
+        .cloned()
+        .chain(
+            request
+                .measures
+                .iter()
+                .filter_map(|m| m.property().cloned()),
+        )
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect();
+    let query = ValidatedQuery::new(
+        QueryRequest {
+            set: request.set.clone(),
+            select: selected,
+        },
+        Vec::new(),
+        PageSpec {
+            first: 1,
+            after: None,
+        },
+        ontology,
+        scope,
+        CompileLimits::default(),
+    )?;
+    let mut select = compile_source_select(&query, ontology, binding, scope, attrs)?.select;
+    let column = |property: &PropertyName| binding.column_for(property.as_str()).to_owned();
+    let grants = scope.lower(attrs, &column).columns;
+    let visible = |property: &PropertyName| -> Result<Expr, QueryError> {
+        Ok(Expr::CaseWhen {
+            when: Box::new(
+                grants
+                    .get(property)
+                    .cloned()
+                    .ok_or(QueryError::InvalidQuery)?,
+            ),
+            then: Box::new(Expr::Column(column(property))),
+            otherwise: Box::new(Expr::Literal(Literal::Null)),
+        })
+    };
+    select.projection.clear();
+    for (index, property) in request.group_by.iter().enumerate() {
+        let expr = visible(property)?;
+        select.group_by.push(expr.clone());
+        select.projection.push(SelectItem {
+            expr,
+            alias: Some(format!("g{index}")),
+        });
+    }
+    select.projection.push(SelectItem {
+        expr: Expr::CountStar,
+        alias: Some("rows".to_owned()),
+    });
+    for (index, measure) in request.measures.iter().enumerate() {
+        let expr = match measure {
+            AggregateMeasure::Count { property: None } => Expr::CountStar,
+            AggregateMeasure::Count {
+                property: Some(property),
+            } => Expr::Aggregate {
+                func: AggregateFunc::Count,
+                arg: Box::new(visible(property)?),
+            },
+            AggregateMeasure::Sum { property } | AggregateMeasure::Avg { property } => {
+                Expr::Aggregate {
+                    func: AggregateFunc::Sum,
+                    arg: Box::new(visible(property)?),
+                }
+            }
+            _ => unreachable!("unsupported measure returned above"),
+        };
+        select.projection.push(SelectItem {
+            expr,
+            alias: Some(format!("m{index}")),
+        });
+        if let AggregateMeasure::Sum { property } | AggregateMeasure::Avg { property } = measure {
+            select.projection.push(SelectItem {
+                expr: Expr::Aggregate {
+                    func: AggregateFunc::Count,
+                    arg: Box::new(visible(property)?),
+                },
+                alias: Some(format!("c{index}")),
+            });
+        }
+    }
+    select.order_by.clear();
+    select.limit = None;
+    Ok(Some(select))
+}
+
+#[allow(clippy::too_many_lines)]
+pub fn compile_source_select(
+    query: &ValidatedQuery,
+    ontology: &Ontology,
+    binding: &SourceBinding,
+    scope: &TypeScope,
+    attrs: &Attrs,
+) -> Result<SourceSelect, QueryError> {
+    let ty = ontology
+        .object_types
+        .get(query.request.set.object_type())
+        .ok_or(QueryError::InvalidQuery)?;
+    let column = |property: &PropertyName| binding.column_for(property.as_str()).to_owned();
+    let lower = scope.lower(attrs, &column);
+    let mut required = BTreeSet::from([ty.primary_key.clone()]);
+    required.extend(query.request.select.iter().cloned());
+    if let ObjectSet::Where { predicate, .. } = &query.request.set {
+        collect_properties(predicate, &mut required);
+    }
+    if let ObjectSet::Search { property, .. } = &query.request.set {
+        required.insert(property.clone());
+    }
+    required.extend(query.order_by.iter().map(|o| o.property.clone()));
+    let projection = required
+        .iter()
+        .map(|property| {
+            let raw = Expr::Column(column(property));
+            let expr = if property == &ty.primary_key {
+                raw
+            } else {
+                Expr::CaseWhen {
+                    when: Box::new(
+                        lower
+                            .columns
+                            .get(property)
+                            .cloned()
+                            .ok_or(QueryError::InvalidQuery)?,
+                    ),
+                    then: Box::new(raw),
+                    otherwise: Box::new(Expr::Literal(Literal::Null)),
+                }
+            };
+            Ok(SelectItem {
+                expr,
+                alias: Some(property.as_str().to_owned()),
+            })
+        })
+        .collect::<Result<Vec<_>, QueryError>>()?;
+    let candidate = match &query.request.set {
+        ObjectSet::Pk { pk, .. } => Some(Expr::Compare {
+            left: Box::new(Expr::Column(column(&ty.primary_key))),
+            op: CompareOp::Eq,
+            right: Box::new(Expr::Literal(to_literal(
+                &PropertyValue::from_json(
+                    ty.properties
+                        .get(&ty.primary_key)
+                        .ok_or(QueryError::InvalidQuery)?,
+                    pk,
+                )
+                .map_err(|_| QueryError::InvalidQuery)?,
+            ))),
+        }),
+        ObjectSet::Where { predicate, .. } if can_push(predicate, binding) => {
+            Some(lower_where(predicate, ty, binding, &lower.columns)?)
+        }
+        ObjectSet::Where { .. }
+        | ObjectSet::Search { .. }
+        | ObjectSet::Type { .. }
+        | ObjectSet::Union { .. }
+        | ObjectSet::Intersect { .. }
+        | ObjectSet::Subtract { .. }
+        | ObjectSet::SearchAround { .. } => None,
+    };
+    let filter = Some(match candidate {
+        Some(candidate) => Expr::And(vec![lower.row, candidate]),
+        None => lower.row,
+    });
+    let sortable = query.order_by.iter().all(|o| !is_ci(binding, &o.property));
+    let order_by = if sortable {
+        query
+            .order_by
+            .iter()
+            .map(|o| OrderItem {
+                expr: Expr::CaseWhen {
+                    when: Box::new(
+                        lower
+                            .columns
+                            .get(&o.property)
+                            .expect("validated column")
+                            .clone(),
+                    ),
+                    then: Box::new(Expr::Column(column(&o.property))),
+                    otherwise: Box::new(Expr::Literal(Literal::Null)),
+                },
+                descending: o.direction == Direction::Desc,
+                nulls_first: o.nulls == Nulls::First,
+            })
+            .collect()
+    } else {
+        Vec::new()
+    };
+    Ok(SourceSelect {
+        select: Select {
+            projection,
+            from: Some(ontoforge_engine::TableRef {
+                catalog: binding.source.catalog.clone(),
+                schema: binding.source.schema.clone(),
+                table: binding.source.table.clone(),
+            }),
+            filter,
+            group_by: Vec::new(),
+            having: None,
+            order_by,
+            limit: Some(if matches!(query.request.set, ObjectSet::Pk { .. }) {
+                2
+            } else {
+                query.page.first
+            }),
+        },
+        required_columns: required.into_iter().collect(),
+        final_recheck: true,
+        logical_order: query.order_by.clone(),
+    })
+}
+
+fn is_ci(binding: &SourceBinding, property: &PropertyName) -> bool {
+    binding
+        .columns
+        .get(property.as_str())
+        .and_then(|c| c.collation)
+        == Some(Collation::CaseInsensitive)
+}
+
+fn can_push(part: &WhereClause, binding: &SourceBinding) -> bool {
+    match part {
+        WhereClause::ContainsAnyTerm { .. } | WhereClause::ContainsAllTerms { .. } => false,
+        WhereClause::Eq { property, .. }
+        | WhereClause::Gt { property, .. }
+        | WhereClause::Gte { property, .. }
+        | WhereClause::Lt { property, .. }
+        | WhereClause::Lte { property, .. }
+        | WhereClause::IsNull { property }
+        | WhereClause::In { property, .. }
+        | WhereClause::StartsWith { property, .. } => !is_ci(binding, property),
+        WhereClause::And { clauses } | WhereClause::Or { clauses } => {
+            clauses.iter().all(|p| can_push(p, binding))
+        }
+        WhereClause::Not { clause } => can_push(clause, binding),
+    }
+}
+
+fn lower_where(
+    part: &WhereClause,
+    ty: &ObjectType,
+    binding: &SourceBinding,
+    grants: &BTreeMap<PropertyName, Expr>,
+) -> Result<Expr, QueryError> {
+    let wrap = |property: &PropertyName, body: Expr| -> Result<Expr, QueryError> {
+        Ok(Expr::CaseWhen {
+            when: Box::new(
+                grants
+                    .get(property)
+                    .cloned()
+                    .ok_or(QueryError::InvalidQuery)?,
+            ),
+            then: Box::new(body),
+            otherwise: Box::new(Expr::Literal(Literal::Null)),
+        })
+    };
+    let col =
+        |property: &PropertyName| Expr::Column(binding.column_for(property.as_str()).to_owned());
+    let compare = |property: &PropertyName, value: &QueryLiteral, op| -> Result<Expr, QueryError> {
+        let def = ty
+            .properties
+            .get(property)
+            .ok_or(QueryError::InvalidQuery)?;
+        let literal = to_literal(
+            &PropertyValue::from_json(def, &value.0).map_err(|_| QueryError::InvalidQuery)?,
+        );
+        wrap(
+            property,
+            Expr::Compare {
+                left: Box::new(col(property)),
+                op,
+                right: Box::new(Expr::Literal(literal)),
+            },
+        )
+    };
+    match part {
+        WhereClause::Eq { property, value } => compare(property, value, CompareOp::Eq),
+        WhereClause::Gt { property, value } => compare(property, value, CompareOp::Gt),
+        WhereClause::Gte { property, value } => compare(property, value, CompareOp::GtEq),
+        WhereClause::Lt { property, value } => compare(property, value, CompareOp::Lt),
+        WhereClause::Lte { property, value } => compare(property, value, CompareOp::LtEq),
+        WhereClause::IsNull { property } => wrap(
+            property,
+            Expr::IsNull {
+                expr: Box::new(col(property)),
+                negated: false,
+            },
+        ),
+        WhereClause::In { property, values } => {
+            let def = ty
+                .properties
+                .get(property)
+                .ok_or(QueryError::InvalidQuery)?;
+            let body = if values.is_empty() {
+                Expr::Literal(Literal::Boolean(false))
+            } else {
+                Expr::InList {
+                    expr: Box::new(col(property)),
+                    list: values
+                        .iter()
+                        .map(|v| {
+                            PropertyValue::from_json(def, &v.0)
+                                .map(|p| to_literal(&p))
+                                .map_err(|_| QueryError::InvalidQuery)
+                        })
+                        .collect::<Result<_, _>>()?,
+                    negated: false,
+                }
+            };
+            wrap(property, body)
+        }
+        WhereClause::StartsWith { property, value } => wrap(
+            property,
+            Expr::StringMatch {
+                expr: Box::new(col(property)),
+                needle: value.clone(),
+                kind: MatchKind::StartsWith,
+            },
+        ),
+        WhereClause::ContainsAnyTerm { .. } | WhereClause::ContainsAllTerms { .. } => {
+            Err(QueryError::InvalidQuery)
+        }
+        WhereClause::And { clauses } => Ok(Expr::And(
+            clauses
+                .iter()
+                .map(|p| lower_where(p, ty, binding, grants))
+                .collect::<Result<_, _>>()?,
+        )),
+        WhereClause::Or { clauses } => Ok(Expr::Or(
+            clauses
+                .iter()
+                .map(|p| lower_where(p, ty, binding, grants))
+                .collect::<Result<_, _>>()?,
+        )),
+        WhereClause::Not { clause } => Ok(Expr::Not(Box::new(lower_where(
+            clause, ty, binding, grants,
+        )?))),
+    }
+}
+
+fn to_literal(value: &PropertyValue) -> Literal {
+    match value {
+        PropertyValue::Null | PropertyValue::Array(_) | PropertyValue::Geopoint { .. } => {
+            Literal::Null
+        }
+        PropertyValue::Bool(v) => Literal::Boolean(*v),
+        PropertyValue::Int(v) => Literal::Long(*v),
+        PropertyValue::Double(v) => Literal::Double(*v),
+        PropertyValue::Decimal(v) => Literal::Decimal(v.clone()),
+        PropertyValue::String(v) => Literal::String(v.clone()),
+        PropertyValue::Date(v) => Literal::Date(v.clone()),
+        PropertyValue::Timestamp(v) => {
+            Literal::Timestamp(v.replace('T', " ").trim_end_matches('Z').to_owned())
+        }
+    }
+}
+
+fn collect_properties(part: &WhereClause, out: &mut BTreeSet<PropertyName>) {
+    match part {
+        WhereClause::Eq { property, .. }
+        | WhereClause::Gt { property, .. }
+        | WhereClause::Gte { property, .. }
+        | WhereClause::Lt { property, .. }
+        | WhereClause::Lte { property, .. }
+        | WhereClause::IsNull { property }
+        | WhereClause::In { property, .. }
+        | WhereClause::StartsWith { property, .. }
+        | WhereClause::ContainsAnyTerm { property, .. }
+        | WhereClause::ContainsAllTerms { property, .. } => {
+            out.insert(property.clone());
+        }
+        WhereClause::And { clauses } | WhereClause::Or { clauses } => {
+            for part in clauses {
+                collect_properties(part, out);
+            }
+        }
+        WhereClause::Not { clause } => collect_properties(clause, out),
+    }
+}
+
+pub fn evaluate_where(
+    predicate: &WhereClause,
+    row: &BTreeMap<PropertyName, Value>,
+    visibility: &RowVisibility,
+    ty: &ObjectType,
+) -> Tri {
+    if !visibility.visible {
+        return Tri::False;
+    }
+    match predicate {
+        WhereClause::Eq { property, value } => {
+            compare_atom(property, &value.0, CompareOp::Eq, row, visibility, ty)
+        }
+        WhereClause::Gt { property, value } => {
+            compare_atom(property, &value.0, CompareOp::Gt, row, visibility, ty)
+        }
+        WhereClause::Gte { property, value } => {
+            compare_atom(property, &value.0, CompareOp::GtEq, row, visibility, ty)
+        }
+        WhereClause::Lt { property, value } => {
+            compare_atom(property, &value.0, CompareOp::Lt, row, visibility, ty)
+        }
+        WhereClause::Lte { property, value } => {
+            compare_atom(property, &value.0, CompareOp::LtEq, row, visibility, ty)
+        }
+        WhereClause::IsNull { property } => visible_value(property, row, visibility)
+            .map_or(Tri::Unknown, |value| Tri::from(value.is_null())),
+        WhereClause::In { property, values } => {
+            let Some(value) = visible_value(property, row, visibility) else {
+                return Tri::Unknown;
+            };
+            if values.is_empty() {
+                return Tri::False;
+            }
+            let Some(def) = ty.properties.get(property) else {
+                return Tri::Unknown;
+            };
+            values.iter().fold(Tri::False, |acc, item| {
+                acc.or(compare_value(value, &item.0, CompareOp::Eq, def))
+            })
+        }
+        WhereClause::StartsWith { property, value } => visible_value(property, row, visibility)
+            .and_then(Value::as_str)
+            .map_or(Tri::Unknown, |text| Tri::from(text.starts_with(value))),
+        WhereClause::ContainsAnyTerm { property, value } => {
+            evaluate_search(property, value, TermMode::Any, row, visibility)
+        }
+        WhereClause::ContainsAllTerms { property, value } => {
+            evaluate_search(property, value, TermMode::All, row, visibility)
+        }
+        WhereClause::And { clauses } => clauses.iter().fold(Tri::True, |acc, p| {
+            acc.and(evaluate_where(p, row, visibility, ty))
+        }),
+        WhereClause::Or { clauses } => clauses.iter().fold(Tri::False, |acc, p| {
+            acc.or(evaluate_where(p, row, visibility, ty))
+        }),
+        WhereClause::Not { clause } => evaluate_where(clause, row, visibility, ty).not(),
+    }
+}
+
+pub fn evaluate_search(
+    property: &PropertyName,
+    query: &str,
+    mode: TermMode,
+    row: &BTreeMap<PropertyName, Value>,
+    visibility: &RowVisibility,
+) -> Tri {
+    let Some(text) = visible_value(property, row, visibility).and_then(Value::as_str) else {
+        return Tri::Unknown;
+    };
+    let haystack = text.to_lowercase();
+    let mut terms = query.split_whitespace().map(str::to_lowercase);
+    Tri::from(match mode {
+        TermMode::Any => terms.any(|term| haystack.contains(&term)),
+        TermMode::All => terms.all(|term| haystack.contains(&term)),
+    })
+}
+
+fn visible_value<'a>(
+    property: &PropertyName,
+    row: &'a BTreeMap<PropertyName, Value>,
+    visibility: &RowVisibility,
+) -> Option<&'a Value> {
+    static NULL: Value = Value::Null;
+    if !visibility.columns.contains(property) {
+        return None;
+    }
+    Some(row.get(property).unwrap_or(&NULL))
+}
+
+fn compare_atom(
+    property: &PropertyName,
+    literal: &Value,
+    op: CompareOp,
+    row: &BTreeMap<PropertyName, Value>,
+    visibility: &RowVisibility,
+    ty: &ObjectType,
+) -> Tri {
+    let Some(def) = ty.properties.get(property) else {
+        return Tri::Unknown;
+    };
+    visible_value(property, row, visibility)
+        .map_or(Tri::Unknown, |value| compare_value(value, literal, op, def))
+}
+
+fn compare_value(a: &Value, b: &Value, op: CompareOp, def: &PropertyDef) -> Tri {
+    if a.is_null() || b.is_null() {
+        return Tri::Unknown;
+    }
+    let (Ok(a), Ok(b)) = (
+        PropertyValue::from_json(def, a),
+        PropertyValue::from_json(def, b),
+    ) else {
+        return Tri::Unknown;
+    };
+    let order = match (&a, &b) {
+        (PropertyValue::Bool(a), PropertyValue::Bool(b)) => Some(a.cmp(b)),
+        (PropertyValue::Int(a), PropertyValue::Int(b)) => Some(a.cmp(b)),
+        (PropertyValue::Double(a), PropertyValue::Double(b)) => a.partial_cmp(b),
+        (PropertyValue::Decimal(a), PropertyValue::Decimal(b)) => decimal_order(a, b),
+        (PropertyValue::String(a), PropertyValue::String(b))
+        | (PropertyValue::Date(a), PropertyValue::Date(b))
+        | (PropertyValue::Timestamp(a), PropertyValue::Timestamp(b)) => Some(a.cmp(b)),
+        _ => None,
+    };
+    let Some(order) = order else {
+        return Tri::Unknown;
+    };
+    Tri::from(match op {
+        CompareOp::Eq => order == Ordering::Equal,
+        CompareOp::NotEq => order != Ordering::Equal,
+        CompareOp::Lt => order == Ordering::Less,
+        CompareOp::LtEq => order != Ordering::Greater,
+        CompareOp::Gt => order == Ordering::Greater,
+        CompareOp::GtEq => order != Ordering::Less,
+    })
+}
+
+fn decimal_order(a: &str, b: &str) -> Option<Ordering> {
+    let a = ontoforge_engine::value::split_decimal(a)?;
+    let b = ontoforge_engine::value::split_decimal(b)?;
+    if a.negative != b.negative {
+        return Some(if a.negative {
+            Ordering::Less
+        } else {
+            Ordering::Greater
+        });
+    }
+    let ai = a.integer.trim_start_matches('0');
+    let bi = b.integer.trim_start_matches('0');
+    let magnitude = ai
+        .len()
+        .cmp(&bi.len())
+        .then_with(|| ai.cmp(bi))
+        .then_with(|| {
+            let len = a.fraction.len().max(b.fraction.len());
+            a.fraction
+                .bytes()
+                .chain(std::iter::repeat(b'0'))
+                .take(len)
+                .cmp(b.fraction.bytes().chain(std::iter::repeat(b'0')).take(len))
+        });
+    Some(if a.negative {
+        magnitude.reverse()
+    } else {
+        magnitude
+    })
+}

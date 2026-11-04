@@ -1,0 +1,10 @@
+{
+  "command": "RUSTC_BOOTSTRAP=1 cargo test -p ontoforge-query --lib --locked group_distinct_treats_negative_and_positive_zero_as_one_value -- -Z unstable-options --format=junit",
+  "exitCode": 1,
+  "output": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"test\" package=\"test\" id=\"0\" errors=\"0\" failures=\"1\" tests=\"1\" skipped=\"0\" ><testcase classname=\"aggregate::tests\" name=\"group_distinct_treats_negative_and_positive_zero_as_one_value\" time=\"0\"><failure type=\"assert\"/><system-out><![CDATA[]]>&#xA;<![CDATA[thread 'aggregate::tests::group_distinct_treats_negative_and_positive_zero_as_one_value' (42600) panicked at crates\\ontoforge-query\\src\\aggregate.rs:998:9:]]>&#xA;<![CDATA[assertion `left == right` failed]]>&#xA;<![CDATA[  left: [Number(2)]]]>&#xA;<![CDATA[ right: [Number(1)]]]>&#xA;<![CDATA[note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace]]>&#xA;<![CDATA[]]></system-out></testcase><system-out/><system-err/></testsuite></testsuites>",
+  "targetTest": "group_distinct_treats_negative_and_positive_zero_as_one_value",
+  "targetFile": "crates/ontoforge-query/src/aggregate.rs",
+  "expected": "-0.0 and 0.0 count as one typed double distinct value",
+  "actual": "distinct returned 2",
+  "semanticAssessment": "The named unit test executed and its planned distinct equality assertion failed; no setup or compilation error occurred."
+}

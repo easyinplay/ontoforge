@@ -1,0 +1,38 @@
+2026-10-28T03:32:32.3723311Z
+d6903afe512dd73af28e1c1696f96af804948f58
+e81127fa41099365c44c2c42750024efad6653cb 2026-10-28T10:20:29+08:00
+
+FullName         : D:\DataSpellProjects\ontoforge\target\debug\deps\conformance_pg-39e883f11e6a6c0e.exe
+Length           : 31719936
+LastWriteTimeUtc : 2026/10/28 2:43:50
+
+
+Algorithm : SHA256
+Hash      : 453A0ACC8A4C423F7ED526D532758664BDA9A0B9C721F33E4FB93A773DF7D421
+Path      : D:\DataSpellProjects\ontoforge\target\debug\deps\conformance_pg-39e883f11e6a6c0e.exe
+
+PostgreSQL 17.11 (Debian 17.11-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+command: target/debug/deps/conformance_pg-39e883f11e6a6c0e.exe audit_ --ignored --list
+audit_batch_rejection_is_atomic: test
+audit_batch_retention_parity: test
+audit_cleanup_rejection_rolls_back_batch: test
+audit_pg_connection_interruption_recovers: test
+audit_shutdown_drains_inflight_guard: test
+audit_sink_failure_rejects_inflight_finish: test
+
+6 tests, 0 benchmarks
+command: target/debug/deps/conformance_pg-39e883f11e6a6c0e.exe audit_ --ignored --nocapture
+
+running 6 tests
+test audit_shutdown_drains_inflight_guard ... ok
+test audit_batch_retention_parity ... ok
+test audit_sink_failure_rejects_inflight_finish ... ok
+test audit_pg_connection_interruption_recovers ... ok
+read audit sink did not recover before the pending age limit
+test audit_batch_rejection_is_atomic ... ok
+read audit sink did not recover before the pending age limit
+test audit_cleanup_rejection_rolls_back_batch ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 36 filtered out; finished in 1.62s
+
+test_exit_code=0

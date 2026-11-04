@@ -1,0 +1,236 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ontoforge scope document",
+  "description": "A Role or RoleBinding document (ADR-0018, ADR-0019), selected by its `kind`. Scope documents live in their own directory, apart from the ontology definition and its SourceBinding files; JSON files may hold an array of them.",
+  "anyOf": [
+    {
+      "$ref": "#/$defs/ScopeDefinition"
+    },
+    {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ScopeDefinition"
+      }
+    }
+  ],
+  "$defs": {
+    "ScopeDefinition": {
+      "description": "One scope document: a Role or a RoleBinding, selected by `kind`.",
+      "oneOf": [
+        {
+          "description": "What one role may do.",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "Role"
+            },
+            "apiName": {
+              "description": "Role name, `camelCase`; a `RoleBinding` refers to it.",
+              "$ref": "#/$defs/RoleName"
+            },
+            "displayName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "description": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "objectTypes": {
+              "description": "Per object type: the readable properties and an optional row filter.",
+              "type": "object",
+              "additionalProperties": false,
+              "patternProperties": {
+                "^[A-Z][A-Za-z0-9]{0,99}$": {
+                  "$ref": "#/$defs/TypeGrant"
+                }
+              },
+              "default": {}
+            },
+            "actions": {
+              "description": "Action types the role may submit.",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/ActionTypeName"
+              },
+              "default": []
+            },
+            "sqlLevels": {
+              "description": "SQL tiers beyond the implicit L0 (ontology-bound queries).",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/SqlLevel"
+              },
+              "default": []
+            },
+            "l2": {
+              "description": "Trino catalogs and schemas the role may query directly (L2).",
+              "$ref": "#/$defs/L2Grant",
+              "default": {
+                "catalogs": [],
+                "schemas": []
+              }
+            },
+            "toolsets": {
+              "description": "MCP toolsets the role may use (ADR-0019).",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Toolset"
+              },
+              "default": []
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "apiName"
+          ]
+        },
+        {
+          "description": "Attaches one role to its subjects.",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "RoleBinding"
+            },
+            "role": {
+              "$ref": "#/$defs/RoleName"
+            },
+            "subjects": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Subject"
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "role",
+            "subjects"
+          ]
+        }
+      ]
+    },
+    "RoleName": {
+      "type": "string",
+      "pattern": "^[a-z][A-Za-z0-9]{0,99}$"
+    },
+    "TypeGrant": {
+      "description": "Access to one object type: which columns, and which rows.",
+      "type": "object",
+      "properties": {
+        "properties": {
+          "description": "Property allow-list: the only properties of this type the role can read.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PropertyName"
+          }
+        },
+        "rowFilter": {
+          "description": "CEL over the object's own properties and `principal.attrs`; absent means all\nrows are visible.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "properties"
+      ]
+    },
+    "PropertyName": {
+      "type": "string",
+      "pattern": "^[a-z][A-Za-z0-9]{0,99}$"
+    },
+    "ActionTypeName": {
+      "type": "string",
+      "pattern": "^[a-z][A-Za-z0-9]{0,99}$"
+    },
+    "SqlLevel": {
+      "description": "A SQL tier a role may use besides the implicit L0.",
+      "oneOf": [
+        {
+          "description": "Raw SQL over the ontology tables.",
+          "type": "string",
+          "const": "raw"
+        },
+        {
+          "description": "Administrative SQL.",
+          "type": "string",
+          "const": "admin"
+        }
+      ]
+    },
+    "L2Grant": {
+      "description": "Trino namespaces a role may query directly.",
+      "type": "object",
+      "properties": {
+        "catalogs": {
+          "description": "Whole catalogs.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "schemas": {
+          "description": "`catalog.schema` pairs.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        }
+      },
+      "additionalProperties": false
+    },
+    "Toolset": {
+      "description": "A group of MCP tools (ADR-0019).",
+      "type": "string",
+      "enum": [
+        "core",
+        "full",
+        "sql:raw"
+      ]
+    },
+    "Subject": {
+      "description": "Who a role is granted to. Externally tagged so that error paths survive\ndeserialization (ADR-0003).",
+      "oneOf": [
+        {
+          "description": "A principal id, `\"<iss>|<sub>\"` (D-04).",
+          "type": "object",
+          "properties": {
+            "user": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "user"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "description": "A group name taken from the token's `groups` claim (D-02). With several\nissuers, `\"<iss>|<group>\"`.",
+          "type": "object",
+          "properties": {
+            "group": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "group"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

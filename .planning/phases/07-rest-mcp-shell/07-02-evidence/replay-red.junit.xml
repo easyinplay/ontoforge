@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="nextest-run" tests="1" skipped="0" failures="1" errors="0" uuid="f7b89400-ec52-4ecf-8353-8ab4fb6425d4" timestamp="2026-10-29T12:39:04.779+08:00" time="0.088">
+    <testsuite name="ontoforge-action::frozen_definition" tests="1" skipped="0" errors="0" failures="1">
+        <testcase name="frozen_replay_uses_current_grant_keeps_original_receipt" classname="ontoforge-action::frozen_definition" timestamp="2026-10-29T12:39:04.779+08:00" time="0.086">
+            <failure message="thread &apos;frozen_replay_uses_current_grant_keeps_original_receipt&apos; (22948) panicked at crates\ontoforge-action\tests\frozen_definition.rs:196:5" type="test failure with exit code 101">thread &apos;frozen_replay_uses_current_grant_keeps_original_receipt&apos; (22948) panicked at crates\ontoforge-action\tests\frozen_definition.rs:196:5:
+admission snapshot replay must survive external Action removal: Err(ScopeDenied)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace</failure>
+            <system-out>
+running 1 test
+test frozen_replay_uses_current_grant_keeps_original_receipt ... FAILED
+
+failures:
+
+failures:
+    frozen_replay_uses_current_grant_keeps_original_receipt
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.07s
+
+</system-out>
+            <system-err>
+thread &apos;frozen_replay_uses_current_grant_keeps_original_receipt&apos; (22948) panicked at crates\ontoforge-action\tests\frozen_definition.rs:196:5:
+admission snapshot replay must survive external Action removal: Err(ScopeDenied)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+</system-err>
+        </testcase>
+    </testsuite>
+</testsuites>

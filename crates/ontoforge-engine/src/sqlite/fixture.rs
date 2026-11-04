@@ -643,7 +643,10 @@ fn check_range(n: i64, min: i64, max: i64) -> Result<SqlValue, String> {
 /// Normalizes a decimal to exactly `scale` fractional digits without ever rounding: the value
 /// is refused when it has more fractional digits than `scale` or more integer digits than
 /// `precision - scale`. The syntax is [`split_decimal`]'s.
-fn normalize_decimal(text: &str, precision: u32, scale: u32) -> Result<String, String> {
+///
+/// Public because the edit store converts decimals with this function too (`PropertyValue` of
+/// `ontoforge-storage`), so a fixture, an Action and an import agree on every value.
+pub fn normalize_decimal(text: &str, precision: u32, scale: u32) -> Result<String, String> {
     if precision > MAX_DECIMAL_DIGITS || scale > MAX_DECIMAL_DIGITS {
         return Err(format!(
             "the property declares more than {MAX_DECIMAL_DIGITS} decimal digits"
@@ -654,7 +657,7 @@ fn normalize_decimal(text: &str, precision: u32, scale: u32) -> Result<String, S
     let scale_len = usize::try_from(scale).unwrap_or(0);
     if parts.fraction.len() > scale_len {
         return Err(format!(
-            "more than {scale} fractional digits; a fixture value is never rounded"
+            "more than {scale} fractional digits; a value is never rounded"
         ));
     }
     let integer = parts.integer.trim_start_matches('0');
@@ -680,7 +683,9 @@ fn normalize_decimal(text: &str, precision: u32, scale: u32) -> Result<String, S
 }
 
 /// A date written exactly as `YYYY-MM-DD`.
-fn parse_date(text: &str) -> Result<NaiveDate, String> {
+///
+/// Public for the same reason as [`normalize_decimal`]: the edit store checks dates with it.
+pub fn parse_date(text: &str) -> Result<NaiveDate, String> {
     let b = text.as_bytes();
     let shaped = b.len() == 10
         && b[4] == b'-'

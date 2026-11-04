@@ -1,0 +1,16 @@
+{
+  "command": "C:\\Users\\easyi\\AppData\\Local\\Temp/ontoforge-phase07-nextest/cargo-nextest.exe nextest run -p ontoforge-server --lib --locked --profile gsd --config-file .planning/phases/07-rest-mcp-shell/07-03-evidence/nextest.toml -E test(rest_metadata_and_all_l0_operations)",
+  "exitCode": 100,
+  "runStartedAt": "2026-10-29T03:43:41.6038727Z",
+  "runFinishedAt": "2026-10-29T03:44:08.6029296Z",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07-rest-mcp-shell\\07-03-evidence\\rest-metadata-status-red.log",
+  "output": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<testsuites name=\"nextest-run\" tests=\"1\" skipped=\"0\" failures=\"1\" errors=\"0\" uuid=\"b40dd2f8-a141-4cc6-bd53-e1e923500d0d\" timestamp=\"2026-10-29T11:44:08.225+08:00\" time=\"0.335\">\n    <testsuite name=\"ontoforge-server\" tests=\"1\" skipped=\"0\" errors=\"0\" failures=\"1\">\n        <testcase name=\"rest_tests::rest_metadata_and_all_l0_operations\" classname=\"ontoforge-server\" timestamp=\"2026-10-29T11:44:08.226+08:00\" time=\"0.333\">\n            <failure message=\"thread &apos;rest_tests::rest_metadata_and_all_l0_operations&apos; (28848) panicked at crates\\ontoforge-server\\src\\..\\tests\\unit\\rest.test.rs:21:5\" type=\"test failure with exit code 101\">thread &apos;rest_tests::rest_metadata_and_all_l0_operations&apos; (28848) panicked at crates\\ontoforge-server\\src\\..\\tests\\unit\\rest.test.rs:21:5:\nassertion `left == right` failed: metadata must expose a stable logical engine status\n  left: Null\n right: &quot;available&quot;\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace</failure>\n            <system-out>\nrunning 1 test\ntest rest_tests::rest_metadata_and_all_l0_operations ... FAILED\n\nfailures:\n\nfailures:\n    rest_tests::rest_metadata_and_all_l0_operations\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.11s\n\n</system-out>\n            <system-err>\nthread &apos;rest_tests::rest_metadata_and_all_l0_operations&apos; (28848) panicked at crates\\ontoforge-server\\src\\..\\tests\\unit\\rest.test.rs:21:5:\nassertion `left == right` failed: metadata must expose a stable logical engine status\n  left: Null\n right: &quot;available&quot;\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n</system-err>\n        </testcase>\n    </testsuite>\n</testsuites>\n",
+  "targetTest": "rest_tests::rest_metadata_and_all_l0_operations",
+  "targetFile": "crates/ontoforge-server/tests/unit/rest.test.rs",
+  "expected": "metadata includes available/unavailable logical engineStatus without backend reason",
+  "actual": "metadata engineStatus is absent",
+  "reportPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07-rest-mcp-shell\\07-03-evidence\\rest-metadata-status-red.junit.xml",
+  "reportModifiedAt": "2026-10-29T03:44:08.5606210Z",
+  "semanticAssessment": "Target ran against a real listener; the planned HTTP result or durable audit assertion failed. See unchanged JUnit failure."
+}

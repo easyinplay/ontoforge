@@ -1,0 +1,9 @@
+{
+  "command": "cargo clippy --workspace --all-targets --all-features --locked -- -D warnings",
+  "exitCode": 101,
+  "runStartedAt": "2026-10-29T04:45:12.2513776Z",
+  "runFinishedAt": "2026-10-29T04:45:17.9132963Z",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07-rest-mcp-shell\\07-02-evidence\\workspace-clippy-final.log",
+  "cargoBuildJobs": 2
+}

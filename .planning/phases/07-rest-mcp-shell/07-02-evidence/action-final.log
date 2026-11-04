@@ -1,0 +1,26 @@
+   Compiling ontoforge-action v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-action)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 13.44s
+     Running tests\frozen_definition.rs (target\debug\deps\frozen_definition-e9838925f308e706.exe)
+
+running 3 tests
+test frozen_replay_uses_current_grant_keeps_original_receipt ... ok
+test replay_across_clock_and_definition_change_keeps_winner_time ... ok
+test frozen_action_stale_and_validate_keep_fence_cas_guard ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests\idempotency.rs (target\debug\deps\idempotency-d1f1b67adc794f9d.exe)
+
+running 9 tests
+test replay_cross_principal_lookup_matches_missing ... ok
+test expired_clock_boundary_is_seven_days ... ok
+test expired_command_can_be_claimed_as_new_without_deleting_audit ... ok
+test replay_across_clock_and_definition_change_keeps_winner_time ... ok
+test replay_release_keeps_minimal_receipt_available ... ok
+test replay_grant_removal_and_action_missing_deny_both_entries ... ok
+test replay_row_predicate_change_and_delete_keep_minimal_receipt ... ok
+test replay_external_definition_removal_does_not_disclose ... ok
+test fingerprint_ignores_key_order_but_preserves_explicit_default ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+

@@ -1,0 +1,33 @@
+{
+  "passed": true,
+  "block": false,
+  "verdict": "RED_EVIDENCE_OK",
+  "reason": "target_test_failed",
+  "evidence": {
+    "command": "C:\\Users\\easyi\\AppData\\Local\\Temp/ontoforge-phase07-nextest/cargo-nextest.exe nextest run --config-file .planning/phases/07-rest-mcp-shell/07-01-evidence/nextest.toml --profile gsd --color never -p ontoforge-server --lib --locked -E test(tracer_)",
+    "exit_code": 100,
+    "target_test": "tracer_tests::tracer_authenticated_pk_is_durable_after_shutdown",
+    "tests": 3,
+    "pass": 0,
+    "fail": 3,
+    "failing_tests": [
+      "ontoforge-server#tracer_tests::tracer_authenticated_pk_is_durable_after_shutdown",
+      "ontoforge-server#tracer_tests::tracer_unauthenticated_and_forged_context_are_denied",
+      "ontoforge-server#tracer_tests::tracer_snapshot_releases_lock_before_source"
+    ],
+    "matched_test": "ontoforge-server#tracer_tests::tracer_authenticated_pk_is_durable_after_shutdown",
+    "format": "junit",
+    "report_errors": []
+  },
+  "record": {
+    "command": "C:\\Users\\easyi\\AppData\\Local\\Temp/ontoforge-phase07-nextest/cargo-nextest.exe nextest run --config-file .planning/phases/07-rest-mcp-shell/07-01-evidence/nextest.toml --profile gsd --color never -p ontoforge-server --lib --locked -E test(tracer_)",
+    "exit_code": 100,
+    "failing_test": "ontoforge-server#tracer_tests::tracer_authenticated_pk_is_durable_after_shutdown",
+    "target_test": "tracer_tests::tracer_authenticated_pk_is_durable_after_shutdown",
+    "expected": "HTTP 200 and matching durable audit request_id",
+    "actual": "HTTP 404 because the authenticated object route is absent in the minimal host skeleton",
+    "verdict": "RED_EVIDENCE_OK",
+    "reason": "target_test_failed"
+  },
+  "message": "RED evidence verified: target test \"tracer_tests::tracer_authenticated_pk_is_durable_after_shutdown\" failed as expected (exit 100). GREEN authorized."
+}

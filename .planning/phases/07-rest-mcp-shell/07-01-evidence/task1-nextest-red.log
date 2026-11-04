@@ -1,0 +1,71 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.42s
+────────────
+ Nextest run ID 522dd89d-c722-41b4-a508-bb3d14dbf98e with nextest profile: gsd
+    Starting 3 tests across 1 binary (1 test skipped)
+        FAIL [   0.124s] (1/3) ontoforge-server tracer_tests::tracer_authenticated_pk_is_durable_after_shutdown
+  stdout ───
+
+    running 1 test
+    test tracer_tests::tracer_authenticated_pk_is_durable_after_shutdown ... FAILED
+
+    failures:
+
+    failures:
+        tracer_tests::tracer_authenticated_pk_is_durable_after_shutdown
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.11s
+
+  stderr ───
+
+    thread 'tracer_tests::tracer_authenticated_pk_is_durable_after_shutdown' (53076) panicked at crates\ontoforge-server\src\tracer.test.rs:125:5:
+    assertion `left == right` failed: authenticated pk read must reach QueryService
+      left: 404
+     right: 200
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.146s] (2/3) ontoforge-server tracer_tests::tracer_unauthenticated_and_forged_context_are_denied
+  stdout ───
+
+    running 1 test
+    test tracer_tests::tracer_unauthenticated_and_forged_context_are_denied ... FAILED
+
+    failures:
+
+    failures:
+        tracer_tests::tracer_unauthenticated_and_forged_context_are_denied
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.12s
+
+  stderr ───
+
+    thread 'tracer_tests::tracer_unauthenticated_and_forged_context_are_denied' (36304) panicked at crates\ontoforge-server\src\tracer.test.rs:155:9:
+    assertion `left == right` failed: untrusted bearer must be rejected before read
+      left: 404
+     right: 401
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   2.129s] (3/3) ontoforge-server tracer_tests::tracer_snapshot_releases_lock_before_source
+  stdout ───
+
+    running 1 test
+    test tracer_tests::tracer_snapshot_releases_lock_before_source ... FAILED
+
+    failures:
+
+    failures:
+        tracer_tests::tracer_snapshot_releases_lock_before_source
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 2.11s
+
+  stderr ───
+
+    thread 'tracer_tests::tracer_snapshot_releases_lock_before_source' (13028) panicked at crates\ontoforge-server\src\tracer.test.rs:215:5:
+    authenticated source request must reach the source barrier
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   2.130s] 3 tests run: 0 passed, 3 failed, 1 skipped
+        FAIL [   0.124s] (1/3) ontoforge-server tracer_tests::tracer_authenticated_pk_is_durable_after_shutdown
+        FAIL [   0.146s] (2/3) ontoforge-server tracer_tests::tracer_unauthenticated_and_forged_context_are_denied
+        FAIL [   2.129s] (3/3) ontoforge-server tracer_tests::tracer_snapshot_releases_lock_before_source
+error: test run failed

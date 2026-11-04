@@ -3,8 +3,9 @@
 //! Nodes carry raw values. Escaping happens only while printing, so there is no "already
 //! escaped string" type that could be abused to smuggle SQL text past the printer.
 //!
-//! Phase 4 note: a `LIKE` node must route its pattern wildcard escaping through the same
-//! `escape` exit as every other literal.
+//! String matching ([`Expr::StringMatch`]) carries the raw needle. Its pattern is built only by
+//! the `escape` module's `like_pattern` / `glob_pattern` and then quoted by `quote_string`, so
+//! wildcard characters in the needle can never act as wildcards.
 
 use crate::TableRef;
 
@@ -31,6 +32,11 @@ pub struct SelectItem {
 pub enum Expr {
     Column(String),
     Literal(Literal),
+    CaseWhen {
+        when: Box<Expr>,
+        then: Box<Expr>,
+        otherwise: Box<Expr>,
+    },
     CountStar,
     Aggregate {
         func: AggregateFunc,
@@ -49,6 +55,14 @@ pub enum Expr {
     IsNull {
         expr: Box<Expr>,
         negated: bool,
+    },
+    /// `expr` starts with, ends with or contains `needle`. Case sensitive; wildcard
+    /// characters in `needle` match themselves. `needle` is the raw value, escaped when
+    /// printed.
+    StringMatch {
+        expr: Box<Expr>,
+        needle: String,
+        kind: MatchKind,
     },
     And(Vec<Expr>),
     Or(Vec<Expr>),
@@ -78,6 +92,13 @@ pub enum CompareOp {
     LtEq,
     Gt,
     GtEq,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MatchKind {
+    StartsWith,
+    EndsWith,
+    Contains,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

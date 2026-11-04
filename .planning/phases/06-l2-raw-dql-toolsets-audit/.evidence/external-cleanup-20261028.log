@@ -1,0 +1,7 @@
+2026-10-28T03:35:27.1450663Z
+owned containers: ontoforge-trino-l2 3738891665a2b4db2590477d5a2187506c428ecdb70fab12c007fbe007b88b14; ontoforge-trino-l2-loose bbb8d2815a4c678b385e435d8660104d3bf41bc3a31eb5e9419c81ced5858bd1
+ontoforge-trino-l2
+ontoforge-trino-l2-loose
+ontoforge-trino-05-06 trinodb/trino:483 127.0.0.1:58080->8080/tcp
+ontoforge-pg-05-06 postgres:17.11 127.0.0.1:55432->5432/tcp
+vennuap-casdoor casbin/casdoor:3.118.0 127.0.0.1:8000->8000/tcp

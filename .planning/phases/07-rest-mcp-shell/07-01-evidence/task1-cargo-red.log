@@ -1,0 +1,32 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.13s
+     Running unittests src\lib.rs (target\debug\deps\ontoforge_server-5e423006a07df808.exe)
+
+running 3 tests
+
+thread 'tracer_tests::tracer_unauthenticated_and_forged_context_are_denied' (29060) panicked at crates\ontoforge-server\src\tracer.test.rs:155:9:
+assertion `left == right` failed: untrusted bearer must be rejected before read
+  left: 404
+ right: 401
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'tracer_tests::tracer_authenticated_pk_is_durable_after_shutdown' (19128) panicked at crates\ontoforge-server\src\tracer.test.rs:125:5:
+assertion `left == right` failed: authenticated pk read must reach QueryService
+  left: 404
+ right: 200
+test tracer_tests::tracer_authenticated_pk_is_durable_after_shutdown ... FAILED
+test tracer_tests::tracer_unauthenticated_and_forged_context_are_denied ... FAILED
+
+thread 'tracer_tests::tracer_snapshot_releases_lock_before_source' (44672) panicked at crates\ontoforge-server\src\tracer.test.rs:215:5:
+authenticated source request must reach the source barrier
+test tracer_tests::tracer_snapshot_releases_lock_before_source ... FAILED
+
+failures:
+
+failures:
+    tracer_tests::tracer_authenticated_pk_is_durable_after_shutdown
+    tracer_tests::tracer_snapshot_releases_lock_before_source
+    tracer_tests::tracer_unauthenticated_and_forged_context_are_denied
+
+test result: FAILED. 0 passed; 3 failed; 0 ignored; 0 measured; 1 filtered out; finished in 2.29s
+
+error: test failed, to rerun pass `-p ontoforge-server --lib`

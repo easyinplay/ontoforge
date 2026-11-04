@@ -1,0 +1,39 @@
+    Checking zerofrom v0.1.8
+    Checking h2 v0.4.20
+    Checking serde-saphyr v2.0.0
+    Checking schemars v1.2.3
+    Checking cel v0.15.0
+    Checking yoke v0.8.3
+    Checking zerovec v0.11.8
+    Checking zerotrie v0.2.5
+    Checking tinystr v0.8.4
+    Checking potential_utf v0.1.6
+    Checking icu_collections v2.3.0
+    Checking icu_locale_core v2.3.0
+    Checking icu_provider v2.3.1
+    Checking ontoforge-schema v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-schema)
+    Checking icu_properties v2.3.0
+    Checking icu_normalizer v2.3.0
+    Checking hyper v1.12.0
+    Checking hyper-util v0.1.21
+    Checking ontoforge-expr v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-expr)
+    Checking hyper-rustls v0.27.10
+    Checking idna_adapter v1.2.2
+    Checking idna v1.1.0
+    Checking url v2.5.8
+    Checking tower-http v0.6.11
+    Checking sqlx-core v0.9.0
+    Checking reqwest v0.13.5
+    Checking reqwest-middleware v0.5.2
+    Checking reqwest-retry v0.9.1
+    Checking reqwest-tracing v0.7.1
+    Checking postgresql_archive v0.21.0
+    Checking sqlx-postgres v0.9.0
+    Checking sqlx-sqlite v0.9.0
+    Checking sqlx v0.9.0
+    Checking ontoforge-engine v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-engine)
+    Checking postgresql_embedded v0.21.0
+    Checking sea-query-sqlx v0.9.1
+    Checking ontoforge-auth v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-auth)
+    Checking ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 22.80s

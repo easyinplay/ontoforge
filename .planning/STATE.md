@@ -1,74 +1,65 @@
 ---
 gsd_state_version: "1.0"
-current_phase: 3
-current_phase_name: Edit Store & Scope Model
+milestone: v1.0
+current_phase: "07.1"
+current_phase_name: Source Cardinality Gap Closure
+current_plan: 1
 status: planning
-stopped_at: Phase 02 complete, ready to plan Phase 3
-last_updated: "2026-10-19T08:35:32.981Z"
-last_activity: 2026-10-19
-last_activity_desc: Phase 02 complete, transitioned to Phase 3
-state_head: 7fea7d8c6e0f2d6fa2eea8228b322b52bf7e25a1
+stopped_at: 用户选A；Phase7.1计划定稿与独立checker进行中
+last_updated: "2026-11-04T03:17:48.788Z"
+state_head: f8851ca073fed34e80e605f0ac91880259df7e12
 progress:
-  total_phases: 7
-  completed_phases: 2
-  total_plans: 24
-  completed_plans: 24
-  percent: 29
+  total_phases: 8
+  completed_phases: 5
+  total_plans: 91
+  completed_plans: 88
+last_activity: "2026-11-04: 用户选A；Phase7.1计划定稿与独立检查中"
+verified_source_commit: f8851ca073fed34e80e605f0ac91880259df7e12
+last_gate_trip: null
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-10-19)
+See: .planning/PROJECT.md (updated 2026-11-04)
 
-**Core value:** 定义一次 ontology，应用和 agent 就能通过 REST 与 MCP 对同一份对象图做受控读写：写入一律经 Action 校验与授权，每次写入都可审计。
-**Current focus:** Phase 3: Edit Store & Scope Model
+**Core value:** 定义一次 ontology，应用和 agent 通过 REST 与 MCP 对同一对象图受控读写，写入均经 Action 校验并可审计。
+**Current focus:** Phase7.1按用户选A补齐source基数报告。
 
 ## Current Position
 
-Phase: 3 of 7 (Edit Store & Scope Model)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-10-19, Phase 2 complete, transitioned to Phase 3
+Phase: 07.1 (Source Cardinality Gap Closure)
+Current Plan: 1
+Total Plans in Phase: 3
+Status: planning
+Progress: 88/91计划已实施（新增3份为草稿）；5/8阶段canonical passed，milestone尚未通过。
 
-Progress: [████████████████████] 24/24 plans (100%); phases 2/7 complete
+## Evidence Pointers
 
-## Performance Metrics
+- 当前工作真相源：`v1.0-MILESTONE-AUDIT.md`、`milestones/v1.0-audit/task_plan.md`；Phase7增量复验80/80、UAT14/14通过。
+- 实际运行与发行包：`phases/07-rest-mcp-shell/07-14-SUMMARY.md`；安全与任务覆盖：`07-SECURITY.md`、`07-VALIDATION.md`。
+- 决策归 `.planning/adr/`；运行合同归 Phase 7 CONTEXT，历史实施与修复归各 SUMMARY/reviews，进度归 phase progress。
 
-逐 plan 的耗时与文件数见各 `phases/*/NN-*-SUMMARY.md`。
+## Pending Todos / Blockers
 
-| Plan | Duration | Tasks | Files |
-|------|----------|-------|-------|
-
-## Accumulated Context
-
-### Decisions
-
-决策全文见 `.planning/adr/`，摘要见 PROJECT.md Key Decisions；phase 实施细节见各 SUMMARY。
-
-- [Phase 2]: 绑定独立成 `SourceBinding` 文件、`backing` 必填无默认（ADR-0021）
-- [Phase 2]: 被忽略的 fixture 诊断降为 Info，code 仍为 ONT-V17（ADR-0022）
-- [Phase 2]: nightly Iceberg 用 Trino 本地文件系统代替 MinIO；换 S3 兼容镜像属供应链决策，留给用户（详: `phases/02-source-binding-engine/02-10-SUMMARY.md`）
-- [Design]: Trino 主引擎 + 分级 SQL，ADR-0015..0020（详: `docs/designs/trino-engine-sql-tiers.md`）
-
-### Pending Todos
-
-None yet.
-
-### Blockers/Concerns
-
-- [Ops]: 测试凭据待轮换（`ontoforge_trino_ro`、postgres），测试 catalog `ontoforge_pg` 待删除
-- [Phase 2]: 非阻塞安全 observations 待后续 phase 跟进（详: `phases/02-source-binding-engine/02-SECURITY.md` Observations）
-
-## Deferred Items
-
-| Category | Item | Status | Deferred At | Milestone |
-|----------|------|--------|-------------|-----------|
-| *(none)* | | | | |
+- INT-01/TLS-GUARD已关闭，f885最终CI四job、三平台包与Phase7复验通过。用户已授权已验收PR合并main，详milestones/v1.0-audit/MERGE-READINESS.md；不发布Release/npm。
+- STORE-05待Phase7.1补齐；用户已选A（数据库聚合、有界warning、总deadline），详`phases/07.1-source-cardinality-gap-closure/07.1-INDEPENDENT-OPINION.md`。
+- ENGINE-05：local Iceberg483/484通过；ADR0017 MinIO精确fixture差异未正式闭环，详Phase02复验。
+- Phase1–7历史fingerprint已重核：01 human_needed、02 gaps_found、03–07 passed；78/79 SUMMARY声明齐备不等同功能通过。
+- [Ops] 动态51项、凭据扫描与清理通过，Cargo/Docker已释放；原runner HEAD guard exit1与独立final-check exit0分别保留。
+- [Phase 2] 非阻塞安全 observations：`phases/02-source-binding-engine/02-SECURITY.md`。
+- [Phase 5] 生产 webhook 联调及既有治理债务：`phases/05-online-action/deferred-items.md`。
+- [Phase 6] Windows 慢机审计时限波动与历史验证边界：`phases/06-l2-raw-dql-toolsets-audit/deferred-items.md`、`06-VERIFICATION.md`。
 
 ## Session Continuity
 
-Last session: 2026-10-19
-Stopped at: Phase 2 complete, ready to plan Phase 3
+Last session: 2026-11-04
+Stopped at: 用户选A；Phase7.1计划定稿与独立checker进行中
 Resume file: None
+
+## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 07.1 inserted after Phase 7: STORE-05 source基数报告缺口，详phases/07.1-source-cardinality-gap-closure/ (URGENT)

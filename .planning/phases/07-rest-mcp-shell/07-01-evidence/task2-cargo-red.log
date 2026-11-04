@@ -1,0 +1,63 @@
+   Compiling tokio v1.53.3
+   Compiling icu_normalizer v2.3.0
+   Compiling serde-saphyr v2.0.0
+   Compiling sse-stream v0.2.6
+   Compiling assert-json-diff v2.0.2
+   Compiling idna_adapter v1.2.2
+   Compiling idna v1.1.0
+   Compiling url v2.5.8
+   Compiling ontoforge-schema v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-schema)
+   Compiling sqlx-core v0.9.0
+   Compiling tokio-util v0.7.20
+   Compiling tokio-stream v0.1.19
+   Compiling tower v0.5.3
+   Compiling tokio-rustls v0.26.6
+   Compiling deadpool v0.12.3
+   Compiling h2 v0.4.20
+   Compiling tower-http v0.6.11
+   Compiling hyper v1.12.0
+   Compiling hyper-util v0.1.21
+   Compiling hyper-rustls v0.27.10
+   Compiling axum v0.8.9
+   Compiling wiremock v0.6.5
+   Compiling sqlx-postgres v0.9.0
+   Compiling sqlx-sqlite v0.9.0
+   Compiling reqwest v0.13.5
+   Compiling ontoforge-expr v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-expr)
+   Compiling rmcp v3.8.0
+   Compiling utoipa-axum v0.3.0
+   Compiling sqlx-macros-core v0.9.0
+   Compiling sqlx-macros v0.9.0
+   Compiling sqlx v0.9.0
+   Compiling ontoforge-engine v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-engine)
+   Compiling sea-query-sqlx v0.9.1
+   Compiling ontoforge-auth v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-auth)
+   Compiling ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+   Compiling ontoforge-query v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-query)
+   Compiling ontoforge-action v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-action)
+   Compiling ontoforge-api v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-api)
+   Compiling ontoforge-server v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-server)
+   Compiling ontoforge v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2m 05s
+     Running unittests src\lib.rs (target\debug\deps\ontoforge-b6e03de9df0f5730.exe)
+
+running 2 tests
+
+thread 'serve::tests::serve_args_validate_config_and_address' (62120) panicked at crates\ontoforge\src\serve.test.rs:118:5:
+valid serve args must dispatch to the HTTP host
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test serve::tests::serve_args_validate_config_and_address ... FAILED
+
+thread 'serve::tests::serve_real_listener_auth_and_shutdown' (35440) panicked at crates\ontoforge\src\serve.test.rs:147:5:
+serve must start a real authenticated listener
+test serve::tests::serve_real_listener_auth_and_shutdown ... FAILED
+
+failures:
+
+failures:
+    serve::tests::serve_args_validate_config_and_address
+    serve::tests::serve_real_listener_auth_and_shutdown
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 12 filtered out; finished in 2.12s
+
+error: test failed, to rerun pass `-p ontoforge --lib`

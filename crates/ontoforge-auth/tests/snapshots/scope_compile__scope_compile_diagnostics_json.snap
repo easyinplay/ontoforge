@@ -1,0 +1,149 @@
+---
+source: crates/ontoforge-auth/tests/scope_compile.rs
+expression: all
+---
+[
+  {
+    "code": "ONT-V21",
+    "severity": "error",
+    "message": "role `r` grants unknown object type `Flihgt`",
+    "file": "roles.yaml",
+    "line": 4,
+    "column": 3,
+    "span": {
+      "offset": 37,
+      "length": 6
+    },
+    "help": "did you mean `Flight`?"
+  },
+  {
+    "code": "ONT-V21",
+    "severity": "error",
+    "message": "role `r` does not list the primary key `flightId` of `Flight`",
+    "file": "roles.yaml",
+    "line": 5,
+    "column": 17,
+    "span": {
+      "offset": 61,
+      "length": 1
+    },
+    "help": "every property allow-list must contain the primary key"
+  },
+  {
+    "code": "ONT-V21",
+    "severity": "error",
+    "message": "role `r` lists property `status` of `Flight` more than once",
+    "file": "roles.yaml",
+    "line": 5,
+    "column": 26,
+    "span": {
+      "offset": 70,
+      "length": 6
+    },
+    "help": null
+  },
+  {
+    "code": "ONT-V21",
+    "severity": "error",
+    "message": "role `r` lists unknown property `nope` of `Flight`",
+    "file": "roles.yaml",
+    "line": 5,
+    "column": 34,
+    "span": {
+      "offset": 78,
+      "length": 4
+    },
+    "help": null
+  },
+  {
+    "code": "ONT-V21",
+    "severity": "error",
+    "message": "role `r` has toolset `sql:raw` but `sqlLevels` does not include `raw`",
+    "file": "roles.yaml",
+    "line": 3,
+    "column": 12,
+    "span": {
+      "offset": 33,
+      "length": 7
+    },
+    "help": null
+  },
+  {
+    "code": "ONT-V21",
+    "severity": "error",
+    "message": "role `r` grants L2 catalogs or schemas but `sqlLevels` does not include `raw`",
+    "file": "roles.yaml",
+    "line": 4,
+    "column": 1,
+    "span": {
+      "offset": 42,
+      "length": 2
+    },
+    "help": null
+  },
+  {
+    "code": "ONT-V21",
+    "severity": "error",
+    "message": "role `r` lists L2 schema `noDot`, which is not of the form `catalog.schema`",
+    "file": "roles.yaml",
+    "line": 5,
+    "column": 13,
+    "span": {
+      "offset": 58,
+      "length": 5
+    },
+    "help": null
+  },
+  {
+    "code": "ONT-V21",
+    "severity": "error",
+    "message": "role `r` lists unknown property `nope` of `Flight`",
+    "file": "roles.yaml",
+    "line": 5,
+    "column": 28,
+    "span": {
+      "offset": 72,
+      "length": 4
+    },
+    "help": null
+  },
+  {
+    "code": "ONT-V22",
+    "severity": "error",
+    "message": "rowFilter of role `r` on `Flight`: `size` is not allowed in a row filter (at 1:19 in expression)",
+    "file": "roles.yaml",
+    "line": 6,
+    "column": 16,
+    "span": {
+      "offset": 93,
+      "length": 26
+    },
+    "help": null
+  },
+  {
+    "code": "ONT-V21",
+    "severity": "error",
+    "message": "role `r` grants unknown action `launchRocket`",
+    "file": "roles.yaml",
+    "line": 7,
+    "column": 11,
+    "span": {
+      "offset": 130,
+      "length": 12
+    },
+    "help": null
+  },
+  {
+    "code": "ONT-V22",
+    "severity": "error",
+    "message": "rowFilter of role `r` on `Flight`: principal attribute `tenantId` is not declared in `[auth.principal_attrs]` of ontoforge-server.toml (at 1:18 in expression)",
+    "file": "roles.yaml",
+    "line": 6,
+    "column": 16,
+    "span": {
+      "offset": 95,
+      "length": 43
+    },
+    "help": null
+  }
+]

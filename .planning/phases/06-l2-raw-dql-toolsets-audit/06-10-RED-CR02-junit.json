@@ -1,0 +1,13 @@
+{
+  "command": "target/debug/deps/l2_monitor-cd662f87f457d9e9.exe monitor_restart_must_clean_previous_generation_before_enabling -Z unstable-options --format junit (RUSTC_BOOTSTRAP=1)",
+  "exitCode": 101,
+  "output": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"test\" package=\"test\" id=\"0\" errors=\"0\" failures=\"1\" tests=\"1\" skipped=\"0\" ><testcase classname=\"integration\" name=\"monitor_restart_must_clean_previous_generation_before_enabling\" time=\"0\"><failure type=\"assert\"/><system-out><![CDATA[]]>&#xA;<![CDATA[thread 'monitor_restart_must_clean_previous_generation_before_enabling' (35452) panicked at crates\\ontoforge-engine\\tests\\l2_monitor.rs:583:5:]]>&#xA;<![CDATA[assertion `left == right` failed: new generation must not forget the previous live probe]]>&#xA;<![CDATA[  left: Some(Enabled)]]>&#xA;<![CDATA[ right: Some(Disabled { reason: CleanupFailed })]]>&#xA;<![CDATA[note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace]]>&#xA;<![CDATA[]]></system-out></testcase><system-out/><system-err/></testsuite></testsuites>",
+  "targetTest": "monitor_restart_must_clean_previous_generation_before_enabling",
+  "targetFile": "crates/ontoforge-engine/tests/l2_monitor.rs",
+  "expected": "Restart remains CleanupFailed without submitting another probe until old query cancellation succeeds",
+  "actual": "Some(Enabled)",
+  "reportPath": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-10-RED-CR02.xml",
+  "runStartedAt": "2026-10-28T00:57:41.9703678Z",
+  "reportModifiedAt": "2026-10-28T00:57:41.9991319Z",
+  "semanticAssessment": "Compiled behavior regression reached the intended health assertion; no fixture or compile error."
+}

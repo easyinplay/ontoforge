@@ -3,7 +3,7 @@
 use std::time::Duration;
 
 use ontoforge_engine::printer::ast::{CompareOp, Expr, Literal, OrderItem, Select, SelectItem};
-use ontoforge_engine::printer::print_select;
+use ontoforge_engine::printer::{print_flush_metadata_cache, print_select};
 use ontoforge_engine::trino::{Auth, TrinoConnection, TrinoEngine};
 use ontoforge_engine::{
     Column, Dialect, Engine, EngineError, EngineStatus, PhysicalColumn, PhysicalType, PrintedSql,
@@ -913,4 +913,64 @@ async fn status_available_and_unavailable() {
         }
         EngineStatus::Available => panic!("a 401 is not available"),
     }
+}
+
+// ---------------------------------------------------------------------------------------------
+// Procedure calls: a statement without a result set (plan 03-18)
+// ---------------------------------------------------------------------------------------------
+
+fn empty_output() -> QueryOutput {
+    QueryOutput {
+        columns: Vec::new(),
+        rows: Vec::new(),
+        truncated: false,
+    }
+}
+
+#[tokio::test]
+async fn call_without_columns_returns_empty_output() {
+    let server = MockServer::start().await;
+    // What Trino answers a CALL with: finished at once, no columns, no data, no nextUri.
+    mount_post(
+        &server,
+        json!({ "id": "q1", "stats": { "state": "FINISHED" }, "updateType": "CALL" }),
+    )
+    .await;
+    let sql = print_flush_metadata_cache("editstore").expect("printable");
+
+    let output = engine_for(&server)
+        .execute(&sql, &ctx())
+        .await
+        .expect("a CALL succeeds");
+    assert_eq!(output, empty_output());
+
+    let requests = server.received_requests().await.expect("recorded");
+    assert_eq!(requests.len(), 1, "no page is followed");
+    assert_eq!(
+        String::from_utf8_lossy(&requests[0].body),
+        r#"CALL "editstore".system.flush_metadata_cache()"#
+    );
+}
+
+#[tokio::test]
+async fn call_that_is_queued_first_still_ends_empty() {
+    let server = MockServer::start().await;
+    mount_post(
+        &server,
+        json!({ "id": "q1", "nextUri": next(&server, "1"), "stats": { "state": "QUEUED" } }),
+    )
+    .await;
+    mount_get(
+        &server,
+        "1",
+        json!({ "id": "q1", "stats": { "state": "FINISHED" }, "updateType": "CALL" }),
+    )
+    .await;
+    let sql = print_flush_metadata_cache("editstore").expect("printable");
+
+    let output = engine_for(&server)
+        .execute(&sql, &ctx())
+        .await
+        .expect("a CALL succeeds");
+    assert_eq!(output, empty_output());
 }

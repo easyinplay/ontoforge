@@ -1,0 +1,22 @@
+    Checking ontoforge-server v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-server)
+error: long literal lacking separators
+  --> crates\ontoforge-server\tests\unit\http_contract.test.rs:58:43
+   |
+58 |     unknown["limits"] = json!({"maxRows": 999999});
+   |                                           ^^^^^^ help: consider: `999_999`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#unreadable_literal
+   = note: `-D clippy::unreadable-literal` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::unreadable_literal)]`
+
+error: this function has too many lines (220/100)
+   --> crates\ontoforge-server\tests\unit\http_contract.test.rs:178:7
+    |
+178 | async fn http_rows_bytes_concurrency_timeout_and_audit_fail_closed() {
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#too_many_lines
+    = note: `-D clippy::too-many-lines` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::too_many_lines)]`
+
+error: could not compile `ontoforge-server` (test "http_contract") due to 2 previous errors

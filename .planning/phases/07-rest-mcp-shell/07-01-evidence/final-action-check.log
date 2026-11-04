@@ -1,0 +1,25 @@
+    Checking tokio v1.53.3
+    Checking antlr4rust v0.6.0
+    Checking ontoforge-schema v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-schema)
+    Checking sqlparser v0.63.0
+    Checking cel v0.15.0
+    Checking tokio-stream v0.1.19
+    Checking hyper v1.12.0
+    Checking tower v0.5.3
+    Checking tokio-rustls v0.26.6
+    Checking sqlx-core v0.9.0
+    Checking ontoforge-expr v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-expr)
+    Checking hyper-util v0.1.21
+    Checking tower-http v0.6.11
+    Checking hyper-rustls v0.27.10
+    Checking reqwest v0.13.5
+    Checking sqlx-sqlite v0.9.0
+    Checking sqlx-postgres v0.9.0
+    Checking sqlx v0.9.0
+    Checking sea-query-sqlx v0.9.1
+    Checking ontoforge-engine v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-engine)
+    Checking ontoforge-auth v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-auth)
+    Checking ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+    Checking ontoforge-query v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-query)
+    Checking ontoforge-action v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-action)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 27.11s

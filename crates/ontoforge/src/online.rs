@@ -420,7 +420,7 @@ fn engine_of(
 }
 
 /// ONT-V20 for a problem of the server configuration, located when the error has a span.
-fn config_diagnostic(e: &ConfigError, file: &str, text: Option<&str>) -> Diagnostic {
+pub(crate) fn config_diagnostic(e: &ConfigError, file: &str, text: Option<&str>) -> Diagnostic {
     let diagnostic = match (&e.span, text) {
         (Some(span), Some(text)) => {
             let (line, column) = offset_to_line_col(text, span.start);

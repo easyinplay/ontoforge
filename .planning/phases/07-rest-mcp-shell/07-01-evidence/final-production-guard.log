@@ -1,0 +1,48 @@
+   Compiling tokio v1.53.3
+   Compiling icu_normalizer v2.3.0
+   Compiling h2 v0.4.20
+   Compiling schemars v1.2.3
+   Compiling antlr4rust v0.6.0
+   Compiling ontoforge-schema v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-schema)
+   Compiling cel v0.15.0
+   Compiling idna_adapter v1.2.2
+   Compiling idna v1.1.0
+   Compiling url v2.5.8
+   Compiling sqlx-core v0.9.0
+   Compiling tower-http v0.6.11
+   Compiling tokio-util v0.7.20
+   Compiling tokio-rustls v0.26.6
+   Compiling tower v0.5.3
+   Compiling tokio-stream v0.1.19
+   Compiling deadpool v0.12.3
+   Compiling postgresql_commands v0.21.0
+   Compiling hyper v1.12.0
+   Compiling hyper-util v0.1.21
+   Compiling hyper-rustls v0.27.10
+   Compiling reqwest v0.13.5
+   Compiling ontoforge-expr v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-expr)
+   Compiling wiremock v0.6.5
+   Compiling reqwest-middleware v0.5.2
+   Compiling sqlx-postgres v0.9.0
+   Compiling sqlx-sqlite v0.9.0
+   Compiling reqwest-tracing v0.7.1
+   Compiling reqwest-retry v0.9.1
+   Compiling postgresql_archive v0.21.0
+   Compiling postgresql_embedded v0.21.0
+   Compiling sqlx-macros-core v0.9.0
+   Compiling sqlx-macros v0.9.0
+   Compiling sqlx v0.9.0
+   Compiling ontoforge-engine v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-engine)
+   Compiling sea-query-sqlx v0.9.1
+   Compiling ontoforge-auth v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-auth)
+   Compiling ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+   Compiling ontoforge-query v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-query)
+   Compiling ontoforge-action v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-action)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2m 03s
+     Running tests\entrypoints.rs (target\debug\deps\entrypoints-2dfb21d53640c122.exe)
+
+running 1 test
+test production_mutation_callers_are_action_import_and_read_audit ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.29s
+

@@ -1,0 +1,9 @@
+{
+  "command": "cargo tree --workspace --locked --features ontoforge-storage/embedded-pg -e normal,build,dev -i openssl-sys",
+  "exitCode": 101,
+  "runStartedAt": "2026-10-29T05:02:36.2702821Z",
+  "runFinishedAt": "2026-10-29T05:02:36.6014530Z",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07-rest-mcp-shell\\07-02-evidence\\tls-openssl.log",
+  "cargoBuildJobs": 2
+}

@@ -1,0 +1,13 @@
+{
+  "command": "target/debug/deps/l2_monitor-cd662f87f457d9e9.exe monitor_cleanup_failure_cannot_be_bypassed_by_manual_recheck -Z unstable-options --format junit (RUSTC_BOOTSTRAP=1)",
+  "exitCode": 101,
+  "output": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"test\" package=\"test\" id=\"0\" errors=\"0\" failures=\"1\" tests=\"1\" skipped=\"0\" ><testcase classname=\"integration\" name=\"monitor_cleanup_failure_cannot_be_bypassed_by_manual_recheck\" time=\"0\"><failure type=\"assert\"/><system-out><![CDATA[]]>&#xA;<![CDATA[thread 'monitor_cleanup_failure_cannot_be_bypassed_by_manual_recheck' (29088) panicked at crates\\ontoforge-engine\\tests\\l2_monitor.rs:568:5:]]>&#xA;<![CDATA[manual diagnosis must not bypass the monitor owner's failed cleanup, got Enabled]]>&#xA;<![CDATA[note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace]]>&#xA;<![CDATA[]]></system-out></testcase><system-out/><system-err/></testsuite></testsuites>",
+  "targetTest": "monitor_cleanup_failure_cannot_be_bypassed_by_manual_recheck",
+  "targetFile": "crates/ontoforge-engine/tests/l2_monitor.rs",
+  "expected": "Manual success remains disabled while owner cleanup has failed",
+  "actual": "Enabled",
+  "reportPath": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-10-RED-CR01.xml",
+  "runStartedAt": "2026-10-28T00:57:41.7271823Z",
+  "reportModifiedAt": "2026-10-28T00:57:41.9432705Z",
+  "semanticAssessment": "Compiled behavior regression reached the intended health assertion; no fixture or compile error."
+}

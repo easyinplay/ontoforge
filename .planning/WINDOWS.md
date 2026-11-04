@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 3
+open_count: 11
 waived_count: 0
-fixed_count: 3
-total_count: 6
-last_updated: 2026-10-17T01:06:08.569Z
+fixed_count: 5
+total_count: 16
+last_updated: 2026-10-29T04:49:36.824Z
 ---
 
 # Broken Windows Ledger
@@ -21,6 +21,16 @@ last_updated: 2026-10-17T01:06:08.569Z
 | 4 | 02 | deviation | docs/source-binding.md |  | SQLite stand-in reports float properties as double, so fixture-mode --online flags float properties as ONT-V17 (float reads only real); fix is in sqlite/fixture.rs physical_of, outside 02-08 scope | fixed |  | 2026-10-16T21:49:10.933Z | 2026-10-16T21:55:10.377Z |
 | 5 | 02 | unrun-verify | .github/workflows/ci.yml |  | integration job (PostgreSQL + Trino 483, trino_it / cli_trino_it --ignored) not yet run on GitHub; describe_types_golden and decode_golden are PROVISIONAL until the first run (E21) | open |  | 2026-10-17T01:06:08.093Z |  |
 | 6 | 02 | unrun-verify | .github/workflows/nightly.yml |  | nightly Iceberg workflow (Trino 483/484, local-warehouse JDBC catalog, report-failure issue job) not yet run; needs a workflow_dispatch run (E21) | open |  | 2026-10-17T01:06:08.569Z |  |
+| 7 | 05 | stub | crates/ontoforge-action/src/lib.rs | 186 | validate-only is explicitly refused by the edit-only tracer; planned in 05-02 | open |  | 2026-10-23T07:09:41.788Z |  |
+| 8 | 05 | stub | crates/ontoforge-action/src/version.rs | 47 | source-backed token 在 05-03 无 source sampler，统一 VersionConflict；05-06 接入真实 source snapshot 与往返验收 | fixed |  | 2026-10-23T10:01:46.213Z | 2026-10-23T13:36:20.358Z |
+| 9 | 05 | deviation | crates/ontoforge-action/tests/trino_action_it.rs |  | Task 2 真实集成断言首次有效运行即通过，缺少独立行为 RED。 | open |  | 2026-10-23T13:34:50.748Z |  |
+| 10 | 05 | deviation | .planning/phases/05-online-action/deferred-items.md |  | 默认 feature 组合的 cargo check/clippy 因现有配置问题失败，已用 embedded-pg 验证计划代码。 | open |  | 2026-10-23T13:34:51.389Z |  |
+| 11 | 06 | stub | crates/ontoforge-storage/src/read_audit.rs | 166 | PostgreSQL worker explicitly fails closed until 06-02 provides its system table and sink | open |  | 2026-10-26T06:51:40.852Z |  |
+| 12 | 06 | skipped-test | crates/ontoforge-storage/tests/scope_store.rs |  | pg_audit_is_append_only_and_login_is_recorded: requires ONTOFORGE_PG_URL or embedded-pg feature | open |  | 2026-10-27T19:13:33.710Z |  |
+| 13 | 06 | skipped-test | crates/ontoforge-storage/tests/scope_store.rs |  | pg_concurrent_scope_apply_serializes: requires ONTOFORGE_PG_URL or embedded-pg feature | open |  | 2026-10-27T19:13:44.675Z |  |
+| 14 | 06 | skipped-test | crates/ontoforge-storage/tests/scope_store.rs |  | pg_scope_apply: requires ONTOFORGE_PG_URL or embedded-pg feature | open |  | 2026-10-27T19:13:52.718Z |  |
+| 15 | 07 | skipped-test | .planning/phases/07-rest-mcp-shell/07-03-SUMMARY.md |  | 07-03 workspace: 107 ignored (PG/Trino/private/p95/doctest); external-service evidence pending 07-13/14. Full names and reasons: 07-03-evidence/workspace-tests-jobs2.log. | open |  | 2026-10-29T04:32:00.805Z |  |
+| 16 | 07 | deviation | crates/ontoforge-action/tests/idempotency_pg.rs |  | 07-03 all-features Clippy: large_futures at lines 242/257/398 (16464 bytes); approved minimal Box::pin allocation fix in 07-02 PLAN if still present after replay repair. | fixed |  | 2026-10-29T04:32:02.063Z | 2026-10-29T04:49:36.824Z |
 
 ````json
 [
@@ -95,6 +105,136 @@ last_updated: 2026-10-17T01:06:08.569Z
     "reason": "",
     "recorded_at": "2026-10-17T01:06:08.569Z",
     "resolved_at": null
+  },
+  {
+    "id": 7,
+    "kind": "stub",
+    "phase": "05",
+    "file": "crates/ontoforge-action/src/lib.rs",
+    "line": 186,
+    "description": "validate-only is explicitly refused by the edit-only tracer; planned in 05-02",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-23T07:09:41.788Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 8,
+    "kind": "stub",
+    "phase": "05",
+    "file": "crates/ontoforge-action/src/version.rs",
+    "line": 47,
+    "description": "source-backed token 在 05-03 无 source sampler，统一 VersionConflict；05-06 接入真实 source snapshot 与往返验收",
+    "status": "fixed",
+    "reason": "",
+    "recorded_at": "2026-10-23T10:01:46.213Z",
+    "resolved_at": "2026-10-23T13:36:20.358Z",
+    "milestone": null
+  },
+  {
+    "id": 9,
+    "kind": "deviation",
+    "phase": "05",
+    "file": "crates/ontoforge-action/tests/trino_action_it.rs",
+    "line": null,
+    "description": "Task 2 真实集成断言首次有效运行即通过，缺少独立行为 RED。",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-23T13:34:50.748Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 10,
+    "kind": "deviation",
+    "phase": "05",
+    "file": ".planning/phases/05-online-action/deferred-items.md",
+    "line": null,
+    "description": "默认 feature 组合的 cargo check/clippy 因现有配置问题失败，已用 embedded-pg 验证计划代码。",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-23T13:34:51.389Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 11,
+    "kind": "stub",
+    "phase": "06",
+    "file": "crates/ontoforge-storage/src/read_audit.rs",
+    "line": 166,
+    "description": "PostgreSQL worker explicitly fails closed until 06-02 provides its system table and sink",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-26T06:51:40.852Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 12,
+    "kind": "skipped-test",
+    "phase": "06",
+    "file": "crates/ontoforge-storage/tests/scope_store.rs",
+    "line": null,
+    "description": "pg_audit_is_append_only_and_login_is_recorded: requires ONTOFORGE_PG_URL or embedded-pg feature",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-27T19:13:33.710Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 13,
+    "kind": "skipped-test",
+    "phase": "06",
+    "file": "crates/ontoforge-storage/tests/scope_store.rs",
+    "line": null,
+    "description": "pg_concurrent_scope_apply_serializes: requires ONTOFORGE_PG_URL or embedded-pg feature",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-27T19:13:44.675Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 14,
+    "kind": "skipped-test",
+    "phase": "06",
+    "file": "crates/ontoforge-storage/tests/scope_store.rs",
+    "line": null,
+    "description": "pg_scope_apply: requires ONTOFORGE_PG_URL or embedded-pg feature",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-27T19:13:52.718Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 15,
+    "kind": "skipped-test",
+    "phase": "07",
+    "file": ".planning/phases/07-rest-mcp-shell/07-03-SUMMARY.md",
+    "line": null,
+    "description": "07-03 workspace: 107 ignored (PG/Trino/private/p95/doctest); external-service evidence pending 07-13/14. Full names and reasons: 07-03-evidence/workspace-tests-jobs2.log.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-29T04:32:00.805Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 16,
+    "kind": "deviation",
+    "phase": "07",
+    "file": "crates/ontoforge-action/tests/idempotency_pg.rs",
+    "line": null,
+    "description": "07-03 all-features Clippy: large_futures at lines 242/257/398 (16464 bytes); approved minimal Box::pin allocation fix in 07-02 PLAN if still present after replay repair.",
+    "status": "fixed",
+    "reason": "",
+    "recorded_at": "2026-10-29T04:32:02.063Z",
+    "resolved_at": "2026-10-29T04:49:36.824Z",
+    "milestone": null
   }
 ]
 ````

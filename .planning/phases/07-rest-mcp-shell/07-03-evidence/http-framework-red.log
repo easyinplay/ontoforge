@@ -1,0 +1,28 @@
+   Compiling ontoforge-server v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-server)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 28.94s
+────────────
+ Nextest run ID 2afd4fef-e205-4e14-a2af-a05fed60d154 with nextest profile: gsd
+    Starting 1 test across 1 binary (2 tests skipped)
+        FAIL [   0.141s] (1/1) ontoforge-server::http_contract contracts::http_framework_rejections_are_structured
+  stdout ───
+
+    running 1 test
+    test contracts::http_framework_rejections_are_structured ... FAILED
+
+    failures:
+
+    failures:
+        contracts::http_framework_rejections_are_structured
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.12s
+
+  stderr ───
+
+    thread 'contracts::http_framework_rejections_are_structured' (28840) panicked at crates\ontoforge-server\tests\unit\http_contract.test.rs:12:5:
+    every rejection must use the structured JSON envelope
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.143s] 1 test run: 0 passed, 1 failed, 2 skipped
+        FAIL [   0.141s] (1/1) ontoforge-server::http_contract contracts::http_framework_rejections_are_structured
+error: test run failed

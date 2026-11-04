@@ -1,0 +1,15 @@
+{
+  "source": "workspace-tests-jobs2.log",
+  "aggregation": "Sum all 121 final test result lines, including doctests",
+  "cargoBuildJobs": 2,
+  "testThreads": 1,
+  "groups": 121,
+  "passed": 1279,
+  "failed": 0,
+  "ignored": 107,
+  "measured": 0,
+  "filtered": 0,
+  "exitCode": 0,
+  "ignoredAreNotPassed": true,
+  "defaultFeatureZeroTestPgSuitesAreNotVerified": true
+}

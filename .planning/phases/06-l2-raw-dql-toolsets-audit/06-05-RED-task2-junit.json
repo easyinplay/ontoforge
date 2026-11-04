@@ -1,0 +1,11 @@
+{
+  "command": "RUSTC_BOOTSTRAP=1 cargo test -p ontoforge-query --test audit_l0 --locked audit_aggregate_partial_and_fallback_each_record_once -- -Z unstable-options --format junit --color never",
+  "exitCode": 101,
+  "output": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"test\" package=\"test\" id=\"0\" errors=\"0\" failures=\"1\" tests=\"1\" skipped=\"0\" ><testcase classname=\"integration\" name=\"audit_aggregate_partial_and_fallback_each_record_once\" time=\"0\"><failure type=\"assert\"/><system-out><![CDATA[]]>&#xA;<![CDATA[thread 'audit_aggregate_partial_and_fallback_each_record_once' (55188) panicked at crates\\ontoforge-query\\tests\\audit_l0.rs:176:9:]]>&#xA;<![CDATA[expected 1 audit rows, found 0]]>&#xA;<![CDATA[note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace]]>&#xA;<![CDATA[]]></system-out></testcase><system-out/><system-err/></testsuite></testsuites>\r\n",
+  "targetTest": "audit_aggregate_partial_and_fallback_each_record_once",
+  "targetFile": "crates/ontoforge-query/tests/audit_l0.rs",
+  "expected": "one durable aggregate audit row after the first request",
+  "actual": "expected 1 audit rows, found 0",
+  "runStartedAt": "2026-10-26T10:27:45.8628402Z",
+  "semanticAssessment": "The named aggregate test completed its first partial query and failed at the planned audit row assertion; no fixture or compilation fault."
+}

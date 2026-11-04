@@ -1,0 +1,8 @@
+{
+  "command": "cargo clippy -p ontoforge-server --all-targets --all-features --locked -- -D warnings",
+  "exitCode": 101,
+  "runStartedAt": "2026-10-29T03:50:38.7075623Z",
+  "runFinishedAt": "2026-10-29T03:50:40.9615547Z",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07-rest-mcp-shell\\07-03-evidence\\server-clippy-second.log"
+}

@@ -37,6 +37,30 @@ ONTOFORGE_TRINO_URL=http://localhost:8080 cargo test -p ontoforge-engine --test 
 ONTOFORGE_TRINO_URL=http://localhost:8080 cargo test -p ontoforge --test cli_trino_it -- --ignored
 ```
 
+### edit store 的 PostgreSQL 与 Trino 集成测试
+
+edit store 的 conformance 在 Windows 与 Ubuntu 的 `test` 作业里用 SQLite 运行，同一套用例在 Linux CI 的真实 PostgreSQL 17 上再运行一次（`#[ignore]`，以 `--ignored` 运行）。
+
+| 测试目标 | crate | 所需环境 |
+|---|---|---|
+| `conformance_pg`、`reload_pg`、`scope_store`、`migrate_pg`、`history_masking`、`import` | `ontoforge-storage` | `ONTOFORGE_PG_URL`，或 `--features embedded-pg` |
+| `reload_trino_it` | `ontoforge-storage` | `ONTOFORGE_TRINO_URL` 与 `ONTOFORGE_PG_URL`（后者必须是 Trino catalog `editstore` 映射的数据库） |
+| `rowpred_trino_it` | `ontoforge-auth` | `ONTOFORGE_TRINO_URL`，且 `demo` 库里已用 `ci/pg/rowpred_corpus.sql` 建好语料表 |
+
+本机跑 PostgreSQL 用例有两种方式：
+
+```
+# 已有 PostgreSQL（每个测试在其中建自己的一对 schema）
+ONTOFORGE_PG_URL=postgres://user:password@localhost:5432/editstore cargo test -p ontoforge-storage --test conformance_pg -- --ignored
+
+# 没有 PostgreSQL：postgresql_embedded 首次运行时从 GitHub 下载 PG 二进制，之后复用
+cargo test -p ontoforge-storage --features embedded-pg --test conformance_pg -- --ignored
+```
+
+没有设置变量也没有 `embedded-pg` 时，`--ignored` 的 PostgreSQL 测试会 panic，不会静默通过。
+
+CI 对应的步骤在 `integration` 作业：`Edit store conformance (PostgreSQL)`、`Row predicate corpus (Trino)`、`Reload visibility probe (Trino + PostgreSQL)`，以及 `Ignored tests are actually there`（上表每个目标列出的 ignored 测试数都必须大于 0）。`test` 作业另有一步 `cargo clippy -p ontoforge-storage --features embedded-pg --all-targets`，只编译检查，保证本机 PG 路径不失修。Trino 的 edit store catalog（`ci/trino/catalog/editstore.properties`）需要 `postgresql.array-mapping=AS_ARRAY`，部署说明见 `docs/edit-store.md`。
+
 ### nightly Iceberg 作业
 
 `.github/workflows/nightly.yml` 每天运行一次（也可手动触发 `workflow_dispatch`），在 Trino 483 与 484 上重复上述步骤，并额外配置 Iceberg catalog（`ci/trino/iceberg/iceberg.properties`：JDBC catalog 存在同一 PostgreSQL 的 `iceberg_catalog` 库，表由 `ci/pg/iceberg_catalog.sql` 创建，warehouse 用 Trino 本地文件系统），把 `demo.aviation.flights` 复制成 `iceberg.aviation.flights` 后以 `ONTOFORGE_TRINO_ICEBERG=1` 运行 `trino_it`。任一版本失败时，独立的 `report-failure` 作业创建带 `nightly-failure` 标签的 issue，已有未关闭的同标签 issue 时改为追加评论。只有该作业拥有 `issues: write`，测试作业只有 `contents: read`。

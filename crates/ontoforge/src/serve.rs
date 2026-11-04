@@ -1,0 +1,301 @@
+//! The HTTP host command and its injectable shutdown boundary.
+
+use std::collections::BTreeMap;
+use std::future::Future;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
+
+use camino::Utf8Path;
+use ontoforge_auth::authn::Authenticator;
+use ontoforge_auth::authn::dev::{DevKey, DevMode, DevVerifier};
+use ontoforge_engine::config::{AuthConfig, build_trino_engines};
+use ontoforge_engine::printer::l2::McpDefaults;
+use ontoforge_engine::sqlite::SqliteEngine;
+use ontoforge_engine::{AnyEngine, Engine};
+use ontoforge_server::ServerHost;
+use ontoforge_storage::store::EditStore;
+
+use crate::cli::ServeArgs;
+use crate::reload::load_server;
+
+pub fn run(args: &ServeArgs) -> u8 {
+    let Ok(runtime) = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+    else {
+        eprintln!("cannot start HTTP server runtime");
+        return 3;
+    };
+    let signal_failed = Arc::new(AtomicBool::new(false));
+    let failed = Arc::clone(&signal_failed);
+    let exit = runtime.block_on(async {
+        run_with_shutdown(args, async move {
+            if tokio::signal::ctrl_c().await.is_err() {
+                failed.store(true, Ordering::Relaxed);
+                eprintln!("cannot listen for HTTP server shutdown signal");
+            }
+        })
+        .await
+    });
+    if signal_failed.load(Ordering::Relaxed) {
+        3
+    } else {
+        exit
+    }
+}
+
+#[expect(
+    clippy::too_many_lines,
+    reason = "preserves linear startup validation and failure cleanup ordering"
+)]
+pub async fn run_with_shutdown(
+    args: &ServeArgs,
+    shutdown: impl Future<Output = ()> + Send + 'static,
+) -> u8 {
+    if let Some(path) = &args.export_openapi {
+        return match std::fs::write(path, ontoforge_server::api::openapi::render()) {
+            Ok(()) => 0,
+            Err(error) => {
+                eprintln!("cannot write OpenAPI document: {error}");
+                1
+            }
+        };
+    }
+    let options = crate::cli::dev_options();
+    let mut dev_state = None;
+    let server_config = if let Some(path) = &args.server_config {
+        if options.reset {
+            eprintln!("--reset is only valid when --dev creates the default dev service");
+            return 1;
+        }
+        path.clone()
+    } else if args.dev {
+        match crate::dev::prepare(&options) {
+            Ok(state) => {
+                let path = state.config.clone();
+                dev_state = Some(state);
+                path
+            }
+            Err(error) => {
+                eprintln!("cannot prepare dev service: {error}");
+                return 1;
+            }
+        }
+    } else {
+        eprintln!("HTTP server needs --server-config unless --dev or --export-openapi is used");
+        return 1;
+    };
+    let Ok(server) = load_server(&server_config) else {
+        eprintln!("invalid server configuration for HTTP server");
+        return 1;
+    };
+    let dir = server_config
+        .parent()
+        .filter(|dir| !dir.as_str().is_empty())
+        .unwrap_or(Utf8Path::new("."));
+    let Some(query) = &server.config.query else {
+        eprintln!("HTTP server needs signing_key_file in [query]");
+        return 1;
+    };
+    let Ok(signing_key) = query.load_signing_key(dir) else {
+        eprintln!("cannot load HTTP server query signing key");
+        return 1;
+    };
+    let auth_config = server.config.auth.unwrap_or_else(|| AuthConfig {
+        oidc: Vec::new(),
+        principal_attrs: BTreeMap::new(),
+        dev: None,
+    });
+    let Ok(mut auth) = Authenticator::from_config(&auth_config, dir) else {
+        eprintln!("invalid authentication configuration");
+        return 1;
+    };
+    if args.dev {
+        let Some(file) = auth_config
+            .dev
+            .as_ref()
+            .and_then(|dev| dev.key_file.as_deref())
+        else {
+            eprintln!("--dev needs key_file in [auth.dev]");
+            return 1;
+        };
+        let Ok(key) = DevKey::load_or_create(&dir.join(file)) else {
+            eprintln!("cannot open development signing key");
+            return 1;
+        };
+        auth = auth.with_dev(DevVerifier::new(
+            DevMode::enable_insecure(),
+            key,
+            &auth_config.principal_attrs,
+        ));
+    }
+    let Ok(store) = EditStore::open(server.settings).await else {
+        eprintln!("cannot open HTTP server edit store");
+        return 3;
+    };
+    let store = Arc::new(store);
+    if let Some(state) = &dev_state
+        && let Err(error) = crate::dev::seed_store(state, &store).await
+    {
+        let _ = store.read_audit().shutdown().await;
+        eprintln!("cannot initialize dev store: {error}");
+        return 3;
+    }
+    let Ok(listener) = tokio::net::TcpListener::bind(args.bind).await else {
+        eprintln!("cannot bind HTTP listener");
+        let _ = store.read_audit().shutdown().await;
+        return 3;
+    };
+    let mut l2_runtime = None;
+    let engine = if let Some(state) = &dev_state {
+        match crate::dev::build_engine(state).await {
+            Ok(engine) => engine,
+            Err(error) => {
+                let _ = store.read_audit().shutdown().await;
+                eprintln!("{error}");
+                return 3;
+            }
+        }
+    } else if let Some(config) = server.config.trino.clone() {
+        let Ok(mut engines) = build_trino_engines(&config, dir, &|name| std::env::var(name).ok())
+        else {
+            let _ = store.read_audit().shutdown().await;
+            eprintln!("cannot initialize configured query engine");
+            return 1;
+        };
+        if let Some(l2) = engines.l2.take() {
+            let l2 = Arc::new(l2);
+            let Ok(monitor_ontology) =
+                build_trino_engines(&config, dir, &|name| std::env::var(name).ok())
+            else {
+                let _ = store.read_audit().shutdown().await;
+                eprintln!("cannot initialize L2 monitor query engine");
+                return 1;
+            };
+            let Ok(monitor) = l2
+                .clone()
+                .start_l2_acl_monitor(Arc::new(monitor_ontology.ontology))
+                .await
+            else {
+                let _ = store.read_audit().shutdown().await;
+                let _ = l2.drain_cancellations().await;
+                eprintln!("cannot initialize L2 ACL monitor");
+                return 3;
+            };
+            l2_runtime = Some((l2, monitor));
+        }
+        AnyEngine::Trino(engines.ontology)
+    } else {
+        let Ok(engine) = SqliteEngine::in_memory().await else {
+            let _ = store.read_audit().shutdown().await;
+            eprintln!("cannot initialize query engine");
+            return 3;
+        };
+        AnyEngine::Sqlite(engine)
+    };
+    let engine = Arc::new(engine);
+    let host = ServerHost::new(
+        Arc::clone(&store),
+        Arc::clone(&engine),
+        auth,
+        auth_config,
+        signing_key,
+    );
+    let Ok(host) = host else {
+        cleanup_startup(&store, &engine, l2_runtime).await;
+        eprintln!("cannot initialize HTTP server signing key");
+        return 3;
+    };
+    ontoforge_server::state::set_mcp_defaults(&store, deployment_mcp_defaults(args));
+    if let Some((l2, monitor)) = l2_runtime {
+        if ontoforge_server::state::set_l2_engine(&store, l2).is_err() {
+            cleanup_failed_install(&host, monitor).await;
+            eprintln!("cannot install L2 query engine");
+            return 3;
+        }
+        if let Err(monitor) = host.install_l2_monitor(monitor) {
+            cleanup_failed_install(&host, monitor).await;
+            eprintln!("cannot install L2 ACL monitor");
+            return 3;
+        }
+    }
+    match Arc::new(host).serve(listener, shutdown).await {
+        Ok(()) => 0,
+        Err(error) => {
+            eprintln!("{error}");
+            3
+        }
+    }
+}
+
+async fn cleanup_failed_install(
+    host: &ServerHost<AnyEngine>,
+    monitor: ontoforge_engine::trino::l2_monitor::L2AclMonitor,
+) {
+    let cleanup = monitor.cleanup_handle();
+    let _ = tokio::time::timeout(ontoforge_server::lifecycle::SHUTDOWN_TIMEOUT, async {
+        let _ = tokio::join!(
+            monitor.shutdown(),
+            ontoforge_server::lifecycle::ServerLifecycle::new(host).shutdown()
+        );
+        let _ = cleanup.drain().await;
+    })
+    .await;
+}
+
+async fn cleanup_startup(
+    store: &EditStore,
+    engine: &AnyEngine,
+    l2: Option<(
+        Arc<ontoforge_engine::trino::TrinoEngine>,
+        ontoforge_engine::trino::l2_monitor::L2AclMonitor,
+    )>,
+) {
+    let deadline = tokio::time::Instant::now() + ontoforge_server::lifecycle::SHUTDOWN_TIMEOUT;
+    let _ = tokio::time::timeout_at(
+        deadline - std::time::Duration::from_secs(4),
+        store.read_audit().shutdown(),
+    )
+    .await;
+    let mut l2_engine = None;
+    let mut cleanup = None;
+    if let Some((l2, monitor)) = l2 {
+        cleanup = Some(monitor.cleanup_handle());
+        l2_engine = Some(l2);
+        let _ = tokio::time::timeout_at(
+            deadline - std::time::Duration::from_secs(2),
+            monitor.shutdown(),
+        )
+        .await;
+    }
+    let _ = tokio::time::timeout_at(deadline, async {
+        let (core, l2, monitor) = tokio::join!(
+            engine.drain_cancellations(),
+            async {
+                if let Some(l2) = l2_engine {
+                    l2.drain_cancellations().await
+                } else {
+                    Ok(())
+                }
+            },
+            async {
+                if let Some(cleanup) = cleanup {
+                    cleanup.drain().await
+                } else {
+                    Ok(())
+                }
+            }
+        );
+        core.and(l2).and(monitor)
+    })
+    .await;
+}
+
+fn deployment_mcp_defaults(args: &ServeArgs) -> McpDefaults {
+    let _ = args;
+    crate::cli::mcp_defaults()
+}
+
+#[cfg(test)]
+#[path = "../tests/unit/serve.test.rs"]
+mod tests;

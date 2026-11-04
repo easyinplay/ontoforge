@@ -1,0 +1,23 @@
+   Compiling ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+   Compiling ontoforge-query v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-query)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 13.43s
+     Running tests\audit_pk.rs (target\debug\deps\audit_pk-f86d44635d7f6a10.exe)
+
+running 12 tests
+test audit_worker_rejects_invalid_limits ... ok
+test audit_pk_execution_reserve_failure_has_no_audit_id ... ok
+test audit_pk_cancelled_in_flight_records_without_result ... ok
+test audit_pk_full_queue_rejects_before_releasing_another_result ... ok
+test audit_pk_execution_returns_durable_id_for_success_and_denial ... ok
+test audit_worker_transient_sink_failure_recovers_before_retry_limit ... ok
+read audit sink did not recover before the pending age limit
+test audit_worker_persistent_sink_failure_stops_and_reports_failed_drain ... ok
+test audit_pk_success_records_one_metadata_row ... ok
+test audit_pk_denied_before_source_and_source_failure_have_distinct_statuses ... ok
+test audit_worker_shutdown_drains_and_reopen_recovers ... ok
+read audit sink did not recover before the pending age limit
+test audit_pk_execution_finish_failure_retains_reserved_id ... ok
+test audit_worker_pending_age_closes_gate_until_blocked_writer_recovers ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.32s
+

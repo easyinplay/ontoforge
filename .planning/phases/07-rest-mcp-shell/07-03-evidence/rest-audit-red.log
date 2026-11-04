@@ -1,0 +1,28 @@
+   Compiling ontoforge-server v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-server)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 14.41s
+────────────
+ Nextest run ID 7e0e2efd-9f36-459d-91a2-1b782d43e226 with nextest profile: gsd
+    Starting 1 test across 1 binary (6 tests skipped)
+        FAIL [   0.193s] (1/1) ontoforge-server rest_tests::rest_metadata_and_all_l0_operations
+  stdout ───
+
+    running 1 test
+    test rest_tests::rest_metadata_and_all_l0_operations ... FAILED
+
+    failures:
+
+    failures:
+        rest_tests::rest_metadata_and_all_l0_operations
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.17s
+
+  stderr ───
+
+    thread 'rest_tests::rest_metadata_and_all_l0_operations' (58644) panicked at crates\ontoforge-server\src\..\tests\unit\rest.test.rs:50:5:
+    HTTP query ID must match its durable audit reservation
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.212s] 1 test run: 0 passed, 1 failed, 6 skipped
+        FAIL [   0.193s] (1/1) ontoforge-server rest_tests::rest_metadata_and_all_l0_operations
+error: test run failed

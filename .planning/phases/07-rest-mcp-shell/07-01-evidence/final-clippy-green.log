@@ -1,0 +1,37 @@
+    Checking ontoforge v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge)
+error: you seem to be trying to use `match` for destructuring a single pattern. Consider using `if let`
+   --> crates\ontoforge\src\serve.rs:95:18
+    |
+ 95 |       let engine = match server.config.trino {
+    |  __________________^
+ 96 | |         Some(config) => {
+ 97 | |             let Ok(engines) = build_trino_engines(&config, dir, &|name| std::env::var(name).ok())
+ 98 | |             else {
+...   |
+111 | |     };
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#single_match_else
+    = note: `-D clippy::single-match-else` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::single_match_else)]`
+help: try
+    |
+ 95 ~     let engine = if let Some(config) = server.config.trino {
+ 96 +         let Ok(engines) = build_trino_engines(&config, dir, &|name| std::env::var(name).ok())
+ 97 +         else {
+ 98 +             eprintln!("cannot initialize configured query engine");
+ 99 +             return 1;
+100 +         };
+101 +         AnyEngine::Trino(engines.ontology)
+102 +     } else {
+103 +         let Ok(engine) = SqliteEngine::in_memory().await else {
+104 +             eprintln!("cannot initialize query engine");
+105 +             return 3;
+106 +         };
+107 +         AnyEngine::Sqlite(engine)
+108 ~     };
+    |
+
+error: could not compile `ontoforge` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `ontoforge` (lib test) due to 1 previous error

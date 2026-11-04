@@ -1,0 +1,8 @@
+{
+  "command": "cargo test -p ontoforge-server --test http_contract --locked -- --nocapture",
+  "exitCode": 0,
+  "runStartedAt": "2026-10-29T03:37:12.1182645Z",
+  "runFinishedAt": "2026-10-29T03:37:28.4031112Z",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07-rest-mcp-shell\\07-03-evidence\\http-framework-green.log"
+}

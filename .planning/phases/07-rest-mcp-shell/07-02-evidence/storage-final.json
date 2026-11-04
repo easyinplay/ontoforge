@@ -1,0 +1,9 @@
+{
+  "command": "cargo test -p ontoforge-storage --test request_snapshot --test frozen_history --test history_masking --locked -- --nocapture",
+  "exitCode": 0,
+  "runStartedAt": "2026-10-29T04:41:31.4855518Z",
+  "runFinishedAt": "2026-10-29T04:42:01.9011263Z",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07-rest-mcp-shell\\07-02-evidence\\storage-final.log",
+  "cargoBuildJobs": 2
+}

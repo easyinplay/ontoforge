@@ -1,0 +1,19 @@
+   Compiling ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 33.50s
+     Running tests\conformance_sqlite.rs (target\debug\deps\conformance_sqlite-e34aafe42af27302.exe)
+
+running 8 tests
+test audit_cancelled_shutdown_retry_waits_for_durability ... ok
+test audit_concurrent_shutdown_waits_for_durability ... ok
+test audit_batch_retention_parity ... ok
+test audit_shutdown_drains_inflight_guard ... ok
+test audit_sink_failure_rejects_inflight_finish ... ok
+read audit sink did not recover before the pending age limit
+read audit sink did not recover before the pending age limit
+test audit_cleanup_rejection_rolls_back_batch ... ok
+test audit_batch_rejection_is_atomic ... ok
+read audit sink did not recover before the pending age limit
+test audit_shutdown_failure_is_sticky ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 35 filtered out; finished in 1.13s
+

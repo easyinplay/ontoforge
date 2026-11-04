@@ -4,12 +4,26 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+    inputs:
+      phase4_query_bench:
+        description: Phase 4 query benchmark mode
+        required: true
+        type: choice
+        options: [isolated]
 
 permissions:
   contents: read
 
+env:
+  CARGO_BUILD_JOBS: "2"
+
 jobs:
   test:
+    env:
+      CARGO_PROFILE_DEV_DEBUG: "0"
+      CARGO_PROFILE_TEST_DEBUG: "0"
+      CARGO_INCREMENTAL: "0"
     strategy:
       fail-fast: false
       matrix:
@@ -23,49 +37,121 @@ jobs:
           toolchain: "1.98.0"
           components: "clippy, rustfmt"
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          prefix-key: ci-test-no-debug-v1
+          cache-targets: false
       - run: cargo fmt --all --check
+      # A second TLS / crypto stack widens the supply chain and makes Linux CI need system
+      # headers; postgresql_embedded pulls native-tls unless its default features are off
+      # (RESEARCH Pitfall 5). Inspect one complete graph; Cargo failures must fail closed.
+      - name: TLS dependency guard regressions
+        run: python -B -m unittest discover -s ci -p test_tls_deps.py -v
+      - name: No OpenSSL or native-tls in the dependency graph
+        shell: bash
+        run: bash ci/check-tls-deps.sh
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
-      - run: cargo test --workspace --locked
+      - run: cargo check -p ontoforge-action --locked
+      # The local PostgreSQL test path (`--features embedded-pg`) is off by default, so nothing
+      # else compiles it. Check it here (compile and lint only: no run, no PostgreSQL download)
+      # so that it cannot rot unnoticed (plan 03-20).
+      - name: Clippy with the embedded-pg feature
+        run: cargo clippy -p ontoforge-storage --features embedded-pg --all-targets --locked -- -D warnings
+      - run: cargo test --workspace --locked -- --test-threads=1
+      - name: Windows private-console shutdown contracts
+        if: runner.os == 'Windows'
+        run: python -B -m unittest discover -s ci -p test_windows_server.py -v
+      - name: L2 104-ID corpus and Display gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          output=$(cargo test -p ontoforge-engine --test l2_gate --locked l2_corpus_ -- --list)
+          count=$(printf '%s\n' "$output" | awk '/: test$/ { n++ } END { print n+0 }')
+          echo "l2_corpus: $count tests discovered at ${GITHUB_SHA}"
+          if [ "$count" -eq 0 ]; then echo "::error::l2_corpus discovered zero tests"; exit 1; fi
+          cargo test -p ontoforge-engine --test l2_gate --locked l2_corpus_ -- --nocapture
+      - name: Action SQLite, outbox and write-entry corpus
+        run: cargo test -p ontoforge-action --locked -- --nocapture
+      - name: SQLite Action fault injection
+        shell: bash
+        run: |
+          set -euo pipefail
+          tests=$(cargo test -p ontoforge-storage --features test-support --test conformance_sqlite --locked action_atomic_ -- --list)
+          test "$(printf '%s\n' "$tests" | grep -c '^action_atomic_.*: test$')" -ge 5
+          cargo test -p ontoforge-storage --features test-support --test conformance_sqlite --locked action_atomic_ -- --nocapture
 
   # Real PostgreSQL + Trino 483 on Linux (ENGINE-05, ADR-0017). The tests are #[ignore]d so
   # that Windows needs no Docker; this job runs them with --ignored.
   integration:
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    services:
-      postgres:
-        # Container images are pinned to a digest, like the actions to a commit SHA; the tag
-        # names the version (WR-C06).
-        image: postgres:17.11@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3
-        env:
-          # Throwaway password that only exists inside this job's containers.
-          POSTGRES_PASSWORD: ontoforge-ci-only
-        # Published to the runner so that the host network Trino and the runner's psql can
-        # reach localhost:5432 (E25).
-        ports: ["5432:5432"]
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 20
     env:
       PGHOST: localhost
       PGUSER: postgres
-      PGPASSWORD: ontoforge-ci-only
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # v1
         with:
           toolchain: "1.98.0"
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      # The password is masked before it is passed to either container or later steps.
+      - name: Start PostgreSQL 17.11 with job-scoped credentials
+        run: bash ci/query-services.sh postgres
       - name: Seed PostgreSQL from the aviation fixtures
         run: |
           psql -v ON_ERROR_STOP=1 -d postgres -c 'CREATE DATABASE demo' -c 'CREATE DATABASE editstore'
           psql -v ON_ERROR_STOP=1 -v fixtures="$PWD/examples/ontologies/aviation/bindings/dev/fixtures" -d demo -f ci/pg/seed.sql
-      # A service container starts before checkout and cannot mount repository files, so Trino
-      # is started here (RESEARCH Pitfall 7).
+          # The fixed row predicate corpus of the Trino differential test (D-09).
+          psql -v ON_ERROR_STOP=1 -d demo -f ci/pg/rowpred_corpus.sql
+          psql -v ON_ERROR_STOP=1 -d demo -f ci/pg/query_corpus.sql
+      # The same conformance cases that run on SQLite in the `test` job, on a real PostgreSQL 17
+      # (STORE-01, ROADMAP SC2). Every test creates its own pair of schemas in `editstore`, so
+      # the tests do not disturb each other. The database is the one the Trino catalog
+      # `editstore` maps (ci/trino/catalog/editstore.properties).
+      - name: Edit store conformance (PostgreSQL)
+        run: >-
+          cargo test -p ontoforge-storage --locked
+          --test conformance_pg --test reload_pg --test scope_store
+          --test migrate_pg --test history_masking --test import
+          -- --ignored
+      - name: Read audit conformance (PostgreSQL)
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${ONTOFORGE_PG_URL:?PostgreSQL service must set ONTOFORGE_PG_URL}"
+          output=$(cargo test -p ontoforge-storage --test conformance_pg --locked audit_ -- --ignored --list)
+          count=$(printf '%s\n' "$output" | awk '/audit_.*: test$/ { n++ } END { print n+0 }')
+          echo "postgres-audit: $count ignored tests discovered at ${GITHUB_SHA}"
+          if [ "$count" -eq 0 ]; then echo "::error::postgres-audit discovered zero tests"; exit 1; fi
+          cargo test -p ontoforge-storage --test conformance_pg --locked audit_ -- --ignored --nocapture
+      - name: Action atomicity, races, idempotency and webhook delivery (PostgreSQL)
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${ONTOFORGE_PG_URL:?PostgreSQL service must set ONTOFORGE_PG_URL}"
+          run_ignored() {
+            local name="$1"; shift
+            local output count
+            output=$(cargo test "$@" -- --ignored --list)
+            count=$(printf '%s\n' "$output" | awk '/: test$/ { n++ } END { print n+0 }')
+            echo "$name: $count ignored tests discovered"
+            if [ "$count" -eq 0 ]; then echo "::error::$name discovered zero tests"; exit 1; fi
+            cargo test "$@" -- --ignored --nocapture
+          }
+          run_ignored action-atomicity -p ontoforge-storage --features test-support --test conformance_pg --locked action_atomic
+          run_ignored action-same-pk -p ontoforge-action --features test-support --test action_pg --locked concurrent_
+          run_ignored action-idempotency -p ontoforge-action --features test-support --test idempotency_pg --locked pg_
+          run_ignored action-webhook-pg -p ontoforge-action --test outbox_pg --locked postgres_outbox_
+      - name: PostgreSQL absent-target source guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          tests=$(cargo test -p ontoforge-action --features embedded-pg --test source --locked source_guard_absent_target_insert_race -- --exact --list)
+          printf '%s\n' "$tests" | grep -Fxq 'source_guard_absent_target_insert_race: test'
+          cargo test -p ontoforge-action --features embedded-pg --test source --locked source_guard_absent_target_insert_race -- --exact --nocapture
+      # Trino uses a runtime catalog outside the checkout; nightly keeps the checked-in catalog.
       - name: Start Trino 483
-        run: docker run -d --name trino --network host -v "$PWD/ci/trino/catalog:/etc/trino/catalog:ro" trinodb/trino:483@sha256:db58cc93e593a2706553745f276bb119c9810e69918be56ecde088ba7ccb0534
+        run: bash ci/query-services.sh trino
       - name: Wait for Trino
         run: |
           deadline=$((SECONDS + 180))
@@ -78,6 +164,20 @@ jobs:
             sleep 2
           done
           echo "Trino is ready after ${SECONDS} s"
+      - name: Start independent L2 ACL Trino 483 and loose control
+        run: bash ci/query-services.sh trino-l2
+      - name: L2 ACL and corpus behavior (Trino 483)
+        shell: bash
+        env:
+          ONTOFORGE_TRINO_L2_URL: http://127.0.0.1:58081
+          ONTOFORGE_TRINO_L2_LOOSE_URL: http://127.0.0.1:58082
+        run: |
+          set -euo pipefail
+          output=$(cargo test -p ontoforge-engine --test trino_l2_acl_it --locked -- --ignored --list)
+          count=$(printf '%s\n' "$output" | awk '/: test$/ { n++ } END { print n+0 }')
+          echo "trino_l2_acl_it: $count ignored tests discovered at ${GITHUB_SHA}"
+          if [ "$count" -eq 0 ]; then echo "::error::trino_l2_acl_it discovered zero tests"; exit 1; fi
+          cargo test -p ontoforge-engine --test trino_l2_acl_it --locked -- --ignored --nocapture
       - name: Engine integration tests
         env:
           ONTOFORGE_TRINO_URL: http://localhost:8080
@@ -86,18 +186,192 @@ jobs:
         env:
           ONTOFORGE_TRINO_URL: http://localhost:8080
         run: cargo test -p ontoforge --test cli_trino_it --locked -- --ignored
+      # D-09: the fixed row predicate corpus, evaluated by Trino and by the Rust evaluator.
+      - name: Row predicate corpus (Trino)
+        env:
+          ONTOFORGE_TRINO_URL: http://localhost:8080
+        run: cargo test -p ontoforge-auth --locked --test rowpred_trino_it -- --ignored
+      # STORE-02: `reload` makes Trino see the new tables and columns of the edit store (the
+      # `editstore` catalog) before the new definition becomes active, which includes
+      # `CALL system.flush_metadata_cache()` through the client (RESEARCH A5).
+      - name: Reload visibility probe (Trino + PostgreSQL)
+        env:
+          ONTOFORGE_TRINO_URL: http://localhost:8080
+        # A catalog-wide flush from one case would invalidate another case's stale metadata.
+        run: cargo test -p ontoforge-storage --locked --test reload_trino_it -- --ignored --test-threads=1
+      - name: Query read storage integration (PostgreSQL)
+        run: cargo test -p ontoforge-storage --test query_read_pg --locked -- --ignored --test-threads=1
+      - name: Query integration (Trino + PostgreSQL)
+        env:
+          ONTOFORGE_TRINO_URL: http://localhost:8080
+          ONTOFORGE_QUERY_PLAN_DIR: ${{ github.workspace }}/target/query-plans
+        run: cargo test -p ontoforge-query --test trino_query_it --locked -- --ignored --test-threads=1
+      - name: Query benchmark smoke (Trino + PostgreSQL)
+        env:
+          ONTOFORGE_TRINO_URL: http://localhost:8080
+          ONTOFORGE_BENCH_MODE: smoke
+          ONTOFORGE_BENCH_ARTIFACT_DIR: ${{ github.workspace }}/target/query-bench
+        run: cargo test -p ontoforge-query --test query_bench_it --locked -- --ignored --test-threads=1
+      - name: Action source integration (Trino + PostgreSQL)
+        env:
+          ONTOFORGE_TRINO_URL: http://localhost:8080
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${ONTOFORGE_PG_URL:?PostgreSQL service must set ONTOFORGE_PG_URL}"
+          : "${ONTOFORGE_TRINO_URL:?Trino service must set ONTOFORGE_TRINO_URL}"
+          output=$(cargo test -p ontoforge-action --test trino_action_it --locked trino_action_ -- --ignored --list)
+          count=$(printf '%s\n' "$output" | awk '/: test$/ { n++ } END { print n+0 }')
+          echo "trino_action_it: $count ignored tests discovered"
+          if [ "$count" -eq 0 ]; then echo "::error::trino_action_it discovered zero tests"; exit 1; fi
+          cargo test -p ontoforge-action --test trino_action_it --locked trino_action_ -- --ignored --nocapture
       # A green run must not mean "nothing ran" (RESEARCH Pitfall 8).
       - name: Ignored tests are actually there
         run: |
-          for target in "ontoforge-engine trino_it" "ontoforge cli_trino_it"; do
+          set -euo pipefail
+          targets=(
+            "ontoforge-engine trino_it"
+            "ontoforge-engine trino_l2_acl_it"
+            "ontoforge cli_trino_it"
+            "ontoforge-storage conformance_pg"
+            "ontoforge-storage reload_pg"
+            "ontoforge-storage scope_store"
+            "ontoforge-storage migrate_pg"
+            "ontoforge-storage history_masking"
+            "ontoforge-storage import"
+            "ontoforge-storage reload_trino_it"
+            "ontoforge-storage query_read_pg"
+            "ontoforge-auth rowpred_trino_it"
+            "ontoforge-query trino_query_it"
+            "ontoforge-query query_bench_it"
+            "ontoforge-action outbox_pg"
+            "ontoforge-action trino_action_it"
+          )
+          for target in "${targets[@]}"; do
             set -- $target
-            count=$(cargo test -p "$1" --test "$2" --locked -- --ignored --list | grep -c ': test$' || true)
-            echo "$2: $count ignored tests"
-            if [ "$count" -eq 0 ]; then
-              echo "::error::$2 lists no ignored tests"
+            if ! count=$(cargo test -p "$1" --test "$2" --locked -- --ignored --list | awk '/: test$/ { n++ } END { print n+0; exit(n > 0 ? 0 : 1) }'); then
+              echo "::error::$2 discovery failed or lists no ignored tests"
               exit 1
             fi
+            echo "$2: $count ignored tests"
           done
+      - id: credential_scan
+        name: Check query artifacts for job credentials
+        if: ${{ !cancelled() }}
+        run: bash ci/query-services.sh check-artifacts target/query-plans target/query-bench
+      - name: Upload distributed query plans
+        if: ${{ !cancelled() && steps.credential_scan.outcome == 'success' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: phase4-query-plans
+          path: target/query-plans/*.txt
+          if-no-files-found: error
+      - name: Upload query benchmark smoke evidence
+        if: ${{ !cancelled() && steps.credential_scan.outcome == 'success' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: phase4-query-bench-smoke
+          path: target/query-bench/*.json
+          if-no-files-found: error
       - name: Trino logs
         if: failure()
-        run: docker logs trino
+        run: docker logs trino 2>&1 || true
+      - name: L2 ACL Trino logs
+        if: failure()
+        run: docker logs ontoforge-trino-l2 2>&1 || true
+      - name: PostgreSQL logs
+        if: failure()
+        run: docker logs postgres 2>&1 || true
+      - name: Clean up query containers and catalog
+        if: ${{ always() && steps.checkout.outcome == 'success' }}
+        run: bash ci/query-services.sh cleanup
+
+  isolated-query-bench:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.phase4_query_bench == 'isolated' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+    steps:
+      - id: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # v1
+        with:
+          toolchain: "1.98.0"
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - name: Start dedicated PostgreSQL 17.11 with job-scoped credentials
+        run: bash ci/query-services.sh postgres
+      - name: Seed dedicated PostgreSQL
+        run: |
+          psql -v ON_ERROR_STOP=1 -d postgres -c 'CREATE DATABASE demo' -c 'CREATE DATABASE editstore'
+          psql -v ON_ERROR_STOP=1 -v fixtures="$PWD/examples/ontologies/aviation/bindings/dev/fixtures" -d demo -f ci/pg/seed.sql
+          psql -v ON_ERROR_STOP=1 -d demo -f ci/pg/query_corpus.sql
+      - name: Start dedicated Trino 483
+        run: bash ci/query-services.sh trino
+      - name: Wait for dedicated Trino
+        run: |
+          deadline=$((SECONDS + 180))
+          until curl -fsS http://localhost:8080/v1/info | jq -e '.starting == false' >/dev/null 2>&1; do
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "Trino did not finish starting within 180 s"
+              docker logs trino
+              exit 1
+            fi
+            sleep 2
+          done
+      - name: Query benchmark isolated thresholds
+        env:
+          ONTOFORGE_TRINO_URL: http://localhost:8080
+          ONTOFORGE_BENCH_MODE: isolated
+          ONTOFORGE_BENCH_ARTIFACT_DIR: ${{ github.workspace }}/target/query-bench
+        run: cargo test -p ontoforge-query --test query_bench_it --locked -- --ignored --test-threads=1 --nocapture
+      - id: credential_scan
+        name: Check benchmark artifact for job credentials
+        if: ${{ !cancelled() }}
+        run: bash ci/query-services.sh check-artifacts target/query-bench
+      - name: Upload isolated raw timings and distributed EXPLAIN
+        if: ${{ !cancelled() && steps.credential_scan.outcome == 'success' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: phase4-query-bench-isolated
+          path: target/query-bench/*.json
+          if-no-files-found: error
+      - name: Trino logs
+        if: failure()
+        run: docker logs trino 2>&1 || true
+      - name: PostgreSQL logs
+        if: failure()
+        run: docker logs postgres 2>&1 || true
+      - name: Clean up query containers and catalog
+        if: ${{ always() && steps.checkout.outcome == 'success' }}
+        run: bash ci/query-services.sh cleanup
+
+  phase7-real-services:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # v1
+        with:
+          toolchain: "1.98.0"
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "24.22.1"
+      - name: Real PostgreSQL, Trino, Rust and TypeScript named suites
+        run: bash ci/server-services.sh verify
+      - id: credential_scan
+        name: Check server evidence for job credentials
+        if: ${{ !cancelled() }}
+        run: bash ci/server-services.sh check-artifacts
+      - name: Upload server evidence
+        if: ${{ !cancelled() && steps.credential_scan.outcome == 'success' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: phase7-real-services
+          path: target/phase7-services/evidence/**
+          if-no-files-found: error
+      - name: Clean up Phase 7 services
+        if: ${{ always() }}
+        run: bash ci/server-services.sh cleanup

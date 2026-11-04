@@ -7,9 +7,9 @@
 use crate::diag::{Diagnostic, SourceLocation, codes, did_you_mean};
 use crate::ir::basetype::{check_literal, widens_to};
 use crate::ir::{
-    ActionType, BaseType, CreateObjectRule, LinkRule, LinkTypeName, ModifyObjectRule, ObjectType,
-    ObjectTypeName, Ontology, ParamType, ParameterName, PropertyDef, PropertyName, Rule,
-    ValueSource,
+    ActionType, Backing, BaseType, CreateObjectRule, LinkRule, LinkTypeName, ModifyObjectRule,
+    ObjectType, ObjectTypeName, Ontology, ParamType, ParameterName, PropertyDef, PropertyName,
+    Rule, ValueSource,
 };
 use crate::loader::SourceMap;
 use crate::loader::sourcemap::{DefKey, DefKind, Part, Seg};
@@ -67,6 +67,17 @@ pub fn check(ontology: &Ontology, sources: &SourceMap, out: &mut Vec<Diagnostic>
                 Rule::ModifyObject(r) => modify_object(&cx, i, r, out),
                 Rule::DeleteObject(r) => {
                     object_param(&cx, i, &r.object, out);
+                }
+                Rule::ReleaseObject(r) => {
+                    if let Some(object) = object_param(&cx, i, &r.object, out)
+                        && object.backing != Backing::Source
+                    {
+                        out.push(Diagnostic::error(
+                            codes::V12,
+                            format!("releaseObject requires a source-backed object, but `{}` is editOnly", object.api_name),
+                            &cx.rule_at(i, &["object"], Part::Value),
+                        ));
+                    }
                 }
                 Rule::AddLink(r) | Rule::RemoveLink(r) => link_rule(&cx, i, r, out),
             }

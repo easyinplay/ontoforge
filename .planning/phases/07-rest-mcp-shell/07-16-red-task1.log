@@ -1,0 +1,9 @@
+command: $env:CARGO_BUILD_JOBS='2'; cargo test -p ontoforge-server --test mcp_l2_defaults --locked -- --nocapture
+exit_code: 1
+target_tests: mcp_l2_optional_context_defaults_and_qualified_override, mcp_l2_missing_context_and_outside_allowlist_deny_before_send
+semanticAssessment: valid RED; 2 tests discovered and both failed on planned assertions. The qualified identifier was forwarded as an unparsed table string, and missing context returned the old principal-derived `catalog is required` message. No compile, collection, fixture, or zero-test failure occurred.
+
+running 2 tests
+thread 'mcp_l2_missing_context_and_outside_allowlist_deny_before_send' panicked: missing context must be explicit: Err(Invalid("catalog is required"))
+thread 'mcp_l2_optional_context_defaults_and_qualified_override' panicked: left TableRef { catalog: "demo", schema: "tiny", table: "\"other\".\"空间\".\"航班\"" } did not equal qualified TableRef { catalog: "other", schema: "空间", table: "航班" }
+test result: FAILED. 0 passed; 2 failed; 0 ignored

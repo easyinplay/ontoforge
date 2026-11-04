@@ -1,0 +1,37 @@
+   Compiling ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 28.25s
+     Running tests\frozen_history.rs (target\debug\deps\frozen_history-8fbf8e89cf441f4c.exe)
+
+running 1 test
+test frozen_history_keeps_request_definition_and_current_scope ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests\history_masking.rs (target\debug\deps\history_masking-f76cacd229f8d4ef.exe)
+
+running 13 tests
+test pg_history_masks_and_pages ... ignored, needs a PostgreSQL server
+test invisible_check_precedes_store_access ... ok
+test visible_object_without_edits_has_empty_history ... ok
+test pagination_keeps_entries_of_one_commit_together ... ok
+test unset_tombstone_release_entries ... ok
+test visibility_uses_current_row ... ok
+test serialized_history_never_contains_masked_values ... ok
+test ordinary_caller_sees_visible_values_only ... ok
+test limit_zero_counts_as_one ... ok
+test link_entries_are_not_object_history ... ok
+test params_hidden_from_ordinary_caller ... ok
+test pagination_with_before_seq ... ok
+test invisible_nonexistent_and_ungranted_are_identical ... ok
+
+test result: ok. 12 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.40s
+
+     Running tests\request_snapshot.rs (target\debug\deps\request_snapshot-2f25c1bc227f7f7f.exe)
+
+running 3 tests
+test snapshot_pg_never_mixes_definition_roles_bindings ... ignored, requires a real PostgreSQL URL; Phase 07-13 runs ignored tests explicitly
+test snapshot_lock_is_released_before_compile_or_network ... ok
+test snapshot_sqlite_never_mixes_definition_roles_bindings ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.61s
+

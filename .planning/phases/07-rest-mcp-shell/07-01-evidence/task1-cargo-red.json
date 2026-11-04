@@ -1,0 +1,8 @@
+{
+  "command": "cargo test -p ontoforge-server --lib --locked tracer_ -- --nocapture",
+  "exitCode": 101,
+  "runStartedAt": "2026-10-28T23:41:04.8411350Z",
+  "runFinishedAt": "2026-10-28T23:41:08.4178389Z",
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07-rest-mcp-shell\\07-01-evidence\\task1-cargo-red.log",
+  "cwd": "D:\\DataSpellProjects\\ontoforge"
+}

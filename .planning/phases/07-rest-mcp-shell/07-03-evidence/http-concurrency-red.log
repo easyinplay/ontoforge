@@ -1,0 +1,28 @@
+   Compiling ontoforge-server v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-server)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.85s
+────────────
+ Nextest run ID d97f37ca-f0b9-4e77-9358-19c500e497f2 with nextest profile: gsd
+    Starting 1 test across 1 binary (2 tests skipped)
+        FAIL [   1.394s] (1/1) ontoforge-server::http_contract contracts::http_rows_bytes_concurrency_timeout_and_audit_fail_closed
+  stdout ───
+
+    running 1 test
+    test contracts::http_rows_bytes_concurrency_timeout_and_audit_fail_closed ... FAILED
+
+    failures:
+
+    failures:
+        contracts::http_rows_bytes_concurrency_timeout_and_audit_fail_closed
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 1.37s
+
+  stderr ───
+
+    thread 'contracts::http_rows_bytes_concurrency_timeout_and_audit_fail_closed' (4408) panicked at crates\ontoforge-server\tests\unit\http_contract.test.rs:163:5:
+    saturated HTTP admission must promptly return a structured rejection
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   1.396s] 1 test run: 0 passed, 1 failed, 2 skipped
+        FAIL [   1.394s] (1/1) ontoforge-server::http_contract contracts::http_rows_bytes_concurrency_timeout_and_audit_fail_closed
+error: test run failed

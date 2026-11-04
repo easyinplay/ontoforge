@@ -1,0 +1,50 @@
+# yaml-language-server: $schema=../../../schemas/ontoforge-scope.schema.json
+# A role lists what its holders may read and do. `objectTypes.<Type>.properties` is the
+# column allow-list; `rowFilter` is a CEL predicate over the object's own properties and
+# `principal.attrs`. Several roles on one user combine (ADR-0018): a row is visible when
+# any role's row filter matches, and a column shows its value only when a role that
+# grants that column matches the row. dispatcher and crewScheduler differ in both, which
+# makes "A's columns x B's rows" a case to test.
+kind: Role
+apiName: dispatcher
+displayName: Dispatcher
+description: Watches the day's flights and moves them when plans change.
+objectTypes:
+  Flight:
+    properties: [flightId, flightNumber, status, delayMinutes, departureAirportCode]
+    rowFilter: "object.status != 'CANCELLED' || object.status == null"
+  Airport:
+    properties: [code, name, city, country]
+actions: [assignPilot, delayFlight]
+toolsets: [core]
+---
+# yaml-language-server: $schema=../../../schemas/ontoforge-scope.schema.json
+kind: Role
+apiName: crewScheduler
+displayName: Crew scheduler
+description: Staffs the flights that leave from the airports they are responsible for.
+objectTypes:
+  Flight:
+    properties: [flightId, aircraftTailNumber, scheduledDeparture, departureAirportCode]
+    rowFilter: "object.departureAirportCode in principal.attrs.homeAirports"
+  Pilot:
+    properties: [employeeId, fullName, licenseNumber]
+actions: [assignPilot]
+toolsets: [core, full]
+---
+# yaml-language-server: $schema=../../../schemas/ontoforge-scope.schema.json
+kind: Role
+apiName: maintenanceLead
+displayName: Maintenance lead
+description: Owns the airframes and their maintenance history; may also run raw SQL.
+objectTypes:
+  Aircraft:
+    properties: [tailNumber, model, seatCapacity, inServiceSince]
+  MaintenanceRecord:
+    properties: [recordId, aircraftTailNumber, performedAt, performedBy, summary, cost]
+actions: [recordMaintenance]
+sqlLevels: [raw]
+l2:
+  catalogs: [demo]
+  schemas: [demo.aviation]
+toolsets: [full, sql:raw]
