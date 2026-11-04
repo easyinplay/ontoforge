@@ -1,0 +1,34 @@
+   Compiling ontoforge-engine v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-engine)
+   Compiling ontoforge-auth v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-auth)
+   Compiling ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+   Compiling ontoforge-query v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-query)
+   Compiling ontoforge-action v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-action)
+   Compiling ontoforge-server v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-server)
+   Compiling ontoforge v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3m 03s
+     Running tests\cli_check_cardinality.rs (target\debug\deps\cli_check_cardinality-0bbc80c32741858e.exe)
+
+running 1 test
+
+thread 'cardinality_tracer_reports_conflict' (42744) panicked at crates\ontoforge\tests\cli_check_cardinality.rs:71:5:
+assertion `left == right` failed: expected warning exit0, stderr: error: unexpected argument '--check-cardinality' found
+
+  tip: a similar argument exists: '--check-pk'
+
+Usage: ontoforge.exe validate --online --check-pk <DIR>
+
+For more information, try '--help'.
+
+  left: Some(2)
+ right: Some(0)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test cardinality_tracer_reports_conflict ... FAILED
+
+failures:
+
+failures:
+    cardinality_tracer_reports_conflict
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+error: test failed, to rerun pass `-p ontoforge --test cli_check_cardinality`

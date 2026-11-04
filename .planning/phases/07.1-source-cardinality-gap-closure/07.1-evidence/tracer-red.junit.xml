@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="nextest-run" tests="1" skipped="0" failures="1" errors="0" uuid="335b2bcc-e5b2-4c44-a946-17cf4f5d0108" timestamp="2026-11-04T11:37:55.615+08:00" time="0.034">
+    <testsuite name="ontoforge::cli_check_cardinality" tests="1" skipped="0" errors="0" failures="1">
+        <testcase name="cardinality_tracer_reports_conflict" classname="ontoforge::cli_check_cardinality" timestamp="2026-11-04T11:37:55.615+08:00" time="0.033">
+            <failure message="thread &apos;cardinality_tracer_reports_conflict&apos; (42268) panicked at crates\ontoforge\tests\cli_check_cardinality.rs:82:5" type="test failure with exit code 101">thread &apos;cardinality_tracer_reports_conflict&apos; (42268) panicked at crates\ontoforge\tests\cli_check_cardinality.rs:82:5:
+assertion `left == right` failed: expected warning exit0, stderr: error: unexpected argument &apos;--check-cardinality&apos; found
+
+  tip: a similar argument exists: &apos;--check-pk&apos;
+
+Usage: ontoforge.exe validate --online --check-pk &lt;DIR&gt;
+
+For more information, try &apos;--help&apos;.
+
+  left: Some(2)
+ right: Some(0)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace</failure>
+            <system-out>
+running 1 test
+test cardinality_tracer_reports_conflict ... FAILED
+
+failures:
+
+failures:
+    cardinality_tracer_reports_conflict
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+</system-out>
+            <system-err>
+thread &apos;cardinality_tracer_reports_conflict&apos; (42268) panicked at crates\ontoforge\tests\cli_check_cardinality.rs:82:5:
+assertion `left == right` failed: expected warning exit0, stderr: error: unexpected argument &apos;--check-cardinality&apos; found
+
+  tip: a similar argument exists: &apos;--check-pk&apos;
+
+Usage: ontoforge.exe validate --online --check-pk &lt;DIR&gt;
+
+For more information, try &apos;--help&apos;.
+
+  left: Some(2)
+ right: Some(0)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+</system-err>
+        </testcase>
+    </testsuite>
+</testsuites>
