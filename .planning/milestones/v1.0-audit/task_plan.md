@@ -17,7 +17,7 @@
 - [x] STORE-05 source oneToOne报告缺口由Phase07.1独立验收18/18闭合，UAT10/10、最终workspace1525/0/119；不以PK/edit代替source报告。
 - [x] 按实际缺口推进Phase2/3/5 Nyquist与Phase1–6历史验证重新核对；保留真实partial/human_needed，不强行全绿。
 - [ ] 对最终源码完成必需CI/受影响服务验证、恢复Phase7报告新鲜性，再生成最终milestone结论与状态。
-- [ ] 按2026-11-04用户新增授权，核对并合并已完成/验收通过的PR到main；补齐Phase04/05等堆叠分支链路，不只停留Draft。
+- [x] 按用户新增授权，Phase03–07由PR8、Phase07.1由PR9合入main；Phase04/05堆叠链路已包含。
 
 ## Current Phase
 
@@ -26,7 +26,7 @@
 
 ## Next Step
 
-Phase03–07已通过PR8合并main ef0ab9c；Phase07.1本地独立验收完成，准备独立PR/CI与合并。随后推进已有MINIO-FEASIBILITY固定源码方案的精确合同补证；历史judgment保持原边界，Cargo已释放。
+Phase03–07已通过PR8合并main ef0ab9c；Phase07.1已通过独立验收、远端CI并由PR9合入main aac4fd8。随后推进已有MINIO-FEASIBILITY固定源码方案的精确合同补证；历史judgment保持原边界，Cargo已释放。
 
 ## Constraints
 
