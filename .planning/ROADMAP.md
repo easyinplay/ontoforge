@@ -18,7 +18,7 @@ Phase 1 定死 IR 契约。2026-10-16 起 Phase 2–7 按 `docs/designs/trino-en
 - [x] **Phase 5: Online Action** - Action 鉴权管线 ①-⑨、并发令牌、`command_id`、webhook outbox (completed 2026-10-26)
 - [x] **Phase 6: L2 Raw DQL, Toolsets & Audit** - L2、toolsets 与读审计已验收；详: `.planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md` (completed 2026-10-28)
 - [x] **Phase 7: REST & MCP Shell** - INT-01/TLS修复后80/80复验、UAT14/14通过（2026-11-04）；详: `.planning/phases/07-rest-mcp-shell/07-VERIFICATION.md`
-- [ ] **Phase 7.1: Source Cardinality Gap Closure** - 用户选择A，3份计划定稿与独立检查中；详: `.planning/phases/07.1-source-cardinality-gap-closure/`
+- [x] **Phase 7.1: Source Cardinality Gap Closure** - 2026-11-04完成，3/3计划、独立18/18验收通过；详: `.planning/phases/07.1-source-cardinality-gap-closure/` (completed 2026-11-04)
 
 ## Phase Details
 
@@ -300,14 +300,17 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7 → 7.1；�
 | 5. Online Action | 7/7 | Complete    | 2026-10-26 |
 | 6. L2 Raw DQL, Toolsets & Audit | 11/11 | Complete | 2026-10-28 |
 | 7. REST & MCP Shell | 16/16 | Complete | 2026-11-04 |
-| 7.1. Source Cardinality Gap Closure | 0/3 | Planning | - |
+| 7.1. Source Cardinality Gap Closure | 3/3 | Complete    | 2026-11-04 |
 
 ### Phase 7.1: Source Cardinality Gap Closure (INSERTED)
 
 **Goal:** As a ontology维护者, I want to 显式运行source OneToOne基数检查并获得有界诊断, so that 我能发现违反声明的FK唯一性而不改变默认在线验证和业务读取行为.
 **Requirements**: STORE-05
 **Depends on:** Phase 7
-**Plans:** 3 plans；用户已选择A，待定稿及独立checker
+**Plans:** 3/3 plans complete；用户已选择A，待定稿及独立checker
+- [x] 07.1-01-PLAN.md
+- [x] 07.1-02-PLAN.md
+- [x] 07.1-03-PLAN.md
 
 **Success Criteria**:
 1. 显式online基数检查对source-backed link.to的非空FK按不同对象PK计数并报告OneToOne冲突；NULL和重复物理行语义明确。

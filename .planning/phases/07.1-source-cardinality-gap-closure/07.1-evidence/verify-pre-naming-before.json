@@ -1,0 +1,11 @@
+{
+  "block": true,
+  "passed": false,
+  "coverage_present": true,
+  "matrix": "07.1-EDGE-COVERAGE.md",
+  "error_count": 1,
+  "errors": [
+    "matrix is empty — no capabilities enumerated"
+  ],
+  "message": "api-coverage: COVERAGE.md has 1 problem(s) — fix the matrix (every capability INTEGRATE or OPT-OUT with a reason) before sealing"
+}

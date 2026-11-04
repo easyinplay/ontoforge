@@ -41,13 +41,13 @@
     {
       "number": "7.1",
       "name": "Source Cardinality Gap Closure",
-      "status": "pending"
+      "status": "complete"
     }
   ],
   "next": {
-    "command": "$gsd-progress --next",
-    "label": "Advance to the next step (plan phase 07.1)",
-    "reason": "Phase 8 of 8 — needs a plan"
+    "command": "$gsd-ship 07.1",
+    "label": "合并已验收的Phase07.1",
+    "reason": "Phase03–07已入main，07.1独立验收通过，待远端CI与合并"
   },
-  "updated_at": "2026-11-04T03:15:58.690Z"
+  "updated_at": "2026-11-04T09:17:44.5528869Z"
 }

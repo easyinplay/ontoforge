@@ -41,7 +41,7 @@
 - [x] **STORE-02**: 新增类定义变更在 reload 时自动生成 DDL；破坏性变更被 lint 拦下，经 `ontoforge migrate --plan/--apply` 完成并归档旧列；reload 原子生效（Trino 元数据可见后才切换、`lock_timeout`、`def_version` 栅栏）
 - [x] **STORE-03**: 每次成功提交的写入都追加到不可变 edit log，记录 actor、action、时间、参数与 edits
 - [x] **STORE-04**: 客户端可以查询某个对象的变更历史
-- [ ] **STORE-05**: link 基数（1:1、1:N）在 edit store 写入时强制；source 数据的基数由 lint / 校验查询报告，不阻塞读取
+- [x] **STORE-05**: link 基数（1:1、1:N）在 edit store 写入时强制；source 数据的基数由 lint / 校验查询报告，不阻塞读取
 - [x] **STORE-06**: 开发者可以用 `ontoforge import` 导入 edit-only 对象与替身引擎数据，导入作为系统 edit 记入 edit log；业务数据摄取由 Trino ETL（L3）负责
 - [x] **STORE-07**: 叠加按属性 patch：edit 只存设置过的属性，未设置的属性跟随 source；tombstone 不复活，release 显式且版本单调递增
 
@@ -202,7 +202,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | STORE-02 | Phase 3 | Complete |
 | STORE-03 | Phase 3 | Complete |
 | STORE-04 | Phase 3 | Complete |
-| STORE-05 | Phase 3（edit写入约束）+ Phase 7.1（source报告补齐） | Partial: source cardinality report missing |
+| STORE-05 | Phase 3（edit写入约束）+ Phase 7.1（source报告补齐） | Complete |
 | STORE-06 | Phase 3 | Complete |
 | STORE-07 | Phase 3 | Complete |
 | SCOPE-01 | Phase 3 | Complete |

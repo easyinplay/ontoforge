@@ -14,9 +14,10 @@
 - [x] 补执行现有feature测试（SQLite action_atomic 5例、PG source_guard 1例）和实际local Iceberg 483/484证据，保留非零发现。
 - [ ] ENGINE-05精确ADR差异：MinIO未实跑且无正式替代决策；与已通过local Iceberg证据分开处置。
 - [ ] 汇总INTEGRATION.md、REQUIREMENTS-AUDIT.md与逐项矩阵，替换不充分的初稿评分。
-- [ ] STORE-05 source oneToOne基数报告缺口：独立接口核查、Claude Code方案收敛、明确gapclosure计划；不将PK检测或edit约束替代source报告。
+- [x] STORE-05 source oneToOne报告缺口由Phase07.1独立验收18/18闭合，UAT10/10、最终workspace1525/0/119；不以PK/edit代替source报告。
 - [x] 按实际缺口推进Phase2/3/5 Nyquist与Phase1–6历史验证重新核对；保留真实partial/human_needed，不强行全绿。
 - [ ] 对最终源码完成必需CI/受影响服务验证、恢复Phase7报告新鲜性，再生成最终milestone结论与状态。
+- [ ] 按2026-11-04用户新增授权，核对并合并已完成/验收通过的PR到main；补齐Phase04/05等堆叠分支链路，不只停留Draft。
 
 ## Current Phase
 
@@ -25,11 +26,11 @@
 
 ## Next Step
 
-按用户选择A修订Phase7.1计划、独立checker并实施TDD。Phase7复验和78/79 SUMMARY声明对账已完成，MinIO与历史judgment保留未闭环；Cargo已释放。
+Phase03–07已通过PR8合并main ef0ab9c；Phase07.1本地独立验收完成，准备独立PR/CI与合并。随后推进已有MINIO-FEASIBILITY固定源码方案的精确合同补证；历史judgment保持原边界，Cargo已释放。
 
 ## Constraints
 
-- PR7/8保持Draft OPEN，不合并、创建Release、发布npm或自动归档。
+- 用户2026-11-04已授权完成的开发任务合并main，覆盖旧PR7/8不合并限制。合并前核对scope、验收、CI与依赖顺序；不创建Release、不发布npm或自动归档。
 - 不改旧报告指纹来冒充重新验证，不将unknown/未运行改列manual-only取得绿色。
 - 自动推进依据用户授权：Claude Code AGREE/同向REFINE无需再问，实质分歧才请用户裁决。
 - Warp/ralph-loop未提供；使用明确验收闭环但不声称调用它们。

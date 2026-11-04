@@ -1,0 +1,26 @@
+{
+  "block": false,
+  "passed": true,
+  "tddPlans": 2,
+  "violations": 0,
+  "table": "### TDD REVIEW — Phase 07.1\n\nTDD Plans: 2 | Gate violations: 0\n\n| Plan | RED | GREEN | REFACTOR | Status |\n|------|-----|-------|----------|--------|\n| 07.1-01 |  ✓  |   ✓   |    —     | Pass   |\n| 07.1-02 |  ✓  |   ✓   |    —     | Pass   |",
+  "rows": [
+    {
+      "planId": "07.1-01",
+      "red": true,
+      "green": true,
+      "refactor": false,
+      "status": "Pass",
+      "missing": []
+    },
+    {
+      "planId": "07.1-02",
+      "red": true,
+      "green": true,
+      "refactor": false,
+      "status": "Pass",
+      "missing": []
+    }
+  ],
+  "message": "### TDD REVIEW — Phase 07.1\n\nTDD Plans: 2 | Gate violations: 0\n\n| Plan | RED | GREEN | REFACTOR | Status |\n|------|-----|-------|----------|--------|\n| 07.1-01 |  ✓  |   ✓   |    —     | Pass   |\n| 07.1-02 |  ✓  |   ✓   |    —     | Pass   |"
+}

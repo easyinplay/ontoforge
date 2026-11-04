@@ -1,8 +1,6 @@
 # Phase 07.1 Progress
 
-## 当前节点
-
-2026-11-04：ready_for_plan_checker。用户在独立比较后明确选A；3份PLAN、7个task已定稿，纳入cardinality整轮总deadline并同步VALIDATION。旧定向AGREE仅为历史，依据见 `07.1-INDEPENDENT-OPINION.md` 与更新后的CONTEXT。生产实施尚未开始，历史动态验证冻结已解除；本planner未构建、启动服务或提交。
+$12026-11-04：verifying_phase_goal。3/3计划完成，源码01aa2df最终workspace1525 passed/0 failed/119 ignored（290秒）、fmt/Clippy、真实Trino均通过。代码open0、安全6/6、Nyquist覆盖24项、UAT原生10/10 complete；TDD gate violations0。独立gsd-verifier接手目标验收前，不关闭STORE-05。PR8已含Phase03–07及复签证据，base main、非Draft，等待新CI后合并；7.1实现尚未push。
 
 ## 本轮证据
 
@@ -23,7 +21,7 @@
 
 ## 下一步
 
-主会话接力独立checker，再按用户授权推进分支及串行TDD。VALIDATION保持draft/nyquist_compliant=false/wave_0_complete=false，因为本phase尚无执行证据。未执行Cargo/Trino，未改生产/ROOT状态，未commit；不存在本phase GREEN证据。
+执行07.1-03；executor独占Cargo/Docker，jobs2。02 task commits为63032dd、73e1577、daf3911、7ecc32b，SUMMARY为b942b55；机器门RED_EVIDENCE_OK和GREEN日志已核对。03执行后仍需独立code/security/goal验收。
 
 ## 独立checker修订 R1
 
@@ -33,3 +31,20 @@
 - `node C:/Users/easyi/.codex/gsd-core/bin/gsd-tools.cjs check verify-command-paths 07.1 --raw`：实际解析JSON，status=not_applicable，18条命令severity=none，counts.blocker=0、warning=0、total=18，readError=null。该probe不识别这些Cargo命令的路径形式，不能把not_applicable解释为已构建/运行通过。
 - 两个进程exit0仅表示probe执行成功；上述结论均来自JSON字段。当前分支 `gsd/phase-07.1-source-cardinality-gap-closure`，HEAD `a6efc11`。本轮未运行Cargo、未修改ROOT/生产、未commit；交同一独立checker复签。
 - 首次rg对Windows路径直接使用通配符返回os error 123；已改为目录参数配合 `-g '*-PLAN.md'`，无内容修改。
+
+
+## 03收尾前的独立审查修正
+
+03-1真实Trino与缺环境检查通过，提交6a8c608。审查发现物理FK=n与count alias n碰撞导致样本排序漂移，Claude Code独立事实咨询确认同向最小修复，详07.1-ALIAS-DECISION.md。executor继续独占Cargo/Docker，先RED/GREEN修正后再统一workspace及最终验收，不提前关闭需求。
+
+
+CR-01在490adcb修复；两路独立review覆盖a78ad58，code open0/security6项可关闭。真实SQLite四组合及Trino三映射GREEN，原distinct/NULL Trino用例复验通过。本轮容器已按ID清理、凭据扫描通过；workspace/fmt/Clippy仍等待executor结果。未关闭STORE-05或phase。
+
+
+全局门进度：workspace首次600秒编译超时exit124，0个test harness结果；原日志保留plan03-workspace.*。executor在确认Cargo/rustc子进程退出后用同一600秒上限缓存续跑，当前仍在编译，不计测试通过/失败。GSD verify:pre命名冲突已通过仅重命名边界文档解决，正文Git blob一致，gate前block=true、后block=false/detected=false，证据edge-rename-proof及verify-pre-naming-before/after。两次纯事实独立咨询已持久化在07.1-evidence的*-independent-opinion.json。
+
+
+第三次workspace构建完成后真实lib失败24/1（deadline单测contexts1vs2），原exit101保留。CC独立意见同向，转为测试侧虚拟时钟修正及dev test-util，生产逻辑不变；Clippy另有新增注释反引号问题。executor已获两处必要ownership，最终门仍未通过，STORE-05保持未关闭。
+
+
+6be5c08最终workspace纯编译124后，构建屏障第1、2轮各600秒exit124；每轮都有新exe产物且自有Cargo/rustc已回收。当前第3/最多4轮，未运行测试且未标通过。日志归plan03-build-barrier-*.log/json；达到预算仍未完成时必须停止盲重试并重新诊断。
