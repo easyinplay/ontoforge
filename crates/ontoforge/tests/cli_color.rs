@@ -9,7 +9,8 @@ const INVALID: &str = concat!(
 
 #[test]
 fn color_environment_controls_human_output_and_never_colors_json() {
-    let cases: &[(&str, &[(&str, &str)], &str, bool)] = &[
+    type ColorCase<'a> = (&'a str, &'a [(&'a str, &'a str)], &'a str, bool);
+    let cases: &[ColorCase<'_>] = &[
         ("forced color", &[("CLICOLOR_FORCE", "1")], "human", true),
         (
             "empty NO_COLOR does not suppress forced color",
