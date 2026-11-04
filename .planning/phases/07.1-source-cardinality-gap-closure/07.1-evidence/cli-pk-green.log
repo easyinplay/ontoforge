@@ -1,0 +1,16 @@
+   Compiling ontoforge v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 10.56s
+     Running tests\cli_check_pk.rs (target\debug\deps\cli_check_pk-d483d71ff5fb98b1.exe)
+
+running 8 tests
+test check_pk_without_flag_runs_no_scan ... ok
+test check_pk_reports_duplicates ... ok
+test check_pk_reports_null_keys ... ok
+test check_pk_skips_mismatched_bindings ... ok
+test check_pk_on_trino ... ok
+test check_pk_engine_failure_keeps_earlier_findings ... ok
+test check_pk_clean_on_aviation ... ok
+test exit_code_table ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.87s
+

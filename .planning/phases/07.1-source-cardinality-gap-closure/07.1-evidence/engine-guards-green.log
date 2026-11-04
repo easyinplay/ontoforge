@@ -1,0 +1,21 @@
+   Compiling ontoforge-engine v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.54s
+     Running tests\pk_check.rs (target\debug\deps\pk_check-97c7bc653dd82677.exe)
+
+running 6 tests
+test display_value_is_short_text ... ok
+test clean_and_empty_tables_have_no_finding ... ok
+test nulls_are_not_duplicates ... ok
+test duplicates_and_nulls_found ... ok
+test twenty_groups_are_not_more ... ok
+test pk_queries_are_printed ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running tests\sql_text_only_from_printer.rs (target\debug\deps\sql_text_only_from_printer-650c9776f1fe8a67.exe)
+
+running 1 test
+test sql_text_only_from_printer ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
