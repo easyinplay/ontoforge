@@ -300,6 +300,10 @@ def cleanup(state):
     require(runtime.resolve().parent == Path(tempfile.gettempdir()).resolve(), "runtime parent refused")
     require(runtime.name == owner, "runtime name refused")
     require((runtime / "owner").read_text() == owner, "runtime owner refused")
+    lock = Path(tempfile.gettempdir()) / "ontoforge-iceberg.lock"
+    if lock.exists():
+        require(bool(state.get("lock_token")) and (lock / "owner").read_text() == state["lock_token"],
+                "lock owner changed")
     failed = False
     for kind in ("container", "network", "volume"):
         recorded = [r["id"] for r in state["resources"] if r["kind"] == kind]
@@ -581,7 +585,12 @@ def helper_test():
     runtime.mkdir(mode=0o700)
     private(runtime, directory=True)
     (runtime / "owner").write_text(owner)
-    state = {"owner": owner, "runtime": str(runtime), "resources": []}
+    state_path = Path(os.environ.get("ONTOFORGE_ICEBERG_STATE", str(runtime / "state.json"))).resolve()
+    require(not state_path.exists(), "helper state already exists")
+    state = {"owner": owner, "runtime": str(runtime), "resources": [],
+             "lock_token": os.environ.get("ICEBERG_LOCK_TOKEN")}
+    write_json(state_path, state)
+    private(state_path)
     status = 0
     try:
         _, metadata, _ = docker("image", "inspect", IMAGE)
@@ -589,6 +598,7 @@ def helper_test():
                 "helper image source does not match")
         _, identifier, _ = docker("create", "--name", owner, "--label", LABEL + "=" + owner, IMAGE)
         state["resources"].append({"kind": "container", "id": identifier.strip(), "name": owner})
+        write_json(state_path, state)
         docker("cp", identifier.strip() + ":/bucket", runtime / "bucket")
         docker("cp", identifier.strip() + ":/SHA256SUMS", runtime / "SHA256SUMS")
         checksums = dict(line.split()[::-1] for line in (runtime / "SHA256SUMS").read_text().splitlines())
@@ -611,11 +621,22 @@ def helper_test():
         if status == 0:
             require(re.search(r"Ran [1-9][0-9]* tests", out + err) and "skipped" not in out + err,
                     "helper test did not execute all cases")
+    except Failure as error:
+        status = error.code
+        print(str(error), file=sys.stderr)
+    except Exception:
+        status = 1
+        print("helper test failed", file=sys.stderr)
     finally:
-        result = cleanup(state)
-        if result["ok"]:
-            shutil.rmtree(runtime)
-        else:
+        try:
+            result = cleanup(state)
+            if result["ok"]:
+                shutil.rmtree(runtime)
+                if state_path.parent != runtime:
+                    state_path.unlink(missing_ok=True)
+            else:
+                status = status or 1
+        except Exception:
             status = status or 1
     return status
 
@@ -649,13 +670,13 @@ def main():
         if result["ok"]:
             runtime = Path(state["runtime"])
             shutil.rmtree(runtime)
-            if state_path.parent != runtime:
-                state_path.unlink(missing_ok=True)
             lock = Path(tempfile.gettempdir()) / "ontoforge-iceberg.lock"
             if state.get("lock_token") and lock.exists():
                 require((lock / "owner").read_text() == state["lock_token"], "lock owner changed")
                 (lock / "owner").unlink()
                 lock.rmdir()
+            if state_path.parent != runtime:
+                state_path.unlink(missing_ok=True)
         print(json.dumps(result))
         return 0 if result["ok"] else 1
     raise Failure("usage: iceberg-services.sh {contract|nightly} --trino {483|484} | helper-test | cleanup --state PATH", 2)

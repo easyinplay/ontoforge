@@ -608,7 +608,7 @@ class NightlyContract(unittest.TestCase):
     def test_ci_explicitly_runs_runner_nightly_and_built_helper_contracts(self):
         workflow = (ROOT / ".github/workflows/nightly.yml").read_text()
         self.assertIn("python3 -m unittest -v ci.test_iceberg_services.RunnerContract ci.test_iceberg_services.NightlyContract", workflow)
-        self.assertIn("run: bash ci/iceberg-services.sh helper-test", workflow)
+        self.assertIn("bash ci/iceberg-services.sh helper-test", workflow)
         self.assertLess(workflow.index("bash ci/iceberg-services.sh nightly"),
                         workflow.index("bash ci/iceberg-services.sh helper-test"))
         self.assertNotIn("LiveFaultContract", workflow)

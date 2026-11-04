@@ -36,7 +36,7 @@ jobs:
           toolchain: "1.98.0"
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
       - name: Runner and nightly behavior contracts
-        run: python3 -m unittest -v ci.test_iceberg_services.RunnerContract ci.test_iceberg_services.NightlyContract
+        run: python3 -m unittest -v ci.test_iceberg_services.RunnerContract ci.test_iceberg_services.NightlyContract ci.test_iceberg_services.HelperLifecycleContract
       - name: Prepare private owner state
         run: |
           mkdir -m 700 -p "$RUNNER_TEMP/$ICEBERG_STATE_NAME"
@@ -44,10 +44,13 @@ jobs:
       - name: Complete MinIO contract and regression corpus
         run: ONTOFORGE_ICEBERG_STATE="$RUNNER_TEMP/$ICEBERG_STATE_NAME/state.json" bash ci/iceberg-services.sh nightly --trino "${{ matrix.trino }}"
       - name: Actual SDK helper contracts from the built image
-        run: bash ci/iceberg-services.sh helper-test
+        run: ONTOFORGE_ICEBERG_STATE="$RUNNER_TEMP/$ICEBERG_STATE_NAME/helper-state.json" bash ci/iceberg-services.sh helper-test
       - name: Always clean this owner
         if: always()
         run: bash ci/iceberg-services.sh cleanup --state "$RUNNER_TEMP/$ICEBERG_STATE_NAME/state.json"
+      - name: Always clean the helper owner
+        if: always()
+        run: bash ci/iceberg-services.sh cleanup --state "$RUNNER_TEMP/$ICEBERG_STATE_NAME/helper-state.json"
       - name: Publish scanned evidence to the run log
         if: always()
         shell: python

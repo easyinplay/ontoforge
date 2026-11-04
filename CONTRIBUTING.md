@@ -71,13 +71,16 @@ bash ci/iceberg-services.sh contract --trino 483
 bash ci/iceberg-services.sh contract --trino 484
 bash ci/iceberg-services.sh nightly --trino 483
 
+# Verify the SDK helper extracted from the built image.
+ONTOFORGE_ICEBERG_STATE=/path/to/private/helper-state.json bash ci/iceberg-services.sh helper-test
+
 # Recovery cleanup; set ONTOFORGE_ICEBERG_STATE before starting the run.
 bash ci/iceberg-services.sh cleanup --state /path/to/private/state.json
 ```
 
 `contract` 验证 source/copy 均为29行、精确 Rust 测试、PG 的 `s3://warehouse/` metadata 与非空对象，并只重启 MinIO/Trino后复验，不重新 CTAS。`nightly` 再执行原有 Action atomicity/race/idempotency/outbox、Trino Action、完整 Engine/CLI corpus；各目标必须发现且实际执行非零测试。容器、network、volumes 按本次 owner label 和身份清理，已有服务不受影响；PG/Trino只发布 loopback 随机端口。
 
-临时凭据只进入私有 env/catalog，Trino使用环境凭据 provider；原始日志按本次真实凭据扫描通过后才可公开。CI有独立 `always()` cleanup，state不存在时无操作，身份无法核验时拒绝删除。只有 **schedule 触发且失败** 才运行拥有 `issues: write` 的 `report-failure`；手动触发不创建 issue/comment，测试job始终只有 `contents: read`。
+临时凭据只进入私有 env/catalog，Trino使用环境凭据 provider；原始日志按本次真实凭据扫描通过后才可公开。CI为主fixture和helper分别保存私有state，并用两个独立 `always()` 步骤补偿清理，第一项失败也会尝试第二项。helper在创建容器前持久化owner和lock token；清理失败保留state供重试。state不存在时无操作，资源或锁身份无法核验时拒绝删除。只有 **schedule 触发且失败** 才运行拥有 `issues: write` 的 `report-failure`；手动触发不创建 issue/comment，测试job始终只有 `contents: read`。
 
 ### 私有 fixture（SQL Server 等公司环境）
 
