@@ -1,0 +1,10 @@
+{
+  "command": "cargo test -p ontoforge --test cli_trino_it missing_env_panics --locked -- --exact --nocapture",
+  "exitCode": 0,
+  "started": "2026-11-04T04:15:25.8424490Z",
+  "finished": "2026-11-04T04:15:26.5849021Z",
+  "head": "b942b55b7625139c2dda271154a7065985a007b5",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "cargoBuildJobs": 2,
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07.1-source-cardinality-gap-closure\\07.1-evidence\\plan03-missing-env.log"
+}

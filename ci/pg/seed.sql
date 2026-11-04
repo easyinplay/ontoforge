@@ -167,4 +167,26 @@ INSERT INTO aviation.flights_dup (flight_id, status) VALUES
     (NULL, 'scheduled'),
     (NULL, 'delayed');
 
+-- Independent source OneToOne corpus: logical object cardinality is distinct PKs per FK.
+-- Duplicate physical rows and NULL keys deliberately have no database constraints.
+CREATE TABLE aviation.cardinality_records (
+    record_id varchar(16),
+    tail_number varchar(16)
+);
+INSERT INTO aviation.cardinality_records (record_id, tail_number) VALUES
+    ('DUP', 'ROW-DUP'),
+    ('DUP', 'ROW-DUP'),
+    ('DUP', 'ROW-DUP'),
+    ('CONFLICT-1', 'CONFLICT'),
+    ('CONFLICT-1', 'CONFLICT'),
+    ('CONFLICT-2', 'CONFLICT'),
+    ('NULL-FK-1', NULL),
+    ('NULL-FK-2', NULL),
+    ('ONLY-VALID-PK', 'NULL-PK'),
+    (NULL, 'NULL-PK'),
+    (NULL, 'NULL-PK'),
+    (NULL, 'ALL-NULL-PK'),
+    (NULL, 'ALL-NULL-PK'),
+    ('CLEAN', 'UNIQUE');
+
 COMMIT;

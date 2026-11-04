@@ -1,4 +1,4 @@
-//! `ontoforge validate --online --check-pk` end to end against the CI Trino (ENGINE-05).
+//! Explicit online data checks end to end against the CI Trino (ENGINE-05, STORE-05).
 //!
 //! The test is `#[ignore]`d; the Linux CI job `integration` runs it with `--ignored` after
 //! seeding the aviation example, using `ci/ontoforge-server.ci.toml`. Without
@@ -33,6 +33,9 @@ fn missing_env_panics() {
         .or_else(|| payload.downcast_ref::<&str>().map(|s| (*s).to_owned()))
         .unwrap_or_default();
     assert!(message.contains(URL_VAR), "{message}");
+    for empty in ["", "  "] {
+        assert!(std::panic::catch_unwind(|| trino_url(Some(empty.to_owned()))).is_err());
+    }
 }
 
 /// Every binding of the aviation example names a fixture that the Trino check does not use,
@@ -173,5 +176,86 @@ fn check_pk_finds_duplicate_and_null_keys_on_ci_trino() {
             .iter()
             .any(|m| m.contains("2 row(s) with a NULL primary key")),
         "{messages:#?}"
+    );
+}
+
+#[test]
+#[ignore = "needs ONTOFORGE_TRINO_URL (Linux CI)"]
+fn check_cardinality_counts_distinct_objects_on_ci_trino() {
+    let url = trino_url(std::env::var(URL_VAR).ok());
+    let config = format!("{REPO}/ci/ontoforge-server.ci.toml");
+    let config_text = std::fs::read_to_string(&config).expect("CI config");
+    assert!(
+        config_text.contains(&format!("url = \"{url}\"")),
+        "{URL_VAR} must match CI config"
+    );
+    let dir = tempfile::TempDir::new().expect("tempdir");
+    let write = |rel: &str, text: &str| {
+        let path = dir.path().join(rel);
+        std::fs::create_dir_all(path.parent().expect("parent")).expect("directory");
+        std::fs::write(path, text).expect("write");
+    };
+    write(
+        "ontology.yaml",
+        "apiName: cardinalitycheck\ndefaultProfile: dev\n",
+    );
+    write(
+        "objects.yaml",
+        "kind: ObjectType\napiName: Aircraft\nprimaryKey: id\nproperties:\n  id: { type: string, required: true }\nbacking: editOnly\n---\nkind: ObjectType\napiName: MaintenanceRecord\nprimaryKey: id\nproperties:\n  id: { type: string, required: true }\n  aircraftId: { type: string }\nbacking: source\n---\nkind: LinkType\napiName: aircraftMaintenance\ncardinality: oneToOne\nfrom: { objectType: Aircraft, apiName: maintenance }\nto: { objectType: MaintenanceRecord, apiName: aircraft, foreignKey: aircraftId }\n",
+    );
+    write(
+        "bindings/dev/record.yaml",
+        "kind: SourceBinding\ntarget: { objectType: MaintenanceRecord }\nsource: { catalog: demo, schema: aviation, table: cardinality_records }\ncolumns:\n  id: { column: record_id }\n  aircraftId: { column: tail_number }\n",
+    );
+    let out = Command::new(env!("CARGO_BIN_EXE_ontoforge"))
+        .args([
+            "validate",
+            "--online",
+            "--check-cardinality",
+            "--server-config",
+            &config,
+            dir.path().to_str().expect("utf8"),
+            "--format",
+            "json",
+            "--color",
+            "never",
+        ])
+        .env_remove("ONTOFORGE_PROFILE")
+        .env("NO_COLOR", "1")
+        .output()
+        .expect("real CLI");
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "stdout={} stderr={}",
+        String::from_utf8_lossy(&out.stdout),
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let diagnostics: Vec<Value> = serde_json::from_slice(&out.stdout).expect("JSON diagnostics");
+    assert_eq!(
+        diagnostics.len(),
+        1,
+        "only the distinct conflict: {diagnostics:#?}"
+    );
+    let warning = &diagnostics[0];
+    assert_eq!(warning["code"], "ONT-W18");
+    assert_eq!(warning["severity"], "warning");
+    assert_eq!(warning["file"], "bindings/dev/record.yaml");
+    assert_eq!(warning["line"], 6);
+    let message = warning["message"].as_str().expect("message");
+    assert!(message.contains("aircraftMaintenance"));
+    assert!(message.contains("1 conflicting foreign key group(s)"));
+    assert!(
+        message.contains("`CONFLICT`: 2 distinct objects"),
+        "{message}"
+    );
+    for clean in ["ROW-DUP", "NULL-PK", "ALL-NULL-PK", "UNIQUE", "and more"] {
+        assert!(!message.contains(clean), "{message}");
+    }
+    assert!(
+        warning["help"]
+            .as_str()
+            .expect("help")
+            .contains("referential integrity (whether referenced objects exist) was not checked")
     );
 }
