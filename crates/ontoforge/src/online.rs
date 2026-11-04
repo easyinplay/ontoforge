@@ -727,4 +727,137 @@ mod tests {
         let ctx = query_context(Some(&trino), None);
         assert_eq!(ctx.client_tags, ["team-a", "ontoforge", "validate-online"]);
     }
+
+    struct BudgetEngine {
+        contexts: std::sync::Mutex<Vec<ontoforge_engine::QueryContext>>,
+        delays: Vec<Duration>,
+    }
+
+    impl ontoforge_engine::Engine for BudgetEngine {
+        fn dialect(&self) -> ontoforge_engine::Dialect {
+            ontoforge_engine::Dialect::Sqlite
+        }
+
+        async fn execute(
+            &self,
+            _sql: &ontoforge_engine::PrintedSql,
+            ctx: &ontoforge_engine::QueryContext,
+        ) -> Result<ontoforge_engine::QueryOutput, ontoforge_engine::EngineError> {
+            let index = {
+                let mut contexts = self.contexts.lock().expect("contexts");
+                let index = contexts.len();
+                contexts.push(ctx.clone());
+                index
+            };
+            let delay = self.delays.get(index).copied().unwrap_or_default();
+            if tokio::time::timeout(ctx.timeout, tokio::time::sleep(delay))
+                .await
+                .is_err()
+            {
+                return Err(ontoforge_engine::EngineError::Timeout {
+                    after_ms: ctx.timeout.as_millis().try_into().expect("small duration"),
+                });
+            }
+            Ok(ontoforge_engine::QueryOutput {
+                columns: Vec::new(),
+                rows: vec![vec![
+                    ontoforge_engine::Value::String("A1".to_owned()),
+                    ontoforge_engine::Value::Long(2),
+                ]],
+                truncated: false,
+            })
+        }
+
+        async fn describe_tables(
+            &self,
+            _tables: &[ontoforge_engine::TableRef],
+            _ctx: &ontoforge_engine::QueryContext,
+        ) -> Result<
+            std::collections::BTreeMap<
+                ontoforge_engine::TableRef,
+                Vec<ontoforge_engine::PhysicalColumn>,
+            >,
+            ontoforge_engine::EngineError,
+        > {
+            Ok(std::collections::BTreeMap::new())
+        }
+
+        async fn status(&self) -> ontoforge_engine::EngineStatus {
+            ontoforge_engine::EngineStatus::Available
+        }
+    }
+
+    fn cardinality_input() -> (
+        ontoforge_schema::LoadOutput,
+        ontoforge_schema::ir::ProfileName,
+        Vec<ontoforge_engine::bind_check::BindingKey>,
+    ) {
+        let mut objects = String::from(
+            "kind: ObjectType\napiName: Origin\nprimaryKey: id\nproperties:\n  id: { type: string, required: true }\nbacking: editOnly\n---\nkind: ObjectType\napiName: Target\nprimaryKey: id\nproperties:\n  id: { type: string, required: true }\n  originId: { type: string }\nbacking: source\n",
+        );
+        for name in ["alpha", "beta", "gamma"] {
+            objects.push_str(&format!("---\nkind: LinkType\napiName: {name}\ncardinality: oneToOne\nfrom: {{ objectType: Origin, apiName: {name}Target }}\nto: {{ objectType: Target, apiName: {name}Origin, foreignKey: originId }}\n"));
+        }
+        let out = ontoforge_schema::load_from_memory(&[
+            ("ontology.yaml", "apiName: demo\ndefaultProfile: dev\n"),
+            ("objects.yaml", &objects),
+            (
+                "bindings/dev/target.yaml",
+                "kind: SourceBinding\ntarget: { objectType: Target }\nsource: { catalog: demo, schema: aviation, table: targets }\n",
+            ),
+        ]);
+        assert!(out.diagnostics.is_empty(), "{:?}", out.diagnostics);
+        let profile =
+            ontoforge_schema::ir::ProfileName::try_from("dev".to_owned()).expect("profile");
+        let key = ontoforge_engine::bind_check::BindingKey {
+            profile: profile.clone(),
+            target: ontoforge_schema::ir::BindingTarget::ObjectType(
+                ontoforge_schema::ir::ObjectTypeName::try_from("Target".to_owned())
+                    .expect("object"),
+            ),
+        };
+        (out, profile, vec![key])
+    }
+
+    #[tokio::test]
+    async fn cardinality_total_deadline_is_shared() {
+        let (out, profile, keys) = cardinality_input();
+        let engine = BudgetEngine {
+            contexts: std::sync::Mutex::new(Vec::new()),
+            delays: vec![Duration::from_millis(30), Duration::from_secs(1)],
+        };
+        let ctx = ontoforge_engine::QueryContext {
+            timeout: Duration::from_millis(200),
+            max_rows: 7,
+            max_bytes: 1234,
+            ..query_context(None, None)
+        };
+        let check = super::Check {
+            ontology: out.ontology.as_ref().expect("ontology"),
+            sources: &out.sources,
+            profile: &profile,
+        };
+        let found = super::check_cardinalities(&engine, &ctx, check, &keys).await;
+        let contexts = engine.contexts.lock().expect("contexts");
+        assert_eq!(
+            contexts.len(),
+            2,
+            "expired total budget must prevent the third scan"
+        );
+        assert!(
+            contexts[1].timeout < contexts[0].timeout,
+            "remaining timeout must decrease"
+        );
+        assert!(contexts[0].timeout <= ctx.timeout);
+        assert!(
+            contexts
+                .iter()
+                .all(|observed| observed.max_rows == 7 && observed.max_bytes == 1234)
+        );
+        assert_eq!(
+            found.iter().filter(|diag| diag.code == "ONT-W18").count(),
+            1
+        );
+        assert!(found.iter().any(|diag| diag.code == "ONT-V19"));
+    }
 }

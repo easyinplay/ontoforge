@@ -1,0 +1,21 @@
+   Compiling ontoforge v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 13s
+     Running unittests src\lib.rs (target\debug\deps\ontoforge-9d7911bca446a24a.exe)
+
+running 1 test
+
+thread 'online::tests::cardinality_total_deadline_is_shared' (47748) panicked at crates\ontoforge\src\online.rs:842:9:
+assertion `left == right` failed: expired total budget must prevent the third scan
+  left: 3
+ right: 2
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test online::tests::cardinality_total_deadline_is_shared ... FAILED
+
+failures:
+
+failures:
+    online::tests::cardinality_total_deadline_is_shared
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.28s
+
+error: test failed, to rerun pass `-p ontoforge --lib`

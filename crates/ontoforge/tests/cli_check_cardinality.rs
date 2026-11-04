@@ -352,6 +352,312 @@ fn long_sample_values_are_bounded() {
     assert!(message.chars().count() < 2000, "bounded message");
 }
 
+fn three_targets() -> TempDir {
+    let dir = ontology("record_id,aircraft_id\nM1,A1\nM2,A1\n");
+    let mut objects = OBJECTS.to_owned();
+    for (object, link, accessor, table) in [
+        ("BackupRecord", "betaMaintenance", "backup", "records_b"),
+        ("OtherRecord", "gammaMaintenance", "other", "records_c"),
+    ] {
+        objects.push_str(&format!("---\nkind: ObjectType\napiName: {object}\nprimaryKey: id\nproperties:\n  id: {{ type: string, required: true }}\n  aircraftId: {{ type: string }}\nbacking: source\n---\nkind: LinkType\napiName: {link}\ncardinality: oneToOne\nfrom: {{ objectType: Aircraft, apiName: {accessor} }}\nto: {{ objectType: {object}, apiName: aircraft, foreignKey: aircraftId }}\n"));
+        write(
+            dir.path(),
+            &format!("bindings/dev/{table}.yaml"),
+            &BINDING
+                .replace("MaintenanceRecord", object)
+                .replace("table: records", &format!("table: {table}")),
+        );
+    }
+    write(dir.path(), "objects.yaml", &objects);
+    dir
+}
+
+fn three_info_rows() -> Value {
+    let mut rows = Vec::new();
+    for table in ["records", "records_b", "records_c"] {
+        rows.extend([
+            json!(["aviation", table, "record_id", "varchar", "NO"]),
+            json!(["aviation", table, "aircraft_id", "varchar", "YES"]),
+        ]);
+    }
+    Value::Array(rows)
+}
+
+async fn mount_slow_scan(server: &MockServer, table: &str, next: &str) {
+    Mock::given(method("POST")).and(body_string_contains("count(DISTINCT"))
+        .and(body_string_contains(format!("\"{table}\"")))
+        .respond_with(ResponseTemplate::new(200).set_body_json(json!({"id":"slow", "nextUri":format!("{}{next}",server.uri()), "stats":{"state":"QUEUED"}})))
+        .mount(server).await;
+    Mock::given(method("GET"))
+        .and(path(next))
+        .respond_with(
+            ResponseTemplate::new(200)
+                .set_body_json(result_page(json!([])))
+                .set_delay(std::time::Duration::from_secs(2)),
+        )
+        .mount(server)
+        .await;
+    Mock::given(method("DELETE"))
+        .and(path(next))
+        .respond_with(ResponseTemplate::new(204))
+        .mount(server)
+        .await;
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn cardinality_total_deadline_is_shared() {
+    let server = MockServer::start().await;
+    mount_info(&server, three_info_rows()).await;
+    Mock::given(method("POST"))
+        .and(body_string_contains("count(DISTINCT"))
+        .and(body_string_contains("\"records\""))
+        .respond_with(
+            ResponseTemplate::new(200)
+                .set_body_json(result_page(json!([["A1", 2]])))
+                .set_delay(std::time::Duration::from_millis(80)),
+        )
+        .mount(&server)
+        .await;
+    let next = "/v1/statement/executing/cardinality/1";
+    mount_slow_scan(&server, "records_b", next).await;
+    Mock::given(method("POST"))
+        .and(body_string_contains("count(DISTINCT"))
+        .and(body_string_contains("\"records_c\""))
+        .respond_with(ResponseTemplate::new(200).set_body_json(result_page(json!([]))))
+        .mount(&server)
+        .await;
+    let dir = three_targets();
+    let config = server_config(dir.path(), &server.uri(), "query_timeout_ms = 500");
+    let out = run_remote(dir.path(), &config, &["--check-cardinality"]).await;
+    assert_eq!(out.status.code(), Some(3), "{:?}", diagnostics(&out));
+    assert!(has_code(&out, "ONT-W18"), "earlier warning must survive");
+    assert!(has_code(&out, "ONT-V19"));
+    assert_eq!(
+        cardinality_requests(&server).await,
+        2,
+        "third target must not be queried after the total deadline"
+    );
+    let requests = server.received_requests().await.expect("requests");
+    assert_eq!(
+        requests
+            .iter()
+            .filter(|request| request.method == wiremock::http::Method::DELETE
+                && request.url.path() == next)
+            .count(),
+        1
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn precheck_errors_skip_cardinality_scan() {
+    for rows in [
+        json!([]),
+        json!([["aviation", "records", "record_id", "varchar", "NO"]]),
+        json!([
+            ["aviation", "records", "record_id", "varchar", "NO"],
+            ["aviation", "records", "aircraft_id", "bigint", "YES"]
+        ]),
+    ] {
+        let server = MockServer::start().await;
+        mount_info(&server, rows).await;
+        let dir = ontology("record_id,aircraft_id\nM1,A1\nM2,A1\n");
+        let config = server_config(dir.path(), &server.uri(), "");
+        let out = run_remote(dir.path(), &config, &["--check-cardinality"]).await;
+        assert_eq!(out.status.code(), Some(1), "{:?}", diagnostics(&out));
+        assert!(has_code(&out, "ONT-V17"));
+        assert_eq!(cardinality_requests(&server).await, 0);
+        assert_eq!(server.received_requests().await.expect("metadata").len(), 1);
+    }
+    let server = MockServer::start().await;
+    let dir = ontology("record_id,aircraft_id\nM1,A1\nM2,A1\n");
+    let config = server_config(dir.path(), &server.uri(), "");
+    write(
+        dir.path(),
+        "objects.yaml",
+        &OBJECTS.replace("cardinality: oneToOne", "cardinality: invalid"),
+    );
+    let offline = run_remote(dir.path(), &config, &["--check-cardinality"]).await;
+    assert_eq!(offline.status.code(), Some(1));
+    assert!(
+        server
+            .received_requests()
+            .await
+            .expect("no requests")
+            .is_empty()
+    );
+    write(dir.path(), "objects.yaml", OBJECTS);
+    Mock::given(method("POST"))
+        .respond_with(ResponseTemplate::new(401))
+        .mount(&server)
+        .await;
+    let metadata = run_remote(dir.path(), &config, &["--check-cardinality"]).await;
+    assert_eq!(metadata.status.code(), Some(3));
+    assert!(has_code(&metadata, "ONT-V19"));
+    assert_eq!(cardinality_requests(&server).await, 0);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn incomplete_scan_is_not_clean() {
+    for (limits, response) in [
+        (
+            "max_rows = 2",
+            result_page(json!([["A", 2], ["B", 2], ["C", 2]])),
+        ),
+        (
+            "max_bytes = 300",
+            result_page(json!([["x".repeat(400), 2]])),
+        ),
+        ("", result_page(json!([["A", 1]]))),
+        ("", result_page(json!([["A", "invalid count"]]))),
+        (
+            "",
+            json!({"id":"q1", "error":{"errorName":"PERMISSION_DENIED", "message":"denied"}}),
+        ),
+    ] {
+        let server = MockServer::start().await;
+        mount_info(&server, info_rows()).await;
+        Mock::given(method("POST"))
+            .and(body_string_contains("count(DISTINCT"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(response))
+            .mount(&server)
+            .await;
+        let dir = ontology("record_id,aircraft_id\nM1,A1\nM2,A1\n");
+        let config = server_config(dir.path(), &server.uri(), limits);
+        let out = run_remote(dir.path(), &config, &["--check-cardinality"]).await;
+        assert_eq!(
+            out.status.code(),
+            Some(3),
+            "{limits}: {:?}",
+            diagnostics(&out)
+        );
+        assert!(has_code(&out, "ONT-V19"));
+        assert!(!has_code(&out, "ONT-W18"));
+        assert_eq!(
+            cardinality_requests(&server).await,
+            1,
+            "must reach the data scan"
+        );
+    }
+    let server = MockServer::start().await;
+    mount_info(&server, info_rows()).await;
+    mount_slow_scan(&server, "records", "/v1/statement/executing/slow/1").await;
+    let dir = ontology("record_id,aircraft_id\nM1,A1\nM2,A1\n");
+    let config = server_config(dir.path(), &server.uri(), "query_timeout_ms = 200");
+    let out = run_remote(dir.path(), &config, &["--check-cardinality"]).await;
+    assert_eq!(out.status.code(), Some(3));
+    assert!(has_code(&out, "ONT-V19"));
+    assert_eq!(cardinality_requests(&server).await, 1);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn failure_preserves_findings_and_drains() {
+    for engine_wide in [false, true] {
+        let server = MockServer::start().await;
+        mount_info(&server, three_info_rows()).await;
+        Mock::given(method("POST"))
+            .and(body_string_contains("count(DISTINCT"))
+            .and(body_string_contains("\"records\""))
+            .respond_with(ResponseTemplate::new(200).set_body_json(result_page(json!([["A", 2]]))))
+            .mount(&server)
+            .await;
+        let next = "/v1/statement/executing/failing/1";
+        Mock::given(method("POST")).and(body_string_contains("count(DISTINCT"))
+            .and(body_string_contains("\"records_b\""))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!({"id":"q2","nextUri":format!("{}{next}",server.uri()),"stats":{"state":"QUEUED"}})))
+            .mount(&server).await;
+        let response = if engine_wide {
+            ResponseTemplate::new(401)
+        } else {
+            ResponseTemplate::new(200).set_body_string("{")
+        };
+        Mock::given(method("GET"))
+            .and(path(next))
+            .respond_with(response)
+            .mount(&server)
+            .await;
+        Mock::given(method("DELETE"))
+            .and(path(next))
+            .respond_with(ResponseTemplate::new(204))
+            .mount(&server)
+            .await;
+        Mock::given(method("POST"))
+            .and(body_string_contains("count(DISTINCT"))
+            .and(body_string_contains("\"records_c\""))
+            .respond_with(ResponseTemplate::new(200).set_body_json(result_page(json!([]))))
+            .mount(&server)
+            .await;
+        let dir = three_targets();
+        let config = server_config(dir.path(), &server.uri(), "");
+        let out = run_remote(dir.path(), &config, &["--check-cardinality"]).await;
+        assert_eq!(out.status.code(), Some(3), "{:?}", diagnostics(&out));
+        assert!(has_code(&out, "ONT-W18"));
+        assert!(has_code(&out, "ONT-V19"));
+        assert_eq!(
+            cardinality_requests(&server).await,
+            if engine_wide { 2 } else { 3 }
+        );
+        let requests = server.received_requests().await.expect("requests");
+        assert_eq!(
+            requests
+                .iter()
+                .filter(|request| request.method == wiremock::http::Method::DELETE
+                    && request.url.path() == next)
+                .count(),
+            1,
+            "cleanup request must complete before process exit"
+        );
+    }
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn cardinality_budget_starts_after_precheck_and_pk() {
+    let server = MockServer::start().await;
+    let columns = json!([{"name":"table_schema","type":"varchar"},{"name":"table_name","type":"varchar"},{"name":"column_name","type":"varchar"},{"name":"data_type","type":"varchar"},{"name":"is_nullable","type":"varchar"}]);
+    Mock::given(method("POST"))
+        .and(body_string_contains("\"information_schema\""))
+        .respond_with(
+            ResponseTemplate::new(200)
+                .set_body_json(page(columns, info_rows()))
+                .set_delay(std::time::Duration::from_millis(180)),
+        )
+        .mount(&server)
+        .await;
+    Mock::given(method("POST"))
+        .and(body_string_contains("HAVING count(*)"))
+        .respond_with(
+            ResponseTemplate::new(200)
+                .set_body_json(result_page(json!([])))
+                .set_delay(std::time::Duration::from_millis(180)),
+        )
+        .mount(&server)
+        .await;
+    Mock::given(method("POST"))
+        .and(body_string_contains("IS NULL"))
+        .respond_with(
+            ResponseTemplate::new(200)
+                .set_body_json(page(json!([{"name":"n","type":"bigint"}]), json!([[0]])))
+                .set_delay(std::time::Duration::from_millis(180)),
+        )
+        .mount(&server)
+        .await;
+    Mock::given(method("POST"))
+        .and(body_string_contains("count(DISTINCT"))
+        .respond_with(
+            ResponseTemplate::new(200)
+                .set_body_json(result_page(json!([["A", 2]])))
+                .set_delay(std::time::Duration::from_millis(180)),
+        )
+        .mount(&server)
+        .await;
+    let dir = ontology("record_id,aircraft_id\nM1,A1\nM2,A1\n");
+    let config = server_config(dir.path(), &server.uri(), "query_timeout_ms = 300");
+    let out = run_remote(dir.path(), &config, &["--check-cardinality", "--check-pk"]).await;
+    assert_eq!(out.status.code(), Some(0), "{:?}", diagnostics(&out));
+    assert!(has_code(&out, "ONT-W18"));
+    assert!(!has_code(&out, "ONT-V19"));
+    assert_eq!(server.received_requests().await.expect("requests").len(), 4);
+}
+
 #[test]
 fn cardinality_tracer_reports_conflict() {
     let dir = ontology("record_id,aircraft_id\nM1,A1\nM2,A1\n");

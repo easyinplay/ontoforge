@@ -1,0 +1,30 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.51s
+     Running tests\cli_check_cardinality.rs (target\debug\deps\cli_check_cardinality-0bbc80c32741858e.exe)
+
+running 11 tests
+test long_sample_values_are_bounded ... ok
+
+thread 'failure_preserves_findings_and_drains' (50372) panicked at crates\ontoforge\tests\cli_check_cardinality.rs:602:9:
+assertion `left == right` failed: cleanup request must complete before process exit
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test failure_preserves_findings_and_drains ... FAILED
+test cardinality_tracer_reports_conflict ... ok
+test repeated_check_is_read_only ... ok
+test cardinality_flag_contract ... ok
+test non_candidates_are_not_scanned ... ok
+test no_flag_means_no_cardinality_scan ... ok
+test warning_output_and_exit_codes ... ok
+test precheck_errors_skip_cardinality_scan ... ok
+test incomplete_scan_is_not_clean ... ok
+test cardinality_budget_starts_after_precheck_and_pk ... ok
+
+failures:
+
+failures:
+    failure_preserves_findings_and_drains
+
+test result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.83s
+
+error: test failed, to rerun pass `-p ontoforge --test cli_check_cardinality`

@@ -1,0 +1,10 @@
+{
+  "command": "cargo test -p ontoforge --test cli_check_cardinality failure_preserves_findings_and_drains --locked -- --exact --nocapture",
+  "exitCode": 0,
+  "started": "2026-11-04T04:01:46.7014510Z",
+  "finished": "2026-11-04T04:01:49.8716843Z",
+  "head": "73e15773df77bac428a71ad55872dc31806f0a15",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "cargoBuildJobs": 2,
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07.1-source-cardinality-gap-closure\\07.1-evidence\\plan02-fault-regression-corrected.log"
+}

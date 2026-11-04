@@ -1,0 +1,14 @@
+{
+  "head": "73e15773df77bac428a71ad55872dc31806f0a15",
+  "targetFile": "crates/ontoforge/tests/cli_check_cardinality.rs",
+  "command": "cargo-nextest nextest run --config-file .planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/nextest.toml --profile gsd -p ontoforge --test cli_check_cardinality --locked -E test(=cardinality_total_deadline_is_shared)",
+  "output": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<testsuites name=\"nextest-run\" tests=\"1\" skipped=\"0\" failures=\"1\" errors=\"0\" uuid=\"488d6976-5ee3-4284-9747-9ff7b45781a5\" timestamp=\"2026-11-04T12:00:44.439+08:00\" time=\"0.679\">\n    <testsuite name=\"ontoforge::cli_check_cardinality\" tests=\"1\" skipped=\"0\" errors=\"0\" failures=\"1\">\n        <testcase name=\"cardinality_total_deadline_is_shared\" classname=\"ontoforge::cli_check_cardinality\" timestamp=\"2026-11-04T12:00:44.440+08:00\" time=\"0.677\">\n            <failure message=\"thread &apos;cardinality_total_deadline_is_shared&apos; (48936) panicked at crates\\ontoforge\\tests\\cli_check_cardinality.rs:435:5\" type=\"test failure with exit code 101\">thread &apos;cardinality_total_deadline_is_shared&apos; (48936) panicked at crates\\ontoforge\\tests\\cli_check_cardinality.rs:435:5:\nassertion `left == right` failed: third target must not be queried after the total deadline\n  left: 3\n right: 2\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace</failure>\n            <system-out>\nrunning 1 test\ntest cardinality_total_deadline_is_shared ... FAILED\n\nfailures:\n\nfailures:\n    cardinality_total_deadline_is_shared\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 11 filtered out; finished in 0.67s\n\n</system-out>\n            <system-err>\nthread &apos;cardinality_total_deadline_is_shared&apos; (48936) panicked at crates\\ontoforge\\tests\\cli_check_cardinality.rs:435:5:\nassertion `left == right` failed: third target must not be queried after the total deadline\n  left: 3\n right: 2\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n</system-err>\n        </testcase>\n    </testsuite>\n</testsuites>\n",
+  "semanticAssessment": "Real CLI reaches three targets despite second exhausting the round budget; intended request-count assertion fails 3 vs 2, earlier warning and V19 assertions passed.",
+  "actual": "three queries because each link receives a fresh full timeout",
+  "reportModifiedAt": "2026-11-04T04:00:45.1192529Z",
+  "runStartedAt": "2026-11-04T04:00:40.4026518Z",
+  "targetTest": "cardinality_total_deadline_is_shared",
+  "reportPath": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-deadline-red.junit.xml",
+  "expected": "two queries only and third target skipped after shared total deadline",
+  "exitCode": 100
+}

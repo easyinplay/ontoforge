@@ -1,0 +1,10 @@
+{
+  "command": "cargo test -p ontoforge --test cli_check_cardinality --locked -- --skip cardinality_total_deadline_is_shared --nocapture",
+  "exitCode": 101,
+  "started": "2026-11-04T04:00:56.1573151Z",
+  "finished": "2026-11-04T04:00:57.6709113Z",
+  "head": "73e15773df77bac428a71ad55872dc31806f0a15",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "cargoBuildJobs": 2,
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07.1-source-cardinality-gap-closure\\07.1-evidence\\plan02-fault-regression-before.log"
+}
