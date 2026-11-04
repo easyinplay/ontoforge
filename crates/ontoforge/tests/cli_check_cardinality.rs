@@ -330,6 +330,29 @@ async fn non_candidates_are_not_scanned() {
 }
 
 #[test]
+fn long_sample_values_are_bounded() {
+    let mut csv = String::from("record_id,aircraft_id\n");
+    for i in 0..22 {
+        let value = format!("{i:02}{}", "界".repeat(80));
+        csv.push_str(&format!("M{i}a,{value}\nM{i}b,{value}\n"));
+    }
+    let dir = ontology(&csv);
+    let out = run(dir.path(), "json");
+    assert_eq!(out.status.code(), Some(0));
+    let diags = diagnostics(&out);
+    let warning = diags
+        .iter()
+        .find(|d| d["code"] == "ONT-W18")
+        .expect("warning");
+    let message = warning["message"].as_str().expect("message");
+    assert_eq!(message.matches("distinct objects").count(), 20);
+    assert!(message.contains("and more (showing up to 20)"));
+    assert!(message.contains(&format!("00{}…", "界".repeat(62))));
+    assert!(!message.contains(&"界".repeat(63)));
+    assert!(message.chars().count() < 2000, "bounded message");
+}
+
+#[test]
 fn cardinality_tracer_reports_conflict() {
     let dir = ontology("record_id,aircraft_id\nM1,A1\nM2,A1\n");
     let out = run(dir.path(), "json");

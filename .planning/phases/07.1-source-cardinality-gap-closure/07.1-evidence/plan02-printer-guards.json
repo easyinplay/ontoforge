@@ -1,0 +1,10 @@
+{
+  "command": "cargo test -p ontoforge-engine --test printer_prop --test sql_text_only_from_printer --locked",
+  "exitCode": 0,
+  "started": "2026-11-04T03:55:57.2334288Z",
+  "finished": "2026-11-04T03:56:04.1185194Z",
+  "head": "63032dd365c3b3397658c3eb50e0f0bc477aec21",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "cargoBuildJobs": 2,
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07.1-source-cardinality-gap-closure\\07.1-evidence\\plan02-printer-guards.log"
+}

@@ -8,6 +8,48 @@ fn col(name: &str) -> Expr {
     Expr::Column(name.to_owned())
 }
 
+#[test]
+fn count_distinct_quotes_identifiers() {
+    let pk = "pk\"; DROP TABLE victim; --";
+    let fk = "fk\" /*comment*/";
+    let mut query = sample();
+    query.projection = vec![SelectItem {
+        expr: Expr::CountDistinct(Box::new(col(pk))),
+        alias: None,
+    }];
+    query.from = Some(TableRef {
+        catalog: "cat\"; --".to_owned(),
+        schema: "schema\"/* */".to_owned(),
+        table: "table\"; DROP TABLE victim; --".to_owned(),
+    });
+    query.filter = None;
+    query.group_by = vec![col(fk)];
+    query.having = None;
+    query.order_by.clear();
+    for dialect in [Dialect::Sqlite, Dialect::Trino] {
+        let sql = print_select(&query, dialect).expect("quoted identifiers");
+        assert!(
+            sql.as_str()
+                .contains("count(DISTINCT \"pk\"\"; DROP TABLE victim; --\")"),
+            "{sql}"
+        );
+        assert!(
+            sql.as_str().contains("GROUP BY \"fk\"\" /*comment*/\""),
+            "{sql}"
+        );
+        assert!(
+            sql.as_str()
+                .contains("\"table\"\"; DROP TABLE victim; --\""),
+            "{sql}"
+        );
+        let statements =
+            sqlparser::parser::Parser::parse_sql(&sqlparser::dialect::AnsiDialect {}, sql.as_str())
+                .expect("one legal query");
+        assert_eq!(statements.len(), 1, "{sql}");
+        assert!(matches!(statements[0], sqlparser::ast::Statement::Query(_)));
+    }
+}
+
 fn sample() -> Select {
     Select {
         projection: vec![

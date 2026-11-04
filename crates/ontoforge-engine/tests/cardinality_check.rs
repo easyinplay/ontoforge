@@ -11,7 +11,9 @@ use ontoforge_engine::cardinality_check::{
 use ontoforge_engine::printer::ast::{Expr, OrderItem, Select, SelectItem};
 use ontoforge_engine::printer::print_select;
 use ontoforge_engine::sqlite::SqliteEngine;
-use ontoforge_engine::sqlite::fixture::plan_fixture_tables;
+use ontoforge_engine::sqlite::fixture::{
+    FixtureColumn, FixtureTable, LogicalType, plan_fixture_tables,
+};
 use ontoforge_engine::{
     Dialect, Engine, EngineError, EngineStatus, PhysicalColumn, PrintedSql, QueryContext,
     QueryOutput, TableRef, Value,
@@ -292,4 +294,129 @@ async fn mapped_to_binding_is_the_only_source() {
         .expect("only dev table exists");
     assert_eq!(result.samples, vec![(string("A1"), 2)]);
     assert_eq!(engine.scans.load(Ordering::SeqCst), 1);
+}
+
+fn grouped_csv(groups: usize) -> String {
+    let mut text = String::from("record_id,aircraft_id\n");
+    for i in (0..groups).rev() {
+        text.push_str(&format!("M{i}a,A{i:03}\nM{i}b,A{i:03}\n"));
+    }
+    text
+}
+
+#[tokio::test]
+async fn samples_have_twenty_plus_sentinel_bound() {
+    for groups in [20, 21, 22] {
+        let finding = check(&grouped_csv(groups)).await;
+        assert_eq!(finding.samples.len(), 20);
+        assert_eq!(finding.more, groups > 20);
+        let expected = (0..20)
+            .map(|i| (string(&format!("A{i:03}")), 2))
+            .collect::<Vec<_>>();
+        assert_eq!(finding.samples, expected);
+    }
+}
+
+#[tokio::test]
+async fn tighter_budgets_are_not_widened() {
+    let (_dir, engine, target) = fixture(&grouped_csv(22)).await;
+    for max_rows in [0, 1, 20] {
+        let context = QueryContext { max_rows, ..ctx() };
+        let error = check_cardinality(&engine, &target, &context)
+            .await
+            .expect_err("incomplete rows");
+        assert!(error.to_string().contains("truncated"), "{error}");
+    }
+    for max_bytes in [0, 1, 20] {
+        let context = QueryContext { max_bytes, ..ctx() };
+        let error = check_cardinality(&engine, &target, &context)
+            .await
+            .expect_err("incomplete bytes");
+        assert!(error.to_string().contains("truncated"), "{error}");
+    }
+    let allowed = QueryContext {
+        max_rows: 21,
+        ..ctx()
+    };
+    assert!(
+        check_cardinality(&engine, &target, &allowed)
+            .await
+            .expect("complete sentinel")
+            .more
+    );
+    assert_eq!(engine.scans.load(Ordering::SeqCst), 7);
+}
+
+fn fixture_table(target: &CardinalityTarget, file: &str) -> FixtureTable {
+    FixtureTable {
+        def_names: vec!["dev/MaintenanceRecord".to_owned()],
+        table: target.table.clone(),
+        file: file.to_owned(),
+        columns: [target.primary_key.clone(), target.foreign_key.clone()]
+            .into_iter()
+            .map(|name| FixtureColumn {
+                name,
+                logical: LogicalType::String,
+            })
+            .collect(),
+    }
+}
+
+#[tokio::test]
+async fn count_distinct_quotes_identifiers_on_sqlite() {
+    let (dir, _engine, mut target) = fixture("record_id,aircraft_id\nM1,A1\n").await;
+    target.table.table = "records\"; DROP TABLE victim; --".to_owned();
+    target.primary_key = "pk\"; --".to_owned();
+    target.foreign_key = "fk\" /* */".to_owned();
+    let special_file = "special.csv";
+    let mut csv = csv::Writer::from_path(dir.path().join(special_file)).expect("CSV");
+    csv.write_record([&target.primary_key, &target.foreign_key])
+        .expect("header");
+    for row in [["M1", "A1"], ["M2", "A1"], ["M1", "A1"]] {
+        csv.write_record(row).expect("row");
+    }
+    csv.flush().expect("flush");
+    let mut victim = target.clone();
+    victim.table.table = "victim".to_owned();
+    let tables = [
+        fixture_table(&target, special_file),
+        fixture_table(&victim, special_file),
+    ];
+    let engine =
+        SqliteEngine::from_fixtures(Utf8Path::from_path(dir.path()).expect("utf8"), &tables)
+            .await
+            .expect("quoted fixtures");
+    let before = rows(&engine, &victim).await;
+    let finding = check_cardinality(&engine, &target, &ctx())
+        .await
+        .expect("safe query");
+    assert_eq!(finding.samples, vec![(string("A1"), 2)]);
+    assert_eq!(before.rows.len(), 3);
+    assert_eq!(rows(&engine, &victim).await, before);
+    assert_eq!(rows(&engine, &target).await.rows, before.rows);
+}
+
+#[tokio::test]
+async fn independent_runs_observe_current_source() {
+    let (dir, engine, target) = fixture("record_id,aircraft_id\nM1,A1\nM2,A1\n").await;
+    let first = check_cardinality(&engine, &target, &ctx())
+        .await
+        .expect("first scan");
+    assert_eq!(first.samples, vec![(string("A1"), 2)]);
+    std::fs::write(
+        dir.path().join(FIXTURE),
+        "record_id,aircraft_id\nM1,A1\nM2,A2\n",
+    )
+    .expect("controlled source update");
+    let changed = SqliteEngine::from_fixtures(
+        Utf8Path::from_path(dir.path()).expect("utf8"),
+        &[fixture_table(&target, FIXTURE)],
+    )
+    .await
+    .expect("updated fixture");
+    let second = check_cardinality(&changed, &target, &ctx())
+        .await
+        .expect("new observation");
+    assert!(second.samples.is_empty());
+    assert_eq!(rows(&changed, &target).await.rows.len(), 2);
 }
