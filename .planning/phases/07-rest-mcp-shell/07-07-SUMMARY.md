@@ -1,6 +1,9 @@
 ---
 phase: 07-rest-mcp-shell
 plan: "07"
+requirements-completed: [MCP-02, MCP-03, MCP-04, MCP-05]
+requirements-reconciled: "2026-11-04"
+# Dated cumulative delivery, including successor evidence; original completion date is retained.
 subsystem: mcp
 tags: [rmcp, mcp, authorization, tool-catalog, action-schema, tdd]
 requires: [07-06]
@@ -39,6 +42,10 @@ actuals:
 ---
 
 # Phase 7 Plan 7: MCP core/full 与动态 Action 工具 Summary
+
+## 2026-11-04 元数据对账
+
+累计确认 MCP-02/03/04/05 完成：scoped describe、对象集合读工具、由真实 Action 参数生成的 schema、validate-only 零业务写均在实际调用链中；后继07-13 schema/validator修正、PG真实并发和最终 `f8851ca` CI `41759804733` 提供累计证据。详 [07-VERIFICATION.md](07-VERIFICATION.md)、[独立增量账本](../../milestones/v1.0-audit/PHASE-07-REVERIFY.md)。原计划当时未通过的 Clippy 等历史记录继续保留，不将后继修复或2026-11-04验收写成原完成日期的事实。
 
 `/mcp` 现在由同一 `ServerHost` 提供 rmcp HTTP 服务，按请求认证并基于主体 scope 生成 core/full 与动态 Action 工具。读工具复用既有 Query/History 服务，Action 调用复用 `ActionService` 的参数验证和写入保护。
 

@@ -56,7 +56,9 @@ key-decisions:
 patterns-established:
   - "Pattern text is built only in escape.rs (like_pattern, glob_pattern) and then goes through quote_string"
 
-requirements-completed: []
+requirements-completed: [SCOPE-03]
+requirements-reconciled: "2026-11-04"
+# Completion is a cumulative reconciliation; original execution-time statements remain historical.
 requirements-addressed: [SCOPE-04, SCOPE-03, SCOPE-05, SCOPE-02]
 # SCOPE-04: Rust == SQLite proven here; the Trino half runs only in CI (03-20), so it is not ticked.
 # SCOPE-03 / SCOPE-05 / SCOPE-02: merge and lowering exist as library API; Role / RoleBinding loading, apply and scoped reads are 03-14 / 03-16 / Phase 4.
@@ -134,6 +136,12 @@ status: complete
 # Phase 3 Plan 11: Row predicate lowering, StringMatch and multi-role merge Summary
 
 **A row predicate is lowered to the printer AST with principal attributes as literals (empty `IN` becomes `FALSE`, unknown becomes `= NULL`, string matches become Trino `LIKE ... ESCAPE` / SQLite `GLOB` through one escape exit), a differential proptest proves it equal to the Rust evaluator on SQLite, and `merge` builds a fail-closed `TypeScope` whose columns cannot leak across roles.**
+
+## 2026-11-04 元数据对账
+
+本次补录 `SCOPE-03` 的累计交付完成，保留原始执行日期以及当时Role/RoleBinding加载、apply和scoped reads尚待后继计划的说明。[03-VERIFICATION.md](03-VERIFICATION.md) 的SCOPE-03需求行确认per-column predicate merge、9个merge测试及实际SQL差分；[PHASE-01-03-REVERIFY.md](../../milestones/v1.0-audit/PHASE-01-03-REVERIFY.md) 亲核了多role不会产生列×行泄露的原始CI结果和后继scope/request接线。
+
+该声明以本计划的merge交付加后继累计验证为依据，不倒写03-11当时整项已完成，也不把当时仅编译/列出的Trino测试改记为实跑。当前Trino差分原始运行证据由独立报告提供；本次仅更新metadata，未重跑测试。
 
 ## Performance
 

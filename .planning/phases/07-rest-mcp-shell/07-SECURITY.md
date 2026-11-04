@@ -1,16 +1,31 @@
 ---
 phase: 07-rest-mcp-shell
-status: OPEN_THREATS
+status: SECURED
 asvs_level: 1
 block_on: high
-threats_open: 1
-audited_head: adc0227
+threats_open: 0
+audited_head: f8851ca073fed34e80e605f0ac91880259df7e12
+historical_audited_head: adc0227
+incremental_scope: [INT-01, TLS-GUARD]
 date: 2026-11-04
 ---
 
 # Phase 7 安全核验
 
-2026-11-04后继审计：INT-01（L2-03，自定义edit catalog应用层硬排除接线）为high OPEN，当前不得沿用下文原48/48结论作为无开放威胁证明。原审查记录保留，增量修复与复签见 `.planning/milestones/v1.0-audit/INTEGRATION.md` 及 `L2-CATALOG-FIX.md`。底层Trino ACL仍可能拒绝，本项未宣称实际数据泄露。
+## 2026-11-04 增量复签
+
+INT-01（L2-03，关联T-07-22）和TLS-GUARD均 CLOSED，当前 `threats_open=0`。独立安全审查见 [GAP-SECURITY-REVIEW.md](../../milestones/v1.0-audit/GAP-SECURITY-REVIEW.md)，本轮 verifier 另亲核生产diff、五个HTTP测试断言、原始RED/GREEN与最终双平台CI日志，详 [PHASE-07-REVERIFY.md](../../milestones/v1.0-audit/PHASE-07-REVERIFY.md)。原48项威胁继承下文历史证据，没有伪称全部重新审计。
+
+| 增量 | 源码与行为证据 | 状态 |
+|---|---|---|
+| INT-01 / T-07-22 | `54a47dd`：可信ACL配置accessor→Enabled检查→六工具统一policy；默认/自定义catalog、defaults/qualified target、全部上游零发送、零fallback/audit与正向六工具；RED2→GREEN2，相关83/83，最终CI两OS新5项全部ok | CLOSED |
+| TLS-GUARD / T-07-SC局部 | `ef7ac92`：单次完整图精确package匹配、Cargo错误fail-closed；verifier独立跑6个hermetic场景exit0，最终CI两OS的hermetic及真实helper均success | CLOSED |
+
+最终CI `41759804733` 四必需job成功；release `41759804768` native3/3与aggregate成功、publish skipped；fresh服务/SDK43项及凭证扫描、清理通过。动态总账51项不用于重计威胁。原dynamic runner因HEAD变化exit1，独立provenance/scan/cleanup exit0保留为另一项证据。未证明真实环境发生过数据泄露；HTTP fixture验证应用fence。STORE-05与ENGINE-05全局缺口不在本复签范围。
+
+## 历史审计记录（基线 adc0227）
+
+2026-11-04早先发现INT-01时，本报告曾暂置OPEN_THREATS/high OPEN；原48/48不能覆盖自定义catalog。该暂停已由上方增量源码、测试与独立复签解除。以下时间、计数及基线维持当时事实。
 
 独立 gsd-security-auditor 核对16份 PLAN，去重为48项（44 high、4 medium）；T24、T22及N3发现的T08修复均已独立复签CLOSED，当前48/48 CLOSED、threats_open=0。全部 disposition=mitigate，无 accepted/transfer 风险。初审基线e6ae310/b068ff5，增量至adc0227；精确最终指纹见reviews/07-T24-SECURITY-RECHECK.md、07-E6-SECURITY-RECHECK.md、07-T08-SECURITY-RECHECK.md，后者覆盖后续context/mcp/lib/state变更。2026-11-04最终fresh43/43、CI41669982375四必需job和native41669982362全部通过，详07-14-SUMMARY.md；不扩大为实际生产发布安全认证。
 

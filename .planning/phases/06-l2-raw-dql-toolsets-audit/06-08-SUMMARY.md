@@ -29,7 +29,9 @@ key-files:
 key-decisions:
   - "CI 对受限 Trino 与 PG audit 先计数后执行，不接受零发现。"
   - "Windows workspace 测试使用单线程 libtest，以免 16 MiB 测试与 1 秒审计期限竞争。"
-requirements-completed: []
+requirements-completed: [L2-01, L2-02]
+requirements-reconciled: "2026-11-04"
+# Completion is cumulative; original execution-time statements below remain historical.
 coverage:
   - id: D1
     description: "独立受限 Trino 483 的 ACL、自检、G11 拒绝和 G16/G17 Display 真执行"
@@ -63,6 +65,14 @@ status: complete
 # Phase 6 Plan 08: 真实服务 CI 门禁 Summary
 
 CI 接入独立受限 Trino 483、宽松规则对照、104-ID corpus 和 PostgreSQL 审计的非零发现与实际执行。
+
+## 2026-11-04 元数据对账
+
+本次补录L2-01、L2-02的累计交付完成，保留原completed日期、原CI未运行和需求pending说明为2026-10-28执行时事实。该声明组合06-03/06/07/08及后继closure，不表示06-08当时单独完成全部合同。
+
+[06-VERIFICATION.md](06-VERIFICATION.md) 的2026-11-04独立复验现为22/22：六个只读库工具通过真实授权/审计接线；104-ID constructed-equivalent语料分类、Display和拒绝零POST有新CI具名GREEN；真实Trino ACL6/6及32条Display SQL实际FINISHED。CI41759804733对应f8851ca，双平台workspace、corpus、PG/Trino全部必需job成功。[PHASE-05-06-REVERIFY.md](../../milestones/v1.0-audit/PHASE-05-06-REVERIFY.md)记录原始日志与边界。
+
+历史原始SQL恢复数仍为0，不把constructed-equivalent改称原始语料。Phase07 MCP adapter的INT-01由其独立验收，不用本metadata关闭transport或milestone缺口。本次只对账文档，未运行测试或服务；随后由verifier生成最终fingerprint。
 
 ## Performance
 

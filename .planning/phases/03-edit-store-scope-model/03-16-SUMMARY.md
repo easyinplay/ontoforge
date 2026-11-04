@@ -68,7 +68,9 @@ patterns-established:
 # through 03-14. Group sync from OIDC at request time, scoped reads and action authorization (Phase 4 / 5), the reload re-check
 # and the request-pinned definition version (03-18) and the REST read-only role view (Phase 7) are still open, so
 # REQUIREMENTS.md stays unticked (policy decided in 03-01).
-requirements-completed: []
+requirements-completed: [SCOPE-01, SCOPE-02]
+requirements-reconciled: "2026-11-04"
+# Completion is a cumulative reconciliation; original execution-time statements remain historical.
 requirements-addressed: [SCOPE-01, SCOPE-07, SCOPE-02, SCOPE-06]
 
 coverage:
@@ -184,6 +186,12 @@ completed: 2026-10-20
 # Phase 3 Plan 16: Scope Plan and Apply Summary
 
 **`ontoforge scope plan|apply` syncs a scope directory into the edit store as a reviewed, hash-bound full sync: offline `compile_scope` first, then roles, bindings, row predicate indexes and one append-only audit record in a single transaction, with a minimal `of_user` record per authenticated principal.**
+
+## 2026-11-04 元数据对账
+
+本次补录 `SCOPE-01`、`SCOPE-02` 的累计交付完成。原始执行日期及当时尚待request-time接线、scoped reads等说明保留；完成声明组合03-02/05/06/07/11/14与本计划的后继证据，不表示03-16单独交付了所有跨phase行为。
+
+[03-VERIFICATION.md](03-VERIFICATION.md) 的SCOPE-01需求行确认Role/RoleBinding加载、scope plan/apply、user/group/JWT groups与管理审计；SCOPE-02需求行确认角色授权文档、属性allow-list、row predicate、action/SQL/toolset授权编译。[PHASE-01-03-REVERIFY.md](../../milestones/v1.0-audit/PHASE-01-03-REVERIFY.md) 记录亲核的PG scope 3/3、OIDC/编译/多role证据及后继request snapshot接线。这里引用独立累计复验，不声称本次执行测试，也不替代Phase4/5/7整体完成判断。
 
 ## Accomplishments
 

@@ -54,7 +54,9 @@ patterns-established:
 # SCOPE-01 / 02 / 05 / 06: compile_scope and for_principal are library API with tests on the aviation example and in-memory corpora.
 # Persisting and applying a scope is 03-16, the reload re-check is 03-18, scoped reads and action authorization are Phase 4 / 5.
 # REQUIREMENTS.md is left unticked on purpose (policy decided in 03-01).
-requirements-completed: []
+requirements-completed: [SCOPE-05]
+requirements-reconciled: "2026-11-04"
+# Completion is a cumulative reconciliation; original execution-time statements remain historical.
 requirements-addressed: [SCOPE-02, SCOPE-05, SCOPE-06, SCOPE-01]
 
 coverage:
@@ -174,6 +176,12 @@ status: complete
 # Phase 3 Plan 14: Scope compilation and criteria coverage Summary
 
 **`compile_scope` turns a role directory plus ontology, profile bindings and declared principal attributes into a `CompiledScope` or into every ONT-V21 / V22 / V23 problem at once (with YAML line and column), and `for_principal` resolves a caller's user and group roles into a fail-closed, merged `PrincipalScope`.**
+
+## 2026-11-04 元数据对账
+
+本次补录 `SCOPE-05` 的累计交付完成。原始执行日期与当时持久化/apply、reload及scoped reads待后继交付的说明保持历史语义。[03-VERIFICATION.md](03-VERIFICATION.md) 的SCOPE-05需求行确认no_grant不可见、缺失属性造成的Unknown不通过、非法谓词编译拒绝；[PHASE-01-03-REVERIFY.md](../../milestones/v1.0-audit/PHASE-01-03-REVERIFY.md) 记录实际Rust/SQLite/Trino差分及scope apply/reload/migrate编译接线核查。
+
+完成声明组合03-05/11、本计划与后继累计证据，未把03-14库级slice改写为当时完成全部接线。缺失属性语义遵循ADR-0025的Null/Kleene/Unknown不可见，不扩大为任何显式null分支都必须拒绝。本次没有重新运行测试或服务。
 
 ## Performance
 

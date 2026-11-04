@@ -46,7 +46,9 @@ patterns-established:
 
 # STORE-04: this plan delivers the library-level history read with D-13 masking. The REST / MCP exposure is Phase 7, so the
 # requirement is addressed here but REQUIREMENTS.md stays unticked (policy decided in 03-01).
-requirements-completed: []
+requirements-completed: [STORE-04]
+requirements-reconciled: "2026-11-04"
+# Completion includes later transport evidence; original execution-time statements remain historical.
 requirements-addressed: [STORE-04]
 
 coverage:
@@ -133,6 +135,12 @@ completed: 2026-10-20
 # Phase 3 Plan 17: Masked Object History Summary
 
 **`EditStore::history` reads the change history of one object newest first and shows values only for the columns the caller's `TypeScope` grants on the current row; every other changed column is named in `masked_changes`, and raw Action params go to `CallerKind::Admin` only.**
+
+## 2026-11-04 元数据对账
+
+本次将 `STORE-04` 补录为累计交付完成。原始执行日期及“REST / MCP exposure is Phase 7”的说明保留为当时事实；03-17交付库级history，后继transport接线是本次补录不可省略的证据。
+
+[03-VERIFICATION.md](03-VERIFICATION.md) 的STORE-04需求行确认history_masking的12个SQLite与1个PG测试、固定definition读取和当前scope遮蔽。[PHASE-01-03-REVERIFY.md](../../milestones/v1.0-audit/PHASE-01-03-REVERIFY.md) 另亲核了后继真实服务测试 `pg_http_mixed_snapshot_reload_revoke_and_history`，以及server `history_page` 调用 `history_with_snapshot` 的接线。以上是独立复验所复用的原始行为证据，本次仅更新metadata，未重新运行服务或测试，不扩大为Phase7整体通过。
 
 ## Accomplishments
 

@@ -37,7 +37,9 @@ key-decisions:
   - "The guard loop uses a bash array instead of one long `for` line, so adding a target is a one-line diff"
   - "The PG step sets ONTOFORGE_PG_URL per step, not job-wide, so only the steps that need it see it"
 
-requirements-completed: [STORE-01, SCOPE-04]
+requirements-completed: [STORE-01, SCOPE-04, STORE-02]
+requirements-reconciled: "2026-11-04"
+# STORE-02 is a cumulative reconciliation; original execution-time statements below remain historical.
 requirements-addressed: [STORE-01, SCOPE-04, STORE-02]
 # STORE-01 and SCOPE-04 are ticked on the green CI run (see "CI run"). STORE-02 is not: see "Requirements".
 ---
@@ -45,6 +47,14 @@ requirements-addressed: [STORE-01, SCOPE-04, STORE-02]
 # Phase 3 Plan 20: CI wiring and edit store deployment guide Summary
 
 The Linux `integration` job (green on its first run) now runs the edit store conformance suites on a real PostgreSQL 17, the fixed row-predicate corpus and the reload visibility probe on Trino 483, behind a guard that fails if any of ten targets lists no ignored tests; `docs/edit-store.md` tells operators how to set up PostgreSQL accounts (REVOKE), the Trino catalog and the commands.
+
+## 2026-11-04 元数据对账
+
+本次仅补录 `STORE-02` 的累计交付声明，原始执行日期、CI run、`STORE-02 not ticked` 与当时 open gaps 保留为历史。该声明依据后继交付和独立复验，不表示03-20执行当时已完成整项需求，也不表示所有历史advisory均已修复。
+
+[03-VERIFICATION.md](03-VERIFICATION.md) 的SC1、SC8和STORE-02需求行核对了reload/migrate、归档、版本栅栏、PG锁超时、pending/probe/active以及真实缓存可见性测试。[PHASE-01-03-REVERIFY.md](../../milestones/v1.0-audit/PHASE-01-03-REVERIFY.md) 记录亲核的原始CI `41669982375`：PG reload 11/11、migrate 4/4、Trino reload 3/3，包含 `cached_column_requires_flush_before_definition_switch`。这是当前累计证据归并，不是本次重新运行这些测试；源码与日志复用边界以独立报告为准。
+
+本段不关闭 `STORE-05` 的source基数报告缺口，也不替代milestone或Phase7最终验收。元数据写入后产生的fingerprint变化交由verifier复签。
 
 ## What was done
 

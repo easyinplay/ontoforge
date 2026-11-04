@@ -1,17 +1,17 @@
 {
   "contract": "1.0.0",
   "flavor": "core",
-  "milestone": null,
+  "milestone": "v1.0",
   "phases": [
     {
       "number": "1",
       "name": "Workspace, Schema & Lint",
-      "status": "complete"
+      "status": "pending"
     },
     {
       "number": "2",
       "name": "Source Binding & Engine",
-      "status": "complete"
+      "status": "pending"
     },
     {
       "number": "3",
@@ -36,13 +36,18 @@
     {
       "number": "7",
       "name": "REST & MCP Shell",
-      "status": "executing"
+      "status": "complete"
+    },
+    {
+      "number": "7.1",
+      "name": "Source Cardinality Gap Closure",
+      "status": "pending"
     }
   ],
   "next": {
-    "command": "$gsd-audit-milestone",
-    "label": "审计既有 milestone",
-    "reason": "独立审计确认INT-01，自定义edit catalog修复及历史证据补审进行中，未归档或发布"
+    "command": "$gsd-progress --next",
+    "label": "Advance to the next step (plan phase 07.1)",
+    "reason": "Phase 8 of 8 — needs a plan"
   },
-  "updated_at": "2026-11-03T16:36:15.676Z"
+  "updated_at": "2026-11-04T03:15:58.690Z"
 }

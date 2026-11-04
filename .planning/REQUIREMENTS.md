@@ -33,7 +33,7 @@
 - [x] **ENGINE-02**: Trino 不可用时，需要 Trino 的读写 fail-closed（`EngineUnavailable`），`/health` 与 describe 暴露引擎状态
 - [x] **ENGINE-03**: 发往 Trino / SQLite 的 SQL 由自有 printer 生成，值只经转义函数输出，注入防护由 proptest 与真实执行验证
 - [x] **ENGINE-04**: SQLite 替身引擎支撑 Windows 本机 `cargo test` 与 `serve --dev`（不承诺生产）
-- [x] **ENGINE-05**: Linux CI 跑 Trino + PG 集成测试，nightly 加跑 Iceberg；SQL Server 由私有 fixture 验证
+- [ ] **ENGINE-05**: Linux CI 跑 Trino + PG 集成测试，nightly 加跑 Iceberg；SQL Server 由私有 fixture 验证
 
 ### Edit store 与 edit log
 
@@ -41,7 +41,7 @@
 - [x] **STORE-02**: 新增类定义变更在 reload 时自动生成 DDL；破坏性变更被 lint 拦下，经 `ontoforge migrate --plan/--apply` 完成并归档旧列；reload 原子生效（Trino 元数据可见后才切换、`lock_timeout`、`def_version` 栅栏）
 - [x] **STORE-03**: 每次成功提交的写入都追加到不可变 edit log，记录 actor、action、时间、参数与 edits
 - [x] **STORE-04**: 客户端可以查询某个对象的变更历史
-- [x] **STORE-05**: link 基数（1:1、1:N）在 edit store 写入时强制；source 数据的基数由 lint / 校验查询报告，不阻塞读取
+- [ ] **STORE-05**: link 基数（1:1、1:N）在 edit store 写入时强制；source 数据的基数由 lint / 校验查询报告，不阻塞读取
 - [x] **STORE-06**: 开发者可以用 `ontoforge import` 导入 edit-only 对象与替身引擎数据，导入作为系统 edit 记入 edit log；业务数据摄取由 Trino ETL（L3）负责
 - [x] **STORE-07**: 叠加按属性 patch：edit 只存设置过的属性，未设置的属性跟随 source；tombstone 不复活，release 显式且版本单调递增
 
@@ -89,7 +89,7 @@
 
 - [x] **L2-01**: 被授予 `sql:raw` 的主体可以执行只读 Trino DQL 并列举 allow-list 内的 catalog / schema / 表
 - [x] **L2-02**: L2 SQL 经 AST 白名单校验（只允许 SELECT / WITH，拒绝表函数、CALL、EXECUTE、多语句、会话与事务语句），执行时发送重序列化后的 SQL
-- [ ] **L2-03**: L2 只能访问 catalog / schema allow-list，硬排除 edit store catalog 与 `system` 元数据表
+- [x] **L2-03**: L2 只能访问 catalog / schema allow-list，硬排除 edit store catalog 与 `system` 元数据表
 - [x] **L2-04**: 启动自检无法证明 L2 身份在 Trino 侧受限时禁用 L2 并告警（fail-closed）
 - [x] **AUDIT-01**: 所有级别的读取记录元数据审计（不含结果数据），异步落库，积压或持续失败时读请求 fail-closed；保留期可配
 
@@ -197,12 +197,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ENGINE-02 | Phase 2（错误分类与 status()）+ Phase 7（/health 与 describe 暴露，API-01） | Complete |
 | ENGINE-03 | Phase 2 | Complete |
 | ENGINE-04 | Phase 2（SQLite 替身支撑 Windows cargo test）+ Phase 7（serve --dev，DX-01） | Complete |
-| ENGINE-05 | Phase 2 | Complete |
+| ENGINE-05 | Phase 2 | Partial: local Iceberg verified; ADR-0017 MinIO fixture deviation unresolved |
 | STORE-01 | Phase 3 | Complete |
 | STORE-02 | Phase 3 | Complete |
 | STORE-03 | Phase 3 | Complete |
 | STORE-04 | Phase 3 | Complete |
-| STORE-05 | Phase 3 | Complete |
+| STORE-05 | Phase 3（edit写入约束）+ Phase 7.1（source报告补齐） | Partial: source cardinality report missing |
 | STORE-06 | Phase 3 | Complete |
 | STORE-07 | Phase 3 | Complete |
 | SCOPE-01 | Phase 3 | Complete |
@@ -238,7 +238,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ACTION-12 | Phase 5 | Complete |
 | L2-01 | Phase 6 | Complete |
 | L2-02 | Phase 6 | Complete |
-| L2-03 | Phase 6 + Phase 7（MCP传输接线） | Gap INT-01 |
+| L2-03 | Phase 6 + Phase 7（MCP传输接线） | Complete: INT-01 fixed and independently reverified 2026-11-04 |
 | L2-04 | Phase 6（库级启动与周期 attestation、fail-closed 状态）+ Phase 7（服务生命周期接线及 `/health` 告警，ADR-0028） | Complete |
 | AUDIT-01 | Phase 6 | Complete |
 | API-01 | Phase 7 | Complete |

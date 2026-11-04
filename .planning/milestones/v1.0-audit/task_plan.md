@@ -9,11 +9,13 @@
 - [x] 读取GSD audit/validate与历史phase状态，识别stale/Nyquist draft。
 - [x] 撤回fa81ca0过早通过结论，恢复独立integration与三源审计。
 - [x] Phase1 Nyquist：颜色环境行为补测，451定向GREEN；保留用户UAT观察边界。
-- [ ] L2-03/MCP-07自定义edit catalog硬排除：实际RED、可信配置接线、六工具拒绝/过滤GREEN、独立review。
-- [ ] TLS依赖门：修复openssl-only与Cargo查询失败的fail-open，hermetic反例与真实依赖图/双平台CI通过。
-- [ ] 补执行现有feature测试（SQLite action_atomic 5例、PG source_guard 1例）和实际Iceberg 483/484证据，保留非零发现。
+- [x] L2-03/MCP-07自定义edit catalog硬排除：实际RED、可信配置接线、六工具拒绝/过滤GREEN、独立review及最终Phase7复验通过。
+- [x] TLS依赖门：修复openssl-only与Cargo查询失败的fail-open，hermetic反例与真实依赖图/双平台CI通过。
+- [x] 补执行现有feature测试（SQLite action_atomic 5例、PG source_guard 1例）和实际local Iceberg 483/484证据，保留非零发现。
+- [ ] ENGINE-05精确ADR差异：MinIO未实跑且无正式替代决策；与已通过local Iceberg证据分开处置。
 - [ ] 汇总INTEGRATION.md、REQUIREMENTS-AUDIT.md与逐项矩阵，替换不充分的初稿评分。
-- [ ] 按实际缺口推进Phase2/3/5 Nyquist与Phase1–6历史验证重新核对；只运行缺乏证据的门。
+- [ ] STORE-05 source oneToOne基数报告缺口：独立接口核查、Claude Code方案收敛、明确gapclosure计划；不将PK检测或edit约束替代source报告。
+- [x] 按实际缺口推进Phase2/3/5 Nyquist与Phase1–6历史验证重新核对；保留真实partial/human_needed，不强行全绿。
 - [ ] 对最终源码完成必需CI/受影响服务验证、恢复Phase7报告新鲜性，再生成最终milestone结论与状态。
 
 ## Current Phase
@@ -23,7 +25,7 @@
 
 ## Next Step
 
-执行自定义edit catalog硬排除的真实HTTP MCP RED→GREEN。
+按用户选择A修订Phase7.1计划、独立checker并实施TDD。Phase7复验和78/79 SUMMARY声明对账已完成，MinIO与历史judgment保留未闭环；Cargo已释放。
 
 ## Constraints
 

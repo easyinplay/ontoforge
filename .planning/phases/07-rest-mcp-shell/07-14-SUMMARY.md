@@ -23,6 +23,18 @@ completed: 2026-11-04
 
 # 07-14 三平台发行包与实际安装验收
 
+## 2026-11-04 最终增量证据
+
+当前source为 `f8851ca073fed34e80e605f0ac91880259df7e12`。CI `41759804733` completed/success，Windows、Ubuntu、integration、phase7-real-services四必需job成功；两个workspace原始日志独立计数分别1496/0/117、1503/0/117，各150组，不相加成唯一测试数。INT-01新5测试及TLS两步在双平台实际通过。当前GSD UAT14/14，`source: automated`；VALIDATION规范状态为 `validated`。
+
+release `41759804768` native3/3与aggregate成功、publish skipped。三个实际包manifest的checkout为 `22913c8e79ae98b6604109d6e05a15f27cd50292`，与source不同；Git commit API与本地source tree复核二者完整tree均为 `0ecc59382aaf12e782c508ba64858e2689299fd7`。独立审计下载实际archive并重算archive SHA、binary SHA、内外manifest，verifier又执行只读重算通过；详细表及源码身份见 [RELEASE-ARTIFACT-AUDIT.md](../../milestones/v1.0-audit/RELEASE-ARTIFACT-AUDIT.md)，原始数据 `target/milestone-release-41759804768/`。没有本机重新运行包内程序；三平台动态行为由本run安装smoke日志证明。
+
+本地动态实际51 passed：SQLite5、PG source guard1、fresh服务/SDK43、Iceberg2。原runner exit1（`HEAD changed during validation`）保留；亲核868643c→f885只改变cli_color测试类型别名，服务输入相同，verify commit.txt=f885。独立final-check的provenance/scan/cleanup exit0是单独证据，不能改写runner退出码。Windows owner正常exited/0与清理结果见 [DYNAMIC-VALIDATION.md](../../milestones/v1.0-audit/DYNAMIC-VALIDATION.md)。旧48项安全证据保留，INT-01/TLS另有局部独立CLOSED复签。
+
+本次不创建Release、不发布npm、不merge PR、不触发nightly或外部消息。Phase07通过不代表milestone全绿：STORE-05 source与ENGINE-05历史MinIO差异仍由主会话保留。以下为原adc0227时点记录，日期、计数、hash和当时结论均保留。
+
+## 历史 adc0227 收口记录
+
 最终源码的三个 native 包与完整安装 smoke 已通过，archive 下载后独立校验一致。最终CI四个必需job全部成功，32个task动态门已对账通过；GSD UAT已complete，13/13通过（commit `975f78e`）；最终goal VERIFICATION由独立verifier归并。
 
 ## 交付与提交

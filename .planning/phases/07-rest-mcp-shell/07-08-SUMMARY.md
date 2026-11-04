@@ -43,7 +43,9 @@ key-decisions:
   - "Treat rmcp authentication failures as JSON-RPC errors carried in HTTP 200 responses, and assert the error envelope in transport tests."
   - "Bind legacy session IDs to the freshly authenticated principal on every handler request; retain no permissions in the owner map."
 
-requirements-completed: [MCP-01, MCP-06, MCP-07, MCP-08, L2-04, SCOPE-07]
+requirements-completed: [MCP-01, MCP-06, MCP-07, MCP-08, L2-04, SCOPE-07, L2-03]
+requirements-reconciled: "2026-11-04"
+# L2-03 is a dated cumulative integration attribution, not an original PLAN requirement.
 
 coverage:
   - id: D1
@@ -77,6 +79,12 @@ status: complete
 ---
 
 # Phase 7 Plan 8: MCP L2 and HTTP Session Isolation Summary
+
+## 2026-11-04 元数据对账
+
+L2-03 累计归属新增至本文件，因为本计划交付实际六工具 adapter。原07-08 PLAN未列L2-03，不修改原PLAN或完成日期；这不是对原计划范围的倒写。Phase06提供AST/allow-list基础，本计划及07-15/16提供transport、typed参数与defaults；本次 `54a47dd` 关闭 INT-01，自可信ACL deployment配置读取edit catalog并统一六工具policy，确保角色误授自定义catalog仍不能绕过硬排除。
+
+当前 `f8851ca` 五个新增真实HTTP测试、相关83/83、最终CI `41759804733` 和fresh43项均通过；依据 [07-VERIFICATION.md](07-VERIFICATION.md)、[PHASE-07-REVERIFY.md](../../milestones/v1.0-audit/PHASE-07-REVERIFY.md) 及 [增量安全复签](../../milestones/v1.0-audit/GAP-SECURITY-REVIEW.md)。L2-03全局完成状态由主会话结合Phase06独立复验决定；本文件记录P07当前累计交付证据。原历史session边界与后继修复归属继续保留。
 
 **Authenticated `sql:raw` MCP discovery/execution with typed EXPLAIN, audited limits, and bounded legacy session ownership.**
 

@@ -1,6 +1,9 @@
 ---
 phase: 07-rest-mcp-shell
 plan: "05"
+requirements-completed: [API-02]
+requirements-reconciled: "2026-11-04"
+# Dated cumulative delivery, including successor evidence; original completion date is retained.
 subsystem: api
 tags: [openapi, utoipa, serde, rust, cli]
 requires: [07-04]
@@ -42,6 +45,10 @@ actuals:
 ---
 
 # Phase 7 Plan 5: OpenAPI 3.1 and Wire Contract Summary
+
+## 2026-11-04 元数据对账
+
+累计确认 API-02 完成。静态 OpenAPI 3.1、DTO/schema snapshot 与无服务依赖导出由本计划交付；后继合同修正及最终 `f8851ca` CI `41759804733`、fresh SDK 43 项矩阵补足当前运行证据。依据 [07-VERIFICATION.md](07-VERIFICATION.md) 与 [独立增量账本](../../milestones/v1.0-audit/PHASE-07-REVERIFY.md)。此字段是本次累计归并，不把后继修复、测试或当前结论倒记为2026-10-29原子交付；以下历史内容保留。
 
 Static OpenAPI 3.1 generation now covers the authenticated REST surface and can be exported from `serve` without opening a store or listener.
 

@@ -11,19 +11,20 @@ Phase 1 定死 IR 契约。2026-10-16 起 Phase 2–7 按 `docs/designs/trino-en
 - Integer phases (1, 2, 3): 本 milestone 计划内工作
 - Decimal phases (2.1, 2.2): 紧急插入（标注 INSERTED）
 
-- [x] **Phase 1: Workspace, Schema & Lint** - cargo workspace 骨架，YAML/JSON 到单一 IR，E/W lint 规则与 line:col 诊断 (completed 2026-10-16)
-- [x] **Phase 2: Source Binding & Engine** - IR 数据源绑定与类型契约，`ontoforge-engine`（自写 Trino client、自有 SQL printer、SQLite 替身），`validate --online` 与 drift 校验 (completed 2026-10-19)
+- [ ] **Phase 1: Workspace, Schema & Lint** - 11/11功能truth成立，3项judgment记录待闭环（2026-11-04复验）；详: `.planning/phases/01-workspace-schema-lint/01-VERIFICATION.md`
+- [ ] **Phase 2: Source Binding & Engine** - 100/103，保留MinIO精确合同缺口及2项judgment（2026-11-04复验）；详: `.planning/phases/02-source-binding-engine/02-VERIFICATION.md`
 - [x] **Phase 3: Edit Store & Scope Model** - 按 type 强类型 edit store、DDL diff / migrate / reload 加固、edit log；用户 / 组 / 角色、CEL 行谓词（SQL 编译 + Rust 单行求值） (completed 2026-10-22)
 - [x] **Phase 4: Scoped L0 Read** - Rust 编排叠加读：pk 读、列表、聚合分解、searchAround、keyset 分页、HMAC 版本令牌 (completed 2026-10-23)
 - [x] **Phase 5: Online Action** - Action 鉴权管线 ①-⑨、并发令牌、`command_id`、webhook outbox (completed 2026-10-26)
 - [x] **Phase 6: L2 Raw DQL, Toolsets & Audit** - L2、toolsets 与读审计已验收；详: `.planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md` (completed 2026-10-28)
-- [ ] **Phase 7: REST & MCP Shell** - 16/16实现后审计发现INT-01，自定义edit catalog修复与重验中；详: `.planning/milestones/v1.0-audit/INTEGRATION.md`
+- [x] **Phase 7: REST & MCP Shell** - INT-01/TLS修复后80/80复验、UAT14/14通过（2026-11-04）；详: `.planning/phases/07-rest-mcp-shell/07-VERIFICATION.md`
+- [ ] **Phase 7.1: Source Cardinality Gap Closure** - 用户选择A，3份计划定稿与独立检查中；详: `.planning/phases/07.1-source-cardinality-gap-closure/`
 
 ## Phase Details
 
 ### Phase 1: Workspace, Schema & Lint
 
-**Goal**: 开发者可以用 YAML/JSON 编写 ontology，并通过 `ontoforge validate` / `ontoforge lint` 得到带源码定位的诊断；仓库在 Windows 本机 `cargo test` 全绿
+**Goal**: As a ontology 开发者, I want to 用 YAML/JSON 编写 ontology，并通过 `ontoforge validate` / `ontoforge lint` 得到带源码定位的诊断，且仓库在 Windows 本机 `cargo test` 全绿, so that 我能在本机可靠地编写和验证定义.
 **Mode:** mvp
 **Depends on**: Nothing (first phase)
 **Requirements**: SCHEMA-01, SCHEMA-02, SCHEMA-03, SCHEMA-04, SCHEMA-05, SCHEMA-06, SCHEMA-07, LINT-01, LINT-02, LINT-03, LINT-04, DX-03
@@ -79,7 +80,7 @@ Plans:
 
 ### Phase 2: Source Binding & Engine
 
-**Goal**: 开发者可以把 object type / M:N link 绑定到 Trino 物理表，ontoforge 经自写 client 连接已有 Trino 并校验绑定；Windows 本机用 SQLite 替身零外部依赖跑通
+**Goal**: As a ontology 开发者, I want to 把 object type / M:N link 绑定到 Trino 物理表，由 ontoforge 经自写 client 连接已有 Trino 并校验绑定，并在 Windows 本机用 SQLite 替身零外部依赖跑通, so that 定义能够使用真实数据源且支持本机验证.
 **Mode:** mvp
 **Depends on**: Phase 1
 **Requirements**: BIND-01, BIND-02, BIND-03, ENGINE-01, ENGINE-02, ENGINE-03, ENGINE-04, ENGINE-05
@@ -125,7 +126,7 @@ Plans:
 
 ### Phase 3: Edit Store & Scope Model
 
-**Goal**: edit store 按 object type 生成强类型表并安全演进，所有写入有不可变 edit log；用户 / 组 / 角色与 scope 规则可配置，同一份 CEL 行谓词既能编译成 SQL 也能在 Rust 中对单行求值且结果一致
+**Goal**: As a 平台管理员, I want to 让 edit store 按 object type 生成强类型表并安全演进、所有写入有不可变 edit log，配置用户 / 组 / 角色与 scope 规则，并使同一份 CEL 行谓词的 SQL 编译与 Rust 单行求值结果一致, so that 存储和权限行为可以安全演进并接受审计.
 **Mode:** mvp
 **Depends on**: Phase 2
 **Requirements**: STORE-01, STORE-02, STORE-03, STORE-04, STORE-05, STORE-06, STORE-07, SCOPE-01, SCOPE-02, SCOPE-03, SCOPE-04, SCOPE-05, SCOPE-06, SCOPE-07, AUTH-01, AUTH-02
@@ -196,7 +197,7 @@ Plans:
 
 ### Phase 4: Scoped L0 Read
 
-**Goal**: 调用者只能在自己的 scope 内读取对象：按 pk、过滤、排序分页、searchAround、集合运算与聚合都由 Rust 编排叠加完成，Trino 只承担单表查询
+**Goal**: As a 调用者, I want to 仅在自己的 scope 内通过 pk、过滤、排序分页、searchAround、集合运算与聚合读取对象，由 Rust 编排叠加且 Trino 只承担单表查询, so that 各种读取方式都遵守一致的授权边界.
 **Mode:** mvp
 **Depends on**: Phase 3
 **Requirements**: QUERY-01, QUERY-02, QUERY-03, QUERY-04, QUERY-05, QUERY-06, QUERY-07, QUERY-08, QUERY-09, QUERY-10
@@ -265,7 +266,7 @@ Plans:
   5. `ontoforge serve --dev`（SQLite 替身 + dev token）在 Windows 本机零外部依赖跑通示例 ontology 的查询 → Action → 历史演示；release workflow 发布 Linux / macOS / Windows 二进制
   6. 服务启动并维持 Phase 6 的 L2 ACL attestation；无法证明或证明过期时 L2 禁用，`/health` 告警并暴露脱敏原因，覆盖失败和恢复的端到端测试（ADR-0028）
 
-**Plans**: 16/16 implemented，INT-01增量修复与重验中；详: `.planning/milestones/v1.0-audit/task_plan.md`
+**Plans**: 16/16 complete，2026-11-04增量复验passed；详: `.planning/phases/07-rest-mcp-shell/07-VERIFICATION.md`
 - [x] 07-01-PLAN.md
 - [x] 07-02-PLAN.md
 - [x] 07-03-PLAN.md
@@ -288,14 +289,29 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7（纵切片，严格顺序依赖）
+Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7 → 7.1；历史审计未闭环项并列保留。
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Workspace, Schema & Lint | 14/14 | Complete    | 2026-10-16 |
-| 2. Source Binding & Engine | 10/10 | Complete    | 2026-10-19 |
+| 1. Workspace, Schema & Lint | 14/14 | human_needed | - |
+| 2. Source Binding & Engine | 10/10 | gaps_found | - |
 | 3. Edit Store & Scope Model | 23/23 | Complete    | 2026-10-22 |
 | 4. Scoped L0 Read | 7/7 | Complete    | 2026-10-23 |
 | 5. Online Action | 7/7 | Complete    | 2026-10-26 |
 | 6. L2 Raw DQL, Toolsets & Audit | 11/11 | Complete | 2026-10-28 |
-| 7. REST & MCP Shell | 16/16 | Re-verifying INT-01 | - |
+| 7. REST & MCP Shell | 16/16 | Complete | 2026-11-04 |
+| 7.1. Source Cardinality Gap Closure | 0/3 | Planning | - |
+
+### Phase 7.1: Source Cardinality Gap Closure (INSERTED)
+
+**Goal:** As a ontology维护者, I want to 显式运行source OneToOne基数检查并获得有界诊断, so that 我能发现违反声明的FK唯一性而不改变默认在线验证和业务读取行为.
+**Requirements**: STORE-05
+**Depends on:** Phase 7
+**Plans:** 3 plans；用户已选择A，待定稿及独立checker
+
+**Success Criteria**:
+1. 显式online基数检查对source-backed link.to的非空FK按不同对象PK计数并报告OneToOne冲突；NULL和重复物理行语义明确。
+2. 默认online与check-pk无额外FK扫描；基数warning默认0/deny-warnings1，未完成3；有整个检查总deadline及真实CLI测试。
+3. typed SQL、限额、取消与错误边界通过SQLite/Trino验证；STORE-05以独立验收结果更新。
+
+**Details**: `.planning/phases/07.1-source-cardinality-gap-closure/`

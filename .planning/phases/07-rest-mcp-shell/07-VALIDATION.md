@@ -1,7 +1,7 @@
 ---
 phase: "07"
 slug: "rest-mcp-shell"
-status: passed
+status: validated
 nyquist_compliant: true
 wave_0_complete: true
 created: "2026-10-29"
@@ -11,6 +11,22 @@ updated: "2026-11-04"
 # Phase 7 Validation Strategy
 
 ## 当前状态与证据边界
+
+2026-11-04增量复验：当前源码 `f8851ca073fed34e80e605f0ac91880259df7e12`；INT-01与TLS-GUARD已闭合，当前UAT为14/14，全部 `source: automated`。最终CI `41759804733` 四必需job成功，release `41759804768` 三native/aggregate成功且publish skipped。原16 PLAN/32 task映射保留；新5个HTTP测试与TLS6场景是后继增量证据，不冒充原32 task新交付。
+
+| 增量证据 | 实测 | 范围 |
+|---|---|---|
+| INT-01 | RED 0/2→GREEN2/2；相关server83/83；最终双OS五个新增测试ok | 真实HTTP默认/自定义edit catalog排除、正常六工具、无Trino；拒绝核对全部上游/业务/source/audit |
+| TLS-GUARD | verifier独立hermetic6/6，exit0；两OS CI hermetic与真实helper success | 精确禁包、单次完整图、查询错误fail-closed；无真实Cargo本机重跑 |
+| 最终完整CI | Windows1496/0/117、Ubuntu1503/0/117，各150组workspace结果；四必需job success | 两平台不相加成唯一测试总数；原始日志`target/milestone-ci-41759804733-{windows,ubuntu,integration}.log` |
+| 本地动态补证 | SQLite5 + PG1 + fresh43 + Iceberg2 = 51 passed | 原runner exit1（HEAD变化）；868643c→f885唯一cli_color类型别名，服务输入等价；独立final-check的provenance/scan/cleanup exit0 |
+| 三平台发行 | 三实际archive与binary hash、内外manifest、完整tree独立核对；native smoke通过 | source f8851ca、packaged22913c8；publish skipped |
+
+详细独立证据：[PHASE-07-REVERIFY.md](../../milestones/v1.0-audit/PHASE-07-REVERIFY.md)、[DYNAMIC-VALIDATION.md](../../milestones/v1.0-audit/DYNAMIC-VALIDATION.md)、[RELEASE-ARTIFACT-AUDIT.md](../../milestones/v1.0-audit/RELEASE-ARTIFACT-AUDIT.md)。没有因Phase07通过而关闭STORE-05或ENGINE-05全局缺口。
+
+### 原 adc0227 验证记录
+
+以下计数、时间与32-task映射属于原审计证据；当前源码/运行身份由上方增量覆盖，原失败事实与后继闭合过程均保留。
 
 2026-11-04：16 份 PLAN、32 个 task 已有实际自动化入口及动态证据。T24、E1–E7、T08 与 N1/N2/N3 的覆盖缺口已闭合；最终源码为 `adc02278b5cc55111def9a30a1c3b778485e8279`。本地fresh服务/SDK、三平台native及CI `41669982375` 四个必需job全部通过；32个task动态门已对账，因此 `nyquist_compliant: true`。GSD `07-UAT.md`已complete、13/13，uat-only passed=true（commit `975f78e`）；最终Phase goal结论由独立VERIFICATION归并。
 
@@ -139,3 +155,11 @@ Approval: approved 2026-11-04
 
 - 2026-11-04等待期间：最终fresh43例exit0、native成功、N1/N2/N3/T08闭合，Windows未终局时曾保留nyquist=false。
 - 2026-11-04最终：CI41669982375四必需job全部success，G5关闭；32task及G1–G6全部GREEN后设置status=passed、nyquist=true。
+
+## Validation Audit 2026-11-04
+
+| Metric | Count |
+|---|---|
+| Gaps found | 2 |
+| Resolved | 2 |
+| Escalated | 0 |

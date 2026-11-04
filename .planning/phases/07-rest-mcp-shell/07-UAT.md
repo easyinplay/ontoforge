@@ -3,8 +3,8 @@ status: complete
 phase: 07-rest-mcp-shell
 source: [07-01-SUMMARY.md, 07-02-SUMMARY.md, 07-03-SUMMARY.md, 07-04-SUMMARY.md, 07-05-SUMMARY.md, 07-06-SUMMARY.md, 07-07-SUMMARY.md, 07-08-SUMMARY.md, 07-09-SUMMARY.md, 07-10-SUMMARY.md, 07-11-SUMMARY.md, 07-12-SUMMARY.md, 07-13-SUMMARY.md, 07-14-SUMMARY.md, 07-15-SUMMARY.md, 07-16-SUMMARY.md]
 started: 2026-11-04T00:28:00+08:00
-updated: 2026-11-03T16:32:58.949Z
-verified_source_commit: adc02278b5cc55111def9a30a1c3b778485e8279
+updated: 2026-11-04T03:07:13Z
+verified_source_commit: f8851ca073fed34e80e605f0ac91880259df7e12
 ---
 
 ## Current Test
@@ -12,6 +12,8 @@ verified_source_commit: adc02278b5cc55111def9a30a1c3b778485e8279
 [testing complete]
 
 ## 验收方式与证据边界
+
+2026-11-04增量复核：前13项保留原证据并由最终 `f8851ca` CI `41759804733`、fresh43项与release `41759804768` 实际三平台smoke回归支持；新增第14项覆盖INT-01。当前14/14仅表示自动验收通过。旧source/run身份在各条中保留为历史，不冒称本轮人工见证。详 [PHASE-07-REVERIFY.md](../../milestones/v1.0-audit/PHASE-07-REVERIFY.md)。原动态runner exit1，另有服务输入等价及scan/cleanup的final-check exit0；不改写原退出码。
 
 按用户授权执行可自动化的验收，以下 `source: automated` 表示实际测试或 CI 证据，不表示用户手工确认。每项引用最终或相同生产源码的动态结果；详细测试矩阵见 `07-VALIDATION.md`，整体门禁与三平台 checksum 见 `07-14-SUMMARY.md`。没有网页 UI 验收项。
 
@@ -97,10 +99,16 @@ result: pass
 source: automated
 evidence: CI41669982375 completed/success，Windows/Ubuntu/integration/phase7-real-services四个必需job全部success。元数据target/phase7-ci-41669982375.json，完整日志及workspace计数保存于同前缀windows/ubuntu文件；isolated-query-bench为本次非必需条件作业，skipped。
 
+### 14. 自定义 edit catalog 的六工具硬排除
+expected: deployment配置private_edits且角色误授其catalog/schema时，SQL与EXPLAIN、显式/默认/qualified metadata目标仍在任何上游前拒绝；发现列表隐藏大小写变体。正常demo六工具仍可用，无Trino时六工具不可用且无fallback或audit。
+result: pass
+source: automated
+evidence: mcp_l2_defaults.rs新增5个真实HTTP测试；target/l2-catalog-red.log为0/2，green为2/2，server-regression为83/83；最终CI41759804733 Windows和Ubuntu原始日志新5项均ok。拒绝精确断言全部上游、业务上游、source和audit；正向断言返回值、6业务请求及6成功audit；不以真实Trino ACL拒绝掩盖应用fence缺口。
+
 ## Summary
 
-total: 13
-passed: 13
+total: 14
+passed: 14
 issues: 0
 pending: 0
 skipped: 0
@@ -108,4 +116,4 @@ blocked: 0
 
 ## Gaps
 
-无未解决验收缺口。13项均由实际自动化证据通过。
+本Phase的14项均由实际自动化证据通过，无未解决UAT缺口。该结论不关闭STORE-05或ENGINE-05的milestone缺口，不构成人工产品见证或发布授权。

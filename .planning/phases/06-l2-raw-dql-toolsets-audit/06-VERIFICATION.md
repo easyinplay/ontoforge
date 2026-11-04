@@ -1,6 +1,6 @@
 ---
 phase: 06-l2-raw-dql-toolsets-audit
-verified: 2026-10-28T12:08:10Z
+verified: 2026-11-04T02:55:02Z
 status: passed
 score: 22/22 must-haves verified
 behavior_unverified: 0
@@ -15,12 +15,12 @@ re_verification:
     - "R1/CR-01: 06-11 保留共享 worker handle 并缓存终态；4 类真实行为 RED/GREEN 和新 HEAD CI 已独立核验（truth #22）。"
   gaps_remaining: []
   regressions: []
-delivery_head: "2c9eee6461a412ead8f998c7fa038acaa458b2f9"
+delivery_head: "f8851ca073fed34e80e605f0ac91880259df7e12"
 implementation_head: "7813e7fb591df1bd2eb607b1a31511492a62c9e3"
-ci_run: 40682870456
-ci_head_sha: "2c9eee6461a412ead8f998c7fa038acaa458b2f9"
-covered_files: [".github/workflows/ci.yml",".planning/phases/06-l2-raw-dql-toolsets-audit/.evidence/.gitattributes",".planning/phases/06-l2-raw-dql-toolsets-audit/.evidence/clippy-workspace-20261028.log",".planning/phases/06-l2-raw-dql-toolsets-audit/.evidence/external-cleanup-20261028.log",".planning/phases/06-l2-raw-dql-toolsets-audit/.evidence/external-pg-audit-20261028.log",".planning/phases/06-l2-raw-dql-toolsets-audit/.evidence/external-trino-acl-20261028.log",".planning/phases/06-l2-raw-dql-toolsets-audit/.evidence/trino-fixture-start-20261028.log",".planning/phases/06-l2-raw-dql-toolsets-audit/06-01-PLAN.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-01-SUMMARY.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-02-PLAN.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-02-SUMMARY.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-03-PLAN.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-03-SUMMARY.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-04-PLAN.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-04-SUMMARY.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-05-PLAN.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-05-SUMMARY.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-06-PLAN.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-06-SUMMARY.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-07-PLAN.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-07-SUMMARY.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-08-PLAN.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-08-SUMMARY.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-09-PLAN.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-09-SUMMARY.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-10-PLAN.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-10-SUMMARY.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-CLIPPY.log",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-DIFF-CHECK.log",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-FIXTURE-CLEANUP.log",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-FMT.log",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-GREEN-join-error.log",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-GREEN-pg.log",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-GREEN-sqlite.log",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-PLAN.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-cancelled-junit.json",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-concurrent-junit.json",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-failure-junit.json",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-join-error-junit.json",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-join-error.log",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-join-error.xml",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-pg.log",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-sqlite.log",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-sqlite.xml",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-SUMMARY.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-EXTERNAL-EVIDENCE.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-PR-REVIEW.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-VALIDATION.md","Cargo.lock","ci/query-services.sh","ci/trino/l2/access-control.properties","ci/trino/l2/config.properties","ci/trino/l2/rules.json","ci/trino/l2/seed.sql","crates/ontoforge-action/tests/entrypoints.rs","crates/ontoforge-engine/Cargo.toml","crates/ontoforge-engine/src/config.rs","crates/ontoforge-engine/src/printer/l2.rs","crates/ontoforge-engine/src/printer/mod.rs","crates/ontoforge-engine/src/trino/decode.rs","crates/ontoforge-engine/src/trino/headers.rs","crates/ontoforge-engine/src/trino/l2_health.rs","crates/ontoforge-engine/src/trino/l2_monitor.rs","crates/ontoforge-engine/src/trino/mod.rs","crates/ontoforge-engine/tests/data/l2_corpus.json","crates/ontoforge-engine/tests/l2_gate.rs","crates/ontoforge-engine/tests/l2_health.rs","crates/ontoforge-engine/tests/l2_monitor.rs","crates/ontoforge-engine/tests/trino_l2_acl_it.rs","crates/ontoforge-query/src/aggregate.rs","crates/ontoforge-query/src/execute.rs","crates/ontoforge-query/src/l2.rs","crates/ontoforge-query/src/lib.rs","crates/ontoforge-query/tests/audit_l0.rs","crates/ontoforge-query/tests/audit_pk.rs","crates/ontoforge-query/tests/definition_snapshot.rs","crates/ontoforge-query/tests/l2_discovery.rs","crates/ontoforge-query/tests/l2_execute.rs","crates/ontoforge-query/tests/security.rs","crates/ontoforge-storage/migrations/postgres/0005_read_audit.sql","crates/ontoforge-storage/migrations/postgres/0006_audit_truncated.sql","crates/ontoforge-storage/migrations/sqlite/0005_read_audit.sql","crates/ontoforge-storage/migrations/sqlite/0006_audit_truncated.sql","crates/ontoforge-storage/src/lib.rs","crates/ontoforge-storage/src/read_audit.rs","crates/ontoforge-storage/src/reload.rs","crates/ontoforge-storage/src/scope_store.rs","crates/ontoforge-storage/src/sql_exit.rs","crates/ontoforge-storage/src/store.rs","crates/ontoforge-storage/tests/conformance/mod.rs","crates/ontoforge-storage/tests/conformance_pg.rs","crates/ontoforge-storage/tests/conformance_sqlite.rs","crates/ontoforge-storage/tests/reload_pg.rs","crates/ontoforge-storage/tests/scope_store.rs","crates/ontoforge/src/lint_cmd.rs","crates/ontoforge/src/reload.rs","crates/ontoforge/src/scope.rs","crates/ontoforge/tests/cli_reload.rs","crates/ontoforge/tests/cli_scope.rs"]
-covered_digest: "v3:sha256:0d99b15cfcb570bfbf1a832323aa7f3aee81bb4060873ffd4bb34875df990fe3"
+ci_run: 41759804733
+ci_head_sha: "f8851ca073fed34e80e605f0ac91880259df7e12"
+covered_files: [".github/workflows/ci.yml",".planning/phases/06-l2-raw-dql-toolsets-audit/.evidence/.gitattributes",".planning/phases/06-l2-raw-dql-toolsets-audit/.evidence/clippy-workspace-20261028.log",".planning/phases/06-l2-raw-dql-toolsets-audit/.evidence/external-cleanup-20261028.log",".planning/phases/06-l2-raw-dql-toolsets-audit/.evidence/external-pg-audit-20261028.log",".planning/phases/06-l2-raw-dql-toolsets-audit/.evidence/external-trino-acl-20261028.log",".planning/phases/06-l2-raw-dql-toolsets-audit/.evidence/trino-fixture-start-20261028.log",".planning/phases/06-l2-raw-dql-toolsets-audit/06-01-PLAN.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-01-SUMMARY.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-02-PLAN.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-02-SUMMARY.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-03-PLAN.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-03-SUMMARY.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-04-PLAN.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-04-SUMMARY.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-05-PLAN.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-05-SUMMARY.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-06-PLAN.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-06-SUMMARY.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-07-PLAN.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-07-SUMMARY.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-08-PLAN.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-08-SUMMARY.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-09-PLAN.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-09-SUMMARY.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-10-PLAN.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-10-SUMMARY.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-CLIPPY.log",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-DIFF-CHECK.log",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-FIXTURE-CLEANUP.log",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-FMT.log",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-GREEN-join-error.log",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-GREEN-pg.log",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-GREEN-sqlite.log",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-PLAN.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-cancelled-junit.json",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-concurrent-junit.json",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-failure-junit.json",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-join-error-junit.json",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-join-error.log",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-join-error.xml",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-pg.log",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-sqlite.log",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-sqlite.xml",".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-SUMMARY.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-EXTERNAL-EVIDENCE.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-PR-REVIEW.md",".planning/phases/06-l2-raw-dql-toolsets-audit/06-VALIDATION.md","Cargo.lock","Cargo.toml","ci/check-tls-deps.sh","ci/query-services.sh","ci/test_tls_deps.py","ci/trino/l2/access-control.properties","ci/trino/l2/config.properties","ci/trino/l2/rules.json","ci/trino/l2/seed.sql","crates/ontoforge-action/tests/entrypoints.rs","crates/ontoforge-engine/Cargo.toml","crates/ontoforge-engine/src/config.rs","crates/ontoforge-engine/src/printer/l2.rs","crates/ontoforge-engine/src/printer/mod.rs","crates/ontoforge-engine/src/trino/decode.rs","crates/ontoforge-engine/src/trino/headers.rs","crates/ontoforge-engine/src/trino/l2_health.rs","crates/ontoforge-engine/src/trino/l2_monitor.rs","crates/ontoforge-engine/src/trino/mod.rs","crates/ontoforge-engine/tests/data/l2_corpus.json","crates/ontoforge-engine/tests/l2_gate.rs","crates/ontoforge-engine/tests/l2_health.rs","crates/ontoforge-engine/tests/l2_monitor.rs","crates/ontoforge-engine/tests/trino_l2_acl_it.rs","crates/ontoforge-query/src/aggregate.rs","crates/ontoforge-query/src/execute.rs","crates/ontoforge-query/src/l2.rs","crates/ontoforge-query/src/lib.rs","crates/ontoforge-query/tests/audit_l0.rs","crates/ontoforge-query/tests/audit_pk.rs","crates/ontoforge-query/tests/definition_snapshot.rs","crates/ontoforge-query/tests/l2_discovery.rs","crates/ontoforge-query/tests/l2_execute.rs","crates/ontoforge-query/tests/security.rs","crates/ontoforge-storage/migrations/postgres/0005_read_audit.sql","crates/ontoforge-storage/migrations/postgres/0006_audit_truncated.sql","crates/ontoforge-storage/migrations/sqlite/0005_read_audit.sql","crates/ontoforge-storage/migrations/sqlite/0006_audit_truncated.sql","crates/ontoforge-storage/src/lib.rs","crates/ontoforge-storage/src/read_audit.rs","crates/ontoforge-storage/src/reload.rs","crates/ontoforge-storage/src/scope_store.rs","crates/ontoforge-storage/src/sql_exit.rs","crates/ontoforge-storage/src/store.rs","crates/ontoforge-storage/tests/conformance/mod.rs","crates/ontoforge-storage/tests/conformance_pg.rs","crates/ontoforge-storage/tests/conformance_sqlite.rs","crates/ontoforge-storage/tests/reload_pg.rs","crates/ontoforge-storage/tests/scope_store.rs","crates/ontoforge/src/lint_cmd.rs","crates/ontoforge/src/reload.rs","crates/ontoforge/src/scope.rs","crates/ontoforge/tests/cli_reload.rs","crates/ontoforge/tests/cli_scope.rs","target/milestone-audit-evidence-20261104/final-check.log","target/milestone-audit-evidence-20261104/postgres_http_it.log","target/milestone-audit-evidence-20261104/source-equivalence.diff","target/milestone-audit-evidence-20261104/source-guard.log","target/milestone-audit-evidence-20261104/sqlite-action-atomic.log","target/milestone-audit-evidence-20261104/trino_l2_acl_it.log","target/milestone-ci-41759804733-integration.log","target/milestone-ci-41759804733-ubuntu.log","target/milestone-ci-41759804733-windows.log"]
+covered_digest: "v4:sha256:ec57a27cc234bc9ef518da861260fb5e9a6914a69b5acd4ccb313e62e451e521"
 
 ---
 
@@ -28,15 +28,15 @@ covered_digest: "v3:sha256:0d99b15cfcb570bfbf1a832323aa7f3aee81bb4060873ffd4bb34
 
 **Phase Goal:** As a 受信主体, I want to 在 allow-list 内执行仅在 Trino 侧权限可证明安全时才开放的只读 Trino SQL, so that 所有级别的读取都留下元数据审计且定义与授权的变更只经部署方与管理通道.
 
-**Verified:** 2026-10-28T12:08:10Z
+**Verified:** 2026-11-04T02:55:02Z
 
-**Status:** passed
+**Status:** passed，22/22，behavior_unverified=0。
 
-**Re-verification:** Yes。上一轮 `21/22`、`gaps_found` 的唯一缺口 R1/CR-01 已由 06-11 关闭。本轮亲读两个增量源码文件、RED/GREEN 原始日志与四份 classifier，独立执行四次 RED classifier 和 GSD TDD gate，并等待新 CI 完成后读取三个必需 job 的关键原始日志；原 21 条历史证据保留，新增 #22 现有行为证据，最终 `22/22`、`passed`。未运行 Cargo、未修改源码、未重做前十个 PLAN 的全量核验。无 overrides。
+**Re-verification:** 本次在既有独立源码/artifact/link审计上补核最终原始运行证据。旧22条truth均保留，通过新CI及fresh实际PG/Trino运行回归；没有把SUMMARY声明计为证据。未运行Cargo或服务、未提交。
 
-**交付快照:** 本轮核验 HEAD 与 PR #7 的 `headRefOid` 均为 `2c9eee6461a412ead8f998c7fa038acaa458b2f9`，新 CI run `40682870456` 的 `headSha` 精确相同。RED 为 `0bb29a3652d217d4e638ff572fefffea651c43bf`，实现 GREEN 为 `7813e7fb591df1bd2eb607b1a31511492a62c9e3`；已执行 `git diff 7813e7f HEAD -- crates ci .github Cargo.toml Cargo.lock`，无输出，之后提交只改 SUMMARY。相对旧 `20fd0005`，增量仅两个 storage 源码/测试文件（142 additions、6 deletions），未更改 CI、fixture、依赖或其他生产模块。新 PR CI 实际 checkout 的合成 merge SHA 为 `5ff30dafc2bb39995d9b639a45bcf75c6b631bea`，不与分支 HEAD 混淆。
+**当前快照:** 分支HEAD f8851ca073fed34e80e605f0ac91880259df7e12，CI41759804733四必需job全部success，合成merge22913c8e79ae98b6604109d6e05a15f27cd50292。旧2c9eee6/40682870456等章节保留为2026-10-28历史证据，不作为当前新改动的通过声明。
 
-**历史证据边界:** 原始 #1-21 的源码行号、W 日志及 H1/H2/H3 章节描述各自核验快照；本轮没有重跑其中的本地测试。旧 run `40675450974` 仅证明 `20fd0005`，不能证明 06-11 修复。当前交付的远端证据以新 run `40682870456` 为准，详最终增量章节。后续仅收尾文档的提交不改变本报告记录的实现与 CI 快照。
+**scope:** Phase06库合同正确；可信edit catalog由query policy读取并在printer硬排除。新engine accessor只公开相同私有attestation配置的只读值；Phase07 MCP adapter的INT-01另由Phase07验收，不误归为Phase06库缺失。L2-01/02本次已独立具备累计完成证据，允许随后补06-08 dated metadata；跨phase L2-04/SCOPE-07整体由主审计对账。
 
 ## User Flow Coverage
 
@@ -50,13 +50,34 @@ covered_digest: "v3:sha256:0d99b15cfcb570bfbf1a832323aa7f3aee81bb4060873ffd4bb34
 | 提交越界、变更或不支持的 SQL | 拒绝且零 Trino POST | `printer/l2.rs:87,283`；`l2_execute_rejections_are_audited_without_post` 原始 GREEN | VERIFIED |
 | 各读取入口返回数据或错误 | 先占用有界审计容量，记录元数据；积压和 sink 故障不释放结果 | `query/lib.rs:242`、`execute.rs:508`、`aggregate.rs:878`、`l2.rs:99,374`；SQLite/查询原始 GREEN | VERIFIED（SQLite与真实PG，H1已闭合） |
 | 管理者更新 scope 或 reload 定义 | lint/validate、hash、定义锁和事务审计生效；在途请求保持旧快照 | `ontoforge/src/reload.rs:37`、`scope_store.rs:453,501`；本轮 L2 竞争快照 1/1 GREEN | VERIFIED |
-| Outcome：安全读取有审计，定义和授权只经既定管理通道 | 已接受审计在 shutdown 完成前持久化，所有调用者一致观察失败 | 原 21 条证据保留；06-11 的共享 worker 终态与四类行为测试证明 #22，新 HEAD 三个必需 CI job 均成功 | VERIFIED |
+| Outcome：安全读取有审计，定义和授权只经既定管理通道 | 已接受审计在 shutdown 完成前持久化，所有调用者一致观察失败 | 22条证据保留；新CI共享shutdown/JoinError具名测试实际通过，当前四必需job成功 | VERIFIED |
 
-真实 PostgreSQL、Trino 483 与本轮交付 HEAD 对应的远端 CI 证据均已补齐，R1 的库级 `ReadAudit::shutdown` 缺口已由 06-11 行为测试及修复关闭。Phase 7 服务持有 monitor 生命周期、HTTP `/health` 和 MCP 工具过滤仍按 ADR-0028 单独验收；L2-04/SCOPE-07 整体 Pending，Phase 7 未启动。
+真实PostgreSQL、Trino483与当前CI证据齐全；Phase07服务生命周期、HTTP /health与MCP工具过滤由其独立报告判断，不再沿用历史“Phase7未启动”作为当前事实。
+
+## 2026-11-04 Current Evidence
+
+U/W/I = `target/milestone-ci-41759804733-{ubuntu,windows,integration}.log`。原始日志已亲读；不是仅凭绿色badge。
+
+| Truth / invariant | 当前原始执行与回归证据 |
+|---|---|
+| #1-3、#10、#17、#20-21：AST/ACL/monitor | U:2070-2075、2108-2126 corpus及monitor状态转换实际ok；双平台corpus各6/6；I:1020 ACL6/6、32条Display FINISHED；fresh真实ACL6/6（4.15s），非workspace ignored |
+| #4、#6-9、#11-16：公开L0/L2审计与授权 | 新W/U audit_pk、audit_l0、l2_execute、l2_discovery具名结果实际ok；I:700发现9audit、718实际9/9；两后端真实durable row与sink故障断言 |
+| #5、#19：管理及固定快照 | 新W/U definition_snapshot两个竞争用例、scope_store rollback实际ok；fresh PG HTTP mixed snapshot/revoke/history实际ok |
+| #18：Windows回归和PG审计 | W workspace150组1496/0/117；U150组1503/0/117；I PG conformance45/45及专门audit9/9。仅workspace step计数，ignored不计PASS |
+| #22：共同等待/取消/重复错误 | U:3479/3481/3483 SQLite三条共享回归；I同名PG实际ok；W:3360/U:3380 audit_shutdown_join_error_is_sticky实际ok |
+| 依赖gate与feature入口 | 新双平台TLS hermetic6/6、真实helper成功；SQLite fault显式test-support，PG source精确非ignored，均实际通过 |
+
+相对adc0227的storage/query/auth/expr/action生产实现无diff；engine仅新增只读l2_edit_catalog accessor。此前本轮独立检查22/22 artifacts substantive，12/12 links在Rust实际module调用链中wired；regex目标路径启发式失败未当作断链。所有公开返回值追到Engine QueryOutput或真实DB audit，未发现静态结果。
+
+本地51passed动态runner原始exit1（HEAD发生仅cli_color测试type alias提交）；独立final-check exit0证明本轮动态输入相同和清理完成。两者分开保留。详细hash与原始日志在PHASE-05-06-REVERIFY/DYNAMIC-VALIDATION。
+
+Decision coverage6/6 honored；无prohibition/backstop/human-check、无shell probe；人工队列为空。用户既有同向自动判断授权保留历史NON-AUTHORITATIVE限制，本次未请求新第二意见，不声称人工逐项观察。
 
 ## Goal Achievement
 
 ### Observable Truths
+
+以下原22条truth与历史源行号保留；当前回归证据逐组补充于上表。历史段落中的“本轮/W/当前HEAD”限定为其注明的2026-10-28快照，不与本报告当前交付快照混用。
 
 表中相对路径 `engine/`、`query/`、`storage/` 分别指 `crates/ontoforge-engine/`、`crates/ontoforge-query/`、`crates/ontoforge-storage/`。`W` 指下方已亲读的最终 workspace 原始日志；不能把 W 中的 ignored 视为通过。
 
@@ -88,6 +109,10 @@ covered_digest: "v3:sha256:0d99b15cfcb570bfbf1a832323aa7f3aee81bb4060873ffd4bb34
 **Score:** 22/22 truths verified，0 条 behavior-unverified，0 条 FAILED truth，0 个未解决 BLOCKER；无 override 或待人工验收项。
 
 合并规则：保留全部五条 ROADMAP SC；06-03 两条细化并入 #1，06-04 默认 fail-closed 和 06-10 startup 并入 #3，06-09 请求快照并入 #5；其余 16 条原 PLAN truth 保留。06-11 的三条 truth（共同等待、取消保留 worker、缓存成功/失败含 JoinError）均归并到既定 #22，不缩减合同。没有发现 `prohibitions`、`verification: backstop` 或 `<human-check>`。
+
+## 2026-10-28 Historical Verification Evidence
+
+以下artifact、行为RED/GREEN、远端旧run、PR状态与跨phasePending是历史记录。当前状态以报告顶部及2026-11-04 Current Evidence为准；原始失败、限制和观测边界未删除。
 
 ### Required Artifacts
 
@@ -289,6 +314,6 @@ None。R1 的四类行为已有真实测试证据；本轮交付 HEAD 的新 run
 
 ---
 
-_Verified: 2026-10-28T12:08:10Z_
+_Verified: 2026-11-04T02:55:02Z (historical evidence timestamps preserved)_
 
 _Verifier: the agent (gsd-verifier)_
