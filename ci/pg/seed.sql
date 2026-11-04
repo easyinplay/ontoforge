@@ -189,4 +189,16 @@ INSERT INTO aviation.cardinality_records (record_id, tail_number) VALUES
     (NULL, 'ALL-NULL-PK'),
     ('CLEAN', 'UNIQUE');
 
+-- Independent alias corpus: 25 equal-cardinality groups expose ORDER BY name resolution.
+CREATE VIEW aviation.cardinality_alias_fk_n AS
+SELECT 'M' || group_id::text || suffix AS fk, chr(65 + group_id) AS n
+FROM generate_series(0, 24) AS groups(group_id)
+CROSS JOIN (VALUES ('a'), ('b')) AS copies(suffix);
+
+CREATE VIEW aviation.cardinality_alias_fk_upper AS
+SELECT fk AS id, n AS "N" FROM aviation.cardinality_alias_fk_n;
+
+CREATE VIEW aviation.cardinality_alias_pk_n AS
+SELECT fk AS n, n AS aircraft_id FROM aviation.cardinality_alias_fk_n;
+
 COMMIT;

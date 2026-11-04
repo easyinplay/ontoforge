@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="nextest-run" tests="1" skipped="0" failures="1" errors="0" uuid="03e29787-0391-4a4a-8fd5-6acf34eded11" timestamp="2026-11-04T12:27:04.911+08:00" time="0.233">
+    <testsuite name="ontoforge::cli_trino_it" tests="1" skipped="0" errors="0" failures="1">
+        <testcase name="check_cardinality_aliases_on_ci_trino" classname="ontoforge::cli_trino_it" timestamp="2026-11-04T12:27:04.912+08:00" time="0.231">
+            <failure message="thread &apos;check_cardinality_aliases_on_ci_trino&apos; (41252) panicked at crates\ontoforge\tests\cli_trino_it.rs:315:9" type="test failure with exit code 101">thread &apos;check_cardinality_aliases_on_ci_trino&apos; (41252) panicked at crates\ontoforge\tests\cli_trino_it.rs:315:9:
+assertion `left == right` failed: cardinality_alias_fk_n PK=fk FK=n: stdout=[
+  {
+    &quot;code&quot;: &quot;ONT-V19&quot;,
+    &quot;severity&quot;: &quot;error&quot;,
+    &quot;message&quot;: &quot;the online check of `Target` could not complete: query failed (COLUMN_NOT_FOUND): line 1:188: Invalid reference to output projection attribute from ORDER BY aggregation&quot;,
+    &quot;file&quot;: &quot;bindings/dev/target.yaml&quot;,
+    &quot;line&quot;: 3,
+    &quot;column&quot;: 9,
+    &quot;span&quot;: {
+      &quot;offset&quot;: 59,
+      &quot;length&quot;: 1
+    },
+    &quot;help&quot;: &quot;engine error `ENGINE_QUERY_FAILED`&quot;
+  }
+]
+ stderr=
+  left: Some(3)
+ right: Some(0)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace</failure>
+            <system-out>
+running 1 test
+test check_cardinality_aliases_on_ci_trino ... FAILED
+
+failures:
+
+failures:
+    check_cardinality_aliases_on_ci_trino
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.22s
+
+</system-out>
+            <system-err>
+thread &apos;check_cardinality_aliases_on_ci_trino&apos; (41252) panicked at crates\ontoforge\tests\cli_trino_it.rs:315:9:
+assertion `left == right` failed: cardinality_alias_fk_n PK=fk FK=n: stdout=[
+  {
+    &quot;code&quot;: &quot;ONT-V19&quot;,
+    &quot;severity&quot;: &quot;error&quot;,
+    &quot;message&quot;: &quot;the online check of `Target` could not complete: query failed (COLUMN_NOT_FOUND): line 1:188: Invalid reference to output projection attribute from ORDER BY aggregation&quot;,
+    &quot;file&quot;: &quot;bindings/dev/target.yaml&quot;,
+    &quot;line&quot;: 3,
+    &quot;column&quot;: 9,
+    &quot;span&quot;: {
+      &quot;offset&quot;: 59,
+      &quot;length&quot;: 1
+    },
+    &quot;help&quot;: &quot;engine error `ENGINE_QUERY_FAILED`&quot;
+  }
+]
+ stderr=
+  left: Some(3)
+ right: Some(0)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+</system-err>
+        </testcase>
+    </testsuite>
+</testsuites>

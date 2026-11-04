@@ -1,0 +1,42 @@
+   Compiling ontoforge-engine v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-engine)
+   Compiling ontoforge-auth v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-auth)
+   Compiling ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+   Compiling ontoforge-query v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-query)
+   Compiling ontoforge-action v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-action)
+   Compiling ontoforge-server v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-server)
+   Compiling ontoforge v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2m 45s
+     Running tests\cli_trino_it.rs (target\debug\deps\cli_trino_it-d4ef9938423f5979.exe)
+
+running 1 test
+
+thread 'check_cardinality_aliases_on_ci_trino' (42144) panicked at crates\ontoforge\tests\cli_trino_it.rs:315:9:
+assertion `left == right` failed: cardinality_alias_fk_n PK=fk FK=n: stdout=[
+  {
+    "code": "ONT-V19",
+    "severity": "error",
+    "message": "the online check of `Target` could not complete: query failed (COLUMN_NOT_FOUND): line 1:188: Invalid reference to output projection attribute from ORDER BY aggregation",
+    "file": "bindings/dev/target.yaml",
+    "line": 3,
+    "column": 9,
+    "span": {
+      "offset": 59,
+      "length": 1
+    },
+    "help": "engine error `ENGINE_QUERY_FAILED`"
+  }
+]
+ stderr=
+  left: Some(3)
+ right: Some(0)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test check_cardinality_aliases_on_ci_trino ... FAILED
+
+failures:
+
+failures:
+    check_cardinality_aliases_on_ci_trino
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.57s
+
+error: test failed, to rerun pass `-p ontoforge --test cli_trino_it`
