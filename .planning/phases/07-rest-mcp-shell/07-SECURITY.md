@@ -1,14 +1,16 @@
 ---
 phase: 07-rest-mcp-shell
-status: SECURED
+status: OPEN_THREATS
 asvs_level: 1
 block_on: high
-threats_open: 0
+threats_open: 1
 audited_head: adc0227
 date: 2026-11-04
 ---
 
 # Phase 7 安全核验
+
+2026-11-04后继审计：INT-01（L2-03，自定义edit catalog应用层硬排除接线）为high OPEN，当前不得沿用下文原48/48结论作为无开放威胁证明。原审查记录保留，增量修复与复签见 `.planning/milestones/v1.0-audit/INTEGRATION.md` 及 `L2-CATALOG-FIX.md`。底层Trino ACL仍可能拒绝，本项未宣称实际数据泄露。
 
 独立 gsd-security-auditor 核对16份 PLAN，去重为48项（44 high、4 medium）；T24、T22及N3发现的T08修复均已独立复签CLOSED，当前48/48 CLOSED、threats_open=0。全部 disposition=mitigate，无 accepted/transfer 风险。初审基线e6ae310/b068ff5，增量至adc0227；精确最终指纹见reviews/07-T24-SECURITY-RECHECK.md、07-E6-SECURITY-RECHECK.md、07-T08-SECURITY-RECHECK.md，后者覆盖后续context/mcp/lib/state变更。2026-11-04最终fresh43/43、CI41669982375四必需job和native41669982362全部通过，详07-14-SUMMARY.md；不扩大为实际生产发布安全认证。
 

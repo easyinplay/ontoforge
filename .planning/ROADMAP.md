@@ -17,7 +17,7 @@ Phase 1 定死 IR 契约。2026-10-16 起 Phase 2–7 按 `docs/designs/trino-en
 - [x] **Phase 4: Scoped L0 Read** - Rust 编排叠加读：pk 读、列表、聚合分解、searchAround、keyset 分页、HMAC 版本令牌 (completed 2026-10-23)
 - [x] **Phase 5: Online Action** - Action 鉴权管线 ①-⑨、并发令牌、`command_id`、webhook outbox (completed 2026-10-26)
 - [x] **Phase 6: L2 Raw DQL, Toolsets & Audit** - L2、toolsets 与读审计已验收；详: `.planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md` (completed 2026-10-28)
-- [x] **Phase 7: REST & MCP Shell** - REST/MCP、SDK、dev与三平台安装验收完成；详: `.planning/phases/07-rest-mcp-shell/07-VERIFICATION.md` (completed 2026-11-04)
+- [ ] **Phase 7: REST & MCP Shell** - 16/16实现后审计发现INT-01，自定义edit catalog修复与重验中；详: `.planning/milestones/v1.0-audit/INTEGRATION.md`
 
 ## Phase Details
 
@@ -265,7 +265,7 @@ Plans:
   5. `ontoforge serve --dev`（SQLite 替身 + dev token）在 Windows 本机零外部依赖跑通示例 ontology 的查询 → Action → 历史演示；release workflow 发布 Linux / macOS / Windows 二进制
   6. 服务启动并维持 Phase 6 的 L2 ACL attestation；无法证明或证明过期时 L2 禁用，`/health` 告警并暴露脱敏原因，覆盖失败和恢复的端到端测试（ADR-0028）
 
-**Plans**: 16/16 complete，2026-11-04；详: `.planning/phases/07-rest-mcp-shell/07-VERIFICATION.md`
+**Plans**: 16/16 implemented，INT-01增量修复与重验中；详: `.planning/milestones/v1.0-audit/task_plan.md`
 - [x] 07-01-PLAN.md
 - [x] 07-02-PLAN.md
 - [x] 07-03-PLAN.md
@@ -298,4 +298,4 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7（纵切片
 | 4. Scoped L0 Read | 7/7 | Complete    | 2026-10-23 |
 | 5. Online Action | 7/7 | Complete    | 2026-10-26 |
 | 6. L2 Raw DQL, Toolsets & Audit | 11/11 | Complete | 2026-10-28 |
-| 7. REST & MCP Shell | 16/16 | Complete    | 2026-11-04 |
+| 7. REST & MCP Shell | 16/16 | Re-verifying INT-01 | - |

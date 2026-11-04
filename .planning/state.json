@@ -36,13 +36,13 @@
     {
       "number": "7",
       "name": "REST & MCP Shell",
-      "status": "complete"
+      "status": "executing"
     }
   ],
   "next": {
     "command": "$gsd-audit-milestone",
     "label": "审计既有 milestone",
-    "reason": "Phase 7 已通过当前验证；Phase 1–6 历史 fingerprint 需重新核验，尚未归档或发布"
+    "reason": "独立审计确认INT-01，自定义edit catalog修复及历史证据补审进行中，未归档或发布"
   },
   "updated_at": "2026-11-03T16:36:15.676Z"
 }
