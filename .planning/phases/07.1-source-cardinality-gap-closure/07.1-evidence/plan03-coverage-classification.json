@@ -1,0 +1,91 @@
+{
+  "mode": "coverage",
+  "summary_file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-03-SUMMARY.md",
+  "total": 4,
+  "all_auto_covered": true,
+  "auto_passed": [
+    {
+      "id": "071-D1",
+      "description": "真实Trino专用数据对不同PK冲突、重复物理行及NULL给出正确报告",
+      "verification": [
+        {
+          "kind": "integration",
+          "ref": "crates/ontoforge/tests/cli_trino_it.rs#check_cardinality_counts_distinct_objects_on_ci_trino",
+          "status": "pass"
+        },
+        {
+          "kind": "integration",
+          "ref": "crates/ontoforge/tests/cli_trino_it.rs#missing_env_panics",
+          "status": "pass"
+        }
+      ],
+      "human_judgment": false,
+      "requirement": "STORE-05",
+      "source": "automated"
+    },
+    {
+      "id": "071-R1-R2",
+      "description": "SQLite索引与Trino聚合下PK/FK同名alias仍稳定返回20个样本",
+      "verification": [
+        {
+          "kind": "integration",
+          "ref": "crates/ontoforge-engine/tests/cardinality_check.rs#count_alias_cannot_change_indexed_fk_sample_order",
+          "status": "pass"
+        },
+        {
+          "kind": "integration",
+          "ref": "crates/ontoforge/tests/cli_trino_it.rs#check_cardinality_aliases_on_ci_trino",
+          "status": "pass"
+        }
+      ],
+      "human_judgment": false,
+      "requirement": "STORE-05",
+      "source": "automated"
+    },
+    {
+      "id": "071-DOC",
+      "description": "实际CLI help提供显式flag，文档已知与必需诊断码包含在线W18",
+      "verification": [
+        {
+          "kind": "integration",
+          "ref": "cargo run -p ontoforge --locked -- validate --help",
+          "status": "pass"
+        },
+        {
+          "kind": "integration",
+          "ref": "crates/ontoforge-engine/tests/doc_type_table.rs#doc_diagnostic_codes_exist",
+          "status": "pass"
+        }
+      ],
+      "human_judgment": false,
+      "requirement": "STORE-05",
+      "source": "automated"
+    },
+    {
+      "id": "071-G4",
+      "description": "最终源码完整workspace、fmt和Clippy均通过",
+      "verification": [
+        {
+          "kind": "integration",
+          "ref": "cargo test --workspace --locked",
+          "status": "pass"
+        },
+        {
+          "kind": "other",
+          "ref": "cargo fmt --all --check",
+          "status": "pass"
+        },
+        {
+          "kind": "other",
+          "ref": "cargo clippy --workspace --all-targets --locked -- -D warnings",
+          "status": "pass"
+        }
+      ],
+      "human_judgment": false,
+      "requirement": "STORE-05",
+      "source": "automated"
+    }
+  ],
+  "present": [],
+  "errors": []
+}
