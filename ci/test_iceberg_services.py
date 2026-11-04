@@ -2,10 +2,15 @@
 
 import os
 import json
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
+import threading
+import time
 import unittest
+from urllib.parse import parse_qs, urlparse
 
 ROOT = Path(__file__).resolve().parent.parent
 RUNNER = ROOT / "ci/iceberg-services.sh"
@@ -33,6 +38,67 @@ class RunnerContract(unittest.TestCase):
     def test_empty_url_cannot_pass(self):
         self.env.update(ONTOFORGE_TRINO_ICEBERG="1", ONTOFORGE_TRINO_URL="")
         self.assertNotEqual(self.run_cli("exact", self.directory).returncode, 0)
+
+    def fake_tool(self, name, script):
+        directory = self.directory / "bin"
+        directory.mkdir(exist_ok=True)
+        path = directory / name
+        path.write_text("#!/usr/bin/env bash\n" + script, encoding="utf-8")
+        path.chmod(0o755)
+        self.env["PATH"] = str(directory) + os.pathsep + self.env["PATH"]
+
+    def test_existing_owner_lock_prevents_any_docker_calls(self):
+        lock = self.directory / "ontoforge-iceberg.lock"
+        lock.mkdir()
+        (lock / "owner").write_text("another-run")
+        calls = self.directory / "docker-called"
+        self.env.update(TMPDIR=str(self.directory), TMP=str(self.directory), TEMP=str(self.directory),
+                        TEST_CALLS=str(calls))
+        self.fake_tool("docker", 'printf invoked >> "$TEST_CALLS"\nexit 77\n')
+        result = self.run_cli("contract", "--trino", "483")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse(calls.exists(), "existing owner must be rejected before touching Docker")
+        self.assertEqual((lock / "owner").read_text(), "another-run")
+
+    def test_cleanup_checks_owner_and_preserves_unrelated_resources(self):
+        owner = "iceberg-" + "a" * 24
+        runtime = self.directory / owner
+        runtime.mkdir()
+        (runtime / "owner").write_text(owner)
+        state = {"owner": owner, "runtime": str(runtime), "resources": [
+            {"kind": "container", "id": "owned", "name": "owned"},
+            {"kind": "container", "id": "foreign", "name": "foreign"}]}
+        path = runtime / "state.json"
+        path.write_text(json.dumps(state))
+        self.env.update(TMPDIR=str(self.directory), TMP=str(self.directory), TEMP=str(self.directory),
+                        TEST_OWNER=owner, TEST_DB=str(self.directory / "resources.json"))
+        database = Path(self.env["TEST_DB"])
+        database.write_text(json.dumps({"owned": owner, "foreign": "another-run"}))
+        self.fake_tool("docker", 'exec "' + sys.executable.replace("\\", "/") + '" "'
+                       + Path(__file__).as_posix() + '" --fake-cleanup "$@"\n')
+        result = self.run_cli("cleanup", "--state", path)
+        self.assertNotEqual(result.returncode, 0, "wrong-owner ledger entry must fail cleanup")
+        self.assertEqual(json.loads(database.read_text()), {"foreign": "another-run"})
+        state["resources"] = []
+        path.write_text(json.dumps(state))
+        self.assertEqual(self.run_cli("cleanup", "--state", path).returncode, 0)
+
+    def test_cleanup_failure_is_nonzero_and_resources_remain(self):
+        owner = "iceberg-" + "b" * 24
+        runtime = self.directory / owner
+        runtime.mkdir()
+        (runtime / "owner").write_text(owner)
+        state = runtime / "state.json"
+        state.write_text(json.dumps({"owner": owner, "runtime": str(runtime), "resources": []}))
+        self.env.update(TMPDIR=str(self.directory), TMP=str(self.directory), TEMP=str(self.directory),
+                        TEST_OWNER=owner, TEST_DB=str(self.directory / "resources.json"), TEST_REMOVE_FAILURE="1")
+        database = Path(self.env["TEST_DB"])
+        database.write_text(json.dumps({"owned": owner}))
+        self.fake_tool("docker", 'exec "' + sys.executable.replace("\\", "/") + '" "'
+                       + Path(__file__).as_posix() + '" --fake-cleanup "$@"\n')
+        result = self.run_cli("cleanup", "--state", state)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(json.loads(database.read_text()), {"owned": owner})
 
     def test_private_acl_trusted_owner_and_child_are_accepted(self):
         result = self.run_cli("permissions", self.directory)
@@ -118,5 +184,145 @@ class RunnerContract(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0, "missing Iceberg environment must fail before Cargo")
 
 
+class BucketClientContract(unittest.TestCase):
+    def setUp(self):
+        self.binary = os.environ["ONTOFORGE_BUCKET_BINARY"]
+        self.mode = "empty"
+        self.requests = []
+        parent = self
+
+        class S3(BaseHTTPRequestHandler):
+            def log_message(self, *args):
+                pass
+
+            def respond(self, code, body):
+                self.send_response(code)
+                self.send_header("Content-Type", "application/xml")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                try:
+                    self.wfile.write(body)
+                except (BrokenPipeError, ConnectionResetError):
+                    pass
+
+            def do_PUT(self):
+                parent.requests.append(self.path)
+                self.respond(200, b"")
+
+            def do_GET(self):
+                parent.requests.append(self.path)
+                query = parse_qs(urlparse(self.path).query)
+                if parent.mode == "slow":
+                    time.sleep(3)
+                if parent.mode == "error" or (parent.mode == "stream-error" and "continuation-token" in query):
+                    body = ("<Error><Code>AccessDenied</Code><Message>" + parent.env["AWS_ACCESS_KEY_ID"]
+                            + " " + parent.env["AWS_SECRET_ACCESS_KEY"] + "</Message></Error>").encode()
+                    self.respond(500 if parent.mode == "error" else 403, body)
+                    return
+                keys = []
+                more = "false"
+                token = ""
+                if parent.mode in ("pages", "stream-error"):
+                    if "continuation-token" in query:
+                        keys = [("flights/data/a.parquet", 80)]
+                    else:
+                        keys = [("flights/metadata/a.json", 43)]
+                        more, token = "true", "<NextContinuationToken>next</NextContinuationToken>"
+                body = '<ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>warehouse</Name>'
+                body += "<IsTruncated>" + more + "</IsTruncated>" + token
+                for key, size in keys:
+                    body += "<Contents><Key>" + key + "</Key><Size>" + str(size) + "</Size></Contents>"
+                self.respond(200, (body + "</ListBucketResult>").encode())
+
+        self.server = ThreadingHTTPServer(("127.0.0.1", 0), S3)
+        self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
+        self.thread.start()
+        self.env = dict(os.environ, S3_ENDPOINT="http://127.0.0.1:" + str(self.server.server_port),
+                        AWS_ACCESS_KEY_ID="fixture-access-7bca", AWS_SECRET_ACCESS_KEY="fixture-secret-eaa7",
+                        AWS_REGION="us-east-1", BUCKET_DEADLINE_SECONDS="1")
+
+    def tearDown(self):
+        self.server.shutdown()
+        self.server.server_close()
+        self.thread.join(timeout=2)
+
+    def invoke(self, *args):
+        result = subprocess.run([self.binary, *args], env=self.env, capture_output=True, text=True, timeout=5)
+        for name in ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"):
+            if self.env[name]:
+                self.assertNotIn(self.env[name], result.stdout + result.stderr)
+        return result
+
+    def test_make_bucket_uses_real_sdk_request(self):
+        result = self.invoke("make", "--bucket", "warehouse")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(self.requests, ["/warehouse/"])
+
+    def test_empty_list_is_json_array(self):
+        result = self.invoke("list", "--bucket", "warehouse")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout), [])
+
+    def test_list_consumes_both_pages(self):
+        self.mode = "pages"
+        result = self.invoke("list", "--bucket", "warehouse")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout), [{"key": "flights/metadata/a.json", "size": 43},
+                                                   {"key": "flights/data/a.parquet", "size": 80}])
+        self.assertEqual(len(self.requests), 2)
+
+    def test_sdk_error_never_prints_response_credentials(self):
+        self.mode = "error"
+        self.assertNotEqual(self.invoke("list", "--bucket", "warehouse").returncode, 0)
+
+    def test_midstream_error_does_not_publish_partial_objects(self):
+        self.mode = "stream-error"
+        result = self.invoke("list", "--bucket", "warehouse")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(result.stdout, "")
+        self.assertGreaterEqual(len(self.requests), 2)
+
+    def test_deadline_bounds_a_stalled_request(self):
+        self.mode = "slow"
+        started = time.monotonic()
+        self.assertNotEqual(self.invoke("list", "--bucket", "warehouse").returncode, 0)
+        self.assertLess(time.monotonic() - started, 2.5)
+
+    def test_empty_credentials_and_userinfo_are_rejected_before_network(self):
+        self.env["AWS_ACCESS_KEY_ID"] = ""
+        self.assertNotEqual(self.invoke("list", "--bucket", "warehouse").returncode, 0)
+        self.env["AWS_ACCESS_KEY_ID"] = "fixture-access-7bca"
+        self.env["S3_ENDPOINT"] = self.env["S3_ENDPOINT"].replace("http://", "http://user:password@")
+        self.assertNotEqual(self.invoke("list", "--bucket", "warehouse").returncode, 0)
+        self.assertEqual(self.requests, [])
+
+    def test_argument_error_never_prints_credentials(self):
+        self.assertNotEqual(self.invoke("list", "--" + self.env["AWS_SECRET_ACCESS_KEY"]).returncode, 0)
+
+
+def fake_cleanup(args):
+    path = Path(os.environ["TEST_DB"])
+    resources = json.loads(path.read_text())
+    if args[:1] == ["ps"]:
+        assert "label=ontoforge.iceberg.owner=" + os.environ["TEST_OWNER"] in args
+        print("\n".join(k for k, v in resources.items() if v == os.environ["TEST_OWNER"]))
+    elif args[:1] == ["inspect"]:
+        if args[1] not in resources:
+            return 1
+        print(json.dumps([{"Id": args[1], "Config": {"Labels": {"ontoforge.iceberg.owner": resources[args[1]]}}}]))
+    elif args[:1] == ["rm"]:
+        if os.environ.get("TEST_REMOVE_FAILURE"):
+            return 42
+        del resources[args[-1]]
+        path.write_text(json.dumps(resources))
+    elif args[0] in ("network", "volume") and args[1] == "ls":
+        pass
+    else:
+        return 88
+    return 0
+
+
 if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "--fake-cleanup":
+        sys.exit(fake_cleanup(sys.argv[2:]))
     unittest.main()
