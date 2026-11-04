@@ -1,0 +1,53 @@
+{
+  "maximumRounds": 4,
+  "latestArtifacts": [
+    {
+      "Name": "health_trino_it-683f97da716f09e7.exe",
+      "Length": 120498008,
+      "LastWriteTime": "2026-11-04T13:45:38.2600156+08:00"
+    },
+    {
+      "Name": "mcp_actions-9b75ed45eaf7d8fd.exe",
+      "Length": 2097152,
+      "LastWriteTime": "2026-11-04T13:44:55.8857089+08:00"
+    },
+    {
+      "Name": "mcp_execution_admission-7309ac84ec795507.exe",
+      "Length": 60337152,
+      "LastWriteTime": "2026-11-04T13:44:42.3401493+08:00"
+    },
+    {
+      "Name": "postgres_http_it-f4cd2f36a7ccf460.exe",
+      "Length": 60352512,
+      "LastWriteTime": "2026-11-04T13:44:17.8950987+08:00"
+    },
+    {
+      "Name": "http_action_diagnostics-ec8d61030e8cc387.exe",
+      "Length": 60203520,
+      "LastWriteTime": "2026-11-04T13:43:07.9058409+08:00"
+    },
+    {
+      "Name": "history_pagination-12dc64b8d949d76a.exe",
+      "Length": 60210688,
+      "LastWriteTime": "2026-11-04T13:42:37.9560319+08:00"
+    },
+    {
+      "Name": "source_drift_cleanup-82bb5b65c60a24aa.exe",
+      "Length": 59127808,
+      "LastWriteTime": "2026-11-04T13:41:33.0842729+08:00"
+    },
+    {
+      "Name": "http_actions-d549d4a746358615.exe",
+      "Length": 60199936,
+      "LastWriteTime": "2026-11-04T13:40:57.3182646+08:00"
+    }
+  ],
+  "exitCode": 124,
+  "head": "6be5c0861c8e80c9f1ba11311fb29ddce3e50aa6",
+  "timeoutSeconds": 600,
+  "finished": "2026-11-04T05:45:43.3459391Z",
+  "round": 2,
+  "cargoBuildJobs": 2,
+  "command": "node gsd-tools.cjs run-with-timeout 600 -- cargo test --workspace --locked --no-run",
+  "started": "2026-11-04T05:35:42.1040350Z"
+}

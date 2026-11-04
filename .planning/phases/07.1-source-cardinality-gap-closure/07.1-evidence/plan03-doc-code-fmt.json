@@ -1,0 +1,8 @@
+{
+  "command": "cargo fmt --all --check",
+  "workingTreeChanges": "doc_type_table W18 known and required only",
+  "exitCode": 0,
+  "started": "2026-11-04T06:28:12.8363008Z",
+  "head": "6be5c0861c8e80c9f1ba11311fb29ddce3e50aa6",
+  "finished": "2026-11-04T06:28:16.1537711Z"
+}

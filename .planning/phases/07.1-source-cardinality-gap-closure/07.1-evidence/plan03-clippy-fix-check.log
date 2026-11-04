@@ -1,0 +1,87 @@
+    Checking ontoforge-schema v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-schema)
+    Checking hyper v1.12.0
+    Checking sqlx-core v0.9.0
+    Checking hyper-util v0.1.21
+    Checking hyper-rustls v0.27.10
+    Checking reqwest v0.13.5
+    Checking sqlx-postgres v0.9.0
+    Checking sqlx-sqlite v0.9.0
+    Checking ontoforge-expr v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-expr)
+    Checking wiremock v0.6.5
+    Checking sqlx v0.9.0
+    Checking ontoforge-api v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-api)
+    Checking ontoforge-engine v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-engine)
+    Checking sea-query-sqlx v0.9.1
+    Checking axum v0.8.9
+    Checking ontoforge-auth v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-auth)
+    Checking ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+    Checking rmcp v3.8.0
+    Checking ontoforge-query v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-query)
+    Checking ontoforge-action v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-action)
+    Checking utoipa-axum v0.3.0
+    Checking reqwest-middleware v0.5.2
+    Checking reqwest-retry v0.9.1
+    Checking reqwest-tracing v0.7.1
+    Checking postgresql_archive v0.21.0
+    Checking postgresql_embedded v0.21.0
+    Checking ontoforge-client v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-client)
+    Checking ontoforge-server v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-server)
+    Checking ontoforge v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge)
+error: this argument is passed by value, but not consumed in the function body
+   --> crates\ontoforge\tests\cli_check_cardinality.rs:126:18
+    |
+126 | fn page(columns: Value, rows: Value) -> Value {
+    |                  ^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#needless_pass_by_value
+    = note: `-D clippy::needless-pass-by-value` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_pass_by_value)]`
+help: consider taking a reference instead
+    |
+126 | fn page(columns: &Value, rows: Value) -> Value {
+    |                  +
+
+error: this argument is passed by value, but not consumed in the function body
+   --> crates\ontoforge\tests\cli_check_cardinality.rs:126:31
+    |
+126 | fn page(columns: Value, rows: Value) -> Value {
+    |                               ^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#needless_pass_by_value
+help: consider taking a reference instead
+    |
+126 | fn page(columns: Value, rows: &Value) -> Value {
+    |                               +
+
+error: `format!(..)` appended to existing `String`
+   --> crates\ontoforge\tests\cli_check_cardinality.rs:337:9
+    |
+337 |         csv.push_str(&format!("M{i}a,{value}\nM{i}b,{value}\n"));
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: you may need to import the `std::fmt::Write` trait
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#format_push_string
+    = note: `-D clippy::format-push-string` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::format_push_string)]`
+help: consider using `write!` to avoid the extra allocation
+    |
+337 -         csv.push_str(&format!("M{i}a,{value}\nM{i}b,{value}\n"));
+337 +         let _ = write!(csv, "M{i}a,{value}\nM{i}b,{value}\n");
+    |
+
+error: `format!(..)` appended to existing `String`
+   --> crates\ontoforge\tests\cli_check_cardinality.rs:362:9
+    |
+362 | ...   objects.push_str(&format!("---\nkind: Object...me: aircraft, foreignKey: aircraftId }}\n"));
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^...^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: you may need to import the `std::fmt::Write` trait
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#format_push_string
+help: consider using `write!` to avoid the extra allocation
+    |
+362 -         objects.push_str(&format!("---\nkind: ObjectType\napiName: {object}\nprimaryKey: id\nproperties:\n  id: {{ type: string, required: true }}\n  aircraftId: {{ type: string }}\nbacking: source\n---\nkind: LinkType\napiName: {link}\ncardinality: oneToOne\nfrom: {{ objectType: Aircraft, apiName: {accessor} }}\nto: {{ objectType: {object}, apiName: aircraft, foreignKey: aircraftId }}\n"));
+362 +         let _ = write!(objects, "---\nkind: ObjectType\napiName: {object}\nprimaryKey: id\nproperties:\n  id: {{ type: string, required: true }}\n  aircraftId: {{ type: string }}\nbacking: source\n---\nkind: LinkType\napiName: {link}\ncardinality: oneToOne\nfrom: {{ objectType: Aircraft, apiName: {accessor} }}\nto: {{ objectType: {object}, apiName: aircraft, foreignKey: aircraftId }}\n");
+    |
+
+error: could not compile `ontoforge` (test "cli_check_cardinality") due to 4 previous errors
+warning: build failed, waiting for other jobs to finish...

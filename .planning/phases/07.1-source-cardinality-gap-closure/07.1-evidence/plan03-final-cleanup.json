@@ -1,0 +1,7 @@
+{
+  "time": "2026-11-04T05:24:10.8129195Z",
+  "credentialScanExit": 0,
+  "head": "6be5c0861c8e80c9f1ba11311fb29ddce3e50aa6",
+  "scope": "only target/phase071-cardinality-runtime/service.env",
+  "serviceEnvDeleted": true
+}

@@ -1,0 +1,10 @@
+{
+  "cargoBuildJobs": 2,
+  "exitCode": 0,
+  "head": "49eb4d5aff89cfcdd21ed532ed8891c6ce0d1958",
+  "finished": "2026-11-04T08:39:21.1551857Z",
+  "command": "cargo clippy --workspace --all-targets --locked -- -D warnings",
+  "started": "2026-11-04T08:39:19.2782985Z",
+  "timeoutSeconds": 600,
+  "workingTreeChanges": "l2_monitor deletion baseline and query removal predicate"
+}

@@ -1,0 +1,53 @@
+{
+  "round": 3,
+  "latestArtifacts": [
+    {
+      "Name": "set_ops-4961812ee27ed6e6.exe",
+      "Length": 62944136,
+      "LastWriteTime": "2026-11-04T13:56:02.6826217+08:00"
+    },
+    {
+      "Name": "sql_shape-f5048f331cfacb85.exe",
+      "Length": 14607360,
+      "LastWriteTime": "2026-11-04T13:56:01.0954365+08:00"
+    },
+    {
+      "Name": "pk_read-ca9313057c454f16.exe",
+      "Length": 32813568,
+      "LastWriteTime": "2026-11-04T13:55:45.6228348+08:00"
+    },
+    {
+      "Name": "sqlite_engine-e6388930b1532c81.exe",
+      "Length": 16935936,
+      "LastWriteTime": "2026-11-04T13:55:35.4314859+08:00"
+    },
+    {
+      "Name": "model_prop-d34dd3976e237e5b.exe",
+      "Length": 31208960,
+      "LastWriteTime": "2026-11-04T13:55:14.1152686+08:00"
+    },
+    {
+      "Name": "conformance_pg-5c9acc4532d80f29.exe",
+      "Length": 31813120,
+      "LastWriteTime": "2026-11-04T13:55:10.3221877+08:00"
+    },
+    {
+      "Name": "trino_l2_acl_it-8a10e20cd31a3feb.exe",
+      "Length": 23485952,
+      "LastWriteTime": "2026-11-04T13:54:22.8185318+08:00"
+    },
+    {
+      "Name": "drift_budget-e1cedecef51bc4be.exe",
+      "Length": 14819840,
+      "LastWriteTime": "2026-11-04T13:54:10.2242969+08:00"
+    }
+  ],
+  "maximumRounds": 4,
+  "timeoutSeconds": 600,
+  "cargoBuildJobs": 2,
+  "command": "node gsd-tools.cjs run-with-timeout 600 -- cargo test --workspace --locked --no-run",
+  "head": "6be5c0861c8e80c9f1ba11311fb29ddce3e50aa6",
+  "started": "2026-11-04T05:46:02.9731055Z",
+  "exitCode": 124,
+  "finished": "2026-11-04T05:56:04.1760648Z"
+}

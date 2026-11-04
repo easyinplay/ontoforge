@@ -1,0 +1,10 @@
+{
+  "cargoBuildJobs": 2,
+  "finished": "2026-11-04T05:13:15.6298568Z",
+  "started": "2026-11-04T05:13:03.6292929Z",
+  "timeoutSeconds": 600,
+  "command": "cargo clippy --workspace --all-targets --locked -- -D warnings",
+  "head": "a78ad587df0c5f8ada2d34e0d82294482c240d13",
+  "workingTreeChanges": "final deadline/doc/helper lint fixes including independent engine test unit",
+  "exitCode": 0
+}

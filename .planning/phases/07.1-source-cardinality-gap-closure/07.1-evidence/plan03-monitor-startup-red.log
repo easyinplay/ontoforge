@@ -1,0 +1,19 @@
+   Compiling ontoforge-engine v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 18.63s
+     Running tests\l2_monitor.rs (target\debug\deps\l2_monitor-8f71fc9ff1a69bf5.exe)
+
+running 1 test
+
+thread 'monitor_cancelled_startup_cleans_up_and_stays_disabled' (37432) panicked at crates\ontoforge-engine\tests\l2_monitor.rs:476:6:
+probe cancelled: Elapsed(())
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test monitor_cancelled_startup_cleans_up_and_stays_disabled ... FAILED
+
+failures:
+
+failures:
+    monitor_cancelled_startup_cleans_up_and_stays_disabled
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 18 filtered out; finished in 1.09s
+
+error: test failed, to rerun pass `-p ontoforge-engine --test l2_monitor`

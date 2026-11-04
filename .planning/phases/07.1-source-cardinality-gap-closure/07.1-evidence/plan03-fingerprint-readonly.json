@@ -1,0 +1,466 @@
+{
+  "testEnabledTargetCount": 141,
+  "details": [
+    {
+      "fingerprintDirectoryExists": true,
+      "artifacts": [
+        {
+          "name": "health_trino_it-683f97da716f09e7.exe",
+          "size": 64298496,
+          "mtimeUtc": "2026-11-04T05:46:21.9310429Z"
+        },
+        {
+          "name": "health_trino_it-683f97da716f09e7.pdb",
+          "size": 515272704,
+          "mtimeUtc": "2026-11-04T05:46:22.7506184Z"
+        },
+        {
+          "name": "health_trino_it-683f97da716f09e7.d",
+          "size": 686,
+          "mtimeUtc": "2026-11-04T05:46:10.5134935Z"
+        }
+      ],
+      "fingerprint": {
+        "rustc": 6728126329342245928,
+        "features": "[]",
+        "declared_features": "[]",
+        "target": 5895779635223036475,
+        "profile": 13764107191832258922,
+        "path": 11482195750083980970,
+        "deps": [
+          [
+            1957009224993739128,
+            "thiserror",
+            false,
+            10258539962914935521
+          ],
+          [
+            2563749155025056971,
+            "ulid",
+            false,
+            12773816489477565713
+          ],
+          [
+            2707755659758455958,
+            "secrecy",
+            false,
+            12340942769081098710
+          ],
+          [
+            3574467496106291331,
+            "ontoforge_action",
+            false,
+            3030363133222633335
+          ],
+          [
+            4058955154813395031,
+            "ontoforge_server",
+            false,
+            5683046636122647780
+          ],
+          [
+            4178260355909482777,
+            "jsonwebtoken",
+            false,
+            17993252763786450185
+          ],
+          [
+            6444209561448300374,
+            "futures_util",
+            false,
+            7358213883908581229
+          ],
+          [
+            6459889917060353397,
+            "camino",
+            false,
+            9392452267260534123
+          ],
+          [
+            6557439603276904804,
+            "serde",
+            false,
+            1844232163280626340
+          ],
+          [
+            6657670353843353714,
+            "ontoforge_storage",
+            false,
+            10433134505941142614
+          ],
+          [
+            7564435940406450658,
+            "ontoforge_auth",
+            false,
+            2041053186732063523
+          ],
+          [
+            8083248482271866068,
+            "ontoforge_query",
+            false,
+            10420201553473405275
+          ],
+          [
+            8160210889872729633,
+            "serde_json",
+            false,
+            12234249686645324883
+          ],
+          [
+            8468608609134601547,
+            "tokio_util",
+            false,
+            1132851004543163180
+          ],
+          [
+            9723370144619655183,
+            "tempfile",
+            false,
+            10356246070118034417
+          ],
+          [
+            9842033052731393846,
+            "axum",
+            false,
+            7430044112051494248
+          ],
+          [
+            11043310563907781214,
+            "ontoforge_engine",
+            false,
+            36474887347080806
+          ],
+          [
+            13196351783047880178,
+            "reqwest",
+            false,
+            14603896688799104449
+          ],
+          [
+            14100686472250244458,
+            "rmcp",
+            false,
+            8478330185156414522
+          ],
+          [
+            15081944117236106268,
+            "ontoforge_schema",
+            false,
+            223414876617225265
+          ],
+          [
+            15463502288687926303,
+            "utoipa",
+            false,
+            17443005137547724341
+          ],
+          [
+            16099316836133515841,
+            "sqlx",
+            false,
+            2101283943050358436
+          ],
+          [
+            16495805082333414573,
+            "ontoforge_api",
+            false,
+            13301971786335771419
+          ],
+          [
+            16580638491779305821,
+            "utoipa_axum",
+            false,
+            13662079354499882303
+          ],
+          [
+            17866805608252134857,
+            "tokio",
+            false,
+            16014553806725247007
+          ]
+        ],
+        "local": [
+          {
+            "CheckDepInfo": {
+              "dep_info": "debug\\.fingerprint\\ontoforge-server-683f97da716f09e7\\dep-test-integration-test-health_trino_it",
+              "checksum": false
+            }
+          }
+        ],
+        "rustflags": [],
+        "config": 9396254390672932401,
+        "compile_kind": 0
+      },
+      "fingerprintFiles": [
+        {
+          "name": "dep-test-integration-test-health_trino_it",
+          "size": 97,
+          "sha256": "7997538EBE19EBCC67800642239799052FC1BD34E84D4B070CF392359DC2DE75",
+          "mtimeUtc": "2026-11-04T05:46:09.8097138Z"
+        },
+        {
+          "name": "invoked.timestamp",
+          "size": 48,
+          "sha256": "5A109E6643E8D3E88642E3F35E85D2A83E639D07523AA6E99166C48178E965C3",
+          "mtimeUtc": "2026-11-04T05:46:09.8097138Z"
+        },
+        {
+          "name": "test-integration-test-health_trino_it",
+          "size": 16,
+          "sha256": "A3FE97A0EAC21B4A0A2A064C715DA8F0C42175AFED36363EA40BF17B622ECCB0",
+          "mtimeUtc": "2026-11-04T05:46:23.5732538Z"
+        },
+        {
+          "name": "test-integration-test-health_trino_it.json",
+          "size": 1926,
+          "sha256": "E065E15300F62B665E44A3EBDB1E6B578186BF787F130B724EE047B2A60590D4",
+          "mtimeUtc": "2026-11-04T05:46:23.5732538Z"
+        }
+      ],
+      "target": "health_trino_it",
+      "cause": "unknown: no historical fingerprint content or Cargo dirty/fresh reason trace was recorded; current timestamps cannot distinguish timeout interruption from dependency invalidation or other rebuild triggers",
+      "depInfoText": "D:\\DataSpellProjects\\ontoforge\\target\\debug\\deps\\health_trino_it-683f97da716f09e7.d: crates\\ontoforge-server\\tests\\health_trino_it.rs crates\\ontoforge-server\\tests\\support\\real.rs crates\\ontoforge-server\\tests\\support\\mod.rs\n\nD:\\DataSpellProjects\\ontoforge\\target\\debug\\deps\\health_trino_it-683f97da716f09e7.exe: crates\\ontoforge-server\\tests\\health_trino_it.rs crates\\ontoforge-server\\tests\\support\\real.rs crates\\ontoforge-server\\tests\\support\\mod.rs\n\ncrates\\ontoforge-server\\tests\\health_trino_it.rs:\ncrates\\ontoforge-server\\tests\\support\\real.rs:\ncrates\\ontoforge-server\\tests\\support\\mod.rs:\n\n# env-dep:CARGO_MANIFEST_DIR=D:\\\\DataSpellProjects\\\\ontoforge\\\\crates\\\\ontoforge-server\n",
+      "hash": "683f97da716f09e7",
+      "objectFiles": {
+        "count": 514,
+        "latestMtimeUtc": "2026-11-04T05:44:29.1058679Z",
+        "earliestMtimeUtc": "2026-11-04T04:48:55.5689964Z"
+      }
+    },
+    {
+      "fingerprintDirectoryExists": true,
+      "artifacts": [
+        {
+          "name": "http_action_safety-3f6f296af9c10bfd.exe",
+          "size": 60303360,
+          "mtimeUtc": "2026-11-04T05:49:26.8734493Z"
+        },
+        {
+          "name": "http_action_safety-3f6f296af9c10bfd.pdb",
+          "size": 486002688,
+          "mtimeUtc": "2026-11-04T05:49:28.0623955Z"
+        },
+        {
+          "name": "http_action_safety-3f6f296af9c10bfd.d",
+          "size": 740,
+          "mtimeUtc": "2026-11-04T05:47:56.6700508Z"
+        }
+      ],
+      "fingerprint": {
+        "rustc": 6728126329342245928,
+        "features": "[]",
+        "declared_features": "[]",
+        "target": 316888920190950787,
+        "profile": 13764107191832258922,
+        "path": 831590725412362702,
+        "deps": [
+          [
+            1957009224993739128,
+            "thiserror",
+            false,
+            10258539962914935521
+          ],
+          [
+            2563749155025056971,
+            "ulid",
+            false,
+            12773816489477565713
+          ],
+          [
+            2707755659758455958,
+            "secrecy",
+            false,
+            12340942769081098710
+          ],
+          [
+            3574467496106291331,
+            "ontoforge_action",
+            false,
+            3030363133222633335
+          ],
+          [
+            4058955154813395031,
+            "ontoforge_server",
+            false,
+            5683046636122647780
+          ],
+          [
+            4178260355909482777,
+            "jsonwebtoken",
+            false,
+            17993252763786450185
+          ],
+          [
+            6444209561448300374,
+            "futures_util",
+            false,
+            7358213883908581229
+          ],
+          [
+            6459889917060353397,
+            "camino",
+            false,
+            9392452267260534123
+          ],
+          [
+            6557439603276904804,
+            "serde",
+            false,
+            1844232163280626340
+          ],
+          [
+            6657670353843353714,
+            "ontoforge_storage",
+            false,
+            10433134505941142614
+          ],
+          [
+            7564435940406450658,
+            "ontoforge_auth",
+            false,
+            2041053186732063523
+          ],
+          [
+            8083248482271866068,
+            "ontoforge_query",
+            false,
+            10420201553473405275
+          ],
+          [
+            8160210889872729633,
+            "serde_json",
+            false,
+            12234249686645324883
+          ],
+          [
+            8468608609134601547,
+            "tokio_util",
+            false,
+            1132851004543163180
+          ],
+          [
+            9723370144619655183,
+            "tempfile",
+            false,
+            10356246070118034417
+          ],
+          [
+            9842033052731393846,
+            "axum",
+            false,
+            7430044112051494248
+          ],
+          [
+            11043310563907781214,
+            "ontoforge_engine",
+            false,
+            36474887347080806
+          ],
+          [
+            13196351783047880178,
+            "reqwest",
+            false,
+            14603896688799104449
+          ],
+          [
+            14100686472250244458,
+            "rmcp",
+            false,
+            8478330185156414522
+          ],
+          [
+            15081944117236106268,
+            "ontoforge_schema",
+            false,
+            223414876617225265
+          ],
+          [
+            15463502288687926303,
+            "utoipa",
+            false,
+            17443005137547724341
+          ],
+          [
+            16099316836133515841,
+            "sqlx",
+            false,
+            2101283943050358436
+          ],
+          [
+            16495805082333414573,
+            "ontoforge_api",
+            false,
+            13301971786335771419
+          ],
+          [
+            16580638491779305821,
+            "utoipa_axum",
+            false,
+            13662079354499882303
+          ],
+          [
+            17866805608252134857,
+            "tokio",
+            false,
+            16014553806725247007
+          ]
+        ],
+        "local": [
+          {
+            "CheckDepInfo": {
+              "dep_info": "debug\\.fingerprint\\ontoforge-server-3f6f296af9c10bfd\\dep-test-integration-test-http_action_safety",
+              "checksum": false
+            }
+          }
+        ],
+        "rustflags": [],
+        "config": 9396254390672932401,
+        "compile_kind": 0
+      },
+      "fingerprintFiles": [
+        {
+          "name": "dep-test-integration-test-http_action_safety",
+          "size": 113,
+          "sha256": "9F914BFEE2D3556D466E3F370704982E2467A022B75F47E8F86999859F874F99",
+          "mtimeUtc": "2026-11-04T05:47:50.9987444Z"
+        },
+        {
+          "name": "invoked.timestamp",
+          "size": 48,
+          "sha256": "5A109E6643E8D3E88642E3F35E85D2A83E639D07523AA6E99166C48178E965C3",
+          "mtimeUtc": "2026-11-04T05:47:50.9987444Z"
+        },
+        {
+          "name": "test-integration-test-http_action_safety",
+          "size": 16,
+          "sha256": "34CCD2459073CDAD93CD98ECBC4E2F87CEF31E1D9DED4A7C472ECBC4FB44C76C",
+          "mtimeUtc": "2026-11-04T05:49:29.9318138Z"
+        },
+        {
+          "name": "test-integration-test-http_action_safety.json",
+          "size": 1926,
+          "sha256": "04754E47C17682241ADACED9AFC23B0E790E4D9855A36E70CFE6419FEF43939B",
+          "mtimeUtc": "2026-11-04T05:49:29.9318138Z"
+        }
+      ],
+      "target": "http_action_safety",
+      "cause": "unknown: no historical fingerprint content or Cargo dirty/fresh reason trace was recorded; current timestamps cannot distinguish timeout interruption from dependency invalidation or other rebuild triggers",
+      "depInfoText": "D:\\DataSpellProjects\\ontoforge\\target\\debug\\deps\\http_action_safety-3f6f296af9c10bfd.d: crates\\ontoforge-server\\tests\\http_action_safety.rs crates\\ontoforge-server\\tests\\support\\security_evidence.rs crates\\ontoforge-server\\tests\\support\\mod.rs\n\nD:\\DataSpellProjects\\ontoforge\\target\\debug\\deps\\http_action_safety-3f6f296af9c10bfd.exe: crates\\ontoforge-server\\tests\\http_action_safety.rs crates\\ontoforge-server\\tests\\support\\security_evidence.rs crates\\ontoforge-server\\tests\\support\\mod.rs\n\ncrates\\ontoforge-server\\tests\\http_action_safety.rs:\ncrates\\ontoforge-server\\tests\\support\\security_evidence.rs:\ncrates\\ontoforge-server\\tests\\support\\mod.rs:\n\n# env-dep:CARGO_MANIFEST_DIR=D:\\\\DataSpellProjects\\\\ontoforge\\\\crates\\\\ontoforge-server\n",
+      "hash": "3f6f296af9c10bfd",
+      "objectFiles": {
+        "count": 257,
+        "latestMtimeUtc": "2026-11-04T05:34:54.9487910Z",
+        "earliestMtimeUtc": "2026-11-04T04:46:28.7818092Z"
+      }
+    }
+  ],
+  "buildCommandsRun": 0,
+  "metadataExit": 0,
+  "head": "6be5c0861c8e80c9f1ba11311fb29ddce3e50aa6",
+  "metadataCommand": "cargo metadata --no-deps --format-version 1 --locked",
+  "remainingCompilerProcesses": [],
+  "matchingCaveat": "Name-prefix matching is not package/hash or Cargo freshness proof. In particular ontoforge lib/bin and cross-package security names collide. An empty list is not evidence that all targets completed.",
+  "targetsWithoutFreshNameMatch": [],
+  "allMetadataTargetCount": 141,
+  "observedUtc": "2026-11-04T06:11:51.4217011Z"
+}

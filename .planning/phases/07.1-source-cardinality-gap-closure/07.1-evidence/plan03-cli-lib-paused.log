@@ -1,0 +1,32 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.48s
+     Running unittests src\lib.rs (target\debug\deps\ontoforge-700c8fe578931e11.exe)
+
+running 25 tests
+test online::tests::query_context_uses_defaults_and_timeout_flag ... ok
+test render::tests::carriage_return_and_bidi_controls_are_replaced ... ok
+test render::tests::exit_codes ... ok
+test online::tests::trino_context_takes_the_configured_limits ... ok
+test online::tests::trino_context_sends_the_configured_client_tags ... ok
+test mcp::tests::bridge_configuration_disables_reinit_and_rejects_url_credentials ... ok
+test mcp::tests::bridge_configuration_bounds_concurrency_and_redacts_errors ... ok
+test render::tests::multibyte_text_is_untouched ... ok
+test render::tests::sanitize_preserves_byte_length_and_strips_escapes ... ok
+test render::tests::located_diagnostic_without_source_names_the_place ... ok
+test render::tests::file_name_cannot_drive_the_terminal ... ok
+test online::tests::cardinality_cleanup_failure_after_metadata_error ... ok
+test dev::tests::lock_acquisition_rechecks_new_entries_before_initialization ... ok
+test reload::tests::a_postgres_store_read_by_trino_on_a_trino_profile_is_probed ... ok
+test online::tests::cardinality_total_deadline_configuration ... ok
+test online::tests::cardinality_total_deadline_is_shared ... ok
+test reload::tests::nothing_to_wait_for_without_trino_in_front_of_postgres ... ok
+test reload::tests::the_default_profile_of_the_manifest_decides_without_an_option ... ok
+test online::tests::cardinality_cleanup_failure_after_success ... ok
+test dev::tests::lock_acquisition_rechecks_marker_before_reset_deletes_assets ... ok
+test serve::tests::openapi_export_without_store_is_deterministic ... ok
+test serve::tests::serve_args_validate_config_and_address ... ok
+test serve::tests::serve_query_key_survives_restart_and_is_independent_of_auth ... ok
+test serve::tests::serve_real_listener_auth_and_shutdown ... ok
+test serve::tests::serve_query_key_rejects_missing_short_and_oversized_files_before_listen ... ok
+
+test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.27s
+

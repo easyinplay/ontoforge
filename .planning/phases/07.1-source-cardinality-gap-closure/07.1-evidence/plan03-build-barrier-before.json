@@ -1,0 +1,48 @@
+{
+  "latestArtifacts": [
+    {
+      "Name": "cli_trino_it-1fd0286250bc4296.exe",
+      "Length": 1364480,
+      "LastWriteTime": "2026-11-04T13:25:01.7119565+08:00"
+    },
+    {
+      "Name": "cli_dev_token-b46eda4acc4105e6.exe",
+      "Length": 15704064,
+      "LastWriteTime": "2026-11-04T13:24:53.4588445+08:00"
+    },
+    {
+      "Name": "ontoforge.exe",
+      "Length": 71848960,
+      "LastWriteTime": "2026-11-04T13:24:48.2153602+08:00"
+    },
+    {
+      "Name": "cli_l2_identity-6e0d19716b15203f.exe",
+      "Length": 70286336,
+      "LastWriteTime": "2026-11-04T13:24:38.3254209+08:00"
+    },
+    {
+      "Name": "private_fixtures-5e464731250cf218.exe",
+      "Length": 930304,
+      "LastWriteTime": "2026-11-04T13:24:37.9732127+08:00"
+    },
+    {
+      "Name": "cli_online_trino-c7e8dffc6099c78e.exe",
+      "Length": 7605760,
+      "LastWriteTime": "2026-11-04T13:24:31.1077076+08:00"
+    },
+    {
+      "Name": "cli_webhook_worker-9855fe14338501f5.exe",
+      "Length": 38997504,
+      "LastWriteTime": "2026-11-04T13:24:03.0788447+08:00"
+    },
+    {
+      "Name": "cli_scope-a25403ab5a74c4d2.exe",
+      "Length": 7820800,
+      "LastWriteTime": "2026-11-04T13:23:02.0346014+08:00"
+    }
+  ],
+  "cargoRustcProcesses": 0,
+  "testHarnessSummaries": 0,
+  "head": "6be5c0861c8e80c9f1ba11311fb29ddce3e50aa6",
+  "time": "2026-11-04T05:25:23.4601143Z"
+}

@@ -1,0 +1,10 @@
+{
+  "exitCode": 101,
+  "head": "a78ad587df0c5f8ada2d34e0d82294482c240d13",
+  "timeoutSeconds": 600,
+  "continuationOf": "plan03-workspace-continuation.json",
+  "finished": "2026-11-04T05:00:40.2475102Z",
+  "started": "2026-11-04T04:52:01.6838976Z",
+  "command": "node gsd-tools.cjs run-with-timeout 600 -- cargo test --workspace --locked",
+  "cargoBuildJobs": 2
+}

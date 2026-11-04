@@ -1,0 +1,10 @@
+{
+  "finished": "2026-11-04T05:07:32.2428887Z",
+  "head": "a78ad587df0c5f8ada2d34e0d82294482c240d13",
+  "started": "2026-11-04T05:07:02.6666030Z",
+  "workingTreeChanges": "5 doc backtick sites; 2 start_paused tests; dev test-util",
+  "cargoBuildJobs": 2,
+  "timeoutSeconds": 600,
+  "command": "cargo clippy --workspace --all-targets --locked -- -D warnings",
+  "exitCode": 101
+}

@@ -1,0 +1,16 @@
+{
+  "ignored": 119.0,
+  "failed": 0.0,
+  "command": {
+    "head": "49eb4d5aff89cfcdd21ed532ed8891c6ce0d1958",
+    "finished": "2026-11-04T08:38:04.2591765Z",
+    "command": "node gsd-tools.cjs run-with-timeout 600 -- cargo test --workspace --locked",
+    "started": "2026-11-04T08:31:49.560685Z",
+    "cargoBuildJobs": 2,
+    "exitCode": 0,
+    "timeoutSeconds": 600
+  },
+  "passed": 1525.0,
+  "remainingCargoRustc": 0,
+  "harnessSummaries": 152
+}

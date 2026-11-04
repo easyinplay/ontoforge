@@ -1,0 +1,8 @@
+{
+  "finished": "2026-11-04T08:30:38.7464671Z",
+  "started": "2026-11-04T08:30:36.7257928Z",
+  "head": "834abd07333e17946005b8b0aca169136802139b",
+  "workingTreeChanges": "l2_monitor startup test synchronization only",
+  "command": "cargo fmt --all --check",
+  "exitCode": 0
+}

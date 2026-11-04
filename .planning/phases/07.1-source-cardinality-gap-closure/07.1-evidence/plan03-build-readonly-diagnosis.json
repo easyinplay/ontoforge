@@ -1,0 +1,4201 @@
+{
+  "head": "6be5c0861c8e80c9f1ba11311fb29ddce3e50aa6",
+  "observedUtc": "2026-11-04T06:07:54.9229433Z",
+  "scopeStartUtc": "2026-11-04T13:15:02+08:00",
+  "metadataCommand": "cargo metadata --no-deps --format-version 1 --locked",
+  "metadataExit": 0,
+  "recentExeCount": 138,
+  "recentExeTotalBytes": 3846044160.0,
+  "mtimeCaveat": "These counts are retrospective current mtimes, not historical creation-event counts. A file rebuilt in a later round moves into that later bucket. Earlier counts are retained-artifact lower bounds. No per-round full snapshots were captured.",
+  "rounds": [
+    {
+      "round": "plan03-workspace-final",
+      "started": "2026-11-04T05:15:02.8002692Z",
+      "finished": "2026-11-04T05:25:03.8498769Z",
+      "exitCode": 124,
+      "currentlyRetainedExeMtimeCount": 27,
+      "files": [
+        {
+          "name": "cli_check_cardinality-c8402ba9f7ecbc33.exe",
+          "mtimeUtc": "2026-11-04T05:22:37.4806809Z"
+        },
+        {
+          "name": "cli_check_pk-7a6fa370b0663a69.exe",
+          "mtimeUtc": "2026-11-04T05:20:47.7552909Z"
+        },
+        {
+          "name": "cli_color-46143148aae0b660.exe",
+          "mtimeUtc": "2026-11-04T05:20:28.2268801Z"
+        },
+        {
+          "name": "cli_dev_token-b46eda4acc4105e6.exe",
+          "mtimeUtc": "2026-11-04T05:24:53.4588445Z"
+        },
+        {
+          "name": "cli_import-7760d7060546e8eb.exe",
+          "mtimeUtc": "2026-11-04T05:20:21.2950035Z"
+        },
+        {
+          "name": "cli_l2_identity-6e0d19716b15203f.exe",
+          "mtimeUtc": "2026-11-04T05:24:38.3254209Z"
+        },
+        {
+          "name": "cli_lint-6f9f2b403b906af9.exe",
+          "mtimeUtc": "2026-11-04T05:22:54.5633871Z"
+        },
+        {
+          "name": "cli_migrate-97e266de9d2cec94.exe",
+          "mtimeUtc": "2026-11-04T05:19:44.2225912Z"
+        },
+        {
+          "name": "cli_online_trino-c7e8dffc6099c78e.exe",
+          "mtimeUtc": "2026-11-04T05:24:31.1077076Z"
+        },
+        {
+          "name": "cli_online-c302488a13e0ceac.exe",
+          "mtimeUtc": "2026-11-04T05:20:34.472991Z"
+        },
+        {
+          "name": "cli_reload-1be21c793166d6c0.exe",
+          "mtimeUtc": "2026-11-04T05:19:39.4525301Z"
+        },
+        {
+          "name": "cli_schema-37209e90e5c420af.exe",
+          "mtimeUtc": "2026-11-04T05:22:47.1952691Z"
+        },
+        {
+          "name": "cli_scope-a25403ab5a74c4d2.exe",
+          "mtimeUtc": "2026-11-04T05:23:02.0346014Z"
+        },
+        {
+          "name": "cli_shutdown-9789033234df29a3.exe",
+          "mtimeUtc": "2026-11-04T05:21:54.1813187Z"
+        },
+        {
+          "name": "cli_stdio-b4bfa364c0ba4235.exe",
+          "mtimeUtc": "2026-11-04T05:22:46.3254874Z"
+        },
+        {
+          "name": "cli_trino_it-1fd0286250bc4296.exe",
+          "mtimeUtc": "2026-11-04T05:25:01.7119565Z"
+        },
+        {
+          "name": "cli_webhook_worker-9855fe14338501f5.exe",
+          "mtimeUtc": "2026-11-04T05:24:03.0788447Z"
+        },
+        {
+          "name": "cli-eb463de316228ca6.exe",
+          "mtimeUtc": "2026-11-04T05:22:43.6521952Z"
+        },
+        {
+          "name": "dev_lifecycle-e49cfb15c86255b8.exe",
+          "mtimeUtc": "2026-11-04T05:22:10.8798897Z"
+        },
+        {
+          "name": "entrypoints-65c4f4b020db7e34.exe",
+          "mtimeUtc": "2026-11-04T05:17:56.6182101Z"
+        },
+        {
+          "name": "invalid_examples-4161ec6a0315eec9.exe",
+          "mtimeUtc": "2026-11-04T05:21:02.9300649Z"
+        },
+        {
+          "name": "ontoforge_schema-fd17dbbbd425a1ce.exe",
+          "mtimeUtc": "2026-11-04T05:15:39.3377552Z"
+        },
+        {
+          "name": "ontoforge-e8806c81ea444329.exe",
+          "mtimeUtc": "2026-11-04T05:20:23.2222436Z"
+        },
+        {
+          "name": "ontoforge.exe",
+          "mtimeUtc": "2026-11-04T05:24:48.2153602Z"
+        },
+        {
+          "name": "private_fixtures-5e464731250cf218.exe",
+          "mtimeUtc": "2026-11-04T05:24:37.9732127Z"
+        },
+        {
+          "name": "rowpred_diff-8a5ccf8b852ece0a.exe",
+          "mtimeUtc": "2026-11-04T05:16:36.8541457Z"
+        },
+        {
+          "name": "source_drift_trino_it-22547d42f529c24f.exe",
+          "mtimeUtc": "2026-11-04T05:20:15.6435871Z"
+        }
+      ]
+    },
+    {
+      "round": "plan03-build-barrier-1",
+      "started": "2026-11-04T05:25:23.8152103Z",
+      "finished": "2026-11-04T05:35:25.02071Z",
+      "exitCode": 124,
+      "currentlyRetainedExeMtimeCount": 27,
+      "files": [
+        {
+          "name": "action_pg-3dc84a05aa3d6ce9.exe",
+          "mtimeUtc": "2026-11-04T05:28:27.2214462Z"
+        },
+        {
+          "name": "action_types-fc9b3e9cb5c68ff8.exe",
+          "mtimeUtc": "2026-11-04T05:27:41.9555341Z"
+        },
+        {
+          "name": "action-fb17afc4be64a38b.exe",
+          "mtimeUtc": "2026-11-04T05:30:17.5491285Z"
+        },
+        {
+          "name": "bindings-032c9bc2bb7a3c35.exe",
+          "mtimeUtc": "2026-11-04T05:26:52.5694954Z"
+        },
+        {
+          "name": "contract-0742d24973ea0861.exe",
+          "mtimeUtc": "2026-11-04T05:28:32.3041734Z"
+        },
+        {
+          "name": "diagnostics-e33760de597247ce.exe",
+          "mtimeUtc": "2026-11-04T05:25:46.6700694Z"
+        },
+        {
+          "name": "error_diagnostics-1654d9e086c03aae.exe",
+          "mtimeUtc": "2026-11-04T05:27:18.3064849Z"
+        },
+        {
+          "name": "frozen_definition-fd0d0591fb2157c2.exe",
+          "mtimeUtc": "2026-11-04T05:31:12.0036858Z"
+        },
+        {
+          "name": "idempotency_pg-4c7dc83a2d1d8f89.exe",
+          "mtimeUtc": "2026-11-04T05:29:30.3084174Z"
+        },
+        {
+          "name": "idempotency-d866894fe1938af6.exe",
+          "mtimeUtc": "2026-11-04T05:30:20.0290626Z"
+        },
+        {
+          "name": "link_types-5a6692588ea8e8c2.exe",
+          "mtimeUtc": "2026-11-04T05:26:59.7952283Z"
+        },
+        {
+          "name": "lint_examples-2a22aa1f3a4d0e74.exe",
+          "mtimeUtc": "2026-11-04T05:25:39.7379055Z"
+        },
+        {
+          "name": "load_examples-93aaefefc3b9a68c.exe",
+          "mtimeUtc": "2026-11-04T05:27:33.027928Z"
+        },
+        {
+          "name": "loader-f667541229b7b361.exe",
+          "mtimeUtc": "2026-11-04T05:25:59.6751543Z"
+        },
+        {
+          "name": "object_types-1e16deb88d0a692f.exe",
+          "mtimeUtc": "2026-11-04T05:25:32.7688637Z"
+        },
+        {
+          "name": "ontoforge_action-41c5226c46d241de.exe",
+          "mtimeUtc": "2026-11-04T05:32:01.0484039Z"
+        },
+        {
+          "name": "ontoforge_client-4522c9f62782f166.exe",
+          "mtimeUtc": "2026-11-04T05:34:30.0896706Z"
+        },
+        {
+          "name": "ontoforge-a5eacfbd0a4a44bc.exe",
+          "mtimeUtc": "2026-11-04T05:34:39.1250182Z"
+        },
+        {
+          "name": "outbox_pg-1e0199c9b702c580.exe",
+          "mtimeUtc": "2026-11-04T05:32:53.3495793Z"
+        },
+        {
+          "name": "outbox-b64e9d931ba3e1a9.exe",
+          "mtimeUtc": "2026-11-04T05:31:20.3701264Z"
+        },
+        {
+          "name": "schema_export-a038c23f1834f0ec.exe",
+          "mtimeUtc": "2026-11-04T05:26:42.4515108Z"
+        },
+        {
+          "name": "scope_documents-edcdc6dc3ec14c65.exe",
+          "mtimeUtc": "2026-11-04T05:25:32.8249065Z"
+        },
+        {
+          "name": "security-f9bd56828e1a544b.exe",
+          "mtimeUtc": "2026-11-04T05:32:06.1468209Z"
+        },
+        {
+          "name": "source_drift-e88af3a1a9ed556e.exe",
+          "mtimeUtc": "2026-11-04T05:34:23.1791419Z"
+        },
+        {
+          "name": "source-08905e5a4d62a2c9.exe",
+          "mtimeUtc": "2026-11-04T05:29:22.2697171Z"
+        },
+        {
+          "name": "trino_action_it-41e0f7e64f76690c.exe",
+          "mtimeUtc": "2026-11-04T05:28:25.4636005Z"
+        },
+        {
+          "name": "version-0e84209c2116df12.exe",
+          "mtimeUtc": "2026-11-04T05:29:17.4469232Z"
+        }
+      ]
+    },
+    {
+      "round": "plan03-build-barrier-2",
+      "started": "2026-11-04T05:35:42.104035Z",
+      "finished": "2026-11-04T05:45:43.3459391Z",
+      "exitCode": 124,
+      "currentlyRetainedExeMtimeCount": 11,
+      "files": [
+        {
+          "name": "action_source_budget-635f78fed3bb4210.exe",
+          "mtimeUtc": "2026-11-04T05:37:42.6939456Z"
+        },
+        {
+          "name": "health_lifecycle_it-28244a7d67537f81.exe",
+          "mtimeUtc": "2026-11-04T05:37:42.6596165Z"
+        },
+        {
+          "name": "history_errors-7358673d4c74d304.exe",
+          "mtimeUtc": "2026-11-04T05:39:20.1770607Z"
+        },
+        {
+          "name": "history_pagination-12dc64b8d949d76a.exe",
+          "mtimeUtc": "2026-11-04T05:42:37.9560319Z"
+        },
+        {
+          "name": "http_action_diagnostics-ec8d61030e8cc387.exe",
+          "mtimeUtc": "2026-11-04T05:43:07.9058409Z"
+        },
+        {
+          "name": "http_actions-d549d4a746358615.exe",
+          "mtimeUtc": "2026-11-04T05:40:57.3182646Z"
+        },
+        {
+          "name": "mcp_execution_admission-7309ac84ec795507.exe",
+          "mtimeUtc": "2026-11-04T05:44:42.3401493Z"
+        },
+        {
+          "name": "mcp_l2-7c9fe5d1a62f104e.exe",
+          "mtimeUtc": "2026-11-04T05:40:01.2633192Z"
+        },
+        {
+          "name": "postgres_http_it-f4cd2f36a7ccf460.exe",
+          "mtimeUtc": "2026-11-04T05:44:17.8950987Z"
+        },
+        {
+          "name": "source_drift_cleanup-82bb5b65c60a24aa.exe",
+          "mtimeUtc": "2026-11-04T05:41:33.0842729Z"
+        },
+        {
+          "name": "trino_http_it-21125039194dcec9.exe",
+          "mtimeUtc": "2026-11-04T05:39:32.5219605Z"
+        }
+      ]
+    },
+    {
+      "round": "plan03-build-barrier-3",
+      "started": "2026-11-04T05:46:02.9731055Z",
+      "finished": "2026-11-04T05:56:04.1760648Z",
+      "exitCode": 124,
+      "currentlyRetainedExeMtimeCount": 23,
+      "files": [
+        {
+          "name": "bind_check_isolation-e50184421ce5ccf8.exe",
+          "mtimeUtc": "2026-11-04T05:52:49.6297695Z"
+        },
+        {
+          "name": "conformance_pg-5c9acc4532d80f29.exe",
+          "mtimeUtc": "2026-11-04T05:55:10.3221877Z"
+        },
+        {
+          "name": "criteria_coverage-bb93eb496a8b60ca.exe",
+          "mtimeUtc": "2026-11-04T05:51:34.6309144Z"
+        },
+        {
+          "name": "criteria-6132d60282591ac3.exe",
+          "mtimeUtc": "2026-11-04T05:52:17.3261545Z"
+        },
+        {
+          "name": "doc_type_table-72132b3774e5f08e.exe",
+          "mtimeUtc": "2026-11-04T05:53:49.0721109Z"
+        },
+        {
+          "name": "drift_budget-e1cedecef51bc4be.exe",
+          "mtimeUtc": "2026-11-04T05:54:10.2242969Z"
+        },
+        {
+          "name": "health_trino_it-683f97da716f09e7.exe",
+          "mtimeUtc": "2026-11-04T05:46:21.9310429Z"
+        },
+        {
+          "name": "http_action_safety-3f6f296af9c10bfd.exe",
+          "mtimeUtc": "2026-11-04T05:49:26.8734493Z"
+        },
+        {
+          "name": "http_contract-611a5e9b63a25750.exe",
+          "mtimeUtc": "2026-11-04T05:48:47.7729083Z"
+        },
+        {
+          "name": "l2_execute-977dfd6806db929b.exe",
+          "mtimeUtc": "2026-11-04T05:53:00.0229529Z"
+        },
+        {
+          "name": "mcp_actions-9b75ed45eaf7d8fd.exe",
+          "mtimeUtc": "2026-11-04T05:47:03.5935165Z"
+        },
+        {
+          "name": "mcp_contract-84db2314986616cd.exe",
+          "mtimeUtc": "2026-11-04T05:50:25.3883084Z"
+        },
+        {
+          "name": "mcp_l2_defaults-fa2271fc6f05a43b.exe",
+          "mtimeUtc": "2026-11-04T05:51:17.6521878Z"
+        },
+        {
+          "name": "mcp_transport-4e828559373aa9f3.exe",
+          "mtimeUtc": "2026-11-04T05:47:48.971129Z"
+        },
+        {
+          "name": "model_prop-d34dd3976e237e5b.exe",
+          "mtimeUtc": "2026-11-04T05:55:14.1152686Z"
+        },
+        {
+          "name": "ontoforge_server-0a1fa3a6214e542f.exe",
+          "mtimeUtc": "2026-11-04T05:52:17.9028429Z"
+        },
+        {
+          "name": "pk_read-ca9313057c454f16.exe",
+          "mtimeUtc": "2026-11-04T05:55:45.6228348Z"
+        },
+        {
+          "name": "query_bench_it-b47b50c6d9cedee2.exe",
+          "mtimeUtc": "2026-11-04T05:53:54.5761184Z"
+        },
+        {
+          "name": "reload_pg-ba286574e281cc58.exe",
+          "mtimeUtc": "2026-11-04T05:53:31.9931598Z"
+        },
+        {
+          "name": "sql_shape-f5048f331cfacb85.exe",
+          "mtimeUtc": "2026-11-04T05:56:01.0954365Z"
+        },
+        {
+          "name": "sqlite_engine-e6388930b1532c81.exe",
+          "mtimeUtc": "2026-11-04T05:55:35.4314859Z"
+        },
+        {
+          "name": "trino_l2_acl_it-8a10e20cd31a3feb.exe",
+          "mtimeUtc": "2026-11-04T05:54:22.8185318Z"
+        },
+        {
+          "name": "trino_query_it-d1b6926803e66f06.exe",
+          "mtimeUtc": "2026-11-04T05:52:07.692709Z"
+        }
+      ]
+    },
+    {
+      "round": "plan03-build-barrier-4",
+      "started": "2026-11-04T05:56:19.8373127Z",
+      "finished": "2026-11-04T06:06:20.8768122Z",
+      "exitCode": 124,
+      "currentlyRetainedExeMtimeCount": 50,
+      "files": [
+        {
+          "name": "analyze-a1a0f9733fc8e63d.exe",
+          "mtimeUtc": "2026-11-04T06:02:06.7370254Z"
+        },
+        {
+          "name": "audit_l0-27e5e71832302d26.exe",
+          "mtimeUtc": "2026-11-04T06:05:52.289027Z"
+        },
+        {
+          "name": "audit_pk-99dd1fb5105cec5e.exe",
+          "mtimeUtc": "2026-11-04T06:03:36.7592916Z"
+        },
+        {
+          "name": "cardinality_check-c4c3341e52cd7e70.exe",
+          "mtimeUtc": "2026-11-04T06:01:42.058017Z"
+        },
+        {
+          "name": "conformance_sqlite-d3478ece9da75694.exe",
+          "mtimeUtc": "2026-11-04T06:04:51.6663629Z"
+        },
+        {
+          "name": "crypto_backend-6b9287c5ae20c41c.exe",
+          "mtimeUtc": "2026-11-04T05:58:16.7873921Z"
+        },
+        {
+          "name": "definition_snapshot-f89fec19165658a4.exe",
+          "mtimeUtc": "2026-11-04T05:56:55.6969401Z"
+        },
+        {
+          "name": "dev_token-84b24bb6ad5633a6.exe",
+          "mtimeUtc": "2026-11-04T06:04:09.6780528Z"
+        },
+        {
+          "name": "drift-6da7f9d5ccd7f28f.exe",
+          "mtimeUtc": "2026-11-04T05:58:35.4692098Z"
+        },
+        {
+          "name": "frozen_history-0d97ba70df34880f.exe",
+          "mtimeUtc": "2026-11-04T06:05:24.2905715Z"
+        },
+        {
+          "name": "history_masking-7191ab5a32373624.exe",
+          "mtimeUtc": "2026-11-04T06:00:29.5893834Z"
+        },
+        {
+          "name": "import-99efa8724a90dff6.exe",
+          "mtimeUtc": "2026-11-04T05:58:16.3342221Z"
+        },
+        {
+          "name": "l2_discovery-308263f997acc82d.exe",
+          "mtimeUtc": "2026-11-04T06:04:52.1939856Z"
+        },
+        {
+          "name": "l2_explain-7f4d1e80977be438.exe",
+          "mtimeUtc": "2026-11-04T06:00:28.4187946Z"
+        },
+        {
+          "name": "l2_gate-dde943abdc185335.exe",
+          "mtimeUtc": "2026-11-04T05:58:38.3472959Z"
+        },
+        {
+          "name": "l2_health-a6f82a7e2d47eba4.exe",
+          "mtimeUtc": "2026-11-04T06:00:04.6763148Z"
+        },
+        {
+          "name": "l2_monitor-6b2929cfda3a4844.exe",
+          "mtimeUtc": "2026-11-04T05:59:57.1773105Z"
+        },
+        {
+          "name": "migrate-1fc1ae2224f64daa.exe",
+          "mtimeUtc": "2026-11-04T06:01:19.3519266Z"
+        },
+        {
+          "name": "oidc-037e5c5f5b6f8d28.exe",
+          "mtimeUtc": "2026-11-04T05:56:50.6942653Z"
+        },
+        {
+          "name": "ontoforge_auth-7f08e9b96fd3d5aa.exe",
+          "mtimeUtc": "2026-11-04T06:02:53.9702344Z"
+        },
+        {
+          "name": "ontoforge_engine-9737abe61c6f2669.exe",
+          "mtimeUtc": "2026-11-04T05:58:10.8057866Z"
+        },
+        {
+          "name": "ontoforge_expr-9b4a1ec2cb839bc7.exe",
+          "mtimeUtc": "2026-11-04T06:04:12.9885926Z"
+        },
+        {
+          "name": "ontoforge_query-afe392b0e4cb5b4e.exe",
+          "mtimeUtc": "2026-11-04T06:00:18.9783238Z"
+        },
+        {
+          "name": "ontoforge_storage-9c1c15f18149e0c0.exe",
+          "mtimeUtc": "2026-11-04T06:03:43.8589734Z"
+        },
+        {
+          "name": "overlay_prop-4cee671a3f919399.exe",
+          "mtimeUtc": "2026-11-04T05:57:10.5949173Z"
+        },
+        {
+          "name": "pk_check-41f02a1d1546e869.exe",
+          "mtimeUtc": "2026-11-04T06:00:43.8700976Z"
+        },
+        {
+          "name": "printer_literals-65770c6081945815.exe",
+          "mtimeUtc": "2026-11-04T06:03:45.0488169Z"
+        },
+        {
+          "name": "printer_prop-715ba11d272d46d0.exe",
+          "mtimeUtc": "2026-11-04T06:04:07.5349303Z"
+        },
+        {
+          "name": "query_read_pg-731de9905926c6eb.exe",
+          "mtimeUtc": "2026-11-04T06:06:19.8716105Z"
+        },
+        {
+          "name": "query_read-62f1418d49a24c33.exe",
+          "mtimeUtc": "2026-11-04T06:05:50.217545Z"
+        },
+        {
+          "name": "reload_trino_it-8622841b7c4b67c7.exe",
+          "mtimeUtc": "2026-11-04T06:06:15.0600771Z"
+        },
+        {
+          "name": "reload-36d0f5e47e808eec.exe",
+          "mtimeUtc": "2026-11-04T06:02:58.8033288Z"
+        },
+        {
+          "name": "request_snapshot-cb3209155410ad6b.exe",
+          "mtimeUtc": "2026-11-04T05:59:43.3665786Z"
+        },
+        {
+          "name": "rowpred_eval-091c1c4a6fcb968d.exe",
+          "mtimeUtc": "2026-11-04T05:58:59.3526404Z"
+        },
+        {
+          "name": "rowpred_subset-25ce0a45a6ee3dfe.exe",
+          "mtimeUtc": "2026-11-04T05:57:44.6648051Z"
+        },
+        {
+          "name": "rowpred_trino_it-1fc6583711d8164f.exe",
+          "mtimeUtc": "2026-11-04T06:01:18.5611102Z"
+        },
+        {
+          "name": "scope_compile-c6cf851d42c62bde.exe",
+          "mtimeUtc": "2026-11-04T06:02:23.866868Z"
+        },
+        {
+          "name": "scope_merge-1324895d5120cc76.exe",
+          "mtimeUtc": "2026-11-04T05:57:31.9780411Z"
+        },
+        {
+          "name": "scope_store-62bd44123514fdcc.exe",
+          "mtimeUtc": "2026-11-04T05:59:22.9144164Z"
+        },
+        {
+          "name": "search_around-8bd3a624705e1d72.exe",
+          "mtimeUtc": "2026-11-04T05:57:28.2156072Z"
+        },
+        {
+          "name": "security-b371561da691a40a.exe",
+          "mtimeUtc": "2026-11-04T06:02:38.4245384Z"
+        },
+        {
+          "name": "server_config-35100a0bc0607ac7.exe",
+          "mtimeUtc": "2026-11-04T06:01:34.6866097Z"
+        },
+        {
+          "name": "set_ops-4961812ee27ed6e6.exe",
+          "mtimeUtc": "2026-11-04T06:00:51.3878662Z"
+        },
+        {
+          "name": "sql_exit_guard-6163e70053e60881.exe",
+          "mtimeUtc": "2026-11-04T05:56:25.442705Z"
+        },
+        {
+          "name": "sql_text_only_from_printer-e1e92e1b7fc1f7bd.exe",
+          "mtimeUtc": "2026-11-04T05:59:28.5747421Z"
+        },
+        {
+          "name": "sqlite_connection-8869b2d2320dc706.exe",
+          "mtimeUtc": "2026-11-04T06:06:12.8511303Z"
+        },
+        {
+          "name": "sqlite_query-b6aa5c0829cd3cf9.exe",
+          "mtimeUtc": "2026-11-04T06:06:12.0633764Z"
+        },
+        {
+          "name": "trino_client-20a588fdeafe3fee.exe",
+          "mtimeUtc": "2026-11-04T06:05:20.6993461Z"
+        },
+        {
+          "name": "trino_it-ade0c4426a53bccf.exe",
+          "mtimeUtc": "2026-11-04T06:02:00.1004828Z"
+        },
+        {
+          "name": "trino_resilience-c2aca69ce760be4f.exe",
+          "mtimeUtc": "2026-11-04T06:01:59.3940171Z"
+        }
+      ]
+    }
+  ],
+  "workspacePackages": 11,
+  "workspaceTestTargets": 141,
+  "targetsWithoutFreshNameMatch": [],
+  "targets": [
+    {
+      "package": "ontoforge",
+      "target": "ontoforge",
+      "kind": [
+        "lib"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge\\src\\lib.rs",
+      "exeMatches": [
+        "ontoforge-0a0e4c4be3f9b4ff.exe",
+        "ontoforge-19c27849e3af2b31.exe",
+        "ontoforge-1dcea695c2187508.exe",
+        "ontoforge-1e6881480bc31560.exe",
+        "ontoforge-29b9103c6855163e.exe",
+        "ontoforge-2b0267def69a0c1d.exe",
+        "ontoforge-2deed3883734598e.exe",
+        "ontoforge-391c5995bde0c43a.exe",
+        "ontoforge-39534742fb1a7fae.exe",
+        "ontoforge-3ba6d1ebcaba513b.exe",
+        "ontoforge-3de59a3401155939.exe",
+        "ontoforge-406714e7989c4396.exe",
+        "ontoforge-4087d72a2326c2aa.exe",
+        "ontoforge-5a76f1d9ae84e6a4.exe",
+        "ontoforge-60a7ddcd0f5b2363.exe",
+        "ontoforge-62cee18622f69549.exe",
+        "ontoforge-69c25f557b0d95b3.exe",
+        "ontoforge-6a5936adff9cc2c6.exe",
+        "ontoforge-6cc45d1cca952d59.exe",
+        "ontoforge-700c8fe578931e11.exe",
+        "ontoforge-70b0b426b8dc1392.exe",
+        "ontoforge-75a21c3a64ea0668.exe",
+        "ontoforge-77934f2a8743cdad.exe",
+        "ontoforge-7a671949ae64ba81.exe",
+        "ontoforge-81e54d0537c50a45.exe",
+        "ontoforge-851718e6b6e691be.exe",
+        "ontoforge-863e2c0d60ca356e.exe",
+        "ontoforge-8c17fbc127b17956.exe",
+        "ontoforge-8e20f956431f48ea.exe",
+        "ontoforge-9d7911bca446a24a.exe",
+        "ontoforge-9e9067844cc3dbe4.exe",
+        "ontoforge-a19984ec498610ce.exe",
+        "ontoforge-a2e37b2940baed62.exe",
+        "ontoforge-a5eacfbd0a4a44bc.exe",
+        "ontoforge-ac014843613ad06a.exe",
+        "ontoforge-b00f18f216b118fb.exe",
+        "ontoforge-b4fdf3529c28d680.exe",
+        "ontoforge-b6e03de9df0f5730.exe",
+        "ontoforge-bedec29ee3c6d744.exe",
+        "ontoforge-c02384feb0606b85.exe",
+        "ontoforge-c09f88f6c2928d6f.exe",
+        "ontoforge-c2abd0c619ca8b7f.exe",
+        "ontoforge-c54008a18e8ad2a0.exe",
+        "ontoforge-c9a0aa689fd0477b.exe",
+        "ontoforge-ce44e130ceebbad8.exe",
+        "ontoforge-ce9732d8094eb3fa.exe",
+        "ontoforge-d29ff0734f86408b.exe",
+        "ontoforge-d4c4f0cbdb2cfdf3.exe",
+        "ontoforge-d4e67b80d90f7a6e.exe",
+        "ontoforge-d6a23c2963095a69.exe",
+        "ontoforge-e70ac9fed9afc1fe.exe",
+        "ontoforge-e81878cf55b314e4.exe",
+        "ontoforge-e8806c81ea444329.exe",
+        "ontoforge-e8b2b6e7014693c0.exe",
+        "ontoforge-eb5fa59a51d08127.exe",
+        "ontoforge-eb89f73d379a4f0e.exe",
+        "ontoforge-ec7247bce43fce6c.exe",
+        "ontoforge-faa892421797bf9b.exe"
+      ],
+      "newExeMatches": [
+        "ontoforge-a5eacfbd0a4a44bc.exe",
+        "ontoforge-e8806c81ea444329.exe"
+      ]
+    },
+    {
+      "package": "ontoforge",
+      "target": "ontoforge",
+      "kind": [
+        "bin"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge\\src\\main.rs",
+      "exeMatches": [
+        "ontoforge-0a0e4c4be3f9b4ff.exe",
+        "ontoforge-19c27849e3af2b31.exe",
+        "ontoforge-1dcea695c2187508.exe",
+        "ontoforge-1e6881480bc31560.exe",
+        "ontoforge-29b9103c6855163e.exe",
+        "ontoforge-2b0267def69a0c1d.exe",
+        "ontoforge-2deed3883734598e.exe",
+        "ontoforge-391c5995bde0c43a.exe",
+        "ontoforge-39534742fb1a7fae.exe",
+        "ontoforge-3ba6d1ebcaba513b.exe",
+        "ontoforge-3de59a3401155939.exe",
+        "ontoforge-406714e7989c4396.exe",
+        "ontoforge-4087d72a2326c2aa.exe",
+        "ontoforge-5a76f1d9ae84e6a4.exe",
+        "ontoforge-60a7ddcd0f5b2363.exe",
+        "ontoforge-62cee18622f69549.exe",
+        "ontoforge-69c25f557b0d95b3.exe",
+        "ontoforge-6a5936adff9cc2c6.exe",
+        "ontoforge-6cc45d1cca952d59.exe",
+        "ontoforge-700c8fe578931e11.exe",
+        "ontoforge-70b0b426b8dc1392.exe",
+        "ontoforge-75a21c3a64ea0668.exe",
+        "ontoforge-77934f2a8743cdad.exe",
+        "ontoforge-7a671949ae64ba81.exe",
+        "ontoforge-81e54d0537c50a45.exe",
+        "ontoforge-851718e6b6e691be.exe",
+        "ontoforge-863e2c0d60ca356e.exe",
+        "ontoforge-8c17fbc127b17956.exe",
+        "ontoforge-8e20f956431f48ea.exe",
+        "ontoforge-9d7911bca446a24a.exe",
+        "ontoforge-9e9067844cc3dbe4.exe",
+        "ontoforge-a19984ec498610ce.exe",
+        "ontoforge-a2e37b2940baed62.exe",
+        "ontoforge-a5eacfbd0a4a44bc.exe",
+        "ontoforge-ac014843613ad06a.exe",
+        "ontoforge-b00f18f216b118fb.exe",
+        "ontoforge-b4fdf3529c28d680.exe",
+        "ontoforge-b6e03de9df0f5730.exe",
+        "ontoforge-bedec29ee3c6d744.exe",
+        "ontoforge-c02384feb0606b85.exe",
+        "ontoforge-c09f88f6c2928d6f.exe",
+        "ontoforge-c2abd0c619ca8b7f.exe",
+        "ontoforge-c54008a18e8ad2a0.exe",
+        "ontoforge-c9a0aa689fd0477b.exe",
+        "ontoforge-ce44e130ceebbad8.exe",
+        "ontoforge-ce9732d8094eb3fa.exe",
+        "ontoforge-d29ff0734f86408b.exe",
+        "ontoforge-d4c4f0cbdb2cfdf3.exe",
+        "ontoforge-d4e67b80d90f7a6e.exe",
+        "ontoforge-d6a23c2963095a69.exe",
+        "ontoforge-e70ac9fed9afc1fe.exe",
+        "ontoforge-e81878cf55b314e4.exe",
+        "ontoforge-e8806c81ea444329.exe",
+        "ontoforge-e8b2b6e7014693c0.exe",
+        "ontoforge-eb5fa59a51d08127.exe",
+        "ontoforge-eb89f73d379a4f0e.exe",
+        "ontoforge-ec7247bce43fce6c.exe",
+        "ontoforge-faa892421797bf9b.exe"
+      ],
+      "newExeMatches": [
+        "ontoforge-a5eacfbd0a4a44bc.exe",
+        "ontoforge-e8806c81ea444329.exe"
+      ]
+    },
+    {
+      "package": "ontoforge",
+      "target": "cli",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge\\tests\\cli.rs",
+      "exeMatches": [
+        "cli-04e03c74e31c28ec.exe",
+        "cli-0ab64cfef3240a66.exe",
+        "cli-1285040a8f5a7e1e.exe",
+        "cli-133fe2b7b7870e17.exe",
+        "cli-2e28cebfa22c226f.exe",
+        "cli-3055027b45ae0e78.exe",
+        "cli-307ef54c6724f8ef.exe",
+        "cli-3bc2061bc1c62797.exe",
+        "cli-3c3ae5e78a163bae.exe",
+        "cli-48b12dc976fe596f.exe",
+        "cli-4990463b470b15f3.exe",
+        "cli-499a013ed0671648.exe",
+        "cli-50f83457c680f336.exe",
+        "cli-5d49a59f4b13b048.exe",
+        "cli-6858df3ad9bb98bd.exe",
+        "cli-77f845b22aff1c7b.exe",
+        "cli-7878db1231c9fd7a.exe",
+        "cli-8d58997998ce0ff8.exe",
+        "cli-924d62db14a421a5.exe",
+        "cli-a65b1b2339d7ea40.exe",
+        "cli-b4d964aa33146284.exe",
+        "cli-b7bc15596097c79b.exe",
+        "cli-bfb6797289b3f986.exe",
+        "cli-d74115a3c405f996.exe",
+        "cli-eb463de316228ca6.exe",
+        "cli-ee1ac391997788af.exe",
+        "cli-f131057b94a2a6eb.exe",
+        "cli-f9290ed7826a35aa.exe",
+        "cli-f9657c384d622068.exe",
+        "cli-fa7138ec11fc527a.exe"
+      ],
+      "newExeMatches": [
+        "cli-eb463de316228ca6.exe"
+      ]
+    },
+    {
+      "package": "ontoforge",
+      "target": "cli_check_cardinality",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge\\tests\\cli_check_cardinality.rs",
+      "exeMatches": [
+        "cli_check_cardinality-0bbc80c32741858e.exe",
+        "cli_check_cardinality-c8402ba9f7ecbc33.exe"
+      ],
+      "newExeMatches": [
+        "cli_check_cardinality-c8402ba9f7ecbc33.exe"
+      ]
+    },
+    {
+      "package": "ontoforge",
+      "target": "cli_check_pk",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge\\tests\\cli_check_pk.rs",
+      "exeMatches": [
+        "cli_check_pk-0be8f0aefbb940f9.exe",
+        "cli_check_pk-1451c2694ad233e4.exe",
+        "cli_check_pk-1687674229c466c6.exe",
+        "cli_check_pk-233f84d62f5f8f22.exe",
+        "cli_check_pk-24e924365ce44030.exe",
+        "cli_check_pk-4b2d65bfc1f6ad5c.exe",
+        "cli_check_pk-5d18848322cb304a.exe",
+        "cli_check_pk-617ef7b5ba8612bd.exe",
+        "cli_check_pk-6e24c66dce3e39f4.exe",
+        "cli_check_pk-7a4402d93a2ff613.exe",
+        "cli_check_pk-7a6fa370b0663a69.exe",
+        "cli_check_pk-a352170f12bc4858.exe",
+        "cli_check_pk-ac90cf37fd398e8e.exe",
+        "cli_check_pk-ae6604cfcec86c96.exe",
+        "cli_check_pk-b17938141bd2857d.exe",
+        "cli_check_pk-b81414d8673f27a5.exe",
+        "cli_check_pk-d483d71ff5fb98b1.exe",
+        "cli_check_pk-e4d98be3396f968a.exe",
+        "cli_check_pk-efeb068d8ce0215a.exe",
+        "cli_check_pk-fc4909442c7e2757.exe"
+      ],
+      "newExeMatches": [
+        "cli_check_pk-7a6fa370b0663a69.exe"
+      ]
+    },
+    {
+      "package": "ontoforge",
+      "target": "cli_color",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge\\tests\\cli_color.rs",
+      "exeMatches": [
+        "cli_color-46143148aae0b660.exe",
+        "cli_color-4d01ddf867a0fcb3.exe"
+      ],
+      "newExeMatches": [
+        "cli_color-46143148aae0b660.exe"
+      ]
+    },
+    {
+      "package": "ontoforge",
+      "target": "cli_dev_token",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge\\tests\\cli_dev_token.rs",
+      "exeMatches": [
+        "cli_dev_token-269e657262c37920.exe",
+        "cli_dev_token-3ca4deffa47eb5be.exe",
+        "cli_dev_token-48569a49da9ef1a9.exe",
+        "cli_dev_token-4863996da62c1c55.exe",
+        "cli_dev_token-67d7a8158ed1c197.exe",
+        "cli_dev_token-888e32b15e827e95.exe",
+        "cli_dev_token-a5a5ce9ba2fafb8e.exe",
+        "cli_dev_token-b46eda4acc4105e6.exe",
+        "cli_dev_token-b4a2b2e1623204eb.exe",
+        "cli_dev_token-d18d8e059c42dbf8.exe",
+        "cli_dev_token-d5bc4938207a9719.exe",
+        "cli_dev_token-dd58cfb6f9e76981.exe",
+        "cli_dev_token-e1c6de381755953f.exe"
+      ],
+      "newExeMatches": [
+        "cli_dev_token-b46eda4acc4105e6.exe"
+      ]
+    },
+    {
+      "package": "ontoforge",
+      "target": "cli_import",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge\\tests\\cli_import.rs",
+      "exeMatches": [
+        "cli_import-03b350957dc9b1b4.exe",
+        "cli_import-0f5fb9c3578b6dfd.exe",
+        "cli_import-10f792375fe6211c.exe",
+        "cli_import-1755fcc5e0fcf26c.exe",
+        "cli_import-1878e1e453609f4c.exe",
+        "cli_import-5a147de8414da4d3.exe",
+        "cli_import-7760d7060546e8eb.exe",
+        "cli_import-796f75e5babab5fa.exe",
+        "cli_import-7c645c4a8b11c5ad.exe",
+        "cli_import-9a441056adafd216.exe",
+        "cli_import-f13cac975ffb9847.exe",
+        "cli_import-faff1bd3e3cf44e4.exe"
+      ],
+      "newExeMatches": [
+        "cli_import-7760d7060546e8eb.exe"
+      ]
+    },
+    {
+      "package": "ontoforge",
+      "target": "cli_l2_identity",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge\\tests\\cli_l2_identity.rs",
+      "exeMatches": [
+        "cli_l2_identity-2b8920a2a1f7561e.exe",
+        "cli_l2_identity-6e0d19716b15203f.exe",
+        "cli_l2_identity-8fd3c4c3598349be.exe"
+      ],
+      "newExeMatches": [
+        "cli_l2_identity-6e0d19716b15203f.exe"
+      ]
+    },
+    {
+      "package": "ontoforge",
+      "target": "cli_lint",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge\\tests\\cli_lint.rs",
+      "exeMatches": [
+        "cli_lint-065b998b57d1115f.exe",
+        "cli_lint-084d66395df9a4f2.exe",
+        "cli_lint-19c15e2e29da93e9.exe",
+        "cli_lint-1d4c71ab761d020f.exe",
+        "cli_lint-22c7832173a02125.exe",
+        "cli_lint-2b9a28d0d40f5e8e.exe",
+        "cli_lint-3d67217481da14d9.exe",
+        "cli_lint-4697ea3811932f92.exe",
+        "cli_lint-4d243636e0c83e9f.exe",
+        "cli_lint-55fcbf9ecbb23582.exe",
+        "cli_lint-59b2b4436c740639.exe",
+        "cli_lint-63b24c7843f57b47.exe",
+        "cli_lint-6f490048ea148753.exe",
+        "cli_lint-6f9f2b403b906af9.exe",
+        "cli_lint-78923c19198cd6b1.exe",
+        "cli_lint-83673c6cbfa7b2f4.exe",
+        "cli_lint-8ee9ad2c1aad5484.exe",
+        "cli_lint-9556916c11fe1ada.exe",
+        "cli_lint-9bef7f6efd9c7716.exe",
+        "cli_lint-9cf95162db5096de.exe",
+        "cli_lint-9d4ddce05b4cc83b.exe",
+        "cli_lint-a494fc62ceb6a6d7.exe",
+        "cli_lint-be9ae9d3e69bf84c.exe",
+        "cli_lint-bf38a9d69642ae92.exe",
+        "cli_lint-c6dc9c6a8ec6c736.exe",
+        "cli_lint-f966b88bda3b9128.exe",
+        "cli_lint-fd1093abc43fe1e3.exe"
+      ],
+      "newExeMatches": [
+        "cli_lint-6f9f2b403b906af9.exe"
+      ]
+    },
+    {
+      "package": "ontoforge",
+      "target": "cli_migrate",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge\\tests\\cli_migrate.rs",
+      "exeMatches": [
+        "cli_migrate-2e705193f79f4583.exe",
+        "cli_migrate-570ae46029fe0957.exe",
+        "cli_migrate-5b1ad0c5a62fa434.exe",
+        "cli_migrate-60be3b592bef0152.exe",
+        "cli_migrate-634467429382b01d.exe",
+        "cli_migrate-8a49a5984f9e3ee7.exe",
+        "cli_migrate-95b7a9d049b75f2f.exe",
+        "cli_migrate-97e266de9d2cec94.exe",
+        "cli_migrate-9a82c7e1aa106985.exe",
+        "cli_migrate-a2319a4792daa6b5.exe",
+        "cli_migrate-ba48eebeceddf9c1.exe",
+        "cli_migrate-e9e90b71b94c5c27.exe",
+        "cli_migrate-eee5328700e13f3c.exe"
+      ],
+      "newExeMatches": [
+        "cli_migrate-97e266de9d2cec94.exe"
+      ]
+    },
+    {
+      "package": "ontoforge",
+      "target": "cli_online",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge\\tests\\cli_online.rs",
+      "exeMatches": [
+        "cli_online-03fc019f7b7a2b5d.exe",
+        "cli_online-073d8eb44eab70e9.exe",
+        "cli_online-0a14bbd34fd90858.exe",
+        "cli_online-0b2055e7809da024.exe",
+        "cli_online-1206a7b7f7d33ded.exe",
+        "cli_online-1ba2df9176d289b3.exe",
+        "cli_online-2f9c573d318b3100.exe",
+        "cli_online-43d7ab62002dbf86.exe",
+        "cli_online-4957b5d7a4e29446.exe",
+        "cli_online-4c570a66223b42db.exe",
+        "cli_online-9d86468861e297f2.exe",
+        "cli_online-9f0bcb6d9fc03b26.exe",
+        "cli_online-af051812e98012af.exe",
+        "cli_online-c302488a13e0ceac.exe",
+        "cli_online-d644d43c3e1c17de.exe",
+        "cli_online-db81c0337661c726.exe",
+        "cli_online-de2206b1f5cd0116.exe",
+        "cli_online-ed222e889c418c32.exe",
+        "cli_online-fc0bc3ef4da08da8.exe"
+      ],
+      "newExeMatches": [
+        "cli_online-c302488a13e0ceac.exe"
+      ]
+    },
+    {
+      "package": "ontoforge",
+      "target": "cli_online_trino",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge\\tests\\cli_online_trino.rs",
+      "exeMatches": [
+        "cli_online_trino-0ed8ee97a9610a44.exe",
+        "cli_online_trino-12cf335a2175de8a.exe",
+        "cli_online_trino-1443fead6c0a46b1.exe",
+        "cli_online_trino-17a88b5e46d4a398.exe",
+        "cli_online_trino-190b1597ae34889e.exe",
+        "cli_online_trino-228f8eb14b26f53e.exe",
+        "cli_online_trino-22ec127953b0c0aa.exe",
+        "cli_online_trino-2962ab0a2ad37d94.exe",
+        "cli_online_trino-2d214470826a5a67.exe",
+        "cli_online_trino-44ae32a5ebe0fb35.exe",
+        "cli_online_trino-56bdd26809d5b544.exe",
+        "cli_online_trino-5a3b7a0df5766fa1.exe",
+        "cli_online_trino-6bd70f26bdde5b46.exe",
+        "cli_online_trino-8485d7e8379a6c83.exe",
+        "cli_online_trino-98fd839324707c4b.exe",
+        "cli_online_trino-a5ed4872378ecf47.exe",
+        "cli_online_trino-c7e8dffc6099c78e.exe",
+        "cli_online_trino-c91a3545a751ab6c.exe",
+        "cli_online_trino-cee57983361e31ce.exe",
+        "cli_online_trino-f620b0af4d1b69ae.exe"
+      ],
+      "newExeMatches": [
+        "cli_online_trino-c7e8dffc6099c78e.exe"
+      ]
+    },
+    {
+      "package": "ontoforge",
+      "target": "cli_reload",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge\\tests\\cli_reload.rs",
+      "exeMatches": [
+        "cli_reload-1be21c793166d6c0.exe",
+        "cli_reload-407b58b937dd976c.exe",
+        "cli_reload-40dbb7257084da10.exe",
+        "cli_reload-4e7e5bfe0d4f4890.exe",
+        "cli_reload-5245797bb22c6588.exe",
+        "cli_reload-57c817e33648e3a6.exe",
+        "cli_reload-725102d9a29ff3b7.exe",
+        "cli_reload-8066cada14f69bc8.exe",
+        "cli_reload-839a709b4e118fb7.exe",
+        "cli_reload-96fbf13f391b8a7b.exe",
+        "cli_reload-99ec26a93ca21b33.exe",
+        "cli_reload-9b44b1b563b07597.exe",
+        "cli_reload-a1eb4394d00d05d3.exe",
+        "cli_reload-a6c99db177c470ea.exe",
+        "cli_reload-b38a8b781d875bef.exe"
+      ],
+      "newExeMatches": [
+        "cli_reload-1be21c793166d6c0.exe"
+      ]
+    },
+    {
+      "package": "ontoforge",
+      "target": "cli_schema",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge\\tests\\cli_schema.rs",
+      "exeMatches": [
+        "cli_schema-00b248f7fce5cb6b.exe",
+        "cli_schema-00ddb70242bfc94c.exe",
+        "cli_schema-09919d2c3aeaad74.exe",
+        "cli_schema-0fee84cc1905c444.exe",
+        "cli_schema-16e5f93c7737d089.exe",
+        "cli_schema-201c6637bff10dd5.exe",
+        "cli_schema-345ae44c7e684b00.exe",
+        "cli_schema-37209e90e5c420af.exe",
+        "cli_schema-524136e575a27989.exe",
+        "cli_schema-68d7d013fb63d512.exe",
+        "cli_schema-715112f0562fded3.exe",
+        "cli_schema-72089b7df38a728c.exe",
+        "cli_schema-749b22e15d117e6b.exe",
+        "cli_schema-9328983ccf5deee5.exe",
+        "cli_schema-a3413e9e4abc7da9.exe",
+        "cli_schema-a43863e4d6d06598.exe",
+        "cli_schema-a8b483222a1b9d16.exe",
+        "cli_schema-aa16cdfe549038bd.exe",
+        "cli_schema-b44e684c74723ce5.exe",
+        "cli_schema-b9ad7e9d4e251577.exe",
+        "cli_schema-c5972c00af48c5b5.exe",
+        "cli_schema-c9b1c41806613572.exe",
+        "cli_schema-cb55d3153dc9f4bf.exe",
+        "cli_schema-ce6f062be1975ca9.exe",
+        "cli_schema-e53652833c741dc2.exe",
+        "cli_schema-f43ccf5e3d13c381.exe",
+        "cli_schema-fcd024bbb11e85ac.exe",
+        "cli_schema-ff4d16829599c553.exe"
+      ],
+      "newExeMatches": [
+        "cli_schema-37209e90e5c420af.exe"
+      ]
+    },
+    {
+      "package": "ontoforge",
+      "target": "cli_scope",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge\\tests\\cli_scope.rs",
+      "exeMatches": [
+        "cli_scope-06429aa0d08c8327.exe",
+        "cli_scope-0baf647716675b25.exe",
+        "cli_scope-0bfe1b62072cb8fb.exe",
+        "cli_scope-10dc14f7f2349074.exe",
+        "cli_scope-259a09160f47ce5a.exe",
+        "cli_scope-39aa82981c4f927c.exe",
+        "cli_scope-455dcba76fa451f0.exe",
+        "cli_scope-5a024e232fc0b003.exe",
+        "cli_scope-71a0351eefd96399.exe",
+        "cli_scope-82223bf4ecd47f31.exe",
+        "cli_scope-83c98d47e44eb64c.exe",
+        "cli_scope-a25403ab5a74c4d2.exe",
+        "cli_scope-a402ed7873ee384a.exe",
+        "cli_scope-a571e314ec05a118.exe",
+        "cli_scope-e39a71f57299f735.exe",
+        "cli_scope-e5f9055c7f7866d7.exe"
+      ],
+      "newExeMatches": [
+        "cli_scope-a25403ab5a74c4d2.exe"
+      ]
+    },
+    {
+      "package": "ontoforge",
+      "target": "cli_shutdown",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge\\tests\\cli_shutdown.rs",
+      "exeMatches": [
+        "cli_shutdown-301fa38945d02035.exe",
+        "cli_shutdown-3f38b14f43dc9e6d.exe",
+        "cli_shutdown-4cc3fb0de87689d2.exe",
+        "cli_shutdown-9789033234df29a3.exe",
+        "cli_shutdown-bfb726c4d25ecf7c.exe",
+        "cli_shutdown-f065ed3a2ec4cb9f.exe",
+        "cli_shutdown-ffda5936cc589bbd.exe"
+      ],
+      "newExeMatches": [
+        "cli_shutdown-9789033234df29a3.exe"
+      ]
+    },
+    {
+      "package": "ontoforge",
+      "target": "cli_stdio",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge\\tests\\cli_stdio.rs",
+      "exeMatches": [
+        "cli_stdio-1b10151fab6ef46c.exe",
+        "cli_stdio-762ae29737d4e67e.exe",
+        "cli_stdio-8ba1a1452368eefb.exe",
+        "cli_stdio-b4bfa364c0ba4235.exe",
+        "cli_stdio-bf6c19f53f3304d0.exe"
+      ],
+      "newExeMatches": [
+        "cli_stdio-b4bfa364c0ba4235.exe"
+      ]
+    },
+    {
+      "package": "ontoforge",
+      "target": "cli_trino_it",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge\\tests\\cli_trino_it.rs",
+      "exeMatches": [
+        "cli_trino_it-19c256b5c5309762.exe",
+        "cli_trino_it-1ac571c792d9d925.exe",
+        "cli_trino_it-1d06c3076803166a.exe",
+        "cli_trino_it-1e9c0f049312d947.exe",
+        "cli_trino_it-1fd0286250bc4296.exe",
+        "cli_trino_it-328ec1df70b517a9.exe",
+        "cli_trino_it-4f4aebdf12cf7fbf.exe",
+        "cli_trino_it-56bcd78985b76801.exe",
+        "cli_trino_it-5905592f6c463a43.exe",
+        "cli_trino_it-66a95bc64fe96e8b.exe",
+        "cli_trino_it-6ef1c430030c6268.exe",
+        "cli_trino_it-6f45203aca477b25.exe",
+        "cli_trino_it-8f0d23b2666a41db.exe",
+        "cli_trino_it-927f02bf02182463.exe",
+        "cli_trino_it-a2987a5725575402.exe",
+        "cli_trino_it-d23e87c1617425b1.exe",
+        "cli_trino_it-d4ef9938423f5979.exe",
+        "cli_trino_it-d53f3a7d443773d9.exe",
+        "cli_trino_it-f06bb623cfb1d11b.exe",
+        "cli_trino_it-fffcc72b4eadc003.exe"
+      ],
+      "newExeMatches": [
+        "cli_trino_it-1fd0286250bc4296.exe"
+      ]
+    },
+    {
+      "package": "ontoforge",
+      "target": "cli_webhook_worker",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge\\tests\\cli_webhook_worker.rs",
+      "exeMatches": [
+        "cli_webhook_worker-333d71be956b9537.exe",
+        "cli_webhook_worker-3699453f56eaac38.exe",
+        "cli_webhook_worker-6284d7968ab17f6b.exe",
+        "cli_webhook_worker-6587716405f61ac0.exe",
+        "cli_webhook_worker-751f7d81de8df375.exe",
+        "cli_webhook_worker-7e2035fa9a681c40.exe",
+        "cli_webhook_worker-83ce695ba2397092.exe",
+        "cli_webhook_worker-9855fe14338501f5.exe",
+        "cli_webhook_worker-9f538d30a733eefb.exe",
+        "cli_webhook_worker-ee1610c63254f6db.exe",
+        "cli_webhook_worker-fef16f7445bae7d9.exe"
+      ],
+      "newExeMatches": [
+        "cli_webhook_worker-9855fe14338501f5.exe"
+      ]
+    },
+    {
+      "package": "ontoforge",
+      "target": "dev_lifecycle",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge\\tests\\dev_lifecycle.rs",
+      "exeMatches": [
+        "dev_lifecycle-7d7bcb282cfe8ec6.exe",
+        "dev_lifecycle-7e9ec2f00bf37a91.exe",
+        "dev_lifecycle-bf17eb244a67bd48.exe",
+        "dev_lifecycle-e49cfb15c86255b8.exe"
+      ],
+      "newExeMatches": [
+        "dev_lifecycle-e49cfb15c86255b8.exe"
+      ]
+    },
+    {
+      "package": "ontoforge",
+      "target": "invalid_examples",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge\\tests\\invalid_examples.rs",
+      "exeMatches": [
+        "invalid_examples-008b3e37e939c17e.exe",
+        "invalid_examples-061366690433a9ae.exe",
+        "invalid_examples-0f8b6ba64752e148.exe",
+        "invalid_examples-1354e10c2d13a756.exe",
+        "invalid_examples-1d291b63a30db1b6.exe",
+        "invalid_examples-20446bfd4984f35e.exe",
+        "invalid_examples-3271849b6834983b.exe",
+        "invalid_examples-36ef433d29005e21.exe",
+        "invalid_examples-4161ec6a0315eec9.exe",
+        "invalid_examples-569bb98677f59b5b.exe",
+        "invalid_examples-5fccad6c3b3ec80f.exe",
+        "invalid_examples-6dd0a9f058f63af3.exe",
+        "invalid_examples-714b152b6c92a3c2.exe",
+        "invalid_examples-7b1f07739d457da2.exe",
+        "invalid_examples-7b75aff6fa65fffe.exe",
+        "invalid_examples-83e15e21056daf6c.exe",
+        "invalid_examples-8af5b5b32ea07652.exe",
+        "invalid_examples-8ba19d970b0ae70c.exe",
+        "invalid_examples-8f45e25a21f52f1a.exe",
+        "invalid_examples-95b33742304aefed.exe",
+        "invalid_examples-983ba7b1e894b91c.exe",
+        "invalid_examples-aa87b095b67ed7af.exe",
+        "invalid_examples-ada0fadbc4962769.exe",
+        "invalid_examples-b428b1b586aa0c0d.exe",
+        "invalid_examples-b6875bacfd340d6b.exe",
+        "invalid_examples-b78995e103a7c854.exe",
+        "invalid_examples-b855305ee66b80be.exe",
+        "invalid_examples-bdf091bd8cd161b2.exe",
+        "invalid_examples-c53ceadb7838ee94.exe",
+        "invalid_examples-eeb2c94910836cf6.exe",
+        "invalid_examples-f35a4b253d0ee25c.exe",
+        "invalid_examples-f6f2cc0d3470a824.exe"
+      ],
+      "newExeMatches": [
+        "invalid_examples-4161ec6a0315eec9.exe"
+      ]
+    },
+    {
+      "package": "ontoforge",
+      "target": "private_fixtures",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge\\tests\\private_fixtures.rs",
+      "exeMatches": [
+        "private_fixtures-08e3cdac2457d81e.exe",
+        "private_fixtures-17ef149d6f53d7a5.exe",
+        "private_fixtures-1b19821870b1c6a4.exe",
+        "private_fixtures-266f0c8cf5208948.exe",
+        "private_fixtures-2ad98c75fe5b1587.exe",
+        "private_fixtures-3d844f864086e6b9.exe",
+        "private_fixtures-45e48c6013d7b37c.exe",
+        "private_fixtures-465617f593c2ffb9.exe",
+        "private_fixtures-5e464731250cf218.exe",
+        "private_fixtures-61a84d437c97f4a1.exe",
+        "private_fixtures-7c14f6b502a497fc.exe",
+        "private_fixtures-8383f481c8c0646f.exe",
+        "private_fixtures-983363cb4451be0b.exe",
+        "private_fixtures-a092f05f73024f4a.exe",
+        "private_fixtures-b65458077de4d150.exe",
+        "private_fixtures-ddbb9cb0c2cb24e7.exe",
+        "private_fixtures-e242919e3b584fc6.exe",
+        "private_fixtures-e91ceffb73632d5a.exe",
+        "private_fixtures-f3561e74cc1cef7a.exe"
+      ],
+      "newExeMatches": [
+        "private_fixtures-5e464731250cf218.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-action",
+      "target": "ontoforge_action",
+      "kind": [
+        "lib"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-action\\src\\lib.rs",
+      "exeMatches": [
+        "ontoforge_action-3761b4e657cd1f85.exe",
+        "ontoforge_action-41c5226c46d241de.exe",
+        "ontoforge_action-49b9a806671a8c30.exe",
+        "ontoforge_action-500bf1cb2f8d532a.exe",
+        "ontoforge_action-569ec70738512332.exe",
+        "ontoforge_action-58d96e72b2c7a806.exe",
+        "ontoforge_action-5a49e09aecec909e.exe",
+        "ontoforge_action-61c19366d758ff32.exe",
+        "ontoforge_action-66351ce28ebc8a8d.exe",
+        "ontoforge_action-66537da480b6f11c.exe",
+        "ontoforge_action-6be3a1888469b536.exe",
+        "ontoforge_action-74c637448f85fcc6.exe",
+        "ontoforge_action-7ed3b983e916ddc7.exe",
+        "ontoforge_action-8184a11c20b10c8b.exe",
+        "ontoforge_action-8fc0dc0ea81e117e.exe",
+        "ontoforge_action-c4dc5f130761ac64.exe",
+        "ontoforge_action-c95005190e3a56dd.exe",
+        "ontoforge_action-dec58cf4d7479aa8.exe",
+        "ontoforge_action-e444f6ffb5fae9a9.exe",
+        "ontoforge_action-fe1205932322f803.exe",
+        "ontoforge_action-ff182ae823fc4993.exe",
+        "ontoforge_action-ff59388a4eb5bed1.exe"
+      ],
+      "newExeMatches": [
+        "ontoforge_action-41c5226c46d241de.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-action",
+      "target": "action",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-action\\tests\\action.rs",
+      "exeMatches": [
+        "action-06ad690f9221b094.exe",
+        "action-0a030ba42204b9b9.exe",
+        "action-1dd8f4bcef9dd10a.exe",
+        "action-205310f0d4b2bea4.exe",
+        "action-3d6062885875a743.exe",
+        "action-619633699b0b06ee.exe",
+        "action-68e5e8712958786f.exe",
+        "action-6921c482bba16479.exe",
+        "action-8255b3a8beb80888.exe",
+        "action-b84ef9de642a882b.exe",
+        "action-b9b5fa0f0bcb3ba5.exe",
+        "action-bb4b61a9c0b6d2e1.exe",
+        "action-c40d6286c471d783.exe",
+        "action-e80d61768a3a776c.exe",
+        "action-f5305242b73ee6e0.exe",
+        "action-fb17afc4be64a38b.exe"
+      ],
+      "newExeMatches": [
+        "action-fb17afc4be64a38b.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-action",
+      "target": "action_pg",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-action\\tests\\action_pg.rs",
+      "exeMatches": [
+        "action_pg-0224d5c71fd992e4.exe",
+        "action_pg-0ad5b17f2ae6eb23.exe",
+        "action_pg-31fb7a48cdfcf538.exe",
+        "action_pg-3dc84a05aa3d6ce9.exe",
+        "action_pg-4615df153fc55f26.exe",
+        "action_pg-5cc88ecdedad1f84.exe",
+        "action_pg-5f8e806360f9c056.exe",
+        "action_pg-b244db549a9a9fc7.exe",
+        "action_pg-ba98dbd3be29dbf7.exe",
+        "action_pg-bac48727831cd4f7.exe",
+        "action_pg-db30de99155585de.exe"
+      ],
+      "newExeMatches": [
+        "action_pg-3dc84a05aa3d6ce9.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-action",
+      "target": "entrypoints",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-action\\tests\\entrypoints.rs",
+      "exeMatches": [
+        "entrypoints-2c9673d039215c25.exe",
+        "entrypoints-2dfb21d53640c122.exe",
+        "entrypoints-2e01cece971c13a9.exe",
+        "entrypoints-3a1561639967563c.exe",
+        "entrypoints-4e2eaf0f89ea56c8.exe",
+        "entrypoints-65c4f4b020db7e34.exe",
+        "entrypoints-6f8b956e1553cf51.exe",
+        "entrypoints-99f203e010802143.exe",
+        "entrypoints-bb92d753c9ff5cba.exe",
+        "entrypoints-c750f198a01af9bc.exe",
+        "entrypoints-dd800e6e45e0a9ce.exe"
+      ],
+      "newExeMatches": [
+        "entrypoints-65c4f4b020db7e34.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-action",
+      "target": "frozen_definition",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-action\\tests\\frozen_definition.rs",
+      "exeMatches": [
+        "frozen_definition-5f1b775de97f73d9.exe",
+        "frozen_definition-761b4c682ea0694c.exe",
+        "frozen_definition-e9838925f308e706.exe",
+        "frozen_definition-fd0d0591fb2157c2.exe"
+      ],
+      "newExeMatches": [
+        "frozen_definition-fd0d0591fb2157c2.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-action",
+      "target": "idempotency",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-action\\tests\\idempotency.rs",
+      "exeMatches": [
+        "idempotency-0900d57a6ef28dea.exe",
+        "idempotency-2f82981152ebb8ec.exe",
+        "idempotency-30f282a4376cc12a.exe",
+        "idempotency-3dc6251b17bc2645.exe",
+        "idempotency-52e2acf854732ddb.exe",
+        "idempotency-63c07c0e7365968b.exe",
+        "idempotency-9f76f1ad6145ba73.exe",
+        "idempotency-d1f1b67adc794f9d.exe",
+        "idempotency-d431af9bda9f0554.exe",
+        "idempotency-d70f515dfdef499b.exe",
+        "idempotency-d866894fe1938af6.exe"
+      ],
+      "newExeMatches": [
+        "idempotency-d866894fe1938af6.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-action",
+      "target": "idempotency_pg",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-action\\tests\\idempotency_pg.rs",
+      "exeMatches": [
+        "idempotency_pg-12c44f61d64dabec.exe",
+        "idempotency_pg-4c7dc83a2d1d8f89.exe",
+        "idempotency_pg-5304cc53c3a450cd.exe",
+        "idempotency_pg-80a017a581226391.exe",
+        "idempotency_pg-8e66a0ecbb0d9a98.exe",
+        "idempotency_pg-a0a8c1abdd242186.exe",
+        "idempotency_pg-a1e1d36f3307a546.exe",
+        "idempotency_pg-b135f2aefcaa0b14.exe",
+        "idempotency_pg-b31ffd3293b8aa02.exe",
+        "idempotency_pg-c90aa0f9555c8905.exe",
+        "idempotency_pg-e3b3250196792a32.exe"
+      ],
+      "newExeMatches": [
+        "idempotency_pg-4c7dc83a2d1d8f89.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-action",
+      "target": "outbox",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-action\\tests\\outbox.rs",
+      "exeMatches": [
+        "outbox-24fdd6ea1e548568.exe",
+        "outbox-259f8c6807a50d28.exe",
+        "outbox-2ca75f65e746f027.exe",
+        "outbox-2e25ef0c420ce95b.exe",
+        "outbox-70efaa1e979e52f4.exe",
+        "outbox-88f34318c47ef852.exe",
+        "outbox-8bbf0cd75555ed08.exe",
+        "outbox-b64e9d931ba3e1a9.exe",
+        "outbox-d8446dc44f0895cb.exe",
+        "outbox-e4b1db604a5d30a8.exe"
+      ],
+      "newExeMatches": [
+        "outbox-b64e9d931ba3e1a9.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-action",
+      "target": "outbox_pg",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-action\\tests\\outbox_pg.rs",
+      "exeMatches": [
+        "outbox_pg-101f19695f1572a1.exe",
+        "outbox_pg-1e0199c9b702c580.exe",
+        "outbox_pg-4f37b3ec67b00f9c.exe",
+        "outbox_pg-962e56528ab1c864.exe",
+        "outbox_pg-986edad04f4d31d9.exe",
+        "outbox_pg-a0811e41c7911028.exe",
+        "outbox_pg-d622ea100ab6ba34.exe",
+        "outbox_pg-e00d355ecf3df24a.exe",
+        "outbox_pg-e5147c3541f5031d.exe",
+        "outbox_pg-e7a75813748e3ff7.exe"
+      ],
+      "newExeMatches": [
+        "outbox_pg-1e0199c9b702c580.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-action",
+      "target": "security",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-action\\tests\\security.rs",
+      "exeMatches": [
+        "security-052ba601d74ee32c.exe",
+        "security-1cbe9ea0e3bbd3c6.exe",
+        "security-2de859b935d1365e.exe",
+        "security-303cbb6b8faa7559.exe",
+        "security-3b60b6610461a6ee.exe",
+        "security-421e0c458541e1a3.exe",
+        "security-43b18640e7568039.exe",
+        "security-4e3a93c8199b5a0e.exe",
+        "security-4fa79533b5c29380.exe",
+        "security-51e86494847c7534.exe",
+        "security-53f664eb5ce870b2.exe",
+        "security-56add491b6c417b6.exe",
+        "security-71b049c309411dd8.exe",
+        "security-7903e61eb9b2f86c.exe",
+        "security-7946f02dd3458109.exe",
+        "security-7d0b109380678cb5.exe",
+        "security-7f06397bd610cf28.exe",
+        "security-8733ad89c167ab91.exe",
+        "security-8d6b23f96c7528b4.exe",
+        "security-a562e0620c233b57.exe",
+        "security-a7d0f852eea80da7.exe",
+        "security-b371561da691a40a.exe",
+        "security-b5a603f47d5fde14.exe",
+        "security-b70ff7cb9f91853b.exe",
+        "security-c1f2dbe70fa01cd7.exe",
+        "security-cbacbeb377640ad3.exe",
+        "security-cf54930ecc42a809.exe",
+        "security-d380356e1bd954f9.exe",
+        "security-f6f236add66f97a4.exe",
+        "security-f9bd56828e1a544b.exe"
+      ],
+      "newExeMatches": [
+        "security-b371561da691a40a.exe",
+        "security-f9bd56828e1a544b.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-action",
+      "target": "source",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-action\\tests\\source.rs",
+      "exeMatches": [
+        "source-0223cb861097de9e.exe",
+        "source-08905e5a4d62a2c9.exe",
+        "source-0e44d655deda2f13.exe",
+        "source-0e907a9fbd1f3f71.exe",
+        "source-126520b4ef0da608.exe",
+        "source-3c27d7c16cb8e520.exe",
+        "source-4081ff0b02554022.exe",
+        "source-59f9ea19952981f7.exe",
+        "source-855e94de3418bd12.exe",
+        "source-b2fc665967e0e539.exe",
+        "source-bf51d19dc8cae49f.exe",
+        "source-c401690be133808c.exe"
+      ],
+      "newExeMatches": [
+        "source-08905e5a4d62a2c9.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-action",
+      "target": "trino_action_it",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-action\\tests\\trino_action_it.rs",
+      "exeMatches": [
+        "trino_action_it-126c30addf3ba6f4.exe",
+        "trino_action_it-41e0f7e64f76690c.exe",
+        "trino_action_it-6bad7b97bca2bddc.exe",
+        "trino_action_it-76c645d6d8c74db7.exe",
+        "trino_action_it-9807212b75b9016a.exe",
+        "trino_action_it-a2868da7b3cc4379.exe",
+        "trino_action_it-a32fdc310f499835.exe",
+        "trino_action_it-b01196c95da9e604.exe",
+        "trino_action_it-d4cf6b445947f326.exe",
+        "trino_action_it-fe447340ab977ed0.exe"
+      ],
+      "newExeMatches": [
+        "trino_action_it-41e0f7e64f76690c.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-action",
+      "target": "version",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-action\\tests\\version.rs",
+      "exeMatches": [
+        "version-0e84209c2116df12.exe",
+        "version-32f36ce47f7dc6aa.exe",
+        "version-3955834e33fbe14e.exe",
+        "version-41caa4dd325ab2e8.exe",
+        "version-4c01a6927d0367e1.exe",
+        "version-62e194985de12a11.exe",
+        "version-99ab31bd5d8893cb.exe",
+        "version-b0d02854cf563e63.exe",
+        "version-c91d9bd7bb46779b.exe",
+        "version-cd9420709af81e9e.exe",
+        "version-da17d746b38dc2b4.exe",
+        "version-de5743e787b69867.exe",
+        "version-e03ab8cbbb37b575.exe",
+        "version-e598b1c6d9c63cc6.exe"
+      ],
+      "newExeMatches": [
+        "version-0e84209c2116df12.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-auth",
+      "target": "ontoforge_auth",
+      "kind": [
+        "lib"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-auth\\src\\lib.rs",
+      "exeMatches": [
+        "ontoforge_auth-4b294d202801177e.exe",
+        "ontoforge_auth-6638b2c2fceb6837.exe",
+        "ontoforge_auth-7a7d06406795b0ee.exe",
+        "ontoforge_auth-7f08e9b96fd3d5aa.exe",
+        "ontoforge_auth-885d3bef065e77c6.exe",
+        "ontoforge_auth-998b317025a15de4.exe",
+        "ontoforge_auth-9bc695b0b18242c4.exe",
+        "ontoforge_auth-9d0ed0fde920413f.exe",
+        "ontoforge_auth-a5e937eed17826f8.exe",
+        "ontoforge_auth-a91c8fb711396722.exe",
+        "ontoforge_auth-bd72024f87f31c6f.exe",
+        "ontoforge_auth-c4d89ddd31a22ae1.exe"
+      ],
+      "newExeMatches": [
+        "ontoforge_auth-7f08e9b96fd3d5aa.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-auth",
+      "target": "criteria_coverage",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-auth\\tests\\criteria_coverage.rs",
+      "exeMatches": [
+        "criteria_coverage-273f38e22bac30bf.exe",
+        "criteria_coverage-37e1220ab730cc2e.exe",
+        "criteria_coverage-380583727b612b5f.exe",
+        "criteria_coverage-3e41ea89148f5520.exe",
+        "criteria_coverage-66d37edb8fe6e062.exe",
+        "criteria_coverage-6cca2bc43cc82375.exe",
+        "criteria_coverage-bb93eb496a8b60ca.exe"
+      ],
+      "newExeMatches": [
+        "criteria_coverage-bb93eb496a8b60ca.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-auth",
+      "target": "crypto_backend",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-auth\\tests\\crypto_backend.rs",
+      "exeMatches": [
+        "crypto_backend-32b26bace0d99852.exe",
+        "crypto_backend-55bb16e008869e16.exe",
+        "crypto_backend-6b9287c5ae20c41c.exe",
+        "crypto_backend-b59c4e9632f3aacc.exe",
+        "crypto_backend-c0dc20b19227d1c6.exe",
+        "crypto_backend-dacd1454dbe6d22c.exe",
+        "crypto_backend-ed5eb6787607c743.exe",
+        "crypto_backend-ed8adc39992eed15.exe"
+      ],
+      "newExeMatches": [
+        "crypto_backend-6b9287c5ae20c41c.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-auth",
+      "target": "dev_token",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-auth\\tests\\dev_token.rs",
+      "exeMatches": [
+        "dev_token-1fd614afb4fbe535.exe",
+        "dev_token-465142ad050e295b.exe",
+        "dev_token-84b24bb6ad5633a6.exe",
+        "dev_token-8b6f97f42f932934.exe",
+        "dev_token-9e388a0158750fe9.exe",
+        "dev_token-f4a428f40f668304.exe",
+        "dev_token-fe9244ef7f43c919.exe"
+      ],
+      "newExeMatches": [
+        "dev_token-84b24bb6ad5633a6.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-auth",
+      "target": "oidc",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-auth\\tests\\oidc.rs",
+      "exeMatches": [
+        "oidc-037e5c5f5b6f8d28.exe",
+        "oidc-2113d1ed8ad64c85.exe",
+        "oidc-363628e1a3de1e45.exe",
+        "oidc-51e54f59b58f282d.exe",
+        "oidc-64f6311ff2c2e783.exe",
+        "oidc-c385aed9b0d2b7f5.exe",
+        "oidc-c8d2ae37dc0fef09.exe"
+      ],
+      "newExeMatches": [
+        "oidc-037e5c5f5b6f8d28.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-auth",
+      "target": "rowpred_diff",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-auth\\tests\\rowpred_diff.rs",
+      "exeMatches": [
+        "rowpred_diff-188e7e06e985349d.exe",
+        "rowpred_diff-5f317a5fee41f43f.exe",
+        "rowpred_diff-76118b74f4e4abd4.exe",
+        "rowpred_diff-80076bb08e643768.exe",
+        "rowpred_diff-8a5ccf8b852ece0a.exe",
+        "rowpred_diff-8ebe433fb753bcb4.exe",
+        "rowpred_diff-90c5a2002f4cb2e1.exe"
+      ],
+      "newExeMatches": [
+        "rowpred_diff-8a5ccf8b852ece0a.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-auth",
+      "target": "rowpred_trino_it",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-auth\\tests\\rowpred_trino_it.rs",
+      "exeMatches": [
+        "rowpred_trino_it-1fc6583711d8164f.exe",
+        "rowpred_trino_it-563ea8b104d61bec.exe",
+        "rowpred_trino_it-8925c2915cc83ec6.exe",
+        "rowpred_trino_it-922735038df9d136.exe",
+        "rowpred_trino_it-ac521a9ffd8108a8.exe",
+        "rowpred_trino_it-bc07a44a07e254a9.exe",
+        "rowpred_trino_it-e5a6c421cbb523a0.exe"
+      ],
+      "newExeMatches": [
+        "rowpred_trino_it-1fc6583711d8164f.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-auth",
+      "target": "scope_compile",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-auth\\tests\\scope_compile.rs",
+      "exeMatches": [
+        "scope_compile-025e1f66a88da396.exe",
+        "scope_compile-322aac793775daa6.exe",
+        "scope_compile-72a927a74158310b.exe",
+        "scope_compile-828f486945a00389.exe",
+        "scope_compile-986af787aad7d7a6.exe",
+        "scope_compile-c6cf851d42c62bde.exe",
+        "scope_compile-ec71e0fb5ba4bda2.exe"
+      ],
+      "newExeMatches": [
+        "scope_compile-c6cf851d42c62bde.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-auth",
+      "target": "scope_merge",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-auth\\tests\\scope_merge.rs",
+      "exeMatches": [
+        "scope_merge-1324895d5120cc76.exe",
+        "scope_merge-1a5b8b548eaa7d57.exe",
+        "scope_merge-6407eb8eb4745701.exe",
+        "scope_merge-73b8b70415839cec.exe",
+        "scope_merge-ad12660c5e49bc63.exe",
+        "scope_merge-b03cead5c63307fa.exe",
+        "scope_merge-d60b36ff653a4c42.exe"
+      ],
+      "newExeMatches": [
+        "scope_merge-1324895d5120cc76.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-engine",
+      "target": "ontoforge_engine",
+      "kind": [
+        "lib"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-engine\\src\\lib.rs",
+      "exeMatches": [
+        "ontoforge_engine-1fdb27b36e1a6954.exe",
+        "ontoforge_engine-3dd5f50108e26b8b.exe",
+        "ontoforge_engine-41b3da31e6ed0350.exe",
+        "ontoforge_engine-4f8d6f0a3639d1b5.exe",
+        "ontoforge_engine-55efa26d6f86e927.exe",
+        "ontoforge_engine-5b578ad87769c4fc.exe",
+        "ontoforge_engine-67f6386e44ee858a.exe",
+        "ontoforge_engine-6e12e5e7b83d6fb7.exe",
+        "ontoforge_engine-7764009d45f5abf6.exe",
+        "ontoforge_engine-85480d286634868a.exe",
+        "ontoforge_engine-9737abe61c6f2669.exe",
+        "ontoforge_engine-bb487b1f9e8e2c8b.exe",
+        "ontoforge_engine-cc9febf3250bbc60.exe",
+        "ontoforge_engine-db35029964edcfb7.exe",
+        "ontoforge_engine-ed65e9b64b9a7900.exe",
+        "ontoforge_engine-f6b52d37c8e8e55c.exe",
+        "ontoforge_engine-f85e39aad7aa6c31.exe",
+        "ontoforge_engine-fb9b2db1fd65a8a0.exe",
+        "ontoforge_engine-fc1c2cfd33323083.exe",
+        "ontoforge_engine-fedf96b99164bda2.exe"
+      ],
+      "newExeMatches": [
+        "ontoforge_engine-9737abe61c6f2669.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-engine",
+      "target": "bind_check_isolation",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-engine\\tests\\bind_check_isolation.rs",
+      "exeMatches": [
+        "bind_check_isolation-041b5823d008a6bc.exe",
+        "bind_check_isolation-28b7e8a6f923d594.exe",
+        "bind_check_isolation-525e08bb83f387f2.exe",
+        "bind_check_isolation-6b6576de9e337db1.exe",
+        "bind_check_isolation-9d4fb896afdb38f7.exe",
+        "bind_check_isolation-b4c5561e4205064c.exe",
+        "bind_check_isolation-b5d6a0bc33c375f5.exe",
+        "bind_check_isolation-c7ecb6b74c818ce3.exe",
+        "bind_check_isolation-d7b3f993cbb31a36.exe",
+        "bind_check_isolation-e50184421ce5ccf8.exe",
+        "bind_check_isolation-e909a8c41df22a6b.exe",
+        "bind_check_isolation-ea2b1058caf78ba5.exe",
+        "bind_check_isolation-f4d11a7846584c26.exe",
+        "bind_check_isolation-f8c95ae8498347bf.exe",
+        "bind_check_isolation-fd1ebd6b7a6891ad.exe"
+      ],
+      "newExeMatches": [
+        "bind_check_isolation-e50184421ce5ccf8.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-engine",
+      "target": "cardinality_check",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-engine\\tests\\cardinality_check.rs",
+      "exeMatches": [
+        "cardinality_check-b9d4f4de23a855fd.exe",
+        "cardinality_check-c4c3341e52cd7e70.exe"
+      ],
+      "newExeMatches": [
+        "cardinality_check-c4c3341e52cd7e70.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-engine",
+      "target": "doc_type_table",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-engine\\tests\\doc_type_table.rs",
+      "exeMatches": [
+        "doc_type_table-0155496132c42cb6.exe",
+        "doc_type_table-1cd559272b457886.exe",
+        "doc_type_table-3c8cb00fc1f9367c.exe",
+        "doc_type_table-458d2093b9d334c8.exe",
+        "doc_type_table-48b7238bba481543.exe",
+        "doc_type_table-499c6ef565352257.exe",
+        "doc_type_table-72132b3774e5f08e.exe",
+        "doc_type_table-80333cff24f850d2.exe",
+        "doc_type_table-8c001be4c1663c00.exe",
+        "doc_type_table-8c30a9b36fad2518.exe",
+        "doc_type_table-91e0aa2971c77618.exe",
+        "doc_type_table-a1920e0a52fb78ee.exe",
+        "doc_type_table-d57d71c9ed5fbb6f.exe",
+        "doc_type_table-db2539cb297f976d.exe",
+        "doc_type_table-e3b3c8e2cc623548.exe"
+      ],
+      "newExeMatches": [
+        "doc_type_table-72132b3774e5f08e.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-engine",
+      "target": "drift",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-engine\\tests\\drift.rs",
+      "exeMatches": [
+        "drift-086a577d987324eb.exe",
+        "drift-0a2b7dcab894422f.exe",
+        "drift-1bc5e0cadd943990.exe",
+        "drift-2a9fb919068a2b2f.exe",
+        "drift-3740292ba5a0a519.exe",
+        "drift-38264d1b9cf9a0b2.exe",
+        "drift-3ad718249ec4de65.exe",
+        "drift-4f3b6234427f4ace.exe",
+        "drift-4faca9817bc24c82.exe",
+        "drift-54508a9c8b5e09a0.exe",
+        "drift-60125925610ef132.exe",
+        "drift-6da7f9d5ccd7f28f.exe",
+        "drift-83f43d2fb3f16e9d.exe",
+        "drift-d6751a4048b9d270.exe",
+        "drift-e663989539685bde.exe"
+      ],
+      "newExeMatches": [
+        "drift-6da7f9d5ccd7f28f.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-engine",
+      "target": "drift_budget",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-engine\\tests\\drift_budget.rs",
+      "exeMatches": [
+        "drift_budget-3a45f1559335cd89.exe",
+        "drift_budget-5968c078e8067475.exe",
+        "drift_budget-e1cedecef51bc4be.exe"
+      ],
+      "newExeMatches": [
+        "drift_budget-e1cedecef51bc4be.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-engine",
+      "target": "l2_explain",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-engine\\tests\\l2_explain.rs",
+      "exeMatches": [
+        "l2_explain-0942b3dcea65c564.exe",
+        "l2_explain-5c21a42222b5582d.exe",
+        "l2_explain-7f4d1e80977be438.exe"
+      ],
+      "newExeMatches": [
+        "l2_explain-7f4d1e80977be438.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-engine",
+      "target": "l2_gate",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-engine\\tests\\l2_gate.rs",
+      "exeMatches": [
+        "l2_gate-2523ba014cbb8e9d.exe",
+        "l2_gate-565de62ac86b72af.exe",
+        "l2_gate-9dd3153c684cb106.exe",
+        "l2_gate-a1987c243ec0f983.exe",
+        "l2_gate-ad845b9f4122c40e.exe",
+        "l2_gate-cd903564bba80b98.exe",
+        "l2_gate-d665a874ba674036.exe",
+        "l2_gate-dde943abdc185335.exe"
+      ],
+      "newExeMatches": [
+        "l2_gate-dde943abdc185335.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-engine",
+      "target": "l2_health",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-engine\\tests\\l2_health.rs",
+      "exeMatches": [
+        "l2_health-0bf95104dfae4ba1.exe",
+        "l2_health-4b06d0777b43bfb7.exe",
+        "l2_health-85a28b51cf96ba43.exe",
+        "l2_health-a6f82a7e2d47eba4.exe",
+        "l2_health-da28b2238e881068.exe",
+        "l2_health-eda592e652f53154.exe"
+      ],
+      "newExeMatches": [
+        "l2_health-a6f82a7e2d47eba4.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-engine",
+      "target": "l2_monitor",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-engine\\tests\\l2_monitor.rs",
+      "exeMatches": [
+        "l2_monitor-129bf4ed4b4834eb.exe",
+        "l2_monitor-2d5ee0c16c171aee.exe",
+        "l2_monitor-4f35b3c5d0d15789.exe",
+        "l2_monitor-6b2929cfda3a4844.exe",
+        "l2_monitor-cd662f87f457d9e9.exe",
+        "l2_monitor-e94769286aaf1f46.exe"
+      ],
+      "newExeMatches": [
+        "l2_monitor-6b2929cfda3a4844.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-engine",
+      "target": "pk_check",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-engine\\tests\\pk_check.rs",
+      "exeMatches": [
+        "pk_check-28a8d987b207a329.exe",
+        "pk_check-2e14a899a1003171.exe",
+        "pk_check-41f02a1d1546e869.exe",
+        "pk_check-4c00f1ffcacbe58f.exe",
+        "pk_check-5d3bee5d96116d2c.exe",
+        "pk_check-79f57d33412c070e.exe",
+        "pk_check-8248ed84f7fc30a9.exe",
+        "pk_check-8a9456a243415838.exe",
+        "pk_check-97c7bc653dd82677.exe",
+        "pk_check-b006d688f9622363.exe",
+        "pk_check-b2f5928a9132bd8d.exe",
+        "pk_check-c44c68a6ce8c8909.exe",
+        "pk_check-d54f23256e6adb87.exe",
+        "pk_check-d60cf4dbfa4ca731.exe",
+        "pk_check-efd654d198219b7a.exe",
+        "pk_check-fdfc83b7528d198f.exe"
+      ],
+      "newExeMatches": [
+        "pk_check-41f02a1d1546e869.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-engine",
+      "target": "printer_literals",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-engine\\tests\\printer_literals.rs",
+      "exeMatches": [
+        "printer_literals-36c03dae14d1d4b5.exe",
+        "printer_literals-3b51cabdb0a5c49a.exe",
+        "printer_literals-44c08f268ca1314b.exe",
+        "printer_literals-4853eaeade677a78.exe",
+        "printer_literals-51db33574ffaf0ab.exe",
+        "printer_literals-5635944dc7bf9d93.exe",
+        "printer_literals-5cd1d5ec61f09615.exe",
+        "printer_literals-63cff05811a32d3e.exe",
+        "printer_literals-65770c6081945815.exe",
+        "printer_literals-65b9886992f9378d.exe",
+        "printer_literals-97c5400dfef42d10.exe",
+        "printer_literals-98d42db4d9237527.exe",
+        "printer_literals-a5680b1a31a3b1ee.exe",
+        "printer_literals-b637dc8bae13c82a.exe",
+        "printer_literals-d514e9ddcd66a1dd.exe",
+        "printer_literals-d7cba0b88bfa13a2.exe",
+        "printer_literals-ecd5119fe7ff92c5.exe",
+        "printer_literals-f065bd8bec15639d.exe"
+      ],
+      "newExeMatches": [
+        "printer_literals-65770c6081945815.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-engine",
+      "target": "printer_prop",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-engine\\tests\\printer_prop.rs",
+      "exeMatches": [
+        "printer_prop-03de4bff990a3785.exe",
+        "printer_prop-08ad47050a8bb60e.exe",
+        "printer_prop-1c2e9f2f52eadb11.exe",
+        "printer_prop-1d1c8e80d438c2f4.exe",
+        "printer_prop-2d2eaaab178bb656.exe",
+        "printer_prop-3bacc86e48230b95.exe",
+        "printer_prop-3f2ad065819383e6.exe",
+        "printer_prop-52fe4bf2c57f368a.exe",
+        "printer_prop-6f5f807af9ac43b4.exe",
+        "printer_prop-715ba11d272d46d0.exe",
+        "printer_prop-787ccadf9b531de4.exe",
+        "printer_prop-7ed8ed6b23f2efc7.exe",
+        "printer_prop-8d10c85981569610.exe",
+        "printer_prop-9b0590d2cfe324ae.exe",
+        "printer_prop-a302142a81e37912.exe",
+        "printer_prop-acb9ab57b737662f.exe",
+        "printer_prop-dbef49f09d4f5ad2.exe",
+        "printer_prop-ed77346c60de732b.exe",
+        "printer_prop-fe1df78694bc826e.exe"
+      ],
+      "newExeMatches": [
+        "printer_prop-715ba11d272d46d0.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-engine",
+      "target": "server_config",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-engine\\tests\\server_config.rs",
+      "exeMatches": [
+        "server_config-154572f8924a0239.exe",
+        "server_config-30dc1fc27d77ad2d.exe",
+        "server_config-35100a0bc0607ac7.exe",
+        "server_config-6b01f95d3c49d04c.exe",
+        "server_config-7b586ed2acde5db6.exe",
+        "server_config-85d90dbf2f131b4b.exe",
+        "server_config-9da25301fea02e19.exe",
+        "server_config-aa0b200bbc9727cc.exe",
+        "server_config-ae687b6ee39b694d.exe",
+        "server_config-af613e6e7242b5b1.exe",
+        "server_config-d3d27b94a01c53e1.exe",
+        "server_config-db9656d9f4f12b84.exe",
+        "server_config-dda2ce8fbfd0ada5.exe",
+        "server_config-e11d345b998aa1e9.exe",
+        "server_config-e69e42ee99e6dadb.exe",
+        "server_config-e9211519d7b3bd2a.exe",
+        "server_config-fa37da1a49b2dcc0.exe"
+      ],
+      "newExeMatches": [
+        "server_config-35100a0bc0607ac7.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-engine",
+      "target": "sql_text_only_from_printer",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-engine\\tests\\sql_text_only_from_printer.rs",
+      "exeMatches": [
+        "sql_text_only_from_printer-04cbe8e18186903d.exe",
+        "sql_text_only_from_printer-0ed27457f79ac064.exe",
+        "sql_text_only_from_printer-14ac5ea997245eab.exe",
+        "sql_text_only_from_printer-3402da067a5da327.exe",
+        "sql_text_only_from_printer-4a249c926d966981.exe",
+        "sql_text_only_from_printer-4d963c4956e0129e.exe",
+        "sql_text_only_from_printer-58cbb4a0b3f18549.exe",
+        "sql_text_only_from_printer-5d2fdcd896388d76.exe",
+        "sql_text_only_from_printer-650c9776f1fe8a67.exe",
+        "sql_text_only_from_printer-694a5aae17571246.exe",
+        "sql_text_only_from_printer-6a6cb4b2be5f683c.exe",
+        "sql_text_only_from_printer-a18b10404b3ce79c.exe",
+        "sql_text_only_from_printer-a89b2831f663541e.exe",
+        "sql_text_only_from_printer-abfe9b89527e18a3.exe",
+        "sql_text_only_from_printer-ae99ead181af7b65.exe",
+        "sql_text_only_from_printer-b146a8bc5ffdd1fc.exe",
+        "sql_text_only_from_printer-e1e92e1b7fc1f7bd.exe",
+        "sql_text_only_from_printer-eb01c93125745294.exe",
+        "sql_text_only_from_printer-ee06ee02cd688813.exe"
+      ],
+      "newExeMatches": [
+        "sql_text_only_from_printer-e1e92e1b7fc1f7bd.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-engine",
+      "target": "sqlite_engine",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-engine\\tests\\sqlite_engine.rs",
+      "exeMatches": [
+        "sqlite_engine-13118c1debdc6c2e.exe",
+        "sqlite_engine-1581e21f0652fa0a.exe",
+        "sqlite_engine-1b1ed8bc0c4264cc.exe",
+        "sqlite_engine-244fd8db650e90e7.exe",
+        "sqlite_engine-289f2bae2beb4b4c.exe",
+        "sqlite_engine-2c3f9f3e21d3dde0.exe",
+        "sqlite_engine-309179795fe01a72.exe",
+        "sqlite_engine-3c304db7bcb6af56.exe",
+        "sqlite_engine-43d005b2d21aebff.exe",
+        "sqlite_engine-5b6fa8f4af05b6d4.exe",
+        "sqlite_engine-62540f05241f43d7.exe",
+        "sqlite_engine-981e4b288704e84e.exe",
+        "sqlite_engine-ae4729328b96d426.exe",
+        "sqlite_engine-cced843d1f113de7.exe",
+        "sqlite_engine-e43cf65a2a1221d1.exe",
+        "sqlite_engine-e6388930b1532c81.exe",
+        "sqlite_engine-ea0e3580fbdf25df.exe",
+        "sqlite_engine-f1e283a6716abd3d.exe"
+      ],
+      "newExeMatches": [
+        "sqlite_engine-e6388930b1532c81.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-engine",
+      "target": "trino_client",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-engine\\tests\\trino_client.rs",
+      "exeMatches": [
+        "trino_client-1ada0ebc4953c5c0.exe",
+        "trino_client-20a588fdeafe3fee.exe",
+        "trino_client-225c359ee68b9142.exe",
+        "trino_client-25ec3bbcfaf19776.exe",
+        "trino_client-2642a0e792c864f7.exe",
+        "trino_client-337c45b902517361.exe",
+        "trino_client-5f80e5787fa68919.exe",
+        "trino_client-829da93fbf001a8d.exe",
+        "trino_client-8dae35567a507862.exe",
+        "trino_client-9292ce08f8b0824a.exe",
+        "trino_client-af0e64774e9688bc.exe",
+        "trino_client-cb31ae6c3572ad99.exe",
+        "trino_client-d5ac0291234b22f3.exe",
+        "trino_client-da157b50dc495438.exe",
+        "trino_client-ee912d8d2a6320ef.exe",
+        "trino_client-f6a636872a8f64ae.exe"
+      ],
+      "newExeMatches": [
+        "trino_client-20a588fdeafe3fee.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-engine",
+      "target": "trino_it",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-engine\\tests\\trino_it.rs",
+      "exeMatches": [
+        "trino_it-2fe819f285765e39.exe",
+        "trino_it-475fabc65461b3d0.exe",
+        "trino_it-4e6195afff8307df.exe",
+        "trino_it-590b9312d737aba6.exe",
+        "trino_it-6db337cf944a33d2.exe",
+        "trino_it-73a018210c0d0972.exe",
+        "trino_it-78c5ef7469d4d047.exe",
+        "trino_it-8bca5643b9cef77a.exe",
+        "trino_it-ade0c4426a53bccf.exe",
+        "trino_it-b65a3a141c368305.exe",
+        "trino_it-ce06283ca0c7cbf3.exe",
+        "trino_it-cfc51dff18cc9ada.exe",
+        "trino_it-daad7aa0ad973aaf.exe",
+        "trino_it-dd20e57220c910a9.exe",
+        "trino_it-df83e4def5abb406.exe",
+        "trino_it-ef34c7680ce298b4.exe"
+      ],
+      "newExeMatches": [
+        "trino_it-ade0c4426a53bccf.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-engine",
+      "target": "trino_l2_acl_it",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-engine\\tests\\trino_l2_acl_it.rs",
+      "exeMatches": [
+        "trino_l2_acl_it-0af57445ba4215b1.exe",
+        "trino_l2_acl_it-0f603567560cf0de.exe",
+        "trino_l2_acl_it-20df6d38b80bf447.exe",
+        "trino_l2_acl_it-213c509121bd8237.exe",
+        "trino_l2_acl_it-8a10e20cd31a3feb.exe",
+        "trino_l2_acl_it-90320ad9ae6a164b.exe",
+        "trino_l2_acl_it-9ca204eb4c4bfb76.exe",
+        "trino_l2_acl_it-cec2afb659d4652f.exe"
+      ],
+      "newExeMatches": [
+        "trino_l2_acl_it-8a10e20cd31a3feb.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-engine",
+      "target": "trino_resilience",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-engine\\tests\\trino_resilience.rs",
+      "exeMatches": [
+        "trino_resilience-238bffc79c571296.exe",
+        "trino_resilience-2eae1adc6319bd66.exe",
+        "trino_resilience-34a08a3ded9677b4.exe",
+        "trino_resilience-3ece6d8e1e142f9d.exe",
+        "trino_resilience-48bb027c4c741af9.exe",
+        "trino_resilience-66226ab28e669b19.exe",
+        "trino_resilience-7068cc567ab477bb.exe",
+        "trino_resilience-72ae02096cbb719a.exe",
+        "trino_resilience-83e1948b91e485e4.exe",
+        "trino_resilience-9b2660b1ad9e6a0b.exe",
+        "trino_resilience-9ee95f9f35580e89.exe",
+        "trino_resilience-c2aca69ce760be4f.exe",
+        "trino_resilience-c307734b767a6e89.exe",
+        "trino_resilience-d073d4ec9c0803b5.exe",
+        "trino_resilience-ec1d257f4fa3d65d.exe",
+        "trino_resilience-facc293d199630c1.exe"
+      ],
+      "newExeMatches": [
+        "trino_resilience-c2aca69ce760be4f.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-schema",
+      "target": "ontoforge_schema",
+      "kind": [
+        "lib"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-schema\\src\\lib.rs",
+      "exeMatches": [
+        "ontoforge_schema-1792c4b6ec04f665.exe",
+        "ontoforge_schema-3f58889cb784beda.exe",
+        "ontoforge_schema-4aab879f7d68c256.exe",
+        "ontoforge_schema-4ad2d9535f9cda32.exe",
+        "ontoforge_schema-5cc6c29ccca344e3.exe",
+        "ontoforge_schema-67792e7562101d00.exe",
+        "ontoforge_schema-6ca035c2042893ae.exe",
+        "ontoforge_schema-728b92a2495eee50.exe",
+        "ontoforge_schema-99547c5bae957599.exe",
+        "ontoforge_schema-a7558bb835c68797.exe",
+        "ontoforge_schema-b08478cdfb64d338.exe",
+        "ontoforge_schema-b0a29f7caf7e108a.exe",
+        "ontoforge_schema-d2afc3ad5b5df584.exe",
+        "ontoforge_schema-e903363246df3abd.exe",
+        "ontoforge_schema-fd17dbbbd425a1ce.exe"
+      ],
+      "newExeMatches": [
+        "ontoforge_schema-fd17dbbbd425a1ce.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-schema",
+      "target": "action_types",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-schema\\tests\\action_types.rs",
+      "exeMatches": [
+        "action_types-1022ff50f19cc1b3.exe",
+        "action_types-1fc8f39e3c6bbe3c.exe",
+        "action_types-47dcca9c4c6adb38.exe",
+        "action_types-7fecb8f09cdd2f1b.exe",
+        "action_types-9422233004901608.exe",
+        "action_types-9fcd4b2cd36fc926.exe",
+        "action_types-a06511fc3a0e0ddb.exe",
+        "action_types-ac4766bc0b894668.exe",
+        "action_types-b30a8a1182997390.exe",
+        "action_types-db66090ba60013c8.exe",
+        "action_types-dcd2e86de2130a6d.exe",
+        "action_types-ea20dfa2415c943a.exe",
+        "action_types-fc3a63c1d0c55318.exe",
+        "action_types-fc9b3e9cb5c68ff8.exe"
+      ],
+      "newExeMatches": [
+        "action_types-fc9b3e9cb5c68ff8.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-schema",
+      "target": "bindings",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-schema\\tests\\bindings.rs",
+      "exeMatches": [
+        "bindings-032c9bc2bb7a3c35.exe",
+        "bindings-3daac1ebbcaaef23.exe",
+        "bindings-6bcbca05def35cd1.exe",
+        "bindings-6cd244093b4b9b9f.exe",
+        "bindings-7e8659dd7c0e8915.exe",
+        "bindings-84a70e5d50c507cd.exe",
+        "bindings-acbcd280cf542cd7.exe",
+        "bindings-bd46c2b894f18e47.exe",
+        "bindings-c8f11dfed6819233.exe",
+        "bindings-dff45452820d3c9f.exe",
+        "bindings-ebdf541b239cdecf.exe"
+      ],
+      "newExeMatches": [
+        "bindings-032c9bc2bb7a3c35.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-schema",
+      "target": "diagnostics",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-schema\\tests\\diagnostics.rs",
+      "exeMatches": [
+        "diagnostics-0551570e849652a4.exe",
+        "diagnostics-0695bb7153afa937.exe",
+        "diagnostics-2654da1f78f7b369.exe",
+        "diagnostics-2a71a2bcd0a9cce4.exe",
+        "diagnostics-318009432bdc3f61.exe",
+        "diagnostics-3829b422758909e1.exe",
+        "diagnostics-38574c485db0ae6f.exe",
+        "diagnostics-43a8f3dd5ea36518.exe",
+        "diagnostics-4af8fd0b29dcec15.exe",
+        "diagnostics-4b2342a00038515d.exe",
+        "diagnostics-57eb121dce864890.exe",
+        "diagnostics-713c442d56ad4272.exe",
+        "diagnostics-8bbe53a2a86f899e.exe",
+        "diagnostics-9c35c80af8bc6ef4.exe",
+        "diagnostics-e33760de597247ce.exe"
+      ],
+      "newExeMatches": [
+        "diagnostics-e33760de597247ce.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-schema",
+      "target": "link_types",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-schema\\tests\\link_types.rs",
+      "exeMatches": [
+        "link_types-0d74f39d489fa243.exe",
+        "link_types-1d5fcee3533b2fe7.exe",
+        "link_types-24dd696d5808bb74.exe",
+        "link_types-2f667c7dc76a93d4.exe",
+        "link_types-35a4ad2277c9a3fd.exe",
+        "link_types-5a6692588ea8e8c2.exe",
+        "link_types-63393534d230bbb2.exe",
+        "link_types-8125607e679a04bd.exe",
+        "link_types-8ae0eef4386f42d1.exe",
+        "link_types-9f5e6808b99e9619.exe",
+        "link_types-d77975dd7340518c.exe",
+        "link_types-dddfefd549e3eeb3.exe",
+        "link_types-e4b61c4aeffa418b.exe",
+        "link_types-ffda17df37e757dd.exe"
+      ],
+      "newExeMatches": [
+        "link_types-5a6692588ea8e8c2.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-schema",
+      "target": "lint_examples",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-schema\\tests\\lint_examples.rs",
+      "exeMatches": [
+        "lint_examples-2a22aa1f3a4d0e74.exe",
+        "lint_examples-2a6123653ae50b21.exe",
+        "lint_examples-324ec57da66fdc1b.exe",
+        "lint_examples-37fd9a90fea94679.exe",
+        "lint_examples-541f6ac3e345ba3b.exe",
+        "lint_examples-554691485d6126dd.exe",
+        "lint_examples-6cb99c03e5e51763.exe",
+        "lint_examples-786bbf0531e0455e.exe",
+        "lint_examples-7c6fdf178105335f.exe",
+        "lint_examples-84e5c60ca90dc13c.exe",
+        "lint_examples-97e35f4cdb1e9cc7.exe",
+        "lint_examples-a21f82593134dcc1.exe",
+        "lint_examples-b1a355c8c661503f.exe",
+        "lint_examples-ccaf8e0b128dfd62.exe"
+      ],
+      "newExeMatches": [
+        "lint_examples-2a22aa1f3a4d0e74.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-schema",
+      "target": "load_examples",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-schema\\tests\\load_examples.rs",
+      "exeMatches": [
+        "load_examples-167174322e155bf4.exe",
+        "load_examples-1ea6fd5747aa43c8.exe",
+        "load_examples-3a84ad38287daec0.exe",
+        "load_examples-5d2a124b6cd19722.exe",
+        "load_examples-7f71afc013fe47c2.exe",
+        "load_examples-8150d6e58bf482cd.exe",
+        "load_examples-93aaefefc3b9a68c.exe",
+        "load_examples-94a3871ad43b2403.exe",
+        "load_examples-aa0c4691ada56995.exe",
+        "load_examples-d5bc38f43a377fce.exe",
+        "load_examples-da925e3480a5a416.exe",
+        "load_examples-e106395ea6f3158c.exe",
+        "load_examples-e3c0860813f5dbc4.exe",
+        "load_examples-f76c7a10f8d573bf.exe"
+      ],
+      "newExeMatches": [
+        "load_examples-93aaefefc3b9a68c.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-schema",
+      "target": "loader",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-schema\\tests\\loader.rs",
+      "exeMatches": [
+        "loader-03213b978bde096a.exe",
+        "loader-19bb86c4d30d2cbe.exe",
+        "loader-323b07c2174c4834.exe",
+        "loader-81f8c97af530be08.exe",
+        "loader-8516a5baf4dbb493.exe",
+        "loader-89919987bfd76059.exe",
+        "loader-aee9b5a052aae0e1.exe",
+        "loader-b9020e5f588c2146.exe",
+        "loader-bbf7202298f607c2.exe",
+        "loader-e46b742ca1b04c5f.exe",
+        "loader-e8fc47ee78384df0.exe",
+        "loader-f667541229b7b361.exe",
+        "loader-fb02f72194e8e8f6.exe",
+        "loader-ff25f09f2b4fc47c.exe"
+      ],
+      "newExeMatches": [
+        "loader-f667541229b7b361.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-schema",
+      "target": "object_types",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-schema\\tests\\object_types.rs",
+      "exeMatches": [
+        "object_types-15a57ee8a3e71f87.exe",
+        "object_types-1e16deb88d0a692f.exe",
+        "object_types-2039119adba114c8.exe",
+        "object_types-523064b12b43effe.exe",
+        "object_types-58dc7f743bad296e.exe",
+        "object_types-5d84c15547973d70.exe",
+        "object_types-7d46183bc9c657f3.exe",
+        "object_types-81cbebe765d853a3.exe",
+        "object_types-9294f4b5928ee3ce.exe",
+        "object_types-95e7dc9643ac4307.exe",
+        "object_types-9c7c83c51ebf0235.exe",
+        "object_types-cbc46b197c5491ad.exe",
+        "object_types-f8f83eab98af7d73.exe",
+        "object_types-feb68ae5ff016818.exe"
+      ],
+      "newExeMatches": [
+        "object_types-1e16deb88d0a692f.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-schema",
+      "target": "schema_export",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-schema\\tests\\schema_export.rs",
+      "exeMatches": [
+        "schema_export-07fbb04072c58e36.exe",
+        "schema_export-3f063dfa037edda9.exe",
+        "schema_export-515f2b8498ed44b9.exe",
+        "schema_export-6dca3c2908e6bfc1.exe",
+        "schema_export-7788b20b6a6777c1.exe",
+        "schema_export-9ed85dbdda1059c5.exe",
+        "schema_export-a038c23f1834f0ec.exe",
+        "schema_export-a61d5e62a405ef1c.exe",
+        "schema_export-bfebb5f686f20f0f.exe",
+        "schema_export-cd33b7c66dc7b00e.exe",
+        "schema_export-d4424c7330caa394.exe",
+        "schema_export-eccbb96aa0a1a9fc.exe",
+        "schema_export-f50291547c6a481a.exe",
+        "schema_export-fc4beeaad4b23736.exe"
+      ],
+      "newExeMatches": [
+        "schema_export-a038c23f1834f0ec.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-schema",
+      "target": "scope_documents",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-schema\\tests\\scope_documents.rs",
+      "exeMatches": [
+        "scope_documents-12c3892b924ebb20.exe",
+        "scope_documents-1f918256dfff42bc.exe",
+        "scope_documents-78f68ed8954da7a1.exe",
+        "scope_documents-99b708a4bff96194.exe",
+        "scope_documents-bc5f1a384d670630.exe",
+        "scope_documents-edcdc6dc3ec14c65.exe"
+      ],
+      "newExeMatches": [
+        "scope_documents-edcdc6dc3ec14c65.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-expr",
+      "target": "ontoforge_expr",
+      "kind": [
+        "lib"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-expr\\src\\lib.rs",
+      "exeMatches": [
+        "ontoforge_expr-121c3fae1245a9d8.exe",
+        "ontoforge_expr-13d6b17810a9497b.exe",
+        "ontoforge_expr-1e69dc9d08152de9.exe",
+        "ontoforge_expr-3a8a2238fa3061d7.exe",
+        "ontoforge_expr-3c221c4783bc0964.exe",
+        "ontoforge_expr-42275ce77ed1b1da.exe",
+        "ontoforge_expr-4e846fd388903138.exe",
+        "ontoforge_expr-9b4a1ec2cb839bc7.exe",
+        "ontoforge_expr-a5af7966a937d2d2.exe",
+        "ontoforge_expr-b14c5d16fda1ad13.exe",
+        "ontoforge_expr-e243371b47e8ab7f.exe",
+        "ontoforge_expr-eb2e5871220afef0.exe",
+        "ontoforge_expr-ef9513b7925494c1.exe",
+        "ontoforge_expr-f26f97ef20515a98.exe"
+      ],
+      "newExeMatches": [
+        "ontoforge_expr-9b4a1ec2cb839bc7.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-expr",
+      "target": "analyze",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-expr\\tests\\analyze.rs",
+      "exeMatches": [
+        "analyze-0955bc1f8c866ff8.exe",
+        "analyze-3e090e47d6a0e588.exe",
+        "analyze-79604f7faa866809.exe",
+        "analyze-88d5a0ae3d439b1e.exe",
+        "analyze-8cdcb84083e6310b.exe",
+        "analyze-94373c7df3ae82a2.exe",
+        "analyze-a1a0f9733fc8e63d.exe",
+        "analyze-a655e9390d8911b3.exe",
+        "analyze-af2fdf7c098d3690.exe",
+        "analyze-d55def22aaff0921.exe",
+        "analyze-dab0878ac5ea56c9.exe",
+        "analyze-e9c28f97856e8816.exe",
+        "analyze-ed859ccec5e8a710.exe",
+        "analyze-f59b6e861af2478b.exe"
+      ],
+      "newExeMatches": [
+        "analyze-a1a0f9733fc8e63d.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-expr",
+      "target": "criteria",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-expr\\tests\\criteria.rs",
+      "exeMatches": [
+        "criteria-02dddc1b065e9386.exe",
+        "criteria-08a6489e3be63d49.exe",
+        "criteria-0e86620fd6594413.exe",
+        "criteria-106eba3f61d652ae.exe",
+        "criteria-2d58cd93945a3ba0.exe",
+        "criteria-311698659463b95c.exe",
+        "criteria-3cdeefbc3f35f387.exe",
+        "criteria-6109c41ed8109fea.exe",
+        "criteria-6132d60282591ac3.exe",
+        "criteria-7237172b6494e32f.exe",
+        "criteria-813d594989b4389c.exe",
+        "criteria-8ed8ba178fe46842.exe",
+        "criteria-98b75a2f40296b47.exe",
+        "criteria-bbe04edf80b9f7fa.exe"
+      ],
+      "newExeMatches": [
+        "criteria-6132d60282591ac3.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-expr",
+      "target": "rowpred_eval",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-expr\\tests\\rowpred_eval.rs",
+      "exeMatches": [
+        "rowpred_eval-091c1c4a6fcb968d.exe",
+        "rowpred_eval-813072f0c58c48b8.exe",
+        "rowpred_eval-be67be9f6f6d6803.exe",
+        "rowpred_eval-c37f834dcf2fefde.exe",
+        "rowpred_eval-d2a9b8a7fa2c5ac2.exe",
+        "rowpred_eval-f590fd9c22aab642.exe"
+      ],
+      "newExeMatches": [
+        "rowpred_eval-091c1c4a6fcb968d.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-expr",
+      "target": "rowpred_subset",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-expr\\tests\\rowpred_subset.rs",
+      "exeMatches": [
+        "rowpred_subset-141a8acaccb785cd.exe",
+        "rowpred_subset-25ce0a45a6ee3dfe.exe",
+        "rowpred_subset-61b99f4b9328c69d.exe",
+        "rowpred_subset-8a0383d1d49eeb8e.exe",
+        "rowpred_subset-bff2866971558e83.exe",
+        "rowpred_subset-f831ec4d4b54cc71.exe"
+      ],
+      "newExeMatches": [
+        "rowpred_subset-25ce0a45a6ee3dfe.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-query",
+      "target": "ontoforge_query",
+      "kind": [
+        "lib"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-query\\src\\lib.rs",
+      "exeMatches": [
+        "ontoforge_query-0d7df82c4276d96d.exe",
+        "ontoforge_query-2b6af8ca496a7eb7.exe",
+        "ontoforge_query-4dd7486c35b52557.exe",
+        "ontoforge_query-50c3c43a5aac29f8.exe",
+        "ontoforge_query-62b2494d5bb7c6cb.exe",
+        "ontoforge_query-677cc23d107fa8d3.exe",
+        "ontoforge_query-821647e1477fa1b7.exe",
+        "ontoforge_query-86310d33be2407a3.exe",
+        "ontoforge_query-a2b09624805d5a09.exe",
+        "ontoforge_query-aa3905a077be36b3.exe",
+        "ontoforge_query-afe392b0e4cb5b4e.exe",
+        "ontoforge_query-baf3db02fea45eb7.exe",
+        "ontoforge_query-c0b6793a1c67db57.exe",
+        "ontoforge_query-c45a46a027bb5918.exe",
+        "ontoforge_query-cf52dcbc6a9e450d.exe",
+        "ontoforge_query-d611403ae283e9d0.exe",
+        "ontoforge_query-da2c722dbee4e641.exe",
+        "ontoforge_query-e2d584e5c9973b4c.exe",
+        "ontoforge_query-ed8c574e21fe1396.exe",
+        "ontoforge_query-f9cc99d0f89c0b93.exe",
+        "ontoforge_query-fba9996012b65361.exe"
+      ],
+      "newExeMatches": [
+        "ontoforge_query-afe392b0e4cb5b4e.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-query",
+      "target": "aggregate",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-query\\tests\\aggregate.rs",
+      "exeMatches": [
+        "aggregate-004ba96bef91032b.exe",
+        "aggregate-06170e96e9298df0.exe",
+        "aggregate-525252461a942af5.exe",
+        "aggregate-685e5db50ab07d1d.exe",
+        "aggregate-6a8cad3385cfb5f2.exe",
+        "aggregate-7a748ce468781e3d.exe",
+        "aggregate-8af1b6ff24e4a5cb.exe",
+        "aggregate-abeed2f70b768ff2.exe",
+        "aggregate-b080a77b0d6813a2.exe",
+        "aggregate-e54a6426c4479b71.exe",
+        "aggregate-ea0524c3e4d0d5fe.exe",
+        "aggregate-ecea1c3ac5dd3601.exe",
+        "aggregate-ede912a8b04ac506.exe",
+        "aggregate-f87e8f93b6c4badb.exe"
+      ],
+      "newExeMatches": [
+        null
+      ]
+    },
+    {
+      "package": "ontoforge-query",
+      "target": "audit_l0",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-query\\tests\\audit_l0.rs",
+      "exeMatches": [
+        "audit_l0-27e5e71832302d26.exe",
+        "audit_l0-3282fd30af369f30.exe",
+        "audit_l0-34f99354ddf723b5.exe",
+        "audit_l0-4a223e201e199b06.exe",
+        "audit_l0-510f1a84a93b0596.exe",
+        "audit_l0-beaf0ae42d21a595.exe",
+        "audit_l0-d704ea481601185b.exe",
+        "audit_l0-e69efe651c0e8b1b.exe"
+      ],
+      "newExeMatches": [
+        "audit_l0-27e5e71832302d26.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-query",
+      "target": "audit_pk",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-query\\tests\\audit_pk.rs",
+      "exeMatches": [
+        "audit_pk-3d82805109d40fc5.exe",
+        "audit_pk-69184d57fbc9e290.exe",
+        "audit_pk-99dd1fb5105cec5e.exe",
+        "audit_pk-a899927e1db3a7b1.exe",
+        "audit_pk-b0b61a8d9c706e31.exe",
+        "audit_pk-b260647c9040c5fa.exe",
+        "audit_pk-bca4d82b2da3d2ee.exe",
+        "audit_pk-be73ba45cbb46893.exe",
+        "audit_pk-f86d44635d7f6a10.exe",
+        "audit_pk-fffe9f5ba9f120b8.exe"
+      ],
+      "newExeMatches": [
+        "audit_pk-99dd1fb5105cec5e.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-query",
+      "target": "definition_snapshot",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-query\\tests\\definition_snapshot.rs",
+      "exeMatches": [
+        "definition_snapshot-0046ac0a2984555e.exe",
+        "definition_snapshot-1c882e086449830b.exe",
+        "definition_snapshot-5a9b115b03912dbc.exe",
+        "definition_snapshot-9198927162269918.exe",
+        "definition_snapshot-d4c23118d121b6ee.exe",
+        "definition_snapshot-f89fec19165658a4.exe"
+      ],
+      "newExeMatches": [
+        "definition_snapshot-f89fec19165658a4.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-query",
+      "target": "l2_discovery",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-query\\tests\\l2_discovery.rs",
+      "exeMatches": [
+        "l2_discovery-08287673aa6db6b7.exe",
+        "l2_discovery-308263f997acc82d.exe",
+        "l2_discovery-41694b0dbbc8f71c.exe",
+        "l2_discovery-47ffd49c634782e4.exe",
+        "l2_discovery-9e13f177f7af39b0.exe",
+        "l2_discovery-a3082cba0a70c19e.exe",
+        "l2_discovery-c2d7ab298f401d2c.exe"
+      ],
+      "newExeMatches": [
+        "l2_discovery-308263f997acc82d.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-query",
+      "target": "l2_execute",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-query\\tests\\l2_execute.rs",
+      "exeMatches": [
+        "l2_execute-2bc5d317a9ed8b60.exe",
+        "l2_execute-33b22cd31a309736.exe",
+        "l2_execute-517ab5aceba61f4e.exe",
+        "l2_execute-684904d7022b4018.exe",
+        "l2_execute-790acc98718cb4b1.exe",
+        "l2_execute-8e410152e627f24b.exe",
+        "l2_execute-977dfd6806db929b.exe",
+        "l2_execute-b0c1ab865acbc5bd.exe",
+        "l2_execute-d2c4823ece9d040b.exe"
+      ],
+      "newExeMatches": [
+        "l2_execute-977dfd6806db929b.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-query",
+      "target": "overlay_prop",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-query\\tests\\overlay_prop.rs",
+      "exeMatches": [
+        "overlay_prop-015cfd7bd3e4aa22.exe",
+        "overlay_prop-0b0cc87d3034fd92.exe",
+        "overlay_prop-1a3d239bb972875d.exe",
+        "overlay_prop-37fade0ac8bb0185.exe",
+        "overlay_prop-4cee671a3f919399.exe",
+        "overlay_prop-5d07365d893f40ec.exe",
+        "overlay_prop-78dd10365d9a0517.exe",
+        "overlay_prop-8fe0a68133cf5bc4.exe",
+        "overlay_prop-a835914ae0d2b915.exe",
+        "overlay_prop-a88e3403457fe56b.exe",
+        "overlay_prop-b416aaa42bbb2da8.exe",
+        "overlay_prop-b4d7b0a826ceb135.exe",
+        "overlay_prop-ca6884f0cf3c4e2a.exe",
+        "overlay_prop-e0ba48c0399ae34b.exe",
+        "overlay_prop-eaa51fc4ea4aa5d8.exe"
+      ],
+      "newExeMatches": [
+        "overlay_prop-4cee671a3f919399.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-query",
+      "target": "pk_read",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-query\\tests\\pk_read.rs",
+      "exeMatches": [
+        "pk_read-01942b4fd6b26a5d.exe",
+        "pk_read-15b07185439b63aa.exe",
+        "pk_read-1887187c3ed8f47e.exe",
+        "pk_read-27765d789ccf6312.exe",
+        "pk_read-2b77007c2520d18b.exe",
+        "pk_read-3d29bd89a579f621.exe",
+        "pk_read-6adac73dc4512c12.exe",
+        "pk_read-939acdfb5e6b67a9.exe",
+        "pk_read-b1da3e58cd3a6385.exe",
+        "pk_read-b6c1b418c7c68468.exe",
+        "pk_read-be123079a7b1ca9c.exe",
+        "pk_read-ca9313057c454f16.exe",
+        "pk_read-cc3f1d77cef61eb6.exe",
+        "pk_read-d8273a7df21c4bf0.exe",
+        "pk_read-f5b00b8835f84be2.exe"
+      ],
+      "newExeMatches": [
+        "pk_read-ca9313057c454f16.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-query",
+      "target": "query_bench_it",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-query\\tests\\query_bench_it.rs",
+      "exeMatches": [
+        "query_bench_it-101d1d6397f86545.exe",
+        "query_bench_it-1d912c7d6eb35e60.exe",
+        "query_bench_it-452478fdeabad90e.exe",
+        "query_bench_it-5d28d408fffad371.exe",
+        "query_bench_it-66606b850634997a.exe",
+        "query_bench_it-7a71635317d8782d.exe",
+        "query_bench_it-7a94cd595ab31ddf.exe",
+        "query_bench_it-9582d532b1e22045.exe",
+        "query_bench_it-b3858181915c8934.exe",
+        "query_bench_it-b47b50c6d9cedee2.exe",
+        "query_bench_it-dc973a476dc18085.exe",
+        "query_bench_it-f38c634f40865cf9.exe",
+        "query_bench_it-fad8abe6ee4c80b5.exe"
+      ],
+      "newExeMatches": [
+        "query_bench_it-b47b50c6d9cedee2.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-query",
+      "target": "search_around",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-query\\tests\\search_around.rs",
+      "exeMatches": [
+        "search_around-166e6d4200425bf4.exe",
+        "search_around-189bf6f501d8cd65.exe",
+        "search_around-4c564d09f4084289.exe",
+        "search_around-692611978fae5af0.exe",
+        "search_around-838bf238f8d16259.exe",
+        "search_around-8bd3a624705e1d72.exe",
+        "search_around-b314c1b5026676b1.exe",
+        "search_around-cc4d961192d35831.exe",
+        "search_around-da6e4ba51507ed84.exe",
+        "search_around-de9dfa975e7cc8f6.exe",
+        "search_around-e364b1264898ae25.exe",
+        "search_around-e9574f96cc1a1405.exe",
+        "search_around-f6a801d7166ca448.exe",
+        "search_around-f70cc4b51fac6620.exe"
+      ],
+      "newExeMatches": [
+        "search_around-8bd3a624705e1d72.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-query",
+      "target": "security",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-query\\tests\\security.rs",
+      "exeMatches": [
+        "security-052ba601d74ee32c.exe",
+        "security-1cbe9ea0e3bbd3c6.exe",
+        "security-2de859b935d1365e.exe",
+        "security-303cbb6b8faa7559.exe",
+        "security-3b60b6610461a6ee.exe",
+        "security-421e0c458541e1a3.exe",
+        "security-43b18640e7568039.exe",
+        "security-4e3a93c8199b5a0e.exe",
+        "security-4fa79533b5c29380.exe",
+        "security-51e86494847c7534.exe",
+        "security-53f664eb5ce870b2.exe",
+        "security-56add491b6c417b6.exe",
+        "security-71b049c309411dd8.exe",
+        "security-7903e61eb9b2f86c.exe",
+        "security-7946f02dd3458109.exe",
+        "security-7d0b109380678cb5.exe",
+        "security-7f06397bd610cf28.exe",
+        "security-8733ad89c167ab91.exe",
+        "security-8d6b23f96c7528b4.exe",
+        "security-a562e0620c233b57.exe",
+        "security-a7d0f852eea80da7.exe",
+        "security-b371561da691a40a.exe",
+        "security-b5a603f47d5fde14.exe",
+        "security-b70ff7cb9f91853b.exe",
+        "security-c1f2dbe70fa01cd7.exe",
+        "security-cbacbeb377640ad3.exe",
+        "security-cf54930ecc42a809.exe",
+        "security-d380356e1bd954f9.exe",
+        "security-f6f236add66f97a4.exe",
+        "security-f9bd56828e1a544b.exe"
+      ],
+      "newExeMatches": [
+        "security-b371561da691a40a.exe",
+        "security-f9bd56828e1a544b.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-query",
+      "target": "set_ops",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-query\\tests\\set_ops.rs",
+      "exeMatches": [
+        "set_ops-35c0204ef8813061.exe",
+        "set_ops-4961812ee27ed6e6.exe",
+        "set_ops-502d63308e616707.exe",
+        "set_ops-61b7730b50a80c1d.exe",
+        "set_ops-74e21d758399bc1d.exe",
+        "set_ops-795f6f558e5e0d78.exe",
+        "set_ops-a6d39d0d647aa7a8.exe",
+        "set_ops-ad80c288a54aabf2.exe",
+        "set_ops-b4ae5d8da8da61d5.exe",
+        "set_ops-c9a37ced6d8ded84.exe",
+        "set_ops-dc82ff6028049d41.exe",
+        "set_ops-e7cf2622f3542615.exe",
+        "set_ops-f3e5c95167462157.exe",
+        "set_ops-fcd28f1645295813.exe"
+      ],
+      "newExeMatches": [
+        "set_ops-4961812ee27ed6e6.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-query",
+      "target": "sql_shape",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-query\\tests\\sql_shape.rs",
+      "exeMatches": [
+        "sql_shape-0275a21325c9c042.exe",
+        "sql_shape-296a036f9c2800dc.exe",
+        "sql_shape-3137644c2ec2395c.exe",
+        "sql_shape-4f1e0197ca4c0360.exe",
+        "sql_shape-5e6f470bba44872f.exe",
+        "sql_shape-714ad6e4e6929354.exe",
+        "sql_shape-8c58cb953ecfc4cc.exe",
+        "sql_shape-928eb865828d5bae.exe",
+        "sql_shape-9f618f27813bc338.exe",
+        "sql_shape-aadda5d088003d2a.exe",
+        "sql_shape-b207e898bb66d095.exe",
+        "sql_shape-c24024bade22be20.exe",
+        "sql_shape-c439a0eeb26eeede.exe",
+        "sql_shape-e629ba43e52a8866.exe",
+        "sql_shape-f5048f331cfacb85.exe"
+      ],
+      "newExeMatches": [
+        "sql_shape-f5048f331cfacb85.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-query",
+      "target": "sqlite_query",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-query\\tests\\sqlite_query.rs",
+      "exeMatches": [
+        "sqlite_query-19b733604f172132.exe",
+        "sqlite_query-1e715cee51fcfa5f.exe",
+        "sqlite_query-2426b6c655e255c1.exe",
+        "sqlite_query-27d89ea151f5d840.exe",
+        "sqlite_query-36074a5f75dab7f4.exe",
+        "sqlite_query-36e66057206c3d7a.exe",
+        "sqlite_query-423612583b58c83c.exe",
+        "sqlite_query-48238eabea73f455.exe",
+        "sqlite_query-5c4c8ff8c0242d3c.exe",
+        "sqlite_query-7bdb1b5e648a72de.exe",
+        "sqlite_query-7d261a03c73449ff.exe",
+        "sqlite_query-b6aa5c0829cd3cf9.exe",
+        "sqlite_query-beb5e71b0ab9e9da.exe",
+        "sqlite_query-e36b23d256f46428.exe",
+        "sqlite_query-f8455f9457245aad.exe"
+      ],
+      "newExeMatches": [
+        "sqlite_query-b6aa5c0829cd3cf9.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-query",
+      "target": "trino_query_it",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-query\\tests\\trino_query_it.rs",
+      "exeMatches": [
+        "trino_query_it-2555eee9cba1bf23.exe",
+        "trino_query_it-3614464c2cfa0faa.exe",
+        "trino_query_it-623e51736512b662.exe",
+        "trino_query_it-640f33cb17ede2d0.exe",
+        "trino_query_it-9fe070985accbb68.exe",
+        "trino_query_it-a58686acafdc6306.exe",
+        "trino_query_it-bb7c760207bed263.exe",
+        "trino_query_it-d102f39937a80a59.exe",
+        "trino_query_it-d1b6926803e66f06.exe",
+        "trino_query_it-d743b10412114ceb.exe",
+        "trino_query_it-dde86868fe2826e1.exe",
+        "trino_query_it-de3c3f2b531d17aa.exe",
+        "trino_query_it-f94f2c33540487b5.exe"
+      ],
+      "newExeMatches": [
+        "trino_query_it-d1b6926803e66f06.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-storage",
+      "target": "ontoforge_storage",
+      "kind": [
+        "lib"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-storage\\src\\lib.rs",
+      "exeMatches": [
+        "ontoforge_storage-0a02bf32c3bcc413.exe",
+        "ontoforge_storage-0c9aaa54a0fda4cd.exe",
+        "ontoforge_storage-0e3604b37631b1b0.exe",
+        "ontoforge_storage-2318d3aad41406eb.exe",
+        "ontoforge_storage-28ec0d35ae35ed47.exe",
+        "ontoforge_storage-361a6651c6b074a4.exe",
+        "ontoforge_storage-48bf3a8cdd474702.exe",
+        "ontoforge_storage-63e18522fadf462d.exe",
+        "ontoforge_storage-7920d8fa4a0592e5.exe",
+        "ontoforge_storage-9c1c15f18149e0c0.exe",
+        "ontoforge_storage-b251042e0bd48377.exe",
+        "ontoforge_storage-c0fc5d03ac2b5c08.exe",
+        "ontoforge_storage-d017e263e07d7df2.exe",
+        "ontoforge_storage-d9fb9a39b708538e.exe",
+        "ontoforge_storage-e2292b8421ec847a.exe",
+        "ontoforge_storage-eb801a59b105838d.exe",
+        "ontoforge_storage-f48b2b5170e7cbfb.exe"
+      ],
+      "newExeMatches": [
+        "ontoforge_storage-9c1c15f18149e0c0.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-storage",
+      "target": "conformance_pg",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-storage\\tests\\conformance_pg.rs",
+      "exeMatches": [
+        "conformance_pg-05279a2abc7e2bfd.exe",
+        "conformance_pg-180f03be168e5756.exe",
+        "conformance_pg-3112f27a893f6b71.exe",
+        "conformance_pg-37a3b207645e4791.exe",
+        "conformance_pg-39e883f11e6a6c0e.exe",
+        "conformance_pg-41bc46fdd1426706.exe",
+        "conformance_pg-44433ee5e27d37e4.exe",
+        "conformance_pg-5638e734a9317f84.exe",
+        "conformance_pg-5c9acc4532d80f29.exe",
+        "conformance_pg-73c576160c21c933.exe",
+        "conformance_pg-7db0d85f6ab0148e.exe",
+        "conformance_pg-921edb1e5e9869e0.exe",
+        "conformance_pg-a14d8054246ef7a0.exe",
+        "conformance_pg-c6873fc1b0cc6ef8.exe",
+        "conformance_pg-daf336a97990d659.exe",
+        "conformance_pg-e8742b557db208ee.exe"
+      ],
+      "newExeMatches": [
+        "conformance_pg-5c9acc4532d80f29.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-storage",
+      "target": "conformance_sqlite",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-storage\\tests\\conformance_sqlite.rs",
+      "exeMatches": [
+        "conformance_sqlite-185527b2b6fed615.exe",
+        "conformance_sqlite-22b37423a2750c3f.exe",
+        "conformance_sqlite-37e7d0aaa61e22f9.exe",
+        "conformance_sqlite-4c26163d57085927.exe",
+        "conformance_sqlite-518cbd73e0d405d2.exe",
+        "conformance_sqlite-55aef25615bda094.exe",
+        "conformance_sqlite-66f911dd26a47b85.exe",
+        "conformance_sqlite-673bd84e10840461.exe",
+        "conformance_sqlite-9e296005f191c484.exe",
+        "conformance_sqlite-cc0458df6562dcb8.exe",
+        "conformance_sqlite-d3478ece9da75694.exe",
+        "conformance_sqlite-d412fdcee9b6c1c7.exe",
+        "conformance_sqlite-e34aafe42af27302.exe"
+      ],
+      "newExeMatches": [
+        "conformance_sqlite-d3478ece9da75694.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-storage",
+      "target": "frozen_history",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-storage\\tests\\frozen_history.rs",
+      "exeMatches": [
+        "frozen_history-0d97ba70df34880f.exe",
+        "frozen_history-2775eee1678de62d.exe",
+        "frozen_history-8fbf8e89cf441f4c.exe",
+        "frozen_history-b15e572183ee341b.exe"
+      ],
+      "newExeMatches": [
+        "frozen_history-0d97ba70df34880f.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-storage",
+      "target": "history_masking",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-storage\\tests\\history_masking.rs",
+      "exeMatches": [
+        "history_masking-0615ff362d042980.exe",
+        "history_masking-1ff16506058d3572.exe",
+        "history_masking-2bbec1edc77d668b.exe",
+        "history_masking-3349f90b91702818.exe",
+        "history_masking-68cb63211e9578f9.exe",
+        "history_masking-7191ab5a32373624.exe",
+        "history_masking-7fe5f1d9cf5c4693.exe",
+        "history_masking-a6244ae13c6d3899.exe",
+        "history_masking-c65d43a40a85c1da.exe",
+        "history_masking-d46d979723a6a9ca.exe",
+        "history_masking-f76cacd229f8d4ef.exe"
+      ],
+      "newExeMatches": [
+        "history_masking-7191ab5a32373624.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-storage",
+      "target": "import",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-storage\\tests\\import.rs",
+      "exeMatches": [
+        "import-04e64010166c7b64.exe",
+        "import-08ac006b4566389c.exe",
+        "import-3241f6928327247d.exe",
+        "import-7d864eabfcf12522.exe",
+        "import-99efa8724a90dff6.exe",
+        "import-cd7c325276ba6a20.exe",
+        "import-d3b4e18cd723fd8c.exe",
+        "import-d7c19d853f1a8024.exe",
+        "import-f26e77e603c9ced8.exe",
+        "import-fd664166af3f47c8.exe"
+      ],
+      "newExeMatches": [
+        "import-99efa8724a90dff6.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-storage",
+      "target": "migrate",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-storage\\tests\\migrate.rs",
+      "exeMatches": [
+        "migrate-057bde1436d55fc4.exe",
+        "migrate-09ea321064254d74.exe",
+        "migrate-1fc1ae2224f64daa.exe",
+        "migrate-34820f7e1f8d8b25.exe",
+        "migrate-39877afdeb8229f6.exe",
+        "migrate-3fea3f069cdff57a.exe",
+        "migrate-4d2d0c66c6f3dded.exe",
+        "migrate-6382fc88aca21671.exe",
+        "migrate-d87269b6bd4c8ba5.exe",
+        "migrate-e982c156739657f8.exe"
+      ],
+      "newExeMatches": [
+        "migrate-1fc1ae2224f64daa.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-storage",
+      "target": "migrate_pg",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-storage\\tests\\migrate_pg.rs",
+      "exeMatches": [
+        "migrate_pg-3ac3d0eb4f55997f.exe",
+        "migrate_pg-5a2b8b6ffca0d858.exe",
+        "migrate_pg-5d700527fdc11242.exe",
+        "migrate_pg-5f39001c86fe501a.exe",
+        "migrate_pg-73c9d9ae74009e47.exe",
+        "migrate_pg-a4c324642936b3e5.exe",
+        "migrate_pg-bb33c0cf8fa292bf.exe",
+        "migrate_pg-c4e86e808942fdf5.exe",
+        "migrate_pg-c5c14a2c95ea3b63.exe",
+        "migrate_pg-f1dcd81a5e84ccdd.exe"
+      ],
+      "newExeMatches": [
+        null
+      ]
+    },
+    {
+      "package": "ontoforge-storage",
+      "target": "model_prop",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-storage\\tests\\model_prop.rs",
+      "exeMatches": [
+        "model_prop-09e72e41eb081199.exe",
+        "model_prop-28a78a4e8959dd0b.exe",
+        "model_prop-2f0a31a3780a9d4c.exe",
+        "model_prop-4fef63f4baf833a6.exe",
+        "model_prop-72f9de26ccac5689.exe",
+        "model_prop-781bf395679ffa7e.exe",
+        "model_prop-7ec94b4de236c99e.exe",
+        "model_prop-9dc4e4630d58dd18.exe",
+        "model_prop-b85d9fa374bf8f28.exe",
+        "model_prop-d34dd3976e237e5b.exe"
+      ],
+      "newExeMatches": [
+        "model_prop-d34dd3976e237e5b.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-storage",
+      "target": "query_read",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-storage\\tests\\query_read.rs",
+      "exeMatches": [
+        "query_read-24502ac7ad8e64c2.exe",
+        "query_read-62f1418d49a24c33.exe",
+        "query_read-a9cdca6231cbf475.exe",
+        "query_read-b144a92ae5603cd6.exe",
+        "query_read-bc1b16121fc0b29f.exe",
+        "query_read-cf7c2031dc788b6f.exe",
+        "query_read-ebd728714159f3b6.exe",
+        "query_read-f6c69537e359a438.exe"
+      ],
+      "newExeMatches": [
+        "query_read-62f1418d49a24c33.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-storage",
+      "target": "query_read_pg",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-storage\\tests\\query_read_pg.rs",
+      "exeMatches": [
+        "query_read_pg-02589a0823baf7e3.exe",
+        "query_read_pg-13eb41d4e5bfc509.exe",
+        "query_read_pg-2a218ce455bcd708.exe",
+        "query_read_pg-410abdef9f9ef58e.exe",
+        "query_read_pg-55bab355a5bac34c.exe",
+        "query_read_pg-59626132f5089037.exe",
+        "query_read_pg-731de9905926c6eb.exe",
+        "query_read_pg-dc05bbc664ae0ea6.exe"
+      ],
+      "newExeMatches": [
+        "query_read_pg-731de9905926c6eb.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-storage",
+      "target": "reload",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-storage\\tests\\reload.rs",
+      "exeMatches": [
+        "reload-02f36c7c32b0e573.exe",
+        "reload-36d0f5e47e808eec.exe",
+        "reload-383195b91f84749d.exe",
+        "reload-3d0aee3999c3814d.exe",
+        "reload-8f94102f967ecfb0.exe",
+        "reload-99a720774f6c0ca7.exe",
+        "reload-a9540cd39278354e.exe",
+        "reload-afdf0b6e186a43c6.exe",
+        "reload-b07cf2e465285f91.exe",
+        "reload-c3d80fc3b747b003.exe",
+        "reload-e6bafce6ca8b2bf3.exe"
+      ],
+      "newExeMatches": [
+        "reload-36d0f5e47e808eec.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-storage",
+      "target": "reload_pg",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-storage\\tests\\reload_pg.rs",
+      "exeMatches": [
+        "reload_pg-4af26267171c3845.exe",
+        "reload_pg-5ecd7335e2af433f.exe",
+        "reload_pg-5f17912168bee541.exe",
+        "reload_pg-64bbd847f0d34c46.exe",
+        "reload_pg-70cd35f7e8ed9672.exe",
+        "reload_pg-77c1639b89063044.exe",
+        "reload_pg-7d4728e89fec0b76.exe",
+        "reload_pg-8a25a3e3bee4f32e.exe",
+        "reload_pg-ab802f4bdd8db4ab.exe",
+        "reload_pg-ae72b06fec8aa1bf.exe",
+        "reload_pg-ba286574e281cc58.exe",
+        "reload_pg-c1428324f45ff5c5.exe"
+      ],
+      "newExeMatches": [
+        "reload_pg-ba286574e281cc58.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-storage",
+      "target": "reload_trino_it",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-storage\\tests\\reload_trino_it.rs",
+      "exeMatches": [
+        "reload_trino_it-0fd6993ac4ee3688.exe",
+        "reload_trino_it-55db7c506b40e4b3.exe",
+        "reload_trino_it-58c3c46ad880458e.exe",
+        "reload_trino_it-8366f8d642565d09.exe",
+        "reload_trino_it-8622841b7c4b67c7.exe",
+        "reload_trino_it-a161dbcff7f71996.exe",
+        "reload_trino_it-ba0ef01a50232b45.exe",
+        "reload_trino_it-f059764d37b9d7fd.exe"
+      ],
+      "newExeMatches": [
+        "reload_trino_it-8622841b7c4b67c7.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-storage",
+      "target": "request_snapshot",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-storage\\tests\\request_snapshot.rs",
+      "exeMatches": [
+        "request_snapshot-2f25c1bc227f7f7f.exe",
+        "request_snapshot-3f95abab7fbe96d9.exe",
+        "request_snapshot-5b6b8f8db200c1c3.exe",
+        "request_snapshot-631341ee014ca482.exe",
+        "request_snapshot-cb3209155410ad6b.exe"
+      ],
+      "newExeMatches": [
+        "request_snapshot-cb3209155410ad6b.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-storage",
+      "target": "scope_store",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-storage\\tests\\scope_store.rs",
+      "exeMatches": [
+        "scope_store-171ec28fd1ae16f6.exe",
+        "scope_store-190f2546e1c9d21f.exe",
+        "scope_store-62bd44123514fdcc.exe",
+        "scope_store-79e7f9bdb3e0bc5f.exe",
+        "scope_store-8fac8652e5f23e8e.exe",
+        "scope_store-94415c704779d460.exe",
+        "scope_store-96fc5fccd5206e9c.exe",
+        "scope_store-992242495689afba.exe",
+        "scope_store-bdf0cf66c66a7f2d.exe",
+        "scope_store-ebd7a92a731cad06.exe",
+        "scope_store-fa246e51f206400d.exe",
+        "scope_store-feac26aeb5a0570d.exe"
+      ],
+      "newExeMatches": [
+        "scope_store-62bd44123514fdcc.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-storage",
+      "target": "sql_exit_guard",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-storage\\tests\\sql_exit_guard.rs",
+      "exeMatches": [
+        "sql_exit_guard-12d0eed524a7c7b8.exe",
+        "sql_exit_guard-2b06188cdde7b520.exe",
+        "sql_exit_guard-5b2802d073da08e1.exe",
+        "sql_exit_guard-6163e70053e60881.exe",
+        "sql_exit_guard-647a4f6192ef026c.exe",
+        "sql_exit_guard-a933f9e4a8796a0d.exe",
+        "sql_exit_guard-b977add3034eb3d9.exe",
+        "sql_exit_guard-d912884891901407.exe",
+        "sql_exit_guard-e777e51b22b32335.exe",
+        "sql_exit_guard-f0594c0be667cc62.exe",
+        "sql_exit_guard-f5a981476edc96c5.exe"
+      ],
+      "newExeMatches": [
+        "sql_exit_guard-6163e70053e60881.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-storage",
+      "target": "sqlite_connection",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-storage\\tests\\sqlite_connection.rs",
+      "exeMatches": [
+        "sqlite_connection-06effe3ff6a1a1f1.exe",
+        "sqlite_connection-1abc2a81d226e8f4.exe",
+        "sqlite_connection-5ca28a878353e7d2.exe",
+        "sqlite_connection-60cebb2dc930a957.exe",
+        "sqlite_connection-6f87ed07e31799d7.exe",
+        "sqlite_connection-761eac10ab467ec7.exe",
+        "sqlite_connection-8869b2d2320dc706.exe",
+        "sqlite_connection-8fce6c2115de2373.exe",
+        "sqlite_connection-a8a6c78f5a014646.exe",
+        "sqlite_connection-c6e62f90b93284ef.exe",
+        "sqlite_connection-eb494302c6fb09c5.exe"
+      ],
+      "newExeMatches": [
+        "sqlite_connection-8869b2d2320dc706.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-server",
+      "target": "ontoforge_server",
+      "kind": [
+        "lib"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-server\\src\\lib.rs",
+      "exeMatches": [
+        "ontoforge_server-0a1fa3a6214e542f.exe",
+        "ontoforge_server-136b3932c2e18e2b.exe",
+        "ontoforge_server-1f67847e546b0d66.exe",
+        "ontoforge_server-38f95975c1a3f9a4.exe",
+        "ontoforge_server-436b01d79a3045d0.exe",
+        "ontoforge_server-44b39dfaf99832d7.exe",
+        "ontoforge_server-4c8507131ec6cf6e.exe",
+        "ontoforge_server-508622cf692d1fd3.exe",
+        "ontoforge_server-5a9190f8a10f1b12.exe",
+        "ontoforge_server-5e423006a07df808.exe",
+        "ontoforge_server-6a58a16c1ff1a38f.exe",
+        "ontoforge_server-7ebc84fb9663eeac.exe",
+        "ontoforge_server-81e4c376938ce6be.exe",
+        "ontoforge_server-82105f844e753e13.exe",
+        "ontoforge_server-82be5ae0a9fdd28a.exe",
+        "ontoforge_server-bcef496ed2c65afe.exe",
+        "ontoforge_server-ceb9cd1c5d033352.exe",
+        "ontoforge_server-fcdf02841ff363ae.exe",
+        "ontoforge_server-fdc969dd04e67c6c.exe",
+        "ontoforge_server-fe76453f3a79f671.exe"
+      ],
+      "newExeMatches": [
+        "ontoforge_server-0a1fa3a6214e542f.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-server",
+      "target": "action_source_budget",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-server\\tests\\action_source_budget.rs",
+      "exeMatches": [
+        "action_source_budget-42e3829da274537e.exe",
+        "action_source_budget-449df8a0321d29f8.exe",
+        "action_source_budget-635f78fed3bb4210.exe"
+      ],
+      "newExeMatches": [
+        "action_source_budget-635f78fed3bb4210.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-server",
+      "target": "health_lifecycle_it",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-server\\tests\\health_lifecycle_it.rs",
+      "exeMatches": [
+        "health_lifecycle_it-28244a7d67537f81.exe",
+        "health_lifecycle_it-33d879817a411ffb.exe",
+        "health_lifecycle_it-3f427e8d7f8465cc.exe",
+        "health_lifecycle_it-7e8861758741a5a2.exe",
+        "health_lifecycle_it-ac7722fa2634e86d.exe",
+        "health_lifecycle_it-e147159ba4a7090f.exe"
+      ],
+      "newExeMatches": [
+        "health_lifecycle_it-28244a7d67537f81.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-server",
+      "target": "health_trino_it",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-server\\tests\\health_trino_it.rs",
+      "exeMatches": [
+        "health_trino_it-683f97da716f09e7.exe",
+        "health_trino_it-6a8dbbbdc3d73fa2.exe",
+        "health_trino_it-9cbc8cdb85d4bdd4.exe",
+        "health_trino_it-b8fddf6a298254b9.exe",
+        "health_trino_it-cfba3c2c2e0a3018.exe",
+        "health_trino_it-df72daa379cda43b.exe"
+      ],
+      "newExeMatches": [
+        "health_trino_it-683f97da716f09e7.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-server",
+      "target": "history_errors",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-server\\tests\\history_errors.rs",
+      "exeMatches": [
+        "history_errors-13d72c2e74675f76.exe",
+        "history_errors-7358673d4c74d304.exe"
+      ],
+      "newExeMatches": [
+        "history_errors-7358673d4c74d304.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-server",
+      "target": "history_pagination",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-server\\tests\\history_pagination.rs",
+      "exeMatches": [
+        "history_pagination-12dc64b8d949d76a.exe",
+        "history_pagination-7540482fdaa1776c.exe"
+      ],
+      "newExeMatches": [
+        "history_pagination-12dc64b8d949d76a.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-server",
+      "target": "http_action_diagnostics",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-server\\tests\\http_action_diagnostics.rs",
+      "exeMatches": [
+        "http_action_diagnostics-a1799a3b175c82f8.exe",
+        "http_action_diagnostics-ec8d61030e8cc387.exe"
+      ],
+      "newExeMatches": [
+        "http_action_diagnostics-ec8d61030e8cc387.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-server",
+      "target": "http_action_safety",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-server\\tests\\http_action_safety.rs",
+      "exeMatches": [
+        "http_action_safety-114ff4e3744243e8.exe",
+        "http_action_safety-3f6f296af9c10bfd.exe",
+        "http_action_safety-5e899ad56fab327a.exe",
+        "http_action_safety-70b8df53389bfc0a.exe",
+        "http_action_safety-d9f5459d35a8d3e5.exe",
+        "http_action_safety-e4c39694aace6bfa.exe",
+        "http_action_safety-f8596817092cb782.exe"
+      ],
+      "newExeMatches": [
+        "http_action_safety-3f6f296af9c10bfd.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-server",
+      "target": "http_actions",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-server\\tests\\http_actions.rs",
+      "exeMatches": [
+        "http_actions-0a591e7bafe514be.exe",
+        "http_actions-0bc7c46c84525b8d.exe",
+        "http_actions-5ead6fcc9b9c1cf1.exe",
+        "http_actions-6ac1ad8cf4a6fcbb.exe",
+        "http_actions-9449dea4c2aff584.exe",
+        "http_actions-d549d4a746358615.exe",
+        "http_actions-d71607134de4aa8c.exe",
+        "http_actions-fe893a99d8669668.exe"
+      ],
+      "newExeMatches": [
+        "http_actions-d549d4a746358615.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-server",
+      "target": "http_contract",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-server\\tests\\http_contract.rs",
+      "exeMatches": [
+        "http_contract-1ac563af6c3f08c1.exe",
+        "http_contract-5a49ba49b1ce4249.exe",
+        "http_contract-611a5e9b63a25750.exe",
+        "http_contract-930b2367ea8c10e1.exe",
+        "http_contract-9f77aff63160a86b.exe",
+        "http_contract-cdb57e7cfa4361e9.exe",
+        "http_contract-d711cd447121f1f0.exe",
+        "http_contract-f830501b3e828b04.exe"
+      ],
+      "newExeMatches": [
+        "http_contract-611a5e9b63a25750.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-server",
+      "target": "mcp_actions",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-server\\tests\\mcp_actions.rs",
+      "exeMatches": [
+        "mcp_actions-27d62a6663e6a8a7.exe",
+        "mcp_actions-3e749a91104c5462.exe",
+        "mcp_actions-447c12c094abc3f2.exe",
+        "mcp_actions-6303f71c513922fa.exe",
+        "mcp_actions-9b75ed45eaf7d8fd.exe"
+      ],
+      "newExeMatches": [
+        "mcp_actions-9b75ed45eaf7d8fd.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-server",
+      "target": "mcp_contract",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-server\\tests\\mcp_contract.rs",
+      "exeMatches": [
+        "mcp_contract-0996eac53cab8f61.exe",
+        "mcp_contract-1fb367b3c1a94e52.exe",
+        "mcp_contract-625e11d9271dc323.exe",
+        "mcp_contract-84248078c92dda94.exe",
+        "mcp_contract-84db2314986616cd.exe",
+        "mcp_contract-ce001b25a7e3445e.exe"
+      ],
+      "newExeMatches": [
+        "mcp_contract-84db2314986616cd.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-server",
+      "target": "mcp_execution_admission",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-server\\tests\\mcp_execution_admission.rs",
+      "exeMatches": [
+        "mcp_execution_admission-7309ac84ec795507.exe",
+        "mcp_execution_admission-8e35010cbb1b8257.exe"
+      ],
+      "newExeMatches": [
+        "mcp_execution_admission-7309ac84ec795507.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-server",
+      "target": "mcp_l2",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-server\\tests\\mcp_l2.rs",
+      "exeMatches": [
+        "mcp_l2-292f89b934dbf9ed.exe",
+        "mcp_l2-3dba8c75501da290.exe",
+        "mcp_l2-42d04b52249e04f8.exe",
+        "mcp_l2-7c9fe5d1a62f104e.exe",
+        "mcp_l2-e5371c42ccac70ab.exe"
+      ],
+      "newExeMatches": [
+        "mcp_l2-7c9fe5d1a62f104e.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-server",
+      "target": "mcp_l2_defaults",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-server\\tests\\mcp_l2_defaults.rs",
+      "exeMatches": [
+        "mcp_l2_defaults-098ea965b0138c8b.exe",
+        "mcp_l2_defaults-88f2588a05dfb0d9.exe",
+        "mcp_l2_defaults-8b2b834cfe076406.exe",
+        "mcp_l2_defaults-bdd71126e62545f2.exe",
+        "mcp_l2_defaults-fa2271fc6f05a43b.exe"
+      ],
+      "newExeMatches": [
+        "mcp_l2_defaults-fa2271fc6f05a43b.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-server",
+      "target": "mcp_transport",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-server\\tests\\mcp_transport.rs",
+      "exeMatches": [
+        "mcp_transport-3cabac7fbb28f864.exe",
+        "mcp_transport-4e828559373aa9f3.exe",
+        "mcp_transport-5d22cac0aca61563.exe",
+        "mcp_transport-82417942c71dc616.exe",
+        "mcp_transport-89c81fdafcf66363.exe",
+        "mcp_transport-8cef89e87884c3b2.exe",
+        "mcp_transport-b1e87b05148cb459.exe"
+      ],
+      "newExeMatches": [
+        "mcp_transport-4e828559373aa9f3.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-server",
+      "target": "postgres_http_it",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-server\\tests\\postgres_http_it.rs",
+      "exeMatches": [
+        "postgres_http_it-0bb5c4565e3696eb.exe",
+        "postgres_http_it-31309646a74edcd2.exe",
+        "postgres_http_it-3a3de284e8f44dd1.exe",
+        "postgres_http_it-a324b22042dfec03.exe",
+        "postgres_http_it-bf7b6b1b6bf4e3f8.exe",
+        "postgres_http_it-f4cd2f36a7ccf460.exe"
+      ],
+      "newExeMatches": [
+        "postgres_http_it-f4cd2f36a7ccf460.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-server",
+      "target": "source_drift",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-server\\tests\\source_drift.rs",
+      "exeMatches": [
+        "source_drift-2610136fdb2db690.exe",
+        "source_drift-37aa9b1b1c6710c3.exe",
+        "source_drift-7095feefe4e02c04.exe",
+        "source_drift-e88af3a1a9ed556e.exe"
+      ],
+      "newExeMatches": [
+        "source_drift-e88af3a1a9ed556e.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-server",
+      "target": "source_drift_cleanup",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-server\\tests\\source_drift_cleanup.rs",
+      "exeMatches": [
+        "source_drift_cleanup-82bb5b65c60a24aa.exe",
+        "source_drift_cleanup-a4a6b6d06c4ea9c0.exe"
+      ],
+      "newExeMatches": [
+        "source_drift_cleanup-82bb5b65c60a24aa.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-server",
+      "target": "source_drift_trino_it",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-server\\tests\\source_drift_trino_it.rs",
+      "exeMatches": [
+        "source_drift_trino_it-22547d42f529c24f.exe",
+        "source_drift_trino_it-6ddf3058f4aed468.exe",
+        "source_drift_trino_it-c2522963459d2dc7.exe"
+      ],
+      "newExeMatches": [
+        "source_drift_trino_it-22547d42f529c24f.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-server",
+      "target": "trino_http_it",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-server\\tests\\trino_http_it.rs",
+      "exeMatches": [
+        "trino_http_it-21125039194dcec9.exe",
+        "trino_http_it-35b1154f7c417fb0.exe",
+        "trino_http_it-5773450c40368fab.exe",
+        "trino_http_it-ac72284bf9abb422.exe",
+        "trino_http_it-af9ee47575e1208f.exe",
+        "trino_http_it-bb7cf3ba42ed87f9.exe"
+      ],
+      "newExeMatches": [
+        "trino_http_it-21125039194dcec9.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-api",
+      "target": "ontoforge_api",
+      "kind": [
+        "lib"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-api\\src\\lib.rs",
+      "exeMatches": [
+        "ontoforge_api-584ba7ff09b8805d.exe",
+        "ontoforge_api-5bd312abf42d84ed.exe",
+        "ontoforge_api-723bc2b7db95bf79.exe",
+        "ontoforge_api-799f226bde9ae212.exe",
+        "ontoforge_api-7a8a7fa1ac8992f4.exe",
+        "ontoforge_api-95de6bf7ffe339f1.exe",
+        "ontoforge_api-a0bd107731c7de9f.exe",
+        "ontoforge_api-b4f4cfd7b67fbc06.exe",
+        "ontoforge_api-ca82d6ffa7ad4cfd.exe",
+        "ontoforge_api-db9f5d248bc2d87f.exe",
+        "ontoforge_api-e9bb38576d7af4dd.exe",
+        "ontoforge_api-ebffdb4df38a9976.exe",
+        "ontoforge_api-eef4cc70489d95b7.exe"
+      ],
+      "newExeMatches": [
+        null
+      ]
+    },
+    {
+      "package": "ontoforge-api",
+      "target": "openapi_snapshot",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-api\\tests\\openapi_snapshot.rs",
+      "exeMatches": [
+        "openapi_snapshot-44cae5aca78eea5d.exe",
+        "openapi_snapshot-53a8464c497da10b.exe",
+        "openapi_snapshot-d044e86108f70015.exe",
+        "openapi_snapshot-f16afc725dc497ad.exe"
+      ],
+      "newExeMatches": [
+        null
+      ]
+    },
+    {
+      "package": "ontoforge-client",
+      "target": "ontoforge_client",
+      "kind": [
+        "lib"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-client\\src\\lib.rs",
+      "exeMatches": [
+        "ontoforge_client-0fd35e947d65b038.exe",
+        "ontoforge_client-258cea1d907478c8.exe",
+        "ontoforge_client-25c75734d4eb8c19.exe",
+        "ontoforge_client-2ac2640dad35e209.exe",
+        "ontoforge_client-4522c9f62782f166.exe",
+        "ontoforge_client-4654164c46248c3c.exe",
+        "ontoforge_client-4bf353eaf1ce4b95.exe",
+        "ontoforge_client-61fc8c63e88c7b45.exe",
+        "ontoforge_client-643ec1e9ae4c6f73.exe",
+        "ontoforge_client-97b5a413216a8aee.exe",
+        "ontoforge_client-b2460b44e53ef380.exe",
+        "ontoforge_client-b4ee841998216f8f.exe",
+        "ontoforge_client-d0fcb09ed84703e9.exe",
+        "ontoforge_client-ddb2c5c001e29c02.exe",
+        "ontoforge_client-dfceee7aa2b03c60.exe"
+      ],
+      "newExeMatches": [
+        "ontoforge_client-4522c9f62782f166.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-client",
+      "target": "contract",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-client\\tests\\contract.rs",
+      "exeMatches": [
+        "contract-0742d24973ea0861.exe",
+        "contract-2cffeed866b86153.exe",
+        "contract-3f08fe8a4cc6ec76.exe",
+        "contract-c64ca9177a3c3aa8.exe"
+      ],
+      "newExeMatches": [
+        "contract-0742d24973ea0861.exe"
+      ]
+    },
+    {
+      "package": "ontoforge-client",
+      "target": "error_diagnostics",
+      "kind": [
+        "test"
+      ],
+      "source": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-client\\tests\\error_diagnostics.rs",
+      "exeMatches": [
+        "error_diagnostics-1654d9e086c03aae.exe",
+        "error_diagnostics-e5f994f13e831e1c.exe"
+      ],
+      "newExeMatches": [
+        "error_diagnostics-1654d9e086c03aae.exe"
+      ]
+    }
+  ],
+  "processesRemaining": [],
+  "cutoffTarget": "Not captured: timeout wrapper logged crate-level Compiling lines only, no active rustc command lines were saved at cutoff. Last log line is not proof of the interrupted target.",
+  "repeatsProvenFromPartialSnapshots": [
+    {
+      "observations": [
+        {
+          "round": 1,
+          "mtime": "2026-11-04T13:34:46.3311452+08:00"
+        },
+        {
+          "round": 2,
+          "mtime": "2026-11-04T13:45:38.2600156+08:00"
+        }
+      ],
+      "distinctMtimes": 2,
+      "name": "health_trino_it-683f97da716f09e7.exe"
+    }
+  ],
+  "targetNameCollisions": [
+    {
+      "name": "ontoforge",
+      "targets": [
+        {
+          "package": "ontoforge",
+          "kind": [
+            "lib"
+          ]
+        },
+        {
+          "package": "ontoforge",
+          "kind": [
+            "bin"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "security",
+      "targets": [
+        {
+          "package": "ontoforge-action",
+          "kind": [
+            "test"
+          ]
+        },
+        {
+          "package": "ontoforge-query",
+          "kind": [
+            "test"
+          ]
+        }
+      ]
+    }
+  ],
+  "matchingCaveat": "Every target name has an exe prefix match, but shared names/lib+bin collisions and absent fingerprints prevent proving all 141 targets built successfully. Latest-8 historical snapshots prove listed repeats only; the total rebuild count is unknown.",
+  "additionalRepeatObservedDuringRound": {
+    "name": "http_action_safety-3f6f296af9c10bfd.exe",
+    "round1Mtime": "2026-11-04T13:34:55.6271668+08:00",
+    "source": "Read-only tool observation at 2026-11-04T05:48:26.7757770Z, before later files displaced it from the round3 latest-8 snapshot",
+    "round3Mtime": "2026-11-04T13:47:59.4690744+08:00"
+  }
+}

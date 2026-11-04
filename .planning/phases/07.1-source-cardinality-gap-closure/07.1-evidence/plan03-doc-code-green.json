@@ -1,0 +1,10 @@
+{
+  "command": "cargo test -p ontoforge-engine --test doc_type_table --locked doc_diagnostic_codes_exist -- --exact --nocapture",
+  "exitCode": 0,
+  "started": "2026-11-04T06:27:52.3413635Z",
+  "finished": "2026-11-04T06:27:56.8819812Z",
+  "head": "6be5c0861c8e80c9f1ba11311fb29ddce3e50aa6",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "cargoBuildJobs": 2,
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07.1-source-cardinality-gap-closure\\07.1-evidence\\plan03-doc-code-green.log"
+}
