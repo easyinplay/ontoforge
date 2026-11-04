@@ -505,6 +505,11 @@ class NightlyContract(unittest.TestCase):
                 self.assertNotEqual(result.returncode, 0)
                 self.assertEqual(json.loads(Path(self.env["TEST_DB"]).read_text())["resources"], {})
 
+    def test_one_empty_nonignored_target_cannot_be_hidden_by_another(self):
+        self.nightly_fixture("partial-zero")
+        result = self.run_cli("nightly", "--trino", "483")
+        self.assertNotEqual(result.returncode, 0, "one zero-test target must not pass via aggregate counts")
+
     def test_manual_failure_never_enables_report_job(self):
         workflow = (ROOT / ".github/workflows/nightly.yml").read_text()
         report = workflow.split("  report-failure:", 1)[1]
@@ -768,7 +773,15 @@ def fake_cargo(args):
         print("test result: FAILED. 0 passed; 1 failed; 0 ignored;")
         return 42
     passed = 1 if exact else (0 if mode == "zero-execution" else 2)
-    print(f"test result: ok. {passed} passed; 0 failed; 0 ignored;")
+    if "outbox" in args and "entrypoints" in args:
+        if mode == "partial-zero":
+            print("test result: ok. 0 passed; 0 failed; 0 ignored;\ntest result: ok. 2 passed; 0 failed; 0 ignored;")
+        else:
+            print("test result: ok. 1 passed; 0 failed; 0 ignored;\ntest result: ok. 1 passed; 0 failed; 0 ignored;")
+    else:
+        if mode == "partial-zero" and "outbox" in args:
+            passed = 0
+        print(f"test result: ok. {passed} passed; 0 failed; 0 ignored;")
     return 0
 
 
