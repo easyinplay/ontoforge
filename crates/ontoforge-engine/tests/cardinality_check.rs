@@ -6,7 +6,8 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use camino::Utf8Path;
 use ontoforge_engine::bind_check::BindingKey;
 use ontoforge_engine::cardinality_check::{
-    CardinalityFinding, CardinalityTarget, cardinality_targets, check_cardinality,
+    CardinalityFinding, CardinalityTarget, cardinality_query, cardinality_targets,
+    check_cardinality,
 };
 use ontoforge_engine::printer::ast::{Expr, OrderItem, Select, SelectItem};
 use ontoforge_engine::printer::print_select;
@@ -483,5 +484,102 @@ async fn incomplete_or_malformed_results_are_not_clean() {
             .await
             .expect_err("invalid aggregate row");
         assert!(matches!(error, EngineError::Protocol(_)), "{error}");
+    }
+}
+
+struct IndexedSqlite(sqlx::SqlitePool);
+
+impl Engine for IndexedSqlite {
+    fn dialect(&self) -> Dialect {
+        Dialect::Sqlite
+    }
+    async fn execute(
+        &self,
+        sql: &PrintedSql,
+        _ctx: &QueryContext,
+    ) -> Result<QueryOutput, EngineError> {
+        let rows: Vec<(String, i64)> = sqlx::query_as(sqlx::AssertSqlSafe(sql.as_str().to_owned()))
+            .fetch_all(&self.0)
+            .await
+            .map_err(|error| EngineError::Protocol(error.to_string()))?;
+        Ok(QueryOutput {
+            columns: Vec::new(),
+            rows: rows
+                .into_iter()
+                .map(|(fk, count)| vec![Value::String(fk), Value::Long(count)])
+                .collect(),
+            truncated: false,
+        })
+    }
+    async fn describe_tables(
+        &self,
+        _tables: &[TableRef],
+        _ctx: &QueryContext,
+    ) -> Result<BTreeMap<TableRef, Vec<PhysicalColumn>>, EngineError> {
+        Ok(BTreeMap::new())
+    }
+    async fn status(&self) -> EngineStatus {
+        EngineStatus::Available
+    }
+}
+
+#[tokio::test]
+async fn count_alias_cannot_change_indexed_fk_sample_order() {
+    let (_dir, _fixture, base_target) = fixture("record_id,aircraft_id\nM1,A1\n").await;
+    let expected: Vec<_> = ('A'..='T')
+        .map(|letter| (string(&letter.to_string()), 2))
+        .collect();
+    for foreign_key in ["n", "N"] {
+        for primary_key in ["id", "fk"] {
+            let pool = sqlx::sqlite::SqlitePoolOptions::new()
+                .max_connections(1)
+                .connect("sqlite::memory:")
+                .await
+                .expect("SQLite pool");
+            sqlx::query("ATTACH DATABASE ':memory:' AS demo__aviation")
+                .execute(&pool)
+                .await
+                .expect("database");
+            sqlx::query(sqlx::AssertSqlSafe(format!("CREATE TABLE demo__aviation.records (\"{primary_key}\" TEXT, \"{foreign_key}\" TEXT)"))).execute(&pool).await.expect("table");
+            for letter in 'A'..='Y' {
+                for suffix in ['a', 'b'] {
+                    sqlx::query("INSERT INTO demo__aviation.records VALUES (?, ?)")
+                        .bind(format!("{letter}{suffix}"))
+                        .bind(letter.to_string())
+                        .execute(&pool)
+                        .await
+                        .expect("row");
+                }
+            }
+            let engine = IndexedSqlite(pool);
+            let target = CardinalityTarget {
+                primary_key: primary_key.to_owned(),
+                foreign_key: foreign_key.to_owned(),
+                ..base_target.clone()
+            };
+            let before = check_cardinality(&engine, &target, &ctx())
+                .await
+                .expect("scan without index");
+            assert_eq!(before.samples, expected);
+            assert!(before.more);
+            sqlx::query(sqlx::AssertSqlSafe(format!(
+                "CREATE INDEX demo__aviation.n_desc ON records (\"{foreign_key}\" DESC)"
+            )))
+            .execute(&engine.0)
+            .await
+            .expect("descending index");
+            let after = check_cardinality(&engine, &target, &ctx())
+                .await
+                .expect("indexed scanner");
+            assert!(after.more);
+            assert_eq!(
+                after.samples, expected,
+                "FK {foreign_key}, PK {primary_key}: index must not change A..T samples"
+            );
+            for dialect in [Dialect::Sqlite, Dialect::Trino] {
+                let query = cardinality_query(&target, dialect).expect("typed query");
+                assert!(query.as_str().contains("\"fk\" ASC NULLS LAST"), "{query}");
+            }
+        }
     }
 }

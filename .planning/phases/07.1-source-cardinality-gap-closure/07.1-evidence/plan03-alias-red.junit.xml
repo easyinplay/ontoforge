@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="nextest-run" tests="1" skipped="0" failures="1" errors="0" uuid="9aeaca9e-4c50-4496-bfe3-b55c59711c33" timestamp="2026-11-04T12:22:19.987+08:00" time="0.026">
+    <testsuite name="ontoforge-engine::cardinality_check" tests="1" skipped="0" errors="0" failures="1">
+        <testcase name="count_alias_cannot_change_indexed_fk_sample_order" classname="ontoforge-engine::cardinality_check" timestamp="2026-11-04T12:22:19.988+08:00" time="0.025">
+            <failure message="thread &apos;count_alias_cannot_change_indexed_fk_sample_order&apos; (10656) panicked at crates\ontoforge-engine\tests\cardinality_check.rs:575:13" type="test failure with exit code 101">thread &apos;count_alias_cannot_change_indexed_fk_sample_order&apos; (10656) panicked at crates\ontoforge-engine\tests\cardinality_check.rs:575:13:
+assertion `left == right` failed: FK n, PK id: index must not change A..T samples
+  left: [(String(&quot;Y&quot;), 2), (String(&quot;X&quot;), 2), (String(&quot;W&quot;), 2), (String(&quot;V&quot;), 2), (String(&quot;U&quot;), 2), (String(&quot;T&quot;), 2), (String(&quot;S&quot;), 2), (String(&quot;R&quot;), 2), (String(&quot;Q&quot;), 2), (String(&quot;P&quot;), 2), (String(&quot;O&quot;), 2), (String(&quot;N&quot;), 2), (String(&quot;M&quot;), 2), (String(&quot;L&quot;), 2), (String(&quot;K&quot;), 2), (String(&quot;J&quot;), 2), (String(&quot;I&quot;), 2), (String(&quot;H&quot;), 2), (String(&quot;G&quot;), 2), (String(&quot;F&quot;), 2)]
+ right: [(String(&quot;A&quot;), 2), (String(&quot;B&quot;), 2), (String(&quot;C&quot;), 2), (String(&quot;D&quot;), 2), (String(&quot;E&quot;), 2), (String(&quot;F&quot;), 2), (String(&quot;G&quot;), 2), (String(&quot;H&quot;), 2), (String(&quot;I&quot;), 2), (String(&quot;J&quot;), 2), (String(&quot;K&quot;), 2), (String(&quot;L&quot;), 2), (String(&quot;M&quot;), 2), (String(&quot;N&quot;), 2), (String(&quot;O&quot;), 2), (String(&quot;P&quot;), 2), (String(&quot;Q&quot;), 2), (String(&quot;R&quot;), 2), (String(&quot;S&quot;), 2), (String(&quot;T&quot;), 2)]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace</failure>
+            <system-out>
+running 1 test
+test count_alias_cannot_change_indexed_fk_sample_order ... FAILED
+
+failures:
+
+failures:
+    count_alias_cannot_change_indexed_fk_sample_order
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 10 filtered out; finished in 0.02s
+
+</system-out>
+            <system-err>
+thread &apos;count_alias_cannot_change_indexed_fk_sample_order&apos; (10656) panicked at crates\ontoforge-engine\tests\cardinality_check.rs:575:13:
+assertion `left == right` failed: FK n, PK id: index must not change A..T samples
+  left: [(String(&quot;Y&quot;), 2), (String(&quot;X&quot;), 2), (String(&quot;W&quot;), 2), (String(&quot;V&quot;), 2), (String(&quot;U&quot;), 2), (String(&quot;T&quot;), 2), (String(&quot;S&quot;), 2), (String(&quot;R&quot;), 2), (String(&quot;Q&quot;), 2), (String(&quot;P&quot;), 2), (String(&quot;O&quot;), 2), (String(&quot;N&quot;), 2), (String(&quot;M&quot;), 2), (String(&quot;L&quot;), 2), (String(&quot;K&quot;), 2), (String(&quot;J&quot;), 2), (String(&quot;I&quot;), 2), (String(&quot;H&quot;), 2), (String(&quot;G&quot;), 2), (String(&quot;F&quot;), 2)]
+ right: [(String(&quot;A&quot;), 2), (String(&quot;B&quot;), 2), (String(&quot;C&quot;), 2), (String(&quot;D&quot;), 2), (String(&quot;E&quot;), 2), (String(&quot;F&quot;), 2), (String(&quot;G&quot;), 2), (String(&quot;H&quot;), 2), (String(&quot;I&quot;), 2), (String(&quot;J&quot;), 2), (String(&quot;K&quot;), 2), (String(&quot;L&quot;), 2), (String(&quot;M&quot;), 2), (String(&quot;N&quot;), 2), (String(&quot;O&quot;), 2), (String(&quot;P&quot;), 2), (String(&quot;Q&quot;), 2), (String(&quot;R&quot;), 2), (String(&quot;S&quot;), 2), (String(&quot;T&quot;), 2)]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+</system-err>
+        </testcase>
+    </testsuite>
+</testsuites>

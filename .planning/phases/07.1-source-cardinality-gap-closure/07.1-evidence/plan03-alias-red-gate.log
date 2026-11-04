@@ -1,0 +1,31 @@
+{
+  "passed": true,
+  "block": false,
+  "verdict": "RED_EVIDENCE_OK",
+  "reason": "target_test_failed",
+  "evidence": {
+    "command": "cargo-nextest nextest run --config-file .planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/nextest.toml --profile gsd -p ontoforge-engine --test cardinality_check --locked -E test(=count_alias_cannot_change_indexed_fk_sample_order)",
+    "exit_code": 100,
+    "target_test": "count_alias_cannot_change_indexed_fk_sample_order",
+    "tests": 1,
+    "pass": 0,
+    "fail": 1,
+    "failing_tests": [
+      "ontoforge-engine::cardinality_check#count_alias_cannot_change_indexed_fk_sample_order"
+    ],
+    "matched_test": "ontoforge-engine::cardinality_check#count_alias_cannot_change_indexed_fk_sample_order",
+    "format": "junit",
+    "report_errors": []
+  },
+  "record": {
+    "command": "cargo-nextest nextest run --config-file .planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/nextest.toml --profile gsd -p ontoforge-engine --test cardinality_check --locked -E test(=count_alias_cannot_change_indexed_fk_sample_order)",
+    "exit_code": 100,
+    "failing_test": "ontoforge-engine::cardinality_check#count_alias_cannot_change_indexed_fk_sample_order",
+    "target_test": "count_alias_cannot_change_indexed_fk_sample_order",
+    "expected": "A through T samples with more=true under descending FK index",
+    "actual": "Y through F samples because ORDER BY n resolves to count alias",
+    "verdict": "RED_EVIDENCE_OK",
+    "reason": "target_test_failed"
+  },
+  "message": "RED evidence verified: target test \"count_alias_cannot_change_indexed_fk_sample_order\" failed as expected (exit 100). GREEN authorized."
+}
