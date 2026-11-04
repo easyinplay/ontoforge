@@ -24,3 +24,12 @@
 ## 下一步
 
 主会话接力独立checker，再按用户授权推进分支及串行TDD。VALIDATION保持draft/nyquist_compliant=false/wave_0_complete=false，因为本phase尚无执行证据。未执行Cargo/Trino，未改生产/ROOT状态，未commit；不存在本phase GREEN证据。
+
+## 独立checker修订 R1
+
+2026-11-04：依据 `07.1-PLAN-CHECK.md` 的FD-01至FD-11，只给11条原缺失命令增加各自紧邻的具体fails_when。A合同、3个plan/7个task、文件ownership、deadline、命令和依赖均未变化。
+
+- `node C:/Users/easyi/.codex/gsd-core/bin/gsd-tools.cjs check verify-failure-directions 07.1 --raw`：实际解析JSON，status=ok，18/18命令status=ok、severity=none，counts.blocker=0、warning=0、total=18，readError=null。
+- `node C:/Users/easyi/.codex/gsd-core/bin/gsd-tools.cjs check verify-command-paths 07.1 --raw`：实际解析JSON，status=not_applicable，18条命令severity=none，counts.blocker=0、warning=0、total=18，readError=null。该probe不识别这些Cargo命令的路径形式，不能把not_applicable解释为已构建/运行通过。
+- 两个进程exit0仅表示probe执行成功；上述结论均来自JSON字段。当前分支 `gsd/phase-07.1-source-cardinality-gap-closure`，HEAD `a6efc11`。本轮未运行Cargo、未修改ROOT/生产、未commit；交同一独立checker复签。
+- 首次rg对Windows路径直接使用通配符返回os error 123；已改为目录参数配合 `-g '*-PLAN.md'`，无内容修改。
