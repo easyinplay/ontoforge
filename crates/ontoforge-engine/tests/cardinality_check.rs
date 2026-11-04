@@ -243,3 +243,53 @@ async fn repeated_check_is_read_only() {
         "the fixture is the only file; no edit store was created"
     );
 }
+
+#[tokio::test]
+async fn mapped_to_binding_is_the_only_source() {
+    let csv = "record_id,aircraft_id\nM1,A1\nM2,A1\n";
+    let production_binding = BINDING.replace("table: records", "table: production_records");
+    let out = load_from_memory(&[
+        ("ontology.yaml", "apiName: demo\ndefaultProfile: dev\n"),
+        ("objects.yaml", OBJECTS),
+        ("bindings/dev/record.yaml", BINDING),
+        (FIXTURE, csv),
+        ("bindings/prod/record.yaml", &production_binding),
+        (
+            "bindings/prod/fixtures/records.csv",
+            "record_id,aircraft_id\nP1,P\n",
+        ),
+    ]);
+    assert!(out.diagnostics.is_empty(), "{:?}", out.diagnostics);
+    let ontology = out.ontology.expect("ontology");
+    let dev = ProfileName::try_from("dev".to_owned()).expect("profile");
+    let prod = ProfileName::try_from("prod".to_owned()).expect("profile");
+    let object = ObjectTypeName::try_from("MaintenanceRecord".to_owned()).expect("name");
+    let key = BindingKey {
+        profile: dev.clone(),
+        target: BindingTarget::ObjectType(object.clone()),
+    };
+    let targets = cardinality_targets(&ontology, &dev, std::slice::from_ref(&key));
+    assert_eq!(targets.len(), 1);
+    assert_eq!(targets[0].foreign_key, "aircraft_id");
+    assert_eq!(targets[0].primary_key, "record_id");
+    assert_eq!(targets[0].table.table, "records");
+    assert!(
+        cardinality_targets(&ontology, &prod, &[key]).is_empty(),
+        "usable keys are profile-specific"
+    );
+    let production_targets = cardinality_targets(
+        &ontology,
+        &prod,
+        &[BindingKey {
+            profile: prod.clone(),
+            target: BindingTarget::ObjectType(object),
+        }],
+    );
+    assert_eq!(production_targets[0].table.table, "production_records");
+    let (_dir, engine, _) = fixture(csv).await;
+    let result = check_cardinality(&engine, &targets[0], &ctx())
+        .await
+        .expect("only dev table exists");
+    assert_eq!(result.samples, vec![(string("A1"), 2)]);
+    assert_eq!(engine.scans.load(Ordering::SeqCst), 1);
+}

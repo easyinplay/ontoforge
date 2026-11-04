@@ -1,0 +1,10 @@
+{
+  "command": "cargo test -p ontoforge-engine --test cardinality_check mapped_to_binding_is_the_only_source --locked -- --exact --nocapture",
+  "exitCode": 0,
+  "started": "2026-11-04T03:51:58.7167095Z",
+  "finished": "2026-11-04T03:52:04.8414386Z",
+  "head": "4714e3dc212b28fdd0421852b809c5bca15f95c2",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "cargoBuildJobs": 2,
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07.1-source-cardinality-gap-closure\\07.1-evidence\\plan02-scope-engine.log"
+}

@@ -1,0 +1,14 @@
+   Compiling ontoforge v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.05s
+     Running tests\cli_check_cardinality.rs (target\debug\deps\cli_check_cardinality-0bbc80c32741858e.exe)
+
+running 6 tests
+test cardinality_tracer_reports_conflict ... ok
+test repeated_check_is_read_only ... ok
+test cardinality_flag_contract ... ok
+test no_flag_means_no_cardinality_scan ... ok
+test non_candidates_are_not_scanned ... ok
+test warning_output_and_exit_codes ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+
