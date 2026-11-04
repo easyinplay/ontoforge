@@ -29,7 +29,7 @@
 
 ## Constraints
 
-- PR7/8保持Draft OPEN，不合并、创建Release、发布npm或自动归档。
+- 用户2026-11-04已授权已验收PR合并main；本次按MERGE-READINESS.md整体集成Phase03–07，不创建Release、发布npm或自动归档。
 - 不改旧报告指纹来冒充重新验证，不将unknown/未运行改列manual-only取得绿色。
 - 自动推进依据用户授权：Claude Code AGREE/同向REFINE无需再问，实质分歧才请用户裁决。
 - Warp/ralph-loop未提供；使用明确验收闭环但不声称调用它们。

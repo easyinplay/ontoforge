@@ -43,7 +43,7 @@ Progress: 88/91计划已实施（新增3份为草稿）；5/8阶段canonical pas
 
 ## Pending Todos / Blockers
 
-- INT-01/TLS-GUARD已关闭，f885最终CI四job、三平台包与Phase7复验通过。PR #7/#8保持Draft，不合并/发布。
+- INT-01/TLS-GUARD已关闭，f885最终CI四job、三平台包与Phase7复验通过。用户已授权已验收PR合并main，详milestones/v1.0-audit/MERGE-READINESS.md；不发布Release/npm。
 - STORE-05待Phase7.1补齐；用户已选A（数据库聚合、有界warning、总deadline），详`phases/07.1-source-cardinality-gap-closure/07.1-INDEPENDENT-OPINION.md`。
 - ENGINE-05：local Iceberg483/484通过；ADR0017 MinIO精确fixture差异未正式闭环，详Phase02复验。
 - Phase1–7历史fingerprint已重核：01 human_needed、02 gaps_found、03–07 passed；78/79 SUMMARY声明齐备不等同功能通过。
