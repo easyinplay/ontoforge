@@ -5,3 +5,4 @@
 - 当前nightly使用local warehouse且report-failure会发issue；必须保证手动验收不发送外部消息。
 - 核心runner的生命周期/环境guard/cleanup必须TDD；纯Dockerfile配置和文档不适合逐行测试，以真实构建运行及配置检查验证，记录此TDD跳过范围。
 - `.codegraph/`不存在，使用rg及直接文件读取。
+- 首次执行预条件失败：WSL的docker是Desktop占位提示且cargo不存在。此前真实服务脚本通过Git Bash/Windows Cargo运行；现ci/query-services.sh有cygpath和MSYS_NO_PATHCONV模式，ci/test_tls_deps.py有显式Git Bash选择。不得以启用WSL integration为由重启用户Docker daemon。

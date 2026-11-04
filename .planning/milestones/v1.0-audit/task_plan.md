@@ -26,7 +26,7 @@
 
 ## Next Step
 
-Phase03–07已通过PR8合并main ef0ab9c；Phase07.1已通过独立验收、远端CI并由PR9合入main aac4fd8。随后推进已有MINIO-FEASIBILITY固定源码方案的精确合同补证；历史judgment保持原边界，Cargo已释放。
+Phase07.2 MinIO合同补证执行中；唯一当前计划与owner见 ../../phases/07.2-minio-contract-gap-closure/task_plan.md。Phase03–07/07.1合并证据归MERGE-RESULT，历史judgment保持原边界。
 
 ## Constraints
 
