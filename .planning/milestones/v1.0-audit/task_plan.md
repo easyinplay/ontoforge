@@ -26,7 +26,7 @@
 
 ## Next Step
 
-Phase07.2已通过独立验收，当前进入PR #11合并收尾，详 ../../phases/07.2-minio-contract-gap-closure/task_plan.md。之后对账milestone审计剩余项，保留Phase01/02历史judgment，不自动归档或发布。
+Phase07.2已通过独立验收并由PR #11合入main，详 ../../phases/07.2-minio-contract-gap-closure/07.2-MERGE-RESULT.md。下一步对账milestone审计剩余项，保留Phase01/02历史judgment，不自动归档或发布。
 
 ## Constraints
 

@@ -5,15 +5,15 @@ current_phase: "07.2"
 current_phase_name: MinIO Contract Gap Closure
 current_plan: 2
 status: completed
-stopped_at: Phase07.2验收通过，PR11待合并
-last_updated: "2026-11-04T13:29:36.422Z"
-state_head: 4df0a693a327d1b7e82f9650d108467d8c0848be
+stopped_at: Phase07.2已合并main；下一步milestone审计对账
+last_updated: "2026-11-04T13:31:34.843Z"
+state_head: 73bbec20deb7ec182fd46a2ce14d011eb509bdce
 progress:
   total_phases: 9
   completed_phases: 7
   total_plans: 93
   completed_plans: 93
-last_activity: 2026-11-04 -- Phase07.2独立验收9/9，进入PR11合并
+last_activity: 2026-11-04 -- Phase07.2通过独立验收并由PR11合入main
 verified_source_commit: 34312dc2173884abe5f3042e3226b1c3c98ee95d
 verified_scope: phase_07.2
 last_gate_trip: null
@@ -26,13 +26,13 @@ last_gate_trip: null
 Phase: 07.2 (MinIO Contract Gap Closure)
 Current Plan: 2
 Total Plans in Phase: 2
-Status: Completed; PR #11 merge pending
+Status: Completed and merged through PR #11
 Progress: 93/93 plans summarized; 7/9 phases passed, historical Phase01/02 judgments retained.
 
 ## Evidence Pointers
 
 - 当前验收：phases/07.2-minio-contract-gap-closure/07.2-VERIFICATION.md；9/9，UAT10/10，SECURED11/11，CI全绿。
-- 合并收尾：phases/07.2-minio-contract-gap-closure/task_plan.md。
+- 合并收尾：phases/07.2-minio-contract-gap-closure/07.2-MERGE-RESULT.md。
 - 前次合并：Phase03–07/07.1已在main，见milestones/v1.0-audit/MERGE-RESULT.md。
 - milestone审计：milestones/v1.0-audit/task_plan.md；旧v1.0-MILESTONE-AUDIT.md为历史快照。
 
@@ -45,6 +45,6 @@ Progress: 93/93 plans summarized; 7/9 phases passed, historical Phase01/02 judgm
 
 ## Session Continuity
 
-Last session: 2026-11-04T13:29:28.795Z
-Stopped at: Phase07.2验收通过，PR11待合并
+Last session: 2026-11-04T13:31:32.642Z
+Stopped at: Phase07.2已合并main；下一步milestone审计对账
 Resume file: None
