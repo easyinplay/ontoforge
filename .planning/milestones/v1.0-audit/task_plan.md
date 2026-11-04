@@ -32,7 +32,7 @@ Phase03–07已通过PR8合并main ef0ab9c；Phase07.1本地独立验收完成�
 
 - 用户2026-11-04已授权完成的开发任务合并main，覆盖旧PR7/8不合并限制。合并前核对scope、验收、CI与依赖顺序；不创建Release、不发布npm或自动归档。
 - 不改旧报告指纹来冒充重新验证，不将unknown/未运行改列manual-only取得绿色。
-- 自动推进依据用户授权：Claude Code AGREE/同向REFINE无需再问，实质分歧才请用户裁决。
+- 自动推进依据用户授权：向Claude Code只给事实、需求和代码，取得其独立方案再比较；同向或方向一致的组合自动推进，实质分歧才请用户裁决。
 - Warp/ralph-loop未提供；使用明确验收闭环但不声称调用它们。
 
 ## Decisions
