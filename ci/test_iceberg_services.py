@@ -34,6 +34,29 @@ class RunnerContract(unittest.TestCase):
         self.env.update(ONTOFORGE_TRINO_ICEBERG="1", ONTOFORGE_TRINO_URL="")
         self.assertNotEqual(self.run_cli("exact", self.directory).returncode, 0)
 
+    def test_private_acl_trusted_owner_and_child_are_accepted(self):
+        result = self.run_cli("permissions", self.directory)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        child = self.directory / "private.txt"
+        child.write_text("nonsecret test data")
+        result = self.run_cli("permissions", child)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_private_acl_rejects_untrusted_explicit_access(self):
+        if os.name != "nt":
+            self.directory.chmod(0o777)
+            self.assertEqual(self.run_cli("permissions", self.directory).returncode, 0)
+            self.assertEqual(self.directory.stat().st_mode & 0o077, 0)
+            return
+        for sid in ("S-1-1-0", "S-1-5-32-545", "S-1-5-21-111-222-333-444"):
+            with self.subTest(sid=sid):
+                directory = self.directory / sid
+                directory.mkdir()
+                grant = subprocess.run(["icacls", str(directory), "/grant", "*" + sid + ":(OI)(CI)R"],
+                                       capture_output=True, text=True)
+                self.assertEqual(grant.returncode, 0, grant.stderr)
+                self.assertNotEqual(self.run_cli("permissions", directory).returncode, 0)
+
     def test_exact_discovery_and_execution_are_both_required(self):
         fake = self.directory / "bin"
         fake.mkdir()
