@@ -1,0 +1,1083 @@
+{
+  "recordedUtc": "2026-11-04T10:04:38.3606891Z",
+  "pr": {
+    "baseRefName": "main",
+    "headRefOid": "f31788219a89eca1bdd9b65903ae2a4640321f48",
+    "mergeCommit": {
+      "oid": "aac4fd8f1be26ce0d9dc118939920cff9d4205b0"
+    },
+    "mergedAt": "2026-11-04T10:01:30Z",
+    "state": "MERGED"
+  },
+  "sourceProvenance": {
+    "testedSourceHead": "bce294f7b6d6a445d3e493fbf5bd0b0c8c4b36da",
+    "shipNoteHead": "f31788219a89eca1bdd9b65903ae2a4640321f48",
+    "changedFiles": [
+      ".planning/STATE.md"
+    ],
+    "reason": "GSD track_shipping documentation-only note; product and verifier inputs unchanged"
+  },
+  "ci": {
+    "conclusion": "success",
+    "databaseId": 41806624715,
+    "headSha": "bce294f7b6d6a445d3e493fbf5bd0b0c8c4b36da",
+    "jobs": [
+      {
+        "completedAt": "2026-11-04T09:33:19Z",
+        "conclusion": "success",
+        "databaseId": 126495138146,
+        "name": "phase7-real-services",
+        "startedAt": "2026-11-04T09:20:12Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-11-04T09:20:15Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-11-04T09:20:14Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:16Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "number": 2,
+            "startedAt": "2026-11-04T09:20:15Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:25Z",
+            "conclusion": "success",
+            "name": "Run dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f",
+            "number": 3,
+            "startedAt": "2026-11-04T09:20:16Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:26Z",
+            "conclusion": "success",
+            "name": "Run Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6",
+            "number": 4,
+            "startedAt": "2026-11-04T09:20:25Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:27Z",
+            "conclusion": "success",
+            "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+            "number": 5,
+            "startedAt": "2026-11-04T09:20:26Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:32:59Z",
+            "conclusion": "success",
+            "name": "Real PostgreSQL, Trino, Rust and TypeScript named suites",
+            "number": 6,
+            "startedAt": "2026-11-04T09:20:27Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:32:59Z",
+            "conclusion": "success",
+            "name": "Check server evidence for job credentials",
+            "number": 7,
+            "startedAt": "2026-11-04T09:32:59Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:33:00Z",
+            "conclusion": "success",
+            "name": "Upload server evidence",
+            "number": 8,
+            "startedAt": "2026-11-04T09:32:59Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:33:00Z",
+            "conclusion": "success",
+            "name": "Clean up Phase 7 services",
+            "number": 9,
+            "startedAt": "2026-11-04T09:33:00Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:33:00Z",
+            "conclusion": "success",
+            "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+            "number": 16,
+            "startedAt": "2026-11-04T09:33:00Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:33:17Z",
+            "conclusion": "success",
+            "name": "Post Run Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6",
+            "number": 17,
+            "startedAt": "2026-11-04T09:33:00Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:33:17Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "number": 18,
+            "startedAt": "2026-11-04T09:33:17Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:33:17Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 19,
+            "startedAt": "2026-11-04T09:33:17Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/easyinplay/ontoforge/actions/runs/41806624715/job/126495138146"
+      },
+      {
+        "completedAt": "2026-11-04T09:32:08Z",
+        "conclusion": "success",
+        "databaseId": 126495138415,
+        "name": "integration",
+        "startedAt": "2026-11-04T09:20:13Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-11-04T09:20:15Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-11-04T09:20:14Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:17Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "number": 2,
+            "startedAt": "2026-11-04T09:20:15Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:25Z",
+            "conclusion": "success",
+            "name": "Run dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f",
+            "number": 3,
+            "startedAt": "2026-11-04T09:20:17Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:27Z",
+            "conclusion": "success",
+            "name": "Run Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6",
+            "number": 4,
+            "startedAt": "2026-11-04T09:20:25Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:36Z",
+            "conclusion": "success",
+            "name": "Start PostgreSQL 17.11 with job-scoped credentials",
+            "number": 5,
+            "startedAt": "2026-11-04T09:20:27Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:36Z",
+            "conclusion": "success",
+            "name": "Seed PostgreSQL from the aviation fixtures",
+            "number": 6,
+            "startedAt": "2026-11-04T09:20:36Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:23:18Z",
+            "conclusion": "success",
+            "name": "Edit store conformance (PostgreSQL)",
+            "number": 7,
+            "startedAt": "2026-11-04T09:20:36Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:23:21Z",
+            "conclusion": "success",
+            "name": "Read audit conformance (PostgreSQL)",
+            "number": 8,
+            "startedAt": "2026-11-04T09:23:18Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:25:17Z",
+            "conclusion": "success",
+            "name": "Action atomicity, races, idempotency and webhook delivery (PostgreSQL)",
+            "number": 9,
+            "startedAt": "2026-11-04T09:23:21Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:25:29Z",
+            "conclusion": "success",
+            "name": "PostgreSQL absent-target source guard",
+            "number": 10,
+            "startedAt": "2026-11-04T09:25:17Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:25:43Z",
+            "conclusion": "success",
+            "name": "Start Trino 483",
+            "number": 11,
+            "startedAt": "2026-11-04T09:25:29Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:25:53Z",
+            "conclusion": "success",
+            "name": "Wait for Trino",
+            "number": 12,
+            "startedAt": "2026-11-04T09:25:43Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:26:28Z",
+            "conclusion": "success",
+            "name": "Start independent L2 ACL Trino 483 and loose control",
+            "number": 13,
+            "startedAt": "2026-11-04T09:25:53Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:27:33Z",
+            "conclusion": "success",
+            "name": "L2 ACL and corpus behavior (Trino 483)",
+            "number": 14,
+            "startedAt": "2026-11-04T09:26:28Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:27:39Z",
+            "conclusion": "success",
+            "name": "Engine integration tests",
+            "number": 15,
+            "startedAt": "2026-11-04T09:27:33Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:29:19Z",
+            "conclusion": "success",
+            "name": "CLI integration tests",
+            "number": 16,
+            "startedAt": "2026-11-04T09:27:39Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:30:28Z",
+            "conclusion": "success",
+            "name": "Row predicate corpus (Trino)",
+            "number": 17,
+            "startedAt": "2026-11-04T09:29:19Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:30:33Z",
+            "conclusion": "success",
+            "name": "Reload visibility probe (Trino + PostgreSQL)",
+            "number": 18,
+            "startedAt": "2026-11-04T09:30:28Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:30:36Z",
+            "conclusion": "success",
+            "name": "Query read storage integration (PostgreSQL)",
+            "number": 19,
+            "startedAt": "2026-11-04T09:30:33Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:31:19Z",
+            "conclusion": "success",
+            "name": "Query integration (Trino + PostgreSQL)",
+            "number": 20,
+            "startedAt": "2026-11-04T09:30:36Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:31:27Z",
+            "conclusion": "success",
+            "name": "Query benchmark smoke (Trino + PostgreSQL)",
+            "number": 21,
+            "startedAt": "2026-11-04T09:31:19Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:31:34Z",
+            "conclusion": "success",
+            "name": "Action source integration (Trino + PostgreSQL)",
+            "number": 22,
+            "startedAt": "2026-11-04T09:31:27Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:31:38Z",
+            "conclusion": "success",
+            "name": "Ignored tests are actually there",
+            "number": 23,
+            "startedAt": "2026-11-04T09:31:34Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:31:38Z",
+            "conclusion": "success",
+            "name": "Check query artifacts for job credentials",
+            "number": 24,
+            "startedAt": "2026-11-04T09:31:38Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:31:40Z",
+            "conclusion": "success",
+            "name": "Upload distributed query plans",
+            "number": 25,
+            "startedAt": "2026-11-04T09:31:38Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:31:42Z",
+            "conclusion": "success",
+            "name": "Upload query benchmark smoke evidence",
+            "number": 26,
+            "startedAt": "2026-11-04T09:31:40Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:31:42Z",
+            "conclusion": "skipped",
+            "name": "Trino logs",
+            "number": 27,
+            "startedAt": "2026-11-04T09:31:42Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:31:42Z",
+            "conclusion": "skipped",
+            "name": "L2 ACL Trino logs",
+            "number": 28,
+            "startedAt": "2026-11-04T09:31:42Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:31:42Z",
+            "conclusion": "skipped",
+            "name": "PostgreSQL logs",
+            "number": 29,
+            "startedAt": "2026-11-04T09:31:42Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:31:43Z",
+            "conclusion": "success",
+            "name": "Clean up query containers and catalog",
+            "number": 30,
+            "startedAt": "2026-11-04T09:31:42Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:32:06Z",
+            "conclusion": "success",
+            "name": "Post Run Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6",
+            "number": 59,
+            "startedAt": "2026-11-04T09:31:43Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:32:06Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "number": 60,
+            "startedAt": "2026-11-04T09:32:06Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:32:06Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 61,
+            "startedAt": "2026-11-04T09:32:06Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/easyinplay/ontoforge/actions/runs/41806624715/job/126495138415"
+      },
+      {
+        "completedAt": "2026-11-04T09:51:09Z",
+        "conclusion": "success",
+        "databaseId": 126495138731,
+        "name": "test (windows-latest)",
+        "startedAt": "2026-11-04T09:20:12Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-11-04T09:20:14Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-11-04T09:20:13Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:21Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "number": 2,
+            "startedAt": "2026-11-04T09:20:14Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:34Z",
+            "conclusion": "success",
+            "name": "Run dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f",
+            "number": 3,
+            "startedAt": "2026-11-04T09:20:21Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:39Z",
+            "conclusion": "success",
+            "name": "Run Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6",
+            "number": 4,
+            "startedAt": "2026-11-04T09:20:34Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:43Z",
+            "conclusion": "success",
+            "name": "Run cargo fmt --all --check",
+            "number": 5,
+            "startedAt": "2026-11-04T09:20:39Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:45Z",
+            "conclusion": "success",
+            "name": "TLS dependency guard regressions",
+            "number": 6,
+            "startedAt": "2026-11-04T09:20:43Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:21:11Z",
+            "conclusion": "success",
+            "name": "No OpenSSL or native-tls in the dependency graph",
+            "number": 7,
+            "startedAt": "2026-11-04T09:20:45Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:25:55Z",
+            "conclusion": "success",
+            "name": "Run cargo clippy --workspace --all-targets --locked -- -D warnings",
+            "number": 8,
+            "startedAt": "2026-11-04T09:21:11Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:27:12Z",
+            "conclusion": "success",
+            "name": "Run cargo check -p ontoforge-action --locked",
+            "number": 9,
+            "startedAt": "2026-11-04T09:25:55Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:27:47Z",
+            "conclusion": "success",
+            "name": "Clippy with the embedded-pg feature",
+            "number": 10,
+            "startedAt": "2026-11-04T09:27:12Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:46:02Z",
+            "conclusion": "success",
+            "name": "Run cargo test --workspace --locked -- --test-threads=1",
+            "number": 11,
+            "startedAt": "2026-11-04T09:27:47Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:46:17Z",
+            "conclusion": "success",
+            "name": "Windows private-console shutdown contracts",
+            "number": 12,
+            "startedAt": "2026-11-04T09:46:02Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:47:35Z",
+            "conclusion": "success",
+            "name": "L2 104-ID corpus and Display gate",
+            "number": 13,
+            "startedAt": "2026-11-04T09:46:17Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:49:29Z",
+            "conclusion": "success",
+            "name": "Action SQLite, outbox and write-entry corpus",
+            "number": 14,
+            "startedAt": "2026-11-04T09:47:35Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:50:34Z",
+            "conclusion": "success",
+            "name": "SQLite Action fault injection",
+            "number": 15,
+            "startedAt": "2026-11-04T09:49:29Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:51:05Z",
+            "conclusion": "success",
+            "name": "Post Run Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6",
+            "number": 29,
+            "startedAt": "2026-11-04T09:50:34Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:51:08Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "number": 30,
+            "startedAt": "2026-11-04T09:51:05Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:51:08Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 31,
+            "startedAt": "2026-11-04T09:51:08Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/easyinplay/ontoforge/actions/runs/41806624715/job/126495138731"
+      },
+      {
+        "completedAt": "2026-11-04T09:32:54Z",
+        "conclusion": "success",
+        "databaseId": 126495138842,
+        "name": "test (ubuntu-latest)",
+        "startedAt": "2026-11-04T09:20:15Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-11-04T09:20:17Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-11-04T09:20:16Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:19Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "number": 2,
+            "startedAt": "2026-11-04T09:20:17Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:26Z",
+            "conclusion": "success",
+            "name": "Run dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f",
+            "number": 3,
+            "startedAt": "2026-11-04T09:20:19Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:27Z",
+            "conclusion": "success",
+            "name": "Run Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6",
+            "number": 4,
+            "startedAt": "2026-11-04T09:20:26Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:28Z",
+            "conclusion": "success",
+            "name": "Run cargo fmt --all --check",
+            "number": 5,
+            "startedAt": "2026-11-04T09:20:27Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:28Z",
+            "conclusion": "success",
+            "name": "TLS dependency guard regressions",
+            "number": 6,
+            "startedAt": "2026-11-04T09:20:28Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:30Z",
+            "conclusion": "success",
+            "name": "No OpenSSL or native-tls in the dependency graph",
+            "number": 7,
+            "startedAt": "2026-11-04T09:20:28Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:22:19Z",
+            "conclusion": "success",
+            "name": "Run cargo clippy --workspace --all-targets --locked -- -D warnings",
+            "number": 8,
+            "startedAt": "2026-11-04T09:20:30Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:22:49Z",
+            "conclusion": "success",
+            "name": "Run cargo check -p ontoforge-action --locked",
+            "number": 9,
+            "startedAt": "2026-11-04T09:22:19Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:23:05Z",
+            "conclusion": "success",
+            "name": "Clippy with the embedded-pg feature",
+            "number": 10,
+            "startedAt": "2026-11-04T09:22:49Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:31:12Z",
+            "conclusion": "success",
+            "name": "Run cargo test --workspace --locked -- --test-threads=1",
+            "number": 11,
+            "startedAt": "2026-11-04T09:23:05Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:31:12Z",
+            "conclusion": "skipped",
+            "name": "Windows private-console shutdown contracts",
+            "number": 12,
+            "startedAt": "2026-11-04T09:31:12Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:31:44Z",
+            "conclusion": "success",
+            "name": "L2 104-ID corpus and Display gate",
+            "number": 13,
+            "startedAt": "2026-11-04T09:31:12Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:32:18Z",
+            "conclusion": "success",
+            "name": "Action SQLite, outbox and write-entry corpus",
+            "number": 14,
+            "startedAt": "2026-11-04T09:31:44Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:32:46Z",
+            "conclusion": "success",
+            "name": "SQLite Action fault injection",
+            "number": 15,
+            "startedAt": "2026-11-04T09:32:18Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:32:52Z",
+            "conclusion": "success",
+            "name": "Post Run Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6",
+            "number": 29,
+            "startedAt": "2026-11-04T09:32:46Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:32:53Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "number": 30,
+            "startedAt": "2026-11-04T09:32:52Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:32:53Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 31,
+            "startedAt": "2026-11-04T09:32:53Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/easyinplay/ontoforge/actions/runs/41806624715/job/126495138842"
+      },
+      {
+        "completedAt": "2026-11-04T09:20:10Z",
+        "conclusion": "skipped",
+        "databaseId": 126495141149,
+        "name": "isolated-query-bench",
+        "startedAt": "2026-11-04T09:20:11Z",
+        "status": "completed",
+        "steps": [],
+        "url": "https://github.com/easyinplay/ontoforge/actions/runs/41806624715/job/126495141149"
+      }
+    ],
+    "status": "completed"
+  },
+  "release": {
+    "conclusion": "success",
+    "databaseId": 41806624818,
+    "headSha": "bce294f7b6d6a445d3e493fbf5bd0b0c8c4b36da",
+    "jobs": [
+      {
+        "completedAt": "2026-11-04T09:27:26Z",
+        "conclusion": "success",
+        "databaseId": 126495139347,
+        "name": "native (x86_64-unknown-linux-gnu)",
+        "startedAt": "2026-11-04T09:20:13Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-11-04T09:20:15Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-11-04T09:20:13Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:16Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "number": 2,
+            "startedAt": "2026-11-04T09:20:15Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:24Z",
+            "conclusion": "success",
+            "name": "Run dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f",
+            "number": 3,
+            "startedAt": "2026-11-04T09:20:16Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:26Z",
+            "conclusion": "success",
+            "name": "Run Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6",
+            "number": 4,
+            "startedAt": "2026-11-04T09:20:24Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:27:13Z",
+            "conclusion": "success",
+            "name": "Build, package and reopen native archive",
+            "number": 5,
+            "startedAt": "2026-11-04T09:20:26Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:27:16Z",
+            "conclusion": "success",
+            "name": "Install actual archive and exercise dev lifecycle and stdio",
+            "number": 6,
+            "startedAt": "2026-11-04T09:27:13Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:27:18Z",
+            "conclusion": "success",
+            "name": "Upload verified native package",
+            "number": 7,
+            "startedAt": "2026-11-04T09:27:16Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:27:24Z",
+            "conclusion": "success",
+            "name": "Post Run Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6",
+            "number": 13,
+            "startedAt": "2026-11-04T09:27:18Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:27:24Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "number": 14,
+            "startedAt": "2026-11-04T09:27:24Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:27:24Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 15,
+            "startedAt": "2026-11-04T09:27:24Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/easyinplay/ontoforge/actions/runs/41806624818/job/126495139347"
+      },
+      {
+        "completedAt": "2026-11-04T09:37:10Z",
+        "conclusion": "success",
+        "databaseId": 126495139738,
+        "name": "native (x86_64-pc-windows-msvc)",
+        "startedAt": "2026-11-04T09:20:14Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-11-04T09:20:17Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-11-04T09:20:15Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:27Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "number": 2,
+            "startedAt": "2026-11-04T09:20:17Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:45Z",
+            "conclusion": "success",
+            "name": "Run dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f",
+            "number": 3,
+            "startedAt": "2026-11-04T09:20:27Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:53Z",
+            "conclusion": "success",
+            "name": "Run Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6",
+            "number": 4,
+            "startedAt": "2026-11-04T09:20:45Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:36:32Z",
+            "conclusion": "success",
+            "name": "Build, package and reopen native archive",
+            "number": 5,
+            "startedAt": "2026-11-04T09:20:53Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:36:43Z",
+            "conclusion": "success",
+            "name": "Install actual archive and exercise dev lifecycle and stdio",
+            "number": 6,
+            "startedAt": "2026-11-04T09:36:32Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:36:45Z",
+            "conclusion": "success",
+            "name": "Upload verified native package",
+            "number": 7,
+            "startedAt": "2026-11-04T09:36:43Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:37:06Z",
+            "conclusion": "success",
+            "name": "Post Run Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6",
+            "number": 13,
+            "startedAt": "2026-11-04T09:36:45Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:37:09Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "number": 14,
+            "startedAt": "2026-11-04T09:37:06Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:37:09Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 15,
+            "startedAt": "2026-11-04T09:37:09Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/easyinplay/ontoforge/actions/runs/41806624818/job/126495139738"
+      },
+      {
+        "completedAt": "2026-11-04T09:34:19Z",
+        "conclusion": "success",
+        "databaseId": 126495140319,
+        "name": "native (aarch64-apple-darwin)",
+        "startedAt": "2026-11-04T09:20:14Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-11-04T09:20:16Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-11-04T09:20:14Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:19Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "number": 2,
+            "startedAt": "2026-11-04T09:20:16Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:28Z",
+            "conclusion": "success",
+            "name": "Run dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f",
+            "number": 3,
+            "startedAt": "2026-11-04T09:20:19Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:20:30Z",
+            "conclusion": "success",
+            "name": "Run Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6",
+            "number": 4,
+            "startedAt": "2026-11-04T09:20:28Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:33:38Z",
+            "conclusion": "success",
+            "name": "Build, package and reopen native archive",
+            "number": 5,
+            "startedAt": "2026-11-04T09:20:30Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:33:42Z",
+            "conclusion": "success",
+            "name": "Install actual archive and exercise dev lifecycle and stdio",
+            "number": 6,
+            "startedAt": "2026-11-04T09:33:38Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:33:44Z",
+            "conclusion": "success",
+            "name": "Upload verified native package",
+            "number": 7,
+            "startedAt": "2026-11-04T09:33:42Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:34:10Z",
+            "conclusion": "success",
+            "name": "Post Run Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6",
+            "number": 13,
+            "startedAt": "2026-11-04T09:33:44Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:34:11Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "number": 14,
+            "startedAt": "2026-11-04T09:34:10Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:34:17Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 15,
+            "startedAt": "2026-11-04T09:34:11Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/easyinplay/ontoforge/actions/runs/41806624818/job/126495140319"
+      },
+      {
+        "completedAt": "2026-11-04T09:37:37Z",
+        "conclusion": "success",
+        "databaseId": 126502991888,
+        "name": "verify all release packages",
+        "startedAt": "2026-11-04T09:37:19Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-11-04T09:37:20Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-11-04T09:37:20Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:37:22Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "number": 2,
+            "startedAt": "2026-11-04T09:37:20Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:37:34Z",
+            "conclusion": "success",
+            "name": "Download this run's three exact artifacts and verify identities",
+            "number": 3,
+            "startedAt": "2026-11-04T09:37:22Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:37:35Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "number": 6,
+            "startedAt": "2026-11-04T09:37:34Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-04T09:37:35Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 7,
+            "startedAt": "2026-11-04T09:37:35Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/easyinplay/ontoforge/actions/runs/41806624818/job/126502991888"
+      },
+      {
+        "completedAt": "2026-11-04T09:37:37Z",
+        "conclusion": "skipped",
+        "databaseId": 126503102515,
+        "name": "upload assets to the published release",
+        "startedAt": "2026-11-04T09:37:37Z",
+        "status": "completed",
+        "steps": [],
+        "url": "https://github.com/easyinplay/ontoforge/actions/runs/41806624818/job/126503102515"
+      }
+    ],
+    "status": "completed"
+  },
+  "mergedTreeEqualsPrHead": true,
+  "nativeVerification": "passed",
+  "strongPushOrAdminBypass": false
+}
