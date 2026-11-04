@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-11-04T13:18:24.130372+00:00",
+  "archive": {
+    "path": "ci-evidence.tar.gz",
+    "size": 309306,
+    "sha256": "99f7eab201e18d4c79981bbf7b233afc283ba4817c46199edf98696c70b09c6f"
+  },
+  "file_count": 15,
+  "uncompressed_size": 2768884,
+  "source_boundary": {
+    "root": "target/phase072-minio/ci",
+    "runs": {
+      "41833307824": {
+        "head_sha": "b7e44fa934b56c9d68620a4ea103d68ee2fb3a92",
+        "conclusion": "success",
+        "successful_job_ids": [
+          126585725657,
+          126585726171
+        ],
+        "skipped_job_ids": [
+          126592749564
+        ]
+      },
+      "41833241053": {
+        "head_sha": "b7e44fa934b56c9d68620a4ea103d68ee2fb3a92",
+        "conclusion": "success",
+        "successful_job_ids": [
+          126585492708,
+          126585492987,
+          126585493047,
+          126585493167
+        ],
+        "skipped_job_ids": [
+          126585494538
+        ]
+      },
+      "41833240915": {
+        "head_sha": "b7e44fa934b56c9d68620a4ea103d68ee2fb3a92",
+        "conclusion": "success",
+        "successful_job_ids": [
+          126585492707,
+          126585493042,
+          126585493255,
+          126594688261
+        ],
+        "skipped_job_ids": [
+          126594834241
+        ]
+      }
+    },
+    "included": "three final run JSON, ten successful job logs, nightly verified JSON and verification script",
+    "excluded": [
+      "auth-status.txt",
+      "watch logs",
+      "private runtime/env/state/secrets",
+      "all other files"
+    ],
+    "acceptance": "archive integrity and recovery only; not independent phase acceptance"
+  },
+  "files": [
+    {
+      "path": "target/phase072-minio/ci/job-126585492707.log",
+      "size": 194823,
+      "sha256": "8b5b6dd1f94b3f982d48e34766f6e79c576d5c1720507476241d65ea9155f668"
+    },
+    {
+      "path": "target/phase072-minio/ci/job-126585492708.log",
+      "size": 667407,
+      "sha256": "eb933730c7b213b5b422b262f695edfa84c8e2bf173b1a04709a69b6b18b75f1"
+    },
+    {
+      "path": "target/phase072-minio/ci/job-126585492987.log",
+      "size": 143786,
+      "sha256": "dd5e3a2b5b274c2511df733615946b8fbc118e0ab3b714e669da15dc0c701d09"
+    },
+    {
+      "path": "target/phase072-minio/ci/job-126585493042.log",
+      "size": 194391,
+      "sha256": "a10845d820259e489e259ce5b03386035159d94d7c60013568a6c7598d412e81"
+    },
+    {
+      "path": "target/phase072-minio/ci/job-126585493047.log",
+      "size": 206090,
+      "sha256": "00bd7940e40af90cfdc3f264a5a3f10bfe02e589270d24a4ae50d44b9610bed8"
+    },
+    {
+      "path": "target/phase072-minio/ci/job-126585493167.log",
+      "size": 676546,
+      "sha256": "0a7d55c7fcbd6c7c7115c9a0a5a2f70b29f61288b8798031af22efe4419b5fbb"
+    },
+    {
+      "path": "target/phase072-minio/ci/job-126585493255.log",
+      "size": 200284,
+      "sha256": "83593bcb815c6e38741341444677d56d9e529e5451dc3566ee633028f252d679"
+    },
+    {
+      "path": "target/phase072-minio/ci/job-126585725657.log",
+      "size": 201163,
+      "sha256": "2f70ea485fedab3c5f43a2dd560f705f965ba9caaf4b2083e033fbdb13d13ecb"
+    },
+    {
+      "path": "target/phase072-minio/ci/job-126585726171.log",
+      "size": 200551,
+      "sha256": "dabcade3945bf147b051c7692d2457996e7c02621dc2f4bd0ef224b2302e2835"
+    },
+    {
+      "path": "target/phase072-minio/ci/job-126594688261.log",
+      "size": 34079,
+      "sha256": "32456dcb5201d795e493ccbf3e867f8ba6fdfbf23849e683f5f918b926b34560"
+    },
+    {
+      "path": "target/phase072-minio/ci/run-41833240915.json",
+      "size": 12072,
+      "sha256": "2d92d80e17a0e24c9d42b26997d986fc74ca0919b323942a09db6f8a2908ac26"
+    },
+    {
+      "path": "target/phase072-minio/ci/run-41833241053.json",
+      "size": 25010,
+      "sha256": "76e8dd7fced1c330f9e6f213018e4b2d0b9d3e516ca67c8be95f335b5ed51aca"
+    },
+    {
+      "path": "target/phase072-minio/ci/run-41833307824-verified.json",
+      "size": 1701,
+      "sha256": "1445fa78e065466b403a9fee0a86e6e47a9452e210c8f9abfc7b37b1dd17ab4a"
+    },
+    {
+      "path": "target/phase072-minio/ci/run-41833307824.json",
+      "size": 6279,
+      "sha256": "66ff707ad95ef8025d37bd8b6edfa4f59273681ede89a3e3203c6e51759c8e7f"
+    },
+    {
+      "path": "target/phase072-minio/ci/verify_nightly.py",
+      "size": 4702,
+      "sha256": "b9d7ef8f18cd57484900b66e916b0bd623b4e1a530f2d334b8343191f2e1de7d"
+    }
+  ]
+}

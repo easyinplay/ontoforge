@@ -9,7 +9,7 @@
 - [x] 主会话收敛构建、bucket客户端、隔离和cleanup决策；取得只给事实的Claude Code独立意见。
 - [x] GSD planner/checker形成可执行PLAN与验证矩阵；2计划、2串行wave，checker零问题，decision coverage 7/7。
 - [x] subagent按TDD实现固定源码artifact和runner，483最终run通过；PLAN01定点review三项全部关闭，详07.2-01-SUMMARY和07.2-RUNNER-REVIEW。
-- [ ] 验证484、重启持久性、失败/超时清理、凭据扫描，并恢复安全的nightly矩阵入口。
+- [x] 验证484、重启持久性、失败/超时清理、凭据扫描，并恢复安全的nightly矩阵入口；真实 GitHub nightly 41833307824 两版通过。
 - [ ] 独立代码/安全/目标验收，PR与CI通过后合并main。
 
 ## Ownership and Constraints
@@ -22,4 +22,4 @@
 
 ## Next Step
 
-PLAN01 SUMMARY落盘后进入07.2-02：484、两版restart、真实fault和完整nightly。
+三项 GitHub run 全部通过，独立 GSD 验收9/9、UAT10/10、安全11/11通过；CI证据已归档。现在更新PR #11最终说明，提交纯文档收尾并核对与b7e44fa的实现等价后合并。ENGINE-05仅关闭MinIO缺口，私有SQL Server历史judgment保留。
