@@ -15,3 +15,5 @@
 - 484 restart run iceberg-2cfc1a661f4438b4afb6a2f8亦通过；真实LiveFault3/3（42/1/143、owner0、私有目录清理、基线保持），Runner25/25实际98.3s，超过原60s反馈目标但行为验收通过。PLAN02 code review发现合计计数可掩盖单target0，已RED commit5235f26，正拆为逐目标9条记录。本地完整nightly与GitHub尚未执行。
 - 计数guard已修并review关闭；c364fed/dd0ce2b通过Nightly5/5。独立安全11/11缓解落实，最终运行待证。本地完整nightly首次exit101：前7target分别5/4/6/2/4/11/4通过，engine8/9因遗漏tpch catalog失败，CLI未跑；scan通过、cleanup0。独立意见同向恢复全部catalog，补RED后重跑。
 - fb2c8fd恢复catalog并接CI测试；第二次nightly在trino_action_it因并行SystemTime纳秒schema碰撞PG23505失败（前4target通过），非业务断言失败，cleanup0。两审查方发现CI helper缺持久补偿state，安全T-07.2-07重开high。独立CC意见同向：最小fixture唯一性修复+helper独立state/always补偿，已落PLAN02并授权executor继续，不串行掩盖、不修改生产语义。
+- 93eb758修schema，997f697补helper持久state；36/37黑盒通过、1平台skip，实际helper强杀恢复通过，两个独立审查重签全闭合。第三次完整nightly前8target通过，4CLI因固定8080配置断言与随机端口不符失败；独立意见同向每test临时CI配置，仅实际URL替换，已更新PLAN02后继续。
+- 34312dc修CLI私有配置，2个新增测试+missing-env/fmt/定向Clippy通过。最终本地nightly iceberg-f21f4b11a5280914d4c25f2c：9target共49/49、0failed/0ignored，重启前后29/29、全日志scan、cleanup0；源码34312dc，索引e4e13a5。代码和安全增量审查全部关闭，进入GitHub矩阵/PR CI，ENGINE-05仍待最终独立验收。
