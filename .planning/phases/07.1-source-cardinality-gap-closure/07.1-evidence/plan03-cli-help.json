@@ -1,0 +1,10 @@
+{
+  "command": "cargo run -p ontoforge --locked -- validate --help",
+  "exitCode": 0,
+  "started": "2026-11-04T04:16:58.3893768Z",
+  "finished": "2026-11-04T04:20:49.4658943Z",
+  "head": "6a8c60858ea85493d0140ec50e7d7d92c87d8b74",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "cargoBuildJobs": 2,
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07.1-source-cardinality-gap-closure\\07.1-evidence\\plan03-cli-help.log"
+}

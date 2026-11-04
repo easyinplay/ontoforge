@@ -234,27 +234,29 @@ s ≤ S  且  p - s ≤ P - S
 | `ONT-V16` | validate | error | 绑定定义与完备性：profile 名、绑定目标、fixture 引用与 fixture 内容；`source` 但选定 profile 无绑定、`editOnly` 却有绑定 |
 | `ONT-V17` | validate --online | error、warning 或 info | 在线绑定不匹配：表不存在、列缺失、类型不兼容、精度或时区变化、char 填充、大小写歧义、不支持的类型；对 Trino 复核时绑定的 `fixture` 被忽略是 info |
 | `ONT-V18` | validate --check-pk | error | 主键列存在重复值或 NULL |
-| `ONT-V19` | validate --online | error | 因引擎侧原因无法完成在线校验：不可用、认证失败、超时、协议或查询错误 |
+| `ONT-V19` | validate --online | error | 因引擎侧原因无法完成在线校验：不可用、认证失败、超时、协议或查询错误；cardinality 结果被行数/字节预算截断、整轮预算耗尽或取消清理失败也使用此码 |
 | `ONT-V20` | validate / 服务配置 | error | 服务配置（`ontoforge-server.toml`）错误；也用于选定 profile 的绑定没有 fixture 又没有 `--server-config` 时 |
 | `ONT-E13` | lint | error | decimal 的 `precision` 须在 1 到 38，`scale` 须在 0 到 `precision` |
 | `ONT-E14` | lint | error | source 绑定的 timestamp 属性必须声明 `timezone`；在非 timestamp 属性上声明 `timezone` 也报 |
 | `ONT-E15` | lint | error | `collation` 只能用于 string 属性、string 数组及对应的 link 端列 |
 | `ONT-E16` | lint | error | `backing: source` 的 object type 不得含 geopoint 属性 |
 | `ONT-W17` | lint | warning | fixture 的表头缺少绑定要求的列；表头无法读取或解析时，同一规则给出定位到 `fixture.file` 的「无法离线检查」提示，而不是静默跳过 |
+| `ONT-W18` | validate --online --check-cardinality | warning | source OneToOne 的非 NULL FK 被两个或更多不同 PK 对象共享；定位到 to-object 的 FK 列映射，没有显式映射时定位到 source.table |
 
-lint 规则 `ONT-E13` 至 `ONT-E16` 与 `ONT-W17` 可在 `ontoforge.toml` 的 `[lint]` 中按 ID 调整级别或关闭。`ONT-V*` 是结构性错误，不可配置。
+lint 规则 `ONT-E13` 至 `ONT-E16` 与 `ONT-W17` 可在 `ontoforge.toml` 的 `[lint]` 中按 ID 调整级别或关闭。`ONT-V*` 是结构性错误，不可配置。`ONT-W18` 是显式在线数据检查的诊断，不属于离线可配置的 `LintRule`，不能放进 `[lint]` 作为规则开关。
 
 ## 命令行与退出码
 
 ```
-ontoforge validate <DIR> --online [--profile <NAME>] [--server-config <FILE>] [--check-pk] [--timeout <MS>]
+ontoforge validate <DIR> --online [--profile <NAME>] [--server-config <FILE>] [--check-pk] [--check-cardinality] [--timeout <MS>]
 ```
 
 - `--online`：对选定 profile 的每个绑定描述物理表并比对。未给 `--server-config` 时，选定 profile 的绑定必须全部带 `fixture`，用内存 SQLite 替身；否则报 `ONT-V20` 并提示 `--server-config`。
 - `--profile <NAME>`：选定 profile，优先于环境变量 `ONTOFORGE_PROFILE` 与 `defaultProfile`。
 - `--server-config <FILE>`：读取 `ontoforge-server.toml`，对映射到 Trino 的 profile 连接真实 Trino。配置映射到 Trino 而绑定仍带 `fixture` 时给出 info（`ONT-V17`，fixture 被忽略属于运行信息而非绑定漂移，`--deny-warnings` 不会因此失败，见 ADR-0022）。本 phase 不做服务配置的隐式查找。
 - `--check-pk`：在显式要求时，对每个绑定的主键列查重复值。重复值查询排除 NULL 主键，NULL 主键单独计数，二者都报 `ONT-V18`。drift 检查不做这件事，因为它需要扫描全表。
-- `--timeout <MS>`：覆盖每个元数据请求的超时（毫秒），只能与 `--online` 同用，至少为 1（`0` 是用法错误，exit 2）。
+- `--check-cardinality`：显式检查 source-backed to-object 的 OneToOne FK 唯一性，只能与 `--online` 同用。默认 online 与单独 `--check-pk` 不增加这种数据扫描；可以组合两个 flag，它们分别报告 PK 和 link cardinality 问题。
+- `--timeout <MS>`：覆盖在线查询的超时（毫秒），只能与 `--online` 同用，至少为 1（`0` 是用法错误，exit 2）。元数据及独立 PK 查询沿既有单次时限；cardinality 检查将此值作为所有候选共享的整轮总预算，详见下节。
 
 每个 catalog 只发一次元数据请求。
 
@@ -263,12 +265,33 @@ ontoforge validate <DIR> --online [--profile <NAME>] [--server-config <FILE>] [-
 | 码 | 含义 |
 |---|---|
 | 0 | 没有 error（warning 不影响，除非加 `--deny-warnings`） |
-| 1 | 有 error：绑定不匹配、重复主键、配置错误等 |
+| 1 | 有 error（绑定不匹配、重复主键、配置错误等），或存在 warning 且指定 `--deny-warnings` |
 | 2 | 命令行用法错误（clap） |
 | 3 | 引擎侧原因导致在线校验无法完成（`ONT-V19`），与绑定错误区分 |
 | 101 | 内部错误 |
 
 不可用与认证失败这类整轮错误中止校验。单个绑定或单个 catalog 的查询类错误（例如对某个 catalog 没有权限）只让该 catalog 的绑定得到 `ONT-V19`，其余 catalog 的绑定照常比对；只要出现任一 `ONT-V19`，退出码就是 3。
+
+## source OneToOne 基数检查
+
+```sh
+ontoforge validate ./ontology --online --check-cardinality --server-config ./ontoforge-server.toml --profile prod
+ontoforge validate ./ontology --online --check-pk --check-cardinality --server-config ./ontoforge-server.toml --profile prod --deny-warnings
+```
+
+检查先经过既有 schema 和 metadata 预检，再选择当前 profile 中可用的 source-backed `link.to` 对象绑定。`link.from` 可以是 `editOnly`；候选不根据 from 的 backing 或 link 自身的 backing 判断。`OneToMany`、`ManyToMany` 和 to-object 为 `editOnly` 的关系不扫描。预检失败的 binding 不扫描，也不能因此算作完整通过。
+
+现有模型只支持单列 PK/FK。检查按 to-object 当前 profile 的 `SourceBinding.columns` 及默认同名规则映射 FK 与该对象的 PK，对非 NULL FK 分组，只有 `COUNT(DISTINCT mapped_to_pk) > 1` 才报告冲突。例如同一 FK 下 `M1, M1, M2` 三条物理记录只计两个逻辑对象；只有 `M1, M1` 不报告 cardinality 冲突。NULL FK 不形成连接，NULL PK 不增加 distinct 对象数；NULL/重复 PK 问题仍由独立 `--check-pk` 检查，两个 flag 不替代彼此。
+
+每个 link 最多显示20个冲突组，按不同对象数降序、FK 升序排序；第21组只用于判断是否附加 `and more`。每个样本值最多显示64个字符，超长时附加省略号。没有完整取得查询结果时，即使已取得部分样本也不能当作完整结果：引擎报告 `truncated`、超时、bytes/rows 上限、协议/查询失败或取消清理失败时返回 `ONT-V19`、exit3，并保留此前其他目标的诊断。调用者配置的更紧行数/字节预算不会被采样默认值扩大。
+
+整个 cardinality 轮次共用一个 `QueryContext.timeout` 总预算，默认30秒；Trino 的 `[trino].query_timeout_ms` 可覆盖默认值，CLI `--timeout` 再覆盖配置。每个后续 link 只获得剩余时限；预算耗尽后不启动新扫描，正在执行的查询按剩余时限超时并取消。元数据预检和独立 `--check-pk` 的耗时不扣入这个新增轮次。检查结束仍等待取消清理，清理时间不因扫描预算已耗尽而被跳过。
+
+分组和 distinct 聚合可能扫描整个源表。SQL `LIMIT 21` 只限制返回的冲突组数量，20个样本和总 deadline 都不是数据库物理扫描行数上界。
+
+仅发现 `ONT-W18` 时默认 exit0，但 human 摘要仍显示 warning 数，不表示数据没有冲突；`--deny-warnings` 将它变为 exit1。该报告只进入 CLI diagnostics，不改变 L0/Action 的业务读取、drift/health 状态或服务 admission。
+
+本检查只核对声明的 FK 唯一性，**没有检查被引用对象是否存在（referential integrity）**，也不执行跨 backend JOIN、复合键检查或写入约束。每项结果描述对应查询当时看到的 source；外部数据可以并发变化，不保证跨表一致快照或未来持续唯一性。部署前应在实际 Trino 上运行；fixture SQLite 的结果只覆盖对应 fixture 数据。
 
 ## 服务配置
 
@@ -279,7 +302,7 @@ ontoforge validate <DIR> --online [--profile <NAME>] [--server-config <FILE>] [-
 | `[trino]` | `url` | Trino 地址，`http` 或 `https`，不得带用户信息 |
 | `[trino]` | `ca_file` | PEM 文件，附加的根证书，与平台根证书合并 |
 | `[trino]` | `connect_timeout_ms` | 连接超时，缺省 5000 |
-| `[trino]` | `query_timeout_ms` | 单次查询超时，缺省 30000 |
+| `[trino]` | `query_timeout_ms` | 单次查询超时，缺省 30000；显式 cardinality 检查以同一值作为整轮预算，后续查询只使用剩余时间 |
 | `[trino]` | `max_rows` / `max_bytes` / `max_page_bytes` | 结果行数、字节数与单页字节数上限，须大于 0；缺省 10000、16 MiB、16 MiB。单页先整页缓冲，再逐行解析，超过行数上限的行不解析 |
 | `[trino]` | `next_uri_origins` | 除 `url` 外 `nextUri` 可以指向的 origin（Trino 前面有网关时用），形如 `scheme://host[:port]`，scheme 必须与 `url` 相同 |
 | `[trino]` | `client_tags` | 客户端标签，每个 1 到 64 个字符，取自 `[A-Za-z0-9._:-]`，缺省 `["ontoforge"]`；随每次查询发送，调用方自己的标签（如 CLI 的 `validate-online`）追加在后，重复的不再追加 |
