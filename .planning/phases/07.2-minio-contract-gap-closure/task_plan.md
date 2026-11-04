@@ -8,7 +8,7 @@
 
 - [x] 主会话收敛构建、bucket客户端、隔离和cleanup决策；取得只给事实的Claude Code独立意见。
 - [x] GSD planner/checker形成可执行PLAN与验证矩阵；2计划、2串行wave，checker零问题，decision coverage 7/7。
-- [ ] subagent按TDD实现固定源码artifact和runner，先完成483纵切片。
+- [x] subagent按TDD实现固定源码artifact和runner，483最终run通过；PLAN01定点review三项全部关闭，详07.2-01-SUMMARY和07.2-RUNNER-REVIEW。
 - [ ] 验证484、重启持久性、失败/超时清理、凭据扫描，并恢复安全的nightly矩阵入口。
 - [ ] 独立代码/安全/目标验收，PR与CI通过后合并main。
 
@@ -22,4 +22,4 @@
 
 ## Next Step
 
-执行07.2-01：先可靠性RED，再固定构建与483真实MinIO纵切片。
+PLAN01 SUMMARY落盘后进入07.2-02：484、两版restart、真实fault和完整nightly。
