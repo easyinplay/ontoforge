@@ -318,3 +318,14 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7 → 7.1；�
 3. typed SQL、限额、取消与错误边界通过SQLite/Trino验证；STORE-05以独立验收结果更新。
 
 **Details**: `.planning/phases/07.1-source-cardinality-gap-closure/`
+
+### Phase 07.2: MinIO Contract Gap Closure (INSERTED)
+
+**Goal:** 恢复ENGINE-05的MinIO/S3与JDBC Iceberg原合同，完成483/484真实环境及nightly补证。
+**Requirements**: ENGINE-05
+**Depends on:** Phase 7
+**Plans:** 2 plans（2个串行wave）；详: `.planning/phases/07.2-minio-contract-gap-closure/`
+
+Plans:
+- [ ] 07.2-01-PLAN.md：固定构建、483真实合同纵切片与runner/client可靠性
+- [ ] 07.2-02-PLAN.md：484、restart/fault、完整nightly矩阵与独立验收交接
