@@ -1,0 +1,10 @@
+{
+  "command": "cargo test -p ontoforge-engine --test pk_check --test printer_prop --test sql_text_only_from_printer --locked",
+  "exitCode": 0,
+  "started": "2026-11-04T04:07:37.1808002Z",
+  "finished": "2026-11-04T04:07:38.5576385Z",
+  "head": "7ecc32b22847d6cae392a7043545ef94fceffb8b",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "cargoBuildJobs": 2,
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07.1-source-cardinality-gap-closure\\07.1-evidence\\plan02-regression-engine.log"
+}
