@@ -111,6 +111,8 @@ class RunnerContract(unittest.TestCase):
                        + Path(__file__).as_posix() + '" --fake-fixture "$@"\n')
         self.fake_tool("cargo", 'case "$*" in *--list*) echo "iceberg_table_is_readable: test";; '
                        '*) echo "test result: ok. 1 passed; 0 failed; 0 ignored;";; esac\n')
+        version = self.env.get("TEST_TRINO_VERSION", "483")
+
         class Trino(BaseHTTPRequestHandler):
             def log_message(self, *args):
                 pass
@@ -118,13 +120,44 @@ class RunnerContract(unittest.TestCase):
             def do_GET(self):
                 self.send_response(200)
                 self.end_headers()
-                self.wfile.write(b'{"starting":false,"nodeVersion":{"version":"483"}}')
+                self.wfile.write(json.dumps({"starting": False, "nodeVersion": {"version": version}}).encode())
 
         server = ThreadingHTTPServer(("127.0.0.1", 0), Trino)
         threading.Thread(target=lambda: server.serve_forever(poll_interval=0.02), daemon=True).start()
         self.addCleanup(server.server_close)
         self.addCleanup(server.shutdown)
         self.env["TEST_PORT"] = str(server.server_port)
+
+    def test_both_versions_restart_without_recreating_the_table(self):
+        for version in ("483", "484"):
+            with self.subTest(version=version):
+                self.env["TEST_TRINO_VERSION"] = version
+                self.env["ONTOFORGE_ICEBERG_EVIDENCE_DIR"] = str(self.directory / ("proof-" + version))
+                self.full_fixture("success")
+                result = self.run_cli("contract", "--trino", version)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                calls = json.loads(Path(self.env["TEST_DB"]).read_text())["calls"]
+                restarts = [i for i, args in enumerate(calls) if args[0] == "restart"]
+                self.assertEqual(len(restarts), 1, "contract must restart MinIO and Trino exactly once")
+                self.assertEqual(len(calls[restarts[0]][1:]), 2)
+                after = calls[restarts[0] + 1:]
+                self.assertFalse(any("--execute" in args and args[-1].startswith("CREATE ") for args in after))
+                proof = self.directory / ("proof-" + version)
+                self.assertEqual(json.loads((proof / "counts-after.json").read_text()), {"source": 29, "copied": 29})
+                self.assertEqual(json.loads((proof / "restart.json").read_text())["before"],
+                                 json.loads((proof / "restart.json").read_text())["after"])
+
+    def test_restart_cannot_hide_lost_rows(self):
+        self.full_fixture("restart-empty")
+        result = self.run_cli("contract", "--trino", "483")
+        self.assertNotEqual(result.returncode, 0, "empty table after restart must fail")
+
+    def test_unknown_fault_is_rejected_before_creating_resources(self):
+        self.full_fixture("success")
+        self.env["ONTOFORGE_ICEBERG_FAULT"] = "unknown"
+        result = self.run_cli("contract", "--trino", "483")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(json.loads(Path(self.env["TEST_DB"]).read_text())["calls"], [])
 
     def test_success_requires_complete_logs_and_successful_cleanup(self):
         self.full_fixture("success-logs-fail")
@@ -538,11 +571,13 @@ def fake_fixture(args):
         code = 1 if mode == "readiness-timeout" and db["readiness_calls"] < 3 else 0
     elif args[0] == "exec":
         if "--execute" in args and "count(*)" in args[-1]:
-            output = "29"
+            output = "0" if mode == "restart-empty" and db.get("restarted") else "29"
         elif "-At" in args:
             output = "s3://warehouse/aviation/flights-id/metadata/a.json"
     elif args[0] == "port":
         output = "127.0.0.1:" + (os.environ["TEST_PORT"] if args[-1] == "8080/tcp" else "15432")
+    elif args[0] == "restart":
+        db["restarted"] = True
     else:
         code = 88
     path.write_text(json.dumps(db))
