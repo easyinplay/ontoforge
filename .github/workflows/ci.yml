@@ -43,12 +43,12 @@ jobs:
       - run: cargo fmt --all --check
       # A second TLS / crypto stack widens the supply chain and makes Linux CI need system
       # headers; postgresql_embedded pulls native-tls unless its default features are off
-      # (RESEARCH Pitfall 5). `cargo tree -i` exits non-zero when the package is absent.
+      # (RESEARCH Pitfall 5). Inspect one complete graph; Cargo failures must fail closed.
+      - name: TLS dependency guard regressions
+        run: python -B -m unittest discover -s ci -p test_tls_deps.py -v
       - name: No OpenSSL or native-tls in the dependency graph
         shell: bash
-        run: |
-          ! cargo tree --workspace --locked --features ontoforge-storage/embedded-pg -e normal,build,dev -i openssl
-          ! cargo tree --workspace --locked --features ontoforge-storage/embedded-pg -e normal,build,dev -i native-tls
+        run: bash ci/check-tls-deps.sh
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - run: cargo check -p ontoforge-action --locked
       # The local PostgreSQL test path (`--features embedded-pg`) is off by default, so nothing
@@ -71,6 +71,13 @@ jobs:
           cargo test -p ontoforge-engine --test l2_gate --locked l2_corpus_ -- --nocapture
       - name: Action SQLite, outbox and write-entry corpus
         run: cargo test -p ontoforge-action --locked -- --nocapture
+      - name: SQLite Action fault injection
+        shell: bash
+        run: |
+          set -euo pipefail
+          tests=$(cargo test -p ontoforge-storage --features test-support --test conformance_sqlite --locked action_atomic_ -- --list)
+          test "$(printf '%s\n' "$tests" | grep -c '^action_atomic_.*: test$')" -ge 5
+          cargo test -p ontoforge-storage --features test-support --test conformance_sqlite --locked action_atomic_ -- --nocapture
 
   # Real PostgreSQL + Trino 483 on Linux (ENGINE-05, ADR-0017). The tests are #[ignore]d so
   # that Windows needs no Docker; this job runs them with --ignored.
@@ -135,6 +142,13 @@ jobs:
           run_ignored action-same-pk -p ontoforge-action --features test-support --test action_pg --locked concurrent_
           run_ignored action-idempotency -p ontoforge-action --features test-support --test idempotency_pg --locked pg_
           run_ignored action-webhook-pg -p ontoforge-action --test outbox_pg --locked postgres_outbox_
+      - name: PostgreSQL absent-target source guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          tests=$(cargo test -p ontoforge-action --features embedded-pg --test source --locked source_guard_absent_target_insert_race -- --exact --list)
+          printf '%s\n' "$tests" | grep -Fxq 'source_guard_absent_target_insert_race: test'
+          cargo test -p ontoforge-action --features embedded-pg --test source --locked source_guard_absent_target_insert_race -- --exact --nocapture
       # Trino uses a runtime catalog outside the checkout; nightly keeps the checked-in catalog.
       - name: Start Trino 483
         run: bash ci/query-services.sh trino
