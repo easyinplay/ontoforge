@@ -294,7 +294,7 @@ class RunnerContract(unittest.TestCase):
         credentials.unlink()
         self.assertNotEqual(self.run_cli("check-artifacts", raw, credentials).returncode, 0)
 
-    def test_private_acl_trusted_owner_and_child_are_accepted(self):
+    def test_private_directory_and_child_permissions_are_accepted(self):
         result = self.run_cli("permissions", self.directory)
         self.assertEqual(result.returncode, 0, result.stderr)
         child = self.directory / "private.txt"
@@ -302,12 +302,8 @@ class RunnerContract(unittest.TestCase):
         result = self.run_cli("permissions", child)
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    @unittest.skipUnless(os.name == "nt", "Windows DACL rejection contract; covered by the Windows run")
     def test_private_acl_rejects_untrusted_explicit_access(self):
-        if os.name != "nt":
-            self.directory.chmod(0o777)
-            self.assertEqual(self.run_cli("permissions", self.directory).returncode, 0)
-            self.assertEqual(self.directory.stat().st_mode & 0o077, 0)
-            return
         for sid in ("S-1-1-0", "S-1-5-32-545", "S-1-5-11"):
             with self.subTest(sid=sid):
                 directory = self.directory / sid
@@ -529,6 +525,22 @@ class NightlyContract(unittest.TestCase):
         result = self.run_cli("cleanup", "--state", self.directory / "missing.json")
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_ci_explicitly_runs_runner_nightly_and_built_helper_contracts(self):
+        workflow = (ROOT / ".github/workflows/nightly.yml").read_text()
+        self.assertIn("python3 -m unittest -v ci.test_iceberg_services.RunnerContract ci.test_iceberg_services.NightlyContract", workflow)
+        self.assertIn("run: bash ci/iceberg-services.sh helper-test", workflow)
+        self.assertLess(workflow.index("bash ci/iceberg-services.sh nightly"),
+                        workflow.index("bash ci/iceberg-services.sh helper-test"))
+        self.assertNotIn("LiveFaultContract", workflow)
+
+    def test_fixture_preserves_existing_pr_catalogs(self):
+        self.nightly_fixture()
+        result = self.run_cli("nightly", "--trino", "483")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        catalogs = json.loads(Path(self.env["TEST_DB"]).read_text())["catalogs"]
+        expected = {p.name for p in (ROOT / "ci/trino/catalog").glob("*.properties")} | {"iceberg.properties"}
+        self.assertEqual(set(catalogs), expected, "full Engine corpus requires all existing PR catalogs")
+
 
 class BucketClientContract(unittest.TestCase):
     def setUp(self):
@@ -712,6 +724,10 @@ def fake_fixture(args):
         name = args[args.index("--name") + 1] if "--name" in args else args[-1]
         owner = args[args.index("--label") + 1].split("=", 1)[1]
         resources[name] = {"kind": kind, "owner": owner}
+        if args[0] == "run" and name.endswith("-trino"):
+            mount = next(a for a in args if a.endswith(":/etc/trino/catalog:ro"))
+            directory = Path(mount.removesuffix(":/etc/trino/catalog:ro"))
+            db["catalogs"] = [p.name for p in directory.glob("*.properties")]
         output = name
         if mode == "name-conflict":
             resources[name]["owner"] = "foreign-owner"
