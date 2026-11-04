@@ -430,8 +430,9 @@ def contract(version, nightly=False):
             + "\nAWS_SECRET_ACCESS_KEY=" + credentials[2] + "\nAWS_REGION=us-east-1\n")
         catalog = runtime / "catalog"
         catalog.mkdir(mode=0o755)
-        for name in ("demo", "editstore", "iceberg"):
-            origin = ROOT / "ci/trino" / ("iceberg" if name == "iceberg" else "catalog") / (name + ".properties")
+        origins = sorted((ROOT / "ci/trino/catalog").glob("*.properties"))
+        origins.append(ROOT / "ci/trino/iceberg/iceberg.properties")
+        for origin in origins:
             content = origin.read_text().replace("localhost:5432", "postgres:5432")
             content = re.sub(r"(?m)^(.*connection-password)=.*$", lambda m: m[1] + "=" + credentials[0], content)
             (catalog / origin.name).write_text(content)
