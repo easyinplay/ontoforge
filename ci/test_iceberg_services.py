@@ -4,6 +4,7 @@ import os
 import ast
 import json
 import secrets
+import signal
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 import subprocess
@@ -374,6 +375,85 @@ class RunnerContract(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0, "missing Iceberg environment must fail before Cargo")
 
 
+class HelperLifecycleContract(unittest.TestCase):
+    setUp = RunnerContract.setUp
+    run_cli = RunnerContract.run_cli
+    fake_tool = RunnerContract.fake_tool
+    full_fixture = RunnerContract.full_fixture
+
+    def helper(self, mode):
+        self.full_fixture(mode)
+        self.state = self.directory / "helper-state.json"
+        self.env["ONTOFORGE_ICEBERG_STATE"] = str(self.state)
+        return self.run_cli("helper-test")
+
+    def test_state_is_private_and_persisted_before_create(self):
+        result = self.helper("helper-state")
+        self.assertNotEqual(result.returncode, 0, "invalid fake binary must fail")
+        db = json.loads(Path(self.env["TEST_DB"]).read_text())
+        self.assertTrue(db.get("state_before_create"), "helper must persist recovery state before Docker create")
+        self.assertTrue(db["private_state"])
+        self.assertTrue(db["lock_matches"])
+        self.assertFalse(db["resources"])
+        self.assertFalse(self.state.exists())
+
+    def test_cleanup_failure_retains_state_for_retry(self):
+        result = self.helper("helper-cleanup-fail")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertTrue(self.state.exists(), "failed cleanup must preserve its recovery state")
+        state = json.loads(self.state.read_text())
+        self.assertEqual(len(state["resources"]), 1)
+        self.env["TEST_MODE"] = "success"
+        self.assertEqual(self.run_cli("cleanup", "--state", self.state).returncode, 0)
+        self.assertFalse(Path(state["runtime"]).exists())
+        self.assertFalse(self.state.exists())
+        self.assertEqual(self.run_cli("cleanup", "--state", self.state).returncode, 0)
+
+    def test_killed_owner_can_recover_unrecorded_container_and_lock(self):
+        result = self.helper("helper-kill")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertTrue(self.state.exists(), "SIGKILL recovery requires durable helper state")
+        state = json.loads(self.state.read_text())
+        self.assertEqual(state["resources"], [], "kill happens before create returns its ID")
+        lock = self.directory / "ontoforge-iceberg.lock"
+        self.assertEqual((lock / "owner").read_text(), state["lock_token"])
+        self.env["TEST_MODE"] = "success"
+        result = self.run_cli("cleanup", "--state", self.state)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertFalse(json.loads(Path(self.env["TEST_DB"]).read_text())["resources"])
+        self.assertFalse(lock.exists())
+        self.assertFalse(self.state.exists())
+        self.assertEqual(self.run_cli("cleanup", "--state", self.state).returncode, 0)
+
+    def test_tampered_lock_is_rejected_before_any_deletion(self):
+        self.helper("helper-cleanup-fail")
+        self.assertTrue(self.state.exists(), "helper must retain state")
+        state = json.loads(self.state.read_text())
+        lock = self.directory / "ontoforge-iceberg.lock"
+        lock.mkdir(exist_ok=True)
+        (lock / "owner").write_text("another-owner")
+        before = Path(self.env["TEST_DB"]).read_text()
+        self.env["TEST_MODE"] = "success"
+        result = self.run_cli("cleanup", "--state", self.state)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(Path(self.env["TEST_DB"]).read_text(), before)
+        self.assertTrue(self.state.exists())
+        self.assertTrue(Path(state["runtime"]).exists())
+        self.assertEqual((lock / "owner").read_text(), "another-owner")
+        (lock / "owner").write_text(state["lock_token"])
+        self.assertEqual(self.run_cli("cleanup", "--state", self.state).returncode, 0)
+
+    def test_ci_cleans_both_states_even_when_first_cleanup_fails(self):
+        workflow = (ROOT / ".github/workflows/nightly.yml").read_text()
+        self.assertIn('ONTOFORGE_ICEBERG_STATE="$RUNNER_TEMP/$ICEBERG_STATE_NAME/helper-state.json"', workflow)
+        cleanup_steps = [s for s in workflow.split("      - name:")
+                         if "bash ci/iceberg-services.sh cleanup --state" in s]
+        self.assertEqual(len(cleanup_steps), 2, "independent always steps must attempt both owners")
+        self.assertTrue(all("if: always()" in s for s in cleanup_steps))
+        self.assertIn('/state.json"', cleanup_steps[0])
+        self.assertIn('/helper-state.json"', cleanup_steps[1])
+
+
 class LiveFaultContract(unittest.TestCase):
     def setUp(self):
         self.assertEqual(os.environ.get("ONTOFORGE_ICEBERG_LIVE"), "1", "live Docker tests require explicit opt-in")
@@ -717,6 +797,13 @@ def fake_fixture(args):
             output = json.dumps([{"key": "aviation/flights-id/metadata/a.json", "size": 30},
                                  {"key": "aviation/flights-id/data/a.parquet", "size": 90}])
     elif args[0] in ("run", "create") or args[:2] in (["network", "create"], ["volume", "create"]):
+        if mode.startswith("helper-") and args[0] == "create":
+            recovery = Path(os.environ["ONTOFORGE_ICEBERG_STATE"])
+            db["state_before_create"] = recovery.exists()
+            if recovery.exists():
+                state = json.loads(recovery.read_text())
+                db["private_state"] = recovery.stat().st_mode & 0o077 == 0
+                db["lock_matches"] = state.get("lock_token") == (Path(tempfile.gettempdir()) / "ontoforge-iceberg.lock/owner").read_text()
         if mode == "term" and args[:2] == ["network", "create"]:
             Path(os.environ["TEST_READY"]).write_text("ready")
             time.sleep(30)
@@ -724,6 +811,10 @@ def fake_fixture(args):
         name = args[args.index("--name") + 1] if "--name" in args else args[-1]
         owner = args[args.index("--label") + 1].split("=", 1)[1]
         resources[name] = {"kind": kind, "owner": owner}
+        if mode == "helper-kill":
+            path.write_text(json.dumps(db))
+            os.kill(os.getppid(), signal.SIGKILL)
+            return 0
         if args[0] == "run" and name.endswith("-trino"):
             mount = next(a for a in args if a.endswith(":/etc/trino/catalog:ro"))
             directory = Path(mount.removesuffix(":/etc/trino/catalog:ro"))
