@@ -1,5 +1,17 @@
 # Progress
 
+- 2026-11-04用户新增授权：已完成且验收/CI通过的开发PR应合并main，替代此前PR7/8不合并限制。远端目前PR6指向main、PR7指向phase05、PR8指向phase06；主会话核对堆叠祖先及缺失Phase04/05连接，独立只读检查并行。Phase7.1继续完整workspace回归，尚不提前合并。
+
+- 合并准备：独立检查与纯事实CC同向，PR8已retarget main并改为Phase03–07集成，解除Draft。推送06b4965（f885源码+a6复签+纯文档证据归档），未带入7.1实现。独立worktree恢复58份原始target证据后原生verification passed/UAT14/14，不改fingerprint；归档全部SHA256一致。等待06b4965新CI后merge commit，详独立worktree的MERGE-READINESS.md。旧分支PR6/7包含关系已核对，不通过依次合并旧漏洞快照落地。
+
+- 07.1-02已提交b942b55，77个独立测试通过，主会话核对真实日志与同分支commits。推进07.1-03真实Trino/文档，代码与安全独立审查并行，Cargo/Docker单owner。STORE-05仍待phase最终验收。MinIO只读研究已完成，纯事实独立意见支持固定官方源码构建的隔离补证，尚未build/run；详MINIO-FEASIBILITY.md。
+
+- 07.1-02的scope测试63032dd及sampling/quoting73e1577已提交，均真实首跑GREEN回归。整轮deadline CLI RED明确为第三target仍发送（actual3 vs expected2），随后取recording Engine/JUnit证据再实现。GSD roadmap.update-plan-progress派生1/3；state.update-progress因v1.0未被versioned ROADMAP包围拒绝，主会话按实际89份SUMMARY同步digest，不改工具算法。
+
+- 07.1-01第一task真实CLI RED（未知flag exit2）及JUnit RED gate通过，提交5d1455b；tracer GREEN后最小实现提交950a320。当前executor继续01-2的distinct/NULL/只读测试，deadline与故障边界留02。MinIO可行性研究落MINIO-FEASIBILITY.md，新的纯事实独立咨询进行中；未启动额外构建/容器。
+
+- 审计/计划提交a6efc11，Phase7.1分支gsd/phase-07.1-source-cardinality-gap-closure；11个fails_when绑定补齐后独立checker通过18/18，提交20f1b17。已启动唯一Cargo owner phase071_executor执行07.1-01（2task，TDD）；按01→02→03串行，尚无本phase GREEN证据。use_worktrees=false，jobs2，不push/发布/合并。
+
 - 用户已明确“选A”，source方案分歧已裁决：服务端distinct聚合、有界warning，加全检查总deadline。Phase7.1恢复计划定稿/独立checker；此前等待记录保留为历史，不再阻塞该phase。
 
 - GSD已写入.gsd/WAITING.json保存Phase7.1 A/B待答，STATE为65行digest。state.json经原生publisher更新；ROADMAP的07.1 header统一为7.1，消除smart-entry将同一decimal phase重复计为9阶段的显示偏差，实际8阶段。三源声明对账使用原生frontmatter parser，未安装额外Python依赖。

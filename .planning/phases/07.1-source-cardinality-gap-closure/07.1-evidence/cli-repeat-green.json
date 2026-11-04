@@ -1,0 +1,7 @@
+{
+  "finished": "2026-11-04T03:45:00.2673860Z",
+  "exitCode": 0,
+  "head": "950a3205d3e60e7b3af6b6389d74a5ec22ea0110",
+  "command": "cargo test -p ontoforge --test cli_check_cardinality repeated_check_is_read_only --locked -- --exact --nocapture",
+  "started": "2026-11-04T03:44:58.4227502Z"
+}

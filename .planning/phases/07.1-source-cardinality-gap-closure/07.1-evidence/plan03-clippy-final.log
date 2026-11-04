@@ -1,0 +1,150 @@
+    Checking ontoforge v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge)
+    Checking ontoforge-client v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-client)
+    Checking ontoforge-schema v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-schema)
+    Checking ontoforge-action v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-action)
+    Checking ontoforge-server v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-server)
+error: unused `async` for async trait impl function with no `.await` statements
+   --> crates\ontoforge\src\online.rs:805:9
+    |
+805 | /         async fn describe_tables(
+806 | |             &self,
+807 | |             _tables: &[ontoforge_engine::TableRef],
+808 | |             _ctx: &ontoforge_engine::QueryContext,
+...   |
+816 | |             Ok(std::collections::BTreeMap::new())
+817 | |         }
+    | |_________^
+    |
+    = note: `std::future::ready` creates a `Future` which returns the value immediately when `poll`ed
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#unused_async_trait_impl
+    = note: `-D clippy::unused-async-trait-impl` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::unused_async_trait_impl)]`
+help: consider removing the `async` from this function and returning `impl Future<Output = Result<
+                  std::collections::BTreeMap<
+                      ontoforge_engine::TableRef,
+                      Vec<ontoforge_engine::PhysicalColumn>,
+                  >,
+                  ontoforge_engine::EngineError,
+              >>` instead
+    |
+805 ~         fn describe_tables(
+806 |             &self,
+807 |             _tables: &[ontoforge_engine::TableRef],
+808 |             _ctx: &ontoforge_engine::QueryContext,
+809 ~         ) -> impl Future<Output = Result<
+810 +             std::collections::BTreeMap<
+811 +                 ontoforge_engine::TableRef,
+812 +                 Vec<ontoforge_engine::PhysicalColumn>,
+813 +             >,
+814 +             ontoforge_engine::EngineError,
+815 ~         >> {
+816 ~             std::future::ready(Ok(std::collections::BTreeMap::new()))
+    |
+
+error: unused `async` for async trait impl function with no `.await` statements
+   --> crates\ontoforge\src\online.rs:819:9
+    |
+819 | /         async fn status(&self) -> ontoforge_engine::EngineStatus {
+820 | |             ontoforge_engine::EngineStatus::Available
+821 | |         }
+    | |_________^
+    |
+    = note: `std::future::ready` creates a `Future` which returns the value immediately when `poll`ed
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#unused_async_trait_impl
+help: consider removing the `async` from this function and returning `impl Future<Output = ontoforge_engine::EngineStatus>` instead
+    |
+819 ~         fn status(&self) -> impl Future<Output = ontoforge_engine::EngineStatus> {
+820 ~             std::future::ready(ontoforge_engine::EngineStatus::Available)
+    |
+
+error: unused `async` for async trait impl function with no `.await` statements
+   --> crates\ontoforge\src\online.rs:961:9
+    |
+961 | /         async fn execute(
+962 | |             &self,
+963 | |             _sql: &ontoforge_engine::PrintedSql,
+964 | |             _ctx: &ontoforge_engine::QueryContext,
+...   |
+973 | |             })
+974 | |         }
+    | |_________^
+    |
+    = note: `std::future::ready` creates a `Future` which returns the value immediately when `poll`ed
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#unused_async_trait_impl
+help: consider removing the `async` from this function and returning `impl Future<Output = Result<ontoforge_engine::QueryOutput, ontoforge_engine::EngineError>>` instead
+    |
+961 ~         fn execute(
+962 |             &self,
+963 |             _sql: &ontoforge_engine::PrintedSql,
+964 |             _ctx: &ontoforge_engine::QueryContext,
+965 ~         ) -> impl Future<Output = Result<ontoforge_engine::QueryOutput, ontoforge_engine::EngineError>> {
+966 ~             std::future::ready(Ok(ontoforge_engine::QueryOutput {
+967 +                 columns: Vec::new(),
+968 +                 rows: vec![vec![
+969 +                     ontoforge_engine::Value::String("A".to_owned()),
+970 +                     ontoforge_engine::Value::Long(2),
+971 +                 ]],
+972 +                 truncated: false,
+973 +             }))
+    |
+
+error: unused `async` for async trait impl function with no `.await` statements
+   --> crates\ontoforge\src\online.rs:975:9
+    |
+975 | /         async fn describe_tables(
+976 | |             &self,
+977 | |             _tables: &[ontoforge_engine::TableRef],
+978 | |             _ctx: &ontoforge_engine::QueryContext,
+...   |
+994 | |         }
+    | |_________^
+    |
+    = note: `std::future::ready` creates a `Future` which returns the value immediately when `poll`ed
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#unused_async_trait_impl
+help: consider removing the `async` from this function and returning `impl Future<Output = Result<
+                  std::collections::BTreeMap<
+                      ontoforge_engine::TableRef,
+                      Vec<ontoforge_engine::PhysicalColumn>,
+                  >,
+                  ontoforge_engine::EngineError,
+              >>` instead
+    |
+975 ~         fn describe_tables(
+976 |             &self,
+977 |             _tables: &[ontoforge_engine::TableRef],
+978 |             _ctx: &ontoforge_engine::QueryContext,
+979 ~         ) -> impl Future<Output = Result<
+980 +             std::collections::BTreeMap<
+981 +                 ontoforge_engine::TableRef,
+982 +                 Vec<ontoforge_engine::PhysicalColumn>,
+983 +             >,
+984 +             ontoforge_engine::EngineError,
+985 ~         >> {
+986 ~             std::future::ready(if self.metadata_fails {
+987 +                 Err(ontoforge_engine::EngineError::Unavailable {
+988 +                     retryable: false,
+989 +                     reason: "metadata unavailable".to_owned(),
+990 +                 })
+991 +             } else {
+992 +                 Ok(std::collections::BTreeMap::new())
+993 +             })
+    |
+
+error: unused `async` for async trait impl function with no `.await` statements
+   --> crates\ontoforge\src\online.rs:995:9
+    |
+995 | /         async fn status(&self) -> ontoforge_engine::EngineStatus {
+996 | |             ontoforge_engine::EngineStatus::Available
+997 | |         }
+    | |_________^
+    |
+    = note: `std::future::ready` creates a `Future` which returns the value immediately when `poll`ed
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#unused_async_trait_impl
+help: consider removing the `async` from this function and returning `impl Future<Output = ontoforge_engine::EngineStatus>` instead
+    |
+995 ~         fn status(&self) -> impl Future<Output = ontoforge_engine::EngineStatus> {
+996 ~             std::future::ready(ontoforge_engine::EngineStatus::Available)
+    |
+
+error: could not compile `ontoforge` (lib test) due to 5 previous errors
+warning: build failed, waiting for other jobs to finish...

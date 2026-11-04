@@ -1,0 +1,21 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.41s
+     Running unittests src\lib.rs (target\debug\deps\ontoforge_engine-55efa26d6f86e927.exe)
+
+running 14 tests
+test printer::tests::flush_metadata_cache_rejects_an_empty_catalog ... ok
+test printer::tests::count_distinct_quotes_identifiers ... ok
+test printer::tests::flush_metadata_cache_is_a_call_of_the_catalog_procedure ... ok
+test printer::tests::flush_metadata_cache_quotes_the_catalog ... ok
+test printer::tests::case_arms_are_typed_and_escape_each_literal ... ok
+test printer::tests::distributed_explain_wraps_executed_printed_sql ... ok
+test printer::tests::distributed_explain_wraps_typed_select ... ok
+test printer::tests::case_when_masks_only_projection ... ok
+test printer::tests::string_match_is_parenthesized_inside_connectives ... ok
+test printer::tests::glob_pattern_escapes_the_glob_metacharacters ... ok
+test printer::tests::string_match_quotes_the_needle_and_rejects_nul ... ok
+test printer::tests::string_match_escapes_wildcards_in_both_dialects ... ok
+test printer::tests::string_match_kinds_place_the_wildcards ... ok
+test printer::tests::print_trino_and_sqlite ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 42 filtered out; finished in 0.16s
+

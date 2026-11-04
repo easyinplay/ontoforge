@@ -1,0 +1,31 @@
+{
+  "passed": true,
+  "block": false,
+  "verdict": "RED_EVIDENCE_OK",
+  "reason": "target_test_failed",
+  "evidence": {
+    "command": "cargo-nextest nextest run --config-file .planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/nextest.toml --profile gsd -p ontoforge --test cli_trino_it --locked --run-ignored all -E test(=check_cardinality_aliases_on_ci_trino)",
+    "exit_code": 100,
+    "target_test": "check_cardinality_aliases_on_ci_trino",
+    "tests": 1,
+    "pass": 0,
+    "fail": 1,
+    "failing_tests": [
+      "ontoforge::cli_trino_it#check_cardinality_aliases_on_ci_trino"
+    ],
+    "matched_test": "ontoforge::cli_trino_it#check_cardinality_aliases_on_ci_trino",
+    "format": "junit",
+    "report_errors": []
+  },
+  "record": {
+    "command": "cargo-nextest nextest run --config-file .planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/nextest.toml --profile gsd -p ontoforge --test cli_trino_it --locked --run-ignored all -E test(=check_cardinality_aliases_on_ci_trino)",
+    "exit_code": 100,
+    "failing_test": "ontoforge::cli_trino_it#check_cardinality_aliases_on_ci_trino",
+    "target_test": "check_cardinality_aliases_on_ci_trino",
+    "expected": "valid PK=fk FK=n binding returns cardinality warning exit0",
+    "actual": "Trino rejects aggregate ORDER BY projection reference with V19 exit3",
+    "verdict": "RED_EVIDENCE_OK",
+    "reason": "target_test_failed"
+  },
+  "message": "RED evidence verified: target test \"check_cardinality_aliases_on_ci_trino\" failed as expected (exit 100). GREEN authorized."
+}

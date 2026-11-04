@@ -1,0 +1,10 @@
+{
+  "timeoutSeconds": 600,
+  "workingTreeChanges": "l2_monitor startup test synchronization only",
+  "finished": "2026-11-04T08:30:50.1722188Z",
+  "command": "cargo clippy --workspace --all-targets --locked -- -D warnings",
+  "exitCode": 0,
+  "cargoBuildJobs": 2,
+  "started": "2026-11-04T08:30:39.2439676Z",
+  "head": "834abd07333e17946005b8b0aca169136802139b"
+}

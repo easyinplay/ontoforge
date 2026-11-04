@@ -1,0 +1,18 @@
+   Compiling ontoforge-schema v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-schema)
+   Compiling ontoforge-expr v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-expr)
+   Compiling ontoforge-engine v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-engine)
+   Compiling ontoforge-auth v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-auth)
+   Compiling ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+   Compiling ontoforge-query v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-query)
+   Compiling ontoforge-action v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-action)
+   Compiling ontoforge-server v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-server)
+   Compiling ontoforge v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2m 09s
+     Running unittests src\lib.rs (target\debug\deps\ontoforge-700c8fe578931e11.exe)
+
+running 2 tests
+test online::tests::cardinality_total_deadline_is_shared ... ok
+test online::tests::cardinality_total_deadline_configuration ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 23 filtered out; finished in 0.01s
+

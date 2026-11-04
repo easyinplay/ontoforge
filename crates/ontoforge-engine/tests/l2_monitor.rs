@@ -24,6 +24,7 @@ struct Fixture {
     foreign_uri: Mutex<Option<String>>,
     origin: Mutex<String>,
     delayed: AtomicBool,
+    probe_post_delayed: AtomicBool,
     observations: AtomicUsize,
     unknown: AtomicBool,
     finish_after_visibility: AtomicBool,
@@ -166,7 +167,12 @@ impl Respond for Fixture {
             json!({"columns":[{"name":"ok","type":"integer"}],"data":[[1]]})
         };
         let template = ResponseTemplate::new(200).set_body_json(response);
-        if self.delayed.load(Ordering::SeqCst) && sql.contains("system.runtime.queries") {
+        if self.probe_post_delayed.load(Ordering::SeqCst)
+            && request.method == "POST"
+            && sql.contains("count(*)")
+        {
+            template.set_delay(Duration::from_millis(150))
+        } else if self.delayed.load(Ordering::SeqCst) && sql.contains("system.runtime.queries") {
             template.set_delay(Duration::from_millis(400))
         } else {
             template
@@ -443,16 +449,35 @@ async fn monitor_foreign_next_uri_never_receives_get_or_cancel() {
 #[tokio::test]
 async fn monitor_cancelled_startup_cleans_up_and_stays_disabled() {
     let (server, fixture) = fixture().await;
+    fixture.probe_post_delayed.store(true, Ordering::SeqCst);
     fixture.delayed.store(true, Ordering::SeqCst);
     let (l2, ontology) = engines(&server.uri(), Some(PROBE));
-    assert!(
-        tokio::time::timeout(
-            Duration::from_millis(80),
-            l2.clone().start_l2_acl_monitor(ontology.clone())
-        )
-        .await
-        .is_err()
-    );
+    let startup_l2 = l2.clone();
+    let startup_ontology = ontology.clone();
+    let startup =
+        tokio::spawn(async move { startup_l2.start_l2_acl_monitor(startup_ontology).await });
+    tokio::time::timeout(Duration::from_secs(1), async {
+        while fixture.observations.load(Ordering::SeqCst) == 0 {
+            tokio::time::sleep(Duration::from_millis(5)).await;
+        }
+    })
+    .await
+    .expect("probe registered before startup cancellation");
+    let active_probe = fixture
+        .queries
+        .lock()
+        .expect("queries")
+        .keys()
+        .next()
+        .expect("active probe")
+        .clone();
+    assert!(!startup.is_finished(), "startup must still be in progress");
+    let deletes_before_cancel = fixture.deletes.load(Ordering::SeqCst);
+    startup.abort();
+    let Err(cancelled) = startup.await else {
+        panic!("startup must be cancelled");
+    };
+    assert!(cancelled.is_cancelled());
     wait_status(
         &l2,
         L2HealthStatus::Disabled {
@@ -461,19 +486,34 @@ async fn monitor_cancelled_startup_cleans_up_and_stays_disabled() {
     )
     .await;
     tokio::time::timeout(Duration::from_secs(1), async {
-        while fixture.deletes.load(Ordering::SeqCst) == 0 {
+        while fixture.deletes.load(Ordering::SeqCst) <= deletes_before_cancel
+            || fixture
+                .queries
+                .lock()
+                .expect("queries")
+                .contains_key(&active_probe)
+        {
             tokio::time::sleep(Duration::from_millis(5)).await;
         }
     })
     .await
     .expect("probe cancelled");
+    assert!(
+        !fixture
+            .queries
+            .lock()
+            .expect("queries")
+            .contains_key(&active_probe)
+    );
+    fixture.probe_post_delayed.store(false, Ordering::SeqCst);
     fixture.delayed.store(false, Ordering::SeqCst);
-    l2.start_l2_acl_monitor(ontology)
+    let monitor = l2
+        .clone()
+        .start_l2_acl_monitor(ontology)
         .await
-        .expect("new monitor after cancellation")
-        .shutdown()
-        .await
-        .expect("shutdown");
+        .expect("new monitor after cancellation");
+    assert_eq!(l2.l2_status(), Some(L2HealthStatus::Enabled));
+    monitor.shutdown().await.expect("shutdown");
 }
 
 #[tokio::test]

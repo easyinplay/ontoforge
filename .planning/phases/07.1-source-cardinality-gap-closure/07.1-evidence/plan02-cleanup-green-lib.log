@@ -1,0 +1,9 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.46s
+     Running unittests src\lib.rs (target\debug\deps\ontoforge-9d7911bca446a24a.exe)
+
+running 2 tests
+test online::tests::cardinality_cleanup_failure_after_metadata_error ... ok
+test online::tests::cardinality_cleanup_failure_after_success ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 23 filtered out; finished in 0.01s
+

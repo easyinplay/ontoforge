@@ -1,0 +1,10 @@
+{
+  "command": "cargo test -p ontoforge --lib --locked cardinality_total_deadline_ -- --nocapture",
+  "exitCode": 0,
+  "started": "2026-11-04T04:04:33.8575179Z",
+  "finished": "2026-11-04T04:05:00.0516354Z",
+  "head": "daf3911fb4992a0ca88464040a1066ad61877f99",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "cargoBuildJobs": 2,
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07.1-source-cardinality-gap-closure\\07.1-evidence\\plan02-deadline-green-lib.log"
+}

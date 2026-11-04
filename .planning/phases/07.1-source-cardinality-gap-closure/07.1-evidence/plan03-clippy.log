@@ -1,0 +1,19 @@
+    Checking ontoforge-schema v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-schema)
+    Checking h2 v0.4.20
+error: item in documentation is missing backticks
+   --> crates\ontoforge-schema\src\diag.rs:184:23
+    |
+184 |     /// Online source OneToOne foreign key shared by distinct objects; not an offline lint.
+    |                       ^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#doc_markdown
+    = note: `-D clippy::doc-markdown` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::doc_markdown)]`
+help: try
+    |
+184 -     /// Online source OneToOne foreign key shared by distinct objects; not an offline lint.
+184 +     /// Online source `OneToOne` foreign key shared by distinct objects; not an offline lint.
+    |
+
+error: could not compile `ontoforge-schema` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

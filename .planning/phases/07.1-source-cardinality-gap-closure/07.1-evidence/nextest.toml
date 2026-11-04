@@ -1,0 +1,8 @@
+[profile.gsd]
+retries = 0
+fail-fast = false
+
+[profile.gsd.junit]
+path = "phase071-junit.xml"
+store-success-output = true
+store-failure-output = true

@@ -1,0 +1,53 @@
+{
+  "timeoutSeconds": 600,
+  "round": 4,
+  "head": "6be5c0861c8e80c9f1ba11311fb29ddce3e50aa6",
+  "command": "node gsd-tools.cjs run-with-timeout 600 -- cargo test --workspace --locked --no-run",
+  "finished": "2026-11-04T06:06:20.8768122Z",
+  "exitCode": 124,
+  "maximumRounds": 4,
+  "latestArtifacts": [
+    {
+      "Name": "query_read_pg-731de9905926c6eb.exe",
+      "Length": 2097152,
+      "LastWriteTime": "2026-11-04T14:06:19.8716105+08:00"
+    },
+    {
+      "Name": "reload_trino_it-8622841b7c4b67c7.exe",
+      "Length": 2097152,
+      "LastWriteTime": "2026-11-04T14:06:15.0600771+08:00"
+    },
+    {
+      "Name": "sqlite_connection-8869b2d2320dc706.exe",
+      "Length": 16066560,
+      "LastWriteTime": "2026-11-04T14:06:12.8511303+08:00"
+    },
+    {
+      "Name": "sqlite_query-b6aa5c0829cd3cf9.exe",
+      "Length": 17460224,
+      "LastWriteTime": "2026-11-04T14:06:12.0633764+08:00"
+    },
+    {
+      "Name": "audit_l0-27e5e71832302d26.exe",
+      "Length": 34165760,
+      "LastWriteTime": "2026-11-04T14:05:52.289027+08:00"
+    },
+    {
+      "Name": "query_read-62f1418d49a24c33.exe",
+      "Length": 30392320,
+      "LastWriteTime": "2026-11-04T14:05:50.217545+08:00"
+    },
+    {
+      "Name": "frozen_history-0d97ba70df34880f.exe",
+      "Length": 30498304,
+      "LastWriteTime": "2026-11-04T14:05:24.2905715+08:00"
+    },
+    {
+      "Name": "trino_client-20a588fdeafe3fee.exe",
+      "Length": 14937600,
+      "LastWriteTime": "2026-11-04T14:05:20.6993461+08:00"
+    }
+  ],
+  "cargoBuildJobs": 2,
+  "started": "2026-11-04T05:56:19.8373127Z"
+}

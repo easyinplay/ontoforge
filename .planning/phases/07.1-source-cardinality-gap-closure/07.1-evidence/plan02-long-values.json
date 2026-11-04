@@ -1,0 +1,10 @@
+{
+  "command": "cargo test -p ontoforge --test cli_check_cardinality long_sample_values_are_bounded --locked -- --exact --nocapture",
+  "exitCode": 0,
+  "started": "2026-11-04T03:56:12.0304830Z",
+  "finished": "2026-11-04T03:56:15.8118088Z",
+  "head": "63032dd365c3b3397658c3eb50e0f0bc477aec21",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "cargoBuildJobs": 2,
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07.1-source-cardinality-gap-closure\\07.1-evidence\\plan02-long-values.log"
+}

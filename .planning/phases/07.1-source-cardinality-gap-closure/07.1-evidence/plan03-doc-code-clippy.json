@@ -1,0 +1,10 @@
+{
+  "command": "cargo clippy --workspace --all-targets --locked -- -D warnings",
+  "timeoutSeconds": 600,
+  "finished": "2026-11-04T06:28:25.1200159Z",
+  "head": "6be5c0861c8e80c9f1ba11311fb29ddce3e50aa6",
+  "started": "2026-11-04T06:28:16.5629556Z",
+  "workingTreeChanges": "doc_type_table W18 known and required only",
+  "cargoBuildJobs": 2,
+  "exitCode": 0
+}

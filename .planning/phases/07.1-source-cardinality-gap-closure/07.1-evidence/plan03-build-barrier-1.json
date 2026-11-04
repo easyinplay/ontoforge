@@ -1,0 +1,53 @@
+{
+  "cargoBuildJobs": 2,
+  "exitCode": 124,
+  "head": "6be5c0861c8e80c9f1ba11311fb29ddce3e50aa6",
+  "started": "2026-11-04T05:25:23.8152103Z",
+  "round": 1,
+  "latestArtifacts": [
+    {
+      "Name": "http_action_safety-3f6f296af9c10bfd.exe",
+      "Length": 2097152,
+      "LastWriteTime": "2026-11-04T13:34:55.6271668+08:00"
+    },
+    {
+      "Name": "health_trino_it-683f97da716f09e7.exe",
+      "Length": 2097152,
+      "LastWriteTime": "2026-11-04T13:34:46.3311452+08:00"
+    },
+    {
+      "Name": "ontoforge-a5eacfbd0a4a44bc.exe",
+      "Length": 67348992,
+      "LastWriteTime": "2026-11-04T13:34:39.1250182+08:00"
+    },
+    {
+      "Name": "ontoforge_client-4522c9f62782f166.exe",
+      "Length": 3703296,
+      "LastWriteTime": "2026-11-04T13:34:30.0896706+08:00"
+    },
+    {
+      "Name": "source_drift-e88af3a1a9ed556e.exe",
+      "Length": 60979712,
+      "LastWriteTime": "2026-11-04T13:34:23.1791419+08:00"
+    },
+    {
+      "Name": "outbox_pg-1e0199c9b702c580.exe",
+      "Length": 39299072,
+      "LastWriteTime": "2026-11-04T13:32:53.3495793+08:00"
+    },
+    {
+      "Name": "security-f9bd56828e1a544b.exe",
+      "Length": 38430208,
+      "LastWriteTime": "2026-11-04T13:32:06.1468209+08:00"
+    },
+    {
+      "Name": "ontoforge_action-41c5226c46d241de.exe",
+      "Length": 38391296,
+      "LastWriteTime": "2026-11-04T13:32:01.0484039+08:00"
+    }
+  ],
+  "command": "node gsd-tools.cjs run-with-timeout 600 -- cargo test --workspace --locked --no-run",
+  "timeoutSeconds": 600,
+  "maximumRounds": 4,
+  "finished": "2026-11-04T05:35:25.0207100Z"
+}

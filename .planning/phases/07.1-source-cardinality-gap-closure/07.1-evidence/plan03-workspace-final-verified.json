@@ -1,0 +1,9 @@
+{
+  "started": "2026-11-04T08:42:32.5426660Z",
+  "timeoutSeconds": 600,
+  "finished": "2026-11-04T08:47:22.4796289Z",
+  "cargoBuildJobs": 2,
+  "command": "node gsd-tools.cjs run-with-timeout 600 -- cargo test --workspace --locked",
+  "head": "01aa2dfd29262105c52cecbaecd142404215bee4",
+  "exitCode": 0
+}

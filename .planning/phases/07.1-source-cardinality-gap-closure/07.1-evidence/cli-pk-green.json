@@ -1,0 +1,7 @@
+{
+  "exitCode": 0,
+  "started": "2026-11-04T03:45:44.7542070Z",
+  "head": "c43754a404becc0e4f4586769eda0f589acd267d",
+  "command": "cargo test -p ontoforge --test cli_check_pk --locked",
+  "finished": "2026-11-04T03:46:03.4301980Z"
+}

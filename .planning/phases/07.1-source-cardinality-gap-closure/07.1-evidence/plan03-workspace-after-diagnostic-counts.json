@@ -1,0 +1,18 @@
+{
+  "remainingCargoRustc": 0,
+  "harnessSummaries": 54,
+  "failure": "the document mentions unknown code ONT-W18",
+  "passed": 450.0,
+  "failedTarget": "ontoforge-engine/tests/doc_type_table.rs::doc_diagnostic_codes_exist",
+  "ignored": 14.0,
+  "failed": 1.0,
+  "command": {
+    "exitCode": 101,
+    "head": "6be5c0861c8e80c9f1ba11311fb29ddce3e50aa6",
+    "finished": "2026-11-04T06:22:44.4654067Z",
+    "cargoBuildJobs": 2,
+    "timeoutSeconds": 600,
+    "command": "node gsd-tools.cjs run-with-timeout 600 -- cargo test --workspace --locked",
+    "started": "2026-11-04T06:19:50.8943439Z"
+  }
+}

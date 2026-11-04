@@ -1,0 +1,11 @@
+{
+  "evidenceFiles": 127,
+  "commits": 9,
+  "changedProductFiles": 12,
+  "tokens": 502326.0,
+  "tasks": 2,
+  "plan_head_before": "b942b55b7625139c2dda271154a7065985a007b5",
+  "diffCharacters": 2009302,
+  "plan_head_after": "01aa2dfd29262105c52cecbaecd142404215bee4",
+  "method": "chars/4 of realized git diff from ledger base through staged owned evidence/EXECUTION/VALIDATION and committed product changes, measured before SUMMARY self-record; binary gzip contributes git binary markers rather than expanded payload"
+}

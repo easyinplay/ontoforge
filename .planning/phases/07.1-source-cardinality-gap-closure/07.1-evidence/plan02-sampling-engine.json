@@ -1,0 +1,10 @@
+{
+  "command": "cargo test -p ontoforge-engine --test cardinality_check --locked -- --nocapture",
+  "exitCode": 0,
+  "started": "2026-11-04T03:54:50.2632432Z",
+  "finished": "2026-11-04T03:54:54.9621197Z",
+  "head": "63032dd365c3b3397658c3eb50e0f0bc477aec21",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "cargoBuildJobs": 2,
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07.1-source-cardinality-gap-closure\\07.1-evidence\\plan02-sampling-engine.log"
+}

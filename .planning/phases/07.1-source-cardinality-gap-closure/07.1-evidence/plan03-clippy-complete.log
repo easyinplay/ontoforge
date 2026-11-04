@@ -1,0 +1,6 @@
+    Checking ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+    Checking ontoforge-engine v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-engine)
+    Checking ontoforge-query v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-query)
+    Checking ontoforge-auth v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-auth)
+    Checking ontoforge-expr v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-expr)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 11.39s

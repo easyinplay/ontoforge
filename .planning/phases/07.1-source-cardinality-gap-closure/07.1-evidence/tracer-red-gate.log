@@ -1,0 +1,31 @@
+{
+  "passed": true,
+  "block": false,
+  "verdict": "RED_EVIDENCE_OK",
+  "reason": "target_test_failed",
+  "evidence": {
+    "command": "cargo-nextest nextest run --config-file .planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/nextest.toml --profile gsd -p ontoforge --test cli_check_cardinality --locked -E test(=cardinality_tracer_reports_conflict)",
+    "exit_code": 100,
+    "target_test": "cardinality_tracer_reports_conflict",
+    "tests": 1,
+    "pass": 0,
+    "fail": 1,
+    "failing_tests": [
+      "ontoforge::cli_check_cardinality#cardinality_tracer_reports_conflict"
+    ],
+    "matched_test": "ontoforge::cli_check_cardinality#cardinality_tracer_reports_conflict",
+    "format": "junit",
+    "report_errors": []
+  },
+  "record": {
+    "command": "cargo-nextest nextest run --config-file .planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/nextest.toml --profile gsd -p ontoforge --test cli_check_cardinality --locked -E test(=cardinality_tracer_reports_conflict)",
+    "exit_code": 100,
+    "failing_test": "ontoforge::cli_check_cardinality#cardinality_tracer_reports_conflict",
+    "target_test": "cardinality_tracer_reports_conflict",
+    "expected": "explicit source OneToOne warning with exit0",
+    "actual": "unknown --check-cardinality argument produced exit2",
+    "verdict": "RED_EVIDENCE_OK",
+    "reason": "target_test_failed"
+  },
+  "message": "RED evidence verified: target test \"cardinality_tracer_reports_conflict\" failed as expected (exit 100). GREEN authorized."
+}

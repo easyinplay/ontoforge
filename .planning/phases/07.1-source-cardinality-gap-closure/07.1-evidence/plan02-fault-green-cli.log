@@ -1,0 +1,21 @@
+   Compiling ontoforge v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 32.41s
+     Running tests\cli_check_cardinality.rs (target\debug\deps\cli_check_cardinality-0bbc80c32741858e.exe)
+
+running 13 tests
+test long_sample_values_are_bounded ... ok
+test cardinality_tracer_reports_conflict ... ok
+test repeated_check_is_read_only ... ok
+test cleanup_transport_failure_is_reported ... ok
+test cardinality_flag_contract ... ok
+test failure_preserves_findings_and_drains ... ok
+test no_flag_means_no_cardinality_scan ... ok
+test non_candidates_are_not_scanned ... ok
+test warning_output_and_exit_codes ... ok
+test precheck_errors_skip_cardinality_scan ... ok
+test incomplete_scan_is_not_clean ... ok
+test cardinality_total_deadline_is_shared ... ok
+test cardinality_budget_starts_after_precheck_and_pk ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.23s
+

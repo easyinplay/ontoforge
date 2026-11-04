@@ -1,0 +1,20 @@
+{
+  "maximumRounds": 4,
+  "newArtifacts": [
+    "query_read_pg-731de9905926c6eb.exe",
+    "reload_trino_it-8622841b7c4b67c7.exe",
+    "sqlite_connection-8869b2d2320dc706.exe",
+    "sqlite_query-b6aa5c0829cd3cf9.exe",
+    "audit_l0-27e5e71832302d26.exe",
+    "query_read-62f1418d49a24c33.exe",
+    "frozen_history-0d97ba70df34880f.exe",
+    "trino_client-20a588fdeafe3fee.exe"
+  ],
+  "finished": "2026-11-04T06:06:20.8768122Z",
+  "roundsUsed": 4,
+  "head": "6be5c0861c8e80c9f1ba11311fb29ddce3e50aa6",
+  "exitCode": 124,
+  "started": "2026-11-04T05:56:19.8373127Z",
+  "cargoRustcProcesses": 0,
+  "workspaceTestsActuallyRunOnFinalCommit": 0
+}

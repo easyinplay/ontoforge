@@ -1,5 +1,7 @@
 # Findings
 
+- MinIO后续独立咨询（target/minio-restoration-independent-opinion.json）自行推荐保留原标准、固定官方源码自建测试artifact再隔离验证。原02-10 PLAN要求MinIO但未要求官方签名预编译image，主会话采用此工程路径，不改ADR验收语义。当前仍仅研究，builder pin/构建/运行尚未完成，ENGINE-05保持Partial；详MINIO-FEASIBILITY.md。
+
 - 新独立Iceberg意见（target/iceberg-fixture-independent-opinion.json）：local warehouse路径483/484证据充分，但accepted ADR0017与02-10 PLAN明确MinIO，SUMMARY披露替代不等于正式决策修订。当前是规范偏差及对应覆盖缺口，非已证产品故障。主会话保留未闭环，不在缺少最终处置时新增accepted ADR或宣称MinIO/S3通过；ENGINE-05当前追踪降为Partial。SQLServer私有fixture与nightly外部发帖分支证据边界继续保留。
 
 - 2026-11-04用户修正第二意见协议：只提供需求、现状、约束和已验证事实；不得附带主会话方案，不要求AGREE/REFINE/DISAGREE。对方独立给方案后主会话再比较；同方向自动推进，实质分歧才问用户。旧定向审查作为历史保留，当前Phase7.1与Iceberg差异已重做独立咨询，不能继续把旧AGREE当本次独立结论。
@@ -18,3 +20,8 @@
 - nightly失败会自动创建/comment issue，本轮不直接触发；Iceberg普通integration早退不算通过，需本地隔离fixture或等价有效证据。
 - SOURCE-CARDINALITY：独立explorer确认STORE-05 source侧未实现；pk_check.rs:124只ObjectType并只取primary_key，binding diagnostics只表列类型，读取link OneToOne/OneToMany共用分支不报source重复。03-13 PLAN/SUMMARY原明确不交付source报告；没有取消需求的ADR。现中央STORE05取消完成勾选，edit部分仍有证据，不能用对象PK重复测试替代FK基数。
 - 最小静态复现：aviation副本maintenance_records.csv将R-002 tail_number改为R-001的D-AAAA，PK仍唯一却违反aircraftCurrentMaintenance oneToOne。当前validate --online --check-pk按源码不会报告此FK重复；尚未执行此复现，待新缺口TDD。
+# 2026-11-04交付补记
+
+Phase07.1独立verifier通过18/18，native verification.status与UAT10/10通过。phase.complete因历史01/02未完成将下一指针选回Phase01，主会话按实际当前交付工作将digest保留07.1 completed、下一步ship/MinIO，不伪称旧judgment已处理。requirements.mark-complete对现有STORE-05的自定义Partial说明返回not_found且未写；实际ID存在，依据独立SATISFIED结论由T1 owner直接同步checkbox与traceability为Complete，不修改全局GSD工具。
+
+用户新增合并授权已落实：PR8整体Phase03–07合入main ef0ab9c，精确head CI与打包验证通过；PR6自动merged、PR7祖先包含后关闭重复入口。详MERGE-RESULT.md。此前“不合并”均为历史授权边界，已被用户当前指令覆盖。

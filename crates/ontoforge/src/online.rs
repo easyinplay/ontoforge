@@ -15,6 +15,9 @@ use camino::Utf8Path;
 use ontoforge_engine::bind_check::{
     BindingKey, DescribedBinding, compare_binding, describe_bindings,
 };
+use ontoforge_engine::cardinality_check::{
+    CardinalityFinding, cardinality_targets, check_cardinality,
+};
 use ontoforge_engine::config::{
     ConfigError, EngineKind, ServerConfig, TrinoConfig, build_trino_engines, load_server_config,
 };
@@ -23,7 +26,7 @@ use ontoforge_engine::pk_check::{
 };
 use ontoforge_engine::sqlite::SqliteEngine;
 use ontoforge_engine::sqlite::fixture::{FixtureError, plan_fixture_tables};
-use ontoforge_engine::{AnyEngine, EngineError, QueryContext};
+use ontoforge_engine::{AnyEngine, Engine, EngineError, QueryContext};
 use ontoforge_schema::LoadOutput;
 use ontoforge_schema::diag::{
     Diagnostic, Severity, SourceLocation, codes, has_errors, offset_to_line_col, sort_diagnostics,
@@ -78,16 +81,20 @@ pub fn run_online(args: &ValidateArgs) -> OnlineRun {
     if !has_errors(&out.diagnostics) {
         out.ontology = Some(ontology);
     }
-    let code = if out.diagnostics.iter().any(|d| d.code == codes::V19) {
-        EXIT_ENGINE
-    } else {
-        render::exit_code(&out.diagnostics, deny_warnings)
-    };
+    let code = online_exit_code(&out.diagnostics, deny_warnings);
     OnlineRun {
         out,
         code,
         profile: Some(profile),
         bindings,
+    }
+}
+
+fn online_exit_code(diagnostics: &[Diagnostic], deny_warnings: bool) -> u8 {
+    if diagnostics.iter().any(|d| d.code == codes::V19) {
+        EXIT_ENGINE
+    } else {
+        render::exit_code(diagnostics, deny_warnings)
     }
 }
 
@@ -198,7 +205,15 @@ fn check_online(
     runtime.block_on(async {
         match (backend, fixtures) {
             (Backend::Trino(trino), _) => {
-                match compare_all(&trino.engine, &trino.ctx, check, args.check_pk).await {
+                match compare_all(
+                    &trino.engine,
+                    &trino.ctx,
+                    check,
+                    args.check_pk,
+                    args.check_cardinality,
+                )
+                .await
+                {
                     Ok((compared, count)) => {
                         let mut found = ignored_fixtures(ontology, sources, profile);
                         found.extend(compared);
@@ -214,7 +229,7 @@ fn check_online(
                     Err(errors) => return (fixture_diagnostics(&errors), 0),
                 };
                 let ctx = query_context(None, args.timeout);
-                compare_all(&engine, &ctx, check, args.check_pk)
+                compare_all(&engine, &ctx, check, args.check_pk, args.check_cardinality)
                     .await
                     .unwrap_or_else(|failure| (vec![failure], 0))
             }
@@ -230,6 +245,34 @@ async fn compare_all(
     ctx: &QueryContext,
     check: Check<'_>,
     check_pk: bool,
+    check_cardinality: bool,
+) -> Result<(Vec<Diagnostic>, usize), Diagnostic> {
+    let result = compare_bindings(engine, ctx, check, check_pk, check_cardinality).await;
+    if check_cardinality {
+        finish_cardinality_check(engine, result).await
+    } else {
+        result
+    }
+}
+
+async fn finish_cardinality_check(
+    engine: &impl Engine,
+    result: Result<(Vec<Diagnostic>, usize), Diagnostic>,
+) -> Result<(Vec<Diagnostic>, usize), Diagnostic> {
+    if let Err(error) = engine.drain_cancellations().await {
+        let (mut found, count) = result.unwrap_or_else(|failure| (vec![failure], 0));
+        found.push(engine_error_diagnostic(&error, MANIFEST));
+        return Ok((found, count));
+    }
+    result
+}
+
+async fn compare_bindings(
+    engine: &AnyEngine,
+    ctx: &QueryContext,
+    check: Check<'_>,
+    check_pk: bool,
+    check_cardinality: bool,
 ) -> Result<(Vec<Diagnostic>, usize), Diagnostic> {
     let described = describe_bindings(engine, check.ontology, check.profile, ctx)
         .await
@@ -250,7 +293,88 @@ async fn compare_all(
         // so far instead of replacing it (WR-C02).
         found.extend(check_keys(engine, ctx, check, &pk_keys).await);
     }
+    if check_cardinality {
+        found.extend(check_cardinalities(engine, ctx, check, &pk_keys).await);
+    }
     Ok((found, described.len()))
+}
+
+async fn check_cardinalities(
+    engine: &impl Engine,
+    ctx: &QueryContext,
+    check: Check<'_>,
+    keys: &[BindingKey],
+) -> Vec<Diagnostic> {
+    let mut found = Vec::new();
+    let started = tokio::time::Instant::now();
+    for target in cardinality_targets(check.ontology, check.profile, keys) {
+        let remaining = ctx.timeout.saturating_sub(started.elapsed());
+        if remaining.is_zero() {
+            found.push(engine_error_diagnostic(
+                &EngineError::Timeout {
+                    after_ms: u64::try_from(ctx.timeout.as_millis()).unwrap_or(u64::MAX),
+                },
+                MANIFEST,
+            ));
+            break;
+        }
+        let target_ctx = QueryContext {
+            timeout: remaining,
+            ..ctx.clone()
+        };
+        match check_cardinality(engine, &target, &target_ctx).await {
+            Ok(finding) if !finding.samples.is_empty() => {
+                found.push(cardinality_diagnostic(&finding, check));
+            }
+            Ok(_) => {}
+            Err(error) if error.is_engine_wide() => {
+                found.push(engine_error_diagnostic(&error, MANIFEST));
+                break;
+            }
+            Err(error) => {
+                found.push(binding_failure(&target.key, &error, check.sources));
+                if started.elapsed() >= ctx.timeout {
+                    break;
+                }
+            }
+        }
+    }
+    found
+}
+
+fn cardinality_diagnostic(finding: &CardinalityFinding, check: Check<'_>) -> Diagnostic {
+    let target = &finding.target;
+    let logical_fk = check
+        .ontology
+        .link_types
+        .get(&target.link)
+        .and_then(|link| link.to.foreign_key.as_ref());
+    let path = match (binding_of(check.ontology, &target.key), logical_fk) {
+        (Some(binding), Some(fk)) if binding.columns.contains_key(fk.as_str()) => vec![
+            Seg::Key("columns".to_owned()),
+            Seg::Key(fk.to_string()),
+            Seg::Key("column".to_owned()),
+        ],
+        _ => vec![Seg::Key("source".to_owned()), Seg::Key("table".to_owned())],
+    };
+    let at = check
+        .sources
+        .locate(&source_key(&target.key), &path, Part::Value);
+    let samples = finding
+        .samples
+        .iter()
+        .map(|(value, count)| format!("`{}`: {count} distinct objects", display_value(value)))
+        .collect::<Vec<_>>()
+        .join(", ");
+    let more = if finding.more {
+        ", and more (showing up to 20)"
+    } else {
+        ""
+    };
+    Diagnostic::new(codes::W18, Severity::Warning, format!(
+        "OneToOne link `{}` has {} conflicting foreign key group(s) in `{}.{}.{}` column `{}`: {samples}{more}",
+        target.link, finding.samples.len(), target.table.catalog, target.table.schema, target.table.table, target.foreign_key,
+    ), &at).with_help("only foreign key uniqueness was checked; referential integrity (whether referenced objects exist) was not checked")
 }
 
 /// What the online check runs over.
@@ -583,6 +707,7 @@ fn binding_diagnostics(
 
 #[cfg(test)]
 mod tests {
+    use std::fmt::Write as _;
     use std::time::Duration;
 
     use ontoforge_engine::config::parse_server_config;
@@ -635,5 +760,311 @@ mod tests {
         let trino = config.trino.expect("trino section");
         let ctx = query_context(Some(&trino), None);
         assert_eq!(ctx.client_tags, ["team-a", "ontoforge", "validate-online"]);
+    }
+
+    struct BudgetEngine {
+        contexts: std::sync::Mutex<Vec<ontoforge_engine::QueryContext>>,
+        delays: Vec<Duration>,
+    }
+
+    impl ontoforge_engine::Engine for BudgetEngine {
+        fn dialect(&self) -> ontoforge_engine::Dialect {
+            ontoforge_engine::Dialect::Sqlite
+        }
+
+        async fn execute(
+            &self,
+            _sql: &ontoforge_engine::PrintedSql,
+            ctx: &ontoforge_engine::QueryContext,
+        ) -> Result<ontoforge_engine::QueryOutput, ontoforge_engine::EngineError> {
+            let index = {
+                let mut contexts = self.contexts.lock().expect("contexts");
+                let index = contexts.len();
+                contexts.push(ctx.clone());
+                index
+            };
+            let delay = self.delays.get(index).copied().unwrap_or_default();
+            if tokio::time::timeout(ctx.timeout, tokio::time::sleep(delay))
+                .await
+                .is_err()
+            {
+                return Err(ontoforge_engine::EngineError::Timeout {
+                    after_ms: ctx.timeout.as_millis().try_into().expect("small duration"),
+                });
+            }
+            Ok(ontoforge_engine::QueryOutput {
+                columns: Vec::new(),
+                rows: vec![vec![
+                    ontoforge_engine::Value::String("A1".to_owned()),
+                    ontoforge_engine::Value::Long(2),
+                ]],
+                truncated: false,
+            })
+        }
+
+        fn describe_tables(
+            &self,
+            _tables: &[ontoforge_engine::TableRef],
+            _ctx: &ontoforge_engine::QueryContext,
+        ) -> impl Future<
+            Output = Result<
+                std::collections::BTreeMap<
+                    ontoforge_engine::TableRef,
+                    Vec<ontoforge_engine::PhysicalColumn>,
+                >,
+                ontoforge_engine::EngineError,
+            >,
+        > {
+            std::future::ready(Ok(std::collections::BTreeMap::new()))
+        }
+
+        fn status(&self) -> impl Future<Output = ontoforge_engine::EngineStatus> {
+            std::future::ready(ontoforge_engine::EngineStatus::Available)
+        }
+    }
+
+    fn cardinality_input() -> (
+        ontoforge_schema::LoadOutput,
+        ontoforge_schema::ir::ProfileName,
+        Vec<ontoforge_engine::bind_check::BindingKey>,
+    ) {
+        let mut objects = String::from(
+            "kind: ObjectType\napiName: Origin\nprimaryKey: id\nproperties:\n  id: { type: string, required: true }\nbacking: editOnly\n---\nkind: ObjectType\napiName: Target\nprimaryKey: id\nproperties:\n  id: { type: string, required: true }\n  originId: { type: string }\nbacking: source\n",
+        );
+        for name in ["alpha", "beta", "gamma"] {
+            writeln!(objects, "---\nkind: LinkType\napiName: {name}\ncardinality: oneToOne\nfrom: {{ objectType: Origin, apiName: {name}Target }}\nto: {{ objectType: Target, apiName: {name}Origin, foreignKey: originId }}").expect("write ontology");
+        }
+        let out = ontoforge_schema::load_from_memory(&[
+            ("ontology.yaml", "apiName: demo\ndefaultProfile: dev\n"),
+            ("objects.yaml", &objects),
+            (
+                "bindings/dev/target.yaml",
+                "kind: SourceBinding\ntarget: { objectType: Target }\nsource: { catalog: demo, schema: aviation, table: targets }\n",
+            ),
+        ]);
+        assert!(out.diagnostics.is_empty(), "{:?}", out.diagnostics);
+        let profile =
+            ontoforge_schema::ir::ProfileName::try_from("dev".to_owned()).expect("profile");
+        let key = ontoforge_engine::bind_check::BindingKey {
+            profile: profile.clone(),
+            target: ontoforge_schema::ir::BindingTarget::ObjectType(
+                ontoforge_schema::ir::ObjectTypeName::try_from("Target".to_owned())
+                    .expect("object"),
+            ),
+        };
+        (out, profile, vec![key])
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn cardinality_total_deadline_is_shared() {
+        let (out, profile, keys) = cardinality_input();
+        let engine = BudgetEngine {
+            contexts: std::sync::Mutex::new(Vec::new()),
+            delays: vec![Duration::from_millis(30), Duration::from_secs(1)],
+        };
+        let ctx = ontoforge_engine::QueryContext {
+            timeout: Duration::from_millis(200),
+            max_rows: 7,
+            max_bytes: 1234,
+            ..query_context(None, None)
+        };
+        let check = super::Check {
+            ontology: out.ontology.as_ref().expect("ontology"),
+            sources: &out.sources,
+            profile: &profile,
+        };
+        let found = super::check_cardinalities(&engine, &ctx, check, &keys).await;
+        let contexts = engine.contexts.lock().expect("contexts");
+        assert_eq!(
+            contexts.len(),
+            2,
+            "expired total budget must prevent the third scan"
+        );
+        assert!(
+            contexts[1].timeout < contexts[0].timeout,
+            "remaining timeout must decrease"
+        );
+        assert!(contexts[0].timeout <= ctx.timeout);
+        assert!(
+            contexts
+                .iter()
+                .all(|observed| observed.max_rows == 7 && observed.max_bytes == 1234)
+        );
+        assert_eq!(
+            found.iter().filter(|diag| diag.code == "ONT-W18").count(),
+            1
+        );
+        assert!(found.iter().any(|diag| diag.code == "ONT-V19"));
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn cardinality_total_deadline_configuration() {
+        let (out, profile, keys) = cardinality_input();
+        let config = parse_server_config("[trino]\nurl = \"http://127.0.0.1:8080\"\nquery_timeout_ms = 12000\n[trino.identities.ontology]\nuser = \"u\"\n").expect("config");
+        let trino = config.trino.expect("trino");
+        for (ctx, expected) in [
+            (query_context(None, None), 30000),
+            (query_context(Some(&trino), None), 12000),
+            (query_context(Some(&trino), Some(1000)), 1000),
+        ] {
+            assert_eq!(ctx.timeout, Duration::from_millis(expected));
+            let engine = BudgetEngine {
+                contexts: std::sync::Mutex::new(Vec::new()),
+                delays: Vec::new(),
+            };
+            let check = super::Check {
+                ontology: out.ontology.as_ref().expect("ontology"),
+                sources: &out.sources,
+                profile: &profile,
+            };
+            let findings = super::check_cardinalities(&engine, &ctx, check, &keys).await;
+            assert_eq!(findings.len(), 3);
+            let contexts = engine.contexts.lock().expect("contexts");
+            assert_eq!(contexts.len(), 3);
+            assert!(contexts[0].timeout <= ctx.timeout && contexts[0].timeout > ctx.timeout / 2);
+            assert!(
+                contexts
+                    .windows(2)
+                    .all(|pair| pair[1].timeout <= pair[0].timeout)
+            );
+            assert_eq!(
+                ctx.timeout,
+                Duration::from_millis(expected),
+                "original context is unchanged"
+            );
+        }
+        let engine = BudgetEngine {
+            contexts: std::sync::Mutex::new(Vec::new()),
+            delays: Vec::new(),
+        };
+        let check = super::Check {
+            ontology: out.ontology.as_ref().expect("ontology"),
+            sources: &out.sources,
+            profile: &profile,
+        };
+        let expired = ontoforge_engine::QueryContext {
+            timeout: Duration::ZERO,
+            ..query_context(None, None)
+        };
+        let findings = super::check_cardinalities(&engine, &expired, check, &keys).await;
+        assert!(engine.contexts.lock().expect("contexts").is_empty());
+        assert_eq!(super::online_exit_code(&findings, false), 3);
+    }
+
+    struct CleanupEngine {
+        metadata_fails: bool,
+        drained: std::sync::atomic::AtomicBool,
+    }
+
+    impl ontoforge_engine::Engine for CleanupEngine {
+        fn dialect(&self) -> ontoforge_engine::Dialect {
+            ontoforge_engine::Dialect::Sqlite
+        }
+        fn execute(
+            &self,
+            _sql: &ontoforge_engine::PrintedSql,
+            _ctx: &ontoforge_engine::QueryContext,
+        ) -> impl Future<Output = Result<ontoforge_engine::QueryOutput, ontoforge_engine::EngineError>>
+        {
+            std::future::ready(Ok(ontoforge_engine::QueryOutput {
+                columns: Vec::new(),
+                rows: vec![vec![
+                    ontoforge_engine::Value::String("A".to_owned()),
+                    ontoforge_engine::Value::Long(2),
+                ]],
+                truncated: false,
+            }))
+        }
+        fn describe_tables(
+            &self,
+            _tables: &[ontoforge_engine::TableRef],
+            _ctx: &ontoforge_engine::QueryContext,
+        ) -> impl Future<
+            Output = Result<
+                std::collections::BTreeMap<
+                    ontoforge_engine::TableRef,
+                    Vec<ontoforge_engine::PhysicalColumn>,
+                >,
+                ontoforge_engine::EngineError,
+            >,
+        > {
+            std::future::ready(if self.metadata_fails {
+                Err(ontoforge_engine::EngineError::Unavailable {
+                    retryable: false,
+                    reason: "metadata unavailable".to_owned(),
+                })
+            } else {
+                Ok(std::collections::BTreeMap::new())
+            })
+        }
+        fn status(&self) -> impl Future<Output = ontoforge_engine::EngineStatus> {
+            std::future::ready(ontoforge_engine::EngineStatus::Available)
+        }
+        async fn drain_cancellations(&self) -> Result<(), ontoforge_engine::EngineError> {
+            tokio::time::sleep(Duration::from_millis(1)).await;
+            self.drained
+                .store(true, std::sync::atomic::Ordering::SeqCst);
+            Err(ontoforge_engine::EngineError::Unavailable {
+                retryable: false,
+                reason: "cleanup failed".to_owned(),
+            })
+        }
+    }
+
+    #[tokio::test]
+    async fn cardinality_cleanup_failure_after_success() {
+        let (out, profile, keys) = cardinality_input();
+        let engine = CleanupEngine {
+            metadata_fails: false,
+            drained: std::sync::atomic::AtomicBool::new(false),
+        };
+        let check = super::Check {
+            ontology: out.ontology.as_ref().expect("ontology"),
+            sources: &out.sources,
+            profile: &profile,
+        };
+        let found =
+            super::check_cardinalities(&engine, &query_context(None, None), check, &keys).await;
+        assert_eq!(found.len(), 3);
+        let (after, count) = super::finish_cardinality_check(&engine, Ok((found.clone(), 1)))
+            .await
+            .expect("diagnostics");
+        assert_eq!(after[..3], found);
+        assert_eq!(count, 1);
+        assert!(
+            engine.drained.load(std::sync::atomic::Ordering::SeqCst),
+            "cleanup future must finish before return"
+        );
+        assert!(
+            after
+                .last()
+                .expect("cleanup diagnostic")
+                .message
+                .contains("cleanup failed")
+        );
+        assert_eq!(super::online_exit_code(&after, false), 3);
+    }
+
+    #[tokio::test]
+    async fn cardinality_cleanup_failure_after_metadata_error() {
+        use ontoforge_engine::Engine;
+        let engine = CleanupEngine {
+            metadata_fails: true,
+            drained: std::sync::atomic::AtomicBool::new(false),
+        };
+        let error = engine
+            .describe_tables(&[], &query_context(None, None))
+            .await
+            .expect_err("metadata failure");
+        let original = super::engine_error_diagnostic(&error, super::MANIFEST);
+        let (after, count) = super::finish_cardinality_check(&engine, Err(original.clone()))
+            .await
+            .expect("both diagnostics");
+        assert_eq!(after.len(), 2);
+        assert_eq!(after[0], original);
+        assert_eq!(count, 0);
+        assert!(engine.drained.load(std::sync::atomic::Ordering::SeqCst));
+        assert!(after[1].message.contains("cleanup failed"));
+        assert_eq!(super::online_exit_code(&after, false), 3);
     }
 }

@@ -1,0 +1,7 @@
+{
+  "finished": "2026-11-04T03:45:35.6037434Z",
+  "started": "2026-11-04T03:45:29.7223210Z",
+  "head": "c43754a404becc0e4f4586769eda0f589acd267d",
+  "exitCode": 0,
+  "command": "cargo test -p ontoforge-engine --test pk_check --test sql_text_only_from_printer --locked"
+}

@@ -1,0 +1,3 @@
+ontoforge-trino-05-06 trinodb/trino:483 exited
+ontoforge-pg-05-06 postgres:17.11 exited
+vennuap-casdoor casbin/casdoor:3.118.0 running

@@ -1,0 +1,7 @@
+{
+  "block": false,
+  "passed": true,
+  "coverage_present": false,
+  "detected": false,
+  "message": "api-coverage: no external-API integration detected; coverage matrix not required"
+}

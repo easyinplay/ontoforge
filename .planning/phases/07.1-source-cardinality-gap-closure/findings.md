@@ -18,7 +18,7 @@ CONTEXT 的 `Locked decisions` 未带 D-NN。D-01至D-10保留最初十条决策
 
 ## Specless probe
 
-`07.1-EDGE-COVERAGE.md` 两条 resolved/explicit 分别进入 01 的重复运行只读 truth 和 02 的中断/截断 truth。外部 source 允许并发变化，结果只描述各自查询观测，不建立跨表快照或持续唯一性保证。
+`07.1-EDGE-ACCEPTANCE.md` 两条 resolved/explicit 分别进入 01 的重复运行只读 truth 和 02 的中断/截断 truth。外部 source 允许并发变化，结果只描述各自查询观测，不建立跨表快照或持续唯一性保证。
 
 Prohibition recall 针对 STORE-05 先提出十个候选：默认全扫、重复物理行误报、NULL误报、错误target、样本无界、错误后假通过、取消泄漏、改写source、以报告阻断读取、误称引用完整性。precision 后均是已有明确合同或可测试的工程正确性，由任务/edge/安全测试接收；新增 values/safety/ethics 项为0。SQL注入属于通用安全，交 threat_model、typed quoting测试及独立安全复核，不创建 descriptor-less 人工禁止项。`must_haves.prohibitions` 为空列表是明确结果，不是省略 probe。
 
@@ -70,3 +70,49 @@ Prohibition recall 针对 STORE-05 先提出十个候选：默认全扫、重复
 VALIDATION已映射到实际task：01-1 tracer、01-2对象语义/只读重复、02-1scope/flags、02-2采样/quoting、02-3失败/cleanup/总deadline、03-1真实Trino、03-2文档与受影响回归。新增C5a/C5b/C6分别验证剩余预算、真实CLI到期输出、默认/覆盖来源；C7验证cleanup失败。所有执行项仍pending。
 
 总deadline留在CLI内部cardinality轮次，无新公共API或参数；默认值和覆盖来自现有query_context。现有engine dev-dependency具有tokio test-util，CLI没有显式启用；计划使用短预算和recording Engine传入timeout断言，不新增依赖或要求30秒慢测。
+
+
+## 执行状态更新：07.1-02验收后
+
+01/02的实际结果以各自SUMMARY及07.1-evidence为准；上文规划时的pending不是当前执行状态。02的77个独立测试全部通过，真实deadline RED由daf3911记录、GREEN由7ecc32b实现，SUMMARY b942b55。03只增加既有行为的真实Trino验收与文档，不新增生产行为，TDD不适用；如发现生产bug，先保留真实assert RED再修复。共享计划归主会话；executor独占Cargo/Docker，代码/安全review只读并行。独立review模型resolver给出的gpt-5.6系列不可用，沿已采用的gpt-6-astra fallback，effort分别high/xhigh；不声称模型等价。
+
+
+## GSD verify-pre 文档命名冲突
+
+2026-11-04，api-coverage.verify-pre因唯一的*-COVERAGE.md被识别为API矩阵，误将两行边界用例表解释为empty capabilities。主会话先核对gate源码，只向Claude Code提供需求/事实，其独立推荐语义重命名及引用迁移，与主会话判断同向。将07.1-EDGE-COVERAGE.md改为07.1-EDGE-ACCEPTANCE.md，SHA256前后一致；活动PLAN/规划引用同步，既有边界记录与验收要求不变。保留原gate阻塞JSON，不改全局工具、不关闭gate、不虚构API能力。CC prompt/result位于target/phase071-coverage-name-*.{txt,json}，实际MiniMax-M3.1-Flash[1m]。使用未stage的文件移动避免与executor共享Git index冲突，最终Git仍可按相同内容识别rename。后续gate必须对非空完整PLAN重新检测，不能以改名本身宣称通过。
+
+
+## 冷构建预算与独立意见
+
+完整workspace前两次各600秒均在编译阶段exit124，没有test result；持续出现新目标和产物，不把它描述为测试失败或watch mode。主会话独立判断应区分构建与测试预算，向Claude Code仅提供事实后，其同向推荐必要时用同scope的--no-run先完成构建，再运行原完整测试命令；保留600秒有界管理。采纳该条件流程，不改全局配置或测试语义。第三次若直接成功，立即使用其真实计数收尾，不额外重跑。若第三次仍编译超时，最多4次600秒--no-run缓存续跑，每轮记录目标/产物进展并回收本次进程树；连续3轮同目标无产物进展、真实编译错误/测试失败，或该预算耗尽时停止盲目重试并调查，保持验收未完成。构建exit0不等于测试通过，最终仍需完整cargo test --workspace --locked实际运行成功。独立原始咨询归07.1-evidence/build-budget-independent-opinion.json。
+
+
+## 完整回归中的deadline测试时序
+
+第三次workspace构建完成8m17s后，首个CLI lib suite为24 passed/1 failed，exit101；失败cardinality_total_deadline_is_shared实际contexts.len=1，期望2。失败只证明第二target没进入，不能证明生产重置deadline或诊断丢失。生产使用tokio::time::Instant，测试用真实30ms/1s sleep和200ms预算，调度敏感是源码支持的解释；原始失败未记录足够现场来精确断言第一次sleep被延迟的机制。保留原日志，不以一次重跑成功覆盖失败。
+
+主会话独立判断使用虚拟时钟隔离测试调度噪声，向Claude Code仅提供需求/事实/代码，其独立推荐相同方向：CLI自身dev Tokio增加既有test-util feature，测试用start_paused=true，生产和断言不变。授权executor调整两个使用BudgetEngine的deadline单测（共享预算与配置测试），都只验证逻辑时间；不增加依赖版本、不改变Cargo.lock、不放大全局timeout、不串行化workspace。原workspace失败是测试可靠性缺陷，不能冒称新的生产RED。需目标测试、完整CLI lib、最终并发workspace重新通过，若再失败记录实际contexts/timeout/diagnostics并调查。
+
+Clippy新增doc_markdown失败为schema/diag.rs的OneToOne注释缺反引号，允许只修本phase新增注释的标记并保留原exit101；文档/lint修正TDD不适用，Clippy必须真实重新通过。所有后续审查需覆盖dev-only test-util及纯注释变更，不沿用旧manifest零diff声明。
+
+## 构建预算耗尽后的观测修正
+
+4轮600秒no-run于06:06:20Z全部结束124，已停止Cargo。只读metadata列11个package、141个test=true目标；当前05:15:02Z后保留138个exe（3,846,044,160 bytes），mtime桶27/27/11/23/50是当前分布，不能当历史精确新增数。已确认health_trino_it/http_action_safety重复生成，但原因及最后截断target未知；目标名称碰撞使exe前缀匹配不能证明完成。原始事实归plan03-build-readonly-diagnosis.json。
+
+仅提供事实向Claude Code取得独立方案（实际MiniMax-M3.1-Flash[1m]），核心判断与主会话同向：缺少Cargo freshness与目标级观测，继续相同无观测重试无依据。采用一次600秒同scope --no-run --message-format=json -vv诊断，记录artifact fresh、前后完整快照及自有进程CPU/target观测；成功后才执行原完整workspace测试600秒。未授权再次自动追加4轮，也不改profile/features/jobs或缩减目标。此为诊断观测调整，无生产/测试语义变更，TDD不适用；验收仍须实际workspace通过。
+
+对独立回答保留技术判断：进程退出不能排除此前锁争用，无磁盘错误不能排除IO瓶颈，metadata/mtime不是fresh证明；不采用不同build/test命令耗时相减推断链接成本，也不采用bench/example范围推测。完整prompt/result、实际模型、原始结果哈希及采纳边界见build-limit-independent-opinion.json。该诊断轮再次124或出现真实错误即停止，不能标构建或phase通过。
+
+## 最终回归暴露的文档诊断码集合遗漏
+
+可观测构建exit0后，原完整workspace于06:19:50Z至06:22:44Z实际exit101，54个harness汇总450 passed/1 failed/14 ignored。唯一失败doc_diagnostic_codes_exist原文the document mentions unknown code ONT-W18。主会话已读doc_type_table.rs:166起的完整校验：known只包含硬编码V01..V20和KNOWN_RULE_IDS，required也未列W18。schema diag.rs已有W18、online.rs实际发此warning、source-binding.md正确记录在线且非LintRule边界；故缺口定位于文档保护测试的已知码集合，不能通过把W18塞进离线规则表修复。原日志完整保留；独立咨询只提供事实和代码，不附修复方案。
+
+独立意见同向：仅修文档测试known/required以显式纳入codes::W18，不改生产或离线规则表，不引入全局ALL_CODES抽象。executor新增该测试文件ownership，先复现实际RED再改并取得GREEN；原workspace失败是测试校验集合遗漏，不冒称生产行为RED。此次跳过brainstorming：根因明确、既有集合模式、无API或算法设计；生产TDD不适用，保留现有测试RED/GREEN证据。最终workspace必须完整运行并据日志重新计数，不能采纳独立回答预计451/0/14的提前停止数量；不无理由重跑生产/seed未变的真实Trino。完整prompt/result和采纳边界见doc-code-independent-opinion.json。
+
+## 后继回归：monitor取消测试的生命周期前置条件
+
+834abd0完整workspace真实exit101，60个harness507 passed/1 failed/14 ignored；W18已通过，失败旧l2_monitor的monitor_cancelled_startup_cleans_up_and_stays_disabled，1秒等待deletes报probe cancelled: Elapsed(())。该测试用固定80ms取消启动，未证明已登记pending；生产start_probe先登记pending再发system.runtime.queries。fixture观察该查询才有可靠前置条件。原失败现场没有submissions/observations，故准确时序unknown，不声称生产泄漏或已证实仅慢机。
+
+仅事实独立咨询支持同方向：同步到观测查询后取消，等待task abort生效，保留Stopped、DELETE和重启验证，新增对应query移除断言。授权executor单测试文件范围，先用该case专用受控probe响应延迟复现错误前置条件，再修同步机制；不能修改生产、全局timeout或串行化suite。此为已有生命周期合同的测试可靠性修正，跳过新brainstorming，保留真实受控RED/GREEN但不冒称生产RED。原始咨询及采纳边界见monitor-startup-independent-opinion.json。
+
+49eb4d5独立review新增WR-01：fixture先deletes++再锁queries删除，test仅等计数后立即断言删除存在合法交错，源码可证但未实际复现。再次纯事实CC意见同向，授权在原1秒窗口内同时等待DELETE计数增长与对应query消失，保留原后置断言、锁不跨await；不修改fixture顺序或生产。执行中的完整workspace不强杀，保留其结果；修正后的最后源码仍需完整workspace，不采纳无针对性100次循环。咨询见monitor-assertion-independent-opinion.json。

@@ -1,0 +1,9 @@
+   Compiling ontoforge-engine v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.25s
+     Running tests\doc_type_table.rs (target\debug\deps\doc_type_table-85bc175da6cff34b.exe)
+
+running 1 test
+test doc_diagnostic_codes_exist ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
+

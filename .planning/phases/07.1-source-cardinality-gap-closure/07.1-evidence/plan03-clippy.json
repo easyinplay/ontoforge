@@ -1,0 +1,9 @@
+{
+  "head": "a78ad587df0c5f8ada2d34e0d82294482c240d13",
+  "command": "node gsd-tools.cjs run-with-timeout 600 -- cargo clippy --workspace --all-targets --locked -- -D warnings",
+  "exitCode": 101,
+  "cargoBuildJobs": 2,
+  "timeoutSeconds": 600,
+  "started": "2026-11-04T05:03:13.7103926Z",
+  "finished": "2026-11-04T05:03:23.2216681Z"
+}

@@ -1,0 +1,53 @@
+   Compiling ontoforge-server v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-server)
+   Compiling ontoforge-engine v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-engine)
+   Compiling ontoforge-query v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-query)
+   Compiling ontoforge-auth v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-auth)
+   Compiling ontoforge-expr v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-expr)
+   Compiling ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8m 17s
+     Running unittests src\lib.rs (target\debug\deps\ontoforge-a5eacfbd0a4a44bc.exe)
+
+running 25 tests
+test render::tests::exit_codes ... ok
+test render::tests::carriage_return_and_bidi_controls_are_replaced ... ok
+test online::tests::query_context_uses_defaults_and_timeout_flag ... ok
+test render::tests::multibyte_text_is_untouched ... ok
+test render::tests::sanitize_preserves_byte_length_and_strips_escapes ... ok
+test dev::tests::lock_acquisition_rechecks_new_entries_before_initialization ... ok
+test dev::tests::lock_acquisition_rechecks_marker_before_reset_deletes_assets ... ok
+test render::tests::located_diagnostic_without_source_names_the_place ... ok
+test render::tests::file_name_cannot_drive_the_terminal ... ok
+test online::tests::cardinality_cleanup_failure_after_metadata_error ... ok
+test mcp::tests::bridge_configuration_bounds_concurrency_and_redacts_errors ... ok
+test mcp::tests::bridge_configuration_disables_reinit_and_rejects_url_credentials ... ok
+test online::tests::trino_context_takes_the_configured_limits ... ok
+test online::tests::trino_context_sends_the_configured_client_tags ... ok
+test reload::tests::nothing_to_wait_for_without_trino_in_front_of_postgres ... ok
+test serve::tests::openapi_export_without_store_is_deterministic ... ok
+test online::tests::cardinality_cleanup_failure_after_success ... ok
+test online::tests::cardinality_total_deadline_configuration ... ok
+test reload::tests::a_postgres_store_read_by_trino_on_a_trino_profile_is_probed ... ok
+test reload::tests::the_default_profile_of_the_manifest_decides_without_an_option ... ok
+test online::tests::cardinality_total_deadline_is_shared ... FAILED
+test serve::tests::serve_args_validate_config_and_address ... ok
+test serve::tests::serve_query_key_survives_restart_and_is_independent_of_auth ... ok
+test serve::tests::serve_real_listener_auth_and_shutdown ... ok
+test serve::tests::serve_query_key_rejects_missing_short_and_oversized_files_before_listen ... ok
+
+failures:
+
+---- online::tests::cardinality_total_deadline_is_shared stdout ----
+
+thread 'online::tests::cardinality_total_deadline_is_shared' (3444) panicked at crates\ontoforge\src\online.rs:875:9:
+assertion `left == right` failed: expired total budget must prevent the third scan
+  left: 1
+ right: 2
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    online::tests::cardinality_total_deadline_is_shared
+
+test result: FAILED. 24 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 15.94s
+
+error: test failed, to rerun pass `-p ontoforge --lib`

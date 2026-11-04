@@ -1,0 +1,19 @@
+   Compiling ontoforge-engine v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 27.69s
+     Running tests\doc_type_table.rs (target\debug\deps\doc_type_table-85bc175da6cff34b.exe)
+
+running 1 test
+
+thread 'doc_diagnostic_codes_exist' (14056) panicked at crates\ontoforge-engine\tests\doc_type_table.rs:199:9:
+the document mentions unknown code ONT-W18
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test doc_diagnostic_codes_exist ... FAILED
+
+failures:
+
+failures:
+    doc_diagnostic_codes_exist
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p ontoforge-engine --test doc_type_table`

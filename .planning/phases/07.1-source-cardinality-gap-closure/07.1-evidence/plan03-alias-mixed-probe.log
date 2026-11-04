@@ -1,0 +1,4 @@
+Query 20261104_042542_00005_y5qzj failed: line 1:230: Invalid reference to output projection attribute from ORDER BY aggregation
+LINE 1: SELECT n AS fk, count(DISTINCT fk) AS n FROM (SELECT fk, n FROM demo.aviation.cardinality_alias_fk_n UNION ALL SELECT 'Yc', 'Y') AS source_rows WHERE n IS NOT NULL GROUP BY n HAVING count(DISTINCT fk) > 1 ORDER BY count(DISTINCT fk) DESC NULLS LAST, fk ASC NULLS LAST LIMIT 21
+                                                                                                                                                                                                                                             ^
+

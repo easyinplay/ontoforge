@@ -1,0 +1,21 @@
+   Compiling ontoforge-engine v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 35.46s
+     Running tests\cardinality_check.rs (target\debug\deps\cardinality_check-b9d4f4de23a855fd.exe)
+
+running 1 test
+
+thread 'count_alias_cannot_change_indexed_fk_sample_order' (49888) panicked at crates\ontoforge-engine\tests\cardinality_check.rs:575:13:
+assertion `left == right` failed: FK n, PK id: index must not change A..T samples
+  left: [(String("Y"), 2), (String("X"), 2), (String("W"), 2), (String("V"), 2), (String("U"), 2), (String("T"), 2), (String("S"), 2), (String("R"), 2), (String("Q"), 2), (String("P"), 2), (String("O"), 2), (String("N"), 2), (String("M"), 2), (String("L"), 2), (String("K"), 2), (String("J"), 2), (String("I"), 2), (String("H"), 2), (String("G"), 2), (String("F"), 2)]
+ right: [(String("A"), 2), (String("B"), 2), (String("C"), 2), (String("D"), 2), (String("E"), 2), (String("F"), 2), (String("G"), 2), (String("H"), 2), (String("I"), 2), (String("J"), 2), (String("K"), 2), (String("L"), 2), (String("M"), 2), (String("N"), 2), (String("O"), 2), (String("P"), 2), (String("Q"), 2), (String("R"), 2), (String("S"), 2), (String("T"), 2)]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test count_alias_cannot_change_indexed_fk_sample_order ... FAILED
+
+failures:
+
+failures:
+    count_alias_cannot_change_indexed_fk_sample_order
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 10 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `-p ontoforge-engine --test cardinality_check`

@@ -1,0 +1,10 @@
+{
+  "command": "cargo test -p ontoforge-engine --test l2_monitor --locked -- --nocapture",
+  "exitCode": 0,
+  "started": "2026-11-04T08:38:55.9808233Z",
+  "finished": "2026-11-04T08:38:57.8047601Z",
+  "head": "49eb4d5aff89cfcdd21ed532ed8891c6ce0d1958",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "cargoBuildJobs": 2,
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07.1-source-cardinality-gap-closure\\07.1-evidence\\plan03-monitor-assertion-suite.log"
+}

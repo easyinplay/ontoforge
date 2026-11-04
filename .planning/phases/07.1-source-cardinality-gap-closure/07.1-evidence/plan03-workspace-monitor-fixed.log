@@ -1,0 +1,2561 @@
+   Compiling ontoforge-engine v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 20.11s
+     Running unittests src\lib.rs (target\debug\deps\ontoforge-a5eacfbd0a4a44bc.exe)
+
+running 25 tests
+test online::tests::query_context_uses_defaults_and_timeout_flag ... ok
+test mcp::tests::bridge_configuration_bounds_concurrency_and_redacts_errors ... ok
+test mcp::tests::bridge_configuration_disables_reinit_and_rejects_url_credentials ... ok
+test online::tests::trino_context_sends_the_configured_client_tags ... ok
+test online::tests::trino_context_takes_the_configured_limits ... ok
+test render::tests::carriage_return_and_bidi_controls_are_replaced ... ok
+test render::tests::exit_codes ... ok
+test dev::tests::lock_acquisition_rechecks_new_entries_before_initialization ... ok
+test render::tests::file_name_cannot_drive_the_terminal ... ok
+test render::tests::multibyte_text_is_untouched ... ok
+test render::tests::located_diagnostic_without_source_names_the_place ... ok
+test render::tests::sanitize_preserves_byte_length_and_strips_escapes ... ok
+test online::tests::cardinality_total_deadline_is_shared ... ok
+test reload::tests::a_postgres_store_read_by_trino_on_a_trino_profile_is_probed ... ok
+test online::tests::cardinality_cleanup_failure_after_metadata_error ... ok
+test online::tests::cardinality_total_deadline_configuration ... ok
+test reload::tests::nothing_to_wait_for_without_trino_in_front_of_postgres ... ok
+test reload::tests::the_default_profile_of_the_manifest_decides_without_an_option ... ok
+test dev::tests::lock_acquisition_rechecks_marker_before_reset_deletes_assets ... ok
+test online::tests::cardinality_cleanup_failure_after_success ... ok
+test serve::tests::openapi_export_without_store_is_deterministic ... ok
+test serve::tests::serve_args_validate_config_and_address ... ok
+test serve::tests::serve_query_key_survives_restart_and_is_independent_of_auth ... ok
+test serve::tests::serve_real_listener_auth_and_shutdown ... ok
+test serve::tests::serve_query_key_rejects_missing_short_and_oversized_files_before_listen ... ok
+
+test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.30s
+
+     Running unittests src\main.rs (target\debug\deps\ontoforge-e8806c81ea444329.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\cli.rs (target\debug\deps\cli-eb463de316228ca6.exe)
+
+running 8 tests
+test validate_unknown_field_points_at_the_misspelled_key ... ok
+test validate_aviation_succeeds_silently ... ok
+test json_output_has_exactly_the_documented_fields_and_no_ansi ... ok
+test missing_manifest_is_reported_as_v14 ... ok
+test validate_summary_names_the_profile ... ok
+test validate_human_output_for_unknown_field ... ok
+test profile_precedence ... ok
+test aviation_is_clean_under_dev ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.22s
+
+     Running tests\cli_check_cardinality.rs (target\debug\deps\cli_check_cardinality-c8402ba9f7ecbc33.exe)
+
+running 13 tests
+test long_sample_values_are_bounded ... ok
+test cardinality_tracer_reports_conflict ... ok
+test repeated_check_is_read_only ... ok
+test cleanup_transport_failure_is_reported ... ok
+test failure_preserves_findings_and_drains ... ok
+test cardinality_flag_contract ... ok
+test non_candidates_are_not_scanned ... ok
+test no_flag_means_no_cardinality_scan ... ok
+test warning_output_and_exit_codes ... ok
+test precheck_errors_skip_cardinality_scan ... ok
+test cardinality_total_deadline_is_shared ... ok
+test incomplete_scan_is_not_clean ... ok
+test cardinality_budget_starts_after_precheck_and_pk ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.86s
+
+     Running tests\cli_check_pk.rs (target\debug\deps\cli_check_pk-7a6fa370b0663a69.exe)
+
+running 8 tests
+test check_pk_without_flag_runs_no_scan ... ok
+test check_pk_reports_null_keys ... ok
+test check_pk_reports_duplicates ... ok
+test check_pk_clean_on_aviation ... ok
+test check_pk_on_trino ... ok
+test check_pk_skips_mismatched_bindings ... ok
+test check_pk_engine_failure_keeps_earlier_findings ... ok
+test exit_code_table ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.86s
+
+     Running tests\cli_color.rs (target\debug\deps\cli_color-46143148aae0b660.exe)
+
+running 1 test
+test color_environment_controls_human_output_and_never_colors_json ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests\cli_dev_token.rs (target\debug\deps\cli_dev_token-b46eda4acc4105e6.exe)
+
+running 12 tests
+test rejected_arguments_leave_no_key_file_behind ... ok
+test empty_groups_value_means_no_groups ... ok
+test missing_server_config_is_a_v20_diagnostic ... ok
+test issues_token_verifiable_by_dev_verifier ... ok
+test no_key_file_anywhere_fails ... ok
+test undeclared_attr_is_rejected ... ok
+test scalar_attrs_are_converted_by_declared_type ... ok
+test example_config_dev_token_works_from_a_fresh_tree ... ok
+test groups_are_trimmed_and_deduplicated ... ok
+test key_file_flag_wins_and_the_key_is_reused ... ok
+test attr_values_of_the_wrong_type_are_rejected ... ok
+test ttl_bounds ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+
+     Running tests\cli_import.rs (target\debug\deps\cli_import-7760d7060546e8eb.exe)
+
+running 8 tests
+test a_directory_that_was_not_reloaded_is_flagged ... ok
+test json_output_reports_the_result ... ok
+test imports_airports_json ... ok
+test imports_airports_csv ... ok
+test source_backed_type_is_rejected ... ok
+test link_import_and_partial_failure ... ok
+test command_line_mistakes_are_reported ... ok
+test existing_objects_block_create_only ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.37s
+
+     Running tests\cli_l2_identity.rs (target\debug\deps\cli_l2_identity-6e0d19716b15203f.exe)
+
+running 11 tests
+test production_assembly::source_monitor_classifier_preserves_every_nonmatching_request ... ok
+test production_assembly::openapi_export_without_store_is_deterministic ... ok
+test production_assembly::serve_args_validate_config_and_address ... ok
+test production_assembly::serve_l2_queries_use_l2_identity_after_monitor_attestation ... ok
+test production_assembly::serve_shutdown_waits_for_trino_delete_completion ... ok
+test production_assembly::serve_l2_requires_dedicated_proved_identity_for_all_six_tools ... ok
+test production_assembly::serve_query_key_survives_restart_and_is_independent_of_auth ... ok
+test production_assembly::serve_shutdown_reports_failed_or_timed_out_trino_delete ... ok
+test production_assembly::serve_real_listener_auth_and_shutdown ... ok
+test production_assembly::serve_query_key_rejects_missing_short_and_oversized_files_before_listen ... ok
+test production_assembly::same_host_l2_unverified_failed_and_expired_proofs_reject_all_six_tools has been running for over 60 seconds
+test production_assembly::same_host_l2_unverified_failed_and_expired_proofs_reject_all_six_tools ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 61.60s
+
+     Running tests\cli_lint.rs (target\debug\deps\cli_lint-6f9f2b403b906af9.exe)
+
+running 17 tests
+test config_info_level_never_fails ... ok
+test config_error_level_fails ... ok
+test config_off_disables_rule ... ok
+test e14_can_be_disabled ... ok
+test config_flag_overrides_root_file ... ok
+test lint_error_rule_exits_1 ... ok
+test lint_json_has_no_ansi ... ok
+test missing_config_flag_path_fails ... ok
+test validate_codes_cannot_be_turned_off_by_config ... ok
+test unknown_rule_id_in_config_fails ... ok
+test lint_skips_rules_when_validation_fails ... ok
+test lint_summary_counts_by_severity ... ok
+test warning_only_exit_codes ... ok
+test lint_honors_the_profile_flag_and_variable ... ok
+test e08_human ... ok
+test e14_human ... ok
+test lint_aviation_is_clean ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+     Running tests\cli_migrate.rs (target\debug\deps\cli_migrate-97e266de9d2cec94.exe)
+
+running 10 tests
+test apply_requires_plan_hash ... ok
+test plan_and_apply_are_exclusive_and_one_is_required ... ok
+test apply_with_a_wrong_hash_exits_1 ... ok
+test migrate_before_any_reload_is_refused ... ok
+test bad_rename_declarations ... ok
+test plan_json_output ... ok
+test drop_archived_plan_and_apply ... ok
+test rename_declaration_moves_the_column ... ok
+test migrate_plan_then_apply ... ok
+test migrate_refuses_a_change_that_breaks_an_applied_role ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s
+
+     Running tests\cli_online.rs (target\debug\deps\cli_online-c302488a13e0ceac.exe)
+
+running 12 tests
+test aviation_json_fixtures_match_yaml_fixtures ... ok
+test zero_timeout_is_a_usage_error ... ok
+test online_without_profile_says_so ... ok
+test online_binding_without_fixture_is_v20 ... ok
+test offline_validate_unchanged ... ok
+test online_missing_explicit_column ... ok
+test aviation_fixture_data ... ok
+test online_missing_implicit_column ... ok
+test float_and_double_properties_are_clean ... ok
+test timeout_requires_online ... ok
+test online_missing_column_human ... ok
+test online_aviation_is_clean ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+     Running tests\cli_online_trino.rs (target\debug\deps\cli_online_trino-c7e8dffc6099c78e.exe)
+
+running 15 tests
+test check_pk_requires_online ... ok
+test unauthorized_exits_3 ... ok
+test trino_profile_missing_column ... ok
+test sqlite_profile_uses_fixtures ... ok
+test trino_type_mismatch ... ok
+test trino_profile_clean ... ok
+test trino_missing_table ... ok
+test ignored_fixture_info_passes_deny_warnings ... ok
+test timeout_flag_is_sent ... ok
+test one_catalog_query_error_is_v19_others_checked ... ok
+test config_errors_are_v20_with_location ... ok
+test rejected_plaintext_secret_never_printed ... ok
+test timed_out_query_is_cancelled_before_exit ... ok
+test secret_never_printed ... ok
+test trino_unavailable_exits_3 ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 15.45s
+
+     Running tests\cli_reload.rs (target\debug\deps\cli_reload-1be21c793166d6c0.exe)
+
+running 8 tests
+test invalid_definitions_never_open_store ... ok
+test missing_store_section ... ok
+test store_unavailable ... ok
+test json_output ... ok
+test reload_creates_tables ... ok
+test dry_run_prints_ddl_only ... ok
+test example_config_reload_works_from_a_fresh_tree ... ok
+test reload_reports_role_breakage ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.46s
+
+     Running tests\cli_schema.rs (target\debug\deps\cli_schema-37209e90e5c420af.exe)
+
+running 4 tests
+test schema_export_creates_missing_dir ... ok
+test schema_export_reports_io_failure ... ok
+test schema_export_writes_committed_files ... ok
+test aviation_still_validates_with_modelines ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests\cli_scope.rs (target\debug\deps\cli_scope-a25403ab5a74c4d2.exe)
+
+running 8 tests
+test missing_store_section_is_a_configuration_error ... ok
+test unusable_store_exits_3 ... ok
+test scope_before_reload_asks_for_reload ... ok
+test json_plan_is_camel_case ... ok
+test ontology_differing_from_the_active_definition_is_refused ... ok
+test invalid_scope_writes_nothing ... ok
+test plan_then_apply_aviation_scope ... ok
+test plan_lists_removals_and_a_stale_hash_is_refused ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.53s
+
+     Running tests\cli_shutdown.rs (target\debug\deps\cli_shutdown-9789033234df29a3.exe)
+
+running 9 tests
+test serve_fixture::openapi_export_without_store_is_deterministic ... ok
+test serve_fixture::occupied_listener_does_not_start_an_l2_probe_owner ... ok
+test serve_fixture::shutdown_finishes_accepted_action_before_dependency_cancel ... ok
+test serve_fixture::shutdown_cancels_reads_sse_then_durably_drains_audit ... ok
+test serve_fixture::serve_args_validate_config_and_address ... ok
+test serve_fixture::shutdown_timeout_sink_and_cleanup_errors_exit_nonzero ... ok
+test serve_fixture::serve_query_key_survives_restart_and_is_independent_of_auth ... ok
+test serve_fixture::serve_real_listener_auth_and_shutdown ... ok
+test serve_fixture::serve_query_key_rejects_missing_short_and_oversized_files_before_listen ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.32s
+
+     Running tests\cli_stdio.rs (target\debug\deps\cli_stdio-b4bfa364c0ba4235.exe)
+
+running 11 tests
+test live_stdio_legacy_initialize_negotiates_locally ... ok
+test live_stdio_cancellation_maps_string_id_without_cancelling_other_read ... ok
+test live_stdio_real_redirect_never_connects_to_credential_trap ... ok
+test live_stdio_online_bad_token_never_reaches_business_or_leaks_secret ... ok
+test live_stdio_disconnected_before_forward_never_retries_or_commits ... ok
+test live_stdio_closed_upstream_session_never_reinitializes_or_replays ... ok
+test live_stdio_two_principals_validate_action_history_and_rest_receipt ... ok
+test live_stdio_lost_commit_response_requires_explicit_replay ... ok
+test stdio_absent_server_exits_with_queued_input ... ok
+test stdio_absent_server_and_invalid_url_fail_without_leaking_token ... ok
+test stdio_absent_server_keeps_stdout_empty_and_redacts_token ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.07s
+
+     Running tests\cli_trino_it.rs (target\debug\deps\cli_trino_it-1fd0286250bc4296.exe)
+
+running 5 tests
+test check_cardinality_aliases_on_ci_trino ... ignored, needs ONTOFORGE_TRINO_URL (Linux CI)
+test check_cardinality_counts_distinct_objects_on_ci_trino ... ignored, needs ONTOFORGE_TRINO_URL (Linux CI)
+test check_pk_finds_duplicate_and_null_keys_on_ci_trino ... ignored, needs ONTOFORGE_TRINO_URL (Linux CI)
+test validate_online_against_ci_trino ... ignored, needs ONTOFORGE_TRINO_URL (Linux CI)
+test missing_env_panics ... ok
+
+test result: ok. 1 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\cli_webhook_worker.rs (target\debug\deps\cli_webhook_worker-9855fe14338501f5.exe)
+
+running 3 tests
+test committed_action_is_delivered_by_running_cli_worker ... ok
+test restarted_cli_worker_recovers_failed_delivery ... ok
+test running_cli_worker_retries_after_http_failure ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.17s
+
+     Running tests\dev_lifecycle.rs (target\debug\deps\dev_lifecycle-e49cfb15c86255b8.exe)
+
+running 8 tests
+test dev_recovers_unowned_empty_lock_before_first_marker ... ok
+test dev_active_instance_and_unsafe_reset_are_rejected ... ok
+test dev_empty_lock_window_never_allows_a_second_owner_or_reset ... ok
+test dev_demo_restart_and_reset_preserve_then_reinitialize ... ok
+test dev_lock_is_held_for_live_state_and_released_after_process_crash ... ok
+test dev_restart_preserves_action_history_and_receipt ... ok
+test dev_empty_seed_is_idempotent_and_reset_is_explicit ... ok
+test dev_distributed_binary_query_action_history_without_checkout ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.46s
+
+     Running tests\invalid_examples.rs (target\debug\deps\invalid_examples-4161ec6a0315eec9.exe)
+
+running 1 test
+test invalid_examples_produce_their_code_and_a_stable_snapshot ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+     Running tests\private_fixtures.rs (target\debug\deps\private_fixtures-5e464731250cf218.exe)
+
+running 3 tests
+test private_fixtures_validate_online ... ignored, needs ONTOFORGE_PRIVATE_FIXTURES
+test missing_env_panics ... ok
+test a_set_needs_ontology_and_server_config ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (target\debug\deps\ontoforge_action-41c5226c46d241de.exe)
+
+running 4 tests
+test tests::crate_name_has_ontoforge_prefix ... ok
+test tests::canonical_request_hash_ignores_object_key_insertion_order ... ok
+test fingerprint::tests::recursive_keys_are_canonical_but_arrays_keep_order ... ok
+test tests::tracer_commits_one_action_batch ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+     Running tests\action.rs (target\debug\deps\action-fb17afc4be64a38b.exe)
+
+running 6 tests
+test action_request_wire_cannot_override_host_limits ... ok
+test action_batch_schema_exists ... ok
+test validate_only_runs_full_pipeline_without_writes ... ok
+test batch_ordinal_and_same_pk_order_are_stable ... ok
+test params_report_all_errors ... ok
+test batch_all_rule_kinds_expand_in_declared_order ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests\action_pg.rs (target\debug\deps\action_pg-3dc84a05aa3d6ce9.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\entrypoints.rs (target\debug\deps\entrypoints-65c4f4b020db7e34.exe)
+
+running 4 tests
+test action_request_rejects_privileged_write_fields ... ok
+test source_guard_recognizes_split_and_ufcs_calls ... ok
+test import_log_has_reserved_identity_and_source_digest ... ok
+test production_mutation_callers_are_action_import_and_read_audit ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.30s
+
+     Running tests\frozen_definition.rs (target\debug\deps\frozen_definition-fd0d0591fb2157c2.exe)
+
+running 3 tests
+test replay_across_clock_and_definition_change_keeps_winner_time ... ok
+test frozen_replay_uses_current_grant_keeps_original_receipt ... ok
+test frozen_action_stale_and_validate_keep_fence_cas_guard ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests\idempotency.rs (target\debug\deps\idempotency-d866894fe1938af6.exe)
+
+running 9 tests
+test replay_cross_principal_lookup_matches_missing ... ok
+test replay_release_keeps_minimal_receipt_available ... ok
+test expired_clock_boundary_is_seven_days ... ok
+test replay_grant_removal_and_action_missing_deny_both_entries ... ok
+test expired_command_can_be_claimed_as_new_without_deleting_audit ... ok
+test replay_external_definition_removal_does_not_disclose ... ok
+test replay_row_predicate_change_and_delete_keep_minimal_receipt ... ok
+test replay_across_clock_and_definition_change_keeps_winner_time ... ok
+test fingerprint_ignores_key_order_but_preserves_explicit_default ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+     Running tests\idempotency_pg.rs (target\debug\deps\idempotency_pg-4c7dc83a2d1d8f89.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\outbox.rs (target\debug\deps\outbox-b64e9d931ba3e1a9.exe)
+
+running 11 tests
+test payload_target_is_only_trusted_configuration ... ok
+test payload_is_minimal_and_versioned ... ok
+test lease_parallel_workers_claim_one_attempt ... ok
+test crash_before_send_committed_event_survives_restart ... ok
+test poll_does_not_exceed_batch_limit ... ok
+test lease_expiry_reclaims_and_stale_attempt_is_fenced ... ok
+test crash_after_success_before_mark_redelivers_same_event_id ... ok
+test http_failure_retries_with_same_event_id ... ok
+test retry_backoff_caps_at_five_minutes_without_leaking_response ... ok
+test retry_delay_starts_after_slow_response ... ok
+test later_event_is_unclaimed_while_first_delivery_is_in_flight ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.95s
+
+     Running tests\outbox_pg.rs (target\debug\deps\outbox_pg-1e0199c9b702c580.exe)
+
+running 2 tests
+test postgres_outbox_after_send_crash_reclaims_with_same_payload ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test postgres_outbox_parallel_workers_claim_one_generation ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+
+test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\security.rs (target\debug\deps\security-f9bd56828e1a544b.exe)
+
+running 10 tests
+test scope_action_grant_is_checked_before_missing_target ... ok
+test scope_validate_only_rejects_masked_criteria_without_writes ... ok
+test scope_write_column_must_be_visible ... ok
+test scope_hidden_target_matches_missing_outward_shape ... ok
+test scope_criterion_false_uses_configured_message ... ok
+test scope_masked_criteria_is_denied_before_evaluation ... ok
+test scope_post_state_must_remain_visible ... ok
+test scope_link_requires_both_endpoints ... ok
+test scope_missing_type_matches_hidden_row_and_missing_target ... ok
+test scope_each_item_criterion_sees_prior_edit_on_same_row ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests\source.rs (target\debug\deps\source-08905e5a4d62a2c9.exe)
+
+running 11 tests
+test later_alias_release_samples_shared_source_key ... ok
+test source_required_offline_is_engine_unavailable_without_tx ... ok
+test source_duplicate_is_ambiguous_without_tx ... ok
+test source_required_engine_failure_is_stable_and_pretransaction ... ok
+test all_patched_object_succeeds_with_engine_offline_and_zero_calls ... ok
+test source_unique_is_overlaid_once ... ok
+test later_item_token_samples_shared_source_key ... ok
+test source_backed_query_token_roundtrip_and_source_drift ... ok
+test release_source_visibility_guard ... ok
+test batch_deduplicates_source_keys_and_enforces_limit ... ok
+test later_alias_criterion_samples_shared_source_key ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+     Running tests\trino_action_it.rs (target\debug\deps\trino_action_it-41e0f7e64f76690c.exe)
+
+running 4 tests
+test trino_action_all_patched_does_not_contact_trino ... ignored, needs ONTOFORGE_TRINO_URL and ONTOFORGE_PG_URL
+test trino_action_duplicate_pk_is_ambiguous ... ignored, needs ONTOFORGE_TRINO_URL and ONTOFORGE_PG_URL
+test trino_action_source_unavailable_is_engine_unavailable ... ignored, needs ONTOFORGE_TRINO_URL and ONTOFORGE_PG_URL
+test trino_action_unique_source_executes ... ignored, needs ONTOFORGE_TRINO_URL and ONTOFORGE_PG_URL
+
+test result: ok. 0 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\version.rs (target\debug\deps\version-0e84209c2116df12.exe)
+
+running 5 tests
+test observed_no_token_commits_with_current_read_set ... ok
+test token_query_issued_is_accepted_by_unchanged_action_read_set ... ok
+test token_malformed_is_rejected_without_writes ... ok
+test token_definition_change_is_rejected_without_action_writes ... ok
+test token_conflicts_after_edit_scope_or_key_change ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+
+     Running unittests src\lib.rs (target\debug\deps\ontoforge_api-ebffdb4df38a9976.exe)
+
+running 1 test
+test tests::crate_name_has_ontoforge_prefix ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\openapi_snapshot.rs (target\debug\deps\openapi_snapshot-f16afc725dc497ad.exe)
+
+running 8 tests
+test wire_numbers_unicode_and_variant_names ... ok
+test openapi_recursive_nullable_required_and_unknown_fields ... ok
+test openapi_31_all_operations_and_security ... ok
+test checked_in_document_matches_static_render ... ok
+test action_error_schema_preserves_optional_diagnostics ... ok
+test health_schema_includes_optional_l2_status_and_reason ... ok
+test receipt_schema_preserves_every_edit_and_requires_wire_fields ... ok
+test history_error_responses_match_runtime_contract ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src\lib.rs (target\debug\deps\ontoforge_auth-7f08e9b96fd3d5aa.exe)
+
+running 3 tests
+test authn::jwks::tests::max_age_is_read_from_cache_control ... ok
+test tests::crate_name_has_ontoforge_prefix ... ok
+test authn::jwks::tests::ttl_is_clamped_to_the_policy_range ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\criteria_coverage.rs (target\debug\deps\criteria_coverage-bb93eb496a8b60ca.exe)
+
+running 6 tests
+test dynamic_object_path_is_v23_fail_closed ... ok
+test whole_object_read_needs_every_property ... ok
+test criteria_without_object_reads_need_no_properties ... ok
+test hidden_criteria_column_is_v23_at_the_action_entry ... ok
+test covered_criteria_compile ... ok
+test ungranted_object_type_is_v23 ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests\crypto_backend.rs (target\debug\deps\crypto_backend-6b9287c5ae20c41c.exe)
+
+running 1 test
+test hs256_round_trip_does_not_panic ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\dev_token.rs (target\debug\deps\dev_token-84b24bb6ad5633a6.exe)
+
+running 16 tests
+test key_file_of_wrong_length_is_a_config_error ... ok
+test issuing_refuses_a_claim_that_would_override_a_reserved_one ... ok
+test issuing_refuses_an_empty_subject ... ok
+test dev_token_round_trip ... ok
+test list_attr_with_a_null_element_is_rejected ... ok
+test missing_sub_rejected ... ok
+test missing_key_directory_is_created ... ok
+test config_alone_never_enables_dev_tokens ... ok
+test hs256_with_other_issuer_rejected ... ok
+test wrong_key_rejected ... ok
+test other_hmac_algorithms_are_not_accepted ... ok
+test hs256_with_other_audience_rejected ... ok
+test expired_dev_token_rejected ... ok
+test key_file_is_created_once_and_reused ... ok
+test oidc_still_works_with_dev_enabled ... ok
+test rs256_token_with_dev_issuer_is_rejected ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests\oidc.rs (target\debug\deps\oidc-037e5c5f5b6f8d28.exe)
+
+running 31 tests
+test alg_none_is_rejected ... ok
+test hs256_with_the_public_key_as_secret_is_rejected ... ok
+test garbage_is_rejected ... ok
+test ambiguous_and_non_signature_keys_are_not_used ... ok
+test kid_miss_refetches_once_then_throttles ... ok
+test cache_control_max_age_is_clamped ... ok
+test header_key_urls_are_never_followed ... ok
+test algorithm_outside_the_issuer_allow_list_is_rejected ... ok
+test expired_token_is_rejected ... ok
+test not_yet_valid_token_is_rejected ... ok
+test null_attr_claim_is_absent ... ok
+test es256_token_becomes_principal ... ok
+test missing_attr_claim_is_absent ... ok
+test leeway_is_honoured_and_then_used_up ... ok
+test jwks_of_exactly_one_mebibyte_is_accepted ... ok
+test stale_keys_survive_idp_outage ... ok
+test token_without_kid_is_rejected ... ok
+test jwks_is_fetched_once_for_repeated_tokens ... ok
+test rs256_token_becomes_principal ... ok
+test oversized_jwks_rejected ... ok
+test wrong_audience_is_rejected ... ok
+test wrong_issuer_is_rejected ... ok
+test unknown_issuer_is_rejected_when_several_are_trusted ... ok
+test tampered_token_is_rejected ... ok
+test two_issuers_namespace_groups ... ok
+test missing_required_claims_are_rejected ... ok
+test list_claim_with_null_or_foreign_element_is_rejected ... ok
+test groups_claim_must_be_an_array_of_strings ... ok
+test scalar_claim_of_the_wrong_type_is_rejected ... ok
+test integer_and_boolean_attrs_are_typed_strictly ... ok
+test concurrent_kid_miss_is_single_flight ... ok
+
+test result: ok. 31 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.30s
+
+     Running tests\rowpred_diff.rs (target\debug\deps\rowpred_diff-8a5ccf8b852ece0a.exe)
+
+running 6 tests
+test null_column_comparison_is_unknown_on_both_sides ... ok
+test tenant_equality_matches ... ok
+test empty_list_attr_is_false_on_both_sides ... ok
+test rust_eval_equals_sqlite ... ok
+test corpus_cases_match_on_sqlite ... ok
+test fixed_seed_cases_match_on_sqlite ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.41s
+
+     Running tests\rowpred_trino_it.rs (target\debug\deps\rowpred_trino_it-1fc6583711d8164f.exe)
+
+running 4 tests
+test trino_matches_rust_on_seeded_predicates ... ignored, needs ONTOFORGE_TRINO_URL (Linux CI)
+test trino_matches_rust_on_the_corpus_cases ... ignored, needs ONTOFORGE_TRINO_URL (Linux CI)
+test trino_table_equals_the_corpus_rows ... ignored, needs ONTOFORGE_TRINO_URL (Linux CI)
+test missing_env_panics ... ok
+
+test result: ok. 1 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\scope_compile.rs (target\debug\deps\scope_compile-c6cf851d42c62bde.exe)
+
+running 21 tests
+test collation_case_insensitive_is_v22 ... ok
+test collation_check_uses_the_selected_profile ... ok
+test allow_list_without_primary_key_is_v21 ... ok
+test l2_schema_must_be_catalog_dot_schema ... ok
+test raw_toolset_without_raw_level_is_v21 ... ok
+test duplicate_allow_list_entry_is_v21 ... ok
+test stored_roles_diagnostics_without_sources ... ok
+test raw_with_l2_and_toolset_compiles ... ok
+test l2_without_raw_level_is_v21 ... ok
+test aviation_scope_compiles ... ok
+test principal_with_two_roles_gets_merged_flight_scope ... ok
+test undeclared_attr_is_v22 ... ok
+test unknown_action_is_v21 ... ok
+test all_errors_reported_together ... ok
+test principal_without_roles_sees_nothing ... ok
+test bad_row_filter_is_v22_located ... ok
+test unknown_object_type_is_v21 ... ok
+test unknown_property_is_v21 ... ok
+test empty_object_types_grants_nothing ... ok
+test user_subject_binding ... ok
+test scope_compile_diagnostics_json ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
+     Running tests\scope_merge.rs (target\debug\deps\scope_merge-1324895d5120cc76.exe)
+
+running 9 tests
+test no_grant_is_invisible ... ok
+test role_without_row_filter_sees_all_rows ... ok
+test a_role_without_filter_makes_the_row_predicate_true ... ok
+test a_role_with_only_the_key_column_still_makes_rows_visible ... ok
+test a_columns_times_b_rows_do_not_leak ... ok
+test identical_role_predicates_appear_once ... ok
+test same_property_from_two_roles_is_or ... ok
+test visible_columns_are_union_of_true_grants ... ok
+test lowered_scope_matches_evaluate_on_sqlite ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+     Running unittests src\lib.rs (target\debug\deps\ontoforge_client-4522c9f62782f166.exe)
+
+running 6 tests
+test tests::crate_name_has_ontoforge_prefix ... ok
+test tests::receipt_preserves_item_ordinal_u32_boundaries ... ok
+test tests::receipt_rejects_item_ordinal_above_u32_max ... ok
+test tests::receipt_rejects_negative_item_ordinal ... ok
+test tests::history_requires_fields_and_rejects_wrong_types ... ok
+test tests::receipt_requires_complete_edits_and_preserves_empty_items ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\contract.rs (target\debug\deps\contract-0742d24973ea0861.exe)
+
+running 9 tests
+test rust_client_wire_numbers_and_all_endpoint_groups ... ok
+test rust_client_auth_scope_revoke_stale_and_transport_errors ... ok
+test rust_client_metadata_pk_query_aggregate_health ... ok
+test rust_client_history_paginates_with_limit_and_before_seq ... ok
+test rust_client_action_validate_history_result_and_replay ... ok
+test rust_client_valid_principals_revoke_and_inflight_cancel_are_isolated ... ok
+test rust_client_transport_failures_never_retry_and_replay_has_one_durable_commit ... ok
+test rust_client_instances_and_concurrent_cancellation_are_isolated ... ok
+test rust_client_health_preserves_l2_status_and_disable_reason ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.42s
+
+     Running tests\error_diagnostics.rs (target\debug\deps\error_diagnostics-1654d9e086c03aae.exe)
+
+running 4 tests
+test rust_client_action_error_diagnostics_keep_legacy_envelope_aliases ... ok
+test rust_client_recognizes_envelope_before_validating_diagnostics ... ok
+test rust_client_action_error_diagnostics_reject_malformed_fields ... ok
+test rust_client_action_error_diagnostics_survive_real_http ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running unittests src\lib.rs (target\debug\deps\ontoforge_engine-9737abe61c6f2669.exe)
+
+running 56 tests
+test bind_check::compat_tests::unbounded_numbers_are_refused_with_a_cast_hint ... ok
+test bind_check::compat_tests::warnings_point_at_the_binding_like_errors ... ok
+test bind_check::tests::column_names_are_compared_in_lower_case ... ok
+test bind_check::tests::missing_explicit_column_points_at_the_column_value ... ok
+test bind_check::tests::matching_table_has_no_mismatch ... ok
+test bind_check::tests::expected_columns_come_from_bound_columns_and_effective_decimal ... ok
+test bind_check::compat_tests::link_ends_are_compared_with_the_primary_keys ... ok
+test bind_check::tests::warnings_do_not_degrade ... ok
+test printer::tests::case_arms_are_typed_and_escape_each_literal ... ok
+test printer::tests::case_when_masks_only_projection ... ok
+test printer::tests::distributed_explain_wraps_executed_printed_sql ... ok
+test bind_check::tests::missing_implicit_column_points_at_the_table ... ok
+test bind_check::tests::online_missing_table ... ok
+test bind_check::compat_tests::case_collision ... ok
+test printer::tests::flush_metadata_cache_is_a_call_of_the_catalog_procedure ... ok
+test printer::tests::distributed_explain_wraps_typed_select ... ok
+test printer::tests::flush_metadata_cache_quotes_the_catalog ... ok
+test printer::tests::count_distinct_quotes_identifiers ... ok
+test printer::tests::flush_metadata_cache_rejects_an_empty_catalog ... ok
+test bind_check::tests::online_type_family_mismatch ... ok
+test bind_check::compat_tests::decimal_without_precision_uses_the_effective_defaults ... ok
+test printer::tests::glob_pattern_escapes_the_glob_metacharacters ... ok
+test printer::tests::string_match_escapes_wildcards_in_both_dialects ... ok
+test printer::tests::string_match_is_parenthesized_inside_connectives ... ok
+test printer::tests::string_match_kinds_place_the_wildcards ... ok
+test printer::tests::string_match_quotes_the_needle_and_rejects_nul ... ok
+test sqlite::tests::collations_are_total_orders ... ok
+test bind_check::compat_tests::unsupported_types_are_errors_with_a_view_hint ... ok
+test trino::cancel::tests::a_finished_guard_holds_nothing_to_send ... ok
+test bind_check::compat_tests::floats_accept_real_and_double_only_for_double ... ok
+test trino::classify::tests::backoff_doubles_from_50ms_up_to_one_second ... ok
+test sqlite::tests::max_bytes_truncates ... ok
+test sqlite::tests::sqlite_ddl_round_trip ... ok
+test sqlite::tests::max_rows_truncates ... ok
+test sqlite::tests::query_only_after_load ... ok
+test trino::cancel::tests::dropping_an_unfinished_guard_without_a_runtime_does_not_panic ... ok
+test trino::classify::tests::post_retries_only_what_was_not_accepted ... ok
+test sqlite::tests::total_fixture_bytes_capped ... ok
+test trino::classify::tests::retry_after_is_whole_seconds_capped_at_five ... ok
+test trino::classify::tests::statuses_without_a_retry_rule ... ok
+test trino::headers::tests::basic_and_bearer_headers ... ok
+test trino::classify::tests::the_fifth_retry_is_the_last ... ok
+test sqlite::tests::decimal_and_timestamp_compare_by_value ... ok
+test trino::l2_health::tests::l2_health_expired_attestation_is_disabled ... ok
+test value::tests::physical_type_parse_table ... ok
+test value::tests::split_decimal_rules ... ok
+test bind_check::compat_tests::timestamps_are_checked_against_the_declared_zone ... ok
+test bind_check::compat_tests::decimal_integer_digits_and_scale ... ok
+test bind_check::compat_tests::strings_booleans_and_dates ... ok
+test value::tests::array_nesting_is_bounded ... ok
+test bind_check::compat_tests::arrays_are_compared_by_element ... ok
+test bind_check::compat_tests::integers_only_widen ... ok
+test printer::tests::print_trino_and_sqlite ... ok
+test sqlite::tests::timeout_covers_waiting_for_the_connection ... ok
+test trino::l2_monitor::tests::old_cleanup_response_and_owner_cannot_clear_or_cancel_new_probe ... ok
+test sqlite::tests::deadline_interrupts_a_running_statement ... ok
+
+test result: ok. 56 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+     Running tests\bind_check_isolation.rs (target\debug\deps\bind_check_isolation-e50184421ce5ccf8.exe)
+
+running 2 tests
+test engine_wide_error_aborts_round ... ok
+test query_error_isolated_to_its_catalog ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\cardinality_check.rs (target\debug\deps\cardinality_check-c4c3341e52cd7e70.exe)
+
+running 11 tests
+test incomplete_or_malformed_results_are_not_clean ... ok
+test repeated_check_is_read_only ... ok
+test distinct_objects_sharing_fk_are_reported ... ok
+test tighter_budgets_are_not_widened ... ok
+test mapped_to_binding_is_the_only_source ... ok
+test independent_runs_observe_current_source ... ok
+test count_distinct_quotes_identifiers_on_sqlite ... ok
+test duplicate_physical_rows_are_one_object ... ok
+test samples_have_twenty_plus_sentinel_bound ... ok
+test count_alias_cannot_change_indexed_fk_sample_order ... ok
+test null_keys_and_clean_links_have_no_finding ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests\doc_type_table.rs (target\debug\deps\doc_type_table-72132b3774e5f08e.exe)
+
+running 2 tests
+test doc_diagnostic_codes_exist ... ok
+test doc_type_table_matches_compare_binding ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests\drift.rs (target\debug\deps\drift-6da7f9d5ccd7f28f.exe)
+
+running 8 tests
+test degrade_reason_code ... ok
+test warnings_do_not_degrade ... ok
+test query_error_degrades_only_that_target ... ok
+test unreadable_reason_keeps_engine_text_out_of_the_exposable_fields ... ok
+test missing_table_is_drift ... ok
+test aviation_is_healthy ... ok
+test missing_column_degrades_only_flight ... ok
+test engine_error_is_not_a_report ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 13.65s
+
+     Running tests\drift_budget.rs (target\debug\deps\drift_budget-e1cedecef51bc4be.exe)
+
+running 2 tests
+test expired_drift_budget_sends_no_catalog_probe ... ok
+test online_description_retains_per_query_timeout_while_drift_shares_budget ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\l2_explain.rs (target\debug\deps\l2_explain-7f4d1e80977be438.exe)
+
+running 2 tests
+test l2_explain_four_types_preserve_validated_ast ... ok
+test l2_table_name_defaults_qualification_and_injection ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\l2_gate.rs (target\debug\deps\l2_gate-dde943abdc185335.exe)
+
+running 16 tests
+test l2_corpus_has_104_unique_constructed_equivalents ... ok
+test l2_gate_preserves_offset_when_capping ... ok
+test l2_gate_accepts_only_validated_display ... ok
+test l2_gate_rejects_unauthorized_relation ... ok
+test l2_gate_handles_cte_join_and_subquery ... ok
+test l2_corpus_g16_prints_trino_offset_fetch ... ok
+test l2_corpus_g11_rejects_lossy_row_type ... ok
+test l2_gate_requires_raw_grant_and_rejects_system_even_if_granted ... ok
+test l2_gate_bounds_input_and_rejects_malformed_or_dynamic_limits ... ok
+test l2_gate_rejection_cannot_send_trino_post ... ok
+test l2_corpus_b53_posts_only_validated_display ... ok
+test l2_gate_rejects_mutation_multiple_statements_and_scalar_qualified_calls ... ok
+test l2_gate_rejects_hidden_relations_and_table_functions ... ok
+test l2_corpus_rejections_send_no_post ... ok
+test l2_gate_bounded_parser_stack_handles_deep_or_long_input ... ok
+test l2_corpus_each_case_runs_production_gate ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests\l2_health.rs (target\debug\deps\l2_health-a6f82a7e2d47eba4.exe)
+
+running 10 tests
+test l2_health_rejects_reused_ontology_identity ... ok
+test l2_health_rejects_probe_for_wrong_edit_catalog ... ok
+test l2_health_rejects_other_coordinator_without_network ... ok
+test l2_health_unverified_identity_never_submits_a_statement ... ok
+test l2_health_missing_negative_object_and_unsafe_query_id_disable ... ok
+test l2_health_finished_query_cannot_attest_active_isolation ... ok
+test l2_health_other_query_leak_disables_l2 ... ok
+test l2_health_requires_exact_denial_and_known_query_isolation ... ok
+test l2_health_recheck_revocation_disables_public_execution ... ok
+test l2_health_loose_acl_and_non_permission_error_fail_closed ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\l2_monitor.rs (target\debug\deps\l2_monitor-6b2929cfda3a4844.exe)
+
+running 19 tests
+test monitor_cross_coordinator_is_invalid_before_network ... ok
+test monitor_missing_or_unsafe_probe_never_submits ... ok
+test monitor_foreign_next_uri_never_receives_get_or_cancel ... ok
+test monitor_shutdown_reports_inherited_cleanup_failure ... ok
+test monitor_startup_owns_fresh_probe_limits_and_cleanup ... ok
+test monitor_cleanup_failure_cannot_be_bypassed_by_manual_recheck ... ok
+test monitor_cleanup_handle_only_checks_its_generation_and_never_retries ... ok
+test monitor_cancel_failure_disables_but_404_is_cleanup_success ... ok
+test monitor_finished_missing_and_leaked_query_disable ... ok
+test monitor_whole_cycle_deadline_disables_and_cleans_up ... ok
+test monitor_restart_must_clean_previous_generation_before_enabling ... ok
+test monitor_duplicate_and_drop_cannot_reenable ... ok
+test monitor_cancelled_startup_cleans_up_and_stays_disabled ... ok
+test monitor_periodic_failure_and_fresh_recovery ... ok
+test monitor_cannot_enable_before_delete_response_succeeds ... ok
+test monitor_shutdown_during_periodic_check_cannot_reenable ... ok
+test monitor_shutdown_drains_its_ontology_instance_and_reports_delete_failure ... ok
+test monitor_cancelled_shutdown_keeps_drop_retry_in_retained_cleanup_handle ... ok
+test monitor_deadline_includes_waiting_for_recheck_lock ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.23s
+
+     Running tests\pk_check.rs (target\debug\deps\pk_check-41f02a1d1546e869.exe)
+
+running 6 tests
+test display_value_is_short_text ... ok
+test pk_queries_are_printed ... ok
+test clean_and_empty_tables_have_no_finding ... ok
+test duplicates_and_nulls_found ... ok
+test nulls_are_not_duplicates ... ok
+test twenty_groups_are_not_more ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.81s
+
+     Running tests\printer_literals.rs (target\debug\deps\printer_literals-65770c6081945815.exe)
+
+running 8 tests
+test i64_min_is_printed_without_overflow ... ok
+test empty_lists_are_rejected ... ok
+test order_by_always_spells_out_nulls ... ok
+test compare_operands_are_parenthesised ... ok
+test invalid_literals_are_rejected ... ok
+test trino_literals_carry_type_prefixes ... ok
+test sqlite_literals_are_plain ... ok
+test i64_min_reads_back_as_integer_on_sqlite ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.35s
+
+     Running tests\printer_prop.rs (target\debug\deps\printer_prop-715ba11d272d46d0.exe)
+
+running 6 tests
+test nul_in_identifier_is_rejected ... ok
+test ansi_dialect_has_no_backslash_escape ... ok
+test string_literal_keeps_statement_structure ... ok
+test string_literal_round_trips_on_sqlite ... ok
+test identifier_round_trips_on_sqlite ... ok
+test string_match_matches_rust_on_sqlite ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.98s
+
+     Running tests\server_config.rs (target\debug\deps\server_config-35100a0bc0607ac7.exe)
+
+running 35 tests
+test accepts_trusted_webhook_worker_config ... ok
+test parses_full_example ... ok
+test basic_requires_exactly_one_secret_ref ... ok
+test basic_over_http_is_rejected ... ok
+test oidc_two_issuers_with_defaults ... ok
+test dev_auth_key_file ... ok
+test plaintext_password_is_rejected ... ok
+test principal_attrs_types ... ok
+test oidc_rejects_symmetric_and_none_algorithms ... ok
+test oidc_issuer_rules ... ok
+test oidc_numeric_bounds ... ok
+test profile_key_must_be_profile_name ... ok
+test profile_engine_has_no_library_path ... ok
+test query_context_from_config ... ok
+test query_signing_key_reference_is_optional_and_trusted ... ok
+test secret_from_env ... ok
+test rejects_invalid_webhook_worker_limits_and_target ... ok
+test store_and_auth_are_optional ... ok
+test secret_written_into_a_reference_key_is_never_echoed ... ok
+test store_plaintext_url_is_rejected ... ok
+test store_postgres_requires_exactly_one_url_source ... ok
+test store_postgres_with_trino_catalog ... ok
+test store_schema_names_are_validated ... ok
+test store_sqlite_defaults ... ok
+test store_sqlite_rejects_url_and_postgres_rejects_path ... ok
+test trino_profile_needs_trino_section ... ok
+test unknown_key_in_store_or_auth_is_v20 ... ok
+test unknown_key_is_rejected ... ok
+test load_server_config_reads_the_file ... ok
+test secret_from_file_follows_symlink_and_trims ... ok
+test library_rejects_cross_scheme_origin ... ok
+test library_rejects_credentials_over_http ... ok
+test engine_debug_names_the_identity_user ... ok
+test secret_never_in_debug_or_errors ... ok
+test ca_file_is_loaded ... ok
+
+test result: ok. 35 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
+     Running tests\sql_text_only_from_printer.rs (target\debug\deps\sql_text_only_from_printer-e1e92e1b7fc1f7bd.exe)
+
+running 1 test
+test sql_text_only_from_printer ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+     Running tests\sqlite_engine.rs (target\debug\deps\sqlite_engine-e6388930b1532c81.exe)
+
+running 28 tests
+test engine_wide_classification ... ok
+test empty_identifier_is_print_error ... ok
+test error_codes_are_upper_snake ... ok
+test nul_in_string_is_print_error ... ok
+test describe_tables_rejects_mixed_catalogs ... ok
+test fixture_behind_directory_link_is_refused ... ok
+test printed_literal_round_trips_through_sqlite ... ok
+test query_context_defaults ... ok
+test ragged_records_are_refused_with_their_line ... ok
+test fixture_error_has_line ... ok
+test header_only_csv_loads_an_empty_table ... ok
+test out_of_range_decimal_type_is_refused ... ok
+test double_columns_report_double ... ok
+test float_columns_report_real ... ok
+test csv_empty_cell_is_null_for_every_type ... ok
+test attach_limit ... ok
+test status_is_available ... ok
+test unmapped_columns_are_kept_as_text ... ok
+test json_fixture_loads ... ok
+test floats_must_be_finite ... ok
+test shared_table_loaded_once ... ok
+test shared_table_conflicts_are_errors ... ok
+test fixture_errors_never_repeat_cell_contents ... ok
+test decimal_boundaries_12_2 ... ok
+test booleans_and_dates ... ok
+test arrays ... ok
+test integer_ranges ... ok
+test timestamps ... ok
+
+test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.51s
+
+     Running tests\trino_client.rs (target\debug\deps\trino_client-20a588fdeafe3fee.exe)
+
+running 23 tests
+test bad_trace_token_is_config_error ... ok
+test describe_mixed_catalogs_is_config_error ... ok
+test foreign_next_uri_is_rejected ... ok
+test next_uri_scheme_mismatch_is_rejected ... ok
+test kept_row_that_is_not_an_array_is_protocol_error ... ok
+test query_error_maps_to_query ... ok
+test describe_truncated_metadata_is_error ... ok
+test describe_single_table_uses_a_single_condition ... ok
+test call_without_columns_returns_empty_output ... ok
+test rows_past_the_row_limit_are_not_parsed ... ok
+test describe_tables_batches_one_catalog ... ok
+test describe_tables_lowercases_names ... ok
+test decode_types ... ok
+test request_headers ... ok
+test call_that_is_queued_first_still_ends_empty ... ok
+test decode_special_doubles_and_zone_forms ... ok
+test data_spans_pages ... ok
+test select_one_round_trip ... ok
+test trace_token_of_128_characters_is_accepted ... ok
+test status_available_and_unavailable ... ok
+test set_session_header_is_ignored ... ok
+test two_identities_use_separate_clients ... ok
+test describe_missing_tables_absent ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+
+     Running tests\trino_it.rs (target\debug\deps\trino_it-ade0c4426a53bccf.exe)
+
+running 11 tests
+test catalogs_visible ... ignored, needs ONTOFORGE_TRINO_URL (Linux CI)
+test decode_golden ... ignored, needs ONTOFORGE_TRINO_URL (Linux CI)
+test describe_demo_flights ... ignored, needs ONTOFORGE_TRINO_URL (Linux CI)
+test describe_types_golden ... ignored, needs ONTOFORGE_TRINO_URL (Linux CI)
+test drift_is_healthy_on_ci_trino ... ignored, needs ONTOFORGE_TRINO_URL (Linux CI)
+test iceberg_table_is_readable ... ignored, needs ONTOFORGE_TRINO_URL (Linux CI)
+test printer_corpus_round_trips ... ignored, needs ONTOFORGE_TRINO_URL (Linux CI)
+test select_one ... ignored, needs ONTOFORGE_TRINO_URL (Linux CI)
+test timeout_cancels_server_query ... ignored, needs ONTOFORGE_TRINO_URL (Linux CI)
+test present_env_is_used ... ok
+test missing_env_panics ... ok
+
+test result: ok. 2 passed; 0 failed; 9 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running tests\trino_l2_acl_it.rs (target\debug\deps\trino_l2_acl_it-8a10e20cd31a3feb.exe)
+
+running 6 tests
+test trino_l2_acl_hides_known_active_other_query_and_attests_engine ... ignored, requires independent Trino 483
+test trino_l2_acl_loosened_rule_fails_closed ... ignored, requires independent Trino 483 loose ACL control
+test trino_l2_acl_rejects_existing_outside_and_edit_tables ... ignored, requires independent Trino 483
+test trino_l2_monitor_loose_acl_fails_closed ... ignored, requires independent Trino 483 loose ACL control
+test trino_l2_monitor_short_query_does_not_prove_active_isolation ... ignored, requires independent Trino 483
+test trino_l2_monitor_startup_cancels_real_active_probe ... ignored, requires independent Trino 483
+
+test result: ok. 0 passed; 0 failed; 6 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\trino_resilience.rs (target\debug\deps\trino_resilience-c2aca69ce760be4f.exe)
+
+running 31 tests
+test http_503_with_shutting_down_body_is_unavailable ... ok
+test max_bytes_truncates_and_deletes ... ok
+test max_rows_truncates_and_deletes ... ok
+test oversized_page_is_protocol_error ... ok
+test post_502_is_not_retried ... ok
+test cancellation_drain_preserves_original_timeout_error ... ok
+test post_plain_503_is_not_retried ... ok
+test dropped_future_sends_delete ... ok
+test post_503_starting_up_is_retried ... ok
+test get_503_then_success ... ok
+test get_502_and_504_are_retried ... ok
+test server_shutting_down_is_unavailable ... ok
+test server_starting_up_is_unavailable ... ok
+test syntax_error_is_query ... ok
+test finished_query_sends_no_delete ... ok
+test limits_not_reached_do_not_truncate ... ok
+test failed_query_sends_no_delete ... ok
+test unauthorized_is_not_unavailable ... ok
+test hanging_submission_times_out_without_delete ... ok
+test retries_respect_timeout ... ok
+test cancellation_drain_waits_for_delete_and_is_instance_local ... ok
+test cancellation_drain_survives_cancel_now_waiter_drop ... ok
+test timeout_sends_delete ... ok
+test retry_after_is_honoured ... ok
+test exhausted_503_is_unavailable ... ok
+test dns_failure_is_unavailable ... ok
+test cancellation_drain_rejects_failed_or_timed_out_delete_and_accepts_gone ... ok
+test connect_failure_is_retried_with_backoff ... ok
+test retry_after_is_capped ... ok
+test status_reports_unavailable ... ok
+test closed_port_is_unavailable ... ok
+
+test result: ok. 31 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.88s
+
+     Running unittests src\lib.rs (target\debug\deps\ontoforge_expr-9b4a1ec2cb839bc7.exe)
+
+running 3 tests
+test rowpred::value::tests::attrs_list_rejects_null_element ... ok
+test rowpred::value::tests::attrs_missing_is_null ... ok
+test tests::crate_name_has_ontoforge_prefix ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\analyze.rs (target\debug\deps\analyze-a1a0f9733fc8e63d.exe)
+
+running 21 tests
+test comments_do_not_open_strings ... ok
+test invalid_escape_is_rejected_without_compiling ... ok
+test too_long_expression_is_rejected_without_compiling ... ok
+test unterminated_string_is_rejected_without_compiling ... ok
+test walk::has_macro_yields_member_path ... ok
+test syntax_error_has_expression_position ... ok
+test raw_prefix_requires_a_token_boundary ... ok
+test walk::index_breaks_path ... ok
+test walk::bare_identifier_is_a_path ... ok
+test max_length_expression_is_accepted ... ok
+test walk::has_on_comprehension_variable_yields_nothing ... ok
+test triple_quoted_and_raw_strings_follow_cel_lexing ... ok
+test walk::comprehension_vars_are_scoped ... ok
+test walk::nested_comprehension_scopes ... ok
+test closure_panic_becomes_internal ... ok
+test walk::select_chain_is_full_path ... ok
+test walk::positions_are_line_and_char_column ... ok
+test brackets_inside_strings_do_not_count ... ok
+test deeply_nested_expression_is_rejected_not_crashing ... ok
+test walk::map_list_and_method_targets_are_walked ... ok
+test flat_recursive_forms_do_not_crash_on_a_small_stack ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests\criteria.rs (target\debug\deps\criteria-6132d60282591ac3.exe)
+
+running 20 tests
+test analyzer_errors_become_v13 ... ok
+test objects_requires_object_reference_param ... ok
+test non_bool_condition ... ok
+test unknown_parameter_suggests ... ok
+test comprehension_variable_is_not_reported ... ok
+test same_path_reported_once ... ok
+test diagnostic_points_at_condition_value ... ok
+test unknown_object_property_suggests ... ok
+test unknown_reference_is_any ... ok
+test unknown_root_variable ... ok
+test aviation_criteria_pass ... ok
+test dynamic_index_on_a_checked_root_is_an_error ... ok
+test mixed_int_and_double_arithmetic_is_an_error ... ok
+test builtin_functions_have_known_result_types ... ok
+test user_fields_are_id_and_groups ... ok
+test comprehension_result_types ... ok
+test literal_index_is_checked_like_a_field ... ok
+test comparison_type_mismatch ... ok
+test unknown_types_are_any ... ok
+test parser_recursion_limit_has_a_clean_message ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+
+     Running tests\rowpred_eval.rs (target\debug\deps\rowpred_eval-091c1c4a6fcb968d.exe)
+
+running 14 tests
+test tenant_mismatch_false ... ok
+test missing_attr_is_unknown_and_invisible ... ok
+test unknown_root_rejected ... ok
+test tenant_equality_visible ... ok
+test explicit_null_branch_visible ... ok
+test in_empty_list_is_false_even_for_null ... ok
+test null_column_not_equal_is_unknown ... ok
+test in_literal_list_is_three_valued ... ok
+test in_integer_lists ... ok
+test ordering_follows_value_families ... ok
+test in_attribute_list_follows_the_same_rules ... ok
+test string_match_is_case_sensitive_and_literal ... ok
+test kleene_laws ... ok
+test display_round_trip ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.26s
+
+     Running tests\rowpred_subset.rs (target\debug\deps\rowpred_subset-25ce0a45a6ee3dfe.exe)
+
+running 13 tests
+test a_literal_target_with_a_column_needle_reports_both ... ok
+test string_literals_keep_their_escapes ... ok
+test all_issues_are_collected ... ok
+test positions_point_into_the_expression ... ok
+test syntax_and_size_problems_are_issues_too ... ok
+test accepts_two_columns_and_constants ... ok
+test accepts_logic_with_cel_precedence_and_left_association ... ok
+test accepts_string_matching ... ok
+test accepts_in_lists_literal_and_attribute ... ok
+test issue_messages_say_what_to_change ... ok
+test accepts_the_six_comparisons ... ok
+test null_on_either_side_becomes_is_null ... ok
+test rejects_everything_outside_the_subset ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.36s
+
+     Running unittests src\lib.rs (target\debug\deps\ontoforge_query-afe392b0e4cb5b4e.exe)
+
+running 5 tests
+test execute::tests::source_and_edit_lanes_are_polled_before_first_merge ... ok
+test aggregate::tests::group_distinct_treats_negative_and_positive_zero_as_one_value ... ok
+test aggregate::tests::group_distinct_group_and_bucket_bounds_are_inclusive ... ok
+test aggregate::tests::group_distinct_value_and_memory_bounds_are_inclusive_and_shared ... ok
+test aggregate::tests::count_sum_avg_random_old_new_correction_matches_reference ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.60s
+
+     Running tests\aggregate.rs (target\debug\deps\aggregate-ecea1c3ac5dd3601.exe)
+
+running 7 tests
+test count_sum_avg_limits_phase4_defaults_are_exact ... ok
+test aggregate_wire_request_rejects_capabilities ... ok
+test count_sum_avg_connector_capability_selects_supported_plan ... ok
+test count_sum_avg_match_full_materialization_reference ... ok
+test group_distinct_matches_visible_merged_reference ... ok
+test min_max_edited_values_can_win_or_remove_winner ... ok
+test min_max_refill_past_invalid_top_rows ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.85s
+
+     Running tests\audit_l0.rs (target\debug\deps\audit_l0-27e5e71832302d26.exe)
+
+running 10 tests
+test audit_list_pg_only_edit_store_records_once ... ignored, needs ONTOFORGE_PG_URL
+test audit_aggregate_unavailable_keeps_error_identity_and_no_result ... ok
+test audit_aggregate_cancellation_records_event ... ok
+test audit_list_sink_failure_closes_gate_without_releasing_result ... ok
+test audit_aggregate_sink_failure_closes_gate_without_result ... ok
+test audit_list_cancellation_records_event_and_releases_slot ... ok
+test audit_list_denied_source_error_and_truncation_record_status ... ok
+test audit_aggregate_source_error_and_truncation_record_status ... ok
+test audit_aggregate_partial_and_fallback_each_record_once ... ok
+test audit_list_type_filter_set_and_search_around_record_once ... ok
+
+test result: ok. 9 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.75s
+
+     Running tests\audit_pk.rs (target\debug\deps\audit_pk-99dd1fb5105cec5e.exe)
+
+running 13 tests
+test audit_worker_rejects_invalid_limits ... ok
+test audit_pk_execution_reserve_failure_has_no_audit_id ... ok
+test audit_pk_cancelled_in_flight_records_without_result ... ok
+test audit_pk_full_queue_rejects_before_releasing_another_result ... ok
+test audit_observed_wrappers_report_single_reservation_and_never_report_failed_reserve ... ok
+test audit_pk_execution_returns_durable_id_for_success_and_denial ... ok
+test audit_worker_transient_sink_failure_recovers_before_retry_limit ... ok
+test audit_pk_denied_before_source_and_source_failure_have_distinct_statuses ... ok
+test audit_pk_success_records_one_metadata_row ... ok
+test audit_worker_persistent_sink_failure_stops_and_reports_failed_drain ... ok
+test audit_worker_shutdown_drains_and_reopen_recovers ... ok
+test audit_pk_execution_finish_failure_retains_reserved_id ... ok
+test audit_worker_pending_age_closes_gate_until_blocked_writer_recovers ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.91s
+
+     Running tests\definition_snapshot.rs (target\debug\deps\definition_snapshot-f89fec19165658a4.exe)
+
+running 2 tests
+test l0_inflight_reload_and_scope_apply_keep_request_snapshot ... ok
+test l2_inflight_reload_and_scope_apply_keep_request_snapshot ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.62s
+
+     Running tests\l2_discovery.rs (target\debug\deps\l2_discovery-308263f997acc82d.exe)
+
+running 9 tests
+test l2_catalog_cancelled_inflight_audits_once ... ok
+test l2_catalog_filters_and_audits_catalogs_and_schemas ... ok
+test l2_table_denials_never_post_or_reflect_input ... ok
+test l2_table_schema_field_limit_is_truncated_and_audited ... ok
+test l2_catalog_rejects_ungranted_input_without_post ... ok
+test l2_table_schema_cancellation_and_quoted_name ... ok
+test l2_table_lists_only_granted_tables_and_describes_columns ... ok
+test l2_catalog_truncation_source_error_and_audit_failure ... ok
+test l2_table_truncation_source_error_and_audit_failure ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.66s
+
+     Running tests\l2_execute.rs (target\debug\deps\l2_execute-977dfd6806db929b.exe)
+
+running 15 tests
+test l2_execute_sqlite_v5_audit_upgrade_preserves_rows ... ok
+test l2_execute_byte_cap_truncates_without_releasing_partial_row ... ok
+test l2_execute_timeout_is_audited_without_result ... ok
+test l2_explain_inflight_cancellation_records_event ... ok
+test l2_execute_truncation_returns_narrowing_hint_and_audit_status ... ok
+test l2_explain_requires_attestation_and_submits_only_validated_display ... ok
+test l2_explain_old_wrapper_and_rejection_contract ... ok
+test l2_explain_invalid_and_unauthorized_sql_never_posts ... ok
+test l2_execute_inflight_cancellation_records_event ... ok
+test l2_execute_rejections_are_audited_without_post ... ok
+test l2_execute_source_error_and_audit_failure_never_release_rows ... ok
+test l2_execute_only_submits_display_sql_after_attestation_and_audits_result ... ok
+test l2_explain_all_types_share_admission_and_audit ... ok
+test l2_explain_truncation_source_error_and_audit_fault ... ok
+test l2_explain_all_types_timeout_cancel_concurrency ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.09s
+
+     Running tests\overlay_prop.rs (target\debug\deps\overlay_prop-4cee671a3f919399.exe)
+
+running 11 tests
+test pagination_execution_limit_boundaries_are_inclusive ... ok
+test pagination_budget_rejects_overflow_and_untrusted_limits ... ok
+test overlay_partial_patch_and_explicit_null ... ok
+test tombstone_release_and_duplicate_candidates_are_idempotent ... ok
+test overlay_matches_independent_reference ... ok
+test ordering_case_insensitive_unicode_uses_final_rust_recheck ... ok
+test ordering_is_total_and_deterministic ... ok
+test ordering_decimal_uses_numeric_magnitude ... ok
+test scope_and_predicate_run_on_merged_row ... ok
+test hidden_columns_never_reach_sort_filter_or_projection ... ok
+test overlay_multikey_order_matches_reference ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.74s
+
+     Running tests\pk_read.rs (target\debug\deps\pk_read-ca9313057c454f16.exe)
+
+running 11 tests
+test execution_limits_phase4_defaults_are_exact ... ok
+test execution_limits_reject_zero_and_overflow ... ok
+test source_pk_uses_limit_two_and_rejects_ambiguous_rows ... ok
+test partial_edit_without_source_is_not_found ... ok
+test missing_read_has_no_side_effect ... ok
+test tombstone_is_not_found_and_release_reads_source ... ok
+test pk_read_obeys_host_raw_candidate_budget ... ok
+test edited_pk_uses_store_only ... ok
+test scope_runs_after_overlay ... ok
+test patch_null_and_unset_are_distinct ... ok
+test unedited_pk_uses_single_source_query ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.84s
+
+     Running tests\query_bench_it.rs (target\debug\deps\query_bench_it-b47b50c6d9cedee2.exe)
+
+running 3 tests
+test phase4_real_backend_p95 ... ignored, needs dedicated ONTOFORGE_TRINO_URL and ONTOFORGE_PG_URL
+test truncated_distributed_explain_is_rejected_before_fragment_count ... ok
+test nearest_rank_uses_all_samples_and_rejects_failures ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests\search_around.rs (target\debug\deps\search_around-8bd3a624705e1d72.exe)
+
+running 6 tests
+test duplicate_edits_use_highest_version_independent_of_input_order ... ok
+test many_to_many_merges_source_and_link_edits_fixed ... ok
+test search_around_wire_uses_only_logical_names ... ok
+test edge_overlay_matches_independent_reference ... ok
+test outbound_fk_uses_scoped_merged_object_value ... ok
+test many_to_many_hydrates_257_targets_in_bounded_batches ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.89s
+
+     Running tests\security.rs (target\debug\deps\security-b371561da691a40a.exe)
+
+running 23 tests
+test final_row_and_byte_caps_truncate ... ok
+test aggregate_invalid_names_and_limits_fail_before_backend_access ... ok
+test cursor_rejects_tamper_and_context_replay ... ok
+test pagination_backfill_rejects_conflicting_duplicate_pk ... ok
+test token_tamper_fails_closed ... ok
+test pagination_cursor_seeks_source_on_first_window ... ok
+test pagination_budget_exhaustion_returns_no_partial_page ... ok
+test pagination_refills_after_source_scope_false_positives ... ok
+test version_changes_with_principal_scope_definition_and_row ... ok
+test pagination_source_and_edit_share_all_work_budgets ... ok
+test pagination_stops_after_eligible_lookahead ... ok
+test pagination_case_insensitive_order_scans_pk_windows_before_rust_sort ... ok
+test cursor_rejects_same_principal_when_attributes_change ... ok
+test pagination_list_source_keyset_and_has_more ... ok
+test pagination_refills_after_tombstone_and_patch_moves_row_into_filter ... ok
+test pagination_refills_across_three_false_positive_windows ... ok
+test cursor_multikey_null_pages_have_no_duplicates_or_omissions ... ok
+test physical_names_never_escape ... ok
+test pk_probe_is_indistinguishable ... ok
+test version_claims_are_canonical_and_format_tagged ... ok
+test pagination_backfill_batches_never_exceed_256 ... ok
+test version_query_uses_format_tag_and_changes_with_scope ... ok
+test cap_counts_final_masked_row_and_version ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.99s
+
+     Running tests\set_ops.rs (target\debug\deps\set_ops-4961812ee27ed6e6.exe)
+
+running 5 tests
+test nested_set_wire_accepts_logical_names_only ... ok
+test set_ops_match_independent_btreeset_model_fixed ... ok
+test set_ops_match_independent_btreeset_model ... ok
+test valid_same_type_set_and_cross_type_rejection ... ok
+test set_result_reuses_normal_hydration_order_and_cursor ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.85s
+
+     Running tests\sql_shape.rs (target\debug\deps\sql_shape-f5048f331cfacb85.exe)
+
+running 6 tests
+test unbounded_page_is_rejected ... ok
+test collation_forces_recheck_and_disables_source_order ... ok
+test source_select_has_exactly_one_table ... ok
+test scope_row_and_filter_are_anded_without_role_crossing ... ok
+test aggregate_topn_uses_one_typed_bounded_source_table ... ok
+test all_source_variants_have_one_table_and_logical_aliases ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+
+     Running tests\sqlite_query.rs (target\debug\deps\sqlite_query-b6aa5c0829cd3cf9.exe)
+
+running 10 tests
+test limits_reject_before_recursion ... ok
+test hidden_column_is_rejected_before_execution ... ok
+test every_compile_limit_is_enforced ... ok
+test multi_role_grant_is_bound_to_its_row ... ok
+test null_unknown_and_wrong_types_are_checked ... ok
+test canonical_decimal_and_string_order_differ ... ok
+test term_search_is_whitespace_any_or_all ... ok
+test sqlite_multi_role_column_grant_does_not_cross_rows ... ok
+test sqlite_matches_rust_fixed_corpus ... ok
+test every_where_operator_validates_and_evaluates ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.83s
+
+     Running tests\trino_query_it.rs (target\debug\deps\trino_query_it-d1b6926803e66f06.exe)
+
+running 6 tests
+test aggregate_corpus_and_distributed_explain ... ignored, needs ONTOFORGE_TRINO_URL and ONTOFORGE_PG_URL
+test fixed_semantics_and_cursor_refill ... ignored, needs ONTOFORGE_TRINO_URL and ONTOFORGE_PG_URL
+test real_physical_errors_are_sanitized ... ignored, needs ONTOFORGE_TRINO_URL and ONTOFORGE_PG_URL
+test real_security_roles_and_cursor_replay ... ignored, needs ONTOFORGE_TRINO_URL and ONTOFORGE_PG_URL
+test where_search_set_and_relationship_corpus ... ignored, needs ONTOFORGE_TRINO_URL and ONTOFORGE_PG_URL
+test distributed_fragment_parser_rejects_bad_evidence ... ok
+
+test result: ok. 1 passed; 0 failed; 5 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
+     Running unittests src\lib.rs (target\debug\deps\ontoforge_schema-fd17dbbbd425a1ce.exe)
+
+running 139 tests
+test ir::attrs::tests::is_list_only_for_list_types ... ok
+test diag::tests::phase3_codes ... ok
+test diag::tests::offset_to_line_col_takes_byte_offsets_and_counts_char_columns ... ok
+test ir::object::tests::effective_decimal_defaults ... ok
+test ir::names::tests::valid_names_are_accepted ... ok
+test diag::tests::did_you_mean_picks_closest_and_ignores_far_names ... ok
+test ir::names::tests::profile_name_deserializes_through_serde ... ok
+test diag::tests::custom_error_round_trips ... ok
+test ir::names::tests::separators_are_folded_into_camel_case ... ok
+test ir::names::tests::lowercase_object_type_gets_a_canonical_suggestion ... ok
+test ir::names::tests::profile_name_rules ... ok
+test ir::names::tests::reserved_words_match_case_insensitively ... ok
+test ir::names::tests::acronym_prefix_is_lowered_as_a_word ... ok
+test ir::names::tests::schema_carries_the_pattern ... ok
+test diag::tests::sort_is_by_file_line_column_code ... ok
+test ir::names::tests::profile_name_schema_has_pattern ... ok
+test ir::names::tests::length_is_capped_at_one_hundred ... ok
+test ir::names::tests::unfixable_names_get_no_help ... ok
+test ir::names::tests::non_ascii_names_get_no_misleading_suggestion ... ok
+test lint::binding::e14::tests::e14_array_of_timestamps ... ok
+test lint::binding::e14::tests::e14_link_end_with_timestamp_key ... ok
+test lint::binding::e15::tests::e15_link_end ... ok
+test lint::binding::e14::tests::e14_multi_profile ... ok
+test lint::binding::w17::tests::w17_json_fixture_header_is_the_union_of_keys ... ok
+test lint::config::tests::config_levels_parse ... ok
+test lint::binding::e14::tests::e14_can_be_turned_off ... ok
+test lint::binding::e13::tests::e13_can_be_downgraded ... ok
+test lint::config::tests::empty_and_lint_only_files_are_fine ... ok
+test lint::config::tests::config_options_parse ... ok
+test lint::config::tests::every_problem_is_reported ... ok
+test lint::config::tests::invalid_level_is_error ... ok
+test lint::config::tests::datetime_and_out_of_range_integers_are_unsupported_values ... ok
+test lint::config::tests::lint_must_be_a_table ... ok
+test lint::config::tests::option_for_unknown_rule_or_with_bad_value_is_error ... ok
+test lint::config::tests::option_of_the_wrong_kind_is_error ... ok
+test lint::binding::w17::tests::w17_off ... ok
+test lint::config::tests::missing_config_file_uses_defaults ... ok
+test lint::config::tests::missing_override_path_is_error ... ok
+test lint::config::tests::root_config_that_is_not_a_file_is_error ... ok
+test lint::config::tests::toml_syntax_error_is_v15_at_its_span ... ok
+test lint::config::tests::undeclared_option_is_error ... ok
+test lint::config::tests::unknown_key_in_lint_section_is_error ... ok
+test lint::config::tests::unknown_lint_rule_id_is_error ... ok
+test lint::config::tests::override_path_replaces_the_root_file ... ok
+test lint::config::tests::unknown_section_is_error ... ok
+test lint::config::tests::validate_codes_cannot_be_configured ... ok
+test lint::config::tests::root_file_is_read_and_registered ... ok
+test lint::config::tests::symlinked_root_config_is_not_followed ... ok
+test lint::e08::tests::config_off_disables_the_rule ... ok
+test lint::e08::tests::link_help_points_at_the_foreign_key ... ok
+test lint::e09::tests::nested_array_parameter_is_an_error ... ok
+test lint::e09::tests::e09_config_override_applies_to_all_findings ... ok
+test lint::naming::w01::tests::clean ... ok
+test lint::binding::e14::tests::clean ... ok
+test lint::binding::e15::tests::clean ... ok
+test lint::binding::e16::tests::clean ... ok
+test lint::e09::tests::clean ... ok
+test lint::e08::tests::clean ... ok
+test lint::binding::e13::tests::clean ... ok
+test lint::binding::w17::tests::w17_unreadable_header_warns ... ok
+test lint::binding::w17::tests::clean ... ok
+test lint::naming::w04::tests::equal_counts_report_the_b_style ... ok
+test lint::naming::w02::tests::clean ... ok
+test lint::naming::w05::tests::clean ... ok
+test lint::naming::w04::tests::clean ... ok
+test lint::naming::w04::tests::triggers ... ok
+test lint::structure::w06::tests::unknown_option_key_is_rejected ... ok
+test lint::structure::w06::tests::max_properties_option_applies ... ok
+test lint::structure::w07::tests::a_cluster_lists_every_member ... ok
+test lint::structure::w06::tests::clean ... ok
+test lint::structure::w07::tests::clean ... ok
+test lint::structure::w07::tests::silo_prefixes_option_applies ... ok
+test lint::structure::w08::tests::a_shared_set_is_reported_once_for_four_types ... ok
+test lint::structure::w08::tests::clean ... ok
+test lint::e09::tests::triggers ... ok
+test lint::naming::w01::tests::triggers ... ok
+test lint::naming::w05::tests::triggers ... ok
+test lint::naming::w02::tests::triggers ... ok
+test lint::structure::w08::tests::triggers ... ok
+test lint::binding::e13::tests::triggers ... ok
+test lint::binding::e14::tests::triggers ... ok
+test lint::binding::w17::tests::triggers ... ok
+test lint::binding::e15::tests::triggers ... ok
+test lint::structure::w07::tests::triggers ... ok
+test lint::binding::e16::tests::triggers ... ok
+test lint::structure::w06::tests::triggers ... ok
+test lint::e08::tests::triggers ... ok
+test lint::tests::findings_are_located_in_the_source ... ok
+test lint::tests::level_resolution ... ok
+test lint::structure::w09::tests::create_and_modify_count_for_the_same_type ... ok
+test lint::structure::w11::tests::matching_ignores_case ... ok
+test lint::tests::registry_ids_are_known_and_unique ... ok
+test lint::words::tests::split_camel_cases ... ok
+test lint::structure::w09::tests::clean ... ok
+test lint::structure::w11::tests::clean ... ok
+test loader::discover::tests::candidates_skip_manifest_lint_config_and_hidden_dirs ... ok
+test loader::discover::tests::fixture_path_rules ... ok
+test loader::discover::tests::json_extension_is_case_insensitive ... ok
+test lint::naming::w03::tests::clean ... ok
+test lint::tests::rule_options_reach_the_rule ... ok
+test loader::discover::tests::only_binding_fixture_directories_are_excluded ... ok
+test lint::structure::w10::tests::clean ... ok
+test lint::naming::w03::tests::triggers ... ok
+test loader::discover::tests::profile_dir_is_the_second_segment_under_bindings ... ok
+test loader::discover::tests::scope_selection_takes_yaml_and_json_candidates ... ok
+test loader::fixture::tests::fixture_header_errors_do_not_echo_data ... ok
+test loader::fixture::tests::fixture_header_matches_the_engine_rules ... ok
+test lint::structure::w09::tests::max_actions_per_type_option_applies ... ok
+test loader::fixture::tests::fixture_header_rules ... ok
+test loader::parse::tests::json_array_is_flattened ... ok
+test loader::parse::tests::multi_document_yaml_yields_one_node_each ... ok
+test loader::parse::tests::null_key_message_has_no_rust_types ... ok
+test loader::parse::tests::json_trailing_comma_reports_line_and_offset ... ok
+test loader::parse::tests::duplicate_keys_are_an_error_without_the_position_suffix ... ok
+test loader::parse::tests::depth_budget_message_names_the_limit ... ok
+test loader::parse::tests::only_the_trailing_position_is_stripped ... ok
+test loader::parse::tests::yaml_1_1_booleans_stay_strings ... ok
+test loader::parse::tests::nesting_beyond_the_budget_is_an_error ... ok
+test loader::sourcemap::tests::missing_path_falls_back_to_the_nearest_ancestor ... ok
+test loader::sourcemap::tests::key_and_value_parts_differ ... ok
+test loader::sourcemap::tests::multibyte_values_report_byte_offsets_and_char_columns ... ok
+test loader::sourcemap::tests::nested_keys_and_sequence_indexes_resolve ... ok
+test loader::sourcemap::tests::text_is_available_by_path ... ok
+test loader::discover::tests::walk_lists_nested_files_and_prunes_dirs ... ok
+test lint::tests::lint_rule_on_panics_for_an_unregistered_rule - should panic ... ok
+test loader::tests::read_limited_missing_and_directory ... ok
+test loader::tests::fixture_header_is_captured ... ok
+test loader::tests::read_limited_custom_limit ... ok
+test loader::tests::fixture_that_is_not_utf8_is_recorded_as_unreadable ... ok
+test lint::structure::w09::tests::triggers ... ok
+test lint::structure::w10::tests::triggers ... ok
+test loader::tests::fixture_bytes_count_toward_budget ... ok
+test lint::structure::w11::tests::triggers ... ok
+test loader::tests::shared_fixture_is_counted_once ... ok
+test lint::structure::w08::tests::too_many_combinations_are_reported_once ... ok
+test lint::structure::w08::tests::many_types_with_the_same_shared_set_finish_quickly ... ok
+test lint::structure::w07::tests::many_similar_types_are_reported_once ... ok
+test lint::structure::w08::tests::many_types_with_different_shared_sets_finish_quickly ... ok
+test loader::parse::tests::node_budget_message_is_readable ... ok
+
+test result: ok. 139 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.76s
+
+     Running tests\action_types.rs (target\debug\deps\action_types-fc9b3e9cb5c68ff8.exe)
+
+running 28 tests
+test literal_validation ... ok
+test function_rule_is_v03 ... ok
+test object_reference_target_must_exist ... ok
+test object_reference_param_cannot_be_assigned ... ok
+test empty_condition_or_failure_message_is_v12 ... ok
+test object_reference_param_cannot_have_default ... ok
+test current_user_only_on_string ... ok
+test create_must_assign_primary_key_and_required ... ok
+test action_requires_at_least_one_rule ... ok
+test parameter_types ... ok
+test release_object_is_a_public_rule_kind ... ok
+test current_time_only_on_timestamp ... ok
+test modify_cannot_assign_primary_key ... ok
+test parameter_default_must_be_valid_literal ... ok
+test add_link_params_must_match_link_ends ... ok
+test parses_all_rule_kinds ... ok
+test rule_missing_kind_is_v02 ... ok
+test modify_object_param_must_be_object_reference ... ok
+test static_null_is_rejected ... ok
+test parses_all_value_sources ... ok
+test release_object_rejects_edit_only_definition ... ok
+test parameter_items_follow_the_property_rules ... ok
+test unknown_field_inside_rule_is_v04 ... ok
+test unknown_rule_kind_suggests ... ok
+test numeric_values_only_widen ... ok
+test value_source_with_two_keys_is_v06 ... ok
+test static_literal_must_match_property_type ... ok
+test references_must_exist ... ok
+
+test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+     Running tests\bindings.rs (target\debug\deps\bindings-032c9bc2bb7a3c35.exe)
+
+running 32 tests
+test column_key_unknown_property_is_v09 ... ok
+test bad_profile_dir_is_v16 ... ok
+test binding_outside_bindings_dir_is_v16 ... ok
+test binding_directly_under_bindings_is_v16 ... ok
+test definition_inside_bindings_dir_is_v16 ... ok
+test all_edit_only_needs_no_profile ... ok
+test duplicate_binding_is_v08 ... ok
+test many_to_many_without_binding_is_v16 ... ok
+test bound_columns_object_and_link ... ok
+test flight_binding_loads_under_dev_profile ... ok
+test complete_profile_has_no_diagnostics ... ok
+test fixtures_dir_is_not_scanned ... ok
+test fixture_behind_directory_link_is_v16 ... ok
+test edit_only_type_with_binding_is_v16 ... ok
+test link_columns_need_from_and_to ... ok
+test fixture_reference_rules ... ok
+test no_profile_selected_is_v16 ... ok
+test one_to_many_link_binding_is_v16 ... ok
+test same_target_in_two_profiles_is_not_a_duplicate ... ok
+test top_level_fixtures_dir_still_loaded ... ok
+test source_type_without_binding_is_v16 ... ok
+test unknown_link_target_is_v09 ... ok
+test unknown_target_is_v09 ... ok
+test unknown_profile_from_manifest_points_at_default_profile ... ok
+test precision_on_non_decimal_is_v06 ... ok
+test unknown_binding_field_is_v04 ... ok
+test two_keys_on_one_column_is_v16 ... ok
+test unknown_profile_from_flag_is_v16_with_suggestion ... ok
+test profile_name_length_boundaries ... ok
+test timezone_value_rules ... ok
+test physical_identifier_rules ... ok
+test oversized_fixture_is_v16 ... ok
+
+test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.35s
+
+     Running tests\diagnostics.rs (target\debug\deps\diagnostics-e33760de597247ce.exe)
+
+running 16 tests
+test unknown_kind_is_v03_with_a_close_name ... ok
+test reserved_kind_is_v03_not_supported_in_v1 ... ok
+test missing_required_field_is_v05_at_the_kind_value ... ok
+test lowercase_object_type_name_is_v07_with_canonical_help ... ok
+test reserved_word_is_v07_case_insensitively ... ok
+test missing_manifest_is_v14_without_a_location ... ok
+test duplicate_api_name_is_v08_and_cites_the_first_definition ... ok
+test unknown_base_type_is_v06_at_the_value_with_a_suggestion ... ok
+test unknown_field_is_v04_at_the_key_with_a_suggestion ... ok
+test valid_document_loads_into_the_ontology ... ok
+test primary_key_must_be_a_declared_property ... ok
+test yaml_and_json_load_to_the_same_ontology ... ok
+test cel_keyword_parameter_or_property_name_is_v07 ... ok
+test duplicate_yaml_key_is_v01 ... ok
+test json_trailing_comma_is_v01_even_though_yaml_would_accept_it ... ok
+test deeply_nested_yaml_is_rejected_not_crashing ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.35s
+
+     Running tests\link_types.rs (target\debug\deps\link_types-5a6692588ea8e8c2.exe)
+
+running 21 tests
+test link_end_unknown_field_is_v04 ... ok
+test one_to_many_without_foreign_key_is_v11 ... ok
+test link_checks_are_skipped_for_missing_types ... ok
+test end_name_clashes_with_property_is_v08 ... ok
+test many_to_many_without_backing_is_v05 ... ok
+test link_ir_is_typed ... ok
+test foreign_key_on_from_end_is_v11 ... ok
+test many_to_many_with_foreign_key_is_v11 ... ok
+test foreign_key_type_must_match_primary_key ... ok
+test duplicate_end_names_on_same_type_is_v08 ... ok
+test one_to_one_with_backing_is_v11 ... ok
+test one_to_many_with_backing_is_v11 ... ok
+test many_to_many_with_backing_loads ... ok
+test duplicate_link_type_is_v08 ... ok
+test parses_all_three_cardinalities ... ok
+test link_type_api_name_must_be_camel_case ... ok
+test self_link_with_distinct_ends_is_valid ... ok
+test unknown_cardinality_is_v06 ... ok
+test unknown_end_object_type_is_v09 ... ok
+test self_link_ends_must_differ ... ok
+test unknown_foreign_key_property_is_v09 ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.39s
+
+     Running tests\lint_examples.rs (target\debug\deps\lint_examples-2a22aa1f3a4d0e74.exe)
+
+running 1 test
+test aviation_lints_clean ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+
+     Running tests\load_examples.rs (target\debug\deps\load_examples-93aaefefc3b9a68c.exe)
+
+running 6 tests
+test aviation_file_order_does_not_matter ... ok
+test aviation_yaml_and_json_produce_identical_ir ... ok
+test aviation_examples_have_no_diagnostics ... ok
+test aviation_dev_profile_binds_flight ... ok
+test aviation_cost_property ... ok
+test aviation_dev_profile_binds_every_source_type ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.36s
+
+     Running tests\loader.rs (target\debug\deps\loader-f667541229b7b361.exe)
+
+running 34 tests
+test include_with_parent_segment_is_rejected ... ok
+test invalid_glob_is_rejected ... ok
+test absolute_include_is_rejected ... ok
+test manifest_that_is_not_a_file_is_v14 ... ok
+test manifest_and_lint_config_are_not_definitions ... ok
+test empty_yaml_documents_are_skipped ... ok
+test manifest_with_other_letter_case_is_v14_and_not_a_definition ... ok
+test diagnostic_paths_use_forward_slash ... ok
+test multi_document_yaml_and_json_array_are_both_loaded ... ok
+test dot_dirs_and_build_dirs_are_skipped ... ok
+test file_order_does_not_change_ir ... ok
+test bom_crlf_tab_and_cjk_locations_are_exact ... ok
+test json_syntax_error_column_counts_characters ... ok
+test json_trailing_comma_is_rejected ... ok
+test merge_key_is_v01 ... ok
+test json_comment_is_rejected ... ok
+test non_utf8_file_is_v01 ... ok
+test duplicate_key_is_v01_with_location ... ok
+test non_utf8_file_and_directory_names_are_v14 ... ok
+test deeply_nested_yaml_is_rejected_not_crashing ... ok
+test custom_include_restricts_files ... ok
+test load_from_memory_applies_same_include_filter ... ok
+test oversized_file_is_rejected ... ok
+test nested_files_are_merged ... ok
+test oversized_in_memory_file_is_rejected ... ok
+test properties_keep_declared_order ... ok
+test deeply_nested_json_is_rejected_not_crashing ... ok
+test symlinked_manifest_is_not_followed ... ok
+test symlinked_file_is_not_followed ... ok
+test yaml_yes_no_stay_strings ... ok
+test v01_message_has_no_parser_position_suffix ... ok
+test unsupported_tag_is_v01 ... ok
+test file_count_budget_stops_reading ... ok
+test total_size_budget_stops_reading ... ok
+
+test result: ok. 34 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.85s
+
+     Running tests\object_types.rs (target\debug\deps\object_types-1e16deb88d0a692f.exe)
+
+running 21 tests
+test pk_suitability_table ... ok
+test object_without_backing_is_v05 ... ok
+test indexed_must_be_boolean ... ok
+test primary_key_must_be_required ... ok
+test indexed_defaults_to_false ... ok
+test all_v1_base_types_parse ... ok
+test array_requires_items ... ok
+test full_object_type_round_trips ... ok
+test object_type_optional_fields_default ... ok
+test items_only_for_arrays ... ok
+test duplicate_object_type_reports_first_location ... ok
+test discouraged_primary_key_is_not_a_validate_error ... ok
+test nested_array_is_not_a_validate_error ... ok
+test indexed_true_is_kept ... ok
+test string_field_given_number_suggests_quotes ... ok
+test both_backing_values_load ... ok
+test title_key_must_exist ... ok
+test unknown_backing_value_is_v06 ... ok
+test unknown_base_type_suggests_nearest ... ok
+test invalid_primary_key_types_are_v10 ... ok
+test aviation_backing_values ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+     Running tests\schema_export.rs (target\debug\deps\schema_export-a038c23f1834f0ec.exe)
+
+running 14 tests
+test definition_schema_is_draft_2020_12 ... ok
+test committed_schemas_are_up_to_date ... ok
+test scope_variants_are_discriminated_by_kind ... ok
+test definition_variants_are_discriminated_by_kind ... ok
+test scope_schema_is_the_third_exported_file ... ok
+test rendering_is_deterministic ... ok
+test rule_variants_are_discriminated_by_kind ... ok
+test aviation_definition_documents_start_with_modeline ... ok
+test editor_configs_associate_definition_schema_with_examples ... ok
+test invalid_scope_documents_fail_schema ... ok
+test invalid_examples_fail_schema ... ok
+test aviation_scope_documents_validate ... ok
+test aviation_bindings_validate ... ok
+test aviation_documents_validate ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.63s
+
+     Running tests\scope_documents.rs (target\debug\deps\scope_documents-edcdc6dc3ec14c65.exe)
+
+running 16 tests
+test empty_scope_directory_is_reported ... ok
+test source_binding_in_scope_dir_is_v03 ... ok
+test object_type_in_scope_dir_is_v03 ... ok
+test unknown_kind_in_scope_dir_suggests_a_scope_kind ... ok
+test multi_document_file_loads ... ok
+test unknown_field_is_v04_with_location ... ok
+test toolset_value_is_checked ... ok
+test binding_may_precede_its_role_in_file_order ... ok
+test duplicate_role_is_v08 ... ok
+test binding_to_unknown_role_is_v21 ... ok
+test second_binding_for_role_is_v08 ... ok
+test loads_aviation_scope_example ... ok
+test role_binding_in_ontology_dir_is_v03 ... ok
+test role_in_ontology_dir_is_v03 ... ok
+test subject_rules ... ok
+test scope_diagnostics ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+
+     Running unittests src\lib.rs (target\debug\deps\ontoforge_server-0a1fa3a6214e542f.exe)
+
+running 25 tests
+test mcp::error_tests::context_error_without_valid_header_id_uses_transport_id ... ok
+test mcp::error_tests::context_error_bounds_and_filters_body_without_losing_header_id ... ok
+test drift::tests::owner_exit_cannot_leave_future_versions_pending_forever ... ok
+test mcp::error_tests::context_error_preserves_safe_code_and_existing_id_only ... ok
+test drift::tests::exact_key_isolates_new_version_and_keeps_inflight_view ... ok
+test state::session_tests::cancelled_close_keeps_real_session_counted_until_removal ... ok
+test state::session_tests::cancelled_close_is_retried_by_reaper_without_new_requests ... ok
+test state::session_tests::pending_sessions_count_toward_cap_and_evicted_binding_cannot_revive ... ok
+test tests::crate_name_has_ontoforge_prefix ... ok
+test state::session_tests::initialization_failure_and_cancelled_request_release_real_sessions ... ok
+test state::session_tests::real_http_failed_initialize_leaves_no_session ... ok
+test tracer_tests::tracer_unauthenticated_and_forged_context_are_denied ... ok
+test tracer_tests::tracer_snapshot_releases_lock_before_source ... ok
+test tracer_tests::tracer_authenticated_pk_is_durable_after_shutdown ... ok
+test state::session_tests::real_http_eviction_delete_and_hosts_are_isolated ... ok
+test rest_tests::rest_reload_and_revoke_freeze_inflight_only ... ok
+test state::session_tests::real_http_natural_worker_exit_removes_owner_through_wrapper ... ok
+test rest_tests::rest_metadata_and_all_l0_operations ... ok
+test state::session_tests::real_http_cancelled_initialize_cleans_before_slow_handler_returns ... ok
+test state::session_tests::real_http_concurrent_initialize_stays_bounded_and_releases_at_shutdown ... ok
+test state::session_tests::real_http_idle_ttl_reclaims_without_requests ... ok
+test state::session_tests::real_http_wrong_owner_never_refreshes_ttl ... ok
+test context::admission_tests::slow_body_has_one_bounded_control_reservation_until_deadline ... ok
+test state::session_tests::real_http_sessions_never_exceed_capacity ... ok
+test rest_tests::rest_equal_sort_keys_empty_nullable_and_pagination ... ok
+
+test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11.81s
+
+     Running tests\action_source_budget.rs (target\debug\deps\action_source_budget-635f78fed3bb4210.exe)
+
+running 5 tests
+test validate_only_preserves_domain_rows_bytes_while_query_stays_limited ... ok
+test rest_action_disconnect_keeps_domain_source_budget_and_one_receipt ... ok
+test mcp_action_disconnect_keeps_domain_source_budget_and_one_receipt ... ok
+test rest_action_http_deadline_keeps_domain_source_budget_and_one_receipt ... ok
+test mcp_action_http_deadline_keeps_domain_source_budget_and_one_receipt ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.35s
+
+     Running tests\health_lifecycle_it.rs (target\debug\deps\health_lifecycle_it-28244a7d67537f81.exe)
+
+running 4 tests
+test startup_partial_failure_cleans_monitor_and_store ... ok
+test health_unconfigured_optional_l2_is_healthy ... ok
+test health_l2_failure_and_expiry_are_200_degraded ... ok
+test health_core_failure_is_503_and_recovery_is_visible ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.51s
+
+     Running tests\health_trino_it.rs (target\debug\deps\health_trino_it-683f97da716f09e7.exe)
+
+running 2 tests
+test real_health_l2_failure_expiry_recovery_keeps_core ... ignored, requires real Trino L2 ACL services and an authenticated ontoforge HTTP server
+test real_shutdown_action_dependency_audit_and_cleanup ... ignored, requires real Trino L2 ACL services and an authenticated ontoforge HTTP server
+
+test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\history_errors.rs (target\debug\deps\history_errors-7358673d4c74d304.exe)
+
+running 7 tests
+test history_log_store_failure_is_unavailable_with_its_audit_id ... ok
+test history_truncated_pk_is_cost_exceeded_with_its_audit_id ... ok
+test history_audit_unavailable_fails_closed_before_source_dispatch ... ok
+test history_missing_object_remains_not_found_with_its_audit_id ... ok
+test history_query_store_failure_is_unavailable_with_its_audit_id ... ok
+test history_success_uses_its_durable_audit_id ... ok
+test history_source_failures_preserve_status_and_audit_id ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.12s
+
+     Running tests\history_pagination.rs (target\debug\deps\history_pagination-12dc64b8d949d76a.exe)
+
+running 7 tests
+test exact_limit_terminal_page_has_no_continuation ... ok
+test zero_limit_is_normalized_before_continuation_is_decided ... ok
+test oversized_first_group_returns_a_safe_error_without_partial_entries ... ok
+test soft_entry_limit_never_splits_a_record_group ... ok
+test byte_limited_pages_preserve_complete_groups_without_skipping_entries ... ok
+test utf8_budget_includes_the_complete_normalized_page ... ok
+test limit_above_500_reports_and_follows_the_real_continuation ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.26s
+
+     Running tests\http_action_diagnostics.rs (target\debug\deps\http_action_diagnostics-ec8d61030e8cc387.exe)
+
+running 5 tests
+test http_action_store_error_keeps_database_details_private ... ok
+test http_action_other_errors_omit_diagnostics ... ok
+test http_action_parameter_diagnostics_keep_item_and_field ... ok
+test http_action_commit_error_omits_internal_message ... ok
+test http_action_criteria_diagnostics_keep_only_configured_message ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.35s
+
+     Running tests\http_action_safety.rs (target\debug\deps\http_action_safety-3f6f296af9c10bfd.exe)
+
+running 3 tests
+test http_same_command_race_one_commit_original_receipt ... ok
+test http_replay_revoke_cross_principal_and_changed_params ... ok
+test http_stale_and_validate_conflicts_never_retry ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.75s
+
+     Running tests\http_actions.rs (target\debug\deps\http_actions-d549d4a746358615.exe)
+
+running 3 tests
+test http_history_preserves_masked_field_names_and_hides_values ... ok
+test http_action_empty_invalid_and_masked_history ... ok
+test http_action_validate_submit_history_result ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.61s
+
+     Running tests\http_contract.rs (target\debug\deps\http_contract-611a5e9b63a25750.exe)
+
+running 3 tests
+test contracts::http_framework_rejections_are_structured ... ok
+test contracts::http_error_utf8_ids_and_l0_redaction ... ok
+test contracts::http_rows_bytes_concurrency_timeout_and_audit_fail_closed ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.63s
+
+     Running tests\mcp_actions.rs (target\debug\deps\mcp_actions-9b75ed45eaf7d8fd.exe)
+
+running 10 tests
+test mcp_action_envelope_rejects_wrong_shapes_and_unknown_fields ... ok
+test mcp_reference_schema_uses_the_fixed_ontology_primary_key_type ... ok
+test mcp_dynamic_action_schema_matches_real_validation ... ok
+test mcp_action_envelope_optional_params_preserve_business_defaults ... ok
+test mcp_validate_only_keeps_fence_cas_guards_and_zero_writes ... ok
+test mcp_float_array_schema_and_validation_agree ... ok
+test mcp_action_envelope_separates_same_named_business_fields ... ok
+test mcp_validate_only_http_zero_business_writes ... ok
+test mcp_action_schema_execution_keeps_admitted_definition ... ok
+test mcp_rest_same_command_race_and_receipt ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.22s
+
+     Running tests\mcp_contract.rs (target\debug\deps\mcp_contract-84db2314986616cd.exe)
+
+running 16 tests
+test mcp_core_full_describe_query_history_equal_rest ... ok
+test mcp_list_filters_before_keyset_and_direct_call_denies ... ok
+test mcp_real_http_client_lists_core_tools_and_rejects_hidden_call ... ok
+test mcp_get_object_missing_is_distinct_from_budget_exhaustion ... ok
+test mcp_describe_links_and_engine_status_match_scoped_rest_metadata ... ok
+test mcp_get_object_budget_error_preserves_durable_audit_id ... ok
+test mcp_action_criteria_failure_retains_safe_domain_diagnostics ... ok
+test mcp_inflight_snapshot_and_revoke_on_next_call ... ok
+test mcp_action_envelope_optional_params_apply_domain_defaults ... ok
+test mcp_action_envelope_preserves_colliding_business_values_and_controls ... ok
+test mcp_action_envelope_rejects_flat_and_invalid_nested_requests ... ok
+test mcp_history_pages_match_rest_and_preserve_complete_records ... ok
+test mcp_read_tools_use_declared_argument_shapes ... ok
+test mcp_store_failures_are_safe_and_keep_audit_correlation ... ok
+test mcp_action_numeric_and_boolean_references_accept_real_pk_values ... ok
+test mcp_history_byte_budget_matches_rest_without_partial_records ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.30s
+
+     Running tests\mcp_execution_admission.rs (target\debug\deps\mcp_execution_admission-7309ac84ec795507.exe)
+
+running 4 tests
+test rest_request_blocks_mcp_until_actual_execution_finishes ... ok
+test rejected_messages_and_large_body_release_reserved_slots ... ok
+test cancelled_disconnected_action_holds_permit_until_owned_task_finishes ... ok
+test mcp_read_holds_shared_slot_but_real_cancel_and_sse_still_work ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.56s
+
+     Running tests\mcp_l2.rs (target\debug\deps\mcp_l2-7c9fe5d1a62f104e.exe)
+
+running 2 tests
+test mcp_l2_gate_expiry_revoke_and_audit ... ok
+test mcp_l2_all_six_names_parameters_and_allowlist ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests\mcp_l2_defaults.rs (target\debug\deps\mcp_l2_defaults-fa2271fc6f05a43b.exe)
+
+running 15 tests
+test mcp_l2_missing_context_and_outside_allowlist_deny_before_send ... ok
+test mcp_l2_local_rejections_skip_status_execute_and_audit ... ok
+test mcp_l2_optional_context_defaults_and_qualified_override ... ok
+test mcp_l2_defaults_real_listener_consumes_deployment_context ... ok
+test l2_reservation_observer_runs_before_source_await_and_survives_drop ... ok
+test mcp_l2_without_trino_remains_unavailable_for_all_six_tools ... ok
+test mcp_l2_custom_edit_catalog_filtered_and_read_catalog_still_works ... ok
+test mcp_l2_default_edit_catalog_filtered_and_read_catalog_still_works ... ok
+test mcp_l2_custom_edit_catalog_denies_before_any_upstream_request ... ok
+test mcp_l2_default_edit_catalog_denies_before_any_upstream_request ... ok
+test mcp_l2_errors_are_safe_and_preserve_reserved_audit_ids ... ok
+test mcp_l2_same_session_revoke_defaults_and_qualified_zero_send ... ok
+test mcp_l2_typed_explain_concurrency_limit_releases_permit ... ok
+test mcp_l2_cancellation_and_shutdown_keep_reserved_audit_ids ... ok
+test mcp_l2_same_session_real_proof_expiry_zero_send_and_recovery has been running for over 60 seconds
+test mcp_l2_same_session_real_proof_expiry_zero_send_and_recovery ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 63.08s
+
+     Running tests\mcp_transport.rs (target\debug\deps\mcp_transport-4e828559373aa9f3.exe)
+
+running 11 tests
+test shutdown_surfaces_owned_action_task_failure ... ok
+test mcp_new_protocol_without_session_requires_metadata ... ok
+test transport_authenticates_initialize_and_control_requests ... ok
+test shutdown_closes_live_sse_connection ... ok
+test legacy_session_lists_tools ... ok
+test mcp_old_session_reauth_owner_ttl_capacity_delete ... ok
+test transport_binds_initialize_owner_before_first_tool ... ok
+test cancellation_stops_only_requested_read_and_persists_audit ... ok
+test cancelled_action_survives_transport_shutdown_without_replay ... ok
+test shutdown_deadline_still_closes_audit_after_stuck_action ... ok
+test expired_signed_token_rejects_every_session_method ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.96s
+
+     Running tests\postgres_http_it.rs (target\debug\deps\postgres_http_it-f4cd2f36a7ccf460.exe)
+
+running 4 tests
+test pg_http_action_validate_stale_replay_atomicity ... ignored, requires real PostgreSQL and an authenticated ontoforge HTTP server
+test pg_http_definition_stale_barrier_has_zero_business_writes ... ignored, requires ONTOFORGE_PG_URL and ONTOFORGE_TRINO_URL with aviation source fixtures
+test pg_http_mixed_snapshot_reload_revoke_and_history ... ignored, requires real PostgreSQL and an authenticated ontoforge HTTP server
+test pg_mcp_rest_same_command_race_one_persistent_receipt ... ignored, requires ONTOFORGE_PG_URL and ONTOFORGE_TRINO_URL with aviation source fixtures
+
+test result: ok. 0 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\source_drift.rs (target\debug\deps\source_drift-e88af3a1a9ed556e.exe)
+
+running 20 tests
+test invalid_fresh_startup_does_not_probe_or_take_the_store ... ok
+test initial_snapshot_failure_stops_host_and_drains_audit ... ok
+test shutdown_during_initial_probe_cancels_and_joins_owner ... ok
+test first_probe_duration_does_not_extend_the_30_second_period ... ok
+test duplicate_owner_installation_is_rejected_without_stopping_the_first ... ok
+test all_targets_degraded_keeps_health_200_without_details ... ok
+test no_source_definition_is_healthy_without_metadata_calls ... ok
+test metadata_engine_failure_remains_503_despite_live_status_success ... ok
+test source_unreadable_preserves_safe_code_and_zero_source_execution ... ok
+test catalog_probes_share_the_round_budget_and_cancel_inflight_metadata ... ok
+test startup_drift_rejects_source_before_sql_and_preserves_audit_id ... ok
+test search_around_checks_the_link_target_before_reading_join_rows ... ok
+test invalid_duplicate_startup_cannot_close_the_running_owner_or_its_audit ... ok
+test source_drift_blocks_list_aggregate_and_both_action_modes_without_writes ... ok
+test inflight_list_keeps_v1_view_for_second_source_call_after_v2_drift ... ok
+test actual_monitor_panic_becomes_check_failed_and_shutdown_reports_failure ... ok
+test later_list_page_and_backfill_recheck_the_logical_target ... ok
+test complete_source_patch_remains_readable_and_actionable_during_drift ... ok
+test mcp_authorized_action_preserves_drift_code_in_both_modes_without_side_effects ... ok
+test action_type_authorization_precedes_source_drift_for_rest_and_mcp ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.32s
+
+     Running tests\source_drift_cleanup.rs (target\debug\deps\source_drift_cleanup-82bb5b65c60a24aa.exe)
+
+running 2 tests
+test shutdown_waits_for_inflight_metadata_delete_and_closes_audit ... ok
+test failed_metadata_delete_returns_shutdown_error_and_closes_audit ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.46s
+
+     Running tests\source_drift_trino_it.rs (target\debug\deps\source_drift_trino_it-22547d42f529c24f.exe)
+
+running 2 tests
+test real_source_drift_external_reload_does_not_publish_old_metadata ... ignored, requires ONTOFORGE_PG_URL and ONTOFORGE_TRINO_URL; exercises two PostgreSQL stores and a real metadata response barrier
+test real_source_drift_periodic_target_isolation_and_recovery ... ignored, requires ONTOFORGE_PG_URL and ONTOFORGE_TRINO_URL; real Trino demo catalog must address the PostgreSQL demo database
+
+test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\trino_http_it.rs (target\debug\deps\trino_http_it-21125039194dcec9.exe)
+
+running 2 tests
+test trino_http_and_mcp_six_l2_tools_all_formats ... ignored, requires real Trino L2 ACL services and an authenticated ontoforge HTTP server
+test trino_http_long_read_releases_snapshot_lock ... ignored, requires real Trino and an authenticated ontoforge HTTP server
+
+test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (target\debug\deps\ontoforge_storage-9c1c15f18149e0c0.exe)
+
+running 49 tests
+test history::tests::limit_is_between_one_and_the_maximum ... ok
+test naming::tests::fnv1a64_matches_the_published_vectors ... ok
+test physical::tests::array_without_items_is_refused ... ok
+test physical::tests::byte_and_short_stay_distinct ... ok
+test physical::tests::array_of_decimal_keeps_precision ... ok
+test naming::tests::archive_names_carry_the_definition_version ... ok
+test naming::tests::index_names_stay_within_the_postgres_limit ... ok
+test ddl::tests::system_columns_match_the_names_physical_checks_against ... ok
+test diff::tests::archived_columns_are_not_removals ... ok
+test diff::tests::unique_index_leaves_with_its_link_but_a_plain_one_stays ... ok
+test naming::tests::names_are_snake_cased_with_prefixes ... ok
+test naming::tests::bounded_names ... ok
+test diff::tests::diagnostic_is_v25_with_migrate_help ... ok
+test state::tests::link_rows_toggle_and_count_every_write ... ok
+test state::tests::removing_an_absent_link_depends_on_its_backing ... ok
+test ddl::tests::migration_statements_quote_names_and_qualify_the_old_table_only ... ok
+test ddl::tests::add_property_column_is_two_single_operation_statements ... ok
+test ddl::tests::postgres_collates_the_key_before_its_constraints ... ok
+test ddl::tests::create_table_declares_collation_flags_and_system_columns ... ok
+test ddl::tests::postgres_add_column_is_qualified_and_idempotent ... ok
+test tests::crate_name_has_ontoforge_prefix ... ok
+test value::tests::array_elements_follow_items_and_may_not_be_null ... ok
+test value::tests::date_is_a_calendar_day_written_as_iso ... ok
+test value::tests::decimal_json_numbers_must_be_exact_integers ... ok
+test value::tests::float_is_rounded_to_32_bits_once ... ok
+test value::tests::geopoint_is_range_checked ... ok
+test value::tests::integer_ranges_follow_the_type ... ok
+test value::tests::decimal_is_padded_and_never_rounded ... ok
+test value::tests::null_is_refused_for_a_required_property_only ... ok
+test value::tests::only_plain_values_become_predicate_scalars ... ok
+test value::tests::json_round_trips_every_type ... ok
+test value::tests::postgres_limits_are_validated ... ok
+test value::tests::text_cells_convert_to_canonical_values ... ok
+test value::tests::text_cells_that_do_not_fit_are_refused ... ok
+test value::tests::timestamp_needs_an_offset_and_is_stored_in_utc_milliseconds ... ok
+test state::tests::set_creates_a_row_with_version_one ... ok
+test state::tests::a_source_backed_object_may_be_patched_without_required_properties ... ok
+test state::tests::a_tombstoned_object_is_not_revived_by_set ... ok
+test state::tests::a_version_zero_row_counts_as_absent ... ok
+test state::tests::an_edit_only_object_needs_its_required_properties ... ok
+test state::tests::set_patches_given_properties_and_bumps_the_version ... ok
+test state::tests::a_source_backed_object_can_be_tombstoned_without_an_edit_row ... ok
+test state::tests::tombstone_keeps_the_set_properties_and_blocks_everything_but_release ... ok
+test state::tests::a_released_object_can_be_set_or_tombstoned_but_not_released_or_unset ... ok
+test state::tests::unset_clears_only_the_named_properties ... ok
+test state::tests::an_edit_only_object_that_does_not_exist_cannot_be_changed ... ok
+test state::tests::an_edit_only_object_keeps_its_required_properties_on_unset ... ok
+test read_audit::tests::audit_shutdown_join_error_is_sticky ... ok
+test ddl::tests::ddl_snapshots ... ok
+
+test result: ok. 49 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.57s
+
+     Running tests\conformance_pg.rs (target\debug\deps\conformance_pg-5c9acc4532d80f29.exe)
+
+running 45 tests
+test action_batch_guard_interleaves_reads_and_edits ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test action_batch_migration_constraints_match_contract ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test action_batch_principal_scopes_command_id ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test action_batch_stale_definition_leaves_no_action_rows ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test action_batch_writes_one_command_and_outbox ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test action_cas_conflict_rolls_back_version_zero_skeleton ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test action_cas_rejects_stale_no_token_without_side_effects ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test append_only_rejects_sqlite_replace_writes ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test append_only_rejects_truncate_on_pg ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test append_only_rejects_update_and_delete ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test audit_batch_rejection_is_atomic ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test audit_batch_retention_parity ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test audit_cancelled_shutdown_retry_waits_for_durability ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test audit_cleanup_rejection_rolls_back_batch ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test audit_concurrent_shutdown_waits_for_durability ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test audit_pg_connection_interruption_recovers ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test audit_shutdown_drains_inflight_guard ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test audit_shutdown_failure_is_sticky ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test audit_sink_failure_rejects_inflight_finish ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test commit_appends_one_log_record ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test commit_set_creates_edit_row ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test commit_writes_history_snapshot ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test concurrent_commits_on_same_pk_serialize ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test concurrent_fk_claims_one_wins ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test duplicate_link_add_keeps_one_live_row ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test edit_only_rules ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test every_value_type_round_trips ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test import_actor_is_stored_as_system_import ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test invalid_values_are_rejected_without_writes ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test link_add_creates_link_row ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test link_add_remove_toggle ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test link_remove_rules ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test log_records_every_op ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test one_to_one_violation_is_reported ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test pg_sessions_use_the_pinned_settings ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test read_log_pages_by_seq ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test replay_detects_version_divergence ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test replay_rebuilds_edit_store ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test replay_rebuilds_overlay_operations ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test same_commit_twice_creates_two_records ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test second_set_patches_only_given_properties ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test source_object_lifecycle ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test stale_def_version_rejected ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test two_edits_of_one_object_bump_each_version ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test values_postgres_cannot_store_are_refused_on_every_backend ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+
+test result: ok. 0 passed; 0 failed; 45 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\conformance_sqlite.rs (target\debug\deps\conformance_sqlite-d3478ece9da75694.exe)
+
+running 43 tests
+test append_only_rejects_truncate_on_pg ... ok
+test audit_shutdown_drains_inflight_guard ... ok
+test audit_cancelled_shutdown_retry_waits_for_durability ... ok
+test audit_concurrent_shutdown_waits_for_durability ... ok
+test audit_batch_retention_parity ... ok
+test action_batch_guard_interleaves_reads_and_edits ... ok
+test commit_appends_one_log_record ... ok
+test action_batch_migration_constraints_match_contract ... ok
+test action_cas_rejects_stale_no_token_without_side_effects ... ok
+test action_cas_conflict_rolls_back_version_zero_skeleton ... ok
+test commit_writes_history_snapshot ... ok
+test action_batch_stale_definition_leaves_no_action_rows ... ok
+test action_batch_writes_one_command_and_outbox ... ok
+test commit_set_creates_edit_row ... ok
+test action_batch_principal_scopes_command_id ... ok
+test append_only_rejects_sqlite_replace_writes ... ok
+test append_only_rejects_update_and_delete ... ok
+test import_actor_is_stored_as_system_import ... ok
+test concurrent_commits_on_same_pk_serialize ... ok
+test duplicate_link_add_keeps_one_live_row ... ok
+test invalid_values_are_rejected_without_writes ... ok
+test edit_only_rules ... ok
+test link_add_creates_link_row ... ok
+test concurrent_fk_claims_one_wins ... ok
+test log_records_every_op ... ok
+test every_value_type_round_trips ... ok
+test link_remove_rules ... ok
+test link_add_remove_toggle ... ok
+test one_to_one_violation_is_reported ... ok
+test read_log_pages_by_seq ... ok
+test two_edits_of_one_object_bump_each_version ... ok
+test same_commit_twice_creates_two_records ... ok
+test values_postgres_cannot_store_are_refused_on_every_backend ... ok
+test stale_def_version_rejected ... ok
+test second_set_patches_only_given_properties ... ok
+test replay_detects_version_divergence ... ok
+test source_object_lifecycle ... ok
+test audit_sink_failure_rejects_inflight_finish ... ok
+test replay_rebuilds_overlay_operations ... ok
+test replay_rebuilds_edit_store ... ok
+test audit_batch_rejection_is_atomic ... ok
+test audit_cleanup_rejection_rolls_back_batch ... ok
+test audit_shutdown_failure_is_sticky ... ok
+
+test result: ok. 43 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.58s
+
+     Running tests\frozen_history.rs (target\debug\deps\frozen_history-0d97ba70df34880f.exe)
+
+running 1 test
+test frozen_history_keeps_request_definition_and_current_scope ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.59s
+
+     Running tests\history_masking.rs (target\debug\deps\history_masking-7191ab5a32373624.exe)
+
+running 13 tests
+test pg_history_masks_and_pages ... ignored, needs a PostgreSQL server
+test invisible_check_precedes_store_access ... ok
+test visible_object_without_edits_has_empty_history ... ok
+test link_entries_are_not_object_history ... ok
+test pagination_keeps_entries_of_one_commit_together ... ok
+test visibility_uses_current_row ... ok
+test unset_tombstone_release_entries ... ok
+test limit_zero_counts_as_one ... ok
+test ordinary_caller_sees_visible_values_only ... ok
+test serialized_history_never_contains_masked_values ... ok
+test params_hidden_from_ordinary_caller ... ok
+test pagination_with_before_seq ... ok
+test invisible_nonexistent_and_ungranted_are_identical ... ok
+
+test result: ok. 12 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.88s
+
+     Running tests\import.rs (target\debug\deps\import-99efa8724a90dff6.exe)
+
+running 18 tests
+test pg_cells_and_keys_of_every_kind ... ignored, needs a PostgreSQL server
+test pg_import_modes_and_links ... ignored, needs a PostgreSQL server
+test nul_in_a_cell_is_refused_before_anything_is_written ... ok
+test source_backed_type_is_rejected ... ok
+test limits_are_enforced ... ok
+test geopoint_and_decimal_cells ... ok
+test at_most_one_hundred_problems_are_listed ... ok
+test batches_follow_batch_size ... ok
+test airports_csv_is_imported_as_system_edits ... ok
+test file_level_validation ... ok
+test json_decimals_are_never_rounded ... ok
+test empty_and_repeated_imports_are_stable ... ok
+test partial_failure_is_reported ... ok
+test import_goes_through_the_definition_fence ... ok
+test editonly_link_import ... ok
+test tombstoned_object_is_never_revived ... ok
+test existing_objects_block_create_only ... ok
+test json_import_matches_csv ... ok
+
+test result: ok. 16 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.82s
+
+     Running tests\migrate.rs (target\debug\deps\migrate-1fc1ae2224f64daa.exe)
+
+running 15 tests
+test invalid_rename_decl_is_rejected ... ok
+test rename_with_type_change_is_rejected ... ok
+test apply_with_stale_hash_is_rejected ... ok
+test primary_key_change_archives_table ... ok
+test rename_object_type_moves_table ... ok
+test removed_type_archived ... ok
+test rename_rebuilds_the_index_of_the_column ... ok
+test reapply_after_success_is_rejected ... ok
+test undeclared_rename_archives_and_adds_an_empty_column ... ok
+test archive_removed_property ... ok
+test type_change_archives_and_adds ... ok
+test rename_property_moves_data ... ok
+test drop_archived_cleans_up ... ok
+test migrate_with_roles_applies_when_the_roles_still_compile ... ok
+test migrate_rechecks_applied_roles ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.76s
+
+     Running tests\migrate_pg.rs (target\debug\deps\migrate_pg-5a2b8b6ffca0d858.exe)
+
+running 4 tests
+test archive_removed_property_on_pg ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test pg_migrate_rechecks_applied_roles ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test primary_key_change_then_drop_archived_on_pg ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test rename_property_and_type_on_pg ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+
+test result: ok. 0 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\model_prop.rs (target\debug\deps\model_prop-d34dd3976e237e5b.exe)
+
+running 1 test
+test model_matches_store ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 18.05s
+
+     Running tests\query_read.rs (target\debug\deps\query_read-62f1418d49a24c33.exe)
+
+running 11 tests
+test link_fk_request_is_rejected_with_logical_name ... ok
+test batch_preserves_requested_keys_and_distinguishes_null_from_unset ... ok
+test batch_rejects_more_than_256_before_sql ... ok
+test corrupt_property_error_uses_logical_name ... ok
+test version_zero_skeleton_is_not_an_edit_and_read_does_not_mutate ... ok
+test batch_accepts_256_keys_and_all_value_types ... ok
+test link_reads_leave_row_log_and_definition_counts_unchanged ... ok
+test scan_uses_keyset_and_preserves_flags ... ok
+test link_from_or_to_endpoint_is_bounded_and_preserves_removed_edges ... ok
+test scan_includes_release_and_skips_version_zero ... ok
+test get_batch_and_scan_preserve_rows_log_and_definition ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.66s
+
+     Running tests\query_read_pg.rs (target\debug\deps\query_read_pg-731de9905926c6eb.exe)
+
+running 2 tests
+test sqlite_and_postgres_link_reads_match ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test sqlite_and_postgres_object_reads_match ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+
+test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\reload.rs (target\debug\deps\reload-36d0f5e47e808eec.exe)
+
+running 32 tests
+test dry_run_changes_nothing ... ok
+test metadata_only_change_needs_no_probe ... ok
+test metadata_only_change_records_a_version_without_ddl ... ok
+test long_names_round_trip ... ok
+test one_to_one_unique_index_rejects_second_row ... ok
+test index_added_on_second_reload ... ok
+test new_many_to_many_link_creates_a_table ... ok
+test aviation_reload_creates_indexes ... ok
+test additive_property_adds_columns ... ok
+test precision_and_items_changes_are_destructive ... ok
+test first_reload_creates_tables ... ok
+test link_changes_are_destructive ... ok
+test snake_collision_is_v24 ... ok
+test relaxing_one_to_one_drops_unique_index ... ok
+test reload_after_reopen_is_noop ... ok
+test destructive_changes_are_rejected ... ok
+test reload_resumes_after_partial_ddl ... ok
+test removing_indexed_keeps_index ... ok
+test second_reload_is_noop ... ok
+test system_column_collision_is_v24 ... ok
+test stale_writer_rejected_after_switch ... ok
+test writer_without_a_loaded_definition_follows_the_database ... ok
+test array_columns_are_not_probed ... ok
+test tightening_to_one_to_one_with_conflicts_keeps_old_definition ... ok
+test reload_creates_row_filter_indexes ... ok
+test reload_rechecks_applied_roles ... ok
+test concurrent_reloads_single_flight ... ok
+test migrate_waits_for_trino_after_the_switch ... ok
+test reload_racing_commits_never_lets_an_old_write_through ... ok
+test probe_waits_until_visible ... ok
+test probe_timeout_keeps_pending ... ok
+test the_old_definition_keeps_serving_while_the_probe_waits ... ok
+
+test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.34s
+
+     Running tests\reload_pg.rs (target\debug\deps\reload_pg-ba286574e281cc58.exe)
+
+running 11 tests
+test additive_reload_on_pg_adds_columns ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test concurrent_reloads_single_flight_on_pg ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test definition_lock_is_shared_and_bounded_by_lock_timeout ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test first_reload_on_pg_puts_edit_tables_in_edit_schema ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test in_flight_commit_blocks_switch_on_pg ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test indexes_on_pg ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test lock_timeout_keeps_old_definition ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test long_names_on_pg ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test pending_switch_on_pg_serves_the_old_definition_until_visible ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test reload_racing_commits_never_lets_an_old_write_through_on_pg ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test second_reload_on_pg_is_noop ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+
+test result: ok. 0 passed; 0 failed; 11 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\reload_trino_it.rs (target\debug\deps\reload_trino_it-8622841b7c4b67c7.exe)
+
+running 3 tests
+test a_new_column_is_visible_when_its_definition_becomes_active ... ignored, needs ONTOFORGE_TRINO_URL and ONTOFORGE_PG_URL
+test cached_column_requires_flush_before_definition_switch ... ignored, needs ONTOFORGE_TRINO_URL and ONTOFORGE_PG_URL
+test reload_activates_once_trino_sees_the_new_tables ... ignored, needs ONTOFORGE_TRINO_URL and ONTOFORGE_PG_URL
+
+test result: ok. 0 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\request_snapshot.rs (target\debug\deps\request_snapshot-cb3209155410ad6b.exe)
+
+running 3 tests
+test snapshot_pg_never_mixes_definition_roles_bindings ... ignored, requires a real PostgreSQL URL; Phase 07-13 runs ignored tests explicitly
+test snapshot_lock_is_released_before_compile_or_network ... ok
+test snapshot_sqlite_never_mixes_definition_roles_bindings ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.17s
+
+     Running tests\scope_store.rs (target\debug\deps\scope_store-62bd44123514fdcc.exe)
+
+running 15 tests
+test pg_audit_is_append_only_and_login_is_recorded ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test pg_concurrent_scope_apply_serializes ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test pg_scope_apply ... ignored, needs ONTOFORGE_PG_URL or --features embedded-pg
+test scope_tables_written_only_by_scope_store ... ok
+test record_login_creates_user_once ... ok
+test login_recorder_writes_once_per_interval ... ok
+test apply_without_active_definition_fails ... ok
+test order_independent_hash ... ok
+test load_scope_round_trips ... ok
+test admin_audit_is_append_only ... ok
+test audit_insert_failure_rolls_back_scope_and_indexes ... ok
+test apply_writes_roles_bindings_and_audit ... ok
+test stale_plan_hash_rejected ... ok
+test full_sync_removes_bindings_and_roles ... ok
+test apply_creates_row_filter_indexes ... ok
+
+test result: ok. 12 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 1.09s
+
+     Running tests\sql_exit_guard.rs (target\debug\deps\sql_exit_guard-6163e70053e60881.exe)
+
+running 1 test
+test sql_text_only_from_sql_exit ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+
+     Running tests\sqlite_connection.rs (target\debug\deps\sqlite_connection-8869b2d2320dc706.exe)
+
+running 4 tests
+test foreign_keys_on ... ok
+test every_pooled_connection_has_recursive_triggers ... ok
+test open_creates_the_parent_directories_of_the_sqlite_file ... ok
+test engine_collations_are_registered ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.22s
+
+   Doc-tests ontoforge
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests ontoforge_action
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests ontoforge_api
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests ontoforge_auth
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests ontoforge_client
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests ontoforge_engine
+
+running 1 test
+test crates\ontoforge-engine\src\trino\l2_monitor.rs - trino::l2_monitor::TrinoEngine::start_l2_acl_monitor (line 123) ... ignored
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+all doctests ran in 0.59s; merged doctests compilation took 0.50s
+   Doc-tests ontoforge_expr
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests ontoforge_query
+
+running 2 tests
+test crates\ontoforge-query\src\compile.rs - compile::ValidatedQuery (line 50) - compile fail ... ok
+test crates\ontoforge-query\src\compile.rs - compile::ValidatedQuery (line 60) - compile fail ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.80s
+
+   Doc-tests ontoforge_schema
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests ontoforge_server
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests ontoforge_storage
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

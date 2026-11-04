@@ -1,0 +1,8 @@
+{
+  "finished": "2026-11-04T08:39:18.8359584Z",
+  "exitCode": 0,
+  "command": "cargo fmt --all --check",
+  "workingTreeChanges": "l2_monitor deletion baseline and query removal predicate",
+  "head": "49eb4d5aff89cfcdd21ed532ed8891c6ce0d1958",
+  "started": "2026-11-04T08:39:17.0421710Z"
+}

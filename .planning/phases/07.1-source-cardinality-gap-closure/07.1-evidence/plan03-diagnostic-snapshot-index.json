@@ -1,0 +1,28 @@
+{
+  "entries": [
+    {
+      "originalBytes": 5611460,
+      "originalSha256": "83FAD70FDF4B7139A2B60A03C0E6F2A8B825EC32D70032B5967CEBC10966EAE9",
+      "verified": true,
+      "sourceName": "plan03-diagnostic-before.json",
+      "gzipPath": ".planning\\phases\\07.1-source-cardinality-gap-closure\\07.1-evidence\\plan03-diagnostic-before.json.gz",
+      "gzipSha256": "06FBA29F57DC6425FCA3666724684BAC43A1568E13768F72B4362E6228F694EB",
+      "rawPath": "target\\phase071-build-diagnostic\\plan03-diagnostic-before.json",
+      "gzipBytes": 856950,
+      "decompressedSha256": "83FAD70FDF4B7139A2B60A03C0E6F2A8B825EC32D70032B5967CEBC10966EAE9"
+    },
+    {
+      "originalBytes": 5611466,
+      "originalSha256": "161C0C70EA03B01EC2F4D1048CD31B3E0691D10243AA05B4BB0484AC98E6E58C",
+      "verified": true,
+      "sourceName": "plan03-diagnostic-after.json",
+      "gzipPath": ".planning\\phases\\07.1-source-cardinality-gap-closure\\07.1-evidence\\plan03-diagnostic-after.json.gz",
+      "gzipSha256": "1CBDAE21107570C2F5658F14C1DD1A866EB9CA6C7B78E941B6F979771E05EDBA",
+      "rawPath": "target\\phase071-build-diagnostic\\plan03-diagnostic-after.json",
+      "gzipBytes": 856973,
+      "decompressedSha256": "161C0C70EA03B01EC2F4D1048CD31B3E0691D10243AA05B4BB0484AC98E6E58C"
+    }
+  ],
+  "timeUtc": "2026-11-04T08:23:34.0288954Z",
+  "head": "834abd07333e17946005b8b0aca169136802139b"
+}

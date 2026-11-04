@@ -1,0 +1,56 @@
+{
+  "sourceTreeClean": true,
+  "files": [
+    {
+      "path": "crates/ontoforge-engine/src/cardinality_check.rs",
+      "sha256": "7E0890BEE8C7E5389FD1DCB9B25FAA114E22D7EF08C4250BE4ECFEDFF38F3CFC"
+    },
+    {
+      "path": "crates/ontoforge-engine/tests/cardinality_check.rs",
+      "sha256": "FD46A54CFC79EDEC835288EB063151A37B239F496B12CCEDBBD6CAE1070D7DBE"
+    },
+    {
+      "path": "crates/ontoforge-schema/src/diag.rs",
+      "sha256": "FAD8D8B85FD305C25218B088281F92377A77A6031E1D9CE352B1F137A638F535"
+    },
+    {
+      "path": "crates/ontoforge/Cargo.toml",
+      "sha256": "AC9D76C889E8BC1A454D9C486A5DE0906908A139C258E4BE09314E2BEEEA08A8"
+    },
+    {
+      "path": "crates/ontoforge/src/cli.rs",
+      "sha256": "3D046C054134C1E7E2FDC27714E045D127BA76F283E3F462080C2F27478E3FDD"
+    },
+    {
+      "path": "crates/ontoforge/src/online.rs",
+      "sha256": "A93DF1DFD4F0F6FEC9A65039DFB543D35325BC9718D265D9CAAF3C2595700C70"
+    },
+    {
+      "path": "crates/ontoforge/tests/cli_check_cardinality.rs",
+      "sha256": "9B4D2F8C66D6002BB466B02AE92D7168E3A5228E9D13BEC14BD01D64C79E474A"
+    },
+    {
+      "path": "crates/ontoforge/tests/cli_trino_it.rs",
+      "sha256": "4FFDDDEF1C58DF75A2C62E53066B0329B596942E965B8EC1C64093C616DA14AB"
+    },
+    {
+      "path": "ci/pg/seed.sql",
+      "sha256": "3968CED5DF5FFF86621E113B60C55328C08A65BE682AEF35CDDB73B6E49B69D7"
+    },
+    {
+      "path": "docs/source-binding.md",
+      "sha256": "7042E08FDE40DB161E12A5E14195DDEA887E4DA3FB3999D98837F7024AFB1C41"
+    }
+  ],
+  "head": "6be5c0861c8e80c9f1ba11311fb29ddce3e50aa6",
+  "reusedEvidence": {
+    "aliasTrino": "plan03-alias-trino-green.json",
+    "engine": "plan03-engine-cardinality-complete.json",
+    "fmt": "plan03-fmt-complete.json",
+    "cliLib": "plan03-cli-lib-paused.json",
+    "realTrino": "plan03-real-trino-final.json",
+    "deadline": "plan03-deadline-paused.json",
+    "clippy": "plan03-clippy-complete.json"
+  },
+  "reuseReason": "Clippy/fmt/deadline/lib/engine commands ran on the exact staged source content committed as this HEAD. Real Trino ran on final alias SQL; subsequent production changes are doc comments only, plus test-only clock/helper/dev-feature changes."
+}

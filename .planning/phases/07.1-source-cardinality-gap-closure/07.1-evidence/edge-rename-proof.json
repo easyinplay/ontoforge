@@ -1,0 +1,9 @@
+{
+  "oldPath": "07.1-EDGE-COVERAGE.md",
+  "newPath": "07.1-EDGE-ACCEPTANCE.md",
+  "oldBlob": "43546f6fd115cc9c00a5df825732fb5e2f819b63",
+  "newBlob": "43546f6fd115cc9c00a5df825732fb5e2f819b63",
+  "contentUnchanged": true,
+  "gateBefore": "verify-pre-naming-before.json",
+  "gateAfter": "verify-pre-naming-after.json"
+}

@@ -1,0 +1,37 @@
+   Compiling ontoforge v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.32s
+────────────
+ Nextest run ID 335b2bcc-e5b2-4c44-a946-17cf4f5d0108 with nextest profile: gsd
+    Starting 1 test across 1 binary
+        FAIL [   0.033s] (1/1) ontoforge::cli_check_cardinality cardinality_tracer_reports_conflict
+  stdout ───
+
+    running 1 test
+    test cardinality_tracer_reports_conflict ... FAILED
+
+    failures:
+
+    failures:
+        cardinality_tracer_reports_conflict
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'cardinality_tracer_reports_conflict' (42268) panicked at crates\ontoforge\tests\cli_check_cardinality.rs:82:5:
+    assertion `left == right` failed: expected warning exit0, stderr: error: unexpected argument '--check-cardinality' found
+
+      tip: a similar argument exists: '--check-pk'
+
+    Usage: ontoforge.exe validate --online --check-pk <DIR>
+
+    For more information, try '--help'.
+
+      left: Some(2)
+     right: Some(0)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.034s] 1 test run: 0 passed, 1 failed, 0 skipped
+        FAIL [   0.033s] (1/1) ontoforge::cli_check_cardinality cardinality_tracer_reports_conflict
+error: test run failed

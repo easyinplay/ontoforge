@@ -1,0 +1,10 @@
+{
+  "command": "cargo test -p ontoforge-engine --test cardinality_check count_alias_cannot_change_indexed_fk_sample_order --locked -- --exact --nocapture",
+  "exitCode": 0,
+  "started": "2026-11-04T04:22:58.1409470Z",
+  "finished": "2026-11-04T04:23:19.4980170Z",
+  "head": "3e9d784dc7983614489c73a15db628dd00b9658a",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "cargoBuildJobs": 2,
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07.1-source-cardinality-gap-closure\\07.1-evidence\\plan03-alias-green.log"
+}

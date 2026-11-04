@@ -1,0 +1,21 @@
+   Compiling ontoforge v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 30.92s
+     Running tests\cli_check_cardinality.rs (target\debug\deps\cli_check_cardinality-0bbc80c32741858e.exe)
+
+running 1 test
+
+thread 'cardinality_total_deadline_is_shared' (45324) panicked at crates\ontoforge\tests\cli_check_cardinality.rs:435:5:
+assertion `left == right` failed: third target must not be queried after the total deadline
+  left: 3
+ right: 2
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test cardinality_total_deadline_is_shared ... FAILED
+
+failures:
+
+failures:
+    cardinality_total_deadline_is_shared
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 7 filtered out; finished in 1.15s
+
+error: test failed, to rerun pass `-p ontoforge --test cli_check_cardinality`

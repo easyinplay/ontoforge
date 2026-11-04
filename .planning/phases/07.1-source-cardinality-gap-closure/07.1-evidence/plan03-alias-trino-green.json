@@ -1,0 +1,10 @@
+{
+  "command": "cargo test -p ontoforge --test cli_trino_it check_cardinality_aliases_on_ci_trino --locked -- --ignored --exact --nocapture",
+  "exitCode": 0,
+  "started": "2026-11-04T04:28:08.1337576Z",
+  "finished": "2026-11-04T04:28:44.0848153Z",
+  "head": "fd4e5d20a13992bda8081e47e3eede2a625f3c65",
+  "cwd": "D:\\DataSpellProjects\\ontoforge",
+  "cargoBuildJobs": 2,
+  "logPath": "D:\\DataSpellProjects\\ontoforge\\.planning\\phases\\07.1-source-cardinality-gap-closure\\07.1-evidence\\plan03-alias-trino-green.log"
+}

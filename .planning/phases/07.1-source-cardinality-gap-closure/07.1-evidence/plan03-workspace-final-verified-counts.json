@@ -1,0 +1,1236 @@
+{
+  "unitIntegrationPassed": 1523.0,
+  "remainingCargoRustc": 0,
+  "perTarget": [
+    {
+      "target": "unittests src\\lib.rs (target\\debug\\deps\\ontoforge-a5eacfbd0a4a44bc.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 25,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "unittests src\\main.rs (target\\debug\\deps\\ontoforge-e8806c81ea444329.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\cli.rs (target\\debug\\deps\\cli-eb463de316228ca6.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 8,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\cli_check_cardinality.rs (target\\debug\\deps\\cli_check_cardinality-c8402ba9f7ecbc33.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 13,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\cli_check_pk.rs (target\\debug\\deps\\cli_check_pk-7a6fa370b0663a69.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 8,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\cli_color.rs (target\\debug\\deps\\cli_color-46143148aae0b660.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\cli_dev_token.rs (target\\debug\\deps\\cli_dev_token-b46eda4acc4105e6.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 12,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\cli_import.rs (target\\debug\\deps\\cli_import-7760d7060546e8eb.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 8,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\cli_l2_identity.rs (target\\debug\\deps\\cli_l2_identity-6e0d19716b15203f.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 11,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\cli_lint.rs (target\\debug\\deps\\cli_lint-6f9f2b403b906af9.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 17,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\cli_migrate.rs (target\\debug\\deps\\cli_migrate-97e266de9d2cec94.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 10,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\cli_online.rs (target\\debug\\deps\\cli_online-c302488a13e0ceac.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 12,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\cli_online_trino.rs (target\\debug\\deps\\cli_online_trino-c7e8dffc6099c78e.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 15,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\cli_reload.rs (target\\debug\\deps\\cli_reload-1be21c793166d6c0.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 8,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\cli_schema.rs (target\\debug\\deps\\cli_schema-37209e90e5c420af.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 4,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\cli_scope.rs (target\\debug\\deps\\cli_scope-a25403ab5a74c4d2.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 8,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\cli_shutdown.rs (target\\debug\\deps\\cli_shutdown-9789033234df29a3.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 9,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\cli_stdio.rs (target\\debug\\deps\\cli_stdio-b4bfa364c0ba4235.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 11,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\cli_trino_it.rs (target\\debug\\deps\\cli_trino_it-1fd0286250bc4296.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 4
+    },
+    {
+      "target": "tests\\cli_webhook_worker.rs (target\\debug\\deps\\cli_webhook_worker-9855fe14338501f5.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\dev_lifecycle.rs (target\\debug\\deps\\dev_lifecycle-e49cfb15c86255b8.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 8,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\invalid_examples.rs (target\\debug\\deps\\invalid_examples-4161ec6a0315eec9.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\private_fixtures.rs (target\\debug\\deps\\private_fixtures-5e464731250cf218.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 2,
+      "failed": 0,
+      "ignored": 1
+    },
+    {
+      "target": "unittests src\\lib.rs (target\\debug\\deps\\ontoforge_action-41c5226c46d241de.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 4,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\action.rs (target\\debug\\deps\\action-fb17afc4be64a38b.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 6,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\action_pg.rs (target\\debug\\deps\\action_pg-3dc84a05aa3d6ce9.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\entrypoints.rs (target\\debug\\deps\\entrypoints-65c4f4b020db7e34.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 4,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\frozen_definition.rs (target\\debug\\deps\\frozen_definition-fd0d0591fb2157c2.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\idempotency.rs (target\\debug\\deps\\idempotency-d866894fe1938af6.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 9,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\idempotency_pg.rs (target\\debug\\deps\\idempotency_pg-4c7dc83a2d1d8f89.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\outbox.rs (target\\debug\\deps\\outbox-b64e9d931ba3e1a9.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 11,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\outbox_pg.rs (target\\debug\\deps\\outbox_pg-1e0199c9b702c580.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 2
+    },
+    {
+      "target": "tests\\security.rs (target\\debug\\deps\\security-f9bd56828e1a544b.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 10,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\source.rs (target\\debug\\deps\\source-08905e5a4d62a2c9.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 11,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\trino_action_it.rs (target\\debug\\deps\\trino_action_it-41e0f7e64f76690c.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 4
+    },
+    {
+      "target": "tests\\version.rs (target\\debug\\deps\\version-0e84209c2116df12.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 5,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "unittests src\\lib.rs (target\\debug\\deps\\ontoforge_api-ebffdb4df38a9976.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\openapi_snapshot.rs (target\\debug\\deps\\openapi_snapshot-f16afc725dc497ad.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 8,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "unittests src\\lib.rs (target\\debug\\deps\\ontoforge_auth-7f08e9b96fd3d5aa.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\criteria_coverage.rs (target\\debug\\deps\\criteria_coverage-bb93eb496a8b60ca.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 6,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\crypto_backend.rs (target\\debug\\deps\\crypto_backend-6b9287c5ae20c41c.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\dev_token.rs (target\\debug\\deps\\dev_token-84b24bb6ad5633a6.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 16,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\oidc.rs (target\\debug\\deps\\oidc-037e5c5f5b6f8d28.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 31,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\rowpred_diff.rs (target\\debug\\deps\\rowpred_diff-8a5ccf8b852ece0a.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 6,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\rowpred_trino_it.rs (target\\debug\\deps\\rowpred_trino_it-1fc6583711d8164f.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 3
+    },
+    {
+      "target": "tests\\scope_compile.rs (target\\debug\\deps\\scope_compile-c6cf851d42c62bde.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 21,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\scope_merge.rs (target\\debug\\deps\\scope_merge-1324895d5120cc76.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 9,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "unittests src\\lib.rs (target\\debug\\deps\\ontoforge_client-4522c9f62782f166.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 6,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\contract.rs (target\\debug\\deps\\contract-0742d24973ea0861.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 9,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\error_diagnostics.rs (target\\debug\\deps\\error_diagnostics-1654d9e086c03aae.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 4,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "unittests src\\lib.rs (target\\debug\\deps\\ontoforge_engine-9737abe61c6f2669.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 56,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\bind_check_isolation.rs (target\\debug\\deps\\bind_check_isolation-e50184421ce5ccf8.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\cardinality_check.rs (target\\debug\\deps\\cardinality_check-c4c3341e52cd7e70.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 11,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\doc_type_table.rs (target\\debug\\deps\\doc_type_table-72132b3774e5f08e.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\drift.rs (target\\debug\\deps\\drift-6da7f9d5ccd7f28f.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 8,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\drift_budget.rs (target\\debug\\deps\\drift_budget-e1cedecef51bc4be.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\l2_explain.rs (target\\debug\\deps\\l2_explain-7f4d1e80977be438.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\l2_gate.rs (target\\debug\\deps\\l2_gate-dde943abdc185335.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 16,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\l2_health.rs (target\\debug\\deps\\l2_health-a6f82a7e2d47eba4.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 10,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\l2_monitor.rs (target\\debug\\deps\\l2_monitor-6b2929cfda3a4844.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 19,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\pk_check.rs (target\\debug\\deps\\pk_check-41f02a1d1546e869.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 6,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\printer_literals.rs (target\\debug\\deps\\printer_literals-65770c6081945815.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 8,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\printer_prop.rs (target\\debug\\deps\\printer_prop-715ba11d272d46d0.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 6,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\server_config.rs (target\\debug\\deps\\server_config-35100a0bc0607ac7.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 35,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\sql_text_only_from_printer.rs (target\\debug\\deps\\sql_text_only_from_printer-e1e92e1b7fc1f7bd.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\sqlite_engine.rs (target\\debug\\deps\\sqlite_engine-e6388930b1532c81.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 28,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\trino_client.rs (target\\debug\\deps\\trino_client-20a588fdeafe3fee.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 23,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\trino_it.rs (target\\debug\\deps\\trino_it-ade0c4426a53bccf.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 2,
+      "failed": 0,
+      "ignored": 9
+    },
+    {
+      "target": "tests\\trino_l2_acl_it.rs (target\\debug\\deps\\trino_l2_acl_it-8a10e20cd31a3feb.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 6
+    },
+    {
+      "target": "tests\\trino_resilience.rs (target\\debug\\deps\\trino_resilience-c2aca69ce760be4f.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 31,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "unittests src\\lib.rs (target\\debug\\deps\\ontoforge_expr-9b4a1ec2cb839bc7.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\analyze.rs (target\\debug\\deps\\analyze-a1a0f9733fc8e63d.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 21,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\criteria.rs (target\\debug\\deps\\criteria-6132d60282591ac3.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 20,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\rowpred_eval.rs (target\\debug\\deps\\rowpred_eval-091c1c4a6fcb968d.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 14,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\rowpred_subset.rs (target\\debug\\deps\\rowpred_subset-25ce0a45a6ee3dfe.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 13,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "unittests src\\lib.rs (target\\debug\\deps\\ontoforge_query-afe392b0e4cb5b4e.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 5,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\aggregate.rs (target\\debug\\deps\\aggregate-ecea1c3ac5dd3601.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 7,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\audit_l0.rs (target\\debug\\deps\\audit_l0-27e5e71832302d26.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 9,
+      "failed": 0,
+      "ignored": 1
+    },
+    {
+      "target": "tests\\audit_pk.rs (target\\debug\\deps\\audit_pk-99dd1fb5105cec5e.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 13,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\definition_snapshot.rs (target\\debug\\deps\\definition_snapshot-f89fec19165658a4.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\l2_discovery.rs (target\\debug\\deps\\l2_discovery-308263f997acc82d.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 9,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\l2_execute.rs (target\\debug\\deps\\l2_execute-977dfd6806db929b.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 15,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\overlay_prop.rs (target\\debug\\deps\\overlay_prop-4cee671a3f919399.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 11,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\pk_read.rs (target\\debug\\deps\\pk_read-ca9313057c454f16.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 11,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\query_bench_it.rs (target\\debug\\deps\\query_bench_it-b47b50c6d9cedee2.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 2,
+      "failed": 0,
+      "ignored": 1
+    },
+    {
+      "target": "tests\\search_around.rs (target\\debug\\deps\\search_around-8bd3a624705e1d72.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 6,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\security.rs (target\\debug\\deps\\security-b371561da691a40a.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 23,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\set_ops.rs (target\\debug\\deps\\set_ops-4961812ee27ed6e6.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 5,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\sql_shape.rs (target\\debug\\deps\\sql_shape-f5048f331cfacb85.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 6,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\sqlite_query.rs (target\\debug\\deps\\sqlite_query-b6aa5c0829cd3cf9.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 10,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\trino_query_it.rs (target\\debug\\deps\\trino_query_it-d1b6926803e66f06.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 5
+    },
+    {
+      "target": "unittests src\\lib.rs (target\\debug\\deps\\ontoforge_schema-fd17dbbbd425a1ce.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 139,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\action_types.rs (target\\debug\\deps\\action_types-fc9b3e9cb5c68ff8.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 28,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\bindings.rs (target\\debug\\deps\\bindings-032c9bc2bb7a3c35.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 32,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\diagnostics.rs (target\\debug\\deps\\diagnostics-e33760de597247ce.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 16,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\link_types.rs (target\\debug\\deps\\link_types-5a6692588ea8e8c2.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 21,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\lint_examples.rs (target\\debug\\deps\\lint_examples-2a22aa1f3a4d0e74.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\load_examples.rs (target\\debug\\deps\\load_examples-93aaefefc3b9a68c.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 6,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\loader.rs (target\\debug\\deps\\loader-f667541229b7b361.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 34,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\object_types.rs (target\\debug\\deps\\object_types-1e16deb88d0a692f.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 21,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\schema_export.rs (target\\debug\\deps\\schema_export-a038c23f1834f0ec.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 14,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\scope_documents.rs (target\\debug\\deps\\scope_documents-edcdc6dc3ec14c65.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 16,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "unittests src\\lib.rs (target\\debug\\deps\\ontoforge_server-0a1fa3a6214e542f.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 25,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\action_source_budget.rs (target\\debug\\deps\\action_source_budget-635f78fed3bb4210.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 5,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\health_lifecycle_it.rs (target\\debug\\deps\\health_lifecycle_it-28244a7d67537f81.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 4,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\health_trino_it.rs (target\\debug\\deps\\health_trino_it-683f97da716f09e7.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 2
+    },
+    {
+      "target": "tests\\history_errors.rs (target\\debug\\deps\\history_errors-7358673d4c74d304.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 7,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\history_pagination.rs (target\\debug\\deps\\history_pagination-12dc64b8d949d76a.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 7,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\http_action_diagnostics.rs (target\\debug\\deps\\http_action_diagnostics-ec8d61030e8cc387.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 5,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\http_action_safety.rs (target\\debug\\deps\\http_action_safety-3f6f296af9c10bfd.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\http_actions.rs (target\\debug\\deps\\http_actions-d549d4a746358615.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\http_contract.rs (target\\debug\\deps\\http_contract-611a5e9b63a25750.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\mcp_actions.rs (target\\debug\\deps\\mcp_actions-9b75ed45eaf7d8fd.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 10,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\mcp_contract.rs (target\\debug\\deps\\mcp_contract-84db2314986616cd.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 16,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\mcp_execution_admission.rs (target\\debug\\deps\\mcp_execution_admission-7309ac84ec795507.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 4,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\mcp_l2.rs (target\\debug\\deps\\mcp_l2-7c9fe5d1a62f104e.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\mcp_l2_defaults.rs (target\\debug\\deps\\mcp_l2_defaults-fa2271fc6f05a43b.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 15,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\mcp_transport.rs (target\\debug\\deps\\mcp_transport-4e828559373aa9f3.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 11,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\postgres_http_it.rs (target\\debug\\deps\\postgres_http_it-f4cd2f36a7ccf460.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 4
+    },
+    {
+      "target": "tests\\source_drift.rs (target\\debug\\deps\\source_drift-e88af3a1a9ed556e.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 20,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\source_drift_cleanup.rs (target\\debug\\deps\\source_drift_cleanup-82bb5b65c60a24aa.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\source_drift_trino_it.rs (target\\debug\\deps\\source_drift_trino_it-22547d42f529c24f.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 2
+    },
+    {
+      "target": "tests\\trino_http_it.rs (target\\debug\\deps\\trino_http_it-21125039194dcec9.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 2
+    },
+    {
+      "target": "unittests src\\lib.rs (target\\debug\\deps\\ontoforge_storage-9c1c15f18149e0c0.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 49,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\conformance_pg.rs (target\\debug\\deps\\conformance_pg-5c9acc4532d80f29.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 45
+    },
+    {
+      "target": "tests\\conformance_sqlite.rs (target\\debug\\deps\\conformance_sqlite-d3478ece9da75694.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 43,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\frozen_history.rs (target\\debug\\deps\\frozen_history-0d97ba70df34880f.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\history_masking.rs (target\\debug\\deps\\history_masking-7191ab5a32373624.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 12,
+      "failed": 0,
+      "ignored": 1
+    },
+    {
+      "target": "tests\\import.rs (target\\debug\\deps\\import-99efa8724a90dff6.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 16,
+      "failed": 0,
+      "ignored": 2
+    },
+    {
+      "target": "tests\\migrate.rs (target\\debug\\deps\\migrate-1fc1ae2224f64daa.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 15,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\migrate_pg.rs (target\\debug\\deps\\migrate_pg-5a2b8b6ffca0d858.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 4
+    },
+    {
+      "target": "tests\\model_prop.rs (target\\debug\\deps\\model_prop-d34dd3976e237e5b.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\query_read.rs (target\\debug\\deps\\query_read-62f1418d49a24c33.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 11,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\query_read_pg.rs (target\\debug\\deps\\query_read_pg-731de9905926c6eb.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 2
+    },
+    {
+      "target": "tests\\reload.rs (target\\debug\\deps\\reload-36d0f5e47e808eec.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 32,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\reload_pg.rs (target\\debug\\deps\\reload_pg-ba286574e281cc58.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 11
+    },
+    {
+      "target": "tests\\reload_trino_it.rs (target\\debug\\deps\\reload_trino_it-8622841b7c4b67c7.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 3
+    },
+    {
+      "target": "tests\\request_snapshot.rs (target\\debug\\deps\\request_snapshot-cb3209155410ad6b.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 2,
+      "failed": 0,
+      "ignored": 1
+    },
+    {
+      "target": "tests\\scope_store.rs (target\\debug\\deps\\scope_store-62bd44123514fdcc.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 12,
+      "failed": 0,
+      "ignored": 3
+    },
+    {
+      "target": "tests\\sql_exit_guard.rs (target\\debug\\deps\\sql_exit_guard-6163e70053e60881.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "tests\\sqlite_connection.rs (target\\debug\\deps\\sqlite_connection-8869b2d2320dc706.exe)",
+      "doctest": false,
+      "result": "ok",
+      "passed": 4,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "ontoforge",
+      "doctest": true,
+      "result": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "ontoforge_action",
+      "doctest": true,
+      "result": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "ontoforge_api",
+      "doctest": true,
+      "result": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "ontoforge_auth",
+      "doctest": true,
+      "result": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "ontoforge_client",
+      "doctest": true,
+      "result": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "ontoforge_engine",
+      "doctest": true,
+      "result": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 1
+    },
+    {
+      "target": "ontoforge_expr",
+      "doctest": true,
+      "result": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "ontoforge_query",
+      "doctest": true,
+      "result": "ok",
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "ontoforge_schema",
+      "doctest": true,
+      "result": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "ontoforge_server",
+      "doctest": true,
+      "result": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "target": "ontoforge_storage",
+      "doctest": true,
+      "result": "ok",
+      "passed": 0,
+      "failed": 0,
+      "ignored": 0
+    }
+  ],
+  "passed": 1525.0,
+  "docTestsPassed": 2.0,
+  "ignored": 119.0,
+  "command": {
+    "started": "2026-11-04T08:42:32.542666Z",
+    "timeoutSeconds": 600,
+    "finished": "2026-11-04T08:47:22.4796289Z",
+    "cargoBuildJobs": 2,
+    "command": "node gsd-tools.cjs run-with-timeout 600 -- cargo test --workspace --locked",
+    "head": "01aa2dfd29262105c52cecbaecd142404215bee4",
+    "exitCode": 0
+  },
+  "harnessSummaries": 152,
+  "failed": 0.0
+}

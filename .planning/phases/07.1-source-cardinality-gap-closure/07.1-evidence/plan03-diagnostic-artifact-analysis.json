@@ -1,0 +1,95 @@
+{
+  "artifactCount": 627,
+  "nonfreshTestArtifacts": [
+    {
+      "package_id": "path+file:///D:/DataSpellProjects/ontoforge/crates/ontoforge-storage#0.1.0",
+      "target": {
+        "kind": [
+          "test"
+        ],
+        "crate_types": [
+          "bin"
+        ],
+        "name": "reload_trino_it",
+        "src_path": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-storage\\tests\\reload_trino_it.rs",
+        "edition": "2024",
+        "doc": false,
+        "doctest": false,
+        "test": true
+      },
+      "fresh": false
+    },
+    {
+      "package_id": "path+file:///D:/DataSpellProjects/ontoforge/crates/ontoforge-storage#0.1.0",
+      "target": {
+        "kind": [
+          "test"
+        ],
+        "crate_types": [
+          "bin"
+        ],
+        "name": "query_read_pg",
+        "src_path": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-storage\\tests\\query_read_pg.rs",
+        "edition": "2024",
+        "doc": false,
+        "doctest": false,
+        "test": true
+      },
+      "fresh": false
+    },
+    {
+      "package_id": "path+file:///D:/DataSpellProjects/ontoforge/crates/ontoforge-storage#0.1.0",
+      "target": {
+        "kind": [
+          "test"
+        ],
+        "crate_types": [
+          "bin"
+        ],
+        "name": "migrate_pg",
+        "src_path": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-storage\\tests\\migrate_pg.rs",
+        "edition": "2024",
+        "doc": false,
+        "doctest": false,
+        "test": true
+      },
+      "fresh": false
+    },
+    {
+      "package_id": "path+file:///D:/DataSpellProjects/ontoforge/crates/ontoforge-query#0.1.0",
+      "target": {
+        "kind": [
+          "test"
+        ],
+        "crate_types": [
+          "bin"
+        ],
+        "name": "aggregate",
+        "src_path": "D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-query\\tests\\aggregate.rs",
+        "edition": "2024",
+        "doc": false,
+        "doctest": false,
+        "test": true
+      },
+      "fresh": false
+    }
+  ],
+  "buildFinished": [
+    {
+      "reason": "build-finished",
+      "success": true
+    }
+  ],
+  "exitCode": 0,
+  "remainingOwnedProcesses": [],
+  "nonfresh": 4,
+  "freshTestArtifacts": 137,
+  "head": "6be5c0861c8e80c9f1ba11311fb29ddce3e50aa6",
+  "dirtyReasons": [
+    "Dirty ontoforge-storage v0.1.0 (D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-storage): the fingerprint comparison turned up nothing obvious",
+    "Dirty ontoforge-query v0.1.0 (D:\\DataSpellProjects\\ontoforge\\crates\\ontoforge-query): the dependency `ontoforge-storage` was rebuilt (13438243013.260666600s, 18m 4s after last build at 13438241929.443756500s)"
+  ],
+  "causeBoundary": "Cargo reports storage fingerprint comparison turned up nothing obvious and query rebuilt due to storage. The underlying storage invalidation cause remains unknown; do not attribute it to timeout, dependency changes, or a cache fault without further evidence.",
+  "testArtifactCount": 141,
+  "fresh": 623
+}

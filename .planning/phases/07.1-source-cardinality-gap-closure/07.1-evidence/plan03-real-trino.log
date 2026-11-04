@@ -1,0 +1,9 @@
+   Compiling ontoforge v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.74s
+     Running tests\cli_trino_it.rs (target\debug\deps\cli_trino_it-d4ef9938423f5979.exe)
+
+running 1 test
+test check_cardinality_counts_distinct_objects_on_ci_trino ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.88s
+

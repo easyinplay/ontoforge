@@ -1,0 +1,27 @@
+   Compiling ontoforge-engine v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 17.98s
+     Running tests\l2_monitor.rs (target\debug\deps\l2_monitor-8f71fc9ff1a69bf5.exe)
+
+running 19 tests
+test monitor_cross_coordinator_is_invalid_before_network ... ok
+test monitor_foreign_next_uri_never_receives_get_or_cancel ... ok
+test monitor_cleanup_failure_cannot_be_bypassed_by_manual_recheck ... ok
+test monitor_cleanup_handle_only_checks_its_generation_and_never_retries ... ok
+test monitor_cancel_failure_disables_but_404_is_cleanup_success ... ok
+test monitor_startup_owns_fresh_probe_limits_and_cleanup ... ok
+test monitor_missing_or_unsafe_probe_never_submits ... ok
+test monitor_shutdown_reports_inherited_cleanup_failure ... ok
+test monitor_whole_cycle_deadline_disables_and_cleans_up ... ok
+test monitor_finished_missing_and_leaked_query_disable ... ok
+test monitor_restart_must_clean_previous_generation_before_enabling ... ok
+test monitor_duplicate_and_drop_cannot_reenable ... ok
+test monitor_cancelled_startup_cleans_up_and_stays_disabled ... ok
+test monitor_periodic_failure_and_fresh_recovery ... ok
+test monitor_cannot_enable_before_delete_response_succeeds ... ok
+test monitor_shutdown_during_periodic_check_cannot_reenable ... ok
+test monitor_shutdown_drains_its_ontology_instance_and_reports_delete_failure ... ok
+test monitor_cancelled_shutdown_keeps_drop_retry_in_retained_cleanup_handle ... ok
+test monitor_deadline_includes_waiting_for_recheck_lock ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.35s
+

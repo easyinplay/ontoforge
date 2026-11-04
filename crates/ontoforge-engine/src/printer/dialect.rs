@@ -122,6 +122,7 @@ fn expr(e: &Expr, dialect: Dialect) -> Result<String, PrintError> {
             expr(otherwise, dialect)?
         )),
         Expr::CountStar => Ok("count(*)".to_owned()),
+        Expr::CountDistinct(arg) => Ok(format!("count(DISTINCT {})", expr(arg, dialect)?)),
         Expr::Aggregate { func, arg } => Ok(format!(
             "{}({})",
             aggregate_name(*func),

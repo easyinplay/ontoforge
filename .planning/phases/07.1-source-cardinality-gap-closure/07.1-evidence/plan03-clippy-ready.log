@@ -1,0 +1,132 @@
+    Checking ontoforge v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge)
+    Checking ontoforge-server v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-server)
+    Checking ontoforge-api v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-api)
+    Checking ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+    Checking ontoforge-auth v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-auth)
+    Checking ontoforge-engine v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-engine)
+    Checking ontoforge-query v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-query)
+    Checking ontoforge-expr v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-expr)
+error: `format!(..)` appended to existing `String`
+   --> crates\ontoforge-engine\tests\cardinality_check.rs:303:9
+    |
+303 |         text.push_str(&format!("M{i}a,A{i:03}\nM{i}b,A{i:03}\n"));
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: you may need to import the `std::fmt::Write` trait
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#format_push_string
+    = note: `-D clippy::format-push-string` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::format_push_string)]`
+help: consider using `write!` to avoid the extra allocation
+    |
+303 -         text.push_str(&format!("M{i}a,A{i:03}\nM{i}b,A{i:03}\n"));
+303 +         let _ = write!(text, "M{i}a,A{i:03}\nM{i}b,A{i:03}\n");
+    |
+
+error: unused `async` for async trait impl function with no `.await` statements
+   --> crates\ontoforge-engine\tests\cardinality_check.rs:431:5
+    |
+431 | /     async fn execute(
+432 | |         &self,
+433 | |         _sql: &PrintedSql,
+434 | |         _ctx: &QueryContext,
+435 | |     ) -> Result<QueryOutput, EngineError> {
+436 | |         Ok(self.0.clone())
+437 | |     }
+    | |_____^
+    |
+    = note: `std::future::ready` creates a `Future` which returns the value immediately when `poll`ed
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#unused_async_trait_impl
+    = note: `-D clippy::unused-async-trait-impl` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::unused_async_trait_impl)]`
+help: consider removing the `async` from this function and returning `impl Future<Output = Result<QueryOutput, EngineError>>` instead
+    |
+431 ~     fn execute(
+432 |         &self,
+433 |         _sql: &PrintedSql,
+434 |         _ctx: &QueryContext,
+435 ~     ) -> impl Future<Output = Result<QueryOutput, EngineError>> {
+436 ~         std::future::ready(Ok(self.0.clone()))
+    |
+
+error: unused `async` for async trait impl function with no `.await` statements
+   --> crates\ontoforge-engine\tests\cardinality_check.rs:438:5
+    |
+438 | /     async fn describe_tables(
+439 | |         &self,
+440 | |         _tables: &[TableRef],
+441 | |         _ctx: &QueryContext,
+442 | |     ) -> Result<BTreeMap<TableRef, Vec<PhysicalColumn>>, EngineError> {
+443 | |         Ok(BTreeMap::new())
+444 | |     }
+    | |_____^
+    |
+    = note: `std::future::ready` creates a `Future` which returns the value immediately when `poll`ed
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#unused_async_trait_impl
+help: consider removing the `async` from this function and returning `impl Future<Output = Result<BTreeMap<TableRef, Vec<PhysicalColumn>>, EngineError>>` instead
+    |
+438 ~     fn describe_tables(
+439 |         &self,
+440 |         _tables: &[TableRef],
+441 |         _ctx: &QueryContext,
+442 ~     ) -> impl Future<Output = Result<BTreeMap<TableRef, Vec<PhysicalColumn>>, EngineError>> {
+443 ~         std::future::ready(Ok(BTreeMap::new()))
+    |
+
+error: unused `async` for async trait impl function with no `.await` statements
+   --> crates\ontoforge-engine\tests\cardinality_check.rs:445:5
+    |
+445 | /     async fn status(&self) -> EngineStatus {
+446 | |         EngineStatus::Available
+447 | |     }
+    | |_____^
+    |
+    = note: `std::future::ready` creates a `Future` which returns the value immediately when `poll`ed
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#unused_async_trait_impl
+help: consider removing the `async` from this function and returning `impl Future<Output = EngineStatus>` instead
+    |
+445 ~     fn status(&self) -> impl Future<Output = EngineStatus> {
+446 ~         std::future::ready(EngineStatus::Available)
+    |
+
+error: unused `async` for async trait impl function with no `.await` statements
+   --> crates\ontoforge-engine\tests\cardinality_check.rs:514:5
+    |
+514 | /     async fn describe_tables(
+515 | |         &self,
+516 | |         _tables: &[TableRef],
+517 | |         _ctx: &QueryContext,
+518 | |     ) -> Result<BTreeMap<TableRef, Vec<PhysicalColumn>>, EngineError> {
+519 | |         Ok(BTreeMap::new())
+520 | |     }
+    | |_____^
+    |
+    = note: `std::future::ready` creates a `Future` which returns the value immediately when `poll`ed
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#unused_async_trait_impl
+help: consider removing the `async` from this function and returning `impl Future<Output = Result<BTreeMap<TableRef, Vec<PhysicalColumn>>, EngineError>>` instead
+    |
+514 ~     fn describe_tables(
+515 |         &self,
+516 |         _tables: &[TableRef],
+517 |         _ctx: &QueryContext,
+518 ~     ) -> impl Future<Output = Result<BTreeMap<TableRef, Vec<PhysicalColumn>>, EngineError>> {
+519 ~         std::future::ready(Ok(BTreeMap::new()))
+    |
+
+error: unused `async` for async trait impl function with no `.await` statements
+   --> crates\ontoforge-engine\tests\cardinality_check.rs:521:5
+    |
+521 | /     async fn status(&self) -> EngineStatus {
+522 | |         EngineStatus::Available
+523 | |     }
+    | |_____^
+    |
+    = note: `std::future::ready` creates a `Future` which returns the value immediately when `poll`ed
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#unused_async_trait_impl
+help: consider removing the `async` from this function and returning `impl Future<Output = EngineStatus>` instead
+    |
+521 ~     fn status(&self) -> impl Future<Output = EngineStatus> {
+522 ~         std::future::ready(EngineStatus::Available)
+    |
+
+error: could not compile `ontoforge-engine` (test "cardinality_check") due to 6 previous errors
+warning: build failed, waiting for other jobs to finish...
