@@ -48,7 +48,7 @@ class RunnerContract(unittest.TestCase):
             self.assertEqual(self.run_cli("permissions", self.directory).returncode, 0)
             self.assertEqual(self.directory.stat().st_mode & 0o077, 0)
             return
-        for sid in ("S-1-1-0", "S-1-5-32-545", "S-1-5-21-111-222-333-444"):
+        for sid in ("S-1-1-0", "S-1-5-32-545", "S-1-5-11"):
             with self.subTest(sid=sid):
                 directory = self.directory / sid
                 directory.mkdir()
