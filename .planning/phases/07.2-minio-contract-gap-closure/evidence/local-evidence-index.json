@@ -1,0 +1,1430 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-11-04T12:58:56.452142+00:00",
+  "archive": {
+    "path": "local-evidence.tar.gz",
+    "size": 384465,
+    "sha256": "56105fb1ae226365096873ddde5811e1cabf9fc1b1a19183dcc391ac5afb8021"
+  },
+  "file_count": 277,
+  "uncompressed_size": 3789034,
+  "source_boundary": {
+    "root": "target/phase072-minio",
+    "run_policy": {
+      "iceberg-1d36c504684cb423d328f478": "safe_metadata_only",
+      "iceberg-2cfc1a661f4438b4afb6a2f8": "runtime_document_scan_attestation",
+      "iceberg-33f4be8668f9c1379d2a0db1": "safe_metadata_only",
+      "iceberg-56318c5de91a8a4ae6343836": "safe_metadata_only",
+      "iceberg-5b0b8d797deb3a54b0deadb1": "published_scan_passed",
+      "iceberg-60622a04ac8e1ca93317da45": "safe_metadata_only",
+      "iceberg-634a2a41d19284eb4db47b84": "runtime_document_scan_attestation",
+      "iceberg-9f7ed0d25dcc3de6eed64321": "published_scan_passed",
+      "iceberg-c6eb006e71f852ebc66955fb": "safe_metadata_only",
+      "iceberg-d3ab76a2248866ff8f7be7f4": "published_scan_passed",
+      "iceberg-f21f4b11a5280914d4c25f2c": "published_scan_passed",
+      "iceberg-fd7a2d3c9dbad6c7c89c6b6c": "runtime_document_scan_attestation"
+    },
+    "faults": "three named runs: result.json, cleanup.json, fault-verification.json only",
+    "tdd": "published direct-child JSON/log files only",
+    "fixed_build_logs": [
+      "server-build.log",
+      "helper-build.log"
+    ],
+    "excluded": [
+      "ci/ (active; separately archived)",
+      "private runtime/env/state/secrets",
+      "binaries/images",
+      "other target directories",
+      "scripts"
+    ],
+    "scan_attestation_source": ".planning/phases/07.2-minio-contract-gap-closure/07.2-RUNTIME-EVIDENCE.md",
+    "acceptance": "archive integrity only; not independent phase acceptance"
+  },
+  "files": [
+    {
+      "path": "target/phase072-minio/faults/after-pg-1043969af489/cleanup.json",
+      "size": 112,
+      "sha256": "a3b31213a2fda4dff6cbbde350121bd92fa71af9b07798a09ed77fd3da5598a5"
+    },
+    {
+      "path": "target/phase072-minio/faults/after-pg-1043969af489/fault-verification.json",
+      "size": 1407,
+      "sha256": "e2bc7f609bb3d899cb682087daa8cb76cc8ec7603d1861adacb078559a49cee3"
+    },
+    {
+      "path": "target/phase072-minio/faults/after-pg-1043969af489/result.json",
+      "size": 157,
+      "sha256": "898cddd2a2f3997e717655dcd5027a602e965a575d5d57b2f621fb45ce4df4d3"
+    },
+    {
+      "path": "target/phase072-minio/faults/readiness-timeout-a7e2eea8edf6/cleanup.json",
+      "size": 112,
+      "sha256": "a3b31213a2fda4dff6cbbde350121bd92fa71af9b07798a09ed77fd3da5598a5"
+    },
+    {
+      "path": "target/phase072-minio/faults/readiness-timeout-a7e2eea8edf6/fault-verification.json",
+      "size": 1415,
+      "sha256": "663384f470501428c073c3ab17ab8e3fe5d2248aea294920d067e726960bec38"
+    },
+    {
+      "path": "target/phase072-minio/faults/readiness-timeout-a7e2eea8edf6/result.json",
+      "size": 156,
+      "sha256": "8315c4f8dc7b925ae10b7af4fd5aaec3e20aa9dde05d0b573222c8f3523bfb89"
+    },
+    {
+      "path": "target/phase072-minio/faults/term-8468d47426a4/cleanup.json",
+      "size": 112,
+      "sha256": "a3b31213a2fda4dff6cbbde350121bd92fa71af9b07798a09ed77fd3da5598a5"
+    },
+    {
+      "path": "target/phase072-minio/faults/term-8468d47426a4/fault-verification.json",
+      "size": 1404,
+      "sha256": "daa6b9eeee2abd81181589e2c3183f84c115e672c317ef5c214a5331126b44f5"
+    },
+    {
+      "path": "target/phase072-minio/faults/term-8468d47426a4/result.json",
+      "size": 158,
+      "sha256": "04a67c9f9ec2bfa7f1f8f587f8ed590133e7ed71b18928798089bbf075d31bf7"
+    },
+    {
+      "path": "target/phase072-minio/helper-build.log",
+      "size": 2825,
+      "sha256": "171c3c3a8ee504b2c2c6032c8a192eb3bde8205b8557dbe11075a218ab0c1d2c"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-1d36c504684cb423d328f478/cleanup.json",
+      "size": 112,
+      "sha256": "a3b31213a2fda4dff6cbbde350121bd92fa71af9b07798a09ed77fd3da5598a5"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-1d36c504684cb423d328f478/result.json",
+      "size": 131,
+      "sha256": "f689bfbc43916a6b4e7cb3e6b87d0efccd41708fc396c3586b79786210c46fb0"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-2cfc1a661f4438b4afb6a2f8/build.log",
+      "size": 2636,
+      "sha256": "dce0c6c72496595c9b30c4148b8cc550cf782732f975e98bdc6af7e26046f6b8"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-2cfc1a661f4438b4afb6a2f8/cleanup.json",
+      "size": 112,
+      "sha256": "a3b31213a2fda4dff6cbbde350121bd92fa71af9b07798a09ed77fd3da5598a5"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-2cfc1a661f4438b4afb6a2f8/containers-before.json",
+      "size": 573,
+      "sha256": "122c9c4dfcd663600df08da5e48591061a061029706d3525e9fd8bbf3143b184"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-2cfc1a661f4438b4afb6a2f8/counts-after.json",
+      "size": 39,
+      "sha256": "5310ea2f50ac8cd60669671fbbe3dc063b0672a41b5e441a1f6d5227e3419a18"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-2cfc1a661f4438b4afb6a2f8/counts-before.json",
+      "size": 39,
+      "sha256": "5310ea2f50ac8cd60669671fbbe3dc063b0672a41b5e441a1f6d5227e3419a18"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-2cfc1a661f4438b4afb6a2f8/iceberg-discovery-after.log",
+      "size": 208,
+      "sha256": "70fd1253db7b691f0c1ed7159bd1ac796d265f8309feb9b3ecc81936bf05fa1e"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-2cfc1a661f4438b4afb6a2f8/iceberg-discovery.log",
+      "size": 208,
+      "sha256": "70fd1253db7b691f0c1ed7159bd1ac796d265f8309feb9b3ecc81936bf05fa1e"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-2cfc1a661f4438b4afb6a2f8/iceberg-exact-after.log",
+      "size": 305,
+      "sha256": "c38f69ace00348360c96c54cae8b30336305379beed4fef70af3ad9698debfa2"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-2cfc1a661f4438b4afb6a2f8/iceberg-exact.log",
+      "size": 305,
+      "sha256": "e4583c29ac35405095806e3288efc02053e9cfdf135a203a24d231519f82ae87"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-2cfc1a661f4438b4afb6a2f8/metadata-locations-after.txt",
+      "size": 132,
+      "sha256": "bc3be99d1f21056fe43e788c49451422aa6d2f45471e6ca7096482053fdac0a6"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-2cfc1a661f4438b4afb6a2f8/metadata-locations.txt",
+      "size": 132,
+      "sha256": "bc3be99d1f21056fe43e788c49451422aa6d2f45471e6ca7096482053fdac0a6"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-2cfc1a661f4438b4afb6a2f8/minio.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-2cfc1a661f4438b4afb6a2f8/objects-after.json",
+      "size": 717,
+      "sha256": "fe826553af25b48a3728d2de0906517d6d60cd722e5096082a1dd150bf6c6872"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-2cfc1a661f4438b4afb6a2f8/objects-before.json",
+      "size": 717,
+      "sha256": "fe826553af25b48a3728d2de0906517d6d60cd722e5096082a1dd150bf6c6872"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-2cfc1a661f4438b4afb6a2f8/pg.log",
+      "size": 3164,
+      "sha256": "de118286a28d90b68db9f8501c43086d70168fdff3b1a0044b7b713bd9342d26"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-2cfc1a661f4438b4afb6a2f8/provenance.json",
+      "size": 1625,
+      "sha256": "2465664209324ef8bbf22d00722785c56599b342d6d42b24ca97d04f18462f17"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-2cfc1a661f4438b4afb6a2f8/restart.json",
+      "size": 1921,
+      "sha256": "8f043f5020a3db6c8075465c50dbd5b60da13fe685f3c4462ba0c4e88598a1f2"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-2cfc1a661f4438b4afb6a2f8/result.json",
+      "size": 131,
+      "sha256": "686b64bdff959fdacf7dd60baee78e4f1ca0a8d004b8a177c806187f1d3a8368"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-2cfc1a661f4438b4afb6a2f8/sql-statements.json",
+      "size": 490,
+      "sha256": "855561c8e3dc96429f97221907281ff8766f0217ab24f24d2a5831ca8f2abb74"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-2cfc1a661f4438b4afb6a2f8/trino-info.json",
+      "size": 229,
+      "sha256": "cb6a7e4804a25c76571d9c2af71cc851299507c1d222936d67f8eb4e01e9e5ed"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-2cfc1a661f4438b4afb6a2f8/trino.log",
+      "size": 606508,
+      "sha256": "9f52c9cebb6e1110017e3f613db46457f6e2e7928a9f3700ae8a5ce2791d6d9a"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-33f4be8668f9c1379d2a0db1/cleanup.json",
+      "size": 41,
+      "sha256": "0915c186ff82e56568ca98cec9d4bc2e77daaadf126dd8092284c45c6f21d446"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-33f4be8668f9c1379d2a0db1/result.json",
+      "size": 213,
+      "sha256": "ab51fb88291dcd029699ff467c7e9c7bd73c79d6f3840fcd201fd34a0f29129f"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-56318c5de91a8a4ae6343836/cleanup.json",
+      "size": 112,
+      "sha256": "a3b31213a2fda4dff6cbbde350121bd92fa71af9b07798a09ed77fd3da5598a5"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-56318c5de91a8a4ae6343836/result.json",
+      "size": 131,
+      "sha256": "9a7362f6bbd9eb5fcbf7d9e4fe36c89a2bfe53430f68af648cc87f67985b7073"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/action-atomicity-discovery.log",
+      "size": 403,
+      "sha256": "a5b0ed862436925e05e3d68b77006bfd97cf97440d8bd91074ac5e44ecc1f019"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/action-atomicity.log",
+      "size": 524,
+      "sha256": "5bbb5a0b484517b8cc12b78e2e7e9e31a3d9e02e2bfb0e0e6b034cb167a8048d"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/action-idempotency-discovery.log",
+      "size": 543,
+      "sha256": "8e037f38e4f036710b9b6df679517fb07a32f6c638fdde4bb6aca233512b9558"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/action-idempotency.log",
+      "size": 669,
+      "sha256": "d3a2aba0141e4acc8bb727f79e1d798999e7ff0ef57dcad003d96e141e632b84"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/action-races-discovery.log",
+      "size": 400,
+      "sha256": "b2becf86baa48c23e14bdc930f864b0096a11a8fad36827ea9032dde2c4ca93d"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/action-races.log",
+      "size": 514,
+      "sha256": "d2abfa0fe23e424b042f222b759f44832a08720343e0263138cc5b8ac765d71f"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/action-source-discovery.log",
+      "size": 392,
+      "sha256": "f2118b364b49ece0784fde12fefa5382c5fe167b6a9029232176d6306a851933"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/action-source.log",
+      "size": 1381,
+      "sha256": "155b87f11c3be8313783bce1e8527cdab5f72f7b88484bd8d146923ffef68e9a"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/action-webhook-pg-discovery.log",
+      "size": 305,
+      "sha256": "87cc0f87d71e0cf23990ee48d3d2e8d81ab7bb2792d09b3123ee2867e4c87039"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/action-webhook-pg.log",
+      "size": 407,
+      "sha256": "ea61017ca7e2b5b2d1c12b39b6c93adf038a91aae6d69886401aea2cf1c9e011"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/build.log",
+      "size": 2702,
+      "sha256": "26e91e5f8d192aa3e0893bad948d6a87d3f037a05f0fced03dc9106f722c3a5d"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/cleanup.json",
+      "size": 112,
+      "sha256": "a3b31213a2fda4dff6cbbde350121bd92fa71af9b07798a09ed77fd3da5598a5"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/containers-before.json",
+      "size": 573,
+      "sha256": "122c9c4dfcd663600df08da5e48591061a061029706d3525e9fd8bbf3143b184"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/corpus.json",
+      "size": 1189,
+      "sha256": "833b7d6ab03a969cd7c1d70325880ee0f0a5fe52f0c786953f8be0a74a2afc72"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/counts-after.json",
+      "size": 39,
+      "sha256": "5310ea2f50ac8cd60669671fbbe3dc063b0672a41b5e441a1f6d5227e3419a18"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/counts-before.json",
+      "size": 39,
+      "sha256": "5310ea2f50ac8cd60669671fbbe3dc063b0672a41b5e441a1f6d5227e3419a18"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/iceberg-discovery-after.log",
+      "size": 208,
+      "sha256": "70fd1253db7b691f0c1ed7159bd1ac796d265f8309feb9b3ecc81936bf05fa1e"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/iceberg-discovery.log",
+      "size": 208,
+      "sha256": "71afab2b85df5235d8b4f1055ee5701c994011b2e48854e0e70cdd3bdebd1b15"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/iceberg-exact-after.log",
+      "size": 305,
+      "sha256": "f71013371d626721a25cc487ff54aa6f4fa538fbd7fcf986adbd49ae73cec7c7"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/iceberg-exact.log",
+      "size": 305,
+      "sha256": "22ea31f15a7fc062e6522cae81f89ce7f17cf163421ec9d846e827fb550e6935"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/metadata-locations-after.txt",
+      "size": 132,
+      "sha256": "8c3b56fb1a19d77b7f8ee8ad40c7b54a59fde4bebda9f414c6a560278cf3a04b"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/metadata-locations.txt",
+      "size": 132,
+      "sha256": "8c3b56fb1a19d77b7f8ee8ad40c7b54a59fde4bebda9f414c6a560278cf3a04b"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/minio.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/objects-after.json",
+      "size": 718,
+      "sha256": "f6d8bfd2b714d1f5dc949eb561e8f1252aa9c82e64ed9fdc330b7f8f450f0fdb"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/objects-before.json",
+      "size": 718,
+      "sha256": "f6d8bfd2b714d1f5dc949eb561e8f1252aa9c82e64ed9fdc330b7f8f450f0fdb"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/pg.log",
+      "size": 3479,
+      "sha256": "9aa456179050dddea6375cb77b59c6aeaa14df05f2c6c70b05aca5629378efe0"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/provenance.json",
+      "size": 1625,
+      "sha256": "a6b30d157a2b9a1311ee7729c5364ec9b70146ed4aba16af2507c8b2bb72611f"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/restart.json",
+      "size": 1921,
+      "sha256": "d0246fea050ddc6dc2ffd628af0673ee5c7fe9b5d0fa23cc80580b47bbdae3ec"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/result.json",
+      "size": 157,
+      "sha256": "f6f0b05a783498860732011a22e8c36077ea6e4d916ed60920e81980ebf31bdd"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/sql-statements.json",
+      "size": 490,
+      "sha256": "855561c8e3dc96429f97221907281ff8766f0217ab24f24d2a5831ca8f2abb74"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/trino-info.json",
+      "size": 229,
+      "sha256": "d289013bed9ad7fa485706b7eb4c65a24d40a4eef75983e3999af9a04e6d5f07"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-5b0b8d797deb3a54b0deadb1/trino.log",
+      "size": 520447,
+      "sha256": "55688204e0c37327289be53ee7a29005115b5d2fa1c013009e317ecc8bcfee58"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-60622a04ac8e1ca93317da45/cleanup.json",
+      "size": 112,
+      "sha256": "a3b31213a2fda4dff6cbbde350121bd92fa71af9b07798a09ed77fd3da5598a5"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-60622a04ac8e1ca93317da45/result.json",
+      "size": 131,
+      "sha256": "d0936e48c464ed8061aa3ec6306a0201284d4a74f1c35a114be67aa639266bb2"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-634a2a41d19284eb4db47b84/build.log",
+      "size": 2861,
+      "sha256": "3d4d8dfb29114eba6050d69e238f948b51ccc49b9f8f807e313e7ea4b07218ee"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-634a2a41d19284eb4db47b84/cleanup.json",
+      "size": 112,
+      "sha256": "a3b31213a2fda4dff6cbbde350121bd92fa71af9b07798a09ed77fd3da5598a5"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-634a2a41d19284eb4db47b84/containers-before.json",
+      "size": 573,
+      "sha256": "122c9c4dfcd663600df08da5e48591061a061029706d3525e9fd8bbf3143b184"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-634a2a41d19284eb4db47b84/counts-after.json",
+      "size": 39,
+      "sha256": "5310ea2f50ac8cd60669671fbbe3dc063b0672a41b5e441a1f6d5227e3419a18"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-634a2a41d19284eb4db47b84/counts-before.json",
+      "size": 39,
+      "sha256": "5310ea2f50ac8cd60669671fbbe3dc063b0672a41b5e441a1f6d5227e3419a18"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-634a2a41d19284eb4db47b84/iceberg-discovery-after.log",
+      "size": 208,
+      "sha256": "70fd1253db7b691f0c1ed7159bd1ac796d265f8309feb9b3ecc81936bf05fa1e"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-634a2a41d19284eb4db47b84/iceberg-discovery.log",
+      "size": 208,
+      "sha256": "71afab2b85df5235d8b4f1055ee5701c994011b2e48854e0e70cdd3bdebd1b15"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-634a2a41d19284eb4db47b84/iceberg-exact-after.log",
+      "size": 305,
+      "sha256": "833a095563960652980213cdee646e9d99cc2f6d67925ca4702f0617773b4d5c"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-634a2a41d19284eb4db47b84/iceberg-exact.log",
+      "size": 305,
+      "sha256": "b249133cd9d1ba909af143640ae03c73e090498236817e3eb1dac44b4866021d"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-634a2a41d19284eb4db47b84/metadata-locations-after.txt",
+      "size": 132,
+      "sha256": "a361c10c21b62b86dec9f190519b1174e69c242ef45d677dfc09131321e223b7"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-634a2a41d19284eb4db47b84/metadata-locations.txt",
+      "size": 132,
+      "sha256": "a361c10c21b62b86dec9f190519b1174e69c242ef45d677dfc09131321e223b7"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-634a2a41d19284eb4db47b84/minio.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-634a2a41d19284eb4db47b84/objects-after.json",
+      "size": 718,
+      "sha256": "0ddb9b95e3c2558bc332798ab5b7e9f1422bc2036e8c68b6562fdfecae7f969a"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-634a2a41d19284eb4db47b84/objects-before.json",
+      "size": 718,
+      "sha256": "0ddb9b95e3c2558bc332798ab5b7e9f1422bc2036e8c68b6562fdfecae7f969a"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-634a2a41d19284eb4db47b84/pg.log",
+      "size": 3164,
+      "sha256": "7b150c955543abc0606578ff5dfcbe677ee073aa25f800313de70588868589c0"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-634a2a41d19284eb4db47b84/provenance.json",
+      "size": 1625,
+      "sha256": "0a45596bdbd3482cfe4b7cabc03560c880d1e35961e8fb87de57b41e9a81c1a2"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-634a2a41d19284eb4db47b84/restart.json",
+      "size": 1921,
+      "sha256": "cae1c0b7628ef196202a881f70faf191ac8f251ff275373137fb6b5ae772e829"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-634a2a41d19284eb4db47b84/result.json",
+      "size": 131,
+      "sha256": "de291c1c452e3bed389f64f35c2e21022d1c257dd775245386b11bc5c8b04979"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-634a2a41d19284eb4db47b84/sql-statements.json",
+      "size": 490,
+      "sha256": "855561c8e3dc96429f97221907281ff8766f0217ab24f24d2a5831ca8f2abb74"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-634a2a41d19284eb4db47b84/trino-info.json",
+      "size": 229,
+      "sha256": "4beafde12de63de2fe34f20ac3844d48be52134aff27313f19b87cfa758d8a06"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-634a2a41d19284eb4db47b84/trino.log",
+      "size": 516446,
+      "sha256": "902974681f80fe12ed823b7ec74b85c230bb378a85d24b4309d9642306a4911d"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/action-atomicity-discovery.log",
+      "size": 868,
+      "sha256": "635e48e552b27dc5b3ea1c45727e3f2e54349ad80bb6ea938f03c22f565276bd"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/action-atomicity.log",
+      "size": 524,
+      "sha256": "cc78338bd288f502ac0099f769fec28926d601ac2bbccec2d83aa1d476aabe14"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/action-entrypoints-discovery.log",
+      "size": 505,
+      "sha256": "b2cb2b81099a65ac64680c732947b3d2e258b773c3b905e7024842d71090b4c1"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/action-entrypoints.log",
+      "size": 525,
+      "sha256": "1bfff6f6bf234448210ce491fa93ee57a0539a0494daa688de31f8c0c4370a19"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/action-idempotency-discovery.log",
+      "size": 638,
+      "sha256": "930cc2b107372b53720cbc781bf886ed426b637247fc37632a3a9f0e5f754ac2"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/action-idempotency.log",
+      "size": 669,
+      "sha256": "45f99ba89a99c1a4e723d34855efcfe9d9563f8037ba38171611e77a055f5c1e"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/action-outbox-discovery.log",
+      "size": 843,
+      "sha256": "d7c2f88872c968f58a34c5702e6f864dccd7d21fd15bd22921028d82f6a348e4"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/action-outbox.log",
+      "size": 905,
+      "sha256": "252a665649d8357b111fdfbe5ac29e5d2344e1a3ae874b63931d577545d4958f"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/action-races-discovery.log",
+      "size": 1051,
+      "sha256": "1dcd659e764760f1da89ca96887f613bf740c4e51d6cbc0fb6a01561840edba5"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/action-races.log",
+      "size": 514,
+      "sha256": "bd47b598314aa2e666406f81278c2e4045b0a50226b968a79334827efd56e485"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/action-source-discovery.log",
+      "size": 487,
+      "sha256": "5d038797b1333bfedea995717a96407a509f4eb1f8d9e3a7509a2bd9c814392f"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/action-source.log",
+      "size": 506,
+      "sha256": "cd24f417ed6e1356ce6d198095402d710dbc9582bd4feb94ea2fac017632f28f"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/action-webhook-pg-discovery.log",
+      "size": 588,
+      "sha256": "70c504e100bd525391a1efbcc4b4427a74578867a82634c8a316227a11bf6ddb"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/action-webhook-pg.log",
+      "size": 407,
+      "sha256": "9d90161a6182b8440e35c6f81af0058b5098ff1869dda8e5d8b7760cd02edbf9"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/build.log",
+      "size": 2866,
+      "sha256": "3925deb2ddb10af2db3116d048880d123472791bca3b15806de677e2e1b4e6c4"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/cleanup.json",
+      "size": 112,
+      "sha256": "a3b31213a2fda4dff6cbbde350121bd92fa71af9b07798a09ed77fd3da5598a5"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/containers-before.json",
+      "size": 573,
+      "sha256": "122c9c4dfcd663600df08da5e48591061a061029706d3525e9fd8bbf3143b184"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/corpus.json",
+      "size": 1880,
+      "sha256": "73948ad001cd843e9c3fa944d1d5b5d0d3d7415d5bee792c33552401617adb7e"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/counts-after.json",
+      "size": 39,
+      "sha256": "5310ea2f50ac8cd60669671fbbe3dc063b0672a41b5e441a1f6d5227e3419a18"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/counts-before.json",
+      "size": 39,
+      "sha256": "5310ea2f50ac8cd60669671fbbe3dc063b0672a41b5e441a1f6d5227e3419a18"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/engine-discovery.log",
+      "size": 428,
+      "sha256": "515e7fc44351ec6a3c4053b909f244902d4677c24c07f3f164611c2c44ac43fa"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/engine.log",
+      "size": 983,
+      "sha256": "c69f2a12709d68188d6a186cb7a2374a50165a7f2b5b48abaca8f6adb098b326"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/iceberg-discovery-after.log",
+      "size": 208,
+      "sha256": "71afab2b85df5235d8b4f1055ee5701c994011b2e48854e0e70cdd3bdebd1b15"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/iceberg-discovery.log",
+      "size": 208,
+      "sha256": "71afab2b85df5235d8b4f1055ee5701c994011b2e48854e0e70cdd3bdebd1b15"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/iceberg-exact-after.log",
+      "size": 305,
+      "sha256": "2a1e104df35afbe3e038572a588b25f91ee18c4dd55294e04fbc844489e7fa8b"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/iceberg-exact.log",
+      "size": 305,
+      "sha256": "13b95751368db9d932a28b60fa8101d8d5f43c99acc38ea51997b94d02ba1cb1"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/metadata-locations-after.txt",
+      "size": 132,
+      "sha256": "d08cbfd3891c00fb98b047138fd192326888bb924d7190d43b801d392bbe9115"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/metadata-locations.txt",
+      "size": 132,
+      "sha256": "d08cbfd3891c00fb98b047138fd192326888bb924d7190d43b801d392bbe9115"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/minio.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/objects-after.json",
+      "size": 718,
+      "sha256": "4d090207a4ba6a8827750cf8e49aa39e960c85cfc83dc842c82a87f5b70cea82"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/objects-before.json",
+      "size": 718,
+      "sha256": "4d090207a4ba6a8827750cf8e49aa39e960c85cfc83dc842c82a87f5b70cea82"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/pg.log",
+      "size": 3229,
+      "sha256": "d86595ef5821eb18de80e4d23a6285d4f20dd9a9353fb7613149eaf516be5273"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/provenance.json",
+      "size": 1625,
+      "sha256": "6118c4fe8e7f0265d5e65710485d3a6af83336855c0d33edb1eedae85c51d1b6"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/restart.json",
+      "size": 1921,
+      "sha256": "38e62e39f54b41b00a4f19de6b4ae478e8639ceb3a909ab221705cb04ba1517f"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/result.json",
+      "size": 157,
+      "sha256": "0606fb603d8046dd56626a0df2adf01a4ef911bc4cd01ca52a56d887a35049bc"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/sql-statements.json",
+      "size": 490,
+      "sha256": "855561c8e3dc96429f97221907281ff8766f0217ab24f24d2a5831ca8f2abb74"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/trino-info.json",
+      "size": 229,
+      "sha256": "92591cd199971d2a83ec6f7efec4956905d5c6d386a188c866c806dcd437b728"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-9f7ed0d25dcc3de6eed64321/trino.log",
+      "size": 531434,
+      "sha256": "eb4abdc11b0dfc71fa152474e3786f1cfd5cb5dbcf9a5dc4f917defedfa5cfe6"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-c6eb006e71f852ebc66955fb/cleanup.json",
+      "size": 41,
+      "sha256": "0915c186ff82e56568ca98cec9d4bc2e77daaadf126dd8092284c45c6f21d446"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-c6eb006e71f852ebc66955fb/result.json",
+      "size": 237,
+      "sha256": "f5bea821f426f0a7e5009f1224375c7d7d9262879d7f8049eed70cfd26e87cdc"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/action-atomicity-discovery.log",
+      "size": 403,
+      "sha256": "b26f5c2c78bb243b4b5d0059efdc856d32fc1ab2033c5b713e4ab3a0c4d71861"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/action-atomicity.log",
+      "size": 524,
+      "sha256": "a8f2d6fedb9674429696ca3af6c2786af5f7882a22598a70f79e5fed815f9a94"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/action-entrypoints-discovery.log",
+      "size": 411,
+      "sha256": "45ef5134182dfff99e409b5ec90413ff2084003672247654fd033def0edd4e29"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/action-entrypoints.log",
+      "size": 525,
+      "sha256": "5f4e48ad4b0674d134bf497864906edc776af60554c4c32506296b5692333861"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/action-idempotency-discovery.log",
+      "size": 543,
+      "sha256": "687d01ebc2cfe264cb6a60faeb719b0b1c67b8035ca47fd7e66f8331860b9abb"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/action-idempotency.log",
+      "size": 669,
+      "sha256": "a889548f41721e20e69e360a99db3faa37c490fb24d580957be003519eaf3a35"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/action-outbox-discovery.log",
+      "size": 748,
+      "sha256": "60e0e7b09af5bd9312bf6a71ce2d2adf476c38fab22267edc994994b6bab5ed6"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/action-outbox.log",
+      "size": 905,
+      "sha256": "b9f0d43d1d11aa160221fed2a6fd8bed07a1519352a18c430e53f4322710c037"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/action-races-discovery.log",
+      "size": 400,
+      "sha256": "f6a8d98f072a0bc8a44b61de5afc3fe346d6fd7a7ae9985fb1059c6bab2fcde1"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/action-races.log",
+      "size": 514,
+      "sha256": "272060ac35373258871428d106df431179df91c2deb728bdc36f131bbcbcd95f"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/action-source-discovery.log",
+      "size": 486,
+      "sha256": "494b7e92cf281520aa6c7fa1e628a2f085496c63c6eda7c16bff3b5947f3f232"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/action-source.log",
+      "size": 506,
+      "sha256": "986d5a691eb63178c20ae68146615e3757c335411d03b48a9d921094783d307c"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/action-webhook-pg-discovery.log",
+      "size": 305,
+      "sha256": "c9041505e8ab4334d0b36827c98f89808498479d993e7fd7059726e559c08cf7"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/action-webhook-pg.log",
+      "size": 407,
+      "sha256": "22e3031605aff8c5e4b34f5ca7806ffb98a389ff6cbd4eb9624fed9ab3bd1c5c"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/build.log",
+      "size": 2927,
+      "sha256": "908ac668613f88d913e4a1dff1bef1d935172f563bfd492530fd5f0bb5932ab8"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/cleanup.json",
+      "size": 112,
+      "sha256": "a3b31213a2fda4dff6cbbde350121bd92fa71af9b07798a09ed77fd3da5598a5"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/cli-discovery.log",
+      "size": 466,
+      "sha256": "11568a2d8add759457f566024979ecdbdcf2acc30bee527be0a0975744986fa0"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/cli.log",
+      "size": 1792,
+      "sha256": "0f98f46dc718e3be8fa7aecd1965643e2d2d49a06155d16da3f3db9242ab357c"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/containers-before.json",
+      "size": 573,
+      "sha256": "122c9c4dfcd663600df08da5e48591061a061029706d3525e9fd8bbf3143b184"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/corpus.json",
+      "size": 2104,
+      "sha256": "21e23c0ca32663595b31962c75e53980d4f730d64bad22907fcab56232d8c1dd"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/counts-after.json",
+      "size": 39,
+      "sha256": "5310ea2f50ac8cd60669671fbbe3dc063b0672a41b5e441a1f6d5227e3419a18"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/counts-before.json",
+      "size": 39,
+      "sha256": "5310ea2f50ac8cd60669671fbbe3dc063b0672a41b5e441a1f6d5227e3419a18"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/engine-discovery.log",
+      "size": 428,
+      "sha256": "95716913fa0d2da812897a5023ef24bddb34572ff47fb46bad41f6d36144a080"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/engine.log",
+      "size": 572,
+      "sha256": "617ff96970f37c15858d8c036d95d9cbd58c8f530348e06e7fd671fe9b3d19b2"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/iceberg-discovery-after.log",
+      "size": 208,
+      "sha256": "62728d0aafb0943ace78aa110dabc2893e7151f6bbefa5ff9aff397d7f56e47b"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/iceberg-discovery.log",
+      "size": 208,
+      "sha256": "2c0bb2af04ba15c4c0ec13c72d01fe37e26d41df1c9ab693d86f6bd9b067e005"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/iceberg-exact-after.log",
+      "size": 305,
+      "sha256": "192913b3674af9c71ba6f9549342ae188c53055e0175cf35a28b1359bdfe80d4"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/iceberg-exact.log",
+      "size": 305,
+      "sha256": "42bdb89143d9cd12076e28a2bb0c363b7fbed8df850e3ab599e6928c9c514e1f"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/metadata-locations-after.txt",
+      "size": 132,
+      "sha256": "40fbdd80553756aa78ce0dffde3e993a0a2e6efae36e14a7a383c288cf8b8eab"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/metadata-locations.txt",
+      "size": 132,
+      "sha256": "40fbdd80553756aa78ce0dffde3e993a0a2e6efae36e14a7a383c288cf8b8eab"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/minio.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/objects-after.json",
+      "size": 718,
+      "sha256": "9d63120cc7931b4fda0c333bf2ca1ab9f2b138b9fa60c3b4fcb925492e18b706"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/objects-before.json",
+      "size": 718,
+      "sha256": "9d63120cc7931b4fda0c333bf2ca1ab9f2b138b9fa60c3b4fcb925492e18b706"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/pg.log",
+      "size": 3229,
+      "sha256": "a0e2435b96fd9177fbc2decaa9ac3e376a5f23dda4b4761ad2340ba36e4dc5fe"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/provenance.json",
+      "size": 1625,
+      "sha256": "70f54bb7f4c961f2e30082499d6de769edefc2ef6bd642bd7ee9cfb607c12cf1"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/restart.json",
+      "size": 1921,
+      "sha256": "d073da6cb5db76a1504435a4cbbd86659bf782c3a434de13eb0bcfb15e2fc3d8"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/result.json",
+      "size": 157,
+      "sha256": "4ae2040124ca68030ed35e64f4ebe406935a89fff39def175ef6eb73b49fe90e"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/sql-statements.json",
+      "size": 490,
+      "sha256": "855561c8e3dc96429f97221907281ff8766f0217ab24f24d2a5831ca8f2abb74"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/trino-info.json",
+      "size": 229,
+      "sha256": "4edc6d349f59f5816c085da8b0af4e7871dc92f7de309a5b1ae25fbea4d923a9"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-d3ab76a2248866ff8f7be7f4/trino.log",
+      "size": 535047,
+      "sha256": "4e3ee45c5e2a480999ac62e645b3f04e1dd3eca1961295cab048fb4a07230794"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/action-atomicity-discovery.log",
+      "size": 403,
+      "sha256": "6cd56205c9a60cf4e7308f99dae4a25f19e3a0e6296fd1122d3eb7e7442e7113"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/action-atomicity.log",
+      "size": 524,
+      "sha256": "61ac894a6df454bd137c9ae71fe19651cfcd382da66d7652017a91cdedc3117b"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/action-entrypoints-discovery.log",
+      "size": 411,
+      "sha256": "c1dfc201a8dee09ec75ecf762e90c676d3f181416b96d03e7e402d65b249c954"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/action-entrypoints.log",
+      "size": 525,
+      "sha256": "50c269182ec4beb75dfc2e52b66a52345108de3bdd43fcd19a0e879a43650363"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/action-idempotency-discovery.log",
+      "size": 543,
+      "sha256": "bac153706fa2e15ac15b279010527e2feda5e874d8e9e0c978250deb5daab15b"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/action-idempotency.log",
+      "size": 669,
+      "sha256": "19c8285c91c58852a2fd553789ecabb2ef801cac7d14ab73031b42a9fe62ac15"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/action-outbox-discovery.log",
+      "size": 748,
+      "sha256": "60e0e7b09af5bd9312bf6a71ce2d2adf476c38fab22267edc994994b6bab5ed6"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/action-outbox.log",
+      "size": 905,
+      "sha256": "2facb284cfe1a716eb9437523b2f6d97b854bd99ab1a027ea7b6fd258a20fc08"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/action-races-discovery.log",
+      "size": 400,
+      "sha256": "2b4b3f08fc82bcc26c6519d2305bdadfc575c84c947228c402074dee1d2233fd"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/action-races.log",
+      "size": 514,
+      "sha256": "c5dcceabb166b6664f5a34b06cf305fe2661bfb6f64f2b5d6072aa618adbc564"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/action-source-discovery.log",
+      "size": 392,
+      "sha256": "4844583c68afda6c25da94d926cd80b70c6f2124ec4503ecb3467e4c3b0ba7d2"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/action-source.log",
+      "size": 506,
+      "sha256": "472acea931bb150d63fba98e9fa1f86e742fd97833217913567261eed01e11e7"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/action-webhook-pg-discovery.log",
+      "size": 305,
+      "sha256": "87cc0f87d71e0cf23990ee48d3d2e8d81ab7bb2792d09b3123ee2867e4c87039"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/action-webhook-pg.log",
+      "size": 407,
+      "sha256": "43f43298c8f84f89d398d23523385655cb86da4068ae295561e4da9f523caa25"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/build.log",
+      "size": 2866,
+      "sha256": "c432cd68866a52791c95e241babf6b4e38faed0d7a741092e02e261ce2c8e9ed"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/cleanup.json",
+      "size": 112,
+      "sha256": "a3b31213a2fda4dff6cbbde350121bd92fa71af9b07798a09ed77fd3da5598a5"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/cli-discovery.log",
+      "size": 385,
+      "sha256": "98791a3ea53a1357e9b6a008bd211cfc07e8fd1a4d1d2003142fbf44bde1d4eb"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/cli.log",
+      "size": 499,
+      "sha256": "49d818fa2f86d43777946c56846a1b9f787e2c2e981d55b4371f94b53774895f"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/containers-before.json",
+      "size": 573,
+      "sha256": "122c9c4dfcd663600df08da5e48591061a061029706d3525e9fd8bbf3143b184"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/corpus.json",
+      "size": 2102,
+      "sha256": "7085862c9b665b65df75e23c3fe9e99690937105d4a9c96340648817c289758f"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/counts-after.json",
+      "size": 39,
+      "sha256": "5310ea2f50ac8cd60669671fbbe3dc063b0672a41b5e441a1f6d5227e3419a18"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/counts-before.json",
+      "size": 39,
+      "sha256": "5310ea2f50ac8cd60669671fbbe3dc063b0672a41b5e441a1f6d5227e3419a18"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/engine-discovery.log",
+      "size": 428,
+      "sha256": "2c11a7617b57f92cb54e22c449fd271e01c2eeda7a8e49cdbc8754ab358b51a7"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/engine.log",
+      "size": 572,
+      "sha256": "b2fc4fa511d259e16747a3193f02a50741e5b6321c04fe96293221b420670664"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/iceberg-discovery-after.log",
+      "size": 208,
+      "sha256": "70fd1253db7b691f0c1ed7159bd1ac796d265f8309feb9b3ecc81936bf05fa1e"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/iceberg-discovery.log",
+      "size": 208,
+      "sha256": "a91791b972a5d6ba4497cf5b5c5ebc1f04a08a48e537bd7e68c3a7b82e937731"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/iceberg-exact-after.log",
+      "size": 305,
+      "sha256": "67f3e9d9ea70f34cd9cfc657897b2f59e12310d9f9d133ed3f6d2e2901d74b34"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/iceberg-exact.log",
+      "size": 305,
+      "sha256": "98b71e25434148fa2d3d3912db000b5d9a598195e453a676d40ffacd65738cb6"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/metadata-locations-after.txt",
+      "size": 132,
+      "sha256": "37a97280d7088238eee1d53546fb62d60b9e360114259454e63ca1be8822ad53"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/metadata-locations.txt",
+      "size": 132,
+      "sha256": "37a97280d7088238eee1d53546fb62d60b9e360114259454e63ca1be8822ad53"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/minio.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/objects-after.json",
+      "size": 718,
+      "sha256": "15bf2af873886dab9ea66f18ec8a8b0fd19a5704312bc3aa6f854576d11bcd13"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/objects-before.json",
+      "size": 718,
+      "sha256": "15bf2af873886dab9ea66f18ec8a8b0fd19a5704312bc3aa6f854576d11bcd13"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/pg.log",
+      "size": 3164,
+      "sha256": "fac343ecc56290476f7281a41156820a7398d0fc65333162389d37fd89cd6753"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/provenance.json",
+      "size": 1625,
+      "sha256": "e58b9547144b88423679c9bfc67e3f8bfeb3b847ac5a82538083cfe8ee4cf96a"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/restart.json",
+      "size": 1921,
+      "sha256": "89704b4c56309f1c0c549432dddb8e71dbfe5492a31250e9016989c9df7a7d40"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/result.json",
+      "size": 155,
+      "sha256": "0edab8af49538e0557086dbbe807c7a6bd055f279439e4b76ec2eda42c2f56d0"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/sql-statements.json",
+      "size": 490,
+      "sha256": "855561c8e3dc96429f97221907281ff8766f0217ab24f24d2a5831ca8f2abb74"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/trino-info.json",
+      "size": 229,
+      "sha256": "545682a2dd8dac7df1f92b302436e1c0e74e9b72b3a2fa86d70c42a11fb7f2a1"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-f21f4b11a5280914d4c25f2c/trino.log",
+      "size": 541041,
+      "sha256": "711320deb5d9752f314d34f4b507382f532fb21b543df4e5883978f82396c2f2"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-fd7a2d3c9dbad6c7c89c6b6c/build.log",
+      "size": 2871,
+      "sha256": "20b9c669169612136666d0c4afd49f101603f6f0dca83c0461f0316c4ef284cb"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-fd7a2d3c9dbad6c7c89c6b6c/cleanup.json",
+      "size": 112,
+      "sha256": "a3b31213a2fda4dff6cbbde350121bd92fa71af9b07798a09ed77fd3da5598a5"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-fd7a2d3c9dbad6c7c89c6b6c/containers-before.json",
+      "size": 573,
+      "sha256": "122c9c4dfcd663600df08da5e48591061a061029706d3525e9fd8bbf3143b184"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-fd7a2d3c9dbad6c7c89c6b6c/counts-before.json",
+      "size": 39,
+      "sha256": "5310ea2f50ac8cd60669671fbbe3dc063b0672a41b5e441a1f6d5227e3419a18"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-fd7a2d3c9dbad6c7c89c6b6c/iceberg-discovery.log",
+      "size": 208,
+      "sha256": "ae05f06f3738209f5f493a527fb9dafd4685cbee58db59137a3e1c90f2c3b919"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-fd7a2d3c9dbad6c7c89c6b6c/iceberg-exact.log",
+      "size": 305,
+      "sha256": "95b88233ccda8d29d242e3b8feffdea4d133dcdcdd69e4ab8de40abb5f6bc9a7"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-fd7a2d3c9dbad6c7c89c6b6c/metadata-locations.txt",
+      "size": 132,
+      "sha256": "531c8df8dfe86e155d59ccf43a8d59e19fa53b4bd9b3e234d0c0276c50d0b8f6"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-fd7a2d3c9dbad6c7c89c6b6c/minio.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-fd7a2d3c9dbad6c7c89c6b6c/objects-before.json",
+      "size": 717,
+      "sha256": "24ab0403d8304cc1ad5c1d7a75240f066056808a8ade63633ced42bd1718c864"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-fd7a2d3c9dbad6c7c89c6b6c/pg.log",
+      "size": 3164,
+      "sha256": "f64d9aa558903ec57f3343adec3c0b0fa42bb241549782eb42daadc525bb83ca"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-fd7a2d3c9dbad6c7c89c6b6c/provenance.json",
+      "size": 1070,
+      "sha256": "6cd5b032e25f43ed61709883a86b315b60640091bd7e73fc437f663f12179a83"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-fd7a2d3c9dbad6c7c89c6b6c/result.json",
+      "size": 131,
+      "sha256": "31ea763341e9166e589fdcb62f1180c28c6fcaf29d178058686db775efcb4b6d"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-fd7a2d3c9dbad6c7c89c6b6c/trino-info.json",
+      "size": 229,
+      "sha256": "a581f82e0596ca60605d7b2a03797a7ff23a6560c9e72c9a61128d1862d10192"
+    },
+    {
+      "path": "target/phase072-minio/iceberg-fd7a2d3c9dbad6c7c89c6b6c/trino.log",
+      "size": 259519,
+      "sha256": "5c7180e2effe2b7e0a0eb56e28efc905b92264201ce05815749a969065678c36"
+    },
+    {
+      "path": "target/phase072-minio/server-build.log",
+      "size": 13359,
+      "sha256": "99491bde3a94571b22b9199e390d5b57c1ec2fca7f6c17d88599dce92163b1d7"
+    },
+    {
+      "path": "target/phase072-minio/tdd/01-1-acl-red.json",
+      "size": 1516,
+      "sha256": "a96796982c63debed17cb3a57ec8d21340cd586239dd015936792909b82f2e49"
+    },
+    {
+      "path": "target/phase072-minio/tdd/01-1-contract-red.json",
+      "size": 12800,
+      "sha256": "1e9660f392834ecbc659f1a404735224d21c9981861656a6f0001f6a01724818"
+    },
+    {
+      "path": "target/phase072-minio/tdd/01-1-green.log",
+      "size": 989,
+      "sha256": "9774eb5419a03605a905773a41fb838229a1bcb10dbee50ce661c11337c1ebc3"
+    },
+    {
+      "path": "target/phase072-minio/tdd/01-1-red.json",
+      "size": 1436,
+      "sha256": "73846589112e661d48000df30e9b70dbfb226b59d9b4ee4d7e8fe37912f8c4b0"
+    },
+    {
+      "path": "target/phase072-minio/tdd/01-2-cleanup-files-red.json",
+      "size": 1659,
+      "sha256": "9cff181ce2dbcecde2a209a114e505beee9504931e35b46ddc1a853864e435da"
+    },
+    {
+      "path": "target/phase072-minio/tdd/01-2-deadline-red.json",
+      "size": 1604,
+      "sha256": "ad8dbd374cc1ee5fad32845f0423cee18309d7e97e5d3f51b69b4096a4b0eb5a"
+    },
+    {
+      "path": "target/phase072-minio/tdd/01-2-finalization-red.json",
+      "size": 3994,
+      "sha256": "d9ce7654bf0433ae66f9a7df59fb74e18d7ad58d0ee8bc60bf99b003e528121e"
+    },
+    {
+      "path": "target/phase072-minio/tdd/01-2-finalization-red.log",
+      "size": 3085,
+      "sha256": "4a57c71738b3c5775a6a4d85f5e74c22d2aba94dedc1f9f7f7131f84f920c99f"
+    },
+    {
+      "path": "target/phase072-minio/tdd/01-2-helper-green.log",
+      "size": 1340,
+      "sha256": "bd4a1fb5bc8a572b35184e4ea5ea95ce041b10321dc3fcfdb51727efc418b5ea"
+    },
+    {
+      "path": "target/phase072-minio/tdd/01-2-helper-red.json",
+      "size": 2962,
+      "sha256": "af22bcdb70e9c07f9a8a772730d1a0847f1cb761c2d51421723199dd0612185c"
+    },
+    {
+      "path": "target/phase072-minio/tdd/01-2-helper-red.log",
+      "size": 2437,
+      "sha256": "83f286d90f44e978378e2ec5dae14cadf3a677d484ca0bd74846f32dc090c476"
+    },
+    {
+      "path": "target/phase072-minio/tdd/01-2-lock-red.json",
+      "size": 1567,
+      "sha256": "68ae927873852c93284f5165f8924a32faa2e3722c27d3846ee11eba86050fef"
+    },
+    {
+      "path": "target/phase072-minio/tdd/01-2-runner-green.log",
+      "size": 3419,
+      "sha256": "838baa8b59d9674a87164e4b963cc57ab6bcba20ee8fb34c554a5a6db77e5e10"
+    },
+    {
+      "path": "target/phase072-minio/tdd/01-2-term-red.json",
+      "size": 1789,
+      "sha256": "da8e737eab285e6b32a6dc0f4a936dd02ee0e4085172c9dfaf92e4fab23a76b9"
+    },
+    {
+      "path": "target/phase072-minio/tdd/01-2-windows-green.log",
+      "size": 766,
+      "sha256": "6ea77dd4dc408ed2acc6f99a739ab564ebc99bae37014c93ed07422777a64a87"
+    },
+    {
+      "path": "target/phase072-minio/tdd/01-2-windows-term-green.log",
+      "size": 257,
+      "sha256": "f024edf7426bdeb400e2035a73146991145dc35b63192e2697f32614de383d8d"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-1-green-focused.log",
+      "size": 550,
+      "sha256": "ecb017fa327be669c08dbb73bf2ab0532255f43fbcad6139b6f758b069d81db1"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-1-live-faults.log",
+      "size": 559,
+      "sha256": "d52bbab44b8de4c73844e0ebbf47923c78d7226b2434634a50a9f03897962870"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-1-port-red.json",
+      "size": 1363,
+      "sha256": "9b99d33d17b8cf1ca6fcef0623ecc62aed4bac2f463d4127c3a4aceec024cff6"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-1-port-red.log",
+      "size": 866,
+      "sha256": "6c2009ef99cc983e819c91e343837829b8889210eb8d2d81ce63f2f89c9ea562"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-1-red.json",
+      "size": 4404,
+      "sha256": "9da796e3412c4aa0eaca4e7626d97c123ec505cf4e855c54175eea59dcb07cb1"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-1-red.log",
+      "size": 3638,
+      "sha256": "60a633cd48ff3c1438716ddc808caa887ba28fb8b4b3f8d15219df083d434474"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-1-runner-green.log",
+      "size": 3997,
+      "sha256": "c65a25573849340f5125d209774886b5ae5000d039ad55a89652e6c735d243fd"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-2-actual-helper-green.log",
+      "size": 1340,
+      "sha256": "bde38b95974ac4583758b174c06e6394050f00ebd3d0d9f3c60e440a85c495f6"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-2-actual-helper-kill.json",
+      "size": 326,
+      "sha256": "fb62ae7767123c2c05503d56d66fe805c624b947ed72c86f4d06f628bc76e283"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-2-all-contracts-green.log",
+      "size": 5985,
+      "sha256": "469af3dc3971fd5a38c0fb2cb6b5bf75fb2dfeaaa90c9afcb8a3eac99dae7941"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-2-catalog-red.json",
+      "size": 1612,
+      "sha256": "a388a41d5da72de03b789f8dcd394be57a55f277e431af216434f1e189a0d939"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-2-catalog-red.log",
+      "size": 1051,
+      "sha256": "2405a8341566ee8f80bf0773e20bb14276088771c0fc573a6c2d1c3935cc9746"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-2-catalog-wiring-green.log",
+      "size": 567,
+      "sha256": "d1a5f2705f3a7284da0bc7d7154e2263ab29587042be01b599e6d8d5f13344f9"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-2-ci-wiring-green.log",
+      "size": 427,
+      "sha256": "093d1dfe78b28157809373f0236f6ee74b2e04e8a184e0052183cf03726fd333"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-2-ci-wiring-red.json",
+      "size": 6488,
+      "sha256": "f1bf1d20b5b2ccf5521b473479b2dcba3788f6a33870da98f83ec0c9627906c2"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-2-cli-clippy.log",
+      "size": 907,
+      "sha256": "672902b0a382a4be42aa96939bdb412f394e252f0037350737bcc3801ff3b13e"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-2-cli-config-green.log",
+      "size": 1692,
+      "sha256": "0a444317519175dc8224c3c06a9d58cd15096556206932a0fa9909237b9c54cb"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-2-cli-green.log",
+      "size": 2818,
+      "sha256": "d5ceff9f602560ff19c33483ec85da183a433fff4d7fce01c27fd0cbcbb0980d"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-2-cli-red.json",
+      "size": 2625,
+      "sha256": "4d6607b1bb775803d004c1393d4614abdb3f64443cf7ba36c97ecdbb98d09d79"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-2-cli-red.log",
+      "size": 1997,
+      "sha256": "e6edad308e8fa934810eae6b5a6454d4764f2a98ec507d2ae3e8577048c925e6"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-2-clippy.log",
+      "size": 168,
+      "sha256": "19dd0a5d8d06273b334d2551b1b2f529aed85660f9312bc11827d3519d5baf6f"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-2-fmt.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-2-green.log",
+      "size": 903,
+      "sha256": "47a10dfa332d26af7ed3b3e50ece18b729bebf1818ffd5aa6e0ee53449d4845e"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-2-helper-green.log",
+      "size": 915,
+      "sha256": "27eeacf190d47f84de755bee07f90880b921a12f2ce468e05faded7cd69de0fd"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-2-helper-red.json",
+      "size": 10224,
+      "sha256": "8dd79f568026b205d0c95f24b14fa16a26a6537dc468114cb8a8b8547d78f336"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-2-helper-red.log",
+      "size": 9477,
+      "sha256": "4df85bacd3af5bc98448d0f1cbfbf158064c8560cbf5d46ab75fcf88459d2bd8"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-2-per-target-red.json",
+      "size": 1666,
+      "sha256": "0e6fe44fbb49b1969a70aa2dda63f00b875dff39ed44cb45f2e1e19b8d49a485"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-2-per-target-red.log",
+      "size": 1090,
+      "sha256": "482c9633736dc9bbfd5f2c7a86042b76de713ecc5d78b3839edea30077a10c78"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-2-platform-green.log",
+      "size": 500,
+      "sha256": "43b34e9d22670db1c95c0bdacc71f5270731020041cff4c2e78880cd9ca32d16"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-2-red.json",
+      "size": 3571,
+      "sha256": "200a8232ac3104d95b3377d5e1c66198490e2dfefbae4d57d6dc1580e7ca48fb"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-2-red.log",
+      "size": 3025,
+      "sha256": "d59962ad40a54c720c1e8237853cded0b6240f0fd4b32102d5c2d1e8a4060589"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-2-schema-green.log",
+      "size": 238,
+      "sha256": "4a569890510c902d952c0a95b2c9044fc0bbde7cfe6ca1a314907d9c42496723"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-2-schema-red.json",
+      "size": 2330,
+      "sha256": "5599e57b28961c1e452083eb94945f841ace8c0702c73cb88978de5042dad29b"
+    },
+    {
+      "path": "target/phase072-minio/tdd/02-2-schema-red.log",
+      "size": 933,
+      "sha256": "512621bac6bbcdd8f19db915600668b744fed148c59c0d28dadddb825380f51a"
+    }
+  ]
+}

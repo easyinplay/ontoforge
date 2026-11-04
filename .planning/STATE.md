@@ -1,21 +1,21 @@
 ---
 gsd_state_version: "1.0"
 milestone: v1.0
-current_phase: "07.1"
-current_phase_name: Source Cardinality Gap Closure
-current_plan: 3
+current_phase: "07.2"
+current_phase_name: MinIO Contract Gap Closure
+current_plan: 2
 status: completed
-stopped_at: Phase07.1已合入main aac4fd8；下一步MinIO合同补证
-last_updated: "2026-11-04T10:04:37.918Z"
-state_head: aac4fd8f1be26ce0d9dc118939920cff9d4205b0
+stopped_at: Phase07.2验收通过，PR11待合并
+last_updated: "2026-11-04T13:29:36.422Z"
+state_head: 4df0a693a327d1b7e82f9650d108467d8c0848be
 progress:
-  total_phases: 8
-  completed_phases: 6
-  total_plans: 91
-  completed_plans: 91
-last_activity: 2026-11-04 -- Phase03–07经PR8、Phase07.1经PR9均已合入main；STORE-05完成，下一步MinIO补证
-verified_source_commit: 01aa2dfd29262105c52cecbaecd142404215bee4
-verified_scope: phase_07.1
+  total_phases: 9
+  completed_phases: 7
+  total_plans: 93
+  completed_plans: 93
+last_activity: 2026-11-04 -- Phase07.2独立验收9/9，进入PR11合并
+verified_source_commit: 34312dc2173884abe5f3042e3226b1c3c98ee95d
+verified_scope: phase_07.2
 last_gate_trip: null
 ---
 
@@ -23,29 +23,28 @@ last_gate_trip: null
 
 ## Current Position
 
-Phase: 07.1 (Source Cardinality Gap Closure)
-Current Plan: 3
-Total Plans in Phase: 3
-Status: Completed and merged into main (PR #9, aac4fd8)
-Progress: 91/91计划有SUMMARY，6/8阶段passed；01/02历史审计缺口仍保留。
+Phase: 07.2 (MinIO Contract Gap Closure)
+Current Plan: 2
+Total Plans in Phase: 2
+Status: Completed; PR #11 merge pending
+Progress: 93/93 plans summarized; 7/9 phases passed, historical Phase01/02 judgments retained.
 
 ## Evidence Pointers
 
-- 当前phase真相源：`phases/07.1-source-cardinality-gap-closure/07.1-VERIFICATION.md`，18/18、24行为、UAT10/10、workspace1525/0/119、SECURED6/6。
-- milestone审计：`v1.0-MILESTONE-AUDIT.md`、`milestones/v1.0-audit/task_plan.md`。
-- Phase03–07已由PR8合并main：ef0ab9c；PR6自动merged，PR7提交全部包含并关闭重复入口。实际证据归MERGE-READINESS/MERGE-RESULT。
-- 需求归REQUIREMENTS，决策归adr，历史执行/失败归各SUMMARY及证据；不以本digest替代报告。
+- 当前验收：phases/07.2-minio-contract-gap-closure/07.2-VERIFICATION.md；9/9，UAT10/10，SECURED11/11，CI全绿。
+- 合并收尾：phases/07.2-minio-contract-gap-closure/task_plan.md。
+- 前次合并：Phase03–07/07.1已在main，见milestones/v1.0-audit/MERGE-RESULT.md。
+- milestone审计：milestones/v1.0-audit/task_plan.md；旧v1.0-MILESTONE-AUDIT.md为历史快照。
 
 ## Remaining Work
 
-- Phase07.1已合入main；已验收任务按用户授权继续自动合并，不再仅停留Draft。
-- ENGINE-05：local Iceberg483/484已验证，MinIO精确合同待补；已有独立意见和固定源码研究见milestones/v1.0-audit/MINIO-FEASIBILITY.md。
-- Phase01 human_needed、Phase02 gaps_found的历史judgment保留；不机械刷新旧fingerprint，不重开用户已接受的editor体验。
-- Phase05生产webhook联调、Phase06既有治理观察见各deferred-items；不宣称milestone完成。
-- 无Release/npm发布授权；不自动归档。Cargo/Docker已释放，原始失败、清理和凭据扫描记录均保留。
+- ENGINE-05的MinIO缺口已关闭；私有SQL Server保留Phase02历史judgment，需求尚未全局勾选。
+- Phase01 human_needed、Phase02 gaps_found保留；不刷新旧fingerprint冒充复验，不重开已接受editor体验。
+- Phase05生产webhook联调、Phase06治理观察见各deferred-items；后续对账milestone审计，不宣称完成。
+- 未发布Release/npm，未自动归档milestone。本机无运行中的Cargo/Docker任务。
 
 ## Session Continuity
 
-Last session: 2026-11-04
-Stopped at: 07.1交付完成，下一步补齐ENGINE-05 MinIO合同
+Last session: 2026-11-04T13:29:28.795Z
+Stopped at: Phase07.2验收通过，PR11待合并
 Resume file: None

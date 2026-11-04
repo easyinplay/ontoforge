@@ -197,7 +197,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ENGINE-02 | Phase 2（错误分类与 status()）+ Phase 7（/health 与 describe 暴露，API-01） | Complete |
 | ENGINE-03 | Phase 2 | Complete |
 | ENGINE-04 | Phase 2（SQLite 替身支撑 Windows cargo test）+ Phase 7（serve --dev，DX-01） | Complete |
-| ENGINE-05 | Phase 2 | Partial: local Iceberg verified; ADR-0017 MinIO fixture deviation unresolved |
+| ENGINE-05 | Phase 2 / 07.2 | Partial: PG/Trino与MinIO nightly已验证；MinIO缺口由07.2关闭；私有SQL Server保留02-10.8历史judgment，详07.2-VERIFICATION |
 | STORE-01 | Phase 3 | Complete |
 | STORE-02 | Phase 3 | Complete |
 | STORE-03 | Phase 3 | Complete |

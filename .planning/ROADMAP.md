@@ -301,13 +301,14 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7 → 7.1；�
 | 6. L2 Raw DQL, Toolsets & Audit | 11/11 | Complete | 2026-10-28 |
 | 7. REST & MCP Shell | 16/16 | Complete | 2026-11-04 |
 | 7.1. Source Cardinality Gap Closure | 3/3 | Complete    | 2026-11-04 |
+| 7.2. MinIO Contract Gap Closure | 2/2 | Complete | 2026-11-04 |
 
 ### Phase 7.1: Source Cardinality Gap Closure (INSERTED)
 
 **Goal:** As a ontology维护者, I want to 显式运行source OneToOne基数检查并获得有界诊断, so that 我能发现违反声明的FK唯一性而不改变默认在线验证和业务读取行为.
 **Requirements**: STORE-05
 **Depends on:** Phase 7
-**Plans:** 3/3 plans complete；用户已选择A，待定稿及独立checker
+**Plans:** 3/3 plans complete；2026-11-04验收passed，详: `.planning/phases/07.1-source-cardinality-gap-closure/07.1-VERIFICATION.md`
 - [x] 07.1-01-PLAN.md
 - [x] 07.1-02-PLAN.md
 - [x] 07.1-03-PLAN.md
@@ -318,3 +319,14 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7 → 7.1；�
 3. typed SQL、限额、取消与错误边界通过SQLite/Trino验证；STORE-05以独立验收结果更新。
 
 **Details**: `.planning/phases/07.1-source-cardinality-gap-closure/`
+
+### Phase 07.2: MinIO Contract Gap Closure (INSERTED)
+
+**Goal:** 恢复ENGINE-05的MinIO/S3与JDBC Iceberg原合同，完成483/484真实环境及nightly补证。
+**Requirements**: ENGINE-05
+**Depends on:** Phase 7
+**Plans:** 2/2 complete，2026-11-04验收passed；详: `.planning/phases/07.2-minio-contract-gap-closure/07.2-VERIFICATION.md`
+
+Plans:
+- [x] 07.2-01-PLAN.md：固定构建、483真实合同纵切片与runner/client可靠性
+- [x] 07.2-02-PLAN.md：484、restart/fault、完整nightly矩阵与独立验收交接

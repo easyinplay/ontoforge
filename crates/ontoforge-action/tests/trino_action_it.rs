@@ -159,6 +159,44 @@ impl Fixture {
     }
 }
 
+fn source_schema_name(now: SystemTime) -> String {
+    static NEXT_SCHEMA: AtomicUsize = AtomicUsize::new(0);
+    let seconds = now.duration_since(UNIX_EPOCH).expect("clock").as_secs();
+    let counter = NEXT_SCHEMA.fetch_add(1, Ordering::Relaxed);
+    format!("of_action_{:x}_{seconds:x}_{counter:x}", std::process::id())
+}
+
+#[test]
+fn source_schema_names_are_unique_at_same_timestamp() {
+    let now = UNIX_EPOCH + Duration::from_mins(29_896_572);
+    let barrier = std::sync::Arc::new(std::sync::Barrier::new(16));
+    let threads: Vec<_> = (0..16)
+        .map(|_| {
+            let barrier = barrier.clone();
+            std::thread::spawn(move || {
+                barrier.wait();
+                (0..64).map(|_| source_schema_name(now)).collect::<Vec<_>>()
+            })
+        })
+        .collect();
+    let names: std::collections::HashSet<_> = threads
+        .into_iter()
+        .flat_map(|thread| thread.join().expect("fixture name thread"))
+        .collect();
+    assert_eq!(
+        names.len(),
+        16 * 64,
+        "parallel fixtures must never share a schema"
+    );
+    for name in names {
+        assert!(name.len() + "_edit".len() <= 63);
+        assert!(
+            name.bytes()
+                .all(|byte| byte.is_ascii_alphanumeric() || byte == b'_')
+        );
+    }
+}
+
 #[expect(
     clippy::too_many_lines,
     reason = "real source and edit schemas need isolated setup"
@@ -177,11 +215,7 @@ async fn fixture(patched_status: bool, duplicate: bool) -> Fixture {
         .connect_with(options.database("demo"))
         .await
         .expect("demo PostgreSQL");
-    let suffix = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .expect("clock")
-        .as_nanos();
-    let source_schema = format!("of_action_{suffix}");
+    let source_schema = source_schema_name(SystemTime::now());
     let edit_schema = format!("{source_schema}_edit");
     let sys_schema = format!("{source_schema}_sys");
     let create_schema = format!("CREATE SCHEMA \"{source_schema}\"");

@@ -63,7 +63,24 @@ CI 对应的步骤在 `integration` 作业：`Edit store conformance (PostgreSQL
 
 ### nightly Iceberg 作业
 
-`.github/workflows/nightly.yml` 每天运行一次（也可手动触发 `workflow_dispatch`），在 Trino 483 与 484 上重复上述步骤，并额外配置 Iceberg catalog（`ci/trino/iceberg/iceberg.properties`：JDBC catalog 存在同一 PostgreSQL 的 `iceberg_catalog` 库，表由 `ci/pg/iceberg_catalog.sql` 创建，warehouse 用 Trino 本地文件系统），把 `demo.aviation.flights` 复制成 `iceberg.aviation.flights` 后以 `ONTOFORGE_TRINO_ICEBERG=1` 运行 `trino_it`。任一版本失败时，独立的 `report-failure` 作业创建带 `nightly-failure` 标签的 issue，已有未关闭的同标签 issue 时改为追加评论。只有该作业拥有 `issues: write`，测试作业只有 `contents: read`。
+`.github/workflows/nightly.yml` 每天运行一次，也可手动触发 `workflow_dispatch`。Trino 483/484 使用 PostgreSQL JDBC catalog 与真实 MinIO S3 warehouse。`ci/minio/Dockerfile` 固定官方 MinIO source commit 和 Go builder digest，复用原依赖图生成 scratch 测试镜像；自建产物保留 DEVELOPMENT 标识，不宣称官方预编译或 bit-reproducibility。版本、SHA256、source/runner 身份及运行证据写入 `target/phase072-minio/<run-id>/provenance.json`。
+
+```bash
+# Linux or Windows Git Bash; one owner per host, CARGO_BUILD_JOBS=2.
+bash ci/iceberg-services.sh contract --trino 483
+bash ci/iceberg-services.sh contract --trino 484
+bash ci/iceberg-services.sh nightly --trino 483
+
+# Verify the SDK helper extracted from the built image.
+ONTOFORGE_ICEBERG_STATE=/path/to/private/helper-state.json bash ci/iceberg-services.sh helper-test
+
+# Recovery cleanup; set ONTOFORGE_ICEBERG_STATE before starting the run.
+bash ci/iceberg-services.sh cleanup --state /path/to/private/state.json
+```
+
+`contract` 验证 source/copy 均为29行、精确 Rust 测试、PG 的 `s3://warehouse/` metadata 与非空对象，并只重启 MinIO/Trino后复验，不重新 CTAS。`nightly` 再执行原有 Action atomicity/race/idempotency/outbox、Trino Action、完整 Engine/CLI corpus；各目标必须发现且实际执行非零测试。容器、network、volumes 按本次 owner label 和身份清理，已有服务不受影响；PG/Trino只发布 loopback 随机端口。
+
+临时凭据只进入私有 env/catalog，Trino使用环境凭据 provider；原始日志按本次真实凭据扫描通过后才可公开。CI为主fixture和helper分别保存私有state，并用两个独立 `always()` 步骤补偿清理，第一项失败也会尝试第二项。helper在创建容器前持久化owner和lock token；清理失败保留state供重试。state不存在时无操作，资源或锁身份无法核验时拒绝删除。只有 **schedule 触发且失败** 才运行拥有 `issues: write` 的 `report-failure`；手动触发不创建 issue/comment，测试job始终只有 `contents: read`。
 
 ### 私有 fixture（SQL Server 等公司环境）
 

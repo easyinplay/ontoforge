@@ -12,7 +12,7 @@
 - [x] L2-03/MCP-07自定义edit catalog硬排除：实际RED、可信配置接线、六工具拒绝/过滤GREEN、独立review及最终Phase7复验通过。
 - [x] TLS依赖门：修复openssl-only与Cargo查询失败的fail-open，hermetic反例与真实依赖图/双平台CI通过。
 - [x] 补执行现有feature测试（SQLite action_atomic 5例、PG source_guard 1例）和实际local Iceberg 483/484证据，保留非零发现。
-- [ ] ENGINE-05精确ADR差异：MinIO未实跑且无正式替代决策；与已通过local Iceberg证据分开处置。
+- [x] ENGINE-05的MinIO精确合同缺口由Phase07.2独立验收9/9闭合；私有SQL Server历史judgment仍保留，详 ../../phases/07.2-minio-contract-gap-closure/07.2-VERIFICATION.md。
 - [ ] 汇总INTEGRATION.md、REQUIREMENTS-AUDIT.md与逐项矩阵，替换不充分的初稿评分。
 - [x] STORE-05 source oneToOne报告缺口由Phase07.1独立验收18/18闭合，UAT10/10、最终workspace1525/0/119；不以PK/edit代替source报告。
 - [x] 按实际缺口推进Phase2/3/5 Nyquist与Phase1–6历史验证重新核对；保留真实partial/human_needed，不强行全绿。
@@ -26,7 +26,7 @@
 
 ## Next Step
 
-Phase03–07已通过PR8合并main ef0ab9c；Phase07.1已通过独立验收、远端CI并由PR9合入main aac4fd8。随后推进已有MINIO-FEASIBILITY固定源码方案的精确合同补证；历史judgment保持原边界，Cargo已释放。
+Phase07.2已通过独立验收，当前进入PR #11合并收尾，详 ../../phases/07.2-minio-contract-gap-closure/task_plan.md。之后对账milestone审计剩余项，保留Phase01/02历史judgment，不自动归档或发布。
 
 ## Constraints
 

@@ -45,9 +45,9 @@
     }
   ],
   "next": {
-    "command": "$gsd-progress",
-    "label": "推进ENGINE-05 MinIO合同补证",
-    "reason": "已完成Phase03–07与07.1均合入main；剩余MinIO和历史judgment"
+    "command": "$gsd-progress --next",
+    "label": "Advance to the next step (verify)",
+    "reason": "Phase 1 of 9 · 67% · ready to verify"
   },
-  "updated_at": "2026-11-04T10:04:38.0152361Z"
+  "updated_at": "2026-11-04T13:27:28.836Z"
 }

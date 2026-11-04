@@ -1,7 +1,8 @@
 //! Explicit online data checks end to end against the CI Trino (ENGINE-05, STORE-05).
 //!
 //! The test is `#[ignore]`d; the Linux CI job `integration` runs it with `--ignored` after
-//! seeding the aviation example, using `ci/ontoforge-server.ci.toml`. Without
+//! seeding the aviation example, using a private copy of `ci/ontoforge-server.ci.toml`
+//! with the actual Trino URL. Without
 //! `ONTOFORGE_TRINO_URL` it panics instead of passing silently (RESEARCH Pitfall 8).
 
 use std::process::Command;
@@ -11,6 +12,91 @@ use serde_json::Value;
 const URL_VAR: &str = "ONTOFORGE_TRINO_URL";
 
 const REPO: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../..");
+const TEMPLATE_URL: &str = "url = \"http://localhost:8080\"";
+
+fn ci_config(url: &str) -> tempfile::TempDir {
+    assert!(
+        !url.trim().is_empty()
+            && !url
+                .chars()
+                .any(|c| c.is_control() || matches!(c, '"' | '\\')),
+        "Trino URL cannot be safely inserted into a TOML string"
+    );
+    let template = std::fs::read_to_string(format!("{REPO}/ci/ontoforge-server.ci.toml"))
+        .expect("read CI config template");
+    assert_eq!(
+        template.matches(TEMPLATE_URL).count(),
+        1,
+        "expected exactly one template URL"
+    );
+    let config = template.replace(TEMPLATE_URL, &format!("url = \"{url}\""));
+    let dir = tempfile::TempDir::new().expect("config tempdir");
+    std::fs::write(dir.path().join("config.toml"), config).expect("write CI config");
+    dir
+}
+
+#[test]
+fn ci_configs_use_dynamic_urls_and_isolated_unchanged_templates() {
+    let source = format!("{REPO}/ci/ontoforge-server.ci.toml");
+    let original = std::fs::read_to_string(&source).expect("template");
+    let threads = (0..8)
+        .map(|i| {
+            std::thread::spawn(move || {
+                let url = format!("http://127.0.0.1:{}", 45000 + i);
+                let dir = ci_config(&url);
+                let text = std::fs::read_to_string(dir.path().join("config.toml")).expect("config");
+                (dir, text, url)
+            })
+        })
+        .collect::<Vec<_>>();
+    let configs = threads
+        .into_iter()
+        .map(|t| t.join().expect("thread"))
+        .collect::<Vec<_>>();
+    let paths = configs
+        .iter()
+        .map(|(dir, _, _)| dir.path())
+        .collect::<std::collections::HashSet<_>>();
+    assert_eq!(
+        paths.len(),
+        8,
+        "parallel fixtures must use separate config directories"
+    );
+    for (_, text, url) in &configs {
+        let expected = format!("url = \"{url}\"");
+        assert!(
+            text.contains(&expected),
+            "config must use actual random Trino port"
+        );
+        assert_eq!(
+            text.replace(&expected, TEMPLATE_URL),
+            original,
+            "only URL may change"
+        );
+    }
+    assert_eq!(
+        std::fs::read_to_string(source).expect("template after"),
+        original
+    );
+}
+
+#[test]
+fn ci_config_rejects_toml_string_injection() {
+    for url in [
+        "",
+        "http://host/\"",
+        "http://host/\\",
+        "http://host/\n",
+        "http://host/\r",
+        "http://host/\t",
+        "http://host/\0",
+    ] {
+        assert!(
+            std::panic::catch_unwind(|| ci_config(url)).is_err(),
+            "unsafe URL must be refused: {url:?}"
+        );
+    }
+}
 
 /// The Trino URL taken from `value`; panics when it is absent.
 fn trino_url(value: Option<String>) -> String {
@@ -44,7 +130,12 @@ fn missing_env_panics() {
 #[ignore = "needs ONTOFORGE_TRINO_URL (Linux CI)"]
 fn validate_online_against_ci_trino() {
     let url = trino_url(std::env::var(URL_VAR).ok());
-    let config = format!("{REPO}/ci/ontoforge-server.ci.toml");
+    let config_dir = ci_config(&url);
+    let config = config_dir
+        .path()
+        .join("config.toml")
+        .to_string_lossy()
+        .into_owned();
     let config_text = std::fs::read_to_string(&config).expect("read the CI server config");
     assert!(
         config_text.contains(&format!("url = \"{url}\"")),
@@ -96,7 +187,12 @@ fn validate_online_against_ci_trino() {
 #[ignore = "needs ONTOFORGE_TRINO_URL (Linux CI)"]
 fn check_pk_finds_duplicate_and_null_keys_on_ci_trino() {
     let url = trino_url(std::env::var(URL_VAR).ok());
-    let config = format!("{REPO}/ci/ontoforge-server.ci.toml");
+    let config_dir = ci_config(&url);
+    let config = config_dir
+        .path()
+        .join("config.toml")
+        .to_string_lossy()
+        .into_owned();
     let config_text = std::fs::read_to_string(&config).expect("read the CI server config");
     assert!(
         config_text.contains(&format!("url = \"{url}\"")),
@@ -183,7 +279,12 @@ fn check_pk_finds_duplicate_and_null_keys_on_ci_trino() {
 #[ignore = "needs ONTOFORGE_TRINO_URL (Linux CI)"]
 fn check_cardinality_counts_distinct_objects_on_ci_trino() {
     let url = trino_url(std::env::var(URL_VAR).ok());
-    let config = format!("{REPO}/ci/ontoforge-server.ci.toml");
+    let config_dir = ci_config(&url);
+    let config = config_dir
+        .path()
+        .join("config.toml")
+        .to_string_lossy()
+        .into_owned();
     let config_text = std::fs::read_to_string(&config).expect("CI config");
     assert!(
         config_text.contains(&format!("url = \"{url}\"")),
@@ -264,7 +365,12 @@ fn check_cardinality_counts_distinct_objects_on_ci_trino() {
 #[ignore = "needs ONTOFORGE_TRINO_URL (Linux CI)"]
 fn check_cardinality_aliases_on_ci_trino() {
     let url = trino_url(std::env::var(URL_VAR).ok());
-    let config = format!("{REPO}/ci/ontoforge-server.ci.toml");
+    let config_dir = ci_config(&url);
+    let config = config_dir
+        .path()
+        .join("config.toml")
+        .to_string_lossy()
+        .into_owned();
     assert!(
         std::fs::read_to_string(&config)
             .expect("config")
