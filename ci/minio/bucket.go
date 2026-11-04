@@ -6,6 +6,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"net/url"
 	"os"
 	"strconv"
@@ -30,7 +31,7 @@ func run() error {
 		return errors.New("expected make or list")
 	}
 	flags := flag.NewFlagSet("bucket", flag.ContinueOnError)
-	flags.SetOutput(os.Stderr)
+	flags.SetOutput(io.Discard)
 	bucket := flags.String("bucket", "", "bucket name")
 	if err := flags.Parse(os.Args[2:]); err != nil || *bucket == "" || flags.NArg() != 0 {
 		return errors.New("invalid bucket arguments")

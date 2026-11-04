@@ -11,10 +11,28 @@ else
   export ICEBERG_BASH="$BASH"
   PYTHON=python3
 fi
-# Python owns structured state and process lifetimes; Bash supplies the same PATH
-# and argument semantics on Git Bash and Linux without evaluating state as code.
-exec "$PYTHON" - "$@" <<'PY'
+# Git Bash cannot deliver POSIX TERM to native Python handlers. A marker lets
+# the Python owner stop its child and finish cleanup before Bash exits.
+signal_file=$(mktemp)
+if command -v cygpath >/dev/null; then
+  export ICEBERG_SIGNAL_FILE="$(cygpath -w "$signal_file")"
+else
+  export ICEBERG_SIGNAL_FILE="$signal_file"
+fi
+child=""
+forward_signal() {
+  printf '%s' "$1" > "$signal_file"
+  if [[ -n "$child" ]]; then
+    while kill -0 "$child" 2>/dev/null; do wait "$child" || true; done
+  fi
+  exit "$1"
+}
+trap 'forward_signal 143' TERM
+trap 'forward_signal 130' INT
+trap 'rm -f -- "$signal_file"' EXIT
+"$PYTHON" - "$@" <<'PY' &
 import hashlib
+from contextlib import contextmanager
 import json
 import os
 from pathlib import Path
@@ -84,7 +102,21 @@ def call(args, *, limit=120, log=None, data=None, check=True):
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                              start_new_session=os.name != "nt")
     try:
-        out, err = CHILD.communicate(data, timeout=remaining)
+        deadline = time.monotonic() + remaining
+        while True:
+            marker = os.environ.get("ICEBERG_SIGNAL_FILE")
+            requested = Path(marker).read_text() if marker else ""
+            if requested:
+                Path(marker).write_text("")
+                stop_child()
+                raise Failure("run interrupted", int(requested))
+            try:
+                out, err = CHILD.communicate(data, timeout=min(0.2, max(0.001, deadline - time.monotonic())))
+                break
+            except subprocess.TimeoutExpired:
+                data = None
+                if time.monotonic() >= deadline:
+                    raise
         code = CHILD.returncode
     except subprocess.TimeoutExpired:
         stop_child()
@@ -138,6 +170,22 @@ def write_json(path, value):
     tmp = path.with_name(path.name + ".new")
     tmp.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
     tmp.replace(path)
+
+
+@contextmanager
+def owner_lock():
+    lock = Path(tempfile.gettempdir()) / "ontoforge-iceberg.lock"
+    token = secrets.token_hex(24)
+    require(call(["mkdir", str(lock)], check=False)[0] == 0, "another Iceberg owner holds the lock")
+    try:
+        (lock / "owner").write_text(token)
+        os.environ["ICEBERG_LOCK_TOKEN"] = token
+        yield
+    finally:
+        os.environ.pop("ICEBERG_LOCK_TOKEN", None)
+        require((lock / "owner").read_text() == token, "lock owner changed")
+        (lock / "owner").unlink()
+        lock.rmdir()
 
 
 def exact(directory):
@@ -242,7 +290,8 @@ def contract(version):
     evidence = Path(os.environ.get("ONTOFORGE_ICEBERG_EVIDENCE_DIR", str(ROOT / "target/phase072-minio" / owner))).resolve()
     require(not evidence.exists(), "evidence directory already exists")
     state_path = Path(os.environ.get("ONTOFORGE_ICEBERG_STATE", str(runtime / "state.json"))).resolve()
-    state = {"owner": owner, "runtime": str(runtime), "resources": [], "evidence": str(evidence)}
+    state = {"owner": owner, "runtime": str(runtime), "resources": [], "evidence": str(evidence),
+             "lock_token": os.environ.get("ICEBERG_LOCK_TOKEN")}
     write_json(state_path, state)
     private(state_path)
     credentials = [secrets.token_hex(24) for _ in range(3)]
@@ -268,8 +317,11 @@ def contract(version):
                       "--execute", statement, limit=120)[1].strip()
 
     def wait_for(check):
-        deadline = time.monotonic() + 180
+        seconds = int(os.environ.get("ONTOFORGE_ICEBERG_READINESS_SECONDS", "180"))
+        require(1 <= seconds <= 180, "invalid readiness deadline")
+        deadline = time.monotonic() + seconds
         while True:
+            require(time.monotonic() < deadline, "service readiness timeout")
             if check():
                 return
             require(time.monotonic() < deadline, "service readiness timeout")
@@ -284,7 +336,7 @@ def contract(version):
         image_id = json.loads(image_info)[0]["Id"]
         versions = {}
         for binary in ("minio", "bucket"):
-            versions[binary] = docker("run", "--rm", "--entrypoint", "/" + binary, IMAGE,
+            versions[binary] = docker("run", "--rm", "--label", LABEL + "=" + owner, "--entrypoint", "/" + binary, IMAGE,
                                       "--version" if binary == "minio" else "version")[1].strip()
         extract = resource("container", owner + "-artifact", ["create", "--name", owner + "-artifact",
                            "--label", LABEL + "=" + owner, IMAGE])
@@ -302,17 +354,17 @@ def contract(version):
         (runtime / "minio.env").write_text("MINIO_ROOT_USER=" + credentials[1] + "\nMINIO_ROOT_PASSWORD=" + credentials[2]
             + "\nMINIO_BROWSER=off\nS3_ENDPOINT=http://minio:9000\nAWS_ACCESS_KEY_ID=" + credentials[1]
             + "\nAWS_SECRET_ACCESS_KEY=" + credentials[2] + "\nAWS_REGION=us-east-1\n")
+        (runtime / "trino.env").write_text("AWS_ACCESS_KEY_ID=" + credentials[1]
+            + "\nAWS_SECRET_ACCESS_KEY=" + credentials[2] + "\nAWS_REGION=us-east-1\n")
         catalog = runtime / "catalog"
         catalog.mkdir(mode=0o755)
         for name in ("demo", "editstore", "iceberg"):
             origin = ROOT / "ci/trino" / ("iceberg" if name == "iceberg" else "catalog") / (name + ".properties")
             content = origin.read_text().replace("localhost:5432", "postgres:5432")
             content = re.sub(r"(?m)^(.*connection-password)=.*$", lambda m: m[1] + "=" + credentials[0], content)
-            if name == "iceberg":
-                content += "\ns3.aws-access-key=" + credentials[1] + "\ns3.aws-secret-key=" + credentials[2] + "\n"
             (catalog / origin.name).write_text(content)
             (catalog / origin.name).chmod(0o644)
-        for name in ("pg.env", "minio.env", "secrets.json"):
+        for name in ("pg.env", "minio.env", "trino.env", "secrets.json"):
             private(runtime / name)
         common = ["--network", owner, "--label", LABEL + "=" + owner]
         pgname = owner + "-pg"
@@ -335,6 +387,7 @@ def contract(version):
         wait_for(lambda: docker("run", "--rm", *common, "--env-file", runtime / "minio.env", "--entrypoint", "/bucket",
                                 IMAGE, "make", "--bucket", "warehouse", limit=40, check=False)[0] == 0)
         resource("container", owner + "-trino", ["run", "-d", "--name", owner + "-trino", *common,
+                 "--env-file", runtime / "trino.env",
                  "-p", "127.0.0.1::8080", "-v", str(catalog) + ":/etc/trino/catalog:ro", TRINO[version]])
         port = docker("port", owner + "-trino", "8080/tcp")[1].strip()
         require(re.fullmatch(r"127\.0\.0\.1:\d+", port), "non-loopback Trino port")
@@ -377,12 +430,20 @@ def contract(version):
         print("fixture failed; private diagnostics retained until cleanup", file=sys.stderr)
     finally:
         # Capture diagnostics privately, never print unscanned service output.
-        for suffix in (("pg", "minio", "trino") if status else ()):
+        logs_complete = True
+        for suffix in ("pg", "minio", "trino"):
+            if not any(r["name"] == owner + "-" + suffix for r in state["resources"]):
+                continue
             try:
-                docker("logs", owner + "-" + suffix, limit=5, check=False, log=raw / (suffix + ".log"))
+                docker("logs", owner + "-" + suffix, limit=5, log=raw / (suffix + ".log"))
+            except Failure as error:
+                status = status or error.code
+                logs_complete = False
             except Exception:
-                pass
+                status = status or 1
+                logs_complete = False
         try:
+            require(logs_complete, "service log collection failed")
             scan(raw, credentials)
             evidence.mkdir(parents=True)
             for path in raw.iterdir():
@@ -397,26 +458,86 @@ def contract(version):
                 cleanup_result["existing_containers_unchanged"] = all(after.get(k) == v for k, v in baseline.items())
                 cleanup_result["catalogs_unchanged"] = hashes == catalog_hashes()
                 cleanup_result["ok"] &= cleanup_result["existing_containers_unchanged"] and cleanup_result["catalogs_unchanged"]
+        except Failure as error:
+            status = status or error.code
+            cleanup_result = {"ok": False, "remaining": -1}
         except Exception:
             cleanup_result = {"ok": False, "remaining": -1}
         if not cleanup_result["ok"]:
             status = status or 1
-        evidence.mkdir(parents=True, exist_ok=True)
-        write_json(evidence / "cleanup.json", cleanup_result)
-        write_json(evidence / "result.json", {"status": "pass" if status == 0 else "fail", "exit_code": status,
-                   "run_id": owner, "trino": version, "state": str(state_path) if not cleanup_result["ok"] else None})
         if cleanup_result["ok"]:
-            if state_path.parent != runtime:
-                state_path.unlink(missing_ok=True)
+            try:
+                if state_path.parent != runtime:
+                    state_path.unlink(missing_ok=True)
+                shutil.rmtree(runtime)
+            except Exception:
+                status = status or 1
+                cleanup_result["ok"] = False
+        try:
+            evidence.mkdir(parents=True, exist_ok=True)
+            write_json(evidence / "cleanup.json", cleanup_result)
+            write_json(evidence / "result.json", {"status": "pass" if status == 0 else "fail", "exit_code": status,
+                       "run_id": owner, "trino": version, "state": str(state_path) if not cleanup_result["ok"] else None})
+            print("Iceberg result: " + str(evidence / "result.json"))
+        except Exception:
+            status = status or 1
+            print("result publication failed", file=sys.stderr)
+    return status
+
+
+def helper_test():
+    owner = "iceberg-" + secrets.token_hex(12)
+    runtime = Path(tempfile.gettempdir()) / owner
+    runtime.mkdir(mode=0o700)
+    private(runtime, directory=True)
+    (runtime / "owner").write_text(owner)
+    state = {"owner": owner, "runtime": str(runtime), "resources": []}
+    status = 0
+    try:
+        _, metadata, _ = docker("image", "inspect", IMAGE)
+        require(json.loads(metadata)[0]["Config"]["Labels"]["org.opencontainers.image.revision"] == SOURCE,
+                "helper image source does not match")
+        _, identifier, _ = docker("create", "--name", owner, "--label", LABEL + "=" + owner, IMAGE)
+        state["resources"].append({"kind": "container", "id": identifier.strip(), "name": owner})
+        docker("cp", identifier.strip() + ":/bucket", runtime / "bucket")
+        docker("cp", identifier.strip() + ":/SHA256SUMS", runtime / "SHA256SUMS")
+        checksums = dict(line.split()[::-1] for line in (runtime / "SHA256SUMS").read_text().splitlines())
+        actual = hashlib.sha256((runtime / "bucket").read_bytes()).hexdigest()
+        require(actual == checksums["bucket"], "extracted helper checksum mismatch")
+        print("verified bucket SHA256 " + actual, flush=True)
+        if os.name == "nt":
+            _, binary, _ = call(["wsl.exe", "-d", "Ubuntu-26.04", "--", "wslpath", "-u", (runtime / "bucket").as_posix()])
+            binary = binary.strip()
+            call(["wsl.exe", "-d", "Ubuntu-26.04", "--", "chmod", "700", binary])
+            command = ["wsl.exe", "-d", "Ubuntu-26.04", "--cd", ROOT.as_posix(), "--", "env",
+                       "ONTOFORGE_BUCKET_BINARY=" + binary, "PYTHONDONTWRITEBYTECODE=1",
+                       "python3", "-m", "unittest", "-v", "ci.test_iceberg_services.BucketClientContract"]
+        else:
+            (runtime / "bucket").chmod(0o700)
+            os.environ["ONTOFORGE_BUCKET_BINARY"] = str(runtime / "bucket")
+            command = [sys.executable, "-m", "unittest", "-v", "ci.test_iceberg_services.BucketClientContract"]
+        status, out, err = call(command, limit=60, check=False)
+        print(out + err, end="", flush=True)
+        if status == 0:
+            require(re.search(r"Ran [1-9][0-9]* tests", out + err) and "skipped" not in out + err,
+                    "helper test did not execute all cases")
+    finally:
+        result = cleanup(state)
+        if result["ok"]:
             shutil.rmtree(runtime)
-        print("Iceberg result: " + str(evidence / "result.json"))
+        else:
+            status = status or 1
     return status
 
 
 def main():
     args = sys.argv[1:]
     if len(args) == 3 and args[:2] == ["contract", "--trino"]:
-        return contract(args[2])
+        with owner_lock():
+            return contract(args[2])
+    if args == ["helper-test"]:
+        with owner_lock():
+            return helper_test()
     if len(args) == 2 and args[0] == "exact":
         exact(Path(args[1]))
         return 0
@@ -426,9 +547,23 @@ def main():
     if len(args) == 2 and args[0] == "permissions":
         private(Path(args[1]), directory=Path(args[1]).is_dir())
         return 0
+    if len(args) == 3 and args[0] == "check-artifacts":
+        scan(Path(args[1]), json.loads(Path(args[2]).read_text()))
+        return 0
     if len(args) == 3 and args[:2] == ["cleanup", "--state"]:
-        state = json.loads(Path(args[2]).read_text())
+        state_path = Path(args[2])
+        state = json.loads(state_path.read_text())
         result = cleanup(state)
+        if result["ok"]:
+            runtime = Path(state["runtime"])
+            shutil.rmtree(runtime)
+            if state_path.parent != runtime:
+                state_path.unlink(missing_ok=True)
+            lock = Path(tempfile.gettempdir()) / "ontoforge-iceberg.lock"
+            if state.get("lock_token") and lock.exists():
+                require((lock / "owner").read_text() == state["lock_token"], "lock owner changed")
+                (lock / "owner").unlink()
+                lock.rmdir()
         print(json.dumps(result))
         return 0 if result["ok"] else 1
     raise Failure("usage: iceberg-services.sh contract --trino 483 | cleanup --state PATH | exact DIR | validate DIR", 2)
@@ -443,3 +578,5 @@ except Exception:
     print("fixture command failed", file=sys.stderr)
     sys.exit(1)
 PY
+child=$!
+wait "$child"

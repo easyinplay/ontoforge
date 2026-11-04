@@ -83,6 +83,7 @@ class RunnerContract(unittest.TestCase):
         state["resources"] = []
         path.write_text(json.dumps(state))
         self.assertEqual(self.run_cli("cleanup", "--state", path).returncode, 0)
+        self.assertFalse(runtime.exists(), "independent cleanup must remove owned private files")
 
     def test_cleanup_failure_is_nonzero_and_resources_remain(self):
         owner = "iceberg-" + "b" * 24
@@ -120,7 +121,7 @@ class RunnerContract(unittest.TestCase):
                 self.wfile.write(b'{"starting":false,"nodeVersion":{"version":"483"}}')
 
         server = ThreadingHTTPServer(("127.0.0.1", 0), Trino)
-        threading.Thread(target=server.serve_forever, daemon=True).start()
+        threading.Thread(target=lambda: server.serve_forever(poll_interval=0.02), daemon=True).start()
         self.addCleanup(server.server_close)
         self.addCleanup(server.shutdown)
         self.env["TEST_PORT"] = str(server.server_port)
@@ -196,16 +197,50 @@ class RunnerContract(unittest.TestCase):
         self.assertEqual(json.loads(Path(self.env["TEST_DB"]).read_text())["resources"], {})
 
     def test_term_reaps_child_and_cleans_resources(self):
-        self.full_fixture("term")
+        self.check_term("term")
+
+    def test_term_during_log_collection_cannot_publish_pass(self):
+        self.check_term("term-logs")
+        self.assertEqual(json.loads((self.directory / "evidence/result.json").read_text())["exit_code"], 143)
+
+    def check_term(self, mode):
+        self.full_fixture(mode)
         self.env["TEST_READY"] = str(self.directory / "ready")
         command = 'bash ci/iceberg-services.sh contract --trino 483 & child=$!; '
-        command += 'for i in {1..100}; do [[ -f "$TEST_READY" ]] && break; sleep 0.1; done; '
+        command += 'for i in {1..300}; do [[ -f "$TEST_READY" ]] && break; sleep 0.1; done; '
         command += 'kill -TERM "$child"; wait "$child"'
         result = subprocess.run([bash_path(), "--noprofile", "--norc", "-c", command],
                                 cwd=ROOT, env=self.env, capture_output=True, text=True, timeout=45)
         self.assertEqual(result.returncode, 143, result.stderr)
+        self.assertTrue(Path(self.env["TEST_READY"]).exists(), "signal must reach the named operation phase")
         db = json.loads(Path(self.env["TEST_DB"]).read_text())
         self.assertEqual(db["resources"], {}, "TERM must clean resources after stopping the active child")
+
+    def test_name_conflict_never_deletes_the_other_owner(self):
+        self.full_fixture("name-conflict")
+        result = self.run_cli("contract", "--trino", "483")
+        self.assertNotEqual(result.returncode, 0)
+        resources = json.loads(Path(self.env["TEST_DB"]).read_text())["resources"]
+        self.assertEqual(len(resources), 1)
+        self.assertEqual(next(iter(resources.values()))["owner"], "foreign-owner")
+
+    def test_scan_rejects_secret_empty_credentials_and_missing_input(self):
+        raw = self.directory / "raw"
+        raw.mkdir()
+        log = raw / "operation.log"
+        log.write_text("safe operation")
+        credentials = self.directory / "secrets.json"
+        credentials.write_text(json.dumps(["test-pg", "test-access", "test-secret"]))
+        self.assertEqual(self.run_cli("check-artifacts", raw, credentials).returncode, 0)
+        log.write_text("test-secret")
+        rejected = self.run_cli("check-artifacts", raw, credentials)
+        self.assertNotEqual(rejected.returncode, 0)
+        self.assertNotIn("test-secret", rejected.stdout + rejected.stderr)
+        log.write_text("safe operation")
+        credentials.write_text(json.dumps(["", "test-access", "test-secret"]))
+        self.assertNotEqual(self.run_cli("check-artifacts", raw, credentials).returncode, 0)
+        credentials.unlink()
+        self.assertNotEqual(self.run_cli("check-artifacts", raw, credentials).returncode, 0)
 
     def test_private_acl_trusted_owner_and_child_are_accepted(self):
         result = self.run_cli("permissions", self.directory)
@@ -342,7 +377,7 @@ class BucketClientContract(unittest.TestCase):
                 self.respond(200, (body + "</ListBucketResult>").encode())
 
         self.server = ThreadingHTTPServer(("127.0.0.1", 0), S3)
-        self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
+        self.thread = threading.Thread(target=lambda: self.server.serve_forever(poll_interval=0.02), daemon=True)
         self.thread.start()
         self.env = dict(os.environ, S3_ENDPOINT="http://127.0.0.1:" + str(self.server.server_port),
                         AWS_ACCESS_KEY_ID="fixture-access-7bca", AWS_SECRET_ACCESS_KEY="fixture-secret-eaa7",
@@ -474,6 +509,9 @@ def fake_fixture(args):
         owner = args[args.index("--label") + 1].split("=", 1)[1]
         resources[name] = {"kind": kind, "owner": owner}
         output = name
+        if mode == "name-conflict":
+            resources[name]["owner"] = "foreign-owner"
+            code = 9
         if mode.startswith("partial42") and args[0] == "create":
             code = 42
         if mode == "partial42-result-fail":
@@ -486,6 +524,9 @@ def fake_fixture(args):
     elif args[0] == "cp":
         Path(args[-1]).write_text("fixture-minio  minio\nfixture-bucket  bucket\n")
     elif args[0] == "logs":
+        if mode == "term-logs" and args[1].endswith("-trino"):
+            Path(os.environ["TEST_READY"]).write_text("ready")
+            time.sleep(30)
         output = "fixture service log"
         if mode == "success-logs-fail":
             code = 7
