@@ -1,0 +1,46 @@
+{
+  "checked_at": "2026-11-05T11:18:51.709Z",
+  "command": "node .planning/milestones/v1.0-audit/evidence/2026-11-05/requirements-final-recompute.cjs --check",
+  "exit_code": 0,
+  "stdout": {
+    "result": "PASS",
+    "mode": "read-only",
+    "head": "060019fe52005c6b85ae5c5f59da9868f464e579",
+    "counts": {
+      "requirements": 79,
+      "root_plans": 93,
+      "root_summaries": 93,
+      "formal_verifications": 9,
+      "checked": 78,
+      "summary_declared_ids": 79,
+      "metadata_gap_ids": 0,
+      "summary_missing_field_files": 4,
+      "summary_explicit_empty_files": 26,
+      "verification_covered_ids": 79,
+      "orphaned": 0,
+      "historical_three_source_claims": 78,
+      "workflow_satisfied": 43,
+      "workflow_partial": 28,
+      "workflow_unsatisfied": 8,
+      "confirmed_current_functional_failures": 0,
+      "full_contract_partial": 1,
+      "current_execution_evidence_ids": 78,
+      "mapped_tests_executed_ids": 77,
+      "partial_current_execution_ids": 1,
+      "historical_only_ids": 1,
+      "owner_signed_current_phase07_scope_ids": 21,
+      "owner_signed_phase07_only_responsibility_ids": 15,
+      "owner_signed_crossphase_scope_ids": 6,
+      "current_execution_reports_current_ids": 42,
+      "current_execution_report_resign_pending_ids": 36
+    }
+  },
+  "stderr": "",
+  "scope": "current report re-verification; Phase03 human_needed preserved",
+  "previous_snapshot": "report-resign-matrix/requirements-final-check.before.json",
+  "generated_exact_match": true,
+  "output_hashes": {
+    "matrix": "e09172523c25ea6032a650bd38965d8408ae3ac2eac3653d1114476373d33a68",
+    "snapshot": "b46b5b4285f9fa02c9ffe7ab87889c048e89ae6540d87b7893a2e2b69ce022e6"
+  }
+}

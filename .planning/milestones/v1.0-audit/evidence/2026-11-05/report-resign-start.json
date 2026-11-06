@@ -1,0 +1,22 @@
+{
+  "checked_at": "2026-11-05T10:47:41.067Z",
+  "head": "060019fe52005c6b85ae5c5f59da9868f464e579",
+  "scope": "pre-resign baseline; not final acceptance",
+  "old_gate_statuses": {
+    "03-edit-store-scope-model": "stale",
+    "04-scoped-l0-read": "stale",
+    "05-online-action": "stale",
+    "06-l2-raw-dql-toolsets-audit": "stale",
+    "07.1-source-cardinality-gap-closure": "stale"
+  },
+  "coverage": {
+    ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md": 318,
+    ".planning/phases/04-scoped-l0-read/04-VERIFICATION.md": 181,
+    ".planning/phases/05-online-action/05-VERIFICATION.md": 85,
+    ".planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md": 111,
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-VERIFICATION.md": 256
+  },
+  "evidence_index_entries": 56,
+  "evidence_index_mismatches": [],
+  "production_diff": ""
+}

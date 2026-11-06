@@ -1,0 +1,37 @@
+{
+  "recorded_at": "2026-11-05T11:35:03.936Z",
+  "report": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+  "report_sha256": "f6a8657f760a1656657e53ecc04789d0a76ef9098cb28a3ff7e8efc289abc4cf",
+  "report_bytes": 102800,
+  "old_report_sha256": "c4278d97a7171547a82b0caf174b258899b6580f378e5d560b3a8473c10c15df",
+  "snapshot_byte_exact": true,
+  "authorization_unchanged": true,
+  "authorization_sha256": "d847c1ced649772622208c4f79e1e87d38d443acc9cb3d56929241aa7dca4baf",
+  "approved_timestamp": "2026-11-05T11:26:39.587Z",
+  "overrides": [
+    {
+      "must_have": "sea-query-sqlx 与 getrandom（名称来源 [ASSUMED]）只在人工核验 crates.io / docs.rs 页面通过后才写入根 `Cargo.toml`；未核验前本 plan 不执行任何 install",
+      "reason": "当前会话用户明确接受03-01.1安装前人工批准缺独立留档的历史证据边界并授权单项override；未提供或找到新历史批准记录，本轮授权不是过去安装前批准，不豁免其他合同、行为或安全测试。",
+      "accepted_by": "当前会话用户（项目/需求负责人）",
+      "accepted_at": "2026-11-05T11:26:39.587Z"
+    }
+  ],
+  "score": {
+    "verified": 138,
+    "passed_override": 1,
+    "total": 139
+  },
+  "unchanged_truth_rows": 138,
+  "only_truth_judgment_changed": "03-01.1",
+  "remaining_human_items": [],
+  "behavior_unverified": 0,
+  "protected_old_inputs_drift": [],
+  "protected_old_evidence_directory_drift": [],
+  "native_gate": "passed",
+  "native_exit": 0,
+  "native_pick_exit": 0,
+  "covered_count": 350,
+  "covered_digest": "v4:sha256:4eed4c7e8f8d2e39225dc2ee5e253cade83dae50de448093f84a64a9f0d58a4a",
+  "fingerprint_round_trip_equal": true,
+  "new_product_test_runs": 0
+}

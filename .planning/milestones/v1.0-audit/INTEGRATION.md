@@ -1,103 +1,244 @@
 ---
 milestone: v1.0
-audit_date: 2026-11-04
+audit_date: 2026-11-05
 auditor: gsd-integration-checker
-status: gaps_found
-inspected_head: fa81ca0271fb1d620e8217824a0bf2619e3235ed
-dynamic_evidence_source: adc02278b5cc55111def9a30a1c3b778485e8279
-method: static-call-trace-and-existing-local-evidence
+status: static_wiring_verified
+inspected_head: 060019fe52005c6b85ae5c5f59da9868f464e579
+source_equivalent_to: 8d9d8c6
+method: independent-current-source-call-trace
+dynamic_reverification: completed_by_separate_owner
+dynamic_evidence: FINAL-REVERIFY.md
+boundaries: { wired: 12, broken: 0 }
+flows: { statically_wired: 9, broken: 0, dynamically_rerun_here: 0 }
 ---
 
-# Phase 1–7 集成审计
+# v1.0 跨阶段集成审计
 
-## 结论与范围
+## 结论与证据边界
 
-**INTEGRATION_STATUS: GAPS_FOUND**。本次明确枚举的 12 个集成边界中，11 个 WIRED，1 个 BROKEN；9 条用户流中，8 条在列明的合同与证据边界内 WIRED，1 条自定义 edit catalog 隔离流 BROKEN。计数是下表的审计单元数，不是 phase 数、export 总数或独立测试数。不能引用为「79/79 需求全部当前通过」。逐需求三源对账由主 milestone auditor 负责。
+**12/12 个列明边界 WIRED，9/9 条列明用户流静态 WIRED，新增 BLOCKER 为 0。INT-01 的生产接线已修复。此结论不是当前源码动态 E2E 通过，也不是 milestone passed 或 79/79 需求验收完成。**
 
-本轮未运行 Cargo、未启动服务、未改实现或旧阶段报告。动态证据为亲读的已有本地日志与 CI JSON，不代表本轮重新执行，也未在线重新查询 CI。源码只读审计后按 orchestrator 授权新建本报告。
+本报告独立重做，以亲读的当前工作树源码、实际调用与返回路径为依据。已撤回的 fa81ca0 通过结论不作为证据；旧报告只用于保持 B01-B12、F01-F09 标识连续，不继承其判断。没有执行 Cargo、Docker、服务启动、CI 触发、commit 或 push。真实复验由另一个 owner 负责，本报告不替其签字。
 
-已读取 PROJECT、ROADMAP、REQUIREMENTS、STATE；遍历各 SUMMARY 的 provides/requires/key-files/requirements 元数据；核对七个 VERIFICATION/VALIDATION 的状态与接线证据；读取 Phase 7 UAT、07-14 SUMMARY、Phase 5/6 deferred-items。项目无 `.codegraph/`、`.codex/skills/` 或 `.agents/skills/`，`agent_skills` 配置为空。适用记录规则来自 `gsd-audit-milestone`；未重新启动其顶层 orchestration。
+必须保留的判断：
 
-## 当前源码与旧证据的差异
+- Phase01：`human_needed`，不把源码或自动化配置检查当编辑器人工体验验收。
+- Phase02：`gaps_found`，不改旧报告或 fingerprint。其历史 MinIO 缺口由 Phase07.2 后继证据关闭，不意味着原报告在原时点通过。
+- ENGINE-05：**Partial，SQL Server 私有 fixture/来源 judgment 仍未闭环**。07.2 仅关闭 MinIO 合同缺口，不关闭整个需求。
+- 07.1/07.2 已合入 main：读取合并记录，并以 `git merge-base --is-ancestor` 验证 `aac4fd8`、`73bbec2` 均为当前 HEAD 祖先；Phase03-07 的 `ef0ab9c` 同样成立。未在线重新查询 PR。
 
-- `git diff --name-only adc0227 HEAD`：25 个文件，全在 `.planning/`。当前 tracked production code、CI、SDK 与最终动态证据源码一致。工作区存在其他 worker 的 Phase 1 VALIDATION 和新增测试等修改，本报告不把这些未提交项归入 `adc0227` 动态证据。
-- Phase 1–6 指纹不新鲜说明旧 covered_files 已被下游改变，不能自动推导功能回归。后继实际变化包括 `request_snapshot`、`history_with_snapshot`、Action 固定定义入口、L2 typed EXPLAIN/监控，并已由 Phase 7 current-source suites 覆盖其相关路径。
-- 例如相对 Phase 6 历史 `106a5aa`，`l2_health.rs` 为 +174/-49、`query/src/l2.rs` 为 +29/-11、`storage/src/history.rs` 为 +13/-2。变化属于真实实现演进，不能只刷新 fingerprint 就宣称旧测试重新通过。
-- 本报告的 INT-01 在 `adc0227` 的当前生产路径已存在，属于 Phase 6→7 合同遗漏；不是 `adc0227` 之后的文档提交引入的回归。
+已读主会话 `task_plan.md`、`findings.md`、`.planning/STATE.md`、`.planning/REQUIREMENTS.md`，各阶段代表性 SUMMARY 的 provides/requires/key-files，以及相关 VERIFICATION、L2 修复、07.1 原始日志、07.2 运行与 CI 证据。纯审计跳过新功能讨论、brainstorming 和业务 TDD；主会话已持久化计划，不重复修改共享文档。ralph-loop/Warp 不可用，以逐项验收闭环替代，不声称调用。
 
-## 集成边界清单
+### 源码身份
 
-| ID | 提供方 → 消费方与实际调用 | 需求 | 状态 |
-|---|---|---|---|
-| B01 | P1 schema/expr → P2 CLI：`ontoforge/src/pipeline.rs:29` load_dir→check_profile→check_ontology；`online.rs:55,201,248` 将选定 IR/binding 交给 describe/兼容与 PK 检查 | SCHEMA-01..06、BIND-01..03 | WIRED |
-| B02 | P1/P2 validation/lint → P3 reload：`ontoforge/src/reload.rs:46` lint 后才 open/reload，`storage/src/reload.rs:293,401,444` role 复核→DDL→原子切定义；`storage/src/migrate.rs:406,425,429` 同步复核与切换 | LINT-01、BIND-02、STORE-02、SCOPE-06 | WIRED |
-| B03 | P3 auth/scope/store → P7 请求：`server/src/context.rs:401` build 中 authenticate→store.request_snapshot→compile_scope→for_principal；`storage/src/request_snapshot.rs:23` 同锁读取定义与 scope 后结束事务 | AUTH-01/02、SCOPE-01..07、API-01、MCP-06 | WIRED |
-| B04 | P2 Engine + P3 edit/scope → P4 L0：`query/src/lib.rs:309` execute_pk 读取 edit、判 tombstone、按 patch 完备性决定 source、overlay→grant.evaluate→select masking→version；`:513,520` printer→check_source_target→engine | ENGINE-01..04、STORE-07、SCOPE-03/05、QUERY-01/08/09 | WIRED |
-| B05 | P4 list/aggregate → P6 audit → P7 transport：`server/src/rest.rs:279,361` 调用 audited list/aggregate；`mcp.rs:357,393` 相同 QueryService；`query/src/execute.rs:527,545` 与 `aggregate.rs:912,933` reserve/finish，积压失败返回 AuditUnavailable | QUERY-02..07、AUDIT-01、API-01、MCP-03/06 | WIRED |
-| B06 | P4 _version/P3 storage → P5 Action → P7：`server/src/rest.rs:457,481` 与 `mcp.rs:633,645` 调 execute_with_snapshot；`action/src/lib.rs:336,386` prepared read/edits→commit_action_guarded；`storage/src/commit.rs:617..678` definition fence、锁、CAS、guard、validate-only rollback，后续 receipt/log/outbox 同事务 | ACTION-01..10/12、STORE-03/05、QUERY-09、SCOPE-07 | WIRED |
-| B07 | P5 receipt/log → P3 history → P7 display：`server/src/rest.rs:history`、`mcp.rs:480`→`history_page.rs:8,17,28`→`storage/src/history.rs:120,224` 固定定义/当前 scope 遮蔽；SDK decode 返回 history/receipt | STORE-04、ACTION-06/10、API-01/04/05、MCP-06 | WIRED |
-| B08 | P5 outbox → CLI worker → HTTP receiver：`storage/src/commit.rs:1081` 写 outbox；`ontoforge/src/webhook_worker.rs:54` poll_at；`action/src/outbox.rs:123,149,154` lease/send/mark or retry；发送 event_id header 与持久 payload | ACTION-11、STORE-03 | WIRED；实际生产接收端联调仍 deferred |
-| B09 | P2 drift 状态 → P7 启动/周期 → P4/P5 admission/health：`server/src/lib.rs:167` start_drift；`drift.rs:155` 首轮后 30 秒周期；`context.rs:349` check_source_target；`health.rs:16` 取相同定义的 drift_view | BIND-03、ENGINE-02、QUERY-01、ACTION-12、API-01 | WIRED |
-| B10 | P6 L2 ACL monitor → P7 生命周期/执行/health：`ontoforge/src/serve.rs:177,211` start monitor→set_l2_engine/install；`server/src/mcp.rs:150` 仅取 Enabled dedicated engine；`engine/src/trino/mod.rs:456` 持读锁再检查 proof；`health.rs:16` 同实例状态 | L2-04、ENGINE-02、MCP-07 | WIRED |
-| B11 | P6 deployment edit-catalog policy → P7 MCP L2 adapter：Phase 6 `query/src/l2.rs:447` 使用 acl.edit.catalog，但 MCP `server/src/mcp_l2.rs:104,274` 写死 editstore，详 INT-01 | L2-03；关联 MCP-07 | BROKEN / BLOCKER |
-| B12 | P7 host/OpenAPI → Rust/TS clients、stdio 和实际安装包：`server/src/lib.rs:242` route registration；`client/src/lib.rs:129..224`、`clients/typescript/src/index.ts:177..211` 实际 HTTP 调用；`ontoforge/src/mcp.rs:40` stdio→HTTP /mcp；`ci/release-smoke.ps1:155..200` 开包后 query→Action→history→restart/reset→stdio | API-01..05、MCP-01/06、DX-01/02/04 | WIRED |
+- 当前 HEAD：`060019fe52005c6b85ae5c5f59da9868f464e579`。
+- `git diff --name-only 8d9d8c6 HEAD` 仅列 `.planning/HANDOFF.json`、`.planning/STATE.md`、`.planning/milestones/v1.0-audit/.continue-here.md`。两个 commit 的完整 tree 不同，源码相同，不能写成完整 tree 相同。
+- 对 `crates clients ci .github Cargo.toml Cargo.lock schemas examples tools` 的定向 diff 为空；审计时工作区已有其他 worker 的状态/证据/文档变化，未覆盖或清理。
+- 关键接线文件 SHA256 与查询结果另存 `evidence/2026-11-05/integration-final-provenance.json`。这是静态定位证据，不是运行日志。
+- 项目无 `.codegraph/`、`.codex/skills/` 或 `.agents/skills/`。GSD `query agent-skills gsd-integration-checker --skills-only` 未返回配置技能；已读 bootstrap 与 planning-with-files skill，未启动另一个顶层工作流。
 
-## API 消费与认证
+## Wiring Summary
 
-8 个 REST 路由组（含 `/health`）均有 Rust 与 TS 实际客户端调用：ontology、object、query、aggregate、action、command-result、history、health。`validate` 复用 action endpoint；`/mcp` 有 stdio bridge 与协议测试消费者。没有发现本清单中的 route orphan。L2 属 MCP 六工具出口，未要求额外 REST SQL endpoint。
+计数单位为下表列出的集成边界，不是 public export 总数。**Connected：12；Missing：0；导致预期流断链的关键 orphan：0。** 不声称穷举全仓库 export。
 
-7 个业务 REST 路由组均进入 `context_from_headers`；MCP router 使用 `authenticate_mcp`，tool handler 每次重新构造当前 scope，不只信任 session 初始化授权。`/health` 是公开且脱敏的状态接口。此计数只覆盖已注册的业务路由组，不等于逐 handler 安全证明。
+### 提供/消费图
 
-## E2E 用户流清单
-
-| ID | 完整路径与错误/空状态 | 亲核证据 | 状态 |
-|---|---|---|---|
-| F01 | YAML/JSON→校验/lint→reload→scope apply→发 token→认证请求；无效定义不触及 store、空 scope 默认不可见 | B01/B02/B03；CLI `lib.rs:32..38` 确认命令实际 dispatch；dev `src/dev.rs:122,140,160` 初始化同一套 reload/scope_store | WIRED（本轮静态追踪） |
-| F02 | SDK 请求→REST auth/snapshot→L0→edit/source→scope masking→version→decode；空行/越权 404、source drift/失败结构化错误、分页/aggregate 截断 | B03/B04/B05/B09；fresh 日志 Rust9、TS17、Trino2；`source_drift.rs:159,237,379` 检查拒绝与完整 patch 不依赖 source | WIRED |
-| F03 | REST/MCP Action→参数/criteria/visible columns→CAS/fence→单事务 edits/log/command/outbox→receipt→下一读取与 history；validate-only 零写，stale/replay/race拒绝或返回原 receipt | B06/B07；`postgres_http_it.rs:37,75,130,257` 断言持久行；fresh PG4；native smoke query→Action→history | WIRED |
-| F04 | stdio→authenticated HTTP MCP→当前 toolset/action schema→共享 Query/Action/history→协议结果；无权工具直调拒绝、token/session错误、EOF退出 | B03/B06/B07/B12；`mcp.rs:514,554,570,633`；Phase7 UAT9 与 bridge logs；native stdio smoke | WIRED |
-| F05 | L2 identity→启动/周期 proof→六工具 allow-list/AST→重序列化 SQL→Trino→audit→MCP；proof失效拒绝、health降级、恢复重开 | B05/B10，默认 editstore 配置；fresh ACL6+health2；`mcp_l2_defaults.rs:597` expiry/recovery，`:817` cancellation/shutdown | WIRED，受 F06 限制 |
-| F06 | 自定义 edit catalog→deployment exclusion policy→MCP execute/explain/discovery→本地拒绝（应不发送上游） | B11；INT-01 源码控制流证实 policy 丢失；现有 fixture只覆盖 editstore | BROKEN / BLOCKER |
-| F07 | dev单二进制→嵌入 ontology/fixtures→SQLite store/engine/token→query/Action/history→restart保留→reset重建 | B12；`ci/release-smoke.ps1:155..200`；release JSON 3 native+aggregate success | WIRED；发布事件上传仅静态检查 |
-| F08 | Action commit→outbox→独立 webhook-worker→HTTP event_id→2xx标记或503重试→过期lease恢复 | B08；现有 CI JSON integration 的 Action atomicity/races/idempotency/webhook step success；生产部署实接收端未验证 | WIRED（机制）；生产联调 WARNING |
-| F09 | 服务关闭→停止 admission→Action有界完成→读取消→monitor与audit排空→进程退出 | `server/src/lib.rs:290` 后 serve/shutdown顺序、`lifecycle.rs`；fresh exit0，native cleanup；`source_drift.rs:308,329` 覆盖部分启动失败 | WIRED |
-
-动态计数独立核对：`target/phase7-final-adc0227-verify.log` 中 PG4、drift2、snapshot1、Trino2、health2、ACL6、Rust9、TS17，总计43，fail0，末行 `fresh_verify_exit=0`；`evidence/commit.txt` 为 adc0227。CI JSON 为同 SHA 的四个必需 job success；release JSON 为三个 native+aggregate success、publish skipped。上述有重叠，不能加总成唯一测试总数，也不能覆盖未存在的 F06 用例。
-
-## INT-01：部署 edit catalog 未接入 MCP L2 policy
-
-- **分类：BLOCKER。** `L2-03` 的「硬排除 edit store catalog」跨 Phase 6→7 断链。`MCP-07` 的六工具 allow-list 合同受影响。`MCP-06` 要求的是 REST/MCP 公共核心授权与 log，已证明的缺口不直接扩大为该需求整体失败。
-- **起点与断点：** `config.rs:572..580` 允许并核验 `trino.l2_acl.edit.catalog == store.trino.catalog`，名称不是固定 editstore。Phase6 `query/src/l2.rs:441..451` 取可信配置；生产 MCP `server/src/mcp.rs:154..166` 改构造另一 adapter。`mcp_l2.rs:104` policy和`:274..290` metadata filtering均只有字符串 editstore，没有部署 catalog 输入字段。
-- **可达条件：** 配置 `store.trino.catalog = "private_edits"`，ACL edit probe同名；一个 role 有 SqlRaw toolset/Raw level，并误将 `private_edits` 或其某 schema 加入 allow-list。MCP `execute_query("SELECT * FROM private_edits.public.some_table")` / typed explain 在本地 AST gate获准；schema/table/columns discovery也不由本地排除此catalog。标准部署可只返回上游拒绝，但「硬排除」已不成立。
-- **下层不能补该连接：** `engine/src/printer/l2.rs:454` 只比较传入 policy.edit_catalog；`engine/src/trino/mod.rs:456..471` 仅 proof Enabled 后发送SQL。`l2_health.rs:274,295` 对配置的一张 edit relation做 PERMISSION_DENIED负探针，既未把 catalog传回adapter，也未在每次 query重做catalog AST fence。若Trino ACL确实拒绝整个catalog，仍会阻止数据读取。不能据本次静态审计声称已发生数据泄露；若配置仅拒绝探针表、其他 edit tables可读，现有证明与错误allow-list组合才会进一步读到数据。
-- **现有测试覆盖空白：** `server/tests/mcp_l2_defaults.rs:87` 的 attestation fixture固定editstore。`query/tests/l2_execute.rs` 验证L2Service本身不代表生产MCP消费它。`rg 'L2Service\s*\{' crates` 只在 query tests发现实例，生产 MCP不调用它。这是替代实现遗失合同，不因该库仅有测试consumer就判全部L2 orphan。
-- **最小复现计划（未运行）：** 在受控engine/attested fake fixture改edit catalog为private_edits，probe表拒绝、另一edit表可读，给role该catalog的allow-list；调用execute/explain/get_table_schema/list_schemas/list_tables并断言业务statement/metadata calls为0、返回本地拒绝；list_catalogs仍需要上游枚举，但输出必须剔除private_edits。分别验证catalog级与schema级 grants、大小写、qualified table和可信defaults。先建立RED，再修复；不需要真实敏感数据。
-
-## 最小修复设计建议（未实施）
-
-1. 优先让 `TrinoEngine` 暴露只读 `l2_edit_catalog(&self) -> Option<&str>`，从私有 `l2_health.config.edit.catalog` 返回，和 proof 使用同一个配置来源。MCP `call_l2` 拿到已安装 engine 后读取该值；缺失时 fail-closed，不能退回editstore。
-2. `McpL2Tools` 增加可信 `edit_catalog: &'a str`，`gate`构造 `L2Policy` 与 `allowed_catalog` 均消费此字段。这比在ServerState另存一份易漂移配置小；若不宜增加engine accessor，可在serve install时传不可分割的 engine+policy capability，不能由请求参数/role/MCP defaults提供该值。
-3. SQLite/dev与无Trino路径不安装L2 engine，生产 `call_l2` 已拒绝，因此无需虚构默认edit catalog或让SQLite自动开启L2。直接构造adapter的unit fixture应显式传editstore或自定义值，作为测试拥有的可信配置。
-4. 可直接复用现有 `L2Policy` 和 `validate_l2`。Phase6 `L2Service::run_checked` 的policy构造私有且与execution/audit绑定，不能直接作为helper调用；整套改用L2Service会同时改变新defaults/typed schema/资源与audit边界，非最小修改。将排catalog逻辑提到L2Policy方法可减少两处重复，但应限于本次合同修复。
-
-## 非阻塞 WARNING 与 deferred
-
-| 项目 | 需求/当前实现位置 | 判断 |
+| Phase | 从 SUMMARY 与源码提取的提供项 | 已追到的消费者与调用 |
 |---|---|---|
-| Phase1/2/3/5 VALIDATION仍draft（Phase1当前正由其他worker处理） | DX-03、SCHEMA/LINT、BIND/ENGINE、STORE/SCOPE/AUTH、ACTION；实现入口如 pipeline.rs:29、storage/reload.rs:142、action/lib.rs:242 | 过程/覆盖矩阵债务，不能直接判行为失败或刷为通过 |
-| 旧Phase1 VERIFICATION frontmatter passed/10-of-11，正文仍human_needed | SCHEMA-07；schema export/editor配置；当前CLI导出逻辑为 ontoforge/src/lib.rs 的 Schema分支 | 历史报告内部时点矛盾，不能拿frontmatter替代真实编辑器验收。不是已证明的跨Phase断链 |
-| 旧SUMMARY requirements-completed为空/缺失 | 多个Phase3及Phase7 SUMMARY；实际连接证据见B02/B03/B06/B12 | 追踪元数据缺口，非requirement orphan。按主auditor三源对账补齐映射，不能反推功能未交付 |
-| 生产webhook服务管理器、接收端去重/503/重启未联调 | ACTION-11；action/outbox.rs:123、ontoforge/webhook_worker.rs:54；Phase5 deferred-items | 当前机制连接完整；生产验收债务保留 |
-| Windows慢机audit deadline波动 | AUDIT-01、QUERY-09；storage/read_audit.rs:202、query/tests/security.rs 的cap_counts_final_masked_row_and_version | 现有单线程CI成功不能保证墙钟波动消失；Phase6 deferred记录仍适用 |
-| 隔离集群性能、SQL Server私有fixture、nightly Iceberg不由本轮重跑证明 | QUERY-10、ENGINE-05；query execute/engine路径及CI nightly | 历史证据边界保留，不把普通CI的benchmark smoke视为完整性能验收 |
-| GitHub Release真实上传/npm发布未执行 | DX-04；.github/workflows/release.yml、ci/release-package.ps1 | 三native安装门通过，发布事件路径未实际触发；为授权边界，不是已观察实现bug |
+| 01 | load_dir、profile/expr、lint、schema IR | CLI pipeline/lint_cmd → reload/serve；IR → scope/query/action |
+| 02 | Engine、Trino/SQLite、printer、binding/PK/drift | CLI online、query source lookup、Action source snapshot、server drift、serve |
+| 03 | EditStore、reload/migrate、request_snapshot、auth/scope、history | context → QueryService/ActionService/history；下一请求重编译已生效 scope |
+| 04 | QueryService、read_pk_source、overlay、cursor/version、aggregate | REST/MCP audited methods；Action source.rs 共用 bounded source lookup |
+| 05 | execute_with_snapshot、guarded commit、receipt/outbox | REST/MCP action、command result、history、独立 webhook-worker |
+| 06 | L2 AST policy/ACL proof、read audit | MCP adapter 消费 policy/dedicated engine；query/aggregate/L2 共用 store audit；lifecycle drain |
+| 07 | router、MCP catalog/action schema、stdio、OpenAPI、SDK/dev/package | Rust/TS 实际 HTTP；stdio → /mcp；release smoke 调用解包后的二进制 |
+| 07.1 | source OneToOne scanner、--check-cardinality、ONT-W18 | CLI online → binding 筛选 → scanner → printer/Engine → 定位诊断/退出码 |
+| 07.2 | owner-isolated MinIO、S3/restart、nightly runner | workflow → iceberg-services.sh nightly → PG/MinIO/Trino → Rust targets → 计数/S3/cleanup 门 |
 
-## 未宣称覆盖的部分
+### 12 个集成边界
 
-- 没有穷举每个public export，故不提供「全部exports connected/orphaned」的虚假总数；12个边界覆盖本次可验证的主要跨阶段合同。`REST_ROUTE_PATHS` 常量只列4条但实际router注册8组，此常量不是API存在性的真相源，不据此判丢路由。
-- 不将所有79项都判WIRED；SCHEMA-07、LINT-02/03/04、DX-03等有合法的单阶段或工具链内验收，不要求为了统计强造跨Phase连接。QUERY-10与ENGINE-05的环境/性能验收也不能单靠源码调用证明。
-- requirements总体orphan/partial表归主auditor；本审计明确必须带回的partial为L2-03（关联MCP-07），当前未证明其他行为orphan。历史draft/stale是另一个维度。
+路径相对仓库根目录，行号指本次读取的源码。每项不仅检查 import，还检查调用、数据终点与失败分支。
 
-## 建议
+| ID | 提供方 → 消费方及实际数据路径 | 错误/空态与终点 | 需求 | 判定 |
+|---|---|---|---|---|
+| B01 | P1/P2 → CLI/P07.1：`crates/ontoforge/src/pipeline.rs:26` load/profile/CEL；`crates/ontoforge/src/online.rs:275` describe/binding → PK/cardinality 独立分支；`:310` → `crates/ontoforge-engine/src/cardinality_check.rs:34` / `:127` | offline 错误不进引擎；不可用 binding 不扫描；online `:345` 定位诊断。source OneToOne 非 NULL FK 按 distinct PK 计数，非 referential integrity，不阻断读 | SCHEMA-01..06、BIND-01..03、STORE-05 | WIRED |
+| B02 | P1/P2 → P3：`crates/ontoforge/src/reload.rs:35` lint 成功才 open/reload；`crates/ontoforge-storage/src/reload.rs:142` 锁/role/DDL/Trino 可见性/切换；`crates/ontoforge-storage/src/migrate.rs:365` 同类合同 | lint/role/锁/可见性失败不提前切 active；request_snapshot 只读实际生效版本 | LINT-01、BIND-02、STORE-02、SCOPE-06/07 | WIRED |
+| B03 | P3 → P7：`crates/ontoforge/src/serve.rs:109` Authenticator；`crates/ontoforge-server/src/context.rs:401` authenticate → request_snapshot → compile_scope → for_principal；`crates/ontoforge-storage/src/request_snapshot.rs:23` 同锁读取定义/scope 后结束事务 | token/scope 失败拒绝，无 grant 不可见；MCP 每次 request_context 重建当前授权，不复用初始化旧权限 | AUTH-01/02、SCOPE-01..07、API-01、MCP-06 | WIRED |
+| B04 | P2/P3 → P4：`crates/ontoforge-query/src/lib.rs:307` edit → tombstone → source 必要性 → overlay → evaluate → mask → HMAC version；`:513` printer、`:520` guard → engine | 不存在/越权均 NotFound；source 重复/故障安全错误；完整 patch/editOnly 不强制依赖 Trino；返回 ObjectRow/QueryPage | ENGINE-01..04、STORE-01/07、SCOPE-03..05、QUERY-01/08/09 | WIRED |
+| B05 | P4 → P6 → P7：REST `crates/ontoforge-server/src/rest.rs:168` / `:281` / `:360` 与 MCP 调 QueryService audited 方法；`crates/ontoforge-query/src/execute.rs:527`、`crates/ontoforge-query/src/aggregate.rs:912` reserve → execute → finish | `crates/ontoforge-storage/src/read_audit.rs:202` 拒绝积压/不健康 sink；`:326` worker → SQLite/PG/retention；空/截断/失败也走终结/DTO | QUERY-02..07/09、AUDIT-01、API-01、MCP-03/06 | WIRED |
+| B06 | P4/P3 → P5 → P7：REST `crates/ontoforge-server/src/rest.rs:457` / `:481`、MCP `crates/ontoforge-server/src/mcp.rs:649` → execute_with_snapshot；`crates/ontoforge-action/src/lib.rs:324` prepare → `:386` commit → `crates/ontoforge-storage/src/commit.rs:617` fence/claim/locks/CAS/criteria | validate-only 走 guard 后 rollback；成功同事务 edits/log/history/command/outbox → receipt；replay 前复核 scope.actions，异参拒绝 | ACTION-01..10/12、STORE-03/05、QUERY-09、SCOPE-07 | WIRED |
+| B07 | P5 → P3 → P7/SDK：REST history 先按当前 scope 读对象；`crates/ontoforge-server/src/history_page.rs:8` → `crates/ontoforge-storage/src/history.rs:120` 固定定义 → `:224` 可见列 → DTO/SDK | 隐藏值不回传，空页/字节预算/错误有结果，不直接暴露 raw log | STORE-04、ACTION-06/10、API-01/04/05、MCP-06 | WIRED |
+| B08 | P5 → CLI → HTTP：commit 写 outbox；`crates/ontoforge/src/webhook_worker.rs:54` poll_at → `crates/ontoforge-action/src/outbox.rs:123` claim/send/mark_delivered/record_retry | 持久 payload 与 X-Ontoforge-Event-Id，2xx 标记、错误退避、lease/fencing 恢复；生产接收端/自动重启未由源码证明 | ACTION-11、STORE-03 | WIRED |
+| B09 | P2 → P7 → P4/P5：`crates/ontoforge-server/src/lib.rs:167` start_drift；`crates/ontoforge-server/src/drift.rs:155` 首轮/30 秒周期；`crates/ontoforge-server/src/context.rs:349` ScopedEngine → drift.check | Query source 执行前检查，Action 共用 source lookup；`crates/ontoforge-server/src/health.rs:16` 同定义 drift_view；不扩大到不需 source 的请求 | BIND-03、ENGINE-02、QUERY-01、ACTION-12 | WIRED |
+| B10 | P6 → P7：`crates/ontoforge/src/serve.rs:177` start_l2_acl_monitor → `:211` set_l2_engine/install；MCP 只取 Enabled engine；`crates/ontoforge-engine/src/trino/mod.rs:465` admission 读锁重查 proof | 未配置/失败/过期 fail-closed，无 source 身份回退；health 取同一 state；lifecycle 关闭 monitor/audit | L2-04、ENGINE-01/02、MCP-07、AUDIT-01 | WIRED |
+| B11 | P2/P6 exclusion → P7：`crates/ontoforge-engine/src/config.rs:572` store/ACL catalog 一致；`crates/ontoforge-engine/src/trino/mod.rs:144` accessor → `crates/ontoforge-server/src/mcp.rs:157` → edit_catalog → `crates/ontoforge-server/src/mcp_l2.rs:104` policy | execute/explain 在 run_sql 前 validate_l2；metadata `:275` allowed_catalog/resolve_* 大小写不敏感排 edit/system；list_catalogs 枚举后过滤，不要求零上游 | L2-01..03、MCP-07 | WIRED，INT-01 已关闭 |
+| B12 | P7 host/OpenAPI → SDK/stdio/dev/install 与 P07.2 CI：`crates/ontoforge-server/src/lib.rs:219` 八类 HTTP；`crates/ontoforge-client/src/lib.rs:129`、`clients/typescript/src/index.ts:177` 实际调用；`crates/ontoforge/src/mcp.rs:40` stdio→HTTP；OpenAPI generator；`ci/release-smoke.ps1:155` 完整 smoke；`.github/workflows/nightly.yml:45` → MinIO runner | SDK 解码结构化错误/大整数；dev reset 拒绝旧 token；runner 对 discovery/执行数/S3/restart/cleanup 有硬门；发布上传未执行 | API-01..05、MCP-01/06、DX-01/02/04、ENGINE-05 | WIRED |
 
-先对INT-01做最小RED与修复、复签自定义catalog矩阵及原六工具/ACL/取消/audit回归，再归并milestone结论。保留现有Phase7成功动态证据与历史指纹差异，新增证据应绑定修复后的真实源码；不覆写旧时点报告伪装当时已通过。
+## API Coverage 与 Auth Protection
+
+实际 router 是真相源，不以 REST_ROUTE_PATHS 常量或 OpenAPI 单独证明路由已安装。以下八类路径均在 `crates/ontoforge-server/src/lib.rs:219` 起注册。
+
+| 路径 | Rust 消费者，crates/ontoforge-client/src/lib.rs | TS 消费者，clients/typescript/src/index.ts:177 起 | 授权 |
+|---|---|---|---|
+| GET /health | health，:157 | health | 有意公开非敏感健康摘要 |
+| GET /api/ontology | metadata，:129 | metadata | context + scope 过滤 |
+| GET /api/objects/{object_type}/{pk} | get_object，:132 | get | context + QueryService |
+| POST /api/query | query，:144 | query | context + QueryService |
+| POST /api/aggregate | aggregate，:147 | aggregate | context + QueryService |
+| POST /api/actions/{action} | execute_action/validate_action，:160 | action/validate | context + ActionService |
+| GET /api/commands/{command_id} | get_command_result，:220 | commandResult | context + 当前 action grant + 主体隔离 |
+| GET /api/objects/{object_type}/{pk}/history | history，:195 | history | context + 当前行/列遮蔽 |
+
+**Consumed：8/8；orphaned：0/8。** `/mcp` 是额外协议挂载，不混入八类 REST 路径计数。stdio bridge 带 token 访问此挂载，不另装无鉴权后门。
+
+**敏感区：7 类 REST 操作 + 1 个 MCP 挂载均接入鉴权；未发现预期受保护却无 auth 的区域。** MCP 在 `crates/ontoforge-server/src/context.rs:484` 验证 token/session owner；list/call 再经 request_context；`crates/ontoforge-server/src/mcp.rs:573` 先查当前授权 catalog，不能绕过 list_tools 直调未授予工具。catalog 仅列 core/full/sql:raw 与授权 action，不列 reload、角色/定义修改或 L3 工具。OpenAPI 是生成文档，不臆造 `/openapi` HTTP 路由。
+
+## E2E Flows
+
+WIRED 表示入口、实际调用、状态/存储、输出与列明失败分支的静态路径完整。**本轮动态完成数为 0，不可将 9 WIRED 改写成 9 次真实 E2E 成功。**
+
+| ID | 完整静态路径 | 错误/空态与已有测试入口 | 判定 |
+|---|---|---|---|
+| F01 | CLI YAML/JSON → validation/lint → reload → scope apply → token → snapshot → scoped read；附显式 source cardinality 分支 | 无效定义不触 store，无 scope 默认不可见，reload 复核 role；`crates/ontoforge/src/scope.rs:121` / `:198` → scope_apply；online `:296` scanner → warning/exit code | WIRED，B01/B02/B03 |
+| F02 | Rust/TS → REST → auth/snapshot → query/source/edit overlay → mask/version/audit → DTO → decode | 空/无权/坏 cursor/source drift/截断有分支；`crates/ontoforge-query/src/cursor.rs:235` 绑定主体/定义；`crates/ontoforge-server/tests/source_drift.rs:237` / `:379` 拒绝与完整 patch 断言，未重跑 | WIRED，B03/B04/B05/B09/B12 |
+| F03 | REST/MCP action → 参数/criteria/写后授权 → CAS/fence → edits/log/command/outbox → receipt → 下一读取/history | stale、跨主体重放、异参、validate-only、批量 rollback；`crates/ontoforge-server/tests/postgres_http_it.rs:257` durable rows、`:75` race 同 receipt，未重跑 | WIRED，B06/B07/B08 |
+| F04 | stdio → authenticated /mcp → 当前 toolset/action schema → 共享 Query/Action/history → structuredContent | session 错误/未授权直调拒绝；`crates/ontoforge-server/src/mcp_actions.rs` schema/decoder；`ci/release-smoke.ps1:184` 后含桥接与 EOF 断言，未重跑 | WIRED，B03/B06/B07/B12 |
+| F05 | L2 proof/周期复验 → 六工具 allow-list/AST → PrintedSql → dedicated Trino → audit → MCP | 未配置/失效/取消拒绝或终止；执行时重查 proof；audit 不健康不发业务请求；`crates/ontoforge-server/tests/mcp_l2_defaults.rs:860` expired proof 零发送断言，未重跑 | WIRED，B05/B10/B11 |
+| F06 | 自定义 store/ACL edit catalog → trusted accessor → MCP policy → SQL/metadata 本地排除或结果过滤 | `crates/ontoforge-server/tests/mcp_l2_defaults.rs:382` / `:387` / `:458` 含自定义/default/正常 catalog；`:445` 上游/业务计数。未运行 fixture，不声称新 GREEN 或实际泄漏 | WIRED，B11；INT-01 已关闭 |
+| F07 | 解包二进制 → serve --dev → embedded fixture → SQLite store/engine/token → query → Action → history → restart 保留 → reset 重建 → stdio | `crates/ontoforge/src/dev.rs:122` reload/scope 初始化；smoke `:155` 后比较值/receipt/history，reset 后旧 token/command 拒绝；不包含真实发布上传 | WIRED，B12 |
+| F08 | Action commit → outbox → 独立 webhook-worker → HTTP event_id → mark 或 retry → lease 恢复 | 不重读当前对象、不跟随 redirect、错误退避/稳定 event_id；生产管理器/接收端 dedup 待联调，at-least-once 不等于 exactly-once | WIRED（机制），B08；W03 |
+| F09 | shutdown → stop admission → Action 有界等待 → cancel reads → session/read-task 收束 → audit drain/monitor join → exit | `crates/ontoforge-server/src/lib.rs:249` / `crates/ontoforge-server/src/lifecycle.rs:44` 同 deadline，失败返回错误；`crates/ontoforge-server/tests/source_drift.rs:308` / `:329` 启动取消断言，未重跑 | WIRED，B05/B09/B10/B12 |
+
+### 07.1/07.2 后继合同闭环
+
+这两项纳入 B01/B12，不增加 12 边界或 9 用户流分母。
+
+- **STORE-05/source：** online.rs:296 由 args.check_cardinality 实际调用 scanner；仅扫描当前 profile 下通过 binding/describe 的 source OneToOne to-object，使用映射 FK/PK 和 printer 的 COUNT(DISTINCT ...) > 1，返回 bounded samples/more；整轮 deadline 与清理接通。不以对象 PK 检查或 edit-side constraint 冒充 source 报告。已读 `07.1-evidence/plan03-real-trino-final.json` 与 `.log`，记录一个精确真实测试退出 0；这是 2026-11-04 旧运行，不是本轮复验。`07.1-VERIFICATION.md` 为 18/18 passed。
+- **ENGINE-05/MinIO：** nightly.yml:45 调共享 runner；`ci/iceberg-services.sh:203` 精确发现/执行 Iceberg test，`:214` 要求 source/copied 均 29，`:216` 要求 s3://warehouse/，`:239` 起逐 target 强制非零且 failed/ignored 为 0，`:500` restart 后复查，finally cleanup 保留失败证据。不是将 local warehouse 改名为 MinIO。已读 07.2-RUNTIME-EVIDENCE、07.2-CI-VERIFICATION、归档索引及 `target/phase072-minio/ci/run-41833307824-verified.json`：既有记录为 483/484 各 49 corpus、前后 29/29、S3/restart/cleanup 成立，notification skipped；`07.2-VERIFICATION.md` 为 9/9 passed。未在线重查或重跑，不证明 SQL Server 私有 fixture。
+
+## Detailed Findings
+
+### BLOCKER / Missing Connections / Broken Flows
+
+本次列明范围内为 **0**。12 边界与 9 流都有实际调用，不因动态未重跑而伪造 BROKEN，也不因静态 WIRED 而伪造动态 passed。
+
+### INT-01 处置与替代实现
+
+**已修复，当前 B11/F06 WIRED。** call_l2 不再丢弃 deployment edit catalog，缺失 trusted catalog 时 fail-closed；SQL AST 与 metadata 使用同一注入值。默认值、显式参数、qualified table 的最终目标均经 policy/resolve。list_catalogs 的合同是枚举后过滤，不是零上游。
+
+`L2-CATALOG-FIX.md`、`PHASE-07-REVERIFY.md` 保存历史 RED/GREEN。本轮只以亲读代码/测试断言作静态证据，不把历史 GREEN 冒充当前运行。`rg 'L2Service\s*\{' crates` 只在 query tests 找到构造，生产 MCP 用 McpL2Tools。不是整个 L2 功能 orphan，也不能拿 L2Service 测试代替 adapter 覆盖。
+
+### WARNING 与剩余验收
+
+| ID | 需求/范围 | 连接存在但仍须保留的限制 | 责任/依据 |
+|---|---|---|---|
+| W01 | SCHEMA-07、Phase01 | 自动导出/编辑器配置不等于人工体验；human_needed 保留，不重开已接受体验或改 passed | Phase01 VERIFICATION，主 auditor |
+| W02 | ENGINE-05、Phase02 | MinIO 后继补证已闭合；私有 SQL Server fixture/来源 judgment 未证；ENGINE-05 Partial、Phase02 gaps_found | Phase02/07.2 VERIFICATION |
+| W03 | ACTION-11 | outbox/worker/HTTP 机制 WIRED；生产管理器重启、接收端 503/dedup/恢复未由本轮证明 | Phase05 deferred-items，部署/动态 owner |
+| W04 | QUERY-10、AUDIT-01 | 静态预算不证明隔离集群 p95；Windows audit pending 墙钟波动已有记录，单线程 CI 不等于根除 | Phase04 性能证据、Phase06 deferred-items |
+| W05 | DX-04 | 三平台安装 smoke 与真实发布不同；release upload/npm 发布不在本轮执行范围 | release.yml:91 事件门、07.2 CI upload skipped |
+| W06 | 所有动态结果 | workspace、PG/Trino/MinIO、SDK、shutdown 未在本轮重跑；历史 ignored/skipped 不计通过 | 独立复验 owner，不靠刷新 fingerprint 关闭 |
+| W07 | L2-01..04、MCP-07 | L2Service/McpL2Tools 双实现，未来只修前者或只测 query 层会漏生产 adapter 合同 | B10/B11，生产/测试消费者检索 |
+
+没有将 env/feature 门控的 ignored 测试称 orphan，没有将缺 private fixture 当产品已实证失败。无新增灰区需自行裁决；若要改变历史 judgment 或发布范围，返回 `STATUS: NEEDS_CLARIFICATION`，不由本报告扩权。
+
+## Requirements Integration Map
+
+覆盖 REQUIREMENTS 中 79 个 v1 ID。**WIRED 仅表示涉及的集成路径追通，不代表每条验收断言或当前动态结果通过。** N/A 表示该项验收本身无强制跨阶段 touchpoint，不是孤儿代码，其工具可以被其他阶段复用。验收限制单列，不把 ENGINE-05 WIRED 解释为 Complete。
+
+| Requirement | Integration Path | Status | 验收限制/Issue |
+|---|---|---|---|
+| SCHEMA-01 | P1 load → B01 CLI → B02 active IR | WIRED | 本轮静态 |
+| SCHEMA-02 | P1 object IR → B04/B07 typed read/history | WIRED | 本轮静态 |
+| SCHEMA-03 | P1 property types → P2 printer/decode → B04/B06 | WIRED | 本轮静态 |
+| SCHEMA-04 | P1 link IR → B05 traversal/B06 write/B01 scanner | WIRED | 本轮静态 |
+| SCHEMA-05 | P1 action IR/CEL → B06 → P7 dynamic schema | WIRED | 本轮静态 |
+| SCHEMA-06 | P1 SourceMap/diagnostics → B01/B02 CLI result | WIRED | 本轮静态 |
+| SCHEMA-07 | P1 schema export → repository editor association | N/A | W01，human_needed 保留 |
+| LINT-01 | P1 lint → B02 reload admission | WIRED | 本轮静态 |
+| LINT-02 | P1 naming/structure warning → lint diagnostics | N/A | 单阶段规则验收，未重跑 |
+| LINT-03 | P1 diagnostics → CLI human/JSON renderer | N/A | 单阶段输出验收，未重跑 |
+| LINT-04 | P1 config → lint severity/disable | N/A | 单阶段配置验收，未重跑 |
+| BIND-01 | P1 SourceBinding/profile → B01 → B04 source | WIRED | 本轮静态 |
+| BIND-02 | P1 types → B01 online/B02 reload | WIRED | 本轮静态 |
+| BIND-03 | B01 describe/PK → B09 drift → source guard | WIRED | 本轮静态 |
+| ENGINE-01 | P2 Trino → B04/B06 source 与 B10 dedicated L2 | WIRED | 身份/取消实跑归动态 owner |
+| ENGINE-02 | P2 status/drift → B09/B10 → health/admission | WIRED | 本轮静态 |
+| ENGINE-03 | P2 printer → B04/B05/B06/B11 engine call | WIRED | proptest/真实注入未重跑 |
+| ENGINE-04 | P2 SQLite → B04/B06/B12 dev runtime | WIRED | 本轮静态 |
+| ENGINE-05 | P2 targets → B12 P07.2 nightly/MinIO/S3 | WIRED | Partial；SQL Server 未闭环，W02 |
+| STORE-01 | P3 EditStore → B04/B06 → SQLite/PG backend | WIRED | conformance 未重跑 |
+| STORE-02 | P1/P2 checks → B02 reload/migrate → B03 snapshot | WIRED | 本轮静态 |
+| STORE-03 | B06 transaction → log/history/outbox → B07/B08 | WIRED | 本轮静态 |
+| STORE-04 | B06 log → B07 masked history → SDK/MCP | WIRED | 本轮静态 |
+| STORE-05 | B06 edit constraints + B01 P07.1 source scanner | WIRED | source 报告 opt-in，不阻塞读 |
+| STORE-06 | CLI import → storage import → system:import log | WIRED | 已读 import.rs；ETL 非 L0 |
+| STORE-07 | P3 patch/tombstone/release → B04/B06 | WIRED | 本轮静态 |
+| SCOPE-01 | CLI scope apply/OIDC groups → B03 snapshot | WIRED | 本轮静态 |
+| SCOPE-02 | P3 compile_scope → B03/B04/B06/P7 tool catalog | WIRED | 本轮静态 |
+| SCOPE-03 | P3 merged row/column grants → B04/B05/B06 | WIRED | 本轮静态 |
+| SCOPE-04 | P3 evaluate/lower → P4 query compiler/row mask | WIRED | 差分测试未重跑 |
+| SCOPE-05 | B03 scope → B04 invisible/false → safe result | WIRED | 本轮静态 |
+| SCOPE-06 | B02 reload + scope apply → role/criteria coverage | WIRED | 本轮静态 |
+| SCOPE-07 | B02/B03 fixed definition → B06 fence；MCP 无管理工具 | WIRED | 本轮静态 |
+| AUTH-01 | Authenticator/OIDC/JWKS → B03 REST/MCP principal | WIRED | 未请求 IdP/JWKS |
+| AUTH-02 | dev-token/DevVerifier → B03/B12 dev auth | WIRED | 本轮静态 |
+| QUERY-01 | B04 pk → source/edit → REST/MCP/SDK | WIRED | 本轮静态 |
+| QUERY-02 | P7 QueryRequest → P4 compile/filter → B05 result | WIRED | 本轮静态 |
+| QUERY-03 | P7 search set → P4 compile/search → B05 | WIRED | 本轮静态 |
+| QUERY-04 | P4 keyset cursor/context → B05 page → SDK | WIRED | 本轮静态 |
+| QUERY-05 | P1 link IR → P4 searchAround → B05/P7 | WIRED | 本轮静态 |
+| QUERY-06 | P7 set AST → P4 set execution → B05 | WIRED | 本轮静态 |
+| QUERY-07 | P7 aggregate → P4 aggregate → B05 audit/result | WIRED | 本轮静态 |
+| QUERY-08 | P3 overlay → B04/P4 execute → P2 dialects | WIRED | 内存模型/proptest 未重跑 |
+| QUERY-09 | B04 mask/version + B05 budget → P7 errors/SDK | WIRED | 本轮静态 |
+| QUERY-10 | B04/B05 single-table plans → P2 Trino/PG | WIRED | W04，不证明本轮 p95 |
+| ACTION-01 | P7 action input → P5 params → B06 errors | WIRED | 本轮静态 |
+| ACTION-02 | P5 rules → B06 guarded transaction | WIRED | 本轮静态 |
+| ACTION-03 | P3 scoped view → P5 criteria → B06 guard | WIRED | 本轮静态 |
+| ACTION-04 | REST/MCP validateOnly → B06 rollback → DTO | WIRED | 本轮静态 |
+| ACTION-05 | P7 items → P5 prepare → B06 commit/rollback | WIRED | 本轮静态 |
+| ACTION-06 | B06 edits summary/receipt → P7/SDK | WIRED | 本轮静态 |
+| ACTION-07 | P7 ActionService + audited CLI import → P3 writes | WIRED | MCP 无直接写 SQL/管理工具 |
+| ACTION-08 | P3 visibility → P5 guard/poststate → B06 | WIRED | 本轮静态 |
+| ACTION-09 | B04 _version → P5 authorize → B06 locks/CAS | WIRED | 本轮静态 |
+| ACTION-10 | B03 principal/grant → B06 command claim/replay → SDK | WIRED | 本轮静态 |
+| ACTION-11 | B06 outbox → B08 worker/HTTP/retry | WIRED | W03，生产联调待验 |
+| ACTION-12 | P5 source.rs → P4 read_pk_source → B09 guard | WIRED | 完整 patch 不强制访问 Trino |
+| L2-01 | P3 raw grant → B10/B11 → Trino/MCP result | WIRED | 本轮静态 |
+| L2-02 | B11 validate_l2 AST → PrintedSql → B10 engine | WIRED | 本轮静态 |
+| L2-03 | B11 trusted edit catalog → SQL/metadata fence | WIRED | INT-01 已修；动态回归未重跑 |
+| L2-04 | B10 ACL monitor/proof → admission/health | WIRED | 本轮静态 |
+| AUDIT-01 | B04/B05/B11 reserve/finish → P3 sink → F09 drain | WIRED | W04/W06 |
+| API-01 | B03-B07 services → B12 actual router/SDK | WIRED | 八类路径均有消费者 |
+| API-02 | P7 OpenAPI render → docs/openapi.json → TS generator | WIRED | snapshot/generation 未重跑 |
+| API-03 | B03-B07 errors → P7 envelope → B12 typed SDK error | WIRED | 本轮静态 |
+| API-04 | B12 Rust client → 八类 HTTP → DTO decode | WIRED | 本轮静态 |
+| API-05 | B12 OpenAPI TS → raw GET/POST → decode | WIRED | 本轮静态 |
+| MCP-01 | CLI stdio transport → B12 HTTP /mcp | WIRED | 本轮静态 |
+| MCP-02 | B03 filtered ontology → MCP describe | WIRED | 本轮静态 |
+| MCP-03 | P7 tools → B05 QueryService | WIRED | 本轮静态 |
+| MCP-04 | P1 action IR → P7 schema/catalog → B06 | WIRED | 本轮静态 |
+| MCP-05 | P7 validateOnly → B06 validated outcome | WIRED | 本轮静态 |
+| MCP-06 | REST/MCP → B03/B05/B06/B07 shared scope/log | WIRED | 本轮静态 |
+| MCP-07 | P3 toolsets → P7 catalog → B10/B11 six tools | WIRED | INT-01 已修；W07 |
+| MCP-08 | P7 positive catalog → 无 L3/definition/scope mutation | WIRED | 本轮静态 |
+| DX-01 | B12 embedded dev → P2 SQLite/P3 store/auth → server | WIRED | 本轮静态 |
+| DX-02 | B12 aviation → F07 query/Action/history | WIRED | 演示未重跑 |
+| DX-03 | workspace/CI Windows test + CLI color contracts | N/A | 工具链验收，不由跨 phase trace 证明 |
+| DX-04 | B12 package → installed binary smoke → event gate | WIRED | W05，未发布 |
+
+**无独立跨阶段验收 touchpoint 的 5 项：** SCHEMA-07、LINT-02、LINT-03、LINT-04、DX-03。其余 74 项有集成路径，不代表 74 项动态验收全通过。
+
+## 交付验收与 owner 交接
+
+- [x] 亲读当前源码，建立提供/消费图，12 边界逐项 WIRED/BROKEN 结算。
+- [x] 检查实际 router、Rust/TS 请求、MCP auth/tool admission，而非只看 exports/路由定义。
+- [x] 追踪 9 流到存储/返回，核对列明错误、空态、取消与 rollback。
+- [x] INT-01、07.1 scanner、07.2 nightly MinIO 均追到实际消费者。
+- [x] 覆盖全部 79 个 requirement ID，分开 wiring/verification，保留 01/02、ENGINE-05 判断。
+- [x] 仅写本文件与 evidence/2026-11-05/integration-final-* 新证据，不改共享计划或他人文件。
+- [x] 当前源码真实复验已由独立动态 owner 完成，见 FINAL-REVERIFY.md；此处为主 auditor 后续补记，静态 worker 不签动态通过。总体审计另见 SUMMARY.md。
+- [ ] SQL Server judgment、生产 webhook、隔离性能/发布边界按 W01-W06 保留，不在此清零。
+
+本次完成的是独立静态集成审计交付，不是 milestone 完成、归档、合并或发布信号。

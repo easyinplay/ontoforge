@@ -1,0 +1,7 @@
+started_utc=2026-11-05T08:53:02.7667249Z
+head=060019fe52005c6b85ae5c5f59da9868f464e579
+command=C:/Program Files/Git/bin/bash.exe ci/check-tls-deps.sh
+CARGO_BUILD_JOBS=2
+CARGO_TARGET_DIR=C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105
+exit_code=0
+ended_utc=2026-11-05T08:53:03.2886068Z

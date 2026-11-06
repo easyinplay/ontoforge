@@ -6,19 +6,22 @@ Phase 1 定死 IR 契约。2026-10-16 起 Phase 2–7 按 `docs/designs/trino-en
 
 ## Phases
 
+Milestone审计：2026-11-05追加复核及03-01.1显式override已落地，结论仍gaps_found；详: `.planning/milestones/v1.0-audit/SUMMARY.md`。
+
 **Phase Numbering:**
 
 - Integer phases (1, 2, 3): 本 milestone 计划内工作
 - Decimal phases (2.1, 2.2): 紧急插入（标注 INSERTED）
 
-- [ ] **Phase 1: Workspace, Schema & Lint** - 11/11功能truth成立，3项judgment记录待闭环（2026-11-04复验）；详: `.planning/phases/01-workspace-schema-lint/01-VERIFICATION.md`
-- [ ] **Phase 2: Source Binding & Engine** - 100/103，保留MinIO精确合同缺口及2项judgment（2026-11-04复验）；详: `.planning/phases/02-source-binding-engine/02-VERIFICATION.md`
-- [x] **Phase 3: Edit Store & Scope Model** - 按 type 强类型 edit store、DDL diff / migrate / reload 加固、edit log；用户 / 组 / 角色、CEL 行谓词（SQL 编译 + Rust 单行求值） (completed 2026-10-22)
+- [ ] **Phase 1: Workspace, Schema & Lint** - 历史human_needed保留；详: `.planning/phases/01-workspace-schema-lint/01-VERIFICATION.md`
+- [ ] **Phase 2: Source Binding & Engine** - 历史gaps_found保留，后继补证与当前范围详: `.planning/milestones/v1.0-audit/SUMMARY.md`
+- [x] **Phase 3: Edit Store & Scope Model** - 2026-11-05复签passed139/139（含1项用户明确接受的override），详: `.planning/phases/03-edit-store-scope-model/03-VERIFICATION.md`。
 - [x] **Phase 4: Scoped L0 Read** - Rust 编排叠加读：pk 读、列表、聚合分解、searchAround、keyset 分页、HMAC 版本令牌 (completed 2026-10-23)
 - [x] **Phase 5: Online Action** - Action 鉴权管线 ①-⑨、并发令牌、`command_id`、webhook outbox (completed 2026-10-26)
 - [x] **Phase 6: L2 Raw DQL, Toolsets & Audit** - L2、toolsets 与读审计已验收；详: `.planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md` (completed 2026-10-28)
-- [x] **Phase 7: REST & MCP Shell** - INT-01/TLS修复后80/80复验、UAT14/14通过（2026-11-04）；详: `.planning/phases/07-rest-mcp-shell/07-VERIFICATION.md`
+- [x] **Phase 7: REST & MCP Shell** - 2026-11-05最终源码复签80/80；详: `.planning/phases/07-rest-mcp-shell/07-VERIFICATION.md`
 - [x] **Phase 7.1: Source Cardinality Gap Closure** - 2026-11-04完成，3/3计划、独立18/18验收通过；详: `.planning/phases/07.1-source-cardinality-gap-closure/` (completed 2026-11-04)
+- [x] **Phase 7.2: MinIO Contract Gap Closure** - 2026-11-04验收完成；详: `.planning/phases/07.2-minio-contract-gap-closure/07.2-VERIFICATION.md`
 
 ## Phase Details
 
@@ -266,7 +269,7 @@ Plans:
   5. `ontoforge serve --dev`（SQLite 替身 + dev token）在 Windows 本机零外部依赖跑通示例 ontology 的查询 → Action → 历史演示；release workflow 发布 Linux / macOS / Windows 二进制
   6. 服务启动并维持 Phase 6 的 L2 ACL attestation；无法证明或证明过期时 L2 禁用，`/health` 告警并暴露脱敏原因，覆盖失败和恢复的端到端测试（ADR-0028）
 
-**Plans**: 16/16 complete，2026-11-04增量复验passed；详: `.planning/phases/07-rest-mcp-shell/07-VERIFICATION.md`
+**Plans**: 16/16 complete，2026-11-05最终源码复签passed；详: `.planning/phases/07-rest-mcp-shell/07-VERIFICATION.md`
 - [x] 07-01-PLAN.md
 - [x] 07-02-PLAN.md
 - [x] 07-03-PLAN.md
@@ -295,7 +298,7 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7 → 7.1；�
 |-------|----------------|--------|-----------|
 | 1. Workspace, Schema & Lint | 14/14 | human_needed | - |
 | 2. Source Binding & Engine | 10/10 | gaps_found | - |
-| 3. Edit Store & Scope Model | 23/23 | Complete    | 2026-10-22 |
+| 3. Edit Store & Scope Model | 23/23 | Complete (1 accepted override) | 2026-10-22 |
 | 4. Scoped L0 Read | 7/7 | Complete    | 2026-10-23 |
 | 5. Online Action | 7/7 | Complete    | 2026-10-26 |
 | 6. L2 Raw DQL, Toolsets & Audit | 11/11 | Complete | 2026-10-28 |

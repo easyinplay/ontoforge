@@ -1,0 +1,18 @@
+started_utc=2026-11-05T08:53:02.0626453Z
+head=060019fe52005c6b85ae5c5f59da9868f464e579
+command=python -B -m unittest discover -s ci -p test_tls_deps.py -v
+CARGO_BUILD_JOBS=2
+CARGO_TARGET_DIR=C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105
+test_both_packages_are_rejected (test_tls_deps.TlsDependencyTests.test_both_packages_are_rejected) ... ok
+test_cargo_failure_is_rejected (test_tls_deps.TlsDependencyTests.test_cargo_failure_is_rejected) ... ok
+test_native_tls_only_is_rejected (test_tls_deps.TlsDependencyTests.test_native_tls_only_is_rejected) ... ok
+test_neither_package_is_allowed (test_tls_deps.TlsDependencyTests.test_neither_package_is_allowed) ... ok
+test_openssl_only_is_rejected (test_tls_deps.TlsDependencyTests.test_openssl_only_is_rejected) ... ok
+test_similar_package_names_are_allowed (test_tls_deps.TlsDependencyTests.test_similar_package_names_are_allowed) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.502s
+
+OK
+exit_code=0
+ended_utc=2026-11-05T08:53:02.7631657Z

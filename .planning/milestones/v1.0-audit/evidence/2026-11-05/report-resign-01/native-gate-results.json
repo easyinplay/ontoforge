@@ -1,0 +1,53 @@
+{
+  "before": {
+    "command": "C:\\Program Files\\nodejs\\node.exe",
+    "args": [
+      "C:/Users/easyi/.codex/gsd-core/bin/gsd-tools.cjs",
+      "query",
+      "verification.status",
+      ".planning/phases/01-workspace-schema-lint"
+    ],
+    "exit": 0,
+    "stderr": "",
+    "data": {
+      "status": "stale",
+      "next_action": "Verification is stale — covered source files changed after the verifier last ran: \"CONTRIBUTING.md\", \"Cargo.toml\", \"crates/ontoforge-schema/src/diag.rs\", \"crates/ontoforge/src/cli.rs\", \"crates/ontoforge/src/lib.rs\". Re-run execute-phase for this phase: it resumes at the verification gates and re-runs the verifier, regenerating VERIFICATION.md and its digest. verify-work alone cannot refresh a stale report.",
+      "next_command": "$gsd-execute-phase 01",
+      "route": "execute-phase",
+      "moved_files": [
+        "CONTRIBUTING.md",
+        "Cargo.toml",
+        "crates/ontoforge-schema/src/diag.rs",
+        "crates/ontoforge/src/cli.rs",
+        "crates/ontoforge/src/lib.rs"
+      ]
+    }
+  },
+  "after_pick": {
+    "command": "node",
+    "args": [
+      "C:/Users/easyi/.codex/gsd-core/bin/gsd-tools.cjs",
+      "query",
+      "verification.status",
+      ".planning/phases/01-workspace-schema-lint",
+      "--pick",
+      "status"
+    ],
+    "exit": 0,
+    "stdout": "human_needed",
+    "stderr": ""
+  },
+  "after_full": {
+    "command": "node",
+    "args": [
+      "C:/Users/easyi/.codex/gsd-core/bin/gsd-tools.cjs",
+      "query",
+      "verification.status",
+      ".planning/phases/01-workspace-schema-lint"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"status\": \"human_needed\",\n  \"next_action\": \"Human verification required. Complete the manual tests in the phase's *-UAT.md, then re-run the verify step until status is passed.\",\n  \"next_command\": \"$gsd-verify-work 01\",\n  \"route\": \"verify-work\"\n}",
+    "stderr": ""
+  },
+  "final_report_sha256": "9110129fe795220238f364cf9e3909b29de5aa399e0341976aa9741f48f3391f"
+}

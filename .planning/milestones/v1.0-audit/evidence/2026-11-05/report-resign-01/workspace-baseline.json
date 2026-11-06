@@ -1,0 +1,26 @@
+{
+  "at": "2026-11-05T14:02:24.684Z",
+  "head": {
+    "command": "git",
+    "args": [
+      "rev-parse",
+      "HEAD"
+    ],
+    "exit": 0,
+    "stdout": "060019fe52005c6b85ae5c5f59da9868f464e579\n",
+    "stderr": ""
+  },
+  "status": {
+    "command": "git",
+    "args": [
+      "status",
+      "--porcelain=v1"
+    ],
+    "exit": 0,
+    "stdout": " D .planning/HANDOFF.json\n M .planning/PROJECT.md\n M .planning/ROADMAP.md\n M .planning/STATE.md\n D .planning/milestones/v1.0-audit/.continue-here.md\n M .planning/milestones/v1.0-audit/INTEGRATION.md\n M .planning/milestones/v1.0-audit/REQUIREMENTS-AUDIT.md\n M .planning/milestones/v1.0-audit/findings.md\n M .planning/milestones/v1.0-audit/progress.md\n M .planning/milestones/v1.0-audit/requirements-matrix.json\n M .planning/milestones/v1.0-audit/task_plan.md\n M .planning/phases/03-edit-store-scope-model/03-VERIFICATION.md\n M .planning/phases/04-scoped-l0-read/04-VERIFICATION.md\n M .planning/phases/05-online-action/05-VERIFICATION.md\n M .planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md\n M .planning/phases/07-rest-mcp-shell/07-VERIFICATION.md\n M .planning/phases/07.1-source-cardinality-gap-closure/07.1-VERIFICATION.md\n M .planning/v1.0-MILESTONE-AUDIT.md\n?? .planning/milestones/v1.0-audit/FINAL-REVERIFY.md\n?? .planning/milestones/v1.0-audit/FINAL-REVIEW.md\n?? .planning/milestones/v1.0-audit/REPORT-RESIGN.md\n?? .planning/milestones/v1.0-audit/SUMMARY.md\n?? .planning/milestones/v1.0-audit/VERIFICATION.md\n?? .planning/milestones/v1.0-audit/evidence/2026-11-05/\n?? .planning/phases/02-source-binding-engine/.review-diagnostics/\n?? .planning/phases/07-rest-mcp-shell/07-05-workspace-regression.log\n?? docs/README.md\n?? docs/foundry/\n?? docs/images/\n",
+    "stderr": ""
+  },
+  "pin": "D:/DataSpellProjects/ontoforge/.planning/milestones/v1.0-audit",
+  "plan_id": "v1.0-audit",
+  "pwf": "resolve-plan-dir.ps1 -PlanRoot D:/DataSpellProjects/ontoforge/.planning/milestones; PLAN_ID=v1.0-audit; PWF_PLAN_ROOT unset"
+}

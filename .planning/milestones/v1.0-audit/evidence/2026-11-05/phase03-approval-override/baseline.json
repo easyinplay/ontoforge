@@ -1,0 +1,2811 @@
+{
+  "recorded_at": "2026-11-05T11:29:47.177Z",
+  "head": "060019fe52005c6b85ae5c5f59da9868f464e579",
+  "report": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+  "report_bytes": 99329,
+  "report_sha256": "c4278d97a7171547a82b0caf174b258899b6580f378e5d560b3a8473c10c15df",
+  "status": "human_needed",
+  "score": "138/139 must-haves verified",
+  "behavior_unverified": "0",
+  "overrides_applied": "0",
+  "covered_files": [
+    ".gitattributes",
+    ".github/workflows/ci.yml",
+    ".planning/REQUIREMENTS.md",
+    ".planning/ROADMAP.md",
+    ".planning/adr/0002-naming-convention.md",
+    ".planning/adr/0016-storage-system-data-and-typed-edit-store.md",
+    ".planning/adr/0018-authz-scope-and-sql-tiers.md",
+    ".planning/adr/0020-query-execution-rust-orchestrated-overlay.md",
+    ".planning/adr/0023-phase3-crate-dependency-direction.md",
+    ".planning/adr/0024-edit-store-physical-format.md",
+    ".planning/adr/0025-row-predicate-semantics.md",
+    ".planning/adr/0026-edit-log-format.md",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-final.json",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-integration.log",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-isolated-query-bench.log",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-phase7-real-services.log",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-ubuntu.log",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-windows.log",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/03-VERIFICATION.before.md",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/03-contracts.json",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/04-VERIFICATION.before.md",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/04-contracts.json",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/CONTRACT-RESULTS.md",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/GOVERNANCE-AND-BOUNDARIES.md",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/changed-source-inspection.json",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/collect.cjs",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/covered-file-inspection.json",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/evidence-groups.json",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/evidence-inputs.json",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/executed-tests.json",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/governance-inputs.json",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/inspect.cjs",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/selected-test-source.json",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/service-environment-evidence.json",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/truth-results.json",
+    ".planning/phases/03-edit-store-scope-model/03-01-PLAN.md",
+    ".planning/phases/03-edit-store-scope-model/03-01-SUMMARY.md",
+    ".planning/phases/03-edit-store-scope-model/03-02-PLAN.md",
+    ".planning/phases/03-edit-store-scope-model/03-02-SUMMARY.md",
+    ".planning/phases/03-edit-store-scope-model/03-03-PLAN.md",
+    ".planning/phases/03-edit-store-scope-model/03-03-SUMMARY.md",
+    ".planning/phases/03-edit-store-scope-model/03-04-PLAN.md",
+    ".planning/phases/03-edit-store-scope-model/03-04-SUMMARY.md",
+    ".planning/phases/03-edit-store-scope-model/03-05-PLAN.md",
+    ".planning/phases/03-edit-store-scope-model/03-05-SUMMARY.md",
+    ".planning/phases/03-edit-store-scope-model/03-06-PLAN.md",
+    ".planning/phases/03-edit-store-scope-model/03-06-SUMMARY.md",
+    ".planning/phases/03-edit-store-scope-model/03-07-PLAN.md",
+    ".planning/phases/03-edit-store-scope-model/03-07-SUMMARY.md",
+    ".planning/phases/03-edit-store-scope-model/03-08-PLAN.md",
+    ".planning/phases/03-edit-store-scope-model/03-08-SUMMARY.md",
+    ".planning/phases/03-edit-store-scope-model/03-09-PLAN.md",
+    ".planning/phases/03-edit-store-scope-model/03-09-SUMMARY.md",
+    ".planning/phases/03-edit-store-scope-model/03-10-PLAN.md",
+    ".planning/phases/03-edit-store-scope-model/03-10-SUMMARY.md",
+    ".planning/phases/03-edit-store-scope-model/03-11-PLAN.md",
+    ".planning/phases/03-edit-store-scope-model/03-11-SUMMARY.md",
+    ".planning/phases/03-edit-store-scope-model/03-12-PLAN.md",
+    ".planning/phases/03-edit-store-scope-model/03-12-SUMMARY.md",
+    ".planning/phases/03-edit-store-scope-model/03-13-PLAN.md",
+    ".planning/phases/03-edit-store-scope-model/03-13-SUMMARY.md",
+    ".planning/phases/03-edit-store-scope-model/03-14-PLAN.md",
+    ".planning/phases/03-edit-store-scope-model/03-14-SUMMARY.md",
+    ".planning/phases/03-edit-store-scope-model/03-15-PLAN.md",
+    ".planning/phases/03-edit-store-scope-model/03-15-SUMMARY.md",
+    ".planning/phases/03-edit-store-scope-model/03-16-PLAN.md",
+    ".planning/phases/03-edit-store-scope-model/03-16-SUMMARY.md",
+    ".planning/phases/03-edit-store-scope-model/03-17-PLAN.md",
+    ".planning/phases/03-edit-store-scope-model/03-17-SUMMARY.md",
+    ".planning/phases/03-edit-store-scope-model/03-18-PLAN.md",
+    ".planning/phases/03-edit-store-scope-model/03-18-SUMMARY.md",
+    ".planning/phases/03-edit-store-scope-model/03-19-PLAN.md",
+    ".planning/phases/03-edit-store-scope-model/03-19-SUMMARY.md",
+    ".planning/phases/03-edit-store-scope-model/03-20-PLAN.md",
+    ".planning/phases/03-edit-store-scope-model/03-20-SUMMARY.md",
+    ".planning/phases/03-edit-store-scope-model/03-21-PLAN.md",
+    ".planning/phases/03-edit-store-scope-model/03-21-SUMMARY.md",
+    ".planning/phases/03-edit-store-scope-model/03-22-PLAN.md",
+    ".planning/phases/03-edit-store-scope-model/03-22-SUMMARY.md",
+    ".planning/phases/03-edit-store-scope-model/03-23-PLAN.md",
+    ".planning/phases/03-edit-store-scope-model/03-23-SUMMARY.md",
+    ".planning/phases/03-edit-store-scope-model/03-CONTEXT.md",
+    ".planning/phases/03-edit-store-scope-model/03-UAT.md",
+    ".planning/phases/03-edit-store-scope-model/03-VALIDATION.md",
+    ".planning/phases/04-scoped-l0-read/04-VALIDATION.md",
+    "CONTRIBUTING.md",
+    "Cargo.lock",
+    "Cargo.toml",
+    "ci/check-tls-deps.sh",
+    "ci/pg/rowpred_corpus.sql",
+    "ci/pg/seed.sql",
+    "ci/query-services.sh",
+    "ci/server-services.sh",
+    "ci/test_tls_deps.py",
+    "ci/trino/catalog/editstore.properties",
+    "crates/ontoforge-auth/Cargo.toml",
+    "crates/ontoforge-auth/src/authn/dev.rs",
+    "crates/ontoforge-auth/src/authn/jwks.rs",
+    "crates/ontoforge-auth/src/authn/mod.rs",
+    "crates/ontoforge-auth/src/authn/oidc.rs",
+    "crates/ontoforge-auth/src/authn/principal.rs",
+    "crates/ontoforge-auth/src/lib.rs",
+    "crates/ontoforge-auth/src/scope/compile.rs",
+    "crates/ontoforge-auth/src/scope/coverage.rs",
+    "crates/ontoforge-auth/src/scope/lower.rs",
+    "crates/ontoforge-auth/src/scope/merge.rs",
+    "crates/ontoforge-auth/src/scope/mod.rs",
+    "crates/ontoforge-auth/tests/criteria_coverage.rs",
+    "crates/ontoforge-auth/tests/crypto_backend.rs",
+    "crates/ontoforge-auth/tests/data/README.md",
+    "crates/ontoforge-auth/tests/data/oidc_es256.pem",
+    "crates/ontoforge-auth/tests/data/oidc_rs256.pem",
+    "crates/ontoforge-auth/tests/data/rowpred_corpus.json",
+    "crates/ontoforge-auth/tests/dev_token.rs",
+    "crates/ontoforge-auth/tests/oidc.rs",
+    "crates/ontoforge-auth/tests/rowpred_common/mod.rs",
+    "crates/ontoforge-auth/tests/rowpred_diff.rs",
+    "crates/ontoforge-auth/tests/rowpred_trino_it.rs",
+    "crates/ontoforge-auth/tests/scope_compile.rs",
+    "crates/ontoforge-auth/tests/scope_merge.rs",
+    "crates/ontoforge-auth/tests/snapshots/scope_compile__scope_compile_diagnostics_json.snap",
+    "crates/ontoforge-engine/Cargo.toml",
+    "crates/ontoforge-engine/src/config.rs",
+    "crates/ontoforge-engine/src/lib.rs",
+    "crates/ontoforge-engine/src/printer/ast.rs",
+    "crates/ontoforge-engine/src/printer/call.rs",
+    "crates/ontoforge-engine/src/printer/dialect.rs",
+    "crates/ontoforge-engine/src/printer/escape.rs",
+    "crates/ontoforge-engine/src/printer/l2.rs",
+    "crates/ontoforge-engine/src/printer/mod.rs",
+    "crates/ontoforge-engine/src/printer/snapshots/ontoforge_engine__printer__tests__print_sqlite.snap",
+    "crates/ontoforge-engine/src/printer/snapshots/ontoforge_engine__printer__tests__print_trino.snap",
+    "crates/ontoforge-engine/src/printer/sqlite_ddl.rs",
+    "crates/ontoforge-engine/src/printer/tests.rs",
+    "crates/ontoforge-engine/src/trino/cancel.rs",
+    "crates/ontoforge-engine/src/trino/classify.rs",
+    "crates/ontoforge-engine/src/trino/client.rs",
+    "crates/ontoforge-engine/src/trino/decode.rs",
+    "crates/ontoforge-engine/src/trino/headers.rs",
+    "crates/ontoforge-engine/src/trino/l2_health.rs",
+    "crates/ontoforge-engine/src/trino/l2_monitor.rs",
+    "crates/ontoforge-engine/src/trino/mod.rs",
+    "crates/ontoforge-expr/Cargo.toml",
+    "crates/ontoforge-expr/src/analyze.rs",
+    "crates/ontoforge-expr/src/check.rs",
+    "crates/ontoforge-expr/src/infer.rs",
+    "crates/ontoforge-expr/src/lib.rs",
+    "crates/ontoforge-expr/src/limits.rs",
+    "crates/ontoforge-expr/src/rowpred/eval.rs",
+    "crates/ontoforge-expr/src/rowpred/ir.rs",
+    "crates/ontoforge-expr/src/rowpred/mod.rs",
+    "crates/ontoforge-expr/src/rowpred/parse.rs",
+    "crates/ontoforge-expr/src/rowpred/value.rs",
+    "crates/ontoforge-expr/src/walk.rs",
+    "crates/ontoforge-expr/tests/analyze.rs",
+    "crates/ontoforge-expr/tests/common/mod.rs",
+    "crates/ontoforge-expr/tests/criteria.rs",
+    "crates/ontoforge-expr/tests/rowpred_eval.proptest-regressions",
+    "crates/ontoforge-expr/tests/rowpred_eval.rs",
+    "crates/ontoforge-expr/tests/rowpred_subset.rs",
+    "crates/ontoforge-schema/src/diag.rs",
+    "crates/ontoforge-schema/src/ir/action.rs",
+    "crates/ontoforge-schema/src/ir/attrs.rs",
+    "crates/ontoforge-schema/src/ir/basetype.rs",
+    "crates/ontoforge-schema/src/ir/binding.rs",
+    "crates/ontoforge-schema/src/ir/link.rs",
+    "crates/ontoforge-schema/src/ir/manifest.rs",
+    "crates/ontoforge-schema/src/ir/mod.rs",
+    "crates/ontoforge-schema/src/ir/names.rs",
+    "crates/ontoforge-schema/src/ir/object.rs",
+    "crates/ontoforge-schema/src/ir/scope.rs",
+    "crates/ontoforge-schema/src/lib.rs",
+    "crates/ontoforge-schema/src/lint/binding/e13.rs",
+    "crates/ontoforge-schema/src/lint/binding/e14.rs",
+    "crates/ontoforge-schema/src/lint/binding/e15.rs",
+    "crates/ontoforge-schema/src/lint/binding/e16.rs",
+    "crates/ontoforge-schema/src/lint/binding/mod.rs",
+    "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e13__tests__clean.snap",
+    "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e13__tests__triggers.snap",
+    "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e14__tests__clean.snap",
+    "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e14__tests__triggers.snap",
+    "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e15__tests__clean.snap",
+    "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e15__tests__triggers.snap",
+    "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e16__tests__clean.snap",
+    "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e16__tests__triggers.snap",
+    "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__w17__tests__clean.snap",
+    "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__w17__tests__triggers.snap",
+    "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__w17__tests__unreadable.snap",
+    "crates/ontoforge-schema/src/lint/binding/w17.rs",
+    "crates/ontoforge-schema/src/lint/config.rs",
+    "crates/ontoforge-schema/src/lint/e08.rs",
+    "crates/ontoforge-schema/src/lint/e09.rs",
+    "crates/ontoforge-schema/src/lint/mod.rs",
+    "crates/ontoforge-schema/src/lint/naming/mod.rs",
+    "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w01__tests__clean.snap",
+    "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w01__tests__triggers.snap",
+    "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w02__tests__clean.snap",
+    "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w02__tests__triggers.snap",
+    "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w03__tests__clean.snap",
+    "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w03__tests__triggers.snap",
+    "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w04__tests__clean.snap",
+    "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w04__tests__triggers.snap",
+    "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w05__tests__clean.snap",
+    "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w05__tests__triggers.snap",
+    "crates/ontoforge-schema/src/lint/naming/w01.rs",
+    "crates/ontoforge-schema/src/lint/naming/w02.rs",
+    "crates/ontoforge-schema/src/lint/naming/w03.rs",
+    "crates/ontoforge-schema/src/lint/naming/w04.rs",
+    "crates/ontoforge-schema/src/lint/naming/w05.rs",
+    "crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e08__tests__clean.snap",
+    "crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e08__tests__triggers.snap",
+    "crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e09__tests__clean.snap",
+    "crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e09__tests__triggers.snap",
+    "crates/ontoforge-schema/src/lint/structure/mod.rs",
+    "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w06__tests__clean.snap",
+    "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w06__tests__triggers.snap",
+    "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w07__tests__clean.snap",
+    "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w07__tests__triggers.snap",
+    "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w08__tests__clean.snap",
+    "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w08__tests__triggers.snap",
+    "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w09__tests__clean.snap",
+    "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w09__tests__triggers.snap",
+    "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w10__tests__clean.snap",
+    "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w10__tests__triggers.snap",
+    "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w11__tests__clean.snap",
+    "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w11__tests__triggers.snap",
+    "crates/ontoforge-schema/src/lint/structure/w06.rs",
+    "crates/ontoforge-schema/src/lint/structure/w07.rs",
+    "crates/ontoforge-schema/src/lint/structure/w08.rs",
+    "crates/ontoforge-schema/src/lint/structure/w09.rs",
+    "crates/ontoforge-schema/src/lint/structure/w10.rs",
+    "crates/ontoforge-schema/src/lint/structure/w11.rs",
+    "crates/ontoforge-schema/src/lint/words.rs",
+    "crates/ontoforge-schema/src/loader/discover.rs",
+    "crates/ontoforge-schema/src/loader/dispatch.rs",
+    "crates/ontoforge-schema/src/loader/fixture.rs",
+    "crates/ontoforge-schema/src/loader/mod.rs",
+    "crates/ontoforge-schema/src/loader/parse.rs",
+    "crates/ontoforge-schema/src/loader/scope.rs",
+    "crates/ontoforge-schema/src/loader/sourcemap.rs",
+    "crates/ontoforge-schema/src/schema_export.rs",
+    "crates/ontoforge-schema/src/validate/actions.rs",
+    "crates/ontoforge-schema/src/validate/bindings.rs",
+    "crates/ontoforge-schema/src/validate/links.rs",
+    "crates/ontoforge-schema/src/validate/mod.rs",
+    "crates/ontoforge-schema/src/validate/objects.rs",
+    "crates/ontoforge-schema/tests/scope_documents.rs",
+    "crates/ontoforge-server/src/context.rs",
+    "crates/ontoforge-server/src/history_page.rs",
+    "crates/ontoforge-server/tests/postgres_http_it.rs",
+    "crates/ontoforge-storage/Cargo.toml",
+    "crates/ontoforge-storage/migrations/postgres/0001_definitions.sql",
+    "crates/ontoforge-storage/migrations/postgres/0002_edit_log.sql",
+    "crates/ontoforge-storage/migrations/postgres/0003_scope.sql",
+    "crates/ontoforge-storage/migrations/postgres/0004_action.sql",
+    "crates/ontoforge-storage/migrations/postgres/0005_read_audit.sql",
+    "crates/ontoforge-storage/migrations/postgres/0006_audit_truncated.sql",
+    "crates/ontoforge-storage/migrations/sqlite/0001_definitions.sql",
+    "crates/ontoforge-storage/migrations/sqlite/0002_edit_log.sql",
+    "crates/ontoforge-storage/migrations/sqlite/0003_scope.sql",
+    "crates/ontoforge-storage/migrations/sqlite/0004_action.sql",
+    "crates/ontoforge-storage/migrations/sqlite/0005_read_audit.sql",
+    "crates/ontoforge-storage/migrations/sqlite/0006_audit_truncated.sql",
+    "crates/ontoforge-storage/src/commit.rs",
+    "crates/ontoforge-storage/src/ddl.rs",
+    "crates/ontoforge-storage/src/diff.rs",
+    "crates/ontoforge-storage/src/error.rs",
+    "crates/ontoforge-storage/src/history.rs",
+    "crates/ontoforge-storage/src/import.rs",
+    "crates/ontoforge-storage/src/index.rs",
+    "crates/ontoforge-storage/src/lib.rs",
+    "crates/ontoforge-storage/src/log.rs",
+    "crates/ontoforge-storage/src/migrate.rs",
+    "crates/ontoforge-storage/src/naming.rs",
+    "crates/ontoforge-storage/src/physical.rs",
+    "crates/ontoforge-storage/src/query_read.rs",
+    "crates/ontoforge-storage/src/read_audit.rs",
+    "crates/ontoforge-storage/src/reload.rs",
+    "crates/ontoforge-storage/src/request_snapshot.rs",
+    "crates/ontoforge-storage/src/scope_store.rs",
+    "crates/ontoforge-storage/src/snapshots/ontoforge_storage__ddl__tests__ddl_postgres.snap",
+    "crates/ontoforge-storage/src/snapshots/ontoforge_storage__ddl__tests__ddl_sqlite.snap",
+    "crates/ontoforge-storage/src/sql_exit.rs",
+    "crates/ontoforge-storage/src/state.rs",
+    "crates/ontoforge-storage/src/store.rs",
+    "crates/ontoforge-storage/src/value.rs",
+    "crates/ontoforge-storage/tests/conformance/mod.rs",
+    "crates/ontoforge-storage/tests/conformance_pg.rs",
+    "crates/ontoforge-storage/tests/conformance_sqlite.rs",
+    "crates/ontoforge-storage/tests/frozen_history.rs",
+    "crates/ontoforge-storage/tests/history_masking.rs",
+    "crates/ontoforge-storage/tests/import.rs",
+    "crates/ontoforge-storage/tests/migrate.rs",
+    "crates/ontoforge-storage/tests/migrate_pg.rs",
+    "crates/ontoforge-storage/tests/model/mod.rs",
+    "crates/ontoforge-storage/tests/model_prop.proptest-regressions",
+    "crates/ontoforge-storage/tests/model_prop.rs",
+    "crates/ontoforge-storage/tests/query_read.rs",
+    "crates/ontoforge-storage/tests/query_read_pg.rs",
+    "crates/ontoforge-storage/tests/reload.rs",
+    "crates/ontoforge-storage/tests/reload_pg.rs",
+    "crates/ontoforge-storage/tests/reload_trino_it.rs",
+    "crates/ontoforge-storage/tests/request_snapshot.rs",
+    "crates/ontoforge-storage/tests/scope_store.rs",
+    "crates/ontoforge-storage/tests/sql_exit_guard.rs",
+    "crates/ontoforge-storage/tests/sqlite_connection.rs",
+    "crates/ontoforge-storage/tests/support/mod.rs",
+    "crates/ontoforge/Cargo.toml",
+    "crates/ontoforge/src/cli.rs",
+    "crates/ontoforge/src/dev_token.rs",
+    "crates/ontoforge/src/import.rs",
+    "crates/ontoforge/src/lib.rs",
+    "crates/ontoforge/src/main.rs",
+    "crates/ontoforge/src/migrate.rs",
+    "crates/ontoforge/src/reload.rs",
+    "crates/ontoforge/src/scope.rs",
+    "crates/ontoforge/tests/cli_dev_token.rs",
+    "crates/ontoforge/tests/cli_import.rs",
+    "crates/ontoforge/tests/cli_migrate.rs",
+    "crates/ontoforge/tests/cli_reload.rs",
+    "crates/ontoforge/tests/cli_scope.rs",
+    "docs/edit-store.md",
+    "docs/scope.md",
+    "examples/ontologies/aviation/actions.yaml",
+    "examples/ontologies/aviation/bindings/dev/aircraft.yaml",
+    "examples/ontologies/aviation/bindings/dev/fixtures/aircraft.csv",
+    "examples/ontologies/aviation/bindings/dev/fixtures/flight_crew.csv",
+    "examples/ontologies/aviation/bindings/dev/fixtures/flights.csv",
+    "examples/ontologies/aviation/bindings/dev/fixtures/maintenance_records.csv",
+    "examples/ontologies/aviation/bindings/dev/fixtures/pilots.csv",
+    "examples/ontologies/aviation/bindings/dev/flight-crew.yaml",
+    "examples/ontologies/aviation/bindings/dev/flight.yaml",
+    "examples/ontologies/aviation/bindings/dev/maintenance-record.yaml",
+    "examples/ontologies/aviation/bindings/dev/pilot.yaml",
+    "examples/ontologies/aviation/links.yaml",
+    "examples/ontologies/aviation/objects.yaml",
+    "examples/ontologies/aviation/ontology.yaml",
+    "examples/server/ontoforge-server.dev.toml",
+    "rust-toolchain.toml",
+    "schemas/ontoforge-definition.schema.json",
+    "schemas/ontoforge-manifest.schema.json",
+    "schemas/ontoforge-scope.schema.json",
+    "target/milestone-ci-41759804733-integration.log",
+    "target/milestone-ci-41759804733-ubuntu.log",
+    "target/milestone-ci-41759804733-windows.log"
+  ],
+  "covered_digest": "v4:sha256:6bf6d76b3932148c857b0bf40774262a33dae517c0356291ef130a50b39d9a85",
+  "covered_inputs": [
+    {
+      "file": ".gitattributes",
+      "bytes": 147,
+      "sha256": "66a217b6eaefd653b4e2d2fca5e61262849aa513f47a9ef9bf8b2e87362671f6"
+    },
+    {
+      "file": ".github/workflows/ci.yml",
+      "bytes": 18887,
+      "sha256": "b4a802a680e268303a5cdfa66f51f876f0b8128822ff364616c3fe7c3b7f77e8"
+    },
+    {
+      "file": ".planning/REQUIREMENTS.md",
+      "bytes": 17996,
+      "sha256": "bc1c55d4851d9fc029978a5695564372419be7f1ec20fc132073b6f5329a792f"
+    },
+    {
+      "file": ".planning/ROADMAP.md",
+      "bytes": 22391,
+      "sha256": "750d74677072e719fb0c2a5d92d763796ba284b30ab66dec69ecd09fcb962a10"
+    },
+    {
+      "file": ".planning/adr/0002-naming-convention.md",
+      "bytes": 1556,
+      "sha256": "06583dc6b193e33442d6dd6e0c94890cdb7c8ee8eb34c8de0c9a9cde9e311756"
+    },
+    {
+      "file": ".planning/adr/0016-storage-system-data-and-typed-edit-store.md",
+      "bytes": 3143,
+      "sha256": "5eda7f3e40fa58b8608632f7ae29495ab1c4ad70ba90e12f54a661d19fe7a1d6"
+    },
+    {
+      "file": ".planning/adr/0018-authz-scope-and-sql-tiers.md",
+      "bytes": 4462,
+      "sha256": "4a8889fbe1c26707eef9971b7bf8f59286237ca5f10792d01e63a5cf3d85d33c"
+    },
+    {
+      "file": ".planning/adr/0020-query-execution-rust-orchestrated-overlay.md",
+      "bytes": 4048,
+      "sha256": "1d70b2ae02df7d672aa20cb5573c5ad34ddee913091ced009c4a97392f3537ba"
+    },
+    {
+      "file": ".planning/adr/0023-phase3-crate-dependency-direction.md",
+      "bytes": 2468,
+      "sha256": "7bf35405353f76d4ca63a186b593b304e641db367eeac2301cf7b15107e77695"
+    },
+    {
+      "file": ".planning/adr/0024-edit-store-physical-format.md",
+      "bytes": 9542,
+      "sha256": "a8d1c2041b3bfead90b1ef96dfd865d58a1cf0086b49ee762ef8a6a6dbcfe3e8"
+    },
+    {
+      "file": ".planning/adr/0025-row-predicate-semantics.md",
+      "bytes": 9720,
+      "sha256": "b14fd5d877492f90dbaaef4f8264c78b51aeb6a30095418ab43a1cb34d842e4a"
+    },
+    {
+      "file": ".planning/adr/0026-edit-log-format.md",
+      "bytes": 10793,
+      "sha256": "9c73fc3ce4df7760557be5d64d0a498d07771a8aa02261994fa3f09243b1b25b"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-final.json",
+      "bytes": 19631,
+      "sha256": "3947bcf089a3641d0c0afa8bdf525ebd1974778e615c39150e977cad6ae4fc47"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-integration.log",
+      "bytes": 116188,
+      "sha256": "bdc51412697da080151c6b7f68e42f88c0e74bb21ecbfe67acc2fdaba23b449e"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-isolated-query-bench.log",
+      "bytes": 100182,
+      "sha256": "dbfefa449e95c858c9e9c11f3ef7690ae47b80dfbfa4a73c9a88d56a4828aa99"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-phase7-real-services.log",
+      "bytes": 71087,
+      "sha256": "5cad89dc1e75935cc5bdaa3ca82e5e1f4df06c81c56e7dc64425b0996820c727"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-ubuntu.log",
+      "bytes": 337902,
+      "sha256": "ae3d8ed246f84a5ba0ea323ee3a84311f76a8119e8deffeb7679da6161e723c8"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-windows.log",
+      "bytes": 341785,
+      "sha256": "243cf6436c9e9c7ca1b081cd0ce1df3ca486a25d7b678d10303e5ad9adda1753"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/03-VERIFICATION.before.md",
+      "bytes": 33984,
+      "sha256": "005fa619b864593df9f26ce1e5c745ed92cc783093b459c334c2013e773c565d"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/03-contracts.json",
+      "bytes": 182439,
+      "sha256": "ec058c604b6dcf92f9cba5848b80caa20b7dea668ce16d40b33b42b20e797b5e"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/04-VERIFICATION.before.md",
+      "bytes": 31373,
+      "sha256": "1aceaac17a38450bcd808db55b648596df8b33100d2f97000a91dbe6b7be1976"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/04-contracts.json",
+      "bytes": 57138,
+      "sha256": "4e2a69b6d8d4558b8df95c48116a88d19db7b24df36e9c98f7571ea0d1a0e9c7"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/CONTRACT-RESULTS.md",
+      "bytes": 87552,
+      "sha256": "f96ee0f2883e3d257303c0908b307495265260e4370d1a9bbaff95927c692f1b"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/GOVERNANCE-AND-BOUNDARIES.md",
+      "bytes": 7232,
+      "sha256": "59c8293a93551685ebcd1a37fd24ca2a8db8872f08f5e1523d569ad4e56f4f74"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/changed-source-inspection.json",
+      "bytes": 20089,
+      "sha256": "ee6e862a32cf4d77e3185a1a588acd2a810304d7067fb54465c37e0476f28c1f"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/collect.cjs",
+      "bytes": 2562,
+      "sha256": "01f9d3482b02f8680f7d2e9257d2baeb4909e89ac1282db865f3d107b0f40608"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/covered-file-inspection.json",
+      "bytes": 1999278,
+      "sha256": "b6ca8cbbc951771a0f1c64be9ac0fcce8448b95a3200bed00b197c241c8ad6aa"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/evidence-groups.json",
+      "bytes": 49483,
+      "sha256": "11e6a049bb83c45dbdfec91682ad289cd7df78dba982a33ec91b56e6c1efde6d"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/evidence-inputs.json",
+      "bytes": 1668,
+      "sha256": "ce8a79b0aef1587aed65eb10f92dad903ffeb93eec1bce00836d2e6d896a96e9"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/executed-tests.json",
+      "bytes": 1163717,
+      "sha256": "c5fca66084f339aacc485c62d6f23e57e7fd9b4a7716f28aefe5301b48c6632a"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/governance-inputs.json",
+      "bytes": 82627,
+      "sha256": "8716ba230696f22e585e04c48f599ff7679afabc7086253bd71858d782419c97"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/inspect.cjs",
+      "bytes": 4753,
+      "sha256": "b1c650485f255f16e5c10b20012d241898a7c61afabd841c30a994376213d79d"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/selected-test-source.json",
+      "bytes": 437942,
+      "sha256": "2ca49b8bd020e2b8003941a3809ab87f1fb8408dbe31a15a8b8819ce65607754"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/service-environment-evidence.json",
+      "bytes": 14140,
+      "sha256": "1dd3cf7db5ba2afa0b9a23fe80b0acb338c7141e313581aff10477b068a02320"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/truth-results.json",
+      "bytes": 225708,
+      "sha256": "f32411f6aae16ded1b3139257af3f048c65a81aae764437e862a355a353883d5"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-01-PLAN.md",
+      "bytes": 25031,
+      "sha256": "90de3cf4901067613c550248368aa72b7c40249b1519545c1400cb410ff8acae"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-01-SUMMARY.md",
+      "bytes": 11329,
+      "sha256": "3bb6d0208c6578ce5cfbfaaf3da058da020643bdd2974610715704efb6b276a5"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-02-PLAN.md",
+      "bytes": 23687,
+      "sha256": "a0b85331fa3287bab425b25e35b99f76ee30449b160cae137266ad33df6efbea"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-02-SUMMARY.md",
+      "bytes": 14870,
+      "sha256": "1b03cab26d9d6ec64f0eb32397c91ad8dba25ff66d5431922de98e6c25c04db3"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-03-PLAN.md",
+      "bytes": 34262,
+      "sha256": "1bf0a9593224cf7bd50e8fb209aed8436616bc8c7ad458cde83ee96385eaa6ea"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-03-SUMMARY.md",
+      "bytes": 13192,
+      "sha256": "9296ff28289625a8a568d3f49ed1280f628a514de3f81ecbe82be6add8f48dc6"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-04-PLAN.md",
+      "bytes": 20680,
+      "sha256": "f61ae419ddfa64baa7db0977a1e042c53e00aabc4996d09fa88dc39406569369"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-04-SUMMARY.md",
+      "bytes": 17536,
+      "sha256": "2f6941422faa4383c551ed698edeed3d127cb18d351c98af3d5478c9f9cf86a6"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-05-PLAN.md",
+      "bytes": 25061,
+      "sha256": "5a68581e972fd9a420951c0309abcdc305bc8d13c424c81e3581e954ede0fa4b"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-05-SUMMARY.md",
+      "bytes": 16185,
+      "sha256": "484341181f6343e7a5ea35aac4dbf8b9c1a9eddee7d91f1b1ee7ff3c535c0e4c"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-06-PLAN.md",
+      "bytes": 22183,
+      "sha256": "af286046bd0400397f28b5d4a19b8d520ae25c1b85f2da742483e6b1e8d769c7"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-06-SUMMARY.md",
+      "bytes": 15738,
+      "sha256": "d936b5682b7a7ec2aa1fd45f5e77f895d9b01932c79f1a734fae125b9d63ab20"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-07-PLAN.md",
+      "bytes": 22151,
+      "sha256": "bda4a1af83ea591a7230a389dfd22a99a4a02c3d6b67caa824addd4de20935cc"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-07-SUMMARY.md",
+      "bytes": 16421,
+      "sha256": "75143e34d0bf8370b57ebbafda5998647497e93c992ed55d2012454d45a22c89"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-08-PLAN.md",
+      "bytes": 25414,
+      "sha256": "e672ee6ad08df95ab5d59dd05718cb07dbdefc4d31da5a1263aed7e4b49a66d5"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-08-SUMMARY.md",
+      "bytes": 16571,
+      "sha256": "aa78ab71090251b0b12bf75f96ca9de68c500762df02b8bd5c56ab1f69e994dd"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-09-PLAN.md",
+      "bytes": 16069,
+      "sha256": "0742eda1fdaa4281439aad4ed15591e771cd1c400a5462b3e01f22fce87437c8"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-09-SUMMARY.md",
+      "bytes": 13902,
+      "sha256": "3d873b9615a5b008a5439f0be44d1acd41079f9844a58c66acdc523077c72b7c"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-10-PLAN.md",
+      "bytes": 17543,
+      "sha256": "fc5d1cd745425d1a87a06b2abc99b0d117351a0e6b70115a04d8c38207db693d"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-10-SUMMARY.md",
+      "bytes": 15171,
+      "sha256": "fb0e031092df90d984f8bfe947f7289fb7471390436330d3fe00b2617996fd82"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-11-PLAN.md",
+      "bytes": 27930,
+      "sha256": "03bde261c8effbd3def6cbcc8dcd98723ee664022398dc5827e0406969de26db"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-11-SUMMARY.md",
+      "bytes": 13582,
+      "sha256": "b42514704aadd21a35c9f161b39f2e95ed470e9a4d31b7f686f06e3a40e100af"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-12-PLAN.md",
+      "bytes": 17156,
+      "sha256": "40f1d6349808aa42441ae193a2179a40a25575c3e093e76628f2a6bded23dc3e"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-12-SUMMARY.md",
+      "bytes": 14019,
+      "sha256": "5301e091b9e0c99b06ae67c19085f97a6fcc145a38296f7ce06994ad81a770a4"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-13-PLAN.md",
+      "bytes": 19533,
+      "sha256": "07304d39003ebfbf8d5c13ebaf03c5ff779418f4f66975692f267c3d54439dba"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-13-SUMMARY.md",
+      "bytes": 16489,
+      "sha256": "a77a918a9706dd7a6744c62c29f7a471d04b1ec14dc810d978fc1c6684a59dae"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-14-PLAN.md",
+      "bytes": 20418,
+      "sha256": "5c5d55079719bb74896562d296ec1e50d3a10d8cde258a1cee444a71dcc6dadf"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-14-SUMMARY.md",
+      "bytes": 17439,
+      "sha256": "e4cb4f1ce3909de4267800f9be9725355bd7eb8ac68721f4f4af07476bdae81e"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-15-PLAN.md",
+      "bytes": 21558,
+      "sha256": "76c081a016c48c8259f1bfe1e53edfc754d8d6cdfeec0120ccb32fdd8e962b7f"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-15-SUMMARY.md",
+      "bytes": 15986,
+      "sha256": "c7260be34e22de092010a42b06f6c293b7ba6066fd6880f04e67b315f85bfc7e"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-16-PLAN.md",
+      "bytes": 25311,
+      "sha256": "3a283b06fd434186c94756efc5d0fe4c8c14655367bff3b0470dd6115b784ad6"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-16-SUMMARY.md",
+      "bytes": 19586,
+      "sha256": "8c3e79b5f7bc637dd6f18377347614007a9ac8994d6154768368eac73f6958d0"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-17-PLAN.md",
+      "bytes": 14320,
+      "sha256": "a472a5335b570bc153946c8718c68ccc830a7230038a16567d42ec1718658e20"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-17-SUMMARY.md",
+      "bytes": 15297,
+      "sha256": "469e0cade859eaaa7aadca7f84d4785e47a67b22f0f492ebff8410f4a7b9fc3f"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-18-PLAN.md",
+      "bytes": 26161,
+      "sha256": "24b3ea16e0e4f6c5654e87611df32c7d29558020ca79afa1546edf53ed35edb5"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-18-SUMMARY.md",
+      "bytes": 20403,
+      "sha256": "0f9cd46faaca9c48ea95102af731d942cc22c0c4dbf52fbfb6af3c80c746bc3c"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-19-PLAN.md",
+      "bytes": 21541,
+      "sha256": "3dfb751bc4dd00c70f76993e45d967cc9255c398fc07a76254aa967d83feb5e9"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-19-SUMMARY.md",
+      "bytes": 21532,
+      "sha256": "80777f0495addf0f560cac70d8c14273bb92a239b76e37ce78ed13e52886f062"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-20-PLAN.md",
+      "bytes": 15935,
+      "sha256": "1d04fa82cf19fe6351ead160bf56608fc255af828e8b6d3be3339ed7e877a81c"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-20-SUMMARY.md",
+      "bytes": 11080,
+      "sha256": "211c6ffbfc613a0d1b09e419da5532a105551fb908206dd9a53347882d420d8a"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-21-PLAN.md",
+      "bytes": 37245,
+      "sha256": "a7aecdd4eb4f547d01765253d7a5ee923d753a7a6faaa75de87b0ed3c8158ade"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-21-SUMMARY.md",
+      "bytes": 10565,
+      "sha256": "5569d306456568fb45ec00d000b708d151724a620ecf43f5c09620d6d95d4755"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-22-PLAN.md",
+      "bytes": 30279,
+      "sha256": "01c432bed2bace658bc56b0d43d448c0130e27a9710b49863d4aae738245d486"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-22-SUMMARY.md",
+      "bytes": 11796,
+      "sha256": "10229502b5ac034df6278a52359b0ec030deabdd8ef5c4fa03d19f0e42e68e17"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-23-PLAN.md",
+      "bytes": 24534,
+      "sha256": "05269331d8d7cfdb11452d33f2f2d4c83e5d3f599126e07b05651118424bf3ae"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-23-SUMMARY.md",
+      "bytes": 12431,
+      "sha256": "d551d53498e466339e338971a4b554bfaa8783f04ce4d38978bda2cbe9ba4970"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-CONTEXT.md",
+      "bytes": 12949,
+      "sha256": "2454fc04b2923dc2d34a7deaf357adc1117bb884ce093fc68e204b9b707d364b"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-UAT.md",
+      "bytes": 2465,
+      "sha256": "0256aca2788773d9c0ec13cc1c58356b8f68b9fe334027ea628a42d84076077a"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-VALIDATION.md",
+      "bytes": 31142,
+      "sha256": "de8121b068d1f0500c1117aca7397270e8d1349283232823deccd3179fc28504"
+    },
+    {
+      "file": ".planning/phases/04-scoped-l0-read/04-VALIDATION.md",
+      "bytes": 6525,
+      "sha256": "b12ea7c146b6de95c60c0828d90b511df584bced99071609cc677b719ca24814"
+    },
+    {
+      "file": "CONTRIBUTING.md",
+      "bytes": 10913,
+      "sha256": "28689b187772d8a5cf9baf59c121dfbd6fb83463d58c0db3be31a402115e91b5"
+    },
+    {
+      "file": "Cargo.lock",
+      "bytes": 113308,
+      "sha256": "7ccd6827bf948238d62ceb492bea930e30ae7d289a1dd3fc04f94d08afafb2ee"
+    },
+    {
+      "file": "Cargo.toml",
+      "bytes": 2869,
+      "sha256": "6ff37b0773c9cbf86f8738a11f008d32b41ac8e6153c5da37dafea0da33d4dd5"
+    },
+    {
+      "file": "ci/check-tls-deps.sh",
+      "bytes": 345,
+      "sha256": "73bd03d6c2361108bd041f2ccac3a29155d98f7ec8867e5750df6d5891a25fa7"
+    },
+    {
+      "file": "ci/pg/rowpred_corpus.sql",
+      "bytes": 2024,
+      "sha256": "2e5ed26bd766721a0395140a90c7dec8717884f5035084794dce625dad828a14"
+    },
+    {
+      "file": "ci/pg/seed.sql",
+      "bytes": 6445,
+      "sha256": "3968ced5df5fff86621e113b60c55328c08a65be682aef35cddb73b6e49b69d7"
+    },
+    {
+      "file": "ci/query-services.sh",
+      "bytes": 8539,
+      "sha256": "787584901268126405fa46ae5e77f34bc59a618d2297d9196ee0505b35682881"
+    },
+    {
+      "file": "ci/server-services.sh",
+      "bytes": 12537,
+      "sha256": "9456d17e03f07381f8c2370e60f3f4c539fb91db0a12bd81296503899c39edc6"
+    },
+    {
+      "file": "ci/test_tls_deps.py",
+      "bytes": 4211,
+      "sha256": "0f1d1fb4baba849319e8467d087c08b672ed9d94f14c67cd22d8b0042b06845a"
+    },
+    {
+      "file": "ci/trino/catalog/editstore.properties",
+      "bytes": 774,
+      "sha256": "ad81db5b2643beedae489a75a993ba5c0f7790edfba12da0dad1670b10dfe893"
+    },
+    {
+      "file": "crates/ontoforge-auth/Cargo.toml",
+      "bytes": 1126,
+      "sha256": "dc6cdb4e289adcba34b747e4d4de20f7a4aa0a48b1c268362e92b00f39249aac"
+    },
+    {
+      "file": "crates/ontoforge-auth/src/authn/dev.rs",
+      "bytes": 10745,
+      "sha256": "3fd43d156189ea722ad6050b05a63abe81fd3df5d7d03471e27934a417fd8c37"
+    },
+    {
+      "file": "crates/ontoforge-auth/src/authn/jwks.rs",
+      "bytes": 14041,
+      "sha256": "9a019b93e78070b1b8df8b5fdb7ca269a4010c49bfcccffe599d6d4addeacc12"
+    },
+    {
+      "file": "crates/ontoforge-auth/src/authn/mod.rs",
+      "bytes": 4208,
+      "sha256": "7ea7e97cd04cea5391581e37891b10f2c225d4ea19c8e91990fa5f7679dc504e"
+    },
+    {
+      "file": "crates/ontoforge-auth/src/authn/oidc.rs",
+      "bytes": 6280,
+      "sha256": "39d6c94243f67674489cae39ec7a8225e3d8147b37e021a6546d0c6353fff1ee"
+    },
+    {
+      "file": "crates/ontoforge-auth/src/authn/principal.rs",
+      "bytes": 5608,
+      "sha256": "3a2d899ce6b4dcdb4ebc1b26d4007ac0d1c6b5e00b70c06aabd3564d38e2e6f3"
+    },
+    {
+      "file": "crates/ontoforge-auth/src/lib.rs",
+      "bytes": 902,
+      "sha256": "cdd7228b3f9bed3e14889e996b4c20d4bf2dc50651b574762ebff7cafe467b8a"
+    },
+    {
+      "file": "crates/ontoforge-auth/src/scope/compile.rs",
+      "bytes": 18312,
+      "sha256": "32e9c8c8fa29377468ca27989d520f114b07290f3b78d276d78973620116ea90"
+    },
+    {
+      "file": "crates/ontoforge-auth/src/scope/coverage.rs",
+      "bytes": 5429,
+      "sha256": "d1994fb02fc7069b160c10a0a070a4105b6f9264d2075db985aea27617843815"
+    },
+    {
+      "file": "crates/ontoforge-auth/src/scope/lower.rs",
+      "bytes": 6163,
+      "sha256": "aaee7b26d70c858960ea484c51d4eeb28c72c87cf421eac545c0aab9d6f2f3bb"
+    },
+    {
+      "file": "crates/ontoforge-auth/src/scope/merge.rs",
+      "bytes": 4493,
+      "sha256": "123bc10065f7b64de2f5976e36eb9fd64e28836b13b4c35524dda71bd0d544bf"
+    },
+    {
+      "file": "crates/ontoforge-auth/src/scope/mod.rs",
+      "bytes": 1311,
+      "sha256": "b73e66765f3489943ea84ed37f7db008985f89cbab8abba049f0401eacd3b423"
+    },
+    {
+      "file": "crates/ontoforge-auth/tests/criteria_coverage.rs",
+      "bytes": 6425,
+      "sha256": "1cd3645a18b43d7011d7d9f34b210c0c028758c690412a38143223b9a5e8cfd3"
+    },
+    {
+      "file": "crates/ontoforge-auth/tests/crypto_backend.rs",
+      "bytes": 861,
+      "sha256": "356915f4650fdc48c0529f8032233491109a6989e12f616b3e13934ce0716154"
+    },
+    {
+      "file": "crates/ontoforge-auth/tests/data/README.md",
+      "bytes": 799,
+      "sha256": "a77befc58ce522b0892aaa27bc609d9ed240cbd29af30f702a8c046c192cb925"
+    },
+    {
+      "file": "crates/ontoforge-auth/tests/data/oidc_es256.pem",
+      "bytes": 241,
+      "sha256": "9c7b029712fed63d24792bdf4a6b3d2c21f0ab849f7e1fa24c7e73a6c454290d"
+    },
+    {
+      "file": "crates/ontoforge-auth/tests/data/oidc_rs256.pem",
+      "bytes": 1704,
+      "sha256": "737f0ae343d36e84acf4a53ce3be8bc268403d65fa0ecb3134892272cfec8511"
+    },
+    {
+      "file": "crates/ontoforge-auth/tests/data/rowpred_corpus.json",
+      "bytes": 5771,
+      "sha256": "60f81c15413b95273162c4e05fba215c72a69b17ae5fcde416d29343328c1439"
+    },
+    {
+      "file": "crates/ontoforge-auth/tests/dev_token.rs",
+      "bytes": 16941,
+      "sha256": "fa335e229d5dbf61bab6ac45a55307ff52d915077a30450570817695dbb6dfa9"
+    },
+    {
+      "file": "crates/ontoforge-auth/tests/oidc.rs",
+      "bytes": 32784,
+      "sha256": "c239d7179885de5d25239dc5ce7616af954299ff53b60255a57c500d70bb63e3"
+    },
+    {
+      "file": "crates/ontoforge-auth/tests/rowpred_common/mod.rs",
+      "bytes": 19589,
+      "sha256": "168590b77c1a64c16dcb5a1ba72fad78cfe767ba4503231b9909e9c57ae4b47d"
+    },
+    {
+      "file": "crates/ontoforge-auth/tests/rowpred_diff.rs",
+      "bytes": 4835,
+      "sha256": "c1f689899f1e37bf2200ef0045a49b5989d6111a318fa8e4941b67d3989c9e5c"
+    },
+    {
+      "file": "crates/ontoforge-auth/tests/rowpred_trino_it.rs",
+      "bytes": 7584,
+      "sha256": "4f66bb9db206e330060c53b5444f5f821a82586a25f87a1d1df16fa3abf71ffa"
+    },
+    {
+      "file": "crates/ontoforge-auth/tests/scope_compile.rs",
+      "bytes": 14885,
+      "sha256": "b727f00efcb2a802963d4cb17c5980faaadfa47f571b3cfeb3686d4dd4ec549b"
+    },
+    {
+      "file": "crates/ontoforge-auth/tests/scope_merge.rs",
+      "bytes": 7342,
+      "sha256": "cf0264761e014e9f89d50419bd406fa10d197ff4ca8c9908bf3977090df2e172"
+    },
+    {
+      "file": "crates/ontoforge-auth/tests/snapshots/scope_compile__scope_compile_diagnostics_json.snap",
+      "bytes": 3259,
+      "sha256": "a48e500377a286ef2973c2ac5cd88ddcaac48f99816fa1941bea362503f535ee"
+    },
+    {
+      "file": "crates/ontoforge-engine/Cargo.toml",
+      "bytes": 980,
+      "sha256": "b5fbf0daa61f254d24cfabdd1faf56cfbc4f30523ec22b71129c479282f9048b"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/config.rs",
+      "bytes": 44941,
+      "sha256": "d0b7f00d1b33f0fb8300fe1c971af72b3094688914dbb6f66f2e47be9b455543"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/lib.rs",
+      "bytes": 6181,
+      "sha256": "6a084e250a33b629bcbc77c170e84fb21fdf3d040ee8ac1e239ff368eb654e69"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/printer/ast.rs",
+      "bytes": 2781,
+      "sha256": "3ded752ff5e80dfbba0d9f70b9c3857c1ef2fc007d3d144169f6d78eda4f9790"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/printer/call.rs",
+      "bytes": 716,
+      "sha256": "62e31c1578a72701580ceb40d28b83af0c0ca51b2116cb3aa4271698ac3d24f6"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/printer/dialect.rs",
+      "bytes": 10895,
+      "sha256": "255b8bebda8d3f25aa8b2d3d6acff0b2d8f755891b35bef2812cb91d973b6004"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/printer/escape.rs",
+      "bytes": 2853,
+      "sha256": "fb003ca9d935de91830884be370a7561e91e20fa92569c2b61195adfa08a4951"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/printer/l2.rs",
+      "bytes": 21334,
+      "sha256": "b71cadcd7e068f464304173746de8ec3c4c202400a831adff12d26f08ad91378"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/printer/mod.rs",
+      "bytes": 2284,
+      "sha256": "2892c9a56ea812dd6517dea673cfe170d384a111342a22b0bdbc3ad4a7abaeae"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/printer/snapshots/ontoforge_engine__printer__tests__print_sqlite.snap",
+      "bytes": 416,
+      "sha256": "dbd58dfb8210626dccc8b2e5e45d97dc612852e24e9f7c74c0dee2c2ef0ec71c"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/printer/snapshots/ontoforge_engine__printer__tests__print_trino.snap",
+      "bytes": 424,
+      "sha256": "d8cfb791b9c69055d7ed63c72893d70c024bc648f5d812b7269630ee8467decc"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/printer/sqlite_ddl.rs",
+      "bytes": 3559,
+      "sha256": "50d4b50d6e4dd137fb2e107a9eacc890800740ba831d4350baf24863e980d2b7"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/printer/tests.rs",
+      "bytes": 11488,
+      "sha256": "88e5ddb09010b79afec6d9b8de27635c614f7e07f355bb1daffc3dd0f1fd6503"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/trino/cancel.rs",
+      "bytes": 6541,
+      "sha256": "2cf5bdf35abcfe7cdfddb34964fd719da396a2963b62768fa4d2a26775d19502"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/trino/classify.rs",
+      "bytes": 9960,
+      "sha256": "aa698c8058c76e2120a41f19f7448418c855d568aaa49606b8f5d2b3e801b97f"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/trino/client.rs",
+      "bytes": 4124,
+      "sha256": "812863114a1417c315bb2ab0b06f9b29816c8dff29bd95261e4bb5ea14834a68"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/trino/decode.rs",
+      "bytes": 4259,
+      "sha256": "a0dac613e31aecc09225a81e58f31694984ac944d01b48da5263730c55b8e6dc"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/trino/headers.rs",
+      "bytes": 4937,
+      "sha256": "db1c7fe3eedc2e447418afab8d8549f8847c6c8b4277037aec9a1e7b8cacf5fa"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/trino/l2_health.rs",
+      "bytes": 11483,
+      "sha256": "a3d1ef043468bdd30fbad3f4fc3aed07a878aa77284a21cbf2fae5830a7b06a3"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/trino/l2_monitor.rs",
+      "bytes": 16922,
+      "sha256": "f5283824db2e2aaae027382d211f24c2d4110394be4c4a2d2aad132aae3ca1c4"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/trino/mod.rs",
+      "bytes": 22389,
+      "sha256": "f18c5148607b8d75c375c48c2b9ee3d23fbaeac9b34e5863d7c4992a4682d26c"
+    },
+    {
+      "file": "crates/ontoforge-expr/Cargo.toml",
+      "bytes": 362,
+      "sha256": "a6f4e7a3a1e261492fb5dc5e48fcdb784870e2c467618d13c821dd99dd44a258"
+    },
+    {
+      "file": "crates/ontoforge-expr/src/analyze.rs",
+      "bytes": 3803,
+      "sha256": "4c391ab7e58f967d937890e0d73ce588d90d1ca06be5b084a89653f40e6ef720"
+    },
+    {
+      "file": "crates/ontoforge-expr/src/check.rs",
+      "bytes": 8842,
+      "sha256": "c58e9a1065353966a5ab205f0be41817c69103ebc1cfe1b963944aef1ca8259d"
+    },
+    {
+      "file": "crates/ontoforge-expr/src/infer.rs",
+      "bytes": 11967,
+      "sha256": "0862cfd94365ec332656af9bc9295114f4689bed2a99669dca5e7541e8f81dcd"
+    },
+    {
+      "file": "crates/ontoforge-expr/src/lib.rs",
+      "bytes": 794,
+      "sha256": "1af4bd6cf536e1cb6f133a6b05594f89e9e5ec871e8311b26b7f6343a49f114c"
+    },
+    {
+      "file": "crates/ontoforge-expr/src/limits.rs",
+      "bytes": 7104,
+      "sha256": "609d19aa148ecb8052cbfaf840bdee4ebf182397fc9b82a320b014a0c856e43c"
+    },
+    {
+      "file": "crates/ontoforge-expr/src/rowpred/eval.rs",
+      "bytes": 5994,
+      "sha256": "5cedfd07d0dc5a26dd20a58276a3c5a89ff9f3b82bfa5170b6fb575e8ac637d3"
+    },
+    {
+      "file": "crates/ontoforge-expr/src/rowpred/ir.rs",
+      "bytes": 7128,
+      "sha256": "e504125262c4d37352dcefa9091aed1f9376eecbcceae1228a48de33d4bf9128"
+    },
+    {
+      "file": "crates/ontoforge-expr/src/rowpred/mod.rs",
+      "bytes": 544,
+      "sha256": "c92bccd5bb8822a5d0b57fe3072b13ee63986f7568ebdd84fd75e01c8236edcf"
+    },
+    {
+      "file": "crates/ontoforge-expr/src/rowpred/parse.rs",
+      "bytes": 20572,
+      "sha256": "bccc87cade460241468302c40fe6e4f3ffb16f15d0ea77e31fe6c9111fd7151b"
+    },
+    {
+      "file": "crates/ontoforge-expr/src/rowpred/value.rs",
+      "bytes": 3200,
+      "sha256": "baf20d3f4e219d878c0f75d41a454b074d37ab3af946e8238461b820d001e159"
+    },
+    {
+      "file": "crates/ontoforge-expr/src/walk.rs",
+      "bytes": 6888,
+      "sha256": "51ce9cb320cb774c848a7934219c464b494ca435a6f4a2f81140f6ff01c15111"
+    },
+    {
+      "file": "crates/ontoforge-expr/tests/analyze.rs",
+      "bytes": 8133,
+      "sha256": "4c7b89fffeea3e1c5865ad196e626b7fde2d2d0e774b54289ec82d42ce26cbab"
+    },
+    {
+      "file": "crates/ontoforge-expr/tests/common/mod.rs",
+      "bytes": 1900,
+      "sha256": "273c63ba51260de368898ed500c6b21a35c04b6f06f5968f74c0f76a3bbc5ecc"
+    },
+    {
+      "file": "crates/ontoforge-expr/tests/criteria.rs",
+      "bytes": 10201,
+      "sha256": "a9f49ccefa27097f317f5b4d436cedb15f0574a55fcf327903a21af62da168b7"
+    },
+    {
+      "file": "crates/ontoforge-expr/tests/rowpred_eval.proptest-regressions",
+      "bytes": 295,
+      "sha256": "7b399ee10d2b804509749410134488ac533b14c1e4c7cd73d8a2b24f03a3bbac"
+    },
+    {
+      "file": "crates/ontoforge-expr/tests/rowpred_eval.rs",
+      "bytes": 20324,
+      "sha256": "9306d2df9e086a377618b8319fbda68d5edaac633d9bd266639e7ee254c9a44c"
+    },
+    {
+      "file": "crates/ontoforge-expr/tests/rowpred_subset.rs",
+      "bytes": 9203,
+      "sha256": "918c8986bc25d2bcb741f5ce07523ed23860bae1b2ee76456bd0aad13e08ba63"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/diag.rs",
+      "bytes": 11203,
+      "sha256": "fad8d8b85fd305c25218b088281f92377a77a6031e1d9ce352b1f137a638f535"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/ir/action.rs",
+      "bytes": 7616,
+      "sha256": "e7304754dc24f6d757daa3611a8980e6efd439ceba4264a553efa8f9b5b1ec69"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/ir/attrs.rs",
+      "bytes": 1101,
+      "sha256": "36a451738252d9eebe1205e683edefcec3e3cdfe3849efa987d05a0d11518b12"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/ir/basetype.rs",
+      "bytes": 7541,
+      "sha256": "e2a3a66aa781b461bd46bedeecba3f472f390069d2b8176572702d88fb8ddf6c"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/ir/binding.rs",
+      "bytes": 7892,
+      "sha256": "6d93f45b62895068a1685ab19313ea37927c9e339e6eb3c2d4fcf5a141b46073"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/ir/link.rs",
+      "bytes": 3007,
+      "sha256": "4cc8501bb69d2e7d3f4c75b8c0c9e723ca4139ce4506f59d59a860a398aad7a8"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/ir/manifest.rs",
+      "bytes": 637,
+      "sha256": "cd8e590bab63e596b1efc2c8146a5980986dbe00ff641040ce3c44823d3c66a9"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/ir/mod.rs",
+      "bytes": 3043,
+      "sha256": "f50b9f254271c1099898bf8e862ca908737fc6031d460396de2f0d898711423a"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/ir/names.rs",
+      "bytes": 12521,
+      "sha256": "a0a7f1e25f5fde58cc5476ee810faf0fccca72a79a3d97626c56d4e290bdd27a"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/ir/object.rs",
+      "bytes": 4450,
+      "sha256": "12faf758624b52f42b9e2c408fd3335a0750c573c096077c1f9df6006c68d1b4"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/ir/scope.rs",
+      "bytes": 4540,
+      "sha256": "a39f07edc35dd31ef593444061a8f5e48370a9ad03070ee8149405fc6aa877a3"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lib.rs",
+      "bytes": 295,
+      "sha256": "7a95e808b35b4fa1a7deefbde965d0198206f69934c4ff50e92e0018fe09e14a"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/binding/e13.rs",
+      "bytes": 5692,
+      "sha256": "dac507bcd3e6cddce0164fad493b8724f0803231cca094b0411cf0d6c15f06fe"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/binding/e14.rs",
+      "bytes": 9371,
+      "sha256": "9d7ef60d7224bd23dd0ada5c4ee8aa9e95cea50f349217368125a72b7ba6af90"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/binding/e15.rs",
+      "bytes": 5478,
+      "sha256": "ddbe12e11f4586713ddb27fb2712f55b5738e6ebb1868b82f465229d1d7c5b15"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/binding/e16.rs",
+      "bytes": 4179,
+      "sha256": "ae6ebfa1072de42f5a6be913730886bf0bec83eae0ba336ceb214fd2f17f17ea"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/binding/mod.rs",
+      "bytes": 1980,
+      "sha256": "b78dbde2084fb44bb46038f291c59e9f5b3ba237b7b1a2d0eb34af50a02f5562"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e13__tests__clean.snap",
+      "bytes": 85,
+      "sha256": "f83f13ebc2e804566f4a5147140a61eeac031600ad6dea1a6f8480c6c6d83bd4"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e13__tests__triggers.snap",
+      "bytes": 1710,
+      "sha256": "efd9bd631295090c863b14d4c178148bd03be90908386604102cb16350112db9"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e14__tests__clean.snap",
+      "bytes": 85,
+      "sha256": "d1bd854616db8772c10d4fd2b7f112aaddb0ecefd9bc9f5a6ab3ee87e4a22d5e"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e14__tests__triggers.snap",
+      "bytes": 1257,
+      "sha256": "bde06383ec706f21729d69f751c49a1c0e72ba896fa787c186d7f6c80e0975a8"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e15__tests__clean.snap",
+      "bytes": 85,
+      "sha256": "7b94966a0ad65259c59fea53f8869c600d965b52c27a692fe48ad09ae973cf10"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e15__tests__triggers.snap",
+      "bytes": 837,
+      "sha256": "dbe0da2f4382356c68a709ff14ceb92fdbcdba2d0d54815dec4bc22e252d6903"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e16__tests__clean.snap",
+      "bytes": 85,
+      "sha256": "5f18f1975ede890b533d69b02ba9c871d3f52213e48eb88015d044458138d4dc"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e16__tests__triggers.snap",
+      "bytes": 800,
+      "sha256": "05844469f3436ea7b7671d2d2c417b0a8d8e93c55732c7da67f47b6295d17c9b"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__w17__tests__clean.snap",
+      "bytes": 85,
+      "sha256": "b0dd2a60ae36fe67d9fd2dca57ec7357f70f68860506d8954a5ddd890dcaf32b"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__w17__tests__triggers.snap",
+      "bytes": 1205,
+      "sha256": "d37d50bffddec1568a7c6e90965eb8694ae51b5bd972b526cc46ee690c041e07"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__w17__tests__unreadable.snap",
+      "bytes": 531,
+      "sha256": "aa0cbe9f83e856250f8487435f03fbb493b2078fc108f9e86994659085f6d569"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/binding/w17.rs",
+      "bytes": 9734,
+      "sha256": "d30ed7cf51e326d14eb895e249967d486b2552e034ba477f3ceb098eee8c05c4"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/config.rs",
+      "bytes": 24599,
+      "sha256": "6fed4edd5c63f6534730e36671265a88051cf64bed88d69bb14089823122ccc7"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/e08.rs",
+      "bytes": 11153,
+      "sha256": "e3cca0376bde105b84e07dfbc9dd7de99aa2c2940b41479526e20064c9e9b8a6"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/e09.rs",
+      "bytes": 7839,
+      "sha256": "8a080c45ed6d1ae2a131750a6bd7bfb31e1fd1b16deec8dade3ade452d4b7c1b"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/mod.rs",
+      "bytes": 13796,
+      "sha256": "e2b95df43d7f74c09fd4abf4e2b4e39d4bbc8a663c81a6d0cb8f8b95fcc60980"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/naming/mod.rs",
+      "bytes": 3496,
+      "sha256": "f05ee5b6340eadce0dd7a34d18bd5840df2552874bc1e2d973c2f05f4cedd969"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w01__tests__clean.snap",
+      "bytes": 84,
+      "sha256": "fe7764ab73d59cb8a6f7ef28a870a05ab3190319373b9477b5f1dfec11cb6658"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w01__tests__triggers.snap",
+      "bytes": 1690,
+      "sha256": "0909c10cd2928fa4a693ac2e9f8c2150b454df6fcf9878ac0838df8c71b03eb4"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w02__tests__clean.snap",
+      "bytes": 84,
+      "sha256": "ea08163c23b5710ba056d7bb8699079949baa36172e8186abb580ae0665e87f1"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w02__tests__triggers.snap",
+      "bytes": 880,
+      "sha256": "18a141b00d376fa8b3d9d25332364ee1d5cbca3edfb6f2cc6243aec8dfe3ba13"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w03__tests__clean.snap",
+      "bytes": 84,
+      "sha256": "5ea55d250b68da14b4540ce85e4abf4b2da0771eef67288775e708262ce98261"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w03__tests__triggers.snap",
+      "bytes": 2238,
+      "sha256": "828117515df1f1e9e0ca496e9bf2748c52876e019bb1813e65c518b3e6c922bc"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w04__tests__clean.snap",
+      "bytes": 84,
+      "sha256": "d86f14152ef3a251bdb431b87affc836fd8a90315d3a57f2d642ce09c604f8fc"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w04__tests__triggers.snap",
+      "bytes": 583,
+      "sha256": "144248ea25b528c58d52cffe07fd597453eb50c7316a1f62bc8d3e4916889874"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w05__tests__clean.snap",
+      "bytes": 84,
+      "sha256": "c3739f5e59b73f303962c56fc27a2dfdb2d11cc0d93a02bbd1a8b1b4b37f060b"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w05__tests__triggers.snap",
+      "bytes": 2244,
+      "sha256": "189b2653024bd76b895c26c2fc95c2e8e6e946232f417ac329dce7e1fbb39921"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/naming/w01.rs",
+      "bytes": 4253,
+      "sha256": "a058389bc76eca9a4a49ff550b0f7ed83ed21b22e20910dd0d68abc945521e3e"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/naming/w02.rs",
+      "bytes": 3416,
+      "sha256": "dbfe4b8fdd1bda112a64f6937769cd5fcd20d180a3d1ac56ff5a0c5c33715934"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/naming/w03.rs",
+      "bytes": 3268,
+      "sha256": "b535f1630043fd3ed1871ad175ff287a67e75f518e829180dfa94d5532f8bb47"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/naming/w04.rs",
+      "bytes": 5107,
+      "sha256": "44302d3d252c83e5e15e08872de4a81c57732fe22b234d3fe70c3da16f6716b5"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/naming/w05.rs",
+      "bytes": 3402,
+      "sha256": "f3172f386bb036bcd440eea8b1ca7f67b7f8fa8b2bd65d9b6f89c96cd5232a0e"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e08__tests__clean.snap",
+      "bytes": 77,
+      "sha256": "1abe58521230d910fdd07554f504ecb2a14d9433f594168b687b8e2e541ddd4c"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e08__tests__triggers.snap",
+      "bytes": 1607,
+      "sha256": "1216fef13407350308af940374ac414f07835293d4dc54c3cc0599e075dda56e"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e09__tests__clean.snap",
+      "bytes": 77,
+      "sha256": "28a7a3b701e907114f519ce0876b15f16560cecc63b4ee539008453d6ed68ea0"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e09__tests__triggers.snap",
+      "bytes": 1060,
+      "sha256": "53a5346c87c46d40739a5bc87efae23c55d66b19fff08025ef67f02693cbc65d"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/structure/mod.rs",
+      "bytes": 3473,
+      "sha256": "fe4b962a88e4f36c3e5a86c6d259caef684c62cd9408178bc5623c8a865f654f"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w06__tests__clean.snap",
+      "bytes": 87,
+      "sha256": "6e0d5b4aa5825311c2ce52a2fe9bdd3177a5e722220fe7856f147da30dbf458d"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w06__tests__triggers.snap",
+      "bytes": 1411,
+      "sha256": "c9624d2d30c11e2b844300b4e2c6256f22f283068b9f08bcea8fc5c8aa2ed4bb"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w07__tests__clean.snap",
+      "bytes": 87,
+      "sha256": "72f2cfc140c8b68f50efa6353d16c76a70603410e412a401cc28499883309010"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w07__tests__triggers.snap",
+      "bytes": 1406,
+      "sha256": "12b0ca2f1df26ab505754947450d63a9911f3570165fad76f4a207bdeb07ae19"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w08__tests__clean.snap",
+      "bytes": 87,
+      "sha256": "bcdf8e84a3c7dfe74565428af22d78c70f1a1099c3509f74a0b13696d3542f60"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w08__tests__triggers.snap",
+      "bytes": 541,
+      "sha256": "3304920aae91199d3a94a427515b1db4eb66ae58e0fb1fe0da70140a778f9d66"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w09__tests__clean.snap",
+      "bytes": 87,
+      "sha256": "9d40c014f81c8cce202a4265de4a9dce12f69dc02cf5332e5111ec442a2530f4"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w09__tests__triggers.snap",
+      "bytes": 952,
+      "sha256": "1792cace0e81cdafdfe32208488a77026e2b8c39f17cad8b33d966bab5a8a3b3"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w10__tests__clean.snap",
+      "bytes": 87,
+      "sha256": "952b87236f9e6a52bb143c967daf49700f36ed8467f6945aaf443d5856da1453"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w10__tests__triggers.snap",
+      "bytes": 2116,
+      "sha256": "1fdcda141f2ace723c8af19553011d113e28178064e30cc4fc0c678400db6e3a"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w11__tests__clean.snap",
+      "bytes": 87,
+      "sha256": "7466c0a9cc5fa3e4a81ee63c2fd005169da9a24bf536fee01effc021bfbf1f76"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w11__tests__triggers.snap",
+      "bytes": 1283,
+      "sha256": "b3c7947eca1ed7b18fdae3e14750f657fdfb50590219d901ea06e8e03cfe162d"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/structure/w06.rs",
+      "bytes": 5242,
+      "sha256": "62dff4a55bb05257021c8008b463298eddc2c970d60424bad04ae2f45c9671b2"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/structure/w07.rs",
+      "bytes": 11609,
+      "sha256": "3b8a0be43ac1e36cd146848be069f43426c6f91656663d5592f46a28de3ecab1"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/structure/w08.rs",
+      "bytes": 10706,
+      "sha256": "6be7a8cb45c5512c22f402e94b7cbe4660aea6eb09a325a12c967d6093087707"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/structure/w09.rs",
+      "bytes": 8173,
+      "sha256": "75c1a88efaae505712e7dd9b08f6e14950a98cb65cda1bde0c586154ed11f53b"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/structure/w10.rs",
+      "bytes": 3779,
+      "sha256": "b22013c293ce2af14bdee522400c4c4e7e817582f8781b86088513e6143ab474"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/structure/w11.rs",
+      "bytes": 4602,
+      "sha256": "f5ff66ca30579851e80cdbc80c5c83a79a13877aed6cec6bb4db2cf5fb99ee78"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/lint/words.rs",
+      "bytes": 1747,
+      "sha256": "5f656f100e3152113bb3029246ba47c23655a795d20d1a3360a85939f2e3d338"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/loader/discover.rs",
+      "bytes": 16240,
+      "sha256": "331dd628af6ababf11c9bc5b398b2abbdb779b2fe37fbe8a5f314a675b6003fa"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/loader/dispatch.rs",
+      "bytes": 12237,
+      "sha256": "d53d6edf5faa386fe50c31b83bb664a67dafaf3727f6cc0932379a7ab0c8b2e5"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/loader/fixture.rs",
+      "bytes": 5724,
+      "sha256": "7ba21673ba80f6d028bfc627c59e92261dd5479ee3d445d6cabdfdd3cc338d63"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/loader/mod.rs",
+      "bytes": 34507,
+      "sha256": "00abcd4d66270e78e96381b47bc9d8b9a2d41668963a11e83d25f00d182ec08f"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/loader/parse.rs",
+      "bytes": 12703,
+      "sha256": "3a4db45c5a16eadf3c3e43cd4c12b8da088f727d18ba7a15ee3ac8cdc9fd89dd"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/loader/scope.rs",
+      "bytes": 11525,
+      "sha256": "ca35835c1b3ceea0a2b16fc546bd7949194966346cb70aaedf58d81535b8482d"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/loader/sourcemap.rs",
+      "bytes": 9476,
+      "sha256": "62e7459b928b1dff8c5dc48cad152d5f04140e2a385a4e63755076814a7dd1b2"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/schema_export.rs",
+      "bytes": 4061,
+      "sha256": "044762e6ff5ae3b9a5ae2ff18796bc73ccb050fa8a30b99a62fb81b780a75d78"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/validate/actions.rs",
+      "bytes": 16675,
+      "sha256": "5be86e83fed3d2030b7a939958234fb7df728345515288bc9956b52dbfeaa04a"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/validate/bindings.rs",
+      "bytes": 17898,
+      "sha256": "c944d31ff891c07ef6c0261b4ec7588407bdc4e71a28ff014f12690d7cf57cd6"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/validate/links.rs",
+      "bytes": 8938,
+      "sha256": "6cf9f5c8ebb6688095db106e37ee8730f459c05471f5953e25ab3cf48c4f4511"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/validate/mod.rs",
+      "bytes": 686,
+      "sha256": "c50af6a66bbade442fb68acbb88a3a6898065f52652ebcdeca41176848856671"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/validate/objects.rs",
+      "bytes": 5765,
+      "sha256": "66794e6c3c9b700e1a5a7474d9bbd541cb54df51408556ff8fef84b63d5f8167"
+    },
+    {
+      "file": "crates/ontoforge-schema/tests/scope_documents.rs",
+      "bytes": 9261,
+      "sha256": "0d703c424017b8466060609ed7de250e5013622da6129a651a40a1f53178abf9"
+    },
+    {
+      "file": "crates/ontoforge-server/src/context.rs",
+      "bytes": 16926,
+      "sha256": "be35223e46669ab02e42bf7a143dd26cbdae1a595d0caba8b30e4695efb88c0a"
+    },
+    {
+      "file": "crates/ontoforge-server/src/history_page.rs",
+      "bytes": 2954,
+      "sha256": "072cf071c7069dad7cbb89105bc0077ef42b00e1dfb33551cb75875ded877f6a"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/postgres_http_it.rs",
+      "bytes": 17691,
+      "sha256": "77bdb2c7a71e9fc4117efc87f8f44685db288875e2a4aa12e5981f1297378ccf"
+    },
+    {
+      "file": "crates/ontoforge-storage/Cargo.toml",
+      "bytes": 1306,
+      "sha256": "436805d6959abf18622b060519baaef6a75d8b67d94cf672412f33e05ec0129e"
+    },
+    {
+      "file": "crates/ontoforge-storage/migrations/postgres/0001_definitions.sql",
+      "bytes": 844,
+      "sha256": "3f9c40c7556aced9f294fa201579d237a2c8c97e85d58f11f1b7ab9c16f8e62f"
+    },
+    {
+      "file": "crates/ontoforge-storage/migrations/postgres/0002_edit_log.sql",
+      "bytes": 3093,
+      "sha256": "c650fe17a0aca9972174bb195231e681721b64e2c2dcf6f4121fb029cb68c207"
+    },
+    {
+      "file": "crates/ontoforge-storage/migrations/postgres/0003_scope.sql",
+      "bytes": 1676,
+      "sha256": "91d27fe1caeca9ff4db098700ed975e99e5ce019e65275f651c4bf478be142aa"
+    },
+    {
+      "file": "crates/ontoforge-storage/migrations/postgres/0004_action.sql",
+      "bytes": 1222,
+      "sha256": "eefc6b8592f1fed31581eb32be465d0dd8443e43c655192191587575d725466a"
+    },
+    {
+      "file": "crates/ontoforge-storage/migrations/postgres/0005_read_audit.sql",
+      "bytes": 727,
+      "sha256": "da917062bd6aba4206d975cf0b30adc0ce1b1d620bbe492732bb62c1309967e3"
+    },
+    {
+      "file": "crates/ontoforge-storage/migrations/postgres/0006_audit_truncated.sql",
+      "bytes": 225,
+      "sha256": "9181c8cca99c9e517975719f0a13a4c3d686edbddd2fd28dd4b0b4e653e99d40"
+    },
+    {
+      "file": "crates/ontoforge-storage/migrations/sqlite/0001_definitions.sql",
+      "bytes": 645,
+      "sha256": "6293da5e493893f2dab746101193ba16c8e18c5dd1492c3d406ddad0401b5811"
+    },
+    {
+      "file": "crates/ontoforge-storage/migrations/sqlite/0002_edit_log.sql",
+      "bytes": 2924,
+      "sha256": "31736353d8c3983a0a8e8fa3f2260bfb843dfc9686f1b6f3f4b0c2c51bcf4489"
+    },
+    {
+      "file": "crates/ontoforge-storage/migrations/sqlite/0003_scope.sql",
+      "bytes": 1679,
+      "sha256": "4fccce32b71a70685766f1d918d29a05051e4f326329528d365d6257cb6e2431"
+    },
+    {
+      "file": "crates/ontoforge-storage/migrations/sqlite/0004_action.sql",
+      "bytes": 1155,
+      "sha256": "f84962815971186e21af66a86e4192af170feb19c8bfbbb99aad0a79f25a0b3a"
+    },
+    {
+      "file": "crates/ontoforge-storage/migrations/sqlite/0005_read_audit.sql",
+      "bytes": 687,
+      "sha256": "07c1d98b5752b31917bc49978324571739a5bd6f781c7e4a8d268864ae850c29"
+    },
+    {
+      "file": "crates/ontoforge-storage/migrations/sqlite/0006_audit_truncated.sql",
+      "bytes": 1148,
+      "sha256": "481ecba7cac969ceeb8a0453bbba0f27e3e317603a9e2a6fb8fe6d9fcf753b1f"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/commit.rs",
+      "bytes": 72899,
+      "sha256": "b05f6c053ebe1dd00a84f1c58ee69914428d5876ca9e545ce4715888a3335b25"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/ddl.rs",
+      "bytes": 21586,
+      "sha256": "f71c6925850c5d55f34159955902040881c5ed10990c3dd6e0a01c4750dff426"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/diff.rs",
+      "bytes": 10534,
+      "sha256": "ccad6892a43c88005248aebde84e19dbeb1251bb1fb759156fff7e565b7bdea4"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/error.rs",
+      "bytes": 1971,
+      "sha256": "7142eea9c15f9d7b5ed601c8d24ba0e8c1e607e3f8223f047c437580f97f80bc"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/history.rs",
+      "bytes": 16954,
+      "sha256": "33921852605f3adcdad63cbc0079ac63f8cf162c1bf74a484b6478c3ecef85d1"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/import.rs",
+      "bytes": 45906,
+      "sha256": "ca1a7da7b7b2e4929b3406d8aa05f72505d3b76a979468eeba743edb1a20fc41"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/index.rs",
+      "bytes": 2021,
+      "sha256": "8ae3d95094d8fa9ca6e7a89f1524c6fa6cc02543e52e0accda8b1f3fb041782a"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/lib.rs",
+      "bytes": 857,
+      "sha256": "334a3c6fb6ba8aeaf9b12f41782b10f2f1844e10a67b6d9457f93ad0c723e269"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/log.rs",
+      "bytes": 17102,
+      "sha256": "fff7fcb24d98a34832db96dc4cdb12d5105df034d8bca04f84051c05712c92b4"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/migrate.rs",
+      "bytes": 41066,
+      "sha256": "b1d7c281f3d1e61a12fe505ce2973fc18c9c3c260073ffc18185089f898196bb"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/naming.rs",
+      "bytes": 9030,
+      "sha256": "b8b066db48b15366462ff08ee0ba136e969ad0573c6a0b84cf7f0c701f2709ff"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/physical.rs",
+      "bytes": 17372,
+      "sha256": "7b747c09258a4b550e9a39e8ce3676d2ceccf517176f9f5e09d0e092d243dae3"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/query_read.rs",
+      "bytes": 15641,
+      "sha256": "0fa8b6c0d49c9c08a8bbc2e69bf04753170921ef0c9c776c386ba7c2ee394e9f"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/read_audit.rs",
+      "bytes": 14971,
+      "sha256": "92188fe542a6971a3d1f4b1d78ec4664d5a5c303fa33147e7c3f1848d9432ec6"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/reload.rs",
+      "bytes": 33432,
+      "sha256": "0b18b58f12d41207d7a79c7ba59878999788a11fe1a5c5391f3a777d78fe6421"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/request_snapshot.rs",
+      "bytes": 1484,
+      "sha256": "37b569016f78030224f009cc56d9fe80f8efc7fbff497e2b486d0ca213ee01a0"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/scope_store.rs",
+      "bytes": 25295,
+      "sha256": "4b266a9c75d328ba6d133cc3720803ac0632a06392bf18b6150e71a25f4a7a32"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/snapshots/ontoforge_storage__ddl__tests__ddl_postgres.snap",
+      "bytes": 4136,
+      "sha256": "7917fde7d2b400bb58967b95093493a9ad4e88750ef8811b3a03466041d8e6ea"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/snapshots/ontoforge_storage__ddl__tests__ddl_sqlite.snap",
+      "bytes": 3757,
+      "sha256": "9b3cf4af7bb11c191ccbf371b0f450340a5186141daec95104d7c0d43a7fc3ce"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/sql_exit.rs",
+      "bytes": 31823,
+      "sha256": "2ca8b80bf7803f4a184c36b1cd04089a026cc6f2ba609938cb6bd7192841ce72"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/state.rs",
+      "bytes": 16469,
+      "sha256": "5094fa611b9ebe48ef6c261ee7cc8377be64896bcbab71c85401a5d5cc567eb0"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/store.rs",
+      "bytes": 13253,
+      "sha256": "dc15d707e1c6404098121489b79ee79404b232608740b664d93d46e2b23bc1ba"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/value.rs",
+      "bytes": 29590,
+      "sha256": "776c93ea251ed8b1456e99657cde720802b3ec2000255557c9fe13ccf654515c"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/conformance/mod.rs",
+      "bytes": 100960,
+      "sha256": "6dcdb878951be272e31b963a7cc26c1a8bbadda727d1c135292317e89658fd0a"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/conformance_pg.rs",
+      "bytes": 6199,
+      "sha256": "7fa92f91d722f8e7c48b19701e72df76baec424e20bd50e306bc91e27d70bc59"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/conformance_sqlite.rs",
+      "bytes": 216,
+      "sha256": "9ab684a9809264e1113947ad518ee082d8aa0aa3ab516cae78f80648bed32485"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/frozen_history.rs",
+      "bytes": 6610,
+      "sha256": "5b017098a89aab7559184723e889e453ec6a9a94739b194069dbc100317eb564"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/history_masking.rs",
+      "bytes": 23266,
+      "sha256": "536cb31ab559eabbb633493616e88374962f44498ae81a7568f923eab488563f"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/import.rs",
+      "bytes": 37527,
+      "sha256": "241e01735e5f376efcd35aa10d7e628890b9b428b051a413a2bbd8ea96699022"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/migrate.rs",
+      "bytes": 32686,
+      "sha256": "1abb9489319d7811b7b51072a6a8b34a414852aeccda0f211ee52ca40734fb97"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/migrate_pg.rs",
+      "bytes": 12962,
+      "sha256": "254307edf9dab156923448202e17764c21c260ae3db9c9b84cc1d64930996722"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/model/mod.rs",
+      "bytes": 13057,
+      "sha256": "8bfdbaaa16db283b23973d06f271f92239faf4e229b09578223eb4d65690993f"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/model_prop.proptest-regressions",
+      "bytes": 565,
+      "sha256": "0454cb732798e2891de613a0e4a3292493dd2520c290e3d532c9cf5778ee25ff"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/model_prop.rs",
+      "bytes": 16545,
+      "sha256": "3ea888a34575d2c3cbe3e68f80d4bb4bd277367db825a898a6137cc1cab5933a"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/query_read.rs",
+      "bytes": 17929,
+      "sha256": "a4130faf1f71fe4a9584d20e105f9da3dff5ed17f1e37f2f0642f2a3736c1ce6"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/query_read_pg.rs",
+      "bytes": 5417,
+      "sha256": "c6e0cc9a2e0f49d20c8536208555647e0f1a5886fd44e29364d99ca7b3e8b0e9"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/reload.rs",
+      "bytes": 52555,
+      "sha256": "3faac193d50b231b2e4e26e04f0f1415fad8fe4d7a23a9e8e76dc1b48c0626fb"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/reload_pg.rs",
+      "bytes": 26220,
+      "sha256": "0b39d36238048f62218edbf6240f80f29813d1bafa9ef1729f604cc1f3258c0a"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/reload_trino_it.rs",
+      "bytes": 9972,
+      "sha256": "b673da878b762c6784074ec4ebfb488e70f5f59a28cac30f53e68da754c83048"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/request_snapshot.rs",
+      "bytes": 9533,
+      "sha256": "4ecb0f9594cae8f942aeb5260de00e31a1279d9473138f34e67b312c52771f7a"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/scope_store.rs",
+      "bytes": 26580,
+      "sha256": "7a556f375dec4fab9e566ffdf65dd77d7110f55bc776718e611d28be48b58fae"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/sql_exit_guard.rs",
+      "bytes": 3588,
+      "sha256": "0b649e59a2b259fabd8f610ce9f984b007e2a5609184e66525e0258f092139fc"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/sqlite_connection.rs",
+      "bytes": 2930,
+      "sha256": "371d5ac6c70123c1f6dc08e487038dfe6ae8fb1f3bc793a62a350733c4ec8cc7"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/support/mod.rs",
+      "bytes": 16163,
+      "sha256": "131e0f5acf6cd5369bc524e9494ff61d7e2d7f2fb51fcb2249a8c79525d9f537"
+    },
+    {
+      "file": "crates/ontoforge/Cargo.toml",
+      "bytes": 1302,
+      "sha256": "ac9d76c889e8bc1a454d9c486a5de0906908a139c258e4be09314e2beeea08a8"
+    },
+    {
+      "file": "crates/ontoforge/src/cli.rs",
+      "bytes": 15068,
+      "sha256": "3d046c054134c1e7e2fdc27714e045d127ba76f283e3f462080c2f27478e3fdd"
+    },
+    {
+      "file": "crates/ontoforge/src/dev_token.rs",
+      "bytes": 7613,
+      "sha256": "d90e07ec630e1d0a8a1b5def6173ffb605ffeac9dcdca3b76f7020ba7a54ffbc"
+    },
+    {
+      "file": "crates/ontoforge/src/import.rs",
+      "bytes": 13199,
+      "sha256": "386e29db0574f64cd279f6b3ee0b361bb41c4ce36183fe41a5c5018e1e1f076d"
+    },
+    {
+      "file": "crates/ontoforge/src/lib.rs",
+      "bytes": 7265,
+      "sha256": "7740d3899fcde34ca1e638063badda1eda81dae6af436bda3859c07e6f9b120f"
+    },
+    {
+      "file": "crates/ontoforge/src/main.rs",
+      "bytes": 671,
+      "sha256": "b181a875a8a0ef49fb0ca140829e191626e8a0f7f1f088c9641199ce72c9e075"
+    },
+    {
+      "file": "crates/ontoforge/src/migrate.rs",
+      "bytes": 9904,
+      "sha256": "f7843cf9586bfcfc13f8b444b9dad163a6ac1e690114dc4a28e7bdda040ae969"
+    },
+    {
+      "file": "crates/ontoforge/src/reload.rs",
+      "bytes": 17170,
+      "sha256": "3bcf3be942754e7646f92ee1973b4e86913e6553b8fd381b8154b41cf6764915"
+    },
+    {
+      "file": "crates/ontoforge/src/scope.rs",
+      "bytes": 14548,
+      "sha256": "81e35f1f4e4a4b81fc190fd7f2c069670822060e7b3e9aa938447649a134b26f"
+    },
+    {
+      "file": "crates/ontoforge/tests/cli_dev_token.rs",
+      "bytes": 11427,
+      "sha256": "dc97a3b40d07b60116dd43773f6e659c3f036cc7c6095b0d3b27a4a8c5e5ad76"
+    },
+    {
+      "file": "crates/ontoforge/tests/cli_import.rs",
+      "bytes": 14789,
+      "sha256": "f1e7b5ab8ebcaa8efbc7aca2829445cda3869b495c3212c6cca81a7ee23a5c43"
+    },
+    {
+      "file": "crates/ontoforge/tests/cli_migrate.rs",
+      "bytes": 15405,
+      "sha256": "54f2c088964ebb8bd52d0dfe776b977097069ecce8d8e2045b509a045cebdfe7"
+    },
+    {
+      "file": "crates/ontoforge/tests/cli_reload.rs",
+      "bytes": 12149,
+      "sha256": "3aff2a3460b7c0d8d052e9e659810b9b3b3481d00a80fca829c884cec331162e"
+    },
+    {
+      "file": "crates/ontoforge/tests/cli_scope.rs",
+      "bytes": 12891,
+      "sha256": "12f97c2c092268fc28255fe43a5dc07dae39105e02e25fdab83cfbe92971e863"
+    },
+    {
+      "file": "docs/edit-store.md",
+      "bytes": 13390,
+      "sha256": "65b2aad65f8a3b0a98ed188373330f3bb6c1b0f043e039edd8a4947790818a6e"
+    },
+    {
+      "file": "docs/scope.md",
+      "bytes": 14800,
+      "sha256": "f0dfd17b218f29256277fe133f7040220a9b05c3a1bb3d3b9aee2993cf3918ee"
+    },
+    {
+      "file": "examples/ontologies/aviation/actions.yaml",
+      "bytes": 2489,
+      "sha256": "61756c751a174f664fab9d7cb07822711682b14fec3131af47dac2acbeb3a980"
+    },
+    {
+      "file": "examples/ontologies/aviation/bindings/dev/aircraft.yaml",
+      "bytes": 451,
+      "sha256": "7ccb971d207f6bdbe41d652d9a57600ba78ae111aa3a53d207e4c9fa386464bf"
+    },
+    {
+      "file": "examples/ontologies/aviation/bindings/dev/fixtures/aircraft.csv",
+      "bytes": 748,
+      "sha256": "d6bd027dccc347adbfa2562b211021692bca8d7fb4f3b9294525b36bb40dd008"
+    },
+    {
+      "file": "examples/ontologies/aviation/bindings/dev/fixtures/flight_crew.csv",
+      "bytes": 578,
+      "sha256": "b26b8ca8dde2937884a19690caaf3d3ff305325d9c4da834624f85bf87e31ad5"
+    },
+    {
+      "file": "examples/ontologies/aviation/bindings/dev/fixtures/flights.csv",
+      "bytes": 1689,
+      "sha256": "78c6581e6ef710585596da30b6757477d5d2b52064bc9f3beee915a50a9b828f"
+    },
+    {
+      "file": "examples/ontologies/aviation/bindings/dev/fixtures/maintenance_records.csv",
+      "bytes": 1541,
+      "sha256": "37bbdd695fafb8136e29ecb675d8f24ee8b7ec62d9a2bfb6b95d057fff1c48f9"
+    },
+    {
+      "file": "examples/ontologies/aviation/bindings/dev/fixtures/pilots.csv",
+      "bytes": 932,
+      "sha256": "1c4426ca94f1d0e2f6fe96426ee3854c37c295d6902e82ded505ec0cda881a8c"
+    },
+    {
+      "file": "examples/ontologies/aviation/bindings/dev/flight-crew.yaml",
+      "bytes": 399,
+      "sha256": "4e2dbf273fffd1ce7bbf2157efbc1b6d3f07840ccc66f9b9726758832a18d14d"
+    },
+    {
+      "file": "examples/ontologies/aviation/bindings/dev/flight.yaml",
+      "bytes": 1081,
+      "sha256": "a43515bbba6d1134fba216f391bfbe09474d04037029f658f40c4afdc7889eba"
+    },
+    {
+      "file": "examples/ontologies/aviation/bindings/dev/maintenance-record.yaml",
+      "bytes": 605,
+      "sha256": "39ca70911895ac5fbf0cd969b2332fd34b350dba04b72fa48e30f6ed4d896d06"
+    },
+    {
+      "file": "examples/ontologies/aviation/bindings/dev/pilot.yaml",
+      "bytes": 475,
+      "sha256": "dcaece19474c360718a36f95f78b8bee51e98945480cab4e8dd55c9078f549e1"
+    },
+    {
+      "file": "examples/ontologies/aviation/links.yaml",
+      "bytes": 2457,
+      "sha256": "3196a91f1e97232b61a181e1d35756055fc1461fb968f34009b1d35265080239"
+    },
+    {
+      "file": "examples/ontologies/aviation/objects.yaml",
+      "bytes": 3260,
+      "sha256": "80dcfe86d5657a8c38a717e91c581cf8111692d726dbcad8a99096c73815877d"
+    },
+    {
+      "file": "examples/ontologies/aviation/ontology.yaml",
+      "bytes": 222,
+      "sha256": "3ac7ad3bfe587b6f380098e68bf9d6e8a288f44268b57d2d1043e77705517b38"
+    },
+    {
+      "file": "examples/server/ontoforge-server.dev.toml",
+      "bytes": 1396,
+      "sha256": "bd27f81d4d499500bc556f72fbbc7ddece9ef31ca8d20e1e804680b5af93e580"
+    },
+    {
+      "file": "rust-toolchain.toml",
+      "bytes": 86,
+      "sha256": "c7bdffe5b4c71aeafb84939751c9a1690bc39d0e305d4a534ddf7ce9ce64c675"
+    },
+    {
+      "file": "schemas/ontoforge-definition.schema.json",
+      "bytes": 27789,
+      "sha256": "a0a6cb63ec07f793ff9a47b61cf5f2d04ebbc232e4aebdae3017cdc203079546"
+    },
+    {
+      "file": "schemas/ontoforge-manifest.schema.json",
+      "bytes": 1196,
+      "sha256": "bf09685e06a409852a7b2a28c7d4d88c56a12576dd2a781e10c6205093c111b8"
+    },
+    {
+      "file": "schemas/ontoforge-scope.schema.json",
+      "bytes": 6597,
+      "sha256": "d8408f01bf2dd24d3cdb0cd9bffe19cd52115c2ea244553e62dc0054124d4819"
+    },
+    {
+      "file": "target/milestone-ci-41759804733-integration.log",
+      "bytes": 114556,
+      "sha256": "6ecde94b35302e75b4484d4268281d5216fb09f8f2856013075d081050ca6f25"
+    },
+    {
+      "file": "target/milestone-ci-41759804733-ubuntu.log",
+      "bytes": 330741,
+      "sha256": "dd5f4c4165adb6792daa3889c85418d50a14821adf2171352492d57775b27975"
+    },
+    {
+      "file": "target/milestone-ci-41759804733-windows.log",
+      "bytes": 338621,
+      "sha256": "b6ecb8fa1fb5c4459c9e7c8e01074d99c142456d65ab76afd66ccac613679eaa"
+    }
+  ],
+  "authorization": {
+    "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/phase03-approval-override/authorization.md",
+    "sha256": "d847c1ced649772622208c4f79e1e87d38d443acc9cb3d56929241aa7dca4baf",
+    "accepted_by": "当前会话用户（项目/需求负责人）",
+    "accepted_at": "2026-11-05T11:26:39.587Z"
+  },
+  "native_before": {
+    "args": [
+      "verification.status",
+      ".planning/phases/03-edit-store-scope-model"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"status\": \"human_needed\",\n  \"next_action\": \"Human verification required. Complete the manual tests in the phase's *-UAT.md, then re-run the verify step until status is passed.\",\n  \"next_command\": \"$gsd-verify-work 03\",\n  \"route\": \"verify-work\"\n}",
+    "stderr": "",
+    "data": {
+      "status": "human_needed",
+      "next_action": "Human verification required. Complete the manual tests in the phase's *-UAT.md, then re-run the verify step until status is passed.",
+      "next_command": "$gsd-verify-work 03",
+      "route": "verify-work"
+    }
+  },
+  "fingerprint_before": {
+    "args": [
+      "verification.fingerprint",
+      ".planning/phases/03-edit-store-scope-model",
+      ".gitattributes",
+      ".github/workflows/ci.yml",
+      ".planning/REQUIREMENTS.md",
+      ".planning/ROADMAP.md",
+      ".planning/adr/0002-naming-convention.md",
+      ".planning/adr/0016-storage-system-data-and-typed-edit-store.md",
+      ".planning/adr/0018-authz-scope-and-sql-tiers.md",
+      ".planning/adr/0020-query-execution-rust-orchestrated-overlay.md",
+      ".planning/adr/0023-phase3-crate-dependency-direction.md",
+      ".planning/adr/0024-edit-store-physical-format.md",
+      ".planning/adr/0025-row-predicate-semantics.md",
+      ".planning/adr/0026-edit-log-format.md",
+      ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-final.json",
+      ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-integration.log",
+      ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-isolated-query-bench.log",
+      ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-phase7-real-services.log",
+      ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-ubuntu.log",
+      ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-windows.log",
+      ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/03-VERIFICATION.before.md",
+      ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/03-contracts.json",
+      ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/04-VERIFICATION.before.md",
+      ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/04-contracts.json",
+      ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/CONTRACT-RESULTS.md",
+      ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/GOVERNANCE-AND-BOUNDARIES.md",
+      ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/changed-source-inspection.json",
+      ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/collect.cjs",
+      ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/covered-file-inspection.json",
+      ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/evidence-groups.json",
+      ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/evidence-inputs.json",
+      ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/executed-tests.json",
+      ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/governance-inputs.json",
+      ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/inspect.cjs",
+      ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/selected-test-source.json",
+      ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/service-environment-evidence.json",
+      ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/truth-results.json",
+      ".planning/phases/03-edit-store-scope-model/03-01-PLAN.md",
+      ".planning/phases/03-edit-store-scope-model/03-01-SUMMARY.md",
+      ".planning/phases/03-edit-store-scope-model/03-02-PLAN.md",
+      ".planning/phases/03-edit-store-scope-model/03-02-SUMMARY.md",
+      ".planning/phases/03-edit-store-scope-model/03-03-PLAN.md",
+      ".planning/phases/03-edit-store-scope-model/03-03-SUMMARY.md",
+      ".planning/phases/03-edit-store-scope-model/03-04-PLAN.md",
+      ".planning/phases/03-edit-store-scope-model/03-04-SUMMARY.md",
+      ".planning/phases/03-edit-store-scope-model/03-05-PLAN.md",
+      ".planning/phases/03-edit-store-scope-model/03-05-SUMMARY.md",
+      ".planning/phases/03-edit-store-scope-model/03-06-PLAN.md",
+      ".planning/phases/03-edit-store-scope-model/03-06-SUMMARY.md",
+      ".planning/phases/03-edit-store-scope-model/03-07-PLAN.md",
+      ".planning/phases/03-edit-store-scope-model/03-07-SUMMARY.md",
+      ".planning/phases/03-edit-store-scope-model/03-08-PLAN.md",
+      ".planning/phases/03-edit-store-scope-model/03-08-SUMMARY.md",
+      ".planning/phases/03-edit-store-scope-model/03-09-PLAN.md",
+      ".planning/phases/03-edit-store-scope-model/03-09-SUMMARY.md",
+      ".planning/phases/03-edit-store-scope-model/03-10-PLAN.md",
+      ".planning/phases/03-edit-store-scope-model/03-10-SUMMARY.md",
+      ".planning/phases/03-edit-store-scope-model/03-11-PLAN.md",
+      ".planning/phases/03-edit-store-scope-model/03-11-SUMMARY.md",
+      ".planning/phases/03-edit-store-scope-model/03-12-PLAN.md",
+      ".planning/phases/03-edit-store-scope-model/03-12-SUMMARY.md",
+      ".planning/phases/03-edit-store-scope-model/03-13-PLAN.md",
+      ".planning/phases/03-edit-store-scope-model/03-13-SUMMARY.md",
+      ".planning/phases/03-edit-store-scope-model/03-14-PLAN.md",
+      ".planning/phases/03-edit-store-scope-model/03-14-SUMMARY.md",
+      ".planning/phases/03-edit-store-scope-model/03-15-PLAN.md",
+      ".planning/phases/03-edit-store-scope-model/03-15-SUMMARY.md",
+      ".planning/phases/03-edit-store-scope-model/03-16-PLAN.md",
+      ".planning/phases/03-edit-store-scope-model/03-16-SUMMARY.md",
+      ".planning/phases/03-edit-store-scope-model/03-17-PLAN.md",
+      ".planning/phases/03-edit-store-scope-model/03-17-SUMMARY.md",
+      ".planning/phases/03-edit-store-scope-model/03-18-PLAN.md",
+      ".planning/phases/03-edit-store-scope-model/03-18-SUMMARY.md",
+      ".planning/phases/03-edit-store-scope-model/03-19-PLAN.md",
+      ".planning/phases/03-edit-store-scope-model/03-19-SUMMARY.md",
+      ".planning/phases/03-edit-store-scope-model/03-20-PLAN.md",
+      ".planning/phases/03-edit-store-scope-model/03-20-SUMMARY.md",
+      ".planning/phases/03-edit-store-scope-model/03-21-PLAN.md",
+      ".planning/phases/03-edit-store-scope-model/03-21-SUMMARY.md",
+      ".planning/phases/03-edit-store-scope-model/03-22-PLAN.md",
+      ".planning/phases/03-edit-store-scope-model/03-22-SUMMARY.md",
+      ".planning/phases/03-edit-store-scope-model/03-23-PLAN.md",
+      ".planning/phases/03-edit-store-scope-model/03-23-SUMMARY.md",
+      ".planning/phases/03-edit-store-scope-model/03-CONTEXT.md",
+      ".planning/phases/03-edit-store-scope-model/03-UAT.md",
+      ".planning/phases/03-edit-store-scope-model/03-VALIDATION.md",
+      ".planning/phases/04-scoped-l0-read/04-VALIDATION.md",
+      "CONTRIBUTING.md",
+      "Cargo.lock",
+      "Cargo.toml",
+      "ci/check-tls-deps.sh",
+      "ci/pg/rowpred_corpus.sql",
+      "ci/pg/seed.sql",
+      "ci/query-services.sh",
+      "ci/server-services.sh",
+      "ci/test_tls_deps.py",
+      "ci/trino/catalog/editstore.properties",
+      "crates/ontoforge-auth/Cargo.toml",
+      "crates/ontoforge-auth/src/authn/dev.rs",
+      "crates/ontoforge-auth/src/authn/jwks.rs",
+      "crates/ontoforge-auth/src/authn/mod.rs",
+      "crates/ontoforge-auth/src/authn/oidc.rs",
+      "crates/ontoforge-auth/src/authn/principal.rs",
+      "crates/ontoforge-auth/src/lib.rs",
+      "crates/ontoforge-auth/src/scope/compile.rs",
+      "crates/ontoforge-auth/src/scope/coverage.rs",
+      "crates/ontoforge-auth/src/scope/lower.rs",
+      "crates/ontoforge-auth/src/scope/merge.rs",
+      "crates/ontoforge-auth/src/scope/mod.rs",
+      "crates/ontoforge-auth/tests/criteria_coverage.rs",
+      "crates/ontoforge-auth/tests/crypto_backend.rs",
+      "crates/ontoforge-auth/tests/data/README.md",
+      "crates/ontoforge-auth/tests/data/oidc_es256.pem",
+      "crates/ontoforge-auth/tests/data/oidc_rs256.pem",
+      "crates/ontoforge-auth/tests/data/rowpred_corpus.json",
+      "crates/ontoforge-auth/tests/dev_token.rs",
+      "crates/ontoforge-auth/tests/oidc.rs",
+      "crates/ontoforge-auth/tests/rowpred_common/mod.rs",
+      "crates/ontoforge-auth/tests/rowpred_diff.rs",
+      "crates/ontoforge-auth/tests/rowpred_trino_it.rs",
+      "crates/ontoforge-auth/tests/scope_compile.rs",
+      "crates/ontoforge-auth/tests/scope_merge.rs",
+      "crates/ontoforge-auth/tests/snapshots/scope_compile__scope_compile_diagnostics_json.snap",
+      "crates/ontoforge-engine/Cargo.toml",
+      "crates/ontoforge-engine/src/config.rs",
+      "crates/ontoforge-engine/src/lib.rs",
+      "crates/ontoforge-engine/src/printer/ast.rs",
+      "crates/ontoforge-engine/src/printer/call.rs",
+      "crates/ontoforge-engine/src/printer/dialect.rs",
+      "crates/ontoforge-engine/src/printer/escape.rs",
+      "crates/ontoforge-engine/src/printer/l2.rs",
+      "crates/ontoforge-engine/src/printer/mod.rs",
+      "crates/ontoforge-engine/src/printer/snapshots/ontoforge_engine__printer__tests__print_sqlite.snap",
+      "crates/ontoforge-engine/src/printer/snapshots/ontoforge_engine__printer__tests__print_trino.snap",
+      "crates/ontoforge-engine/src/printer/sqlite_ddl.rs",
+      "crates/ontoforge-engine/src/printer/tests.rs",
+      "crates/ontoforge-engine/src/trino/cancel.rs",
+      "crates/ontoforge-engine/src/trino/classify.rs",
+      "crates/ontoforge-engine/src/trino/client.rs",
+      "crates/ontoforge-engine/src/trino/decode.rs",
+      "crates/ontoforge-engine/src/trino/headers.rs",
+      "crates/ontoforge-engine/src/trino/l2_health.rs",
+      "crates/ontoforge-engine/src/trino/l2_monitor.rs",
+      "crates/ontoforge-engine/src/trino/mod.rs",
+      "crates/ontoforge-expr/Cargo.toml",
+      "crates/ontoforge-expr/src/analyze.rs",
+      "crates/ontoforge-expr/src/check.rs",
+      "crates/ontoforge-expr/src/infer.rs",
+      "crates/ontoforge-expr/src/lib.rs",
+      "crates/ontoforge-expr/src/limits.rs",
+      "crates/ontoforge-expr/src/rowpred/eval.rs",
+      "crates/ontoforge-expr/src/rowpred/ir.rs",
+      "crates/ontoforge-expr/src/rowpred/mod.rs",
+      "crates/ontoforge-expr/src/rowpred/parse.rs",
+      "crates/ontoforge-expr/src/rowpred/value.rs",
+      "crates/ontoforge-expr/src/walk.rs",
+      "crates/ontoforge-expr/tests/analyze.rs",
+      "crates/ontoforge-expr/tests/common/mod.rs",
+      "crates/ontoforge-expr/tests/criteria.rs",
+      "crates/ontoforge-expr/tests/rowpred_eval.proptest-regressions",
+      "crates/ontoforge-expr/tests/rowpred_eval.rs",
+      "crates/ontoforge-expr/tests/rowpred_subset.rs",
+      "crates/ontoforge-schema/src/diag.rs",
+      "crates/ontoforge-schema/src/ir/action.rs",
+      "crates/ontoforge-schema/src/ir/attrs.rs",
+      "crates/ontoforge-schema/src/ir/basetype.rs",
+      "crates/ontoforge-schema/src/ir/binding.rs",
+      "crates/ontoforge-schema/src/ir/link.rs",
+      "crates/ontoforge-schema/src/ir/manifest.rs",
+      "crates/ontoforge-schema/src/ir/mod.rs",
+      "crates/ontoforge-schema/src/ir/names.rs",
+      "crates/ontoforge-schema/src/ir/object.rs",
+      "crates/ontoforge-schema/src/ir/scope.rs",
+      "crates/ontoforge-schema/src/lib.rs",
+      "crates/ontoforge-schema/src/lint/binding/e13.rs",
+      "crates/ontoforge-schema/src/lint/binding/e14.rs",
+      "crates/ontoforge-schema/src/lint/binding/e15.rs",
+      "crates/ontoforge-schema/src/lint/binding/e16.rs",
+      "crates/ontoforge-schema/src/lint/binding/mod.rs",
+      "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e13__tests__clean.snap",
+      "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e13__tests__triggers.snap",
+      "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e14__tests__clean.snap",
+      "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e14__tests__triggers.snap",
+      "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e15__tests__clean.snap",
+      "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e15__tests__triggers.snap",
+      "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e16__tests__clean.snap",
+      "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e16__tests__triggers.snap",
+      "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__w17__tests__clean.snap",
+      "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__w17__tests__triggers.snap",
+      "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__w17__tests__unreadable.snap",
+      "crates/ontoforge-schema/src/lint/binding/w17.rs",
+      "crates/ontoforge-schema/src/lint/config.rs",
+      "crates/ontoforge-schema/src/lint/e08.rs",
+      "crates/ontoforge-schema/src/lint/e09.rs",
+      "crates/ontoforge-schema/src/lint/mod.rs",
+      "crates/ontoforge-schema/src/lint/naming/mod.rs",
+      "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w01__tests__clean.snap",
+      "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w01__tests__triggers.snap",
+      "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w02__tests__clean.snap",
+      "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w02__tests__triggers.snap",
+      "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w03__tests__clean.snap",
+      "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w03__tests__triggers.snap",
+      "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w04__tests__clean.snap",
+      "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w04__tests__triggers.snap",
+      "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w05__tests__clean.snap",
+      "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w05__tests__triggers.snap",
+      "crates/ontoforge-schema/src/lint/naming/w01.rs",
+      "crates/ontoforge-schema/src/lint/naming/w02.rs",
+      "crates/ontoforge-schema/src/lint/naming/w03.rs",
+      "crates/ontoforge-schema/src/lint/naming/w04.rs",
+      "crates/ontoforge-schema/src/lint/naming/w05.rs",
+      "crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e08__tests__clean.snap",
+      "crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e08__tests__triggers.snap",
+      "crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e09__tests__clean.snap",
+      "crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e09__tests__triggers.snap",
+      "crates/ontoforge-schema/src/lint/structure/mod.rs",
+      "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w06__tests__clean.snap",
+      "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w06__tests__triggers.snap",
+      "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w07__tests__clean.snap",
+      "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w07__tests__triggers.snap",
+      "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w08__tests__clean.snap",
+      "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w08__tests__triggers.snap",
+      "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w09__tests__clean.snap",
+      "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w09__tests__triggers.snap",
+      "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w10__tests__clean.snap",
+      "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w10__tests__triggers.snap",
+      "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w11__tests__clean.snap",
+      "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w11__tests__triggers.snap",
+      "crates/ontoforge-schema/src/lint/structure/w06.rs",
+      "crates/ontoforge-schema/src/lint/structure/w07.rs",
+      "crates/ontoforge-schema/src/lint/structure/w08.rs",
+      "crates/ontoforge-schema/src/lint/structure/w09.rs",
+      "crates/ontoforge-schema/src/lint/structure/w10.rs",
+      "crates/ontoforge-schema/src/lint/structure/w11.rs",
+      "crates/ontoforge-schema/src/lint/words.rs",
+      "crates/ontoforge-schema/src/loader/discover.rs",
+      "crates/ontoforge-schema/src/loader/dispatch.rs",
+      "crates/ontoforge-schema/src/loader/fixture.rs",
+      "crates/ontoforge-schema/src/loader/mod.rs",
+      "crates/ontoforge-schema/src/loader/parse.rs",
+      "crates/ontoforge-schema/src/loader/scope.rs",
+      "crates/ontoforge-schema/src/loader/sourcemap.rs",
+      "crates/ontoforge-schema/src/schema_export.rs",
+      "crates/ontoforge-schema/src/validate/actions.rs",
+      "crates/ontoforge-schema/src/validate/bindings.rs",
+      "crates/ontoforge-schema/src/validate/links.rs",
+      "crates/ontoforge-schema/src/validate/mod.rs",
+      "crates/ontoforge-schema/src/validate/objects.rs",
+      "crates/ontoforge-schema/tests/scope_documents.rs",
+      "crates/ontoforge-server/src/context.rs",
+      "crates/ontoforge-server/src/history_page.rs",
+      "crates/ontoforge-server/tests/postgres_http_it.rs",
+      "crates/ontoforge-storage/Cargo.toml",
+      "crates/ontoforge-storage/migrations/postgres/0001_definitions.sql",
+      "crates/ontoforge-storage/migrations/postgres/0002_edit_log.sql",
+      "crates/ontoforge-storage/migrations/postgres/0003_scope.sql",
+      "crates/ontoforge-storage/migrations/postgres/0004_action.sql",
+      "crates/ontoforge-storage/migrations/postgres/0005_read_audit.sql",
+      "crates/ontoforge-storage/migrations/postgres/0006_audit_truncated.sql",
+      "crates/ontoforge-storage/migrations/sqlite/0001_definitions.sql",
+      "crates/ontoforge-storage/migrations/sqlite/0002_edit_log.sql",
+      "crates/ontoforge-storage/migrations/sqlite/0003_scope.sql",
+      "crates/ontoforge-storage/migrations/sqlite/0004_action.sql",
+      "crates/ontoforge-storage/migrations/sqlite/0005_read_audit.sql",
+      "crates/ontoforge-storage/migrations/sqlite/0006_audit_truncated.sql",
+      "crates/ontoforge-storage/src/commit.rs",
+      "crates/ontoforge-storage/src/ddl.rs",
+      "crates/ontoforge-storage/src/diff.rs",
+      "crates/ontoforge-storage/src/error.rs",
+      "crates/ontoforge-storage/src/history.rs",
+      "crates/ontoforge-storage/src/import.rs",
+      "crates/ontoforge-storage/src/index.rs",
+      "crates/ontoforge-storage/src/lib.rs",
+      "crates/ontoforge-storage/src/log.rs",
+      "crates/ontoforge-storage/src/migrate.rs",
+      "crates/ontoforge-storage/src/naming.rs",
+      "crates/ontoforge-storage/src/physical.rs",
+      "crates/ontoforge-storage/src/query_read.rs",
+      "crates/ontoforge-storage/src/read_audit.rs",
+      "crates/ontoforge-storage/src/reload.rs",
+      "crates/ontoforge-storage/src/request_snapshot.rs",
+      "crates/ontoforge-storage/src/scope_store.rs",
+      "crates/ontoforge-storage/src/snapshots/ontoforge_storage__ddl__tests__ddl_postgres.snap",
+      "crates/ontoforge-storage/src/snapshots/ontoforge_storage__ddl__tests__ddl_sqlite.snap",
+      "crates/ontoforge-storage/src/sql_exit.rs",
+      "crates/ontoforge-storage/src/state.rs",
+      "crates/ontoforge-storage/src/store.rs",
+      "crates/ontoforge-storage/src/value.rs",
+      "crates/ontoforge-storage/tests/conformance/mod.rs",
+      "crates/ontoforge-storage/tests/conformance_pg.rs",
+      "crates/ontoforge-storage/tests/conformance_sqlite.rs",
+      "crates/ontoforge-storage/tests/frozen_history.rs",
+      "crates/ontoforge-storage/tests/history_masking.rs",
+      "crates/ontoforge-storage/tests/import.rs",
+      "crates/ontoforge-storage/tests/migrate.rs",
+      "crates/ontoforge-storage/tests/migrate_pg.rs",
+      "crates/ontoforge-storage/tests/model/mod.rs",
+      "crates/ontoforge-storage/tests/model_prop.proptest-regressions",
+      "crates/ontoforge-storage/tests/model_prop.rs",
+      "crates/ontoforge-storage/tests/query_read.rs",
+      "crates/ontoforge-storage/tests/query_read_pg.rs",
+      "crates/ontoforge-storage/tests/reload.rs",
+      "crates/ontoforge-storage/tests/reload_pg.rs",
+      "crates/ontoforge-storage/tests/reload_trino_it.rs",
+      "crates/ontoforge-storage/tests/request_snapshot.rs",
+      "crates/ontoforge-storage/tests/scope_store.rs",
+      "crates/ontoforge-storage/tests/sql_exit_guard.rs",
+      "crates/ontoforge-storage/tests/sqlite_connection.rs",
+      "crates/ontoforge-storage/tests/support/mod.rs",
+      "crates/ontoforge/Cargo.toml",
+      "crates/ontoforge/src/cli.rs",
+      "crates/ontoforge/src/dev_token.rs",
+      "crates/ontoforge/src/import.rs",
+      "crates/ontoforge/src/lib.rs",
+      "crates/ontoforge/src/main.rs",
+      "crates/ontoforge/src/migrate.rs",
+      "crates/ontoforge/src/reload.rs",
+      "crates/ontoforge/src/scope.rs",
+      "crates/ontoforge/tests/cli_dev_token.rs",
+      "crates/ontoforge/tests/cli_import.rs",
+      "crates/ontoforge/tests/cli_migrate.rs",
+      "crates/ontoforge/tests/cli_reload.rs",
+      "crates/ontoforge/tests/cli_scope.rs",
+      "docs/edit-store.md",
+      "docs/scope.md",
+      "examples/ontologies/aviation/actions.yaml",
+      "examples/ontologies/aviation/bindings/dev/aircraft.yaml",
+      "examples/ontologies/aviation/bindings/dev/fixtures/aircraft.csv",
+      "examples/ontologies/aviation/bindings/dev/fixtures/flight_crew.csv",
+      "examples/ontologies/aviation/bindings/dev/fixtures/flights.csv",
+      "examples/ontologies/aviation/bindings/dev/fixtures/maintenance_records.csv",
+      "examples/ontologies/aviation/bindings/dev/fixtures/pilots.csv",
+      "examples/ontologies/aviation/bindings/dev/flight-crew.yaml",
+      "examples/ontologies/aviation/bindings/dev/flight.yaml",
+      "examples/ontologies/aviation/bindings/dev/maintenance-record.yaml",
+      "examples/ontologies/aviation/bindings/dev/pilot.yaml",
+      "examples/ontologies/aviation/links.yaml",
+      "examples/ontologies/aviation/objects.yaml",
+      "examples/ontologies/aviation/ontology.yaml",
+      "examples/server/ontoforge-server.dev.toml",
+      "rust-toolchain.toml",
+      "schemas/ontoforge-definition.schema.json",
+      "schemas/ontoforge-manifest.schema.json",
+      "schemas/ontoforge-scope.schema.json",
+      "target/milestone-ci-41759804733-integration.log",
+      "target/milestone-ci-41759804733-ubuntu.log",
+      "target/milestone-ci-41759804733-windows.log"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"covered_files\": [\n    \".gitattributes\",\n    \".github/workflows/ci.yml\",\n    \".planning/REQUIREMENTS.md\",\n    \".planning/ROADMAP.md\",\n    \".planning/adr/0002-naming-convention.md\",\n    \".planning/adr/0016-storage-system-data-and-typed-edit-store.md\",\n    \".planning/adr/0018-authz-scope-and-sql-tiers.md\",\n    \".planning/adr/0020-query-execution-rust-orchestrated-overlay.md\",\n    \".planning/adr/0023-phase3-crate-dependency-direction.md\",\n    \".planning/adr/0024-edit-store-physical-format.md\",\n    \".planning/adr/0025-row-predicate-semantics.md\",\n    \".planning/adr/0026-edit-log-format.md\",\n    \".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-final.json\",\n    \".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-integration.log\",\n    \".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-isolated-query-bench.log\",\n    \".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-phase7-real-services.log\",\n    \".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-ubuntu.log\",\n    \".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-windows.log\",\n    \".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/03-VERIFICATION.before.md\",\n    \".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/03-contracts.json\",\n    \".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/04-VERIFICATION.before.md\",\n    \".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/04-contracts.json\",\n    \".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/CONTRACT-RESULTS.md\",\n    \".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/GOVERNANCE-AND-BOUNDARIES.md\",\n    \".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/changed-source-inspection.json\",\n    \".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/collect.cjs\",\n    \".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/covered-file-inspection.json\",\n    \".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/evidence-groups.json\",\n    \".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/evidence-inputs.json\",\n    \".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/executed-tests.json\",\n    \".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/governance-inputs.json\",\n    \".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/inspect.cjs\",\n    \".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/selected-test-source.json\",\n    \".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/service-environment-evidence.json\",\n    \".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/truth-results.json\",\n    \".planning/phases/03-edit-store-scope-model/03-01-PLAN.md\",\n    \".planning/phases/03-edit-store-scope-model/03-01-SUMMARY.md\",\n    \".planning/phases/03-edit-store-scope-model/03-02-PLAN.md\",\n    \".planning/phases/03-edit-store-scope-model/03-02-SUMMARY.md\",\n    \".planning/phases/03-edit-store-scope-model/03-03-PLAN.md\",\n    \".planning/phases/03-edit-store-scope-model/03-03-SUMMARY.md\",\n    \".planning/phases/03-edit-store-scope-model/03-04-PLAN.md\",\n    \".planning/phases/03-edit-store-scope-model/03-04-SUMMARY.md\",\n    \".planning/phases/03-edit-store-scope-model/03-05-PLAN.md\",\n    \".planning/phases/03-edit-store-scope-model/03-05-SUMMARY.md\",\n    \".planning/phases/03-edit-store-scope-model/03-06-PLAN.md\",\n    \".planning/phases/03-edit-store-scope-model/03-06-SUMMARY.md\",\n    \".planning/phases/03-edit-store-scope-model/03-07-PLAN.md\",\n    \".planning/phases/03-edit-store-scope-model/03-07-SUMMARY.md\",\n    \".planning/phases/03-edit-store-scope-model/03-08-PLAN.md\",\n    \".planning/phases/03-edit-store-scope-model/03-08-SUMMARY.md\",\n    \".planning/phases/03-edit-store-scope-model/03-09-PLAN.md\",\n    \".planning/phases/03-edit-store-scope-model/03-09-SUMMARY.md\",\n    \".planning/phases/03-edit-store-scope-model/03-10-PLAN.md\",\n    \".planning/phases/03-edit-store-scope-model/03-10-SUMMARY.md\",\n    \".planning/phases/03-edit-store-scope-model/03-11-PLAN.md\",\n    \".planning/phases/03-edit-store-scope-model/03-11-SUMMARY.md\",\n    \".planning/phases/03-edit-store-scope-model/03-12-PLAN.md\",\n    \".planning/phases/03-edit-store-scope-model/03-12-SUMMARY.md\",\n    \".planning/phases/03-edit-store-scope-model/03-13-PLAN.md\",\n    \".planning/phases/03-edit-store-scope-model/03-13-SUMMARY.md\",\n    \".planning/phases/03-edit-store-scope-model/03-14-PLAN.md\",\n    \".planning/phases/03-edit-store-scope-model/03-14-SUMMARY.md\",\n    \".planning/phases/03-edit-store-scope-model/03-15-PLAN.md\",\n    \".planning/phases/03-edit-store-scope-model/03-15-SUMMARY.md\",\n    \".planning/phases/03-edit-store-scope-model/03-16-PLAN.md\",\n    \".planning/phases/03-edit-store-scope-model/03-16-SUMMARY.md\",\n    \".planning/phases/03-edit-store-scope-model/03-17-PLAN.md\",\n    \".planning/phases/03-edit-store-scope-model/03-17-SUMMARY.md\",\n    \".planning/phases/03-edit-store-scope-model/03-18-PLAN.md\",\n    \".planning/phases/03-edit-store-scope-model/03-18-SUMMARY.md\",\n    \".planning/phases/03-edit-store-scope-model/03-19-PLAN.md\",\n    \".planning/phases/03-edit-store-scope-model/03-19-SUMMARY.md\",\n    \".planning/phases/03-edit-store-scope-model/03-20-PLAN.md\",\n    \".planning/phases/03-edit-store-scope-model/03-20-SUMMARY.md\",\n    \".planning/phases/03-edit-store-scope-model/03-21-PLAN.md\",\n    \".planning/phases/03-edit-store-scope-model/03-21-SUMMARY.md\",\n    \".planning/phases/03-edit-store-scope-model/03-22-PLAN.md\",\n    \".planning/phases/03-edit-store-scope-model/03-22-SUMMARY.md\",\n    \".planning/phases/03-edit-store-scope-model/03-23-PLAN.md\",\n    \".planning/phases/03-edit-store-scope-model/03-23-SUMMARY.md\",\n    \".planning/phases/03-edit-store-scope-model/03-CONTEXT.md\",\n    \".planning/phases/03-edit-store-scope-model/03-UAT.md\",\n    \".planning/phases/03-edit-store-scope-model/03-VALIDATION.md\",\n    \".planning/phases/04-scoped-l0-read/04-VALIDATION.md\",\n    \"CONTRIBUTING.md\",\n    \"Cargo.lock\",\n    \"Cargo.toml\",\n    \"ci/check-tls-deps.sh\",\n    \"ci/pg/rowpred_corpus.sql\",\n    \"ci/pg/seed.sql\",\n    \"ci/query-services.sh\",\n    \"ci/server-services.sh\",\n    \"ci/test_tls_deps.py\",\n    \"ci/trino/catalog/editstore.properties\",\n    \"crates/ontoforge-auth/Cargo.toml\",\n    \"crates/ontoforge-auth/src/authn/dev.rs\",\n    \"crates/ontoforge-auth/src/authn/jwks.rs\",\n    \"crates/ontoforge-auth/src/authn/mod.rs\",\n    \"crates/ontoforge-auth/src/authn/oidc.rs\",\n    \"crates/ontoforge-auth/src/authn/principal.rs\",\n    \"crates/ontoforge-auth/src/lib.rs\",\n    \"crates/ontoforge-auth/src/scope/compile.rs\",\n    \"crates/ontoforge-auth/src/scope/coverage.rs\",\n    \"crates/ontoforge-auth/src/scope/lower.rs\",\n    \"crates/ontoforge-auth/src/scope/merge.rs\",\n    \"crates/ontoforge-auth/src/scope/mod.rs\",\n    \"crates/ontoforge-auth/tests/criteria_coverage.rs\",\n    \"crates/ontoforge-auth/tests/crypto_backend.rs\",\n    \"crates/ontoforge-auth/tests/data/README.md\",\n    \"crates/ontoforge-auth/tests/data/oidc_es256.pem\",\n    \"crates/ontoforge-auth/tests/data/oidc_rs256.pem\",\n    \"crates/ontoforge-auth/tests/data/rowpred_corpus.json\",\n    \"crates/ontoforge-auth/tests/dev_token.rs\",\n    \"crates/ontoforge-auth/tests/oidc.rs\",\n    \"crates/ontoforge-auth/tests/rowpred_common/mod.rs\",\n    \"crates/ontoforge-auth/tests/rowpred_diff.rs\",\n    \"crates/ontoforge-auth/tests/rowpred_trino_it.rs\",\n    \"crates/ontoforge-auth/tests/scope_compile.rs\",\n    \"crates/ontoforge-auth/tests/scope_merge.rs\",\n    \"crates/ontoforge-auth/tests/snapshots/scope_compile__scope_compile_diagnostics_json.snap\",\n    \"crates/ontoforge-engine/Cargo.toml\",\n    \"crates/ontoforge-engine/src/config.rs\",\n    \"crates/ontoforge-engine/src/lib.rs\",\n    \"crates/ontoforge-engine/src/printer/ast.rs\",\n    \"crates/ontoforge-engine/src/printer/call.rs\",\n    \"crates/ontoforge-engine/src/printer/dialect.rs\",\n    \"crates/ontoforge-engine/src/printer/escape.rs\",\n    \"crates/ontoforge-engine/src/printer/l2.rs\",\n    \"crates/ontoforge-engine/src/printer/mod.rs\",\n    \"crates/ontoforge-engine/src/printer/snapshots/ontoforge_engine__printer__tests__print_sqlite.snap\",\n    \"crates/ontoforge-engine/src/printer/snapshots/ontoforge_engine__printer__tests__print_trino.snap\",\n    \"crates/ontoforge-engine/src/printer/sqlite_ddl.rs\",\n    \"crates/ontoforge-engine/src/printer/tests.rs\",\n    \"crates/ontoforge-engine/src/trino/cancel.rs\",\n    \"crates/ontoforge-engine/src/trino/classify.rs\",\n    \"crates/ontoforge-engine/src/trino/client.rs\",\n    \"crates/ontoforge-engine/src/trino/decode.rs\",\n    \"crates/ontoforge-engine/src/trino/headers.rs\",\n    \"crates/ontoforge-engine/src/trino/l2_health.rs\",\n    \"crates/ontoforge-engine/src/trino/l2_monitor.rs\",\n    \"crates/ontoforge-engine/src/trino/mod.rs\",\n    \"crates/ontoforge-expr/Cargo.toml\",\n    \"crates/ontoforge-expr/src/analyze.rs\",\n    \"crates/ontoforge-expr/src/check.rs\",\n    \"crates/ontoforge-expr/src/infer.rs\",\n    \"crates/ontoforge-expr/src/lib.rs\",\n    \"crates/ontoforge-expr/src/limits.rs\",\n    \"crates/ontoforge-expr/src/rowpred/eval.rs\",\n    \"crates/ontoforge-expr/src/rowpred/ir.rs\",\n    \"crates/ontoforge-expr/src/rowpred/mod.rs\",\n    \"crates/ontoforge-expr/src/rowpred/parse.rs\",\n    \"crates/ontoforge-expr/src/rowpred/value.rs\",\n    \"crates/ontoforge-expr/src/walk.rs\",\n    \"crates/ontoforge-expr/tests/analyze.rs\",\n    \"crates/ontoforge-expr/tests/common/mod.rs\",\n    \"crates/ontoforge-expr/tests/criteria.rs\",\n    \"crates/ontoforge-expr/tests/rowpred_eval.proptest-regressions\",\n    \"crates/ontoforge-expr/tests/rowpred_eval.rs\",\n    \"crates/ontoforge-expr/tests/rowpred_subset.rs\",\n    \"crates/ontoforge-schema/src/diag.rs\",\n    \"crates/ontoforge-schema/src/ir/action.rs\",\n    \"crates/ontoforge-schema/src/ir/attrs.rs\",\n    \"crates/ontoforge-schema/src/ir/basetype.rs\",\n    \"crates/ontoforge-schema/src/ir/binding.rs\",\n    \"crates/ontoforge-schema/src/ir/link.rs\",\n    \"crates/ontoforge-schema/src/ir/manifest.rs\",\n    \"crates/ontoforge-schema/src/ir/mod.rs\",\n    \"crates/ontoforge-schema/src/ir/names.rs\",\n    \"crates/ontoforge-schema/src/ir/object.rs\",\n    \"crates/ontoforge-schema/src/ir/scope.rs\",\n    \"crates/ontoforge-schema/src/lib.rs\",\n    \"crates/ontoforge-schema/src/lint/binding/e13.rs\",\n    \"crates/ontoforge-schema/src/lint/binding/e14.rs\",\n    \"crates/ontoforge-schema/src/lint/binding/e15.rs\",\n    \"crates/ontoforge-schema/src/lint/binding/e16.rs\",\n    \"crates/ontoforge-schema/src/lint/binding/mod.rs\",\n    \"crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e13__tests__clean.snap\",\n    \"crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e13__tests__triggers.snap\",\n    \"crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e14__tests__clean.snap\",\n    \"crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e14__tests__triggers.snap\",\n    \"crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e15__tests__clean.snap\",\n    \"crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e15__tests__triggers.snap\",\n    \"crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e16__tests__clean.snap\",\n    \"crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e16__tests__triggers.snap\",\n    \"crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__w17__tests__clean.snap\",\n    \"crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__w17__tests__triggers.snap\",\n    \"crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__w17__tests__unreadable.snap\",\n    \"crates/ontoforge-schema/src/lint/binding/w17.rs\",\n    \"crates/ontoforge-schema/src/lint/config.rs\",\n    \"crates/ontoforge-schema/src/lint/e08.rs\",\n    \"crates/ontoforge-schema/src/lint/e09.rs\",\n    \"crates/ontoforge-schema/src/lint/mod.rs\",\n    \"crates/ontoforge-schema/src/lint/naming/mod.rs\",\n    \"crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w01__tests__clean.snap\",\n    \"crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w01__tests__triggers.snap\",\n    \"crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w02__tests__clean.snap\",\n    \"crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w02__tests__triggers.snap\",\n    \"crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w03__tests__clean.snap\",\n    \"crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w03__tests__triggers.snap\",\n    \"crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w04__tests__clean.snap\",\n    \"crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w04__tests__triggers.snap\",\n    \"crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w05__tests__clean.snap\",\n    \"crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w05__tests__triggers.snap\",\n    \"crates/ontoforge-schema/src/lint/naming/w01.rs\",\n    \"crates/ontoforge-schema/src/lint/naming/w02.rs\",\n    \"crates/ontoforge-schema/src/lint/naming/w03.rs\",\n    \"crates/ontoforge-schema/src/lint/naming/w04.rs\",\n    \"crates/ontoforge-schema/src/lint/naming/w05.rs\",\n    \"crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e08__tests__clean.snap\",\n    \"crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e08__tests__triggers.snap\",\n    \"crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e09__tests__clean.snap\",\n    \"crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e09__tests__triggers.snap\",\n    \"crates/ontoforge-schema/src/lint/structure/mod.rs\",\n    \"crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w06__tests__clean.snap\",\n    \"crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w06__tests__triggers.snap\",\n    \"crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w07__tests__clean.snap\",\n    \"crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w07__tests__triggers.snap\",\n    \"crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w08__tests__clean.snap\",\n    \"crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w08__tests__triggers.snap\",\n    \"crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w09__tests__clean.snap\",\n    \"crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w09__tests__triggers.snap\",\n    \"crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w10__tests__clean.snap\",\n    \"crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w10__tests__triggers.snap\",\n    \"crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w11__tests__clean.snap\",\n    \"crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w11__tests__triggers.snap\",\n    \"crates/ontoforge-schema/src/lint/structure/w06.rs\",\n    \"crates/ontoforge-schema/src/lint/structure/w07.rs\",\n    \"crates/ontoforge-schema/src/lint/structure/w08.rs\",\n    \"crates/ontoforge-schema/src/lint/structure/w09.rs\",\n    \"crates/ontoforge-schema/src/lint/structure/w10.rs\",\n    \"crates/ontoforge-schema/src/lint/structure/w11.rs\",\n    \"crates/ontoforge-schema/src/lint/words.rs\",\n    \"crates/ontoforge-schema/src/loader/discover.rs\",\n    \"crates/ontoforge-schema/src/loader/dispatch.rs\",\n    \"crates/ontoforge-schema/src/loader/fixture.rs\",\n    \"crates/ontoforge-schema/src/loader/mod.rs\",\n    \"crates/ontoforge-schema/src/loader/parse.rs\",\n    \"crates/ontoforge-schema/src/loader/scope.rs\",\n    \"crates/ontoforge-schema/src/loader/sourcemap.rs\",\n    \"crates/ontoforge-schema/src/schema_export.rs\",\n    \"crates/ontoforge-schema/src/validate/actions.rs\",\n    \"crates/ontoforge-schema/src/validate/bindings.rs\",\n    \"crates/ontoforge-schema/src/validate/links.rs\",\n    \"crates/ontoforge-schema/src/validate/mod.rs\",\n    \"crates/ontoforge-schema/src/validate/objects.rs\",\n    \"crates/ontoforge-schema/tests/scope_documents.rs\",\n    \"crates/ontoforge-server/src/context.rs\",\n    \"crates/ontoforge-server/src/history_page.rs\",\n    \"crates/ontoforge-server/tests/postgres_http_it.rs\",\n    \"crates/ontoforge-storage/Cargo.toml\",\n    \"crates/ontoforge-storage/migrations/postgres/0001_definitions.sql\",\n    \"crates/ontoforge-storage/migrations/postgres/0002_edit_log.sql\",\n    \"crates/ontoforge-storage/migrations/postgres/0003_scope.sql\",\n    \"crates/ontoforge-storage/migrations/postgres/0004_action.sql\",\n    \"crates/ontoforge-storage/migrations/postgres/0005_read_audit.sql\",\n    \"crates/ontoforge-storage/migrations/postgres/0006_audit_truncated.sql\",\n    \"crates/ontoforge-storage/migrations/sqlite/0001_definitions.sql\",\n    \"crates/ontoforge-storage/migrations/sqlite/0002_edit_log.sql\",\n    \"crates/ontoforge-storage/migrations/sqlite/0003_scope.sql\",\n    \"crates/ontoforge-storage/migrations/sqlite/0004_action.sql\",\n    \"crates/ontoforge-storage/migrations/sqlite/0005_read_audit.sql\",\n    \"crates/ontoforge-storage/migrations/sqlite/0006_audit_truncated.sql\",\n    \"crates/ontoforge-storage/src/commit.rs\",\n    \"crates/ontoforge-storage/src/ddl.rs\",\n    \"crates/ontoforge-storage/src/diff.rs\",\n    \"crates/ontoforge-storage/src/error.rs\",\n    \"crates/ontoforge-storage/src/history.rs\",\n    \"crates/ontoforge-storage/src/import.rs\",\n    \"crates/ontoforge-storage/src/index.rs\",\n    \"crates/ontoforge-storage/src/lib.rs\",\n    \"crates/ontoforge-storage/src/log.rs\",\n    \"crates/ontoforge-storage/src/migrate.rs\",\n    \"crates/ontoforge-storage/src/naming.rs\",\n    \"crates/ontoforge-storage/src/physical.rs\",\n    \"crates/ontoforge-storage/src/query_read.rs\",\n    \"crates/ontoforge-storage/src/read_audit.rs\",\n    \"crates/ontoforge-storage/src/reload.rs\",\n    \"crates/ontoforge-storage/src/request_snapshot.rs\",\n    \"crates/ontoforge-storage/src/scope_store.rs\",\n    \"crates/ontoforge-storage/src/snapshots/ontoforge_storage__ddl__tests__ddl_postgres.snap\",\n    \"crates/ontoforge-storage/src/snapshots/ontoforge_storage__ddl__tests__ddl_sqlite.snap\",\n    \"crates/ontoforge-storage/src/sql_exit.rs\",\n    \"crates/ontoforge-storage/src/state.rs\",\n    \"crates/ontoforge-storage/src/store.rs\",\n    \"crates/ontoforge-storage/src/value.rs\",\n    \"crates/ontoforge-storage/tests/conformance/mod.rs\",\n    \"crates/ontoforge-storage/tests/conformance_pg.rs\",\n    \"crates/ontoforge-storage/tests/conformance_sqlite.rs\",\n    \"crates/ontoforge-storage/tests/frozen_history.rs\",\n    \"crates/ontoforge-storage/tests/history_masking.rs\",\n    \"crates/ontoforge-storage/tests/import.rs\",\n    \"crates/ontoforge-storage/tests/migrate.rs\",\n    \"crates/ontoforge-storage/tests/migrate_pg.rs\",\n    \"crates/ontoforge-storage/tests/model/mod.rs\",\n    \"crates/ontoforge-storage/tests/model_prop.proptest-regressions\",\n    \"crates/ontoforge-storage/tests/model_prop.rs\",\n    \"crates/ontoforge-storage/tests/query_read.rs\",\n    \"crates/ontoforge-storage/tests/query_read_pg.rs\",\n    \"crates/ontoforge-storage/tests/reload.rs\",\n    \"crates/ontoforge-storage/tests/reload_pg.rs\",\n    \"crates/ontoforge-storage/tests/reload_trino_it.rs\",\n    \"crates/ontoforge-storage/tests/request_snapshot.rs\",\n    \"crates/ontoforge-storage/tests/scope_store.rs\",\n    \"crates/ontoforge-storage/tests/sql_exit_guard.rs\",\n    \"crates/ontoforge-storage/tests/sqlite_connection.rs\",\n    \"crates/ontoforge-storage/tests/support/mod.rs\",\n    \"crates/ontoforge/Cargo.toml\",\n    \"crates/ontoforge/src/cli.rs\",\n    \"crates/ontoforge/src/dev_token.rs\",\n    \"crates/ontoforge/src/import.rs\",\n    \"crates/ontoforge/src/lib.rs\",\n    \"crates/ontoforge/src/main.rs\",\n    \"crates/ontoforge/src/migrate.rs\",\n    \"crates/ontoforge/src/reload.rs\",\n    \"crates/ontoforge/src/scope.rs\",\n    \"crates/ontoforge/tests/cli_dev_token.rs\",\n    \"crates/ontoforge/tests/cli_import.rs\",\n    \"crates/ontoforge/tests/cli_migrate.rs\",\n    \"crates/ontoforge/tests/cli_reload.rs\",\n    \"crates/ontoforge/tests/cli_scope.rs\",\n    \"docs/edit-store.md\",\n    \"docs/scope.md\",\n    \"examples/ontologies/aviation/actions.yaml\",\n    \"examples/ontologies/aviation/bindings/dev/aircraft.yaml\",\n    \"examples/ontologies/aviation/bindings/dev/fixtures/aircraft.csv\",\n    \"examples/ontologies/aviation/bindings/dev/fixtures/flight_crew.csv\",\n    \"examples/ontologies/aviation/bindings/dev/fixtures/flights.csv\",\n    \"examples/ontologies/aviation/bindings/dev/fixtures/maintenance_records.csv\",\n    \"examples/ontologies/aviation/bindings/dev/fixtures/pilots.csv\",\n    \"examples/ontologies/aviation/bindings/dev/flight-crew.yaml\",\n    \"examples/ontologies/aviation/bindings/dev/flight.yaml\",\n    \"examples/ontologies/aviation/bindings/dev/maintenance-record.yaml\",\n    \"examples/ontologies/aviation/bindings/dev/pilot.yaml\",\n    \"examples/ontologies/aviation/links.yaml\",\n    \"examples/ontologies/aviation/objects.yaml\",\n    \"examples/ontologies/aviation/ontology.yaml\",\n    \"examples/server/ontoforge-server.dev.toml\",\n    \"rust-toolchain.toml\",\n    \"schemas/ontoforge-definition.schema.json\",\n    \"schemas/ontoforge-manifest.schema.json\",\n    \"schemas/ontoforge-scope.schema.json\",\n    \"target/milestone-ci-41759804733-integration.log\",\n    \"target/milestone-ci-41759804733-ubuntu.log\",\n    \"target/milestone-ci-41759804733-windows.log\"\n  ],\n  \"covered_digest\": \"v4:sha256:6bf6d76b3932148c857b0bf40774262a33dae517c0356291ef130a50b39d9a85\"\n}",
+    "stderr": "",
+    "data": {
+      "covered_files": [
+        ".gitattributes",
+        ".github/workflows/ci.yml",
+        ".planning/REQUIREMENTS.md",
+        ".planning/ROADMAP.md",
+        ".planning/adr/0002-naming-convention.md",
+        ".planning/adr/0016-storage-system-data-and-typed-edit-store.md",
+        ".planning/adr/0018-authz-scope-and-sql-tiers.md",
+        ".planning/adr/0020-query-execution-rust-orchestrated-overlay.md",
+        ".planning/adr/0023-phase3-crate-dependency-direction.md",
+        ".planning/adr/0024-edit-store-physical-format.md",
+        ".planning/adr/0025-row-predicate-semantics.md",
+        ".planning/adr/0026-edit-log-format.md",
+        ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-final.json",
+        ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-integration.log",
+        ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-isolated-query-bench.log",
+        ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-phase7-real-services.log",
+        ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-ubuntu.log",
+        ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-windows.log",
+        ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/03-VERIFICATION.before.md",
+        ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/03-contracts.json",
+        ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/04-VERIFICATION.before.md",
+        ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/04-contracts.json",
+        ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/CONTRACT-RESULTS.md",
+        ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/GOVERNANCE-AND-BOUNDARIES.md",
+        ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/changed-source-inspection.json",
+        ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/collect.cjs",
+        ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/covered-file-inspection.json",
+        ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/evidence-groups.json",
+        ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/evidence-inputs.json",
+        ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/executed-tests.json",
+        ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/governance-inputs.json",
+        ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/inspect.cjs",
+        ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/selected-test-source.json",
+        ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/service-environment-evidence.json",
+        ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/truth-results.json",
+        ".planning/phases/03-edit-store-scope-model/03-01-PLAN.md",
+        ".planning/phases/03-edit-store-scope-model/03-01-SUMMARY.md",
+        ".planning/phases/03-edit-store-scope-model/03-02-PLAN.md",
+        ".planning/phases/03-edit-store-scope-model/03-02-SUMMARY.md",
+        ".planning/phases/03-edit-store-scope-model/03-03-PLAN.md",
+        ".planning/phases/03-edit-store-scope-model/03-03-SUMMARY.md",
+        ".planning/phases/03-edit-store-scope-model/03-04-PLAN.md",
+        ".planning/phases/03-edit-store-scope-model/03-04-SUMMARY.md",
+        ".planning/phases/03-edit-store-scope-model/03-05-PLAN.md",
+        ".planning/phases/03-edit-store-scope-model/03-05-SUMMARY.md",
+        ".planning/phases/03-edit-store-scope-model/03-06-PLAN.md",
+        ".planning/phases/03-edit-store-scope-model/03-06-SUMMARY.md",
+        ".planning/phases/03-edit-store-scope-model/03-07-PLAN.md",
+        ".planning/phases/03-edit-store-scope-model/03-07-SUMMARY.md",
+        ".planning/phases/03-edit-store-scope-model/03-08-PLAN.md",
+        ".planning/phases/03-edit-store-scope-model/03-08-SUMMARY.md",
+        ".planning/phases/03-edit-store-scope-model/03-09-PLAN.md",
+        ".planning/phases/03-edit-store-scope-model/03-09-SUMMARY.md",
+        ".planning/phases/03-edit-store-scope-model/03-10-PLAN.md",
+        ".planning/phases/03-edit-store-scope-model/03-10-SUMMARY.md",
+        ".planning/phases/03-edit-store-scope-model/03-11-PLAN.md",
+        ".planning/phases/03-edit-store-scope-model/03-11-SUMMARY.md",
+        ".planning/phases/03-edit-store-scope-model/03-12-PLAN.md",
+        ".planning/phases/03-edit-store-scope-model/03-12-SUMMARY.md",
+        ".planning/phases/03-edit-store-scope-model/03-13-PLAN.md",
+        ".planning/phases/03-edit-store-scope-model/03-13-SUMMARY.md",
+        ".planning/phases/03-edit-store-scope-model/03-14-PLAN.md",
+        ".planning/phases/03-edit-store-scope-model/03-14-SUMMARY.md",
+        ".planning/phases/03-edit-store-scope-model/03-15-PLAN.md",
+        ".planning/phases/03-edit-store-scope-model/03-15-SUMMARY.md",
+        ".planning/phases/03-edit-store-scope-model/03-16-PLAN.md",
+        ".planning/phases/03-edit-store-scope-model/03-16-SUMMARY.md",
+        ".planning/phases/03-edit-store-scope-model/03-17-PLAN.md",
+        ".planning/phases/03-edit-store-scope-model/03-17-SUMMARY.md",
+        ".planning/phases/03-edit-store-scope-model/03-18-PLAN.md",
+        ".planning/phases/03-edit-store-scope-model/03-18-SUMMARY.md",
+        ".planning/phases/03-edit-store-scope-model/03-19-PLAN.md",
+        ".planning/phases/03-edit-store-scope-model/03-19-SUMMARY.md",
+        ".planning/phases/03-edit-store-scope-model/03-20-PLAN.md",
+        ".planning/phases/03-edit-store-scope-model/03-20-SUMMARY.md",
+        ".planning/phases/03-edit-store-scope-model/03-21-PLAN.md",
+        ".planning/phases/03-edit-store-scope-model/03-21-SUMMARY.md",
+        ".planning/phases/03-edit-store-scope-model/03-22-PLAN.md",
+        ".planning/phases/03-edit-store-scope-model/03-22-SUMMARY.md",
+        ".planning/phases/03-edit-store-scope-model/03-23-PLAN.md",
+        ".planning/phases/03-edit-store-scope-model/03-23-SUMMARY.md",
+        ".planning/phases/03-edit-store-scope-model/03-CONTEXT.md",
+        ".planning/phases/03-edit-store-scope-model/03-UAT.md",
+        ".planning/phases/03-edit-store-scope-model/03-VALIDATION.md",
+        ".planning/phases/04-scoped-l0-read/04-VALIDATION.md",
+        "CONTRIBUTING.md",
+        "Cargo.lock",
+        "Cargo.toml",
+        "ci/check-tls-deps.sh",
+        "ci/pg/rowpred_corpus.sql",
+        "ci/pg/seed.sql",
+        "ci/query-services.sh",
+        "ci/server-services.sh",
+        "ci/test_tls_deps.py",
+        "ci/trino/catalog/editstore.properties",
+        "crates/ontoforge-auth/Cargo.toml",
+        "crates/ontoforge-auth/src/authn/dev.rs",
+        "crates/ontoforge-auth/src/authn/jwks.rs",
+        "crates/ontoforge-auth/src/authn/mod.rs",
+        "crates/ontoforge-auth/src/authn/oidc.rs",
+        "crates/ontoforge-auth/src/authn/principal.rs",
+        "crates/ontoforge-auth/src/lib.rs",
+        "crates/ontoforge-auth/src/scope/compile.rs",
+        "crates/ontoforge-auth/src/scope/coverage.rs",
+        "crates/ontoforge-auth/src/scope/lower.rs",
+        "crates/ontoforge-auth/src/scope/merge.rs",
+        "crates/ontoforge-auth/src/scope/mod.rs",
+        "crates/ontoforge-auth/tests/criteria_coverage.rs",
+        "crates/ontoforge-auth/tests/crypto_backend.rs",
+        "crates/ontoforge-auth/tests/data/README.md",
+        "crates/ontoforge-auth/tests/data/oidc_es256.pem",
+        "crates/ontoforge-auth/tests/data/oidc_rs256.pem",
+        "crates/ontoforge-auth/tests/data/rowpred_corpus.json",
+        "crates/ontoforge-auth/tests/dev_token.rs",
+        "crates/ontoforge-auth/tests/oidc.rs",
+        "crates/ontoforge-auth/tests/rowpred_common/mod.rs",
+        "crates/ontoforge-auth/tests/rowpred_diff.rs",
+        "crates/ontoforge-auth/tests/rowpred_trino_it.rs",
+        "crates/ontoforge-auth/tests/scope_compile.rs",
+        "crates/ontoforge-auth/tests/scope_merge.rs",
+        "crates/ontoforge-auth/tests/snapshots/scope_compile__scope_compile_diagnostics_json.snap",
+        "crates/ontoforge-engine/Cargo.toml",
+        "crates/ontoforge-engine/src/config.rs",
+        "crates/ontoforge-engine/src/lib.rs",
+        "crates/ontoforge-engine/src/printer/ast.rs",
+        "crates/ontoforge-engine/src/printer/call.rs",
+        "crates/ontoforge-engine/src/printer/dialect.rs",
+        "crates/ontoforge-engine/src/printer/escape.rs",
+        "crates/ontoforge-engine/src/printer/l2.rs",
+        "crates/ontoforge-engine/src/printer/mod.rs",
+        "crates/ontoforge-engine/src/printer/snapshots/ontoforge_engine__printer__tests__print_sqlite.snap",
+        "crates/ontoforge-engine/src/printer/snapshots/ontoforge_engine__printer__tests__print_trino.snap",
+        "crates/ontoforge-engine/src/printer/sqlite_ddl.rs",
+        "crates/ontoforge-engine/src/printer/tests.rs",
+        "crates/ontoforge-engine/src/trino/cancel.rs",
+        "crates/ontoforge-engine/src/trino/classify.rs",
+        "crates/ontoforge-engine/src/trino/client.rs",
+        "crates/ontoforge-engine/src/trino/decode.rs",
+        "crates/ontoforge-engine/src/trino/headers.rs",
+        "crates/ontoforge-engine/src/trino/l2_health.rs",
+        "crates/ontoforge-engine/src/trino/l2_monitor.rs",
+        "crates/ontoforge-engine/src/trino/mod.rs",
+        "crates/ontoforge-expr/Cargo.toml",
+        "crates/ontoforge-expr/src/analyze.rs",
+        "crates/ontoforge-expr/src/check.rs",
+        "crates/ontoforge-expr/src/infer.rs",
+        "crates/ontoforge-expr/src/lib.rs",
+        "crates/ontoforge-expr/src/limits.rs",
+        "crates/ontoforge-expr/src/rowpred/eval.rs",
+        "crates/ontoforge-expr/src/rowpred/ir.rs",
+        "crates/ontoforge-expr/src/rowpred/mod.rs",
+        "crates/ontoforge-expr/src/rowpred/parse.rs",
+        "crates/ontoforge-expr/src/rowpred/value.rs",
+        "crates/ontoforge-expr/src/walk.rs",
+        "crates/ontoforge-expr/tests/analyze.rs",
+        "crates/ontoforge-expr/tests/common/mod.rs",
+        "crates/ontoforge-expr/tests/criteria.rs",
+        "crates/ontoforge-expr/tests/rowpred_eval.proptest-regressions",
+        "crates/ontoforge-expr/tests/rowpred_eval.rs",
+        "crates/ontoforge-expr/tests/rowpred_subset.rs",
+        "crates/ontoforge-schema/src/diag.rs",
+        "crates/ontoforge-schema/src/ir/action.rs",
+        "crates/ontoforge-schema/src/ir/attrs.rs",
+        "crates/ontoforge-schema/src/ir/basetype.rs",
+        "crates/ontoforge-schema/src/ir/binding.rs",
+        "crates/ontoforge-schema/src/ir/link.rs",
+        "crates/ontoforge-schema/src/ir/manifest.rs",
+        "crates/ontoforge-schema/src/ir/mod.rs",
+        "crates/ontoforge-schema/src/ir/names.rs",
+        "crates/ontoforge-schema/src/ir/object.rs",
+        "crates/ontoforge-schema/src/ir/scope.rs",
+        "crates/ontoforge-schema/src/lib.rs",
+        "crates/ontoforge-schema/src/lint/binding/e13.rs",
+        "crates/ontoforge-schema/src/lint/binding/e14.rs",
+        "crates/ontoforge-schema/src/lint/binding/e15.rs",
+        "crates/ontoforge-schema/src/lint/binding/e16.rs",
+        "crates/ontoforge-schema/src/lint/binding/mod.rs",
+        "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e13__tests__clean.snap",
+        "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e13__tests__triggers.snap",
+        "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e14__tests__clean.snap",
+        "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e14__tests__triggers.snap",
+        "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e15__tests__clean.snap",
+        "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e15__tests__triggers.snap",
+        "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e16__tests__clean.snap",
+        "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e16__tests__triggers.snap",
+        "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__w17__tests__clean.snap",
+        "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__w17__tests__triggers.snap",
+        "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__w17__tests__unreadable.snap",
+        "crates/ontoforge-schema/src/lint/binding/w17.rs",
+        "crates/ontoforge-schema/src/lint/config.rs",
+        "crates/ontoforge-schema/src/lint/e08.rs",
+        "crates/ontoforge-schema/src/lint/e09.rs",
+        "crates/ontoforge-schema/src/lint/mod.rs",
+        "crates/ontoforge-schema/src/lint/naming/mod.rs",
+        "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w01__tests__clean.snap",
+        "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w01__tests__triggers.snap",
+        "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w02__tests__clean.snap",
+        "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w02__tests__triggers.snap",
+        "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w03__tests__clean.snap",
+        "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w03__tests__triggers.snap",
+        "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w04__tests__clean.snap",
+        "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w04__tests__triggers.snap",
+        "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w05__tests__clean.snap",
+        "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w05__tests__triggers.snap",
+        "crates/ontoforge-schema/src/lint/naming/w01.rs",
+        "crates/ontoforge-schema/src/lint/naming/w02.rs",
+        "crates/ontoforge-schema/src/lint/naming/w03.rs",
+        "crates/ontoforge-schema/src/lint/naming/w04.rs",
+        "crates/ontoforge-schema/src/lint/naming/w05.rs",
+        "crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e08__tests__clean.snap",
+        "crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e08__tests__triggers.snap",
+        "crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e09__tests__clean.snap",
+        "crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e09__tests__triggers.snap",
+        "crates/ontoforge-schema/src/lint/structure/mod.rs",
+        "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w06__tests__clean.snap",
+        "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w06__tests__triggers.snap",
+        "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w07__tests__clean.snap",
+        "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w07__tests__triggers.snap",
+        "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w08__tests__clean.snap",
+        "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w08__tests__triggers.snap",
+        "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w09__tests__clean.snap",
+        "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w09__tests__triggers.snap",
+        "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w10__tests__clean.snap",
+        "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w10__tests__triggers.snap",
+        "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w11__tests__clean.snap",
+        "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w11__tests__triggers.snap",
+        "crates/ontoforge-schema/src/lint/structure/w06.rs",
+        "crates/ontoforge-schema/src/lint/structure/w07.rs",
+        "crates/ontoforge-schema/src/lint/structure/w08.rs",
+        "crates/ontoforge-schema/src/lint/structure/w09.rs",
+        "crates/ontoforge-schema/src/lint/structure/w10.rs",
+        "crates/ontoforge-schema/src/lint/structure/w11.rs",
+        "crates/ontoforge-schema/src/lint/words.rs",
+        "crates/ontoforge-schema/src/loader/discover.rs",
+        "crates/ontoforge-schema/src/loader/dispatch.rs",
+        "crates/ontoforge-schema/src/loader/fixture.rs",
+        "crates/ontoforge-schema/src/loader/mod.rs",
+        "crates/ontoforge-schema/src/loader/parse.rs",
+        "crates/ontoforge-schema/src/loader/scope.rs",
+        "crates/ontoforge-schema/src/loader/sourcemap.rs",
+        "crates/ontoforge-schema/src/schema_export.rs",
+        "crates/ontoforge-schema/src/validate/actions.rs",
+        "crates/ontoforge-schema/src/validate/bindings.rs",
+        "crates/ontoforge-schema/src/validate/links.rs",
+        "crates/ontoforge-schema/src/validate/mod.rs",
+        "crates/ontoforge-schema/src/validate/objects.rs",
+        "crates/ontoforge-schema/tests/scope_documents.rs",
+        "crates/ontoforge-server/src/context.rs",
+        "crates/ontoforge-server/src/history_page.rs",
+        "crates/ontoforge-server/tests/postgres_http_it.rs",
+        "crates/ontoforge-storage/Cargo.toml",
+        "crates/ontoforge-storage/migrations/postgres/0001_definitions.sql",
+        "crates/ontoforge-storage/migrations/postgres/0002_edit_log.sql",
+        "crates/ontoforge-storage/migrations/postgres/0003_scope.sql",
+        "crates/ontoforge-storage/migrations/postgres/0004_action.sql",
+        "crates/ontoforge-storage/migrations/postgres/0005_read_audit.sql",
+        "crates/ontoforge-storage/migrations/postgres/0006_audit_truncated.sql",
+        "crates/ontoforge-storage/migrations/sqlite/0001_definitions.sql",
+        "crates/ontoforge-storage/migrations/sqlite/0002_edit_log.sql",
+        "crates/ontoforge-storage/migrations/sqlite/0003_scope.sql",
+        "crates/ontoforge-storage/migrations/sqlite/0004_action.sql",
+        "crates/ontoforge-storage/migrations/sqlite/0005_read_audit.sql",
+        "crates/ontoforge-storage/migrations/sqlite/0006_audit_truncated.sql",
+        "crates/ontoforge-storage/src/commit.rs",
+        "crates/ontoforge-storage/src/ddl.rs",
+        "crates/ontoforge-storage/src/diff.rs",
+        "crates/ontoforge-storage/src/error.rs",
+        "crates/ontoforge-storage/src/history.rs",
+        "crates/ontoforge-storage/src/import.rs",
+        "crates/ontoforge-storage/src/index.rs",
+        "crates/ontoforge-storage/src/lib.rs",
+        "crates/ontoforge-storage/src/log.rs",
+        "crates/ontoforge-storage/src/migrate.rs",
+        "crates/ontoforge-storage/src/naming.rs",
+        "crates/ontoforge-storage/src/physical.rs",
+        "crates/ontoforge-storage/src/query_read.rs",
+        "crates/ontoforge-storage/src/read_audit.rs",
+        "crates/ontoforge-storage/src/reload.rs",
+        "crates/ontoforge-storage/src/request_snapshot.rs",
+        "crates/ontoforge-storage/src/scope_store.rs",
+        "crates/ontoforge-storage/src/snapshots/ontoforge_storage__ddl__tests__ddl_postgres.snap",
+        "crates/ontoforge-storage/src/snapshots/ontoforge_storage__ddl__tests__ddl_sqlite.snap",
+        "crates/ontoforge-storage/src/sql_exit.rs",
+        "crates/ontoforge-storage/src/state.rs",
+        "crates/ontoforge-storage/src/store.rs",
+        "crates/ontoforge-storage/src/value.rs",
+        "crates/ontoforge-storage/tests/conformance/mod.rs",
+        "crates/ontoforge-storage/tests/conformance_pg.rs",
+        "crates/ontoforge-storage/tests/conformance_sqlite.rs",
+        "crates/ontoforge-storage/tests/frozen_history.rs",
+        "crates/ontoforge-storage/tests/history_masking.rs",
+        "crates/ontoforge-storage/tests/import.rs",
+        "crates/ontoforge-storage/tests/migrate.rs",
+        "crates/ontoforge-storage/tests/migrate_pg.rs",
+        "crates/ontoforge-storage/tests/model/mod.rs",
+        "crates/ontoforge-storage/tests/model_prop.proptest-regressions",
+        "crates/ontoforge-storage/tests/model_prop.rs",
+        "crates/ontoforge-storage/tests/query_read.rs",
+        "crates/ontoforge-storage/tests/query_read_pg.rs",
+        "crates/ontoforge-storage/tests/reload.rs",
+        "crates/ontoforge-storage/tests/reload_pg.rs",
+        "crates/ontoforge-storage/tests/reload_trino_it.rs",
+        "crates/ontoforge-storage/tests/request_snapshot.rs",
+        "crates/ontoforge-storage/tests/scope_store.rs",
+        "crates/ontoforge-storage/tests/sql_exit_guard.rs",
+        "crates/ontoforge-storage/tests/sqlite_connection.rs",
+        "crates/ontoforge-storage/tests/support/mod.rs",
+        "crates/ontoforge/Cargo.toml",
+        "crates/ontoforge/src/cli.rs",
+        "crates/ontoforge/src/dev_token.rs",
+        "crates/ontoforge/src/import.rs",
+        "crates/ontoforge/src/lib.rs",
+        "crates/ontoforge/src/main.rs",
+        "crates/ontoforge/src/migrate.rs",
+        "crates/ontoforge/src/reload.rs",
+        "crates/ontoforge/src/scope.rs",
+        "crates/ontoforge/tests/cli_dev_token.rs",
+        "crates/ontoforge/tests/cli_import.rs",
+        "crates/ontoforge/tests/cli_migrate.rs",
+        "crates/ontoforge/tests/cli_reload.rs",
+        "crates/ontoforge/tests/cli_scope.rs",
+        "docs/edit-store.md",
+        "docs/scope.md",
+        "examples/ontologies/aviation/actions.yaml",
+        "examples/ontologies/aviation/bindings/dev/aircraft.yaml",
+        "examples/ontologies/aviation/bindings/dev/fixtures/aircraft.csv",
+        "examples/ontologies/aviation/bindings/dev/fixtures/flight_crew.csv",
+        "examples/ontologies/aviation/bindings/dev/fixtures/flights.csv",
+        "examples/ontologies/aviation/bindings/dev/fixtures/maintenance_records.csv",
+        "examples/ontologies/aviation/bindings/dev/fixtures/pilots.csv",
+        "examples/ontologies/aviation/bindings/dev/flight-crew.yaml",
+        "examples/ontologies/aviation/bindings/dev/flight.yaml",
+        "examples/ontologies/aviation/bindings/dev/maintenance-record.yaml",
+        "examples/ontologies/aviation/bindings/dev/pilot.yaml",
+        "examples/ontologies/aviation/links.yaml",
+        "examples/ontologies/aviation/objects.yaml",
+        "examples/ontologies/aviation/ontology.yaml",
+        "examples/server/ontoforge-server.dev.toml",
+        "rust-toolchain.toml",
+        "schemas/ontoforge-definition.schema.json",
+        "schemas/ontoforge-manifest.schema.json",
+        "schemas/ontoforge-scope.schema.json",
+        "target/milestone-ci-41759804733-integration.log",
+        "target/milestone-ci-41759804733-ubuntu.log",
+        "target/milestone-ci-41759804733-windows.log"
+      ],
+      "covered_digest": "v4:sha256:6bf6d76b3932148c857b0bf40774262a33dae517c0356291ef130a50b39d9a85"
+    }
+  }
+}

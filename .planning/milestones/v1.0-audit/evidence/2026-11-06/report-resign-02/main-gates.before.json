@@ -1,0 +1,81 @@
+{
+  "checked_at": "2026-11-06T02:30:53.977Z",
+  "gates": [
+    {
+      "phase": "01-workspace-schema-lint",
+      "report": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+      "raw_status": "human_needed",
+      "canonical_status": "human_needed",
+      "score": "102/102 contract truths checked (101 VERIFIED; 1 prior override)",
+      "sha256": "98c80776c3170489cf0d72007fcaf942e88dbd605207cb713a5b300257adc310"
+    },
+    {
+      "phase": "02-source-binding-engine",
+      "report": ".planning/phases/02-source-binding-engine/02-VERIFICATION.md",
+      "raw_status": "gaps_found",
+      "canonical_status": "gaps_found",
+      "score": "100/103 must-haves verified",
+      "sha256": "07327e844aa2bc7ae3a04a8cb8b9de98a028083997afc4f62ab1b224224ec53d"
+    },
+    {
+      "phase": "03-edit-store-scope-model",
+      "report": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "139/139 must-haves verified",
+      "sha256": "f6a8657f760a1656657e53ecc04789d0a76ef9098cb28a3ff7e8efc289abc4cf"
+    },
+    {
+      "phase": "04-scoped-l0-read",
+      "report": ".planning/phases/04-scoped-l0-read/04-VERIFICATION.md",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "36/36 must-haves verified",
+      "sha256": "b10127dfe9c705f9b6d0110d45d1a442961d3edcfac8e5ea140bdcd594efe369"
+    },
+    {
+      "phase": "05-online-action",
+      "report": ".planning/phases/05-online-action/05-VERIFICATION.md",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "36/36 must-haves verified",
+      "sha256": "eb120872d560fdb9af1039328fb7c1b8da17f40b0b22916d2c2551c9ef4a5ca9"
+    },
+    {
+      "phase": "06-l2-raw-dql-toolsets-audit",
+      "report": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "22/22 must-haves verified",
+      "sha256": "b029b2f768539e695cc0a0476840a361d0d10643ece50446f1ea19f5b2b3b5da"
+    },
+    {
+      "phase": "07-rest-mcp-shell",
+      "report": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "80/80 must-haves verified",
+      "sha256": "5b64c737fbcdaa345675dfca8c444b70dfb5bd181375983b9eaa067b2ad9103d"
+    },
+    {
+      "phase": "07.1-source-cardinality-gap-closure",
+      "report": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-VERIFICATION.md",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "18/18 must-haves verified",
+      "sha256": "08c44ecfb3053ac485192a0fe6df0692daeb0a92b74429514b87755acd205b24"
+    },
+    {
+      "phase": "07.2-minio-contract-gap-closure",
+      "report": ".planning/phases/07.2-minio-contract-gap-closure/07.2-VERIFICATION.md",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "9/9 must-haves verified",
+      "sha256": "a85bddd065f2f44bc41b139c0088e4271f4dac976b3c5f92fa9efaec3c83a110"
+    }
+  ],
+  "runtime_integrity": {
+    "checked": 56,
+    "differences": []
+  }
+}

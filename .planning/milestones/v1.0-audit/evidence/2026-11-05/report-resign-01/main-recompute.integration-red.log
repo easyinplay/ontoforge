@@ -1,0 +1,8 @@
+{
+  "recorded_at": "2026-11-05T14:26:29.215Z",
+  "command": "node .planning/milestones/v1.0-audit/evidence/2026-11-05/requirements-final-recompute.cjs",
+  "exit": 1,
+  "stdout": "",
+  "stderr": "node:assert:152\r\n  throw new AssertionError(obj);\r\n  ^\r\n\r\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\r\n\r\n12 !== 0\r\n\r\n    at Object.<anonymous> (D:\\DataSpellProjects\\ontoforge\\.planning\\milestones\\v1.0-audit\\evidence\\2026-11-05\\requirements-final-recompute.cjs:131:8)\r\n    at Module._compile (node:internal/modules/cjs/loader:1929:14)\r\n    at Object..js (node:internal/modules/cjs/loader:2060:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1651:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1443:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47 {\r\n  generatedMessage: true,\r\n  code: 'ERR_ASSERTION',\r\n  actual: 12,\r\n  expected: 0,\r\n  operator: 'strictEqual',\r\n  diff: 'simple'\r\n}\r\n\r\nNode.js v24.22.1\r\n",
+  "diagnosis": "Phase01 Requirements Coverage was converted from the existing parser-compatible table to bullets; 12 IDs became parser orphans. Restore report interface, not acceptance rules. Product tests unaffected; no matrix written."
+}

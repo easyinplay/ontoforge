@@ -1,0 +1,12 @@
+started_utc=2026-11-05T09:37:08.8178773Z
+PASS immutable_previous_index_entries=42; superseded_fingerprint_status_phase_status_report_match_prior_hashes=true; old_index_entries=47
+01-workspace-schema-lint canonical=human_needed owner=stale
+02-source-binding-engine canonical=gaps_found owner=gaps_found
+03-edit-store-scope-model canonical=passed owner=stale
+04-scoped-l0-read canonical=passed owner=stale
+05-online-action canonical=passed owner=stale
+06-l2-raw-dql-toolsets-audit canonical=passed owner=stale
+07-rest-mcp-shell canonical=passed owner=passed
+PASS current_covered=248; GSD_current_phase7=passed; scope_only_no_product_rerun=true
+scope_final_assert_exit_code=0
+ended_utc=2026-11-05T09:37:12.0505781Z

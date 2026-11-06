@@ -1,0 +1,22 @@
+{
+  "checked_at": "2026-11-06T02:29:10.707Z",
+  "method": "Read-only in-memory tar members; no filesystem extraction or service execution",
+  "archives": [
+    {
+      "archive": "ci-evidence.tar.gz",
+      "sha256": "99f7eab201e18d4c79981bbf7b233afc283ba4817c46199edf98696c70b09c6f",
+      "bytes": 309306,
+      "members": 15,
+      "indexed": 15,
+      "mismatch": 0
+    },
+    {
+      "archive": "local-evidence.tar.gz",
+      "sha256": "56105fb1ae226365096873ddde5811e1cabf9fc1b1a19183dcc391ac5afb8021",
+      "bytes": 384465,
+      "members": 277,
+      "indexed": 277,
+      "mismatch": 0
+    }
+  ]
+}

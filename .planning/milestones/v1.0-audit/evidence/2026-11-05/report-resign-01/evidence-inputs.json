@@ -1,0 +1,1647 @@
+[
+  {
+    "file": ".gitattributes",
+    "bytes": 147,
+    "sha256": "66a217b6eaefd653b4e2d2fca5e61262849aa513f47a9ef9bf8b2e87362671f6"
+  },
+  {
+    "file": ".github/workflows/ci.yml",
+    "bytes": 18887,
+    "sha256": "b4a802a680e268303a5cdfa66f51f876f0b8128822ff364616c3fe7c3b7f77e8"
+  },
+  {
+    "file": ".planning/adr/0002-naming-convention.md",
+    "bytes": 1556,
+    "sha256": "06583dc6b193e33442d6dd6e0c94890cdb7c8ee8eb34c8de0c9a9cde9e311756"
+  },
+  {
+    "file": ".planning/adr/0003-ontology-definition-format.md",
+    "bytes": 1471,
+    "sha256": "daafdffe64dfd6b8878612535f4cb7bea295929b795b9845cfe25355efd6a6ec"
+  },
+  {
+    "file": ".planning/adr/0006-expression-language.md",
+    "bytes": 1122,
+    "sha256": "9dcc9fe9d0673e040c153e07efa3517918aab47a6a22eb74c1775d6fab12f661"
+  },
+  {
+    "file": ".planning/adr/0011-workspace-layout.md",
+    "bytes": 1077,
+    "sha256": "a61043bb5e089b5bde28c7b50941aab88eff9064c78706d796e9d5923b4a8620"
+  },
+  {
+    "file": ".planning/adr/0012-definition-document-shape.md",
+    "bytes": 4702,
+    "sha256": "1233163cf93f93e2711d02d3d72b200de13c1749ad20f0445d98785d88875cee"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-01-PLAN.md",
+    "bytes": 37671,
+    "sha256": "804d6820af593a1028f8836350ec1803d129ec42b54bf3b2de175a09039966fe"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-01-SUMMARY.md",
+    "bytes": 15051,
+    "sha256": "00006e3d51ad2abf12827f82eb157c95f2b77ac217c3512d2e8585121bb457b4"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-02-PLAN.md",
+    "bytes": 14601,
+    "sha256": "0000752490786cee3a89f47f9b5a43ba1157f14d4c28b6ff61aa5f4f2afeb818"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-02-SUMMARY.md",
+    "bytes": 7807,
+    "sha256": "5e916ae851e86476092dcbe6155fe771573f8e4786c3aa80ca2927c8b81ae96e"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-03-PLAN.md",
+    "bytes": 21690,
+    "sha256": "07a412256957c7cfab030eaff8941bd6fc4070925e7cd88cbcefd43eca4d5a64"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-03-SUMMARY.md",
+    "bytes": 12157,
+    "sha256": "bce4d34119343ec9d7cb3bcdb7da9ab6d70e63484963e2f27dee669c92c1817c"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-04-PLAN.md",
+    "bytes": 24417,
+    "sha256": "e7e534883b446c2d3a8a1f72522a62c9cc7a1cb1d86a591c27ff34a0a4334284"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-04-SUMMARY.md",
+    "bytes": 13360,
+    "sha256": "c550b3d31157dceacc49129484f9c45562b01e5a9beb6299388b8d117bceef93"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-05-PLAN.md",
+    "bytes": 19284,
+    "sha256": "eda33abbb69ff665e82b85fed7affd9f0df2c761c653721d9527657854108101"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-05-SUMMARY.md",
+    "bytes": 14608,
+    "sha256": "a9ed5c66b7f82c8590515109f1e3c5c0357bd46c38a2132700790ff20226ae1b"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-06-PLAN.md",
+    "bytes": 24634,
+    "sha256": "b6023db52d1597c37e9f32dcd09e2206522c63d44537f444c1885ecbf218fc61"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-06-SUMMARY.md",
+    "bytes": 16646,
+    "sha256": "d922ba758fda1d955a9944a4746717d7009b6147f7d62fb7fda4907b1aac9aac"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-07-PLAN.md",
+    "bytes": 18500,
+    "sha256": "bf3ba07fbb6123b9b529504857ad8df8dc71361b3ecf61841386d6b09a2ba2ca"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-07-SUMMARY.md",
+    "bytes": 11649,
+    "sha256": "8ada1b6719bcd0809d7b2ff0917e9ff71f045e138bf2c2f696bad2d508712fd8"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-08-PLAN.md",
+    "bytes": 26732,
+    "sha256": "220c0e4d490a70fcf2e81d2b03fa38c205abfdff85ba30e16212fddf9bff7dbc"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-08-SUMMARY.md",
+    "bytes": 17135,
+    "sha256": "dd8206ffb7cd6230f2a72db9045f80109f13e561a9982029498a03484c43aaa6"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-09-PLAN.md",
+    "bytes": 17564,
+    "sha256": "2df7d81250c2c673efbcb56932f9af3f9feaff6f7c1b2c741046f64f2a6e3ff4"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-09-SUMMARY.md",
+    "bytes": 9203,
+    "sha256": "e220039ea094017ab1bd28200fbe7901a7853d1b2449c94c70bc007cb0678f13"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-10-PLAN.md",
+    "bytes": 14991,
+    "sha256": "9196cfd409617c83155a331916f6115a668a85a7f704754ad8c24d6a5eab206b"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-10-SUMMARY.md",
+    "bytes": 11253,
+    "sha256": "2f4403984d16ff1d5908e7d60f4887e775d60c7ba2ae4559619c6ac86c2f35c0"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-11-PLAN.md",
+    "bytes": 18420,
+    "sha256": "fc87f51d4f0a88835297c4efa524ff968d67139b1ff62b6ceb664bea49c77125"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-11-SUMMARY.md",
+    "bytes": 13167,
+    "sha256": "e5cf3111818c3cc6789ed40a499016002e477c06ebfc37117258fd98e0ad25dc"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-12-PLAN.md",
+    "bytes": 24802,
+    "sha256": "a7f1ae9c44f80fe2f1eee94c4f7cc2b34bad1cb39f1116ff12690c56d17b7376"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-12-SUMMARY.md",
+    "bytes": 12787,
+    "sha256": "cb6068cba7a6e47e50e07ab6f2bdbcd089dd1758df9642f3dc4b31dbf376a26e"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-13-PLAN.md",
+    "bytes": 8318,
+    "sha256": "27207dbdd03c3ea4e13bef09062f06f481726bce21ffcf234efa9fab1dc762c0"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-13-SUMMARY.md",
+    "bytes": 8579,
+    "sha256": "d60c66124cc0fddb2ca3e36b11cc156b07414978f47415c7f36e7d7916b39cda"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-14-PLAN.md",
+    "bytes": 30561,
+    "sha256": "c3120221fc011ddebf25ed96677d0172d5654f63ff9edc0b36a8c76faa4e41aa"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-14-SUMMARY.md",
+    "bytes": 7741,
+    "sha256": "17a1a30c52bc3e953536a029e8612e30c7589e92f23cca3abf08540191de0147"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-CONTEXT.md",
+    "bytes": 10756,
+    "sha256": "fc67f0d3dd39169ff7e8c9ce6aabde287cb82033d6031d0b3a839915f916065a"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-UAT.md",
+    "bytes": 4286,
+    "sha256": "33e06f89f3e6d191b77a584611bb9966d97790614a7533e648a524f363da75d3"
+  },
+  {
+    "file": ".planning/phases/01-workspace-schema-lint/01-VALIDATION.md",
+    "bytes": 19317,
+    "sha256": "748f4a5215c5b85639662c87bb3eb59d4efdc9e13a78e7e448cfb22a7076372d"
+  },
+  {
+    "file": ".vscode/settings.json",
+    "bytes": 171,
+    "sha256": "5b83ca55e8b082e6133f176e5334e1343a1f435f15b896b6c0d3ecf03e178368"
+  },
+  {
+    "file": ".zed/settings.json",
+    "bytes": 321,
+    "sha256": "9b081c2e875fdcb517d0f0f191df98f80186b6896afd254cf180596c3e7c7840"
+  },
+  {
+    "file": "CONTRIBUTING.md",
+    "bytes": 10913,
+    "sha256": "28689b187772d8a5cf9baf59c121dfbd6fb83463d58c0db3be31a402115e91b5"
+  },
+  {
+    "file": "Cargo.lock",
+    "bytes": 113308,
+    "sha256": "7ccd6827bf948238d62ceb492bea930e30ae7d289a1dd3fc04f94d08afafb2ee"
+  },
+  {
+    "file": "Cargo.toml",
+    "bytes": 2869,
+    "sha256": "6ff37b0773c9cbf86f8738a11f008d32b41ac8e6153c5da37dafea0da33d4dd5"
+  },
+  {
+    "file": "ci/check-tls-deps.sh",
+    "bytes": 345,
+    "sha256": "73bd03d6c2361108bd041f2ccac3a29155d98f7ec8867e5750df6d5891a25fa7"
+  },
+  {
+    "file": "ci/test_tls_deps.py",
+    "bytes": 4211,
+    "sha256": "0f1d1fb4baba849319e8467d087c08b672ed9d94f14c67cd22d8b0042b06845a"
+  },
+  {
+    "file": "crates/ontoforge-expr/src/analyze.rs",
+    "bytes": 3803,
+    "sha256": "4c391ab7e58f967d937890e0d73ce588d90d1ca06be5b084a89653f40e6ef720"
+  },
+  {
+    "file": "crates/ontoforge-expr/src/check.rs",
+    "bytes": 8842,
+    "sha256": "c58e9a1065353966a5ab205f0be41817c69103ebc1cfe1b963944aef1ca8259d"
+  },
+  {
+    "file": "crates/ontoforge-expr/src/infer.rs",
+    "bytes": 11967,
+    "sha256": "0862cfd94365ec332656af9bc9295114f4689bed2a99669dca5e7541e8f81dcd"
+  },
+  {
+    "file": "crates/ontoforge-expr/src/lib.rs",
+    "bytes": 794,
+    "sha256": "1af4bd6cf536e1cb6f133a6b05594f89e9e5ec871e8311b26b7f6343a49f114c"
+  },
+  {
+    "file": "crates/ontoforge-expr/src/limits.rs",
+    "bytes": 7104,
+    "sha256": "609d19aa148ecb8052cbfaf840bdee4ebf182397fc9b82a320b014a0c856e43c"
+  },
+  {
+    "file": "crates/ontoforge-expr/src/rowpred/eval.rs",
+    "bytes": 5994,
+    "sha256": "5cedfd07d0dc5a26dd20a58276a3c5a89ff9f3b82bfa5170b6fb575e8ac637d3"
+  },
+  {
+    "file": "crates/ontoforge-expr/src/rowpred/ir.rs",
+    "bytes": 7128,
+    "sha256": "e504125262c4d37352dcefa9091aed1f9376eecbcceae1228a48de33d4bf9128"
+  },
+  {
+    "file": "crates/ontoforge-expr/src/rowpred/mod.rs",
+    "bytes": 544,
+    "sha256": "c92bccd5bb8822a5d0b57fe3072b13ee63986f7568ebdd84fd75e01c8236edcf"
+  },
+  {
+    "file": "crates/ontoforge-expr/src/rowpred/parse.rs",
+    "bytes": 20572,
+    "sha256": "bccc87cade460241468302c40fe6e4f3ffb16f15d0ea77e31fe6c9111fd7151b"
+  },
+  {
+    "file": "crates/ontoforge-expr/src/rowpred/value.rs",
+    "bytes": 3200,
+    "sha256": "baf20d3f4e219d878c0f75d41a454b074d37ab3af946e8238461b820d001e159"
+  },
+  {
+    "file": "crates/ontoforge-expr/src/walk.rs",
+    "bytes": 6888,
+    "sha256": "51ce9cb320cb774c848a7934219c464b494ca435a6f4a2f81140f6ff01c15111"
+  },
+  {
+    "file": "crates/ontoforge-expr/tests/analyze.rs",
+    "bytes": 8133,
+    "sha256": "4c7b89fffeea3e1c5865ad196e626b7fde2d2d0e774b54289ec82d42ce26cbab"
+  },
+  {
+    "file": "crates/ontoforge-expr/tests/criteria.rs",
+    "bytes": 10201,
+    "sha256": "a9f49ccefa27097f317f5b4d436cedb15f0574a55fcf327903a21af62da168b7"
+  },
+  {
+    "file": "crates/ontoforge-schema/Cargo.toml",
+    "bytes": 799,
+    "sha256": "88f76cd6ae4507ebbecd50b130e2f120a53fed656cbc80d591d93ced51b4c3b8"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/diag.rs",
+    "bytes": 11203,
+    "sha256": "fad8d8b85fd305c25218b088281f92377a77a6031e1d9ce352b1f137a638f535"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/ir/action.rs",
+    "bytes": 7616,
+    "sha256": "e7304754dc24f6d757daa3611a8980e6efd439ceba4264a553efa8f9b5b1ec69"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/ir/attrs.rs",
+    "bytes": 1101,
+    "sha256": "36a451738252d9eebe1205e683edefcec3e3cdfe3849efa987d05a0d11518b12"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/ir/basetype.rs",
+    "bytes": 7541,
+    "sha256": "e2a3a66aa781b461bd46bedeecba3f472f390069d2b8176572702d88fb8ddf6c"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/ir/binding.rs",
+    "bytes": 7892,
+    "sha256": "6d93f45b62895068a1685ab19313ea37927c9e339e6eb3c2d4fcf5a141b46073"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/ir/link.rs",
+    "bytes": 3007,
+    "sha256": "4cc8501bb69d2e7d3f4c75b8c0c9e723ca4139ce4506f59d59a860a398aad7a8"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/ir/manifest.rs",
+    "bytes": 637,
+    "sha256": "cd8e590bab63e596b1efc2c8146a5980986dbe00ff641040ce3c44823d3c66a9"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/ir/mod.rs",
+    "bytes": 3043,
+    "sha256": "f50b9f254271c1099898bf8e862ca908737fc6031d460396de2f0d898711423a"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/ir/names.rs",
+    "bytes": 12521,
+    "sha256": "a0a7f1e25f5fde58cc5476ee810faf0fccca72a79a3d97626c56d4e290bdd27a"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/ir/object.rs",
+    "bytes": 4450,
+    "sha256": "12faf758624b52f42b9e2c408fd3335a0750c573c096077c1f9df6006c68d1b4"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/ir/scope.rs",
+    "bytes": 4540,
+    "sha256": "a39f07edc35dd31ef593444061a8f5e48370a9ad03070ee8149405fc6aa877a3"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lib.rs",
+    "bytes": 295,
+    "sha256": "7a95e808b35b4fa1a7deefbde965d0198206f69934c4ff50e92e0018fe09e14a"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/binding/e13.rs",
+    "bytes": 5692,
+    "sha256": "dac507bcd3e6cddce0164fad493b8724f0803231cca094b0411cf0d6c15f06fe"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/binding/e14.rs",
+    "bytes": 9371,
+    "sha256": "9d7ef60d7224bd23dd0ada5c4ee8aa9e95cea50f349217368125a72b7ba6af90"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/binding/e15.rs",
+    "bytes": 5478,
+    "sha256": "ddbe12e11f4586713ddb27fb2712f55b5738e6ebb1868b82f465229d1d7c5b15"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/binding/e16.rs",
+    "bytes": 4179,
+    "sha256": "ae6ebfa1072de42f5a6be913730886bf0bec83eae0ba336ceb214fd2f17f17ea"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/binding/mod.rs",
+    "bytes": 1980,
+    "sha256": "b78dbde2084fb44bb46038f291c59e9f5b3ba237b7b1a2d0eb34af50a02f5562"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e13__tests__clean.snap",
+    "bytes": 85,
+    "sha256": "f83f13ebc2e804566f4a5147140a61eeac031600ad6dea1a6f8480c6c6d83bd4"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e13__tests__triggers.snap",
+    "bytes": 1710,
+    "sha256": "efd9bd631295090c863b14d4c178148bd03be90908386604102cb16350112db9"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e14__tests__clean.snap",
+    "bytes": 85,
+    "sha256": "d1bd854616db8772c10d4fd2b7f112aaddb0ecefd9bc9f5a6ab3ee87e4a22d5e"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e14__tests__triggers.snap",
+    "bytes": 1257,
+    "sha256": "bde06383ec706f21729d69f751c49a1c0e72ba896fa787c186d7f6c80e0975a8"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e15__tests__clean.snap",
+    "bytes": 85,
+    "sha256": "7b94966a0ad65259c59fea53f8869c600d965b52c27a692fe48ad09ae973cf10"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e15__tests__triggers.snap",
+    "bytes": 837,
+    "sha256": "dbe0da2f4382356c68a709ff14ceb92fdbcdba2d0d54815dec4bc22e252d6903"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e16__tests__clean.snap",
+    "bytes": 85,
+    "sha256": "5f18f1975ede890b533d69b02ba9c871d3f52213e48eb88015d044458138d4dc"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__e16__tests__triggers.snap",
+    "bytes": 800,
+    "sha256": "05844469f3436ea7b7671d2d2c417b0a8d8e93c55732c7da67f47b6295d17c9b"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__w17__tests__clean.snap",
+    "bytes": 85,
+    "sha256": "b0dd2a60ae36fe67d9fd2dca57ec7357f70f68860506d8954a5ddd890dcaf32b"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__w17__tests__triggers.snap",
+    "bytes": 1205,
+    "sha256": "d37d50bffddec1568a7c6e90965eb8694ae51b5bd972b526cc46ee690c041e07"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/binding/snapshots/ontoforge_schema__lint__binding__w17__tests__unreadable.snap",
+    "bytes": 531,
+    "sha256": "aa0cbe9f83e856250f8487435f03fbb493b2078fc108f9e86994659085f6d569"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/binding/w17.rs",
+    "bytes": 9734,
+    "sha256": "d30ed7cf51e326d14eb895e249967d486b2552e034ba477f3ceb098eee8c05c4"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/config.rs",
+    "bytes": 24599,
+    "sha256": "6fed4edd5c63f6534730e36671265a88051cf64bed88d69bb14089823122ccc7"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/e08.rs",
+    "bytes": 11153,
+    "sha256": "e3cca0376bde105b84e07dfbc9dd7de99aa2c2940b41479526e20064c9e9b8a6"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/e09.rs",
+    "bytes": 7839,
+    "sha256": "8a080c45ed6d1ae2a131750a6bd7bfb31e1fd1b16deec8dade3ade452d4b7c1b"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/mod.rs",
+    "bytes": 13796,
+    "sha256": "e2b95df43d7f74c09fd4abf4e2b4e39d4bbc8a663c81a6d0cb8f8b95fcc60980"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/naming/mod.rs",
+    "bytes": 3496,
+    "sha256": "f05ee5b6340eadce0dd7a34d18bd5840df2552874bc1e2d973c2f05f4cedd969"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w01__tests__clean.snap",
+    "bytes": 84,
+    "sha256": "fe7764ab73d59cb8a6f7ef28a870a05ab3190319373b9477b5f1dfec11cb6658"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w01__tests__triggers.snap",
+    "bytes": 1690,
+    "sha256": "0909c10cd2928fa4a693ac2e9f8c2150b454df6fcf9878ac0838df8c71b03eb4"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w02__tests__clean.snap",
+    "bytes": 84,
+    "sha256": "ea08163c23b5710ba056d7bb8699079949baa36172e8186abb580ae0665e87f1"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w02__tests__triggers.snap",
+    "bytes": 880,
+    "sha256": "18a141b00d376fa8b3d9d25332364ee1d5cbca3edfb6f2cc6243aec8dfe3ba13"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w03__tests__clean.snap",
+    "bytes": 84,
+    "sha256": "5ea55d250b68da14b4540ce85e4abf4b2da0771eef67288775e708262ce98261"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w03__tests__triggers.snap",
+    "bytes": 2238,
+    "sha256": "828117515df1f1e9e0ca496e9bf2748c52876e019bb1813e65c518b3e6c922bc"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w04__tests__clean.snap",
+    "bytes": 84,
+    "sha256": "d86f14152ef3a251bdb431b87affc836fd8a90315d3a57f2d642ce09c604f8fc"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w04__tests__triggers.snap",
+    "bytes": 583,
+    "sha256": "144248ea25b528c58d52cffe07fd597453eb50c7316a1f62bc8d3e4916889874"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w05__tests__clean.snap",
+    "bytes": 84,
+    "sha256": "c3739f5e59b73f303962c56fc27a2dfdb2d11cc0d93a02bbd1a8b1b4b37f060b"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/naming/snapshots/ontoforge_schema__lint__naming__w05__tests__triggers.snap",
+    "bytes": 2244,
+    "sha256": "189b2653024bd76b895c26c2fc95c2e8e6e946232f417ac329dce7e1fbb39921"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/naming/w01.rs",
+    "bytes": 4253,
+    "sha256": "a058389bc76eca9a4a49ff550b0f7ed83ed21b22e20910dd0d68abc945521e3e"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/naming/w02.rs",
+    "bytes": 3416,
+    "sha256": "dbfe4b8fdd1bda112a64f6937769cd5fcd20d180a3d1ac56ff5a0c5c33715934"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/naming/w03.rs",
+    "bytes": 3268,
+    "sha256": "b535f1630043fd3ed1871ad175ff287a67e75f518e829180dfa94d5532f8bb47"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/naming/w04.rs",
+    "bytes": 5107,
+    "sha256": "44302d3d252c83e5e15e08872de4a81c57732fe22b234d3fe70c3da16f6716b5"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/naming/w05.rs",
+    "bytes": 3402,
+    "sha256": "f3172f386bb036bcd440eea8b1ca7f67b7f8fa8b2bd65d9b6f89c96cd5232a0e"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e08__tests__clean.snap",
+    "bytes": 77,
+    "sha256": "1abe58521230d910fdd07554f504ecb2a14d9433f594168b687b8e2e541ddd4c"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e08__tests__triggers.snap",
+    "bytes": 1607,
+    "sha256": "1216fef13407350308af940374ac414f07835293d4dc54c3cc0599e075dda56e"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e09__tests__clean.snap",
+    "bytes": 77,
+    "sha256": "28a7a3b701e907114f519ce0876b15f16560cecc63b4ee539008453d6ed68ea0"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/snapshots/ontoforge_schema__lint__e09__tests__triggers.snap",
+    "bytes": 1060,
+    "sha256": "53a5346c87c46d40739a5bc87efae23c55d66b19fff08025ef67f02693cbc65d"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/structure/mod.rs",
+    "bytes": 3473,
+    "sha256": "fe4b962a88e4f36c3e5a86c6d259caef684c62cd9408178bc5623c8a865f654f"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w06__tests__clean.snap",
+    "bytes": 87,
+    "sha256": "6e0d5b4aa5825311c2ce52a2fe9bdd3177a5e722220fe7856f147da30dbf458d"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w06__tests__triggers.snap",
+    "bytes": 1411,
+    "sha256": "c9624d2d30c11e2b844300b4e2c6256f22f283068b9f08bcea8fc5c8aa2ed4bb"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w07__tests__clean.snap",
+    "bytes": 87,
+    "sha256": "72f2cfc140c8b68f50efa6353d16c76a70603410e412a401cc28499883309010"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w07__tests__triggers.snap",
+    "bytes": 1406,
+    "sha256": "12b0ca2f1df26ab505754947450d63a9911f3570165fad76f4a207bdeb07ae19"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w08__tests__clean.snap",
+    "bytes": 87,
+    "sha256": "bcdf8e84a3c7dfe74565428af22d78c70f1a1099c3509f74a0b13696d3542f60"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w08__tests__triggers.snap",
+    "bytes": 541,
+    "sha256": "3304920aae91199d3a94a427515b1db4eb66ae58e0fb1fe0da70140a778f9d66"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w09__tests__clean.snap",
+    "bytes": 87,
+    "sha256": "9d40c014f81c8cce202a4265de4a9dce12f69dc02cf5332e5111ec442a2530f4"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w09__tests__triggers.snap",
+    "bytes": 952,
+    "sha256": "1792cace0e81cdafdfe32208488a77026e2b8c39f17cad8b33d966bab5a8a3b3"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w10__tests__clean.snap",
+    "bytes": 87,
+    "sha256": "952b87236f9e6a52bb143c967daf49700f36ed8467f6945aaf443d5856da1453"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w10__tests__triggers.snap",
+    "bytes": 2116,
+    "sha256": "1fdcda141f2ace723c8af19553011d113e28178064e30cc4fc0c678400db6e3a"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w11__tests__clean.snap",
+    "bytes": 87,
+    "sha256": "7466c0a9cc5fa3e4a81ee63c2fd005169da9a24bf536fee01effc021bfbf1f76"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/structure/snapshots/ontoforge_schema__lint__structure__w11__tests__triggers.snap",
+    "bytes": 1283,
+    "sha256": "b3c7947eca1ed7b18fdae3e14750f657fdfb50590219d901ea06e8e03cfe162d"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/structure/w06.rs",
+    "bytes": 5242,
+    "sha256": "62dff4a55bb05257021c8008b463298eddc2c970d60424bad04ae2f45c9671b2"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/structure/w07.rs",
+    "bytes": 11609,
+    "sha256": "3b8a0be43ac1e36cd146848be069f43426c6f91656663d5592f46a28de3ecab1"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/structure/w08.rs",
+    "bytes": 10706,
+    "sha256": "6be7a8cb45c5512c22f402e94b7cbe4660aea6eb09a325a12c967d6093087707"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/structure/w09.rs",
+    "bytes": 8173,
+    "sha256": "75c1a88efaae505712e7dd9b08f6e14950a98cb65cda1bde0c586154ed11f53b"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/structure/w10.rs",
+    "bytes": 3779,
+    "sha256": "b22013c293ce2af14bdee522400c4c4e7e817582f8781b86088513e6143ab474"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/structure/w11.rs",
+    "bytes": 4602,
+    "sha256": "f5ff66ca30579851e80cdbc80c5c83a79a13877aed6cec6bb4db2cf5fb99ee78"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/words.rs",
+    "bytes": 1747,
+    "sha256": "5f656f100e3152113bb3029246ba47c23655a795d20d1a3360a85939f2e3d338"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/loader/discover.rs",
+    "bytes": 16240,
+    "sha256": "331dd628af6ababf11c9bc5b398b2abbdb779b2fe37fbe8a5f314a675b6003fa"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/loader/dispatch.rs",
+    "bytes": 12237,
+    "sha256": "d53d6edf5faa386fe50c31b83bb664a67dafaf3727f6cc0932379a7ab0c8b2e5"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/loader/fixture.rs",
+    "bytes": 5724,
+    "sha256": "7ba21673ba80f6d028bfc627c59e92261dd5479ee3d445d6cabdfdd3cc338d63"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/loader/mod.rs",
+    "bytes": 34507,
+    "sha256": "00abcd4d66270e78e96381b47bc9d8b9a2d41668963a11e83d25f00d182ec08f"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/loader/parse.rs",
+    "bytes": 12703,
+    "sha256": "3a4db45c5a16eadf3c3e43cd4c12b8da088f727d18ba7a15ee3ac8cdc9fd89dd"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/loader/scope.rs",
+    "bytes": 11525,
+    "sha256": "ca35835c1b3ceea0a2b16fc546bd7949194966346cb70aaedf58d81535b8482d"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/loader/sourcemap.rs",
+    "bytes": 9476,
+    "sha256": "62e7459b928b1dff8c5dc48cad152d5f04140e2a385a4e63755076814a7dd1b2"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/schema_export.rs",
+    "bytes": 4061,
+    "sha256": "044762e6ff5ae3b9a5ae2ff18796bc73ccb050fa8a30b99a62fb81b780a75d78"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/validate/actions.rs",
+    "bytes": 16675,
+    "sha256": "5be86e83fed3d2030b7a939958234fb7df728345515288bc9956b52dbfeaa04a"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/validate/bindings.rs",
+    "bytes": 17898,
+    "sha256": "c944d31ff891c07ef6c0261b4ec7588407bdc4e71a28ff014f12690d7cf57cd6"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/validate/links.rs",
+    "bytes": 8938,
+    "sha256": "6cf9f5c8ebb6688095db106e37ee8730f459c05471f5953e25ab3cf48c4f4511"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/validate/mod.rs",
+    "bytes": 686,
+    "sha256": "c50af6a66bbade442fb68acbb88a3a6898065f52652ebcdeca41176848856671"
+  },
+  {
+    "file": "crates/ontoforge-schema/src/validate/objects.rs",
+    "bytes": 5765,
+    "sha256": "66794e6c3c9b700e1a5a7474d9bbd541cb54df51408556ff8fef84b63d5f8167"
+  },
+  {
+    "file": "crates/ontoforge-schema/tests/action_types.rs",
+    "bytes": 21338,
+    "sha256": "804d23aaa3a2a2de1d0f865aa9ceb9c5a8c8703c9448ffb464513e8a47d303a0"
+  },
+  {
+    "file": "crates/ontoforge-schema/tests/bindings.rs",
+    "bytes": 31199,
+    "sha256": "d6a5fd84d0caecee1b763d129a97318958bef912cafb7b7e89a5541f957b2250"
+  },
+  {
+    "file": "crates/ontoforge-schema/tests/diagnostics.rs",
+    "bytes": 6474,
+    "sha256": "2934e47e2b43071b64b74cc4020fc1ee10f67279075e38051c7ee4c2908cbbe6"
+  },
+  {
+    "file": "crates/ontoforge-schema/tests/link_types.rs",
+    "bytes": 13640,
+    "sha256": "c0abb9184bd835d4648e9099e3b232e08969ee42976ce208a8f3e7215cbb5960"
+  },
+  {
+    "file": "crates/ontoforge-schema/tests/lint_examples.rs",
+    "bytes": 748,
+    "sha256": "0c25989a2bb7d548b7089482fa87192ed84c3a8af331e7329829871c1383d4e1"
+  },
+  {
+    "file": "crates/ontoforge-schema/tests/load_examples.rs",
+    "bytes": 5462,
+    "sha256": "d24a4eb7bbc6a1fc103de68e971490b479d58cb80a0bf9cf73411a1484a55292"
+  },
+  {
+    "file": "crates/ontoforge-schema/tests/loader.rs",
+    "bytes": 21447,
+    "sha256": "cb1cd552cd267ec7c377e92899e53d7a64bd089603252b456f13d482cd89543f"
+  },
+  {
+    "file": "crates/ontoforge-schema/tests/object_types.rs",
+    "bytes": 10781,
+    "sha256": "5e3ce38b638e6d6616d1be05f8bdccb318826fa2530f5b279afa9448a915f883"
+  },
+  {
+    "file": "crates/ontoforge-schema/tests/schema_export.rs",
+    "bytes": 18770,
+    "sha256": "14f01c453cb107599df604743681abfbb6ce936f93a9b030da5145b96f5aecfc"
+  },
+  {
+    "file": "crates/ontoforge-schema/tests/scope_documents.rs",
+    "bytes": 9261,
+    "sha256": "0d703c424017b8466060609ed7de250e5013622da6129a651a40a1f53178abf9"
+  },
+  {
+    "file": "crates/ontoforge-schema/tests/snapshots/scope_documents__scope_diagnostics.snap",
+    "bytes": 2504,
+    "sha256": "e9df0bb7ffb907fbf92d1c93bf3ba8c770c6c8277a88e1b55440513e96b02f0d"
+  },
+  {
+    "file": "crates/ontoforge/Cargo.toml",
+    "bytes": 1302,
+    "sha256": "ac9d76c889e8bc1a454d9c486a5de0906908a139c258e4be09314e2beeea08a8"
+  },
+  {
+    "file": "crates/ontoforge/src/cli.rs",
+    "bytes": 15068,
+    "sha256": "3d046c054134c1e7e2fdc27714e045d127ba76f283e3f462080c2f27478e3fdd"
+  },
+  {
+    "file": "crates/ontoforge/src/lib.rs",
+    "bytes": 7265,
+    "sha256": "7740d3899fcde34ca1e638063badda1eda81dae6af436bda3859c07e6f9b120f"
+  },
+  {
+    "file": "crates/ontoforge/src/lint_cmd.rs",
+    "bytes": 1370,
+    "sha256": "26a8b3f981d54e8f1afef41060e3059de8b356d45c4d1fc59ee07b5e3b2d90a1"
+  },
+  {
+    "file": "crates/ontoforge/src/main.rs",
+    "bytes": 671,
+    "sha256": "b181a875a8a0ef49fb0ca140829e191626e8a0f7f1f088c9641199ce72c9e075"
+  },
+  {
+    "file": "crates/ontoforge/src/pipeline.rs",
+    "bytes": 3243,
+    "sha256": "0c1fbd95f77c0d7dec14ffeec821688b83ffe3b1b3724982d39133ba9f6eb453"
+  },
+  {
+    "file": "crates/ontoforge/src/render.rs",
+    "bytes": 7562,
+    "sha256": "40234cca316f436b579ea568975bc350f65104ced8144c0a4be742421765ac18"
+  },
+  {
+    "file": "crates/ontoforge/tests/cli.rs",
+    "bytes": 7101,
+    "sha256": "3ff4c996a486d1bbbcf5cb27e83a4a6a01a5d641c1678f9bcbb7d546e0578f69"
+  },
+  {
+    "file": "crates/ontoforge/tests/cli_color.rs",
+    "bytes": 2530,
+    "sha256": "5b09ea2839fa7a847b0549d3d90cea93f880a14c6cfa7475eed49db0ccea7cd2"
+  },
+  {
+    "file": "crates/ontoforge/tests/cli_lint.rs",
+    "bytes": 11684,
+    "sha256": "af82799752639ba4708c9dba0b5376261ef2d523671ac17049bd412913e79d31"
+  },
+  {
+    "file": "crates/ontoforge/tests/cli_schema.rs",
+    "bytes": 2462,
+    "sha256": "13860b409bb6f5eb95ec349fb82cf7f0bf476713d3a98e935e571a64059b8f56"
+  },
+  {
+    "file": "crates/ontoforge/tests/invalid_examples.rs",
+    "bytes": 1368,
+    "sha256": "6b6521dcc143d5ddeec2e28959dcdc0ad5099727158d29dacedd9a02df6e0278"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/cli__validate_unknown_field_human.snap",
+    "bytes": 312,
+    "sha256": "17f8ed577cee0941841e0094d78b54cf4b0dac09e5686d00f6eee5843d81254d"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/cli_lint__e08_human.snap",
+    "bytes": 472,
+    "sha256": "86f846893b04912b716671eeb0d541f38d8a41204c5758d2150f476ee5716168"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/cli_lint__e14_human.snap",
+    "bytes": 525,
+    "sha256": "9cfbd9c689c11b5f79a9d12a81cd5e3dda2ce89cc81b3bb2722672725bcea140"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/cli_online__online_missing_column_human.snap",
+    "bytes": 569,
+    "sha256": "6c3ee9ede8f08ec7ac0a26a3afa21ba83bd9431cd72e0d563cc047234a99b395"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/cli_online_trino__unavailable_human.snap",
+    "bytes": 165,
+    "sha256": "46626ef31d7b4e044104e084e9ffc55d1c3c8d1b5aa9636d5cfb5bf575182199"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v01-json-trailing-comma.snap",
+    "bytes": 362,
+    "sha256": "eaa88b0d0a4a136a36fcc16a6ab0e3f44d5daa24d3227fdd3aa399431c9f9b91"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v01-yaml-duplicate-key.snap",
+    "bytes": 333,
+    "sha256": "6c9b9d5770ffc2ca4b64ad0ae6a583df67cdfdebdefaab51fa63f0162ce69a00"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v02-missing-kind.snap",
+    "bytes": 391,
+    "sha256": "20ac7d373ad7ab026f890bef121281f2a1a881b4a8c07901ce7c60a68a7d7671"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v03-function-rule.snap",
+    "bytes": 445,
+    "sha256": "33347043c3f1a48496da1b20fa77ea8e8a0aabafd79276f509fb7199d0f11046"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v03-reserved-kind.snap",
+    "bytes": 353,
+    "sha256": "ee365b62a9555444553ff1e7208b34648f57cf43a94dc3677a7f8278550479e2"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v04-unknown-field.snap",
+    "bytes": 351,
+    "sha256": "9828afcd1d7b9ff5a5e7b8c72548f30edd4b6856d225b597aa762797a5b5302f"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v05-missing-backing.snap",
+    "bytes": 334,
+    "sha256": "544a5010e12e8568d6c6e36107aab6a08ee09f0aca1adff9e9325d31df36fd57"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v05-missing-primary-key.snap",
+    "bytes": 337,
+    "sha256": "6131c11441d7c5a06812de7aa6ba6ce00fa9243d9633df79746580c49fc98af2"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v06-precision-on-string.snap",
+    "bytes": 460,
+    "sha256": "08b6df3fca37957fc48123f42ced0335eed49ad0fcf9f61feaf981f4f150f489"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v06-unknown-base-type.snap",
+    "bytes": 344,
+    "sha256": "a9fc34856b1744947e204f7fa609f2634d31c7597c88e8f384411a1959434190"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v07-bad-object-type-name.snap",
+    "bytes": 394,
+    "sha256": "970f07dc2ed16fc0dd7836905311e76940a96de0448dc63a1eb7899297c9e6f5"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v08-duplicate-binding.snap",
+    "bytes": 406,
+    "sha256": "11422b9603b41a1982294b1b4d45dfff4f7da6e20e8a22e56e71f0f1fd9559b5"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v08-duplicate-object-type.snap",
+    "bytes": 357,
+    "sha256": "4d6e0626c80e22053be100a5e96c24ca8259ad172788fe00ad691bf6ed5f4be5"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v08-link-end-clashes-property.snap",
+    "bytes": 429,
+    "sha256": "310bd9ab86e2549be9a15ac1fb03b7b0f2172e625cd859627a4cb04e8f422156"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v09-binding-unknown-target.snap",
+    "bytes": 396,
+    "sha256": "d054e881ed3d200db46f8a442814b22ab59325a7c3af3567928c4388ea7aefa6"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v09-link-unknown-object-type.snap",
+    "bytes": 401,
+    "sha256": "8ab87d6acba31a96e24900d9add8bfae21adbccbc3cb62c3ae6c8d86d754d179"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v09-rule-unknown-property.snap",
+    "bytes": 355,
+    "sha256": "bbc43879204d9316d83136f36e417107135a35c92f4e28d50d8d1cd375777435"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v10-float-primary-key.snap",
+    "bytes": 443,
+    "sha256": "43d29ba333e25d5812ea315c9ff8084e969e9d063b51e2efba5ced0489eea31f"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v10-primary-key-not-required.snap",
+    "bytes": 396,
+    "sha256": "342303043b3390ef58224b5d027f8c4b0fec5a81b2d39f854cc5c6aa7bcef886"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v11-backing-on-one-to-many.snap",
+    "bytes": 458,
+    "sha256": "2546eaee84430e0633373bb812621020b946756626f3afbf87f115b87474cf61"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v11-foreign-key-type-mismatch.snap",
+    "bytes": 480,
+    "sha256": "00a591c697a76640c26d375752e1e90e2cfed6a715c76c55da428eff647a549e"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v11-many-to-many-with-foreign-key.snap",
+    "bytes": 420,
+    "sha256": "2e078428c7c32a286122cb2e41b8c3b7fa6fb33ca0ebf5127b2b35cbc542567a"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v12-create-missing-primary-key.snap",
+    "bytes": 455,
+    "sha256": "18f7e21a7b46d293555ee0a016065be88373529a24c14919b8a51181067fd40f"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v12-current-time-on-string.snap",
+    "bytes": 386,
+    "sha256": "3aeb4a140c4e6ed80da1da21e553700b095d9b7577de1bebf73af9f847b1a53a"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v12-modify-assigns-primary-key.snap",
+    "bytes": 411,
+    "sha256": "f2fb19a320c8c708c688e2bd2adf0d65ece0a2c508ad54a46617f1443910f88c"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v12-value-source-type-mismatch.snap",
+    "bytes": 381,
+    "sha256": "f52160bbb6f14ce8271193c5049d1ea842c6b3117dc7703020b2d64188f11c97"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v13-comparison-type-mismatch.snap",
+    "bytes": 357,
+    "sha256": "9f16982c99e5ffba91b60fcc2350f61d2668c876e2454b65c31e9da463a54f6f"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v13-non-boolean-condition.snap",
+    "bytes": 369,
+    "sha256": "81def43cab3945642e5eb1e4d2e4e8af4979cfa73a846aea7292c6d81f1e7b56"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v13-objects-not-object-reference.snap",
+    "bytes": 446,
+    "sha256": "ea9a7730daa28072c946616551b04b082aa719a1a91a31fd4873c46e598c71f2"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v13-syntax-error.snap",
+    "bytes": 512,
+    "sha256": "6747cad5315c1cb57025d029668981632b828c5b2a60059c6cafedf37df17ea7"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v13-unknown-parameter.snap",
+    "bytes": 407,
+    "sha256": "87feca11cb4ad8f33731bfae073673c48914e44c366b75c407225aa5cf0b991f"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v14-include-escapes-root.snap",
+    "bytes": 419,
+    "sha256": "33076726406cb1d1fff6ebd8941d725ba2465645c4bd7dbb32f1f8a6a811e634"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v16-binding-outside-bindings-dir.snap",
+    "bytes": 442,
+    "sha256": "955e24b184d2265afe6bacbb40ad8a07cd3a86e5e6bbfde0317f723dfc8465a7"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v16-fixture-escapes-root.snap",
+    "bytes": 415,
+    "sha256": "b88ebc622e31d731896bdf2b15a045aca6c550db1726b2116578fb515b335d83"
+  },
+  {
+    "file": "crates/ontoforge/tests/snapshots/invalid_examples__v16-source-without-binding.snap",
+    "bytes": 462,
+    "sha256": "e41d40737d87187b80a94834b84ba1d513a55e049a7da7dd3607269dc402f432"
+  },
+  {
+    "file": "examples/ontologies/aviation-json/actions.json",
+    "bytes": 2615,
+    "sha256": "a2f10e6d714abca09ee5c3bc511dbea6fbcbafdbaa1f2a64e17ff62051613086"
+  },
+  {
+    "file": "examples/ontologies/aviation-json/bindings/dev/bindings.json",
+    "bytes": 2274,
+    "sha256": "4c43934227509d5aa74a302f670b34977573eebb7ff804cd18ab1b5c82cdabd9"
+  },
+  {
+    "file": "examples/ontologies/aviation-json/bindings/dev/fixtures/aircraft.csv",
+    "bytes": 748,
+    "sha256": "d6bd027dccc347adbfa2562b211021692bca8d7fb4f3b9294525b36bb40dd008"
+  },
+  {
+    "file": "examples/ontologies/aviation-json/bindings/dev/fixtures/flight_crew.csv",
+    "bytes": 578,
+    "sha256": "b26b8ca8dde2937884a19690caaf3d3ff305325d9c4da834624f85bf87e31ad5"
+  },
+  {
+    "file": "examples/ontologies/aviation-json/bindings/dev/fixtures/flights.csv",
+    "bytes": 1689,
+    "sha256": "78c6581e6ef710585596da30b6757477d5d2b52064bc9f3beee915a50a9b828f"
+  },
+  {
+    "file": "examples/ontologies/aviation-json/bindings/dev/fixtures/maintenance_records.csv",
+    "bytes": 1541,
+    "sha256": "37bbdd695fafb8136e29ecb675d8f24ee8b7ec62d9a2bfb6b95d057fff1c48f9"
+  },
+  {
+    "file": "examples/ontologies/aviation-json/bindings/dev/fixtures/pilots.csv",
+    "bytes": 932,
+    "sha256": "1c4426ca94f1d0e2f6fe96426ee3854c37c295d6902e82ded505ec0cda881a8c"
+  },
+  {
+    "file": "examples/ontologies/aviation-json/links.json",
+    "bytes": 2271,
+    "sha256": "4dee019b182a01c7e7aa3c8a7e968a646ed44c6b4d26a3d734458bc3b0100377"
+  },
+  {
+    "file": "examples/ontologies/aviation-json/objects.json",
+    "bytes": 3718,
+    "sha256": "9f5d887eac9be6ff57b1e0af8fcdef0341fe6cf206c27224c188f7c08c665674"
+  },
+  {
+    "file": "examples/ontologies/aviation-json/ontology.yaml",
+    "bytes": 142,
+    "sha256": "0bef3c84d19edab7f78c2c0946a5a1edb518e64af2061b26ebf098db4221a354"
+  },
+  {
+    "file": "examples/ontologies/aviation/actions.yaml",
+    "bytes": 2489,
+    "sha256": "61756c751a174f664fab9d7cb07822711682b14fec3131af47dac2acbeb3a980"
+  },
+  {
+    "file": "examples/ontologies/aviation/bindings/dev/aircraft.yaml",
+    "bytes": 451,
+    "sha256": "7ccb971d207f6bdbe41d652d9a57600ba78ae111aa3a53d207e4c9fa386464bf"
+  },
+  {
+    "file": "examples/ontologies/aviation/bindings/dev/fixtures/aircraft.csv",
+    "bytes": 748,
+    "sha256": "d6bd027dccc347adbfa2562b211021692bca8d7fb4f3b9294525b36bb40dd008"
+  },
+  {
+    "file": "examples/ontologies/aviation/bindings/dev/fixtures/flight_crew.csv",
+    "bytes": 578,
+    "sha256": "b26b8ca8dde2937884a19690caaf3d3ff305325d9c4da834624f85bf87e31ad5"
+  },
+  {
+    "file": "examples/ontologies/aviation/bindings/dev/fixtures/flights.csv",
+    "bytes": 1689,
+    "sha256": "78c6581e6ef710585596da30b6757477d5d2b52064bc9f3beee915a50a9b828f"
+  },
+  {
+    "file": "examples/ontologies/aviation/bindings/dev/fixtures/maintenance_records.csv",
+    "bytes": 1541,
+    "sha256": "37bbdd695fafb8136e29ecb675d8f24ee8b7ec62d9a2bfb6b95d057fff1c48f9"
+  },
+  {
+    "file": "examples/ontologies/aviation/bindings/dev/fixtures/pilots.csv",
+    "bytes": 932,
+    "sha256": "1c4426ca94f1d0e2f6fe96426ee3854c37c295d6902e82ded505ec0cda881a8c"
+  },
+  {
+    "file": "examples/ontologies/aviation/bindings/dev/flight-crew.yaml",
+    "bytes": 399,
+    "sha256": "4e2dbf273fffd1ce7bbf2157efbc1b6d3f07840ccc66f9b9726758832a18d14d"
+  },
+  {
+    "file": "examples/ontologies/aviation/bindings/dev/flight.yaml",
+    "bytes": 1081,
+    "sha256": "a43515bbba6d1134fba216f391bfbe09474d04037029f658f40c4afdc7889eba"
+  },
+  {
+    "file": "examples/ontologies/aviation/bindings/dev/maintenance-record.yaml",
+    "bytes": 605,
+    "sha256": "39ca70911895ac5fbf0cd969b2332fd34b350dba04b72fa48e30f6ed4d896d06"
+  },
+  {
+    "file": "examples/ontologies/aviation/bindings/dev/pilot.yaml",
+    "bytes": 475,
+    "sha256": "dcaece19474c360718a36f95f78b8bee51e98945480cab4e8dd55c9078f549e1"
+  },
+  {
+    "file": "examples/ontologies/aviation/links.yaml",
+    "bytes": 2457,
+    "sha256": "3196a91f1e97232b61a181e1d35756055fc1461fb968f34009b1d35265080239"
+  },
+  {
+    "file": "examples/ontologies/aviation/objects.yaml",
+    "bytes": 3260,
+    "sha256": "80dcfe86d5657a8c38a717e91c581cf8111692d726dbcad8a99096c73815877d"
+  },
+  {
+    "file": "examples/ontologies/aviation/ontology.yaml",
+    "bytes": 222,
+    "sha256": "3ac7ad3bfe587b6f380098e68bf9d6e8a288f44268b57d2d1043e77705517b38"
+  },
+  {
+    "file": "examples/ontologies/invalid/v01-json-trailing-comma/objects.json",
+    "bytes": 175,
+    "sha256": "077691d44b6a3064f21bfb955ccf34a595c94ef31b255fc98e07fea3335c261a"
+  },
+  {
+    "file": "examples/ontologies/invalid/v01-json-trailing-comma/ontology.yaml",
+    "bytes": 127,
+    "sha256": "f7ce7b84ad6c7e2f04a9eb31aa91cd3501e206f79f870094ece669bffa788c1f"
+  },
+  {
+    "file": "examples/ontologies/invalid/v01-yaml-duplicate-key/objects.yaml",
+    "bytes": 140,
+    "sha256": "06b875d7bae4b7fb205197eb6e99f98924233ce511954b72a648f04b77c9eb09"
+  },
+  {
+    "file": "examples/ontologies/invalid/v01-yaml-duplicate-key/ontology.yaml",
+    "bytes": 104,
+    "sha256": "7a7724bd5cf6061a2727f2f7e868be19b38d99dc4360619d963aef78d712be0c"
+  },
+  {
+    "file": "examples/ontologies/invalid/v02-missing-kind/objects.yaml",
+    "bytes": 87,
+    "sha256": "8ed77fe55749662acdbe74c097049bc6031e88622421b1b7f1aec6a796a24a24"
+  },
+  {
+    "file": "examples/ontologies/invalid/v02-missing-kind/ontology.yaml",
+    "bytes": 100,
+    "sha256": "5c666ece18109cff17d3bd00205eb7a2f0a6de5899b7abbce3a85b6a0fd20789"
+  },
+  {
+    "file": "examples/ontologies/invalid/v03-function-rule/defs.yaml",
+    "bytes": 357,
+    "sha256": "21dc23334e75afdb8b7225c91f67325e4c613903990ebcc923e46ab116bba44a"
+  },
+  {
+    "file": "examples/ontologies/invalid/v03-function-rule/ontology.yaml",
+    "bytes": 102,
+    "sha256": "861c6375fd14592bca661aa0c258326457fc201d71093a79c1cc8c14a937b20f"
+  },
+  {
+    "file": "examples/ontologies/invalid/v03-reserved-kind/objects.yaml",
+    "bytes": 31,
+    "sha256": "10587db92b5bafa8ebc4faed51bb9a46d12d9166d8a34005cecc275506960bb1"
+  },
+  {
+    "file": "examples/ontologies/invalid/v03-reserved-kind/ontology.yaml",
+    "bytes": 109,
+    "sha256": "096140d54cdf7da60773a8b7d805e0acd1dde20a5f275d91d0d02101d04635d2"
+  },
+  {
+    "file": "examples/ontologies/invalid/v04-unknown-field/objects.yaml",
+    "bytes": 121,
+    "sha256": "5c6c871a5006df2c528d15b7182521238b4074cd9d3600dba4de478ee5089cc1"
+  },
+  {
+    "file": "examples/ontologies/invalid/v04-unknown-field/ontology.yaml",
+    "bytes": 116,
+    "sha256": "8694750121ca182310631bd4a55d3911b788298018c916f642ac7f0748ae17ef"
+  },
+  {
+    "file": "examples/ontologies/invalid/v05-missing-backing/objects.yaml",
+    "bytes": 104,
+    "sha256": "d85b852827a53b82e4efdc40dbf73fb2285d0b9c4051f039cefea200eae61efa"
+  },
+  {
+    "file": "examples/ontologies/invalid/v05-missing-backing/ontology.yaml",
+    "bytes": 99,
+    "sha256": "9b0a413bbd0e0a83b6bd63079b955cd862ffc3bfeb61b360d2e39841fc8317ae"
+  },
+  {
+    "file": "examples/ontologies/invalid/v05-missing-primary-key/objects.yaml",
+    "bytes": 105,
+    "sha256": "2d9e7e95f3c261f7bd800e039d42c8a4857076da6931df08b022b0282de3ffd4"
+  },
+  {
+    "file": "examples/ontologies/invalid/v05-missing-primary-key/ontology.yaml",
+    "bytes": 95,
+    "sha256": "6e57c88dad31a93e0f6a983247aeaee87cc37fd604dc99294abce0646aea1a07"
+  },
+  {
+    "file": "examples/ontologies/invalid/v06-precision-on-string/objects.yaml",
+    "bytes": 177,
+    "sha256": "24b1bc1ec2323d2066204c1395c056099f09a3d720377761dd79185a99100a63"
+  },
+  {
+    "file": "examples/ontologies/invalid/v06-precision-on-string/ontology.yaml",
+    "bytes": 14,
+    "sha256": "f36b3a0a82ce74db89834a0e6002d43f974090e6190e5141d3be02d6c992e3bd"
+  },
+  {
+    "file": "examples/ontologies/invalid/v06-unknown-base-type/objects.yaml",
+    "bytes": 121,
+    "sha256": "a2c2ff5c2267c3dff34608f8cb218a9370de12f7addc9d185c0051d81a002b5c"
+  },
+  {
+    "file": "examples/ontologies/invalid/v06-unknown-base-type/ontology.yaml",
+    "bytes": 86,
+    "sha256": "4b3ffea3fa12b361b4210a32d83dc1ecab49343e89a737eca647c8ee5f8d8a82"
+  },
+  {
+    "file": "examples/ontologies/invalid/v07-bad-object-type-name/objects.yaml",
+    "bytes": 129,
+    "sha256": "71d07b94f6eb39b789a13e84b549f86d5941f25df783d73768a66b08a5be0c9e"
+  },
+  {
+    "file": "examples/ontologies/invalid/v07-bad-object-type-name/ontology.yaml",
+    "bytes": 94,
+    "sha256": "62fcf781f030423c7f13d92259d13a7d1743c72b1fb598cf5ae9f4235f69cbac"
+  },
+  {
+    "file": "examples/ontologies/invalid/v08-duplicate-binding/bindings/dev/a.yaml",
+    "bytes": 111,
+    "sha256": "7f148c57935c5504c6a3c551a675e4825c1183186ad27465555c384af0f5ca0c"
+  },
+  {
+    "file": "examples/ontologies/invalid/v08-duplicate-binding/bindings/dev/b.yaml",
+    "bytes": 111,
+    "sha256": "7f148c57935c5504c6a3c551a675e4825c1183186ad27465555c384af0f5ca0c"
+  },
+  {
+    "file": "examples/ontologies/invalid/v08-duplicate-binding/objects.yaml",
+    "bytes": 160,
+    "sha256": "3a611f1b270e8089e45e3bce6cc763c24da43426d582c6e8e041db31481f766d"
+  },
+  {
+    "file": "examples/ontologies/invalid/v08-duplicate-binding/ontology.yaml",
+    "bytes": 34,
+    "sha256": "b9962cf0085785b755636633bdd6987e3482b24cbda6a7c212a4facc972b7730"
+  },
+  {
+    "file": "examples/ontologies/invalid/v08-duplicate-object-type/a.yaml",
+    "bytes": 122,
+    "sha256": "0657ebd5a8c877d6d14cc0fd3bb0c62111252f9832877f8cff8bcf62504efe96"
+  },
+  {
+    "file": "examples/ontologies/invalid/v08-duplicate-object-type/b.yaml",
+    "bytes": 122,
+    "sha256": "b5834b38836842e47ac1ce987ec14ebbc22d257b0a55ccab3f1d08775b13a55c"
+  },
+  {
+    "file": "examples/ontologies/invalid/v08-duplicate-object-type/ontology.yaml",
+    "bytes": 97,
+    "sha256": "0b57291609f9e58f035f65586eb907c9459dd97b01e84f87ba603fddf7bee03e"
+  },
+  {
+    "file": "examples/ontologies/invalid/v08-link-end-clashes-property/defs.yaml",
+    "bytes": 532,
+    "sha256": "5ad26fc6fde927cbb156d1150d728c2232f36d7262ab2512e1e1df3314fcf0db"
+  },
+  {
+    "file": "examples/ontologies/invalid/v08-link-end-clashes-property/ontology.yaml",
+    "bytes": 106,
+    "sha256": "7aae5449faf9b5aff7d5ec91d10ca5f2b83225201d031473f2dc7317bb84a66a"
+  },
+  {
+    "file": "examples/ontologies/invalid/v09-binding-unknown-target/bindings/dev/flight.yaml",
+    "bytes": 111,
+    "sha256": "7980bfdb75af6d7712bbebc9e3a205a3a99fa0302972749aebc268fdd74c80a1"
+  },
+  {
+    "file": "examples/ontologies/invalid/v09-binding-unknown-target/objects.yaml",
+    "bytes": 160,
+    "sha256": "3a611f1b270e8089e45e3bce6cc763c24da43426d582c6e8e041db31481f766d"
+  },
+  {
+    "file": "examples/ontologies/invalid/v09-binding-unknown-target/ontology.yaml",
+    "bytes": 34,
+    "sha256": "b9962cf0085785b755636633bdd6987e3482b24cbda6a7c212a4facc972b7730"
+  },
+  {
+    "file": "examples/ontologies/invalid/v09-link-unknown-object-type/defs.yaml",
+    "bytes": 541,
+    "sha256": "be81c5f9d62fc706bb7f70c06ca06651f4462904f0f793f0fd52360d6101ac57"
+  },
+  {
+    "file": "examples/ontologies/invalid/v09-link-unknown-object-type/ontology.yaml",
+    "bytes": 108,
+    "sha256": "6d7b9f869410e338618785bb9f87593553177c4b92e3bcc6285f8c710b00e0e3"
+  },
+  {
+    "file": "examples/ontologies/invalid/v09-rule-unknown-property/defs.yaml",
+    "bytes": 408,
+    "sha256": "61fc880041cdca9d0ad69c43be4e8c39f84b8470fc095e2cfd6273398010010c"
+  },
+  {
+    "file": "examples/ontologies/invalid/v09-rule-unknown-property/ontology.yaml",
+    "bytes": 125,
+    "sha256": "53d9d16b4c16fdb8744b204ba1765dd67cf4c5fcb64d16d97d73ec5dabbe0fef"
+  },
+  {
+    "file": "examples/ontologies/invalid/v10-float-primary-key/objects.yaml",
+    "bytes": 122,
+    "sha256": "c7fc838f828c6fe7cf40b4c807641a15d494db1ee257321f215af933c8ae52a5"
+  },
+  {
+    "file": "examples/ontologies/invalid/v10-float-primary-key/ontology.yaml",
+    "bytes": 94,
+    "sha256": "04d5a552a42ed699e2690e8c8a91d3c23ee4cdd0bb5ce6693c3339f663af92d1"
+  },
+  {
+    "file": "examples/ontologies/invalid/v10-primary-key-not-required/objects.yaml",
+    "bytes": 106,
+    "sha256": "3414580f2f0337266a55fb5ebad063042c61cabe8f2e1a138c47a84875bcc4fe"
+  },
+  {
+    "file": "examples/ontologies/invalid/v10-primary-key-not-required/ontology.yaml",
+    "bytes": 93,
+    "sha256": "830f2f05ca0c7f6eb9c1300df527a09ec7cfd332e5f1e6b516a21046146535b5"
+  },
+  {
+    "file": "examples/ontologies/invalid/v11-backing-on-one-to-many/defs.yaml",
+    "bytes": 531,
+    "sha256": "0389b6d8848eae68342059df6f240e4bc97dc7c0798edb03132d5eb667b99ca5"
+  },
+  {
+    "file": "examples/ontologies/invalid/v11-backing-on-one-to-many/ontology.yaml",
+    "bytes": 93,
+    "sha256": "b3c1527dca9555f47cf77ab7b1fd608731ef2881d523de89ffcc122605602993"
+  },
+  {
+    "file": "examples/ontologies/invalid/v11-foreign-key-type-mismatch/defs.yaml",
+    "bytes": 543,
+    "sha256": "1cfcc49a584c942b3578981317b4a3d12be0e4afbec274c15d39d17477405814"
+  },
+  {
+    "file": "examples/ontologies/invalid/v11-foreign-key-type-mismatch/ontology.yaml",
+    "bytes": 114,
+    "sha256": "a254ec92cba6f9021edefd45b9182b820b1c36b78604da299a3b3df2f4c8da8c"
+  },
+  {
+    "file": "examples/ontologies/invalid/v11-many-to-many-with-foreign-key/defs.yaml",
+    "bytes": 466,
+    "sha256": "738f1f4ec36436bb8e213c9458abb516ed5ef77d1ba3131bc6f25e16e3dd9634"
+  },
+  {
+    "file": "examples/ontologies/invalid/v11-many-to-many-with-foreign-key/ontology.yaml",
+    "bytes": 102,
+    "sha256": "1e5f7fed21c0e3f6e626c5e01ded689a783dcbebf79b4d2aab746b8527366f90"
+  },
+  {
+    "file": "examples/ontologies/invalid/v12-create-missing-primary-key/defs.yaml",
+    "bytes": 387,
+    "sha256": "228d837ddcf8fa848cefedb19b6b57754d222bdaf0ff35961782fc9ae38b02a6"
+  },
+  {
+    "file": "examples/ontologies/invalid/v12-create-missing-primary-key/ontology.yaml",
+    "bytes": 110,
+    "sha256": "e7f5b46076059a95fa74f9da6922cf9a7e15c7828ac95476e9fa40579054b8b4"
+  },
+  {
+    "file": "examples/ontologies/invalid/v12-current-time-on-string/defs.yaml",
+    "bytes": 407,
+    "sha256": "b23b4ed89a5a8b635db66f42a3149a67196b429e389e8994c56a920a257aaef5"
+  },
+  {
+    "file": "examples/ontologies/invalid/v12-current-time-on-string/ontology.yaml",
+    "bytes": 108,
+    "sha256": "3c6f5ce2c4a412782d4fc56d8eea4e99fb99b00a5689687ed885be508288e1fb"
+  },
+  {
+    "file": "examples/ontologies/invalid/v12-modify-assigns-primary-key/defs.yaml",
+    "bytes": 449,
+    "sha256": "7e54894d83f09826a883c635a3d3e21d8e0bfb83129ce1346b2cd031f4f9623a"
+  },
+  {
+    "file": "examples/ontologies/invalid/v12-modify-assigns-primary-key/ontology.yaml",
+    "bytes": 105,
+    "sha256": "e457ee43ee9d31daf3f7d01114da7545fc965f528c78eacf3f554f502d2656bc"
+  },
+  {
+    "file": "examples/ontologies/invalid/v12-value-source-type-mismatch/defs.yaml",
+    "bytes": 450,
+    "sha256": "e41282eac50e5a67c1ace90a388d7beacbc6b54f0b580f1d168a35fd7a323f7f"
+  },
+  {
+    "file": "examples/ontologies/invalid/v12-value-source-type-mismatch/ontology.yaml",
+    "bytes": 110,
+    "sha256": "5cceb7f34437a605ef1274335475004fc456ded3136f640009df79bbef3050ba"
+  },
+  {
+    "file": "examples/ontologies/invalid/v13-comparison-type-mismatch/defs.yaml",
+    "bytes": 547,
+    "sha256": "2bc95f990a2dc70a0c5a001ff6a94174e232f20e3b824a37cbd5d3cc66dab036"
+  },
+  {
+    "file": "examples/ontologies/invalid/v13-comparison-type-mismatch/ontology.yaml",
+    "bytes": 97,
+    "sha256": "d491019a8393259e84ada6b43fd879209247e32e9170cc2edc6d098a2be0ccae"
+  },
+  {
+    "file": "examples/ontologies/invalid/v13-non-boolean-condition/defs.yaml",
+    "bytes": 542,
+    "sha256": "5108a45feeb07c1ae5711c8543f4aa62bcb850ffd9c98e464cc21ca2e45dcc06"
+  },
+  {
+    "file": "examples/ontologies/invalid/v13-non-boolean-condition/ontology.yaml",
+    "bytes": 97,
+    "sha256": "85dc2997ccc33c4a709bff8a287d438da5bec3a5b425f091ea083013f9828e1c"
+  },
+  {
+    "file": "examples/ontologies/invalid/v13-objects-not-object-reference/defs.yaml",
+    "bytes": 549,
+    "sha256": "9794a3d7d5bb860818c2f386fb7605e70991be1e7d35a80df57f95e2c36cfa96"
+  },
+  {
+    "file": "examples/ontologies/invalid/v13-objects-not-object-reference/ontology.yaml",
+    "bytes": 110,
+    "sha256": "4f0a8745df0b428c3dfee7a1af79361c62b42986b17e2a61ec9403e0f2f933ea"
+  },
+  {
+    "file": "examples/ontologies/invalid/v13-syntax-error/defs.yaml",
+    "bytes": 540,
+    "sha256": "9dd52b8103973a555e5cb3e6825dd44f3c0540e518b0b96b9355582a59ce613e"
+  },
+  {
+    "file": "examples/ontologies/invalid/v13-syntax-error/ontology.yaml",
+    "bytes": 94,
+    "sha256": "ac1d9b889e4de1292a532458a35341b35a3ea383375ff72b7b186dd53d48049f"
+  },
+  {
+    "file": "examples/ontologies/invalid/v13-unknown-parameter/defs.yaml",
+    "bytes": 541,
+    "sha256": "736c63423a544b69441314c47dd728d51b0ea990db08c2784a1ca2cc4b6058f1"
+  },
+  {
+    "file": "examples/ontologies/invalid/v13-unknown-parameter/ontology.yaml",
+    "bytes": 100,
+    "sha256": "1661fce7b8b087ecb586a210fda0e4649251b1219f66bbb6643a66eb0fe3dfa0"
+  },
+  {
+    "file": "examples/ontologies/invalid/v14-include-escapes-root/ontology.yaml",
+    "bytes": 130,
+    "sha256": "bc8cbdef3ec180561a8e0a0ee1e18386666d7f6804fed3b779321e52c76a11cf"
+  },
+  {
+    "file": "examples/ontologies/invalid/v16-binding-outside-bindings-dir/flight-binding.yaml",
+    "bytes": 111,
+    "sha256": "7f148c57935c5504c6a3c551a675e4825c1183186ad27465555c384af0f5ca0c"
+  },
+  {
+    "file": "examples/ontologies/invalid/v16-binding-outside-bindings-dir/objects.yaml",
+    "bytes": 160,
+    "sha256": "3a611f1b270e8089e45e3bce6cc763c24da43426d582c6e8e041db31481f766d"
+  },
+  {
+    "file": "examples/ontologies/invalid/v16-binding-outside-bindings-dir/ontology.yaml",
+    "bytes": 14,
+    "sha256": "f36b3a0a82ce74db89834a0e6002d43f974090e6190e5141d3be02d6c992e3bd"
+  },
+  {
+    "file": "examples/ontologies/invalid/v16-fixture-escapes-root/bindings/dev/flight.yaml",
+    "bytes": 151,
+    "sha256": "3fc7dae76e115832a9312afbb5475e8fe585e11d1b3d652d97dcc10809593d5b"
+  },
+  {
+    "file": "examples/ontologies/invalid/v16-fixture-escapes-root/objects.yaml",
+    "bytes": 160,
+    "sha256": "3a611f1b270e8089e45e3bce6cc763c24da43426d582c6e8e041db31481f766d"
+  },
+  {
+    "file": "examples/ontologies/invalid/v16-fixture-escapes-root/ontology.yaml",
+    "bytes": 34,
+    "sha256": "b9962cf0085785b755636633bdd6987e3482b24cbda6a7c212a4facc972b7730"
+  },
+  {
+    "file": "examples/ontologies/invalid/v16-source-without-binding/bindings/dev/flight.yaml",
+    "bytes": 111,
+    "sha256": "7f148c57935c5504c6a3c551a675e4825c1183186ad27465555c384af0f5ca0c"
+  },
+  {
+    "file": "examples/ontologies/invalid/v16-source-without-binding/objects.yaml",
+    "bytes": 294,
+    "sha256": "ff321bc6f6a0570dd611a2f456d51b0d8d5d46d744790762141a0405f346be6b"
+  },
+  {
+    "file": "examples/ontologies/invalid/v16-source-without-binding/ontology.yaml",
+    "bytes": 34,
+    "sha256": "b9962cf0085785b755636633bdd6987e3482b24cbda6a7c212a4facc972b7730"
+  },
+  {
+    "file": "rust-toolchain.toml",
+    "bytes": 86,
+    "sha256": "c7bdffe5b4c71aeafb84939751c9a1690bc39d0e305d4a534ddf7ce9ce64c675"
+  },
+  {
+    "file": "schemas/ontoforge-definition.schema.json",
+    "bytes": 27789,
+    "sha256": "a0a6cb63ec07f793ff9a47b61cf5f2d04ebbc232e4aebdae3017cdc203079546"
+  },
+  {
+    "file": "schemas/ontoforge-manifest.schema.json",
+    "bytes": 1196,
+    "sha256": "bf09685e06a409852a7b2a28c7d4d88c56a12576dd2a781e10c6205093c111b8"
+  },
+  {
+    "file": "schemas/ontoforge-scope.schema.json",
+    "bytes": 6597,
+    "sha256": "d8408f01bf2dd24d3cdb0cd9bffe19cd52115c2ea244553e62dc0054124d4819"
+  },
+  {
+    "file": "target/milestone-ci-41759804733-integration.log",
+    "bytes": 114556,
+    "sha256": "6ecde94b35302e75b4484d4268281d5216fb09f8f2856013075d081050ca6f25"
+  },
+  {
+    "file": "target/milestone-ci-41759804733-ubuntu.log",
+    "bytes": 330741,
+    "sha256": "dd5f4c4165adb6792daa3889c85418d50a14821adf2171352492d57775b27975"
+  },
+  {
+    "file": "target/milestone-ci-41759804733-windows.log",
+    "bytes": 338621,
+    "sha256": "b6ecb8fa1fb5c4459c9e7c8e01074d99c142456d65ab76afd66ccac613679eaa"
+  },
+  {
+    "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-ubuntu.log",
+    "bytes": 337902,
+    "sha256": "ae3d8ed246f84a5ba0ea323ee3a84311f76a8119e8deffeb7679da6161e723c8"
+  },
+  {
+    "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-windows.log",
+    "bytes": 341785,
+    "sha256": "243cf6436c9e9c7ca1b081cd0ce1df3ca486a25d7b678d10303e5ad9adda1753"
+  },
+  {
+    "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-integration.log",
+    "bytes": 116188,
+    "sha256": "bdc51412697da080151c6b7f68e42f88c0e74bb21ecbfe67acc2fdaba23b449e"
+  },
+  {
+    "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-phase7-real-services.log",
+    "bytes": 71087,
+    "sha256": "5cad89dc1e75935cc5bdaa3ca82e5e1f4df06c81c56e7dc64425b0996820c727"
+  },
+  {
+    "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-isolated-query-bench.log",
+    "bytes": 100182,
+    "sha256": "dbfefa449e95c858c9e9c11f3ef7690ae47b80dfbfa4a73c9a88d56a4828aa99"
+  },
+  {
+    "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-workspace.log",
+    "bytes": 139931,
+    "sha256": "f1e8594764dfc0572154d18ff520c88321db4cc05cc264d1b3befaa7d0fa5ab1"
+  },
+  {
+    "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-final.json",
+    "bytes": 19631,
+    "sha256": "3947bcf089a3641d0c0afa8bdf525ebd1974778e615c39150e977cad6ae4fc47"
+  },
+  {
+    "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-local-results.json",
+    "bytes": 2374,
+    "sha256": "70ba440f0e1d7223b2633e7e14ac3b3300efbf7f9462f4c467b6cf12d67148ed"
+  },
+  {
+    "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-run.ps1",
+    "bytes": 2550,
+    "sha256": "cedc8337fe6b6921b8cd0a11efceb3c11870b08c7166c89b178e3321fcac44d0"
+  },
+  {
+    "file": ".planning/REQUIREMENTS.md",
+    "bytes": 17996,
+    "sha256": "bc1c55d4851d9fc029978a5695564372419be7f1ec20fc132073b6f5329a792f"
+  },
+  {
+    "file": ".planning/ROADMAP.md",
+    "bytes": 22343,
+    "sha256": "f0e4ac17f7ba248f542023adf02d3c359f222bbf21ca37e4c2f165fdcfdd24f3"
+  },
+  {
+    "file": ".planning/milestones/v1.0-audit/task_plan.md",
+    "bytes": 5604,
+    "sha256": "fd849dbcc55894741060bd5ff71d354d4c571589ebf224628b174a6e7f0325a9"
+  },
+  {
+    "file": ".planning/milestones/v1.0-audit/progress.md",
+    "bytes": 11030,
+    "sha256": "d320e27056ea74060e8d35c6099b2d2c365f42ae571b45e5d209dfbb94538a71"
+  },
+  {
+    "file": ".planning/milestones/v1.0-audit/findings.md",
+    "bytes": 9866,
+    "sha256": "bf19f6ae96eda73a2db4572317f539e8cd232695da0d3dc883d4b4836011e6aa"
+  }
+]

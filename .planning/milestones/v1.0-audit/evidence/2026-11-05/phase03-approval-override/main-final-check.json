@@ -1,0 +1,147 @@
+{
+  "checked_at": "2026-11-05T11:42:46.522Z",
+  "head": "060019fe52005c6b85ae5c5f59da9868f464e579",
+  "scope": "03-01.1 explicit historical-evidence acceptance only",
+  "disposition": "passed_with_one_explicit_override",
+  "milestone_status": "gaps_found",
+  "authorization": {
+    "path": "authorization.md",
+    "sha256": "d847c1ced649772622208c4f79e1e87d38d443acc9cb3d56929241aa7dca4baf",
+    "accepted_at": "2026-11-05T11:26:39.587Z",
+    "backdated_historical_approval": false,
+    "new_historical_record_found": false
+  },
+  "phase03": {
+    "native_status": "passed",
+    "score": "139/139",
+    "verified_without_override": 138,
+    "passed_override": 1,
+    "overrides_applied": 1,
+    "other_truth_rows_unchanged": 138,
+    "human_verification_remaining": 0,
+    "old_covered": 345,
+    "current_covered": 350,
+    "removed": 0,
+    "sha256": "f6a8657f760a1656657e53ecc04789d0a76ef9098cb28a3ff7e8efc289abc4cf"
+  },
+  "phase_gates": [
+    {
+      "phase": "1",
+      "raw_status": "human_needed",
+      "canonical_status": "stale",
+      "score": "11/11 must-haves verified"
+    },
+    {
+      "phase": "2",
+      "raw_status": "gaps_found",
+      "canonical_status": "gaps_found",
+      "score": "100/103 must-haves verified"
+    },
+    {
+      "phase": "3",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "139/139 must-haves verified"
+    },
+    {
+      "phase": "4",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "36/36 must-haves verified"
+    },
+    {
+      "phase": "5",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "36/36 must-haves verified"
+    },
+    {
+      "phase": "6",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "22/22 must-haves verified"
+    },
+    {
+      "phase": "7",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "80/80 must-haves verified"
+    },
+    {
+      "phase": "7.1",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "18/18 must-haves verified"
+    },
+    {
+      "phase": "7.2",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "9/9 must-haves verified"
+    }
+  ],
+  "matrix": {
+    "command": "node .planning/milestones/v1.0-audit/evidence/2026-11-05/requirements-final-recompute.cjs --check",
+    "exit_code": 0,
+    "result": "PASS",
+    "counts": {
+      "requirements": 79,
+      "root_plans": 93,
+      "root_summaries": 93,
+      "formal_verifications": 9,
+      "checked": 78,
+      "summary_declared_ids": 79,
+      "metadata_gap_ids": 0,
+      "summary_missing_field_files": 4,
+      "summary_explicit_empty_files": 26,
+      "verification_covered_ids": 79,
+      "orphaned": 0,
+      "historical_three_source_claims": 78,
+      "workflow_satisfied": 59,
+      "workflow_partial": 12,
+      "workflow_unsatisfied": 8,
+      "confirmed_current_functional_failures": 0,
+      "full_contract_partial": 1,
+      "current_execution_evidence_ids": 78,
+      "mapped_tests_executed_ids": 77,
+      "partial_current_execution_ids": 1,
+      "historical_only_ids": 1,
+      "owner_signed_current_phase07_scope_ids": 21,
+      "owner_signed_phase07_only_responsibility_ids": 15,
+      "owner_signed_crossphase_scope_ids": 6,
+      "current_execution_reports_current_ids": 58,
+      "current_execution_report_resign_pending_ids": 20
+    },
+    "input_manifest_entries": 267,
+    "input_mismatches": 0
+  },
+  "tests": {
+    "node_freshness_exit": 0,
+    "passed": 22,
+    "failed": 0,
+    "new_rust_or_service_execution": false,
+    "new_ci_dispatch": false
+  },
+  "evidence": {
+    "original_runtime_index_entries": 56,
+    "original_runtime_mismatches": 0,
+    "prior_immutable_resign_entries": 67,
+    "prior_immutable_mismatches": 0,
+    "current_index": "main-evidence-index.json",
+    "current_entries": 106,
+    "current_index_sha256": "93c9416c4ccb54745fb1430597c28e7fb7af07204326b25e438002471c91a45d",
+    "current_mismatches": 0,
+    "prior_acceptance_preserved": true
+  },
+  "diff_check": {
+    "exit": 0,
+    "stderr": "warning: in the working copy of '.planning/milestones/v1.0-audit/progress.md', CRLF will be replaced by LF the next time Git touches it\n"
+  },
+  "production_changes": [],
+  "state_lines": 53,
+  "open_audit_tasks": 0,
+  "commit": false,
+  "push": false,
+  "publish_or_archive": false,
+  "protected_resource_operations": 0
+}

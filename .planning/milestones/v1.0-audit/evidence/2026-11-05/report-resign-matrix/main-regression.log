@@ -1,0 +1,34 @@
+command: node --test .planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-matrix/freshness.test.cjs
+exit_code: 0
+✔ passed assigned reports make non-Phase07 execution current without extending owner signature (46.4901ms)
+✔ stale canonical gate keeps executed evidence pending despite a passed raw claim (36.4106ms)
+✔ human_needed canonical gate keeps executed evidence pending despite a passed raw claim (32.8362ms)
+✔ gaps_found canonical gate keeps executed evidence pending despite a passed raw claim (37.7136ms)
+✔ passed Phase3 report makes STORE-01 execution current without a Phase07 owner signature (34.6655ms)
+✔ passed Phase5 report makes ACTION-01 execution current without a Phase07 owner signature (33.195ms)
+✔ passed Phase6 report makes L2-01 execution current without a Phase07 owner signature (33.1889ms)
+✔ passed Phase7.1 report makes STORE-05 execution current without a Phase07 owner signature (30.8807ms)
+✔ one stale assigned crossphase gate blocks freshness after the other report passes (32.4125ms)
+✔ duplicate passed report cannot cover a different missing assigned phase (32.4121ms)
+✔ pending metric counts executed evidence with unresolved gates rather than freshness labels or owner signatures (33.824ms)
+✔ existing 79-requirement assignment retains exactly 21 Phase07 scoped signatures (37.8659ms)
+✔ all assigned crossphase gates passed make current evidence reports current (31.557ms)
+✔ Phase07 owner signature cannot cover another assigned phase human gate (34.9995ms)
+✔ Phase07-only passed report retains its scoped owner signature alongside report freshness (28.9219ms)
+✔ Phase03 historical human approval remains pending across Phase06 and signed Phase07 (30.4493ms)
+✔ a stale Phase07 gate grants neither owner signature nor report freshness (30.8515ms)
+✔ DX-04 stays historical-only without executed-evidence pending count when report is passed (31.7704ms)
+✔ DX-04 stays historical-only without executed-evidence pending count when report is stale (31.0419ms)
+✔ ENGINE-05 stays partial with report gate passed and counts only actual pending gates (30.7634ms)
+✔ ENGINE-05 stays partial with report gate gaps_found and counts only actual pending gates (29.4658ms)
+✔ missing assigned canonical report remains pending rather than vacuously current (29.0467ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 833.1498
+
+stderr:

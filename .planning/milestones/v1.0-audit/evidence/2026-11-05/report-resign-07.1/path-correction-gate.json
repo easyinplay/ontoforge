@@ -1,0 +1,13 @@
+{
+  "recorded_at": "2026-11-05T11:02:13.436Z",
+  "correction": "Use root-relative complete snapshot path in both canonical report and covered contract-map.",
+  "covered_count": 269,
+  "covered_digest": "v4:sha256:d2a7785dbb58fb4ac8f6949e909c75a5fc12a94aca8adb9a055f44f9a9e156fb",
+  "fingerprint_exit": 0,
+  "status": {
+    "exit": 0,
+    "stdout": "{\n  \"status\": \"passed\",\n  \"next_action\": \"Verification passed — continue.\",\n  \"next_command\": \"\",\n  \"route\": \"\"\n}",
+    "stderr": ""
+  },
+  "original_execution_evidence_modified": false
+}

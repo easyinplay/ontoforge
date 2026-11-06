@@ -1,0 +1,182 @@
+{
+  "head": "060019fe52005c6b85ae5c5f59da9868f464e579",
+  "run": 41994479295,
+  "status": "completed",
+  "conclusion": "success",
+  "workspace": [
+    {
+      "platform": "ubuntu",
+      "step": {
+        "completedAt": "2026-11-05T08:41:17Z",
+        "conclusion": "success",
+        "name": "Run cargo test --workspace --locked -- --test-threads=1",
+        "number": 11,
+        "startedAt": "2026-11-05T08:30:42Z",
+        "status": "completed"
+      },
+      "first_result_line": 1302,
+      "last_result_line": 3838,
+      "groups": 152,
+      "totals": {
+        "passed": 1535,
+        "failed": 0,
+        "ignored": 119,
+        "filtered": 0
+      },
+      "runtime_discovery_matches_every_execution": true
+    },
+    {
+      "platform": "windows",
+      "step": {
+        "completedAt": "2026-11-05T08:52:48Z",
+        "conclusion": "success",
+        "name": "Run cargo test --workspace --locked -- --test-threads=1",
+        "number": 11,
+        "startedAt": "2026-11-05T08:34:24Z",
+        "status": "completed"
+      },
+      "first_result_line": 1291,
+      "last_result_line": 3820,
+      "groups": 152,
+      "totals": {
+        "passed": 1528,
+        "failed": 0,
+        "ignored": 119,
+        "filtered": 0
+      },
+      "runtime_discovery_matches_every_execution": true
+    }
+  ],
+  "jobs": [
+    {
+      "name": "test (windows-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "cleanup_and_artifacts": []
+    },
+    {
+      "name": "isolated-query-bench",
+      "status": "completed",
+      "conclusion": "success",
+      "cleanup_and_artifacts": [
+        {
+          "completedAt": "2026-11-05T08:26:58Z",
+          "conclusion": "success",
+          "name": "Start dedicated PostgreSQL 17.11 with job-scoped credentials",
+          "number": 5,
+          "startedAt": "2026-11-05T08:26:49Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-05T08:30:53Z",
+          "conclusion": "success",
+          "name": "Check benchmark artifact for job credentials",
+          "number": 10,
+          "startedAt": "2026-11-05T08:30:53Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-05T08:30:54Z",
+          "conclusion": "success",
+          "name": "Upload isolated raw timings and distributed EXPLAIN",
+          "number": 11,
+          "startedAt": "2026-11-05T08:30:53Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-05T08:30:54Z",
+          "conclusion": "success",
+          "name": "Clean up query containers and catalog",
+          "number": 14,
+          "startedAt": "2026-11-05T08:30:54Z",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "name": "phase7-real-services",
+      "status": "completed",
+      "conclusion": "success",
+      "cleanup_and_artifacts": [
+        {
+          "completedAt": "2026-11-05T08:34:09Z",
+          "conclusion": "success",
+          "name": "Check server evidence for job credentials",
+          "number": 7,
+          "startedAt": "2026-11-05T08:34:09Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-05T08:34:10Z",
+          "conclusion": "success",
+          "name": "Upload server evidence",
+          "number": 8,
+          "startedAt": "2026-11-05T08:34:09Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-05T08:34:10Z",
+          "conclusion": "success",
+          "name": "Clean up Phase 7 services",
+          "number": 9,
+          "startedAt": "2026-11-05T08:34:10Z",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "name": "integration",
+      "status": "completed",
+      "conclusion": "success",
+      "cleanup_and_artifacts": [
+        {
+          "completedAt": "2026-11-05T08:27:44Z",
+          "conclusion": "success",
+          "name": "Start PostgreSQL 17.11 with job-scoped credentials",
+          "number": 5,
+          "startedAt": "2026-11-05T08:27:28Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-05T08:31:44Z",
+          "conclusion": "success",
+          "name": "Check query artifacts for job credentials",
+          "number": 24,
+          "startedAt": "2026-11-05T08:31:44Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-05T08:31:45Z",
+          "conclusion": "success",
+          "name": "Upload distributed query plans",
+          "number": 25,
+          "startedAt": "2026-11-05T08:31:44Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-05T08:31:47Z",
+          "conclusion": "success",
+          "name": "Upload query benchmark smoke evidence",
+          "number": 26,
+          "startedAt": "2026-11-05T08:31:45Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-11-05T08:31:50Z",
+          "conclusion": "success",
+          "name": "Clean up query containers and catalog",
+          "number": 30,
+          "startedAt": "2026-11-05T08:31:47Z",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "name": "test (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "cleanup_and_artifacts": []
+    }
+  ],
+  "note": "Workspace counts are time-windowed; later target reruns and platforms are never aggregated into a unique total."
+}

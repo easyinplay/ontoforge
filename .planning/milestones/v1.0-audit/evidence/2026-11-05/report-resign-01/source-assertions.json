@@ -1,0 +1,4483 @@
+[
+  {
+    "file": "crates/ontoforge/src/lib.rs",
+    "sha256": "7740d3899fcde34ca1e638063badda1eda81dae6af436bda3859c07e6f9b120f",
+    "lines": [
+      {
+        "line": 28,
+        "text": "pub fn run(cli: Cli) -> u8 {"
+      },
+      {
+        "line": 47,
+        "text": "fn export_schemas(out_dir: &Utf8Path) -> u8 {"
+      },
+      {
+        "line": 65,
+        "text": "fn report(out: &LoadOutput, args: &OutputArgs) -> u8 {"
+      },
+      {
+        "line": 71,
+        "text": "fn print_diagnostics(out: &LoadOutput, args: &OutputArgs) {"
+      },
+      {
+        "line": 76,
+        "text": "fn print_rendered("
+      },
+      {
+        "line": 86,
+        "text": "            anstream::AutoStream::choice(&std::io::stdout()) != anstream::ColorChoice::Never"
+      },
+      {
+        "line": 93,
+        "text": "fn validate(args: &ValidateArgs) -> u8 {"
+      },
+      {
+        "line": 119,
+        "text": "fn validate_online(args: &ValidateArgs) -> u8 {"
+      },
+      {
+        "line": 150,
+        "text": "fn lint(args: &LintArgs) -> u8 {"
+      },
+      {
+        "line": 164,
+        "text": "fn lint_summary(out: &LoadOutput) -> String {"
+      },
+      {
+        "line": 174,
+        "text": "            .any(|d| d.severity == Severity::Error && d.code == code)"
+      },
+      {
+        "line": 177,
+        "text": "        d.severity == Severity::Error && d.code.starts_with(\"ONT-V\") && d.code != codes::V15"
+      },
+      {
+        "line": 181,
+        "text": "            plural(count(Severity::Error), \"error\", \"errors\")"
+      },
+      {
+        "line": 184,
+        "text": "    if is_error(codes::V15) {"
+      },
+      {
+        "line": 193,
+        "text": "        plural(count(Severity::Error), \"error\", \"errors\"),"
+      },
+      {
+        "line": 199,
+        "text": "fn plural(n: usize, one: &str, many: &str) -> String {"
+      },
+      {
+        "line": 204,
+        "text": "fn engine_summary(out: &LoadOutput) -> String {"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge/src/pipeline.rs",
+    "sha256": "0c1fbd95f77c0d7dec14ffeec821688b83ffe3b1b3724982d39133ba9f6eb453",
+    "lines": [
+      {
+        "line": 6,
+        "text": "    Diagnostic, Severity, codes, has_errors, parse_custom_de_error, sort_diagnostics,"
+      },
+      {
+        "line": 14,
+        "text": "pub struct Checked {"
+      },
+      {
+        "line": 24,
+        "text": "/// completeness, then the CEL checks of submission criteria (`ONT-V13`, hard errors)"
+      },
+      {
+        "line": 26,
+        "text": "pub fn check_with_profile(root: &Utf8Path, profile: Option<&str>) -> Checked {"
+      },
+      {
+        "line": 40,
+        "text": "            Err(d) => out.diagnostics.push(d),"
+      },
+      {
+        "line": 43,
+        "text": "            .extend(ontoforge_expr::check_ontology(ontology, &out.sources));"
+      },
+      {
+        "line": 46,
+        "text": "    if has_errors(&out.diagnostics) {"
+      },
+      {
+        "line": 57,
+        "text": "pub fn check(root: &Utf8Path) -> LoadOutput {"
+      },
+      {
+        "line": 64,
+        "text": "fn select_profile("
+      },
+      {
+        "line": 75,
+        "text": "                    Diagnostic::without_location(codes::V16, Severity::Error, message, MANIFEST);"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/loader/mod.rs",
+    "sha256": "00abcd4d66270e78e96381b47bc9d8b9a2d41668963a11e83d25f00d182ec08f",
+    "lines": [
+      {
+        "line": 8,
+        "text": "    Diagnostic, Severity, SourceLocation, codes, has_errors, parse_custom_de_error,"
+      },
+      {
+        "line": 32,
+        "text": "pub const MANIFEST: &str = \"ontology.yaml\";"
+      },
+      {
+        "line": 35,
+        "text": "pub struct LoadOutput {"
+      },
+      {
+        "line": 45,
+        "text": "pub const MAX_FILE_BYTES: u64 = 4 * 1024 * 1024;"
+      },
+      {
+        "line": 48,
+        "text": "pub const MAX_FILES: usize = 10_000;"
+      },
+      {
+        "line": 52,
+        "text": "pub const MAX_TOTAL_BYTES: u64 = 64 * 1024 * 1024;"
+      },
+      {
+        "line": 56,
+        "text": "pub fn load_dir(root: &Utf8Path) -> LoadOutput {"
+      },
+      {
+        "line": 71,
+        "text": "pub fn load_from_memory(files: &[(&str, &str)]) -> LoadOutput {"
+      },
+      {
+        "line": 76,
+        "text": "fn memory_files<'a>(files: &[(&str, &'a str)]) -> BTreeMap<String, &'a str> {"
+      },
+      {
+        "line": 84,
+        "text": "fn read_memory(by_path: &BTreeMap<String, &str>, name: &str) -> Text {"
+      },
+      {
+        "line": 89,
+        "text": "            codes::V14,"
+      },
+      {
+        "line": 90,
+        "text": "            Severity::Error,"
+      },
+      {
+        "line": 97,
+        "text": "fn load_from_memory_inner(files: &[(&str, &str)]) -> LoadOutput {"
+      },
+      {
+        "line": 107,
+        "text": "            if len > MAX_FILE_BYTES {"
+      },
+      {
+        "line": 125,
+        "text": "fn isolated<'a, T: Send>(failed: fn() -> T, work: impl FnOnce() -> T + Send + 'a) -> T {"
+      },
+      {
+        "line": 128,
+        "text": "            .stack_size(LOADER_STACK_BYTES)"
+      },
+      {
+        "line": 129,
+        "text": "            .spawn_scoped(scope, work)"
+      },
+      {
+        "line": 136,
+        "text": "fn internal_error_diagnostic(file: &str) -> Diagnostic {"
+      },
+      {
+        "line": 138,
+        "text": "        codes::V01,"
+      },
+      {
+        "line": 139,
+        "text": "        Severity::Error,"
+      },
+      {
+        "line": 145,
+        "text": "fn internal_error() -> LoadOutput {"
+      },
+      {
+        "line": 159,
+        "text": "fn check_size(name: &str, len: u64) -> Result<(), Diagnostic> {"
+      },
+      {
+        "line": 160,
+        "text": "    if len > MAX_FILE_BYTES {"
+      },
+      {
+        "line": 162,
+        "text": "            codes::V14,"
+      },
+      {
+        "line": 163,
+        "text": "            Severity::Error,"
+      },
+      {
+        "line": 172,
+        "text": "pub(crate) fn too_large(len: Option<u64>) -> String {"
+      },
+      {
+        "line": 174,
+        "text": "        Some(len) => format!(\"file is {len} bytes, over the {MAX_FILE_BYTES} byte limit\"),"
+      },
+      {
+        "line": 175,
+        "text": "        None => format!(\"file is over the {MAX_FILE_BYTES} byte limit\"),"
+      },
+      {
+        "line": 179,
+        "text": "fn missing_manifest() -> Diagnostic {"
+      },
+      {
+        "line": 181,
+        "text": "        codes::V14,"
+      },
+      {
+        "line": 182,
+        "text": "        Severity::Error,"
+      },
+      {
+        "line": 193,
+        "text": "pub enum ReadFailure {"
+      },
+      {
+        "line": 194,
+        "text": "    Io(std::io::ErrorKind),"
+      },
+      {
+        "line": 201,
+        "text": "/// Read a regular file of at most `max_bytes` (CR-03). With `follow_links` false a"
+      },
+      {
+        "line": 208,
+        "text": "/// [`read_beneath`] and [`MAX_FILE_BYTES`]. Paths the deployer supplies"
+      },
+      {
+        "line": 211,
+        "text": "pub fn read_limited("
+      },
+      {
+        "line": 213,
+        "text": "    follow_links: bool,"
+      },
+      {
+        "line": 218,
+        "text": "    let meta = if follow_links {"
+      },
+      {
+        "line": 245,
+        "text": "pub fn check_beneath(root: &Utf8Path, rel: &str) -> Result<(), ReadFailure> {"
+      },
+      {
+        "line": 256,
+        "text": "            Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(()),"
+      },
+      {
+        "line": 261,
+        "text": "    let resolved = std::fs::canonicalize(&at).map_err(|e| ReadFailure::Io(e.kind()))?;"
+      },
+      {
+        "line": 262,
+        "text": "    let base = std::fs::canonicalize(root.as_std_path()).map_err(|e| ReadFailure::Io(e.kind()))?;"
+      },
+      {
+        "line": 273,
+        "text": "pub fn read_beneath(root: &Utf8Path, rel: &str, max_bytes: u64) -> Result<Vec<u8>, ReadFailure> {"
+      },
+      {
+        "line": 280,
+        "text": "/// within [`MAX_FILE_BYTES`] (E23, CR-S01)."
+      },
+      {
+        "line": 281,
+        "text": "fn probe_disk(root: &Utf8Path, rel: &str) -> Result<u64, String> {"
+      },
+      {
+        "line": 285,
+        "text": "        Err(ReadFailure::Io(std::io::ErrorKind::NotFound)) => return Err(\"not found\".to_owned()),"
+      },
+      {
+        "line": 292,
+        "text": "        if e.kind() == std::io::ErrorKind::NotFound {"
+      },
+      {
+        "line": 301,
+        "text": "    if meta.len() > MAX_FILE_BYTES {"
+      },
+      {
+        "line": 307,
+        "text": "fn read_text(root: &Utf8Path, name: &str) -> Text {"
+      },
+      {
+        "line": 309,
+        "text": "        |message: String| Diagnostic::without_location(codes::V14, Severity::Error, message, name);"
+      },
+      {
+        "line": 310,
+        "text": "    match read_beneath(root, name, MAX_FILE_BYTES) {"
+      },
+      {
+        "line": 313,
+        "text": "                codes::V01,"
+      },
+      {
+        "line": 314,
+        "text": "                Severity::Error,"
+      },
+      {
+        "line": 323,
+        "text": "        Err(ReadFailure::Io(std::io::ErrorKind::NotFound)) if name == MANIFEST => {"
+      },
+      {
+        "line": 330,
+        "text": "fn syntax_diagnostic(sources: &SourceMap, file: FileId, e: &parse::ParseError) -> Diagnostic {"
+      },
+      {
+        "line": 336,
+        "text": "    Diagnostic::error(codes::V01, e.message.clone(), &at)"
+      },
+      {
+        "line": 343,
+        "text": "fn assemble("
+      },
+      {
+        "line": 364,
+        "text": "    if selection.files.len() > MAX_FILES {"
+      },
+      {
+        "line": 367,
+        "text": "                codes::V14,"
+      },
+      {
+        "line": 368,
+        "text": "                Severity::Error,"
+      },
+      {
+        "line": 370,
+        "text": "                    \"the include patterns select {} files, more than the {MAX_FILES} an ontology may have; only the first {MAX_FILES} were read\","
+      },
+      {
+        "line": 379,
+        "text": "    for path in selection.files.into_iter().take(MAX_FILES) {"
+      },
+      {
+        "line": 388,
+        "text": "        if total > MAX_TOTAL_BYTES {"
+      },
+      {
+        "line": 390,
+        "text": "                codes::V14,"
+      },
+      {
+        "line": 391,
+        "text": "                Severity::Error,"
+      },
+      {
+        "line": 393,
+        "text": "                    \"definition files exceed the {MAX_TOTAL_BYTES} byte budget of an ontology; this file and the ones after it were not read\""
+      },
+      {
+        "line": 411,
+        "text": "    let mut ontology = manifest.filter(|_| !has_errors(&diags)).map(|m| Ontology {"
+      },
+      {
+        "line": 426,
+        "text": "    if has_errors(&diags) {"
+      },
+      {
+        "line": 442,
+        "text": "/// Fixture bytes count against [`MAX_TOTAL_BYTES`] together with the definition files"
+      },
+      {
+        "line": 447,
+        "text": "fn capture_fixture_headers("
+      },
+      {
+        "line": 479,
+        "text": "fn read_fixture_header("
+      },
+      {
+        "line": 486,
+        "text": "    if total.saturating_add(size) > MAX_TOTAL_BYTES {"
+      },
+      {
+        "line": 488,
+        "text": "            \"fixture skipped: the ontology byte budget of {MAX_TOTAL_BYTES} bytes is exhausted\""
+      },
+      {
+        "line": 496,
+        "text": "fn load_manifest("
+      },
+      {
+        "line": 519,
+        "text": "            codes::V02,"
+      },
+      {
+        "line": 528,
+        "text": "            codes::V02,"
+      },
+      {
+        "line": 555,
+        "text": "fn merge("
+      },
+      {
+        "line": 625,
+        "text": "            codes::V08,"
+      },
+      {
+        "line": 652,
+        "text": "fn merge_binding("
+      },
+      {
+        "line": 717,
+        "text": "            codes::V08,"
+      },
+      {
+        "line": 740,
+        "text": "    use super::{MAX_FILE_BYTES, ReadFailure, load_from_memory, read_limited};"
+      },
+      {
+        "line": 744,
+        "text": "    fn object(name: &str) -> String {"
+      },
+      {
+        "line": 750,
+        "text": "    fn binding(name: &str, fixture: &str) -> String {"
+      },
+      {
+        "line": 757,
+        "text": "    fn fixture_header_is_captured() {"
+      },
+      {
+        "line": 801,
+        "text": "    fn fixture_bytes_count_toward_budget() {"
+      },
+      {
+        "line": 822,
+        "text": "    fn shared_fixture_is_counted_once() {"
+      },
+      {
+        "line": 833,
+        "text": "    fn letters(n: u8) -> impl Iterator<Item = char> {"
+      },
+      {
+        "line": 837,
+        "text": "    /// A CSV with a one-column header that is exactly [`MAX_FILE_BYTES`] long."
+      },
+      {
+        "line": 838,
+        "text": "    fn max_size_fixture() -> String {"
+      },
+      {
+        "line": 841,
+        "text": "            \"x\".repeat(usize::try_from(MAX_FILE_BYTES).unwrap() - 3)"
+      },
+      {
+        "line": 843,
+        "text": "        assert_eq!(big.len() as u64, MAX_FILE_BYTES);"
+      },
+      {
+        "line": 850,
+        "text": "    fn many_fixture_bindings("
+      },
+      {
+        "line": 875,
+        "text": "    fn memory_files<'a>("
+      },
+      {
+        "line": 889,
+        "text": "    fn fixture_that_is_not_utf8_is_recorded_as_unreadable() {"
+      },
+      {
+        "line": 914,
+        "text": "    fn read_limited_custom_limit() {"
+      },
+      {
+        "line": 932,
+        "text": "    fn read_limited_missing_and_directory() {"
+      },
+      {
+        "line": 936,
+        "text": "            Err(ReadFailure::Io(std::io::ErrorKind::NotFound))"
+      },
+      {
+        "line": 946,
+        "text": "    fn read_limited_follows_links_only_when_asked() {"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/loader/dispatch.rs",
+    "sha256": "d53d6edf5faa386fe50c31b83bb664a67dafaf3727f6cc0932379a7ab0c8b2e5",
+    "lines": [
+      {
+        "line": 5,
+        "text": "//! error path. Errors are then turned into located `ONT-V` diagnostics."
+      },
+      {
+        "line": 44,
+        "text": "    fn kinds(self) -> &'static [&'static str] {"
+      },
+      {
+        "line": 52,
+        "text": "    fn implemented(self) -> &'static [&'static str] {"
+      },
+      {
+        "line": 60,
+        "text": "    fn misplaced(self, kind: &str, at: &SourceLocation) -> Option<Diagnostic> {"
+      },
+      {
+        "line": 75,
+        "text": "            .then(|| Diagnostic::error(codes::V03, message, at).with_help(help))"
+      },
+      {
+        "line": 80,
+        "text": "pub struct Ctx<'a> {"
+      },
+      {
+        "line": 86,
+        "text": "    fn at(&self, root: &Node, path: &[Seg], part: Part) -> SourceLocation {"
+      },
+      {
+        "line": 91,
+        "text": "fn ticked(items: &[&str]) -> String {"
+      },
+      {
+        "line": 100,
+        "text": "pub fn dispatch(doc: &Node, cx: &Ctx) -> Result<Definition, Diagnostic> {"
+      },
+      {
+        "line": 105,
+        "text": "pub fn dispatch_scope(doc: &Node, cx: &Ctx) -> Result<ScopeDefinition, Diagnostic> {"
+      },
+      {
+        "line": 109,
+        "text": "fn deserialize_document<T: DeserializeOwned>("
+      },
+      {
+        "line": 118,
+        "text": "            codes::V02,"
+      },
+      {
+        "line": 125,
+        "text": "            Diagnostic::error(codes::V02, \"document has no `kind` field\", &root(&[]))"
+      },
+      {
+        "line": 132,
+        "text": "            codes::V02,"
+      },
+      {
+        "line": 139,
+        "text": "            codes::V03,"
+      },
+      {
+        "line": 150,
+        "text": "                codes::V03,"
+      },
+      {
+        "line": 159,
+        "text": "            Diagnostic::error(codes::V03, format!(\"unknown kind `{kind}`\"), &kind_at())"
+      },
+      {
+        "line": 167,
+        "text": "            codes::V02,"
+      },
+      {
+        "line": 184,
+        "text": "fn rewrite_rules("
+      },
+      {
+        "line": 201,
+        "text": "                codes::V02,"
+      },
+      {
+        "line": 208,
+        "text": "                Diagnostic::error(codes::V02, \"rule has no `kind` field\", &at_rule(None))"
+      },
+      {
+        "line": 214,
+        "text": "                codes::V02,"
+      },
+      {
+        "line": 221,
+        "text": "                codes::V03,"
+      },
+      {
+        "line": 236,
+        "text": "pub fn parse_manifest(doc: &Node, cx: &Ctx) -> Result<Manifest, Diagnostic> {"
+      },
+      {
+        "line": 240,
+        "text": "            codes::V02,"
+      },
+      {
+        "line": 250,
+        "text": "fn ticks(msg: &str) -> Vec<&str> {"
+      },
+      {
+        "line": 257,
+        "text": "fn to_segs(path: &Path, root: &Node) -> Vec<Seg> {"
+      },
+      {
+        "line": 269,
+        "text": "        out.push(next);"
+      },
+      {
+        "line": 274,
+        "text": "fn map_error("
+      },
+      {
+        "line": 275,
+        "text": "    e: &serde_path_to_error::Error<serde_json::Error>,"
+      },
+      {
+        "line": 303,
+        "text": "            codes::V04,"
+      },
+      {
+        "line": 316,
+        "text": "            codes::V05,"
+      },
+      {
+        "line": 332,
+        "text": "                codes::V03,"
+      },
+      {
+        "line": 339,
+        "text": "            codes::V06,"
+      },
+      {
+        "line": 346,
+        "text": "    let d = Diagnostic::error(codes::V06, msg.clone(), &cx.at(root, &path, Part::Value));"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/loader/sourcemap.rs",
+    "sha256": "62e7459b928b1dff8c5dc48cad152d5f04140e2a385a4e63755076814a7dd1b2",
+    "lines": [
+      {
+        "line": 14,
+        "text": "pub struct FileId(usize);"
+      },
+      {
+        "line": 17,
+        "text": "pub enum DefKind {"
+      },
+      {
+        "line": 30,
+        "text": "pub struct DefKey {"
+      },
+      {
+        "line": 38,
+        "text": "pub enum Seg {"
+      },
+      {
+        "line": 45,
+        "text": "pub enum Part {"
+      },
+      {
+        "line": 67,
+        "text": "pub struct SourceMap {"
+      },
+      {
+        "line": 77,
+        "text": "    pub fn add_file(&mut self, path: &str, text: String) -> FileId {"
+      },
+      {
+        "line": 86,
+        "text": "    pub(crate) fn path(&self, file: FileId) -> &str {"
+      },
+      {
+        "line": 90,
+        "text": "    pub fn text(&self, path: &str) -> Option<&str> {"
+      },
+      {
+        "line": 97,
+        "text": "    pub(crate) fn register_def(&mut self, key: DefKey, file: FileId, node: Node) {"
+      },
+      {
+        "line": 101,
+        "text": "    pub(crate) fn set_manifest(&mut self, file: FileId, node: Node) {"
+      },
+      {
+        "line": 106,
+        "text": "    pub(crate) fn set_fixture_columns(&mut self, def_name: String, columns: FixtureColumns) {"
+      },
+      {
+        "line": 112,
+        "text": "    pub fn fixture_columns(&self, def_name: &str) -> Option<&FixtureColumns> {"
+      },
+      {
+        "line": 118,
+        "text": "    pub fn locate(&self, def: &DefKey, path: &[Seg], part: Part) -> SourceLocation {"
+      },
+      {
+        "line": 125,
+        "text": "    pub fn locate_manifest(&self, path: &[Seg], part: Part) -> SourceLocation {"
+      },
+      {
+        "line": 133,
+        "text": "    pub(crate) fn locate_in("
+      },
+      {
+        "line": 143,
+        "text": "    pub(crate) fn location(&self, file: FileId, loc: Location) -> SourceLocation {"
+      },
+      {
+        "line": 156,
+        "text": "    pub(crate) fn raw_location("
+      },
+      {
+        "line": 177,
+        "text": "    pub(crate) fn whole_file(&self, file: FileId) -> SourceLocation {"
+      },
+      {
+        "line": 187,
+        "text": "    fn unknown() -> SourceLocation {"
+      },
+      {
+        "line": 200,
+        "text": "pub(crate) fn walk<'a>(root: &'a Node, path: &[Seg]) -> (&'a Node, Option<Location>) {"
+      },
+      {
+        "line": 227,
+        "text": "pub(crate) fn resolve(root: &Node, path: &[Seg], part: Part) -> Location {"
+      },
+      {
+        "line": 240,
+        "text": "    fn map_with(text: &str) -> (SourceMap, DefKey) {"
+      },
+      {
+        "line": 255,
+        "text": "    fn key_and_value_parts_differ() {"
+      },
+      {
+        "line": 267,
+        "text": "    fn nested_keys_and_sequence_indexes_resolve() {"
+      },
+      {
+        "line": 280,
+        "text": "    fn missing_path_falls_back_to_the_nearest_ancestor() {"
+      },
+      {
+        "line": 288,
+        "text": "    fn multibyte_values_report_byte_offsets_and_char_columns() {"
+      },
+      {
+        "line": 297,
+        "text": "    fn text_is_available_by_path() {"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/diag.rs",
+    "sha256": "fad8d8b85fd305c25218b088281f92377a77a6031e1d9ce352b1f137a638f535",
+    "lines": [
+      {
+        "line": 7,
+        "text": "#[serde(rename_all = \"lowercase\")]"
+      },
+      {
+        "line": 8,
+        "text": "pub enum Severity {"
+      },
+      {
+        "line": 9,
+        "text": "    Error,"
+      },
+      {
+        "line": 16,
+        "text": "pub struct Span {"
+      },
+      {
+        "line": 25,
+        "text": "pub fn offset_to_line_col(text: &str, byte_offset: usize) -> (u32, u32) {"
+      },
+      {
+        "line": 41,
+        "text": "pub struct SourceLocation {"
+      },
+      {
+        "line": 51,
+        "text": "#[serde(rename_all = \"camelCase\")]"
+      },
+      {
+        "line": 52,
+        "text": "pub struct Diagnostic {"
+      },
+      {
+        "line": 64,
+        "text": "    pub fn new("
+      },
+      {
+        "line": 85,
+        "text": "    pub fn error(code: &str, message: impl Into<String>, at: &SourceLocation) -> Self {"
+      },
+      {
+        "line": 86,
+        "text": "        Self::new(code, Severity::Error, message, at)"
+      },
+      {
+        "line": 89,
+        "text": "    pub fn without_location("
+      },
+      {
+        "line": 111,
+        "text": "    pub fn with_help(mut self, help: impl Into<String>) -> Self {"
+      },
+      {
+        "line": 118,
+        "text": "pub fn sort_diagnostics(diags: &mut [Diagnostic]) {"
+      },
+      {
+        "line": 125,
+        "text": "pub fn has_errors(diags: &[Diagnostic]) -> bool {"
+      },
+      {
+        "line": 126,
+        "text": "    diags.iter().any(|d| d.severity == Severity::Error)"
+      },
+      {
+        "line": 129,
+        "text": "/// Separator between message and help inside a `de::Error::custom` string."
+      },
+      {
+        "line": 133,
+        "text": "/// `serde::de::Error::custom`. [`parse_custom_de_error`] reverses it."
+      },
+      {
+        "line": 134,
+        "text": "pub fn custom_de_error(code: &str, message: &str, help: Option<&str>) -> String {"
+      },
+      {
+        "line": 143,
+        "text": "pub struct CustomDeError {"
+      },
+      {
+        "line": 150,
+        "text": "pub fn parse_custom_de_error(text: &str) -> Option<CustomDeError> {"
+      },
+      {
+        "line": 157,
+        "text": "    Some(CustomDeError {"
+      },
+      {
+        "line": 165,
+        "text": "pub fn did_you_mean<'a>("
+      },
+      {
+        "line": 185,
+        "text": "    pub const W18: &str = \"ONT-W18\";"
+      },
+      {
+        "line": 187,
+        "text": "    pub const V01: &str = \"ONT-V01\";"
+      },
+      {
+        "line": 189,
+        "text": "    pub const V02: &str = \"ONT-V02\";"
+      },
+      {
+        "line": 191,
+        "text": "    pub const V03: &str = \"ONT-V03\";"
+      },
+      {
+        "line": 193,
+        "text": "    pub const V04: &str = \"ONT-V04\";"
+      },
+      {
+        "line": 195,
+        "text": "    pub const V05: &str = \"ONT-V05\";"
+      },
+      {
+        "line": 197,
+        "text": "    pub const V06: &str = \"ONT-V06\";"
+      },
+      {
+        "line": 199,
+        "text": "    pub const V07: &str = \"ONT-V07\";"
+      },
+      {
+        "line": 201,
+        "text": "    pub const V08: &str = \"ONT-V08\";"
+      },
+      {
+        "line": 203,
+        "text": "    pub const V09: &str = \"ONT-V09\";"
+      },
+      {
+        "line": 205,
+        "text": "    pub const V10: &str = \"ONT-V10\";"
+      },
+      {
+        "line": 207,
+        "text": "    pub const V11: &str = \"ONT-V11\";"
+      },
+      {
+        "line": 209,
+        "text": "    pub const V12: &str = \"ONT-V12\";"
+      },
+      {
+        "line": 211,
+        "text": "    pub const V13: &str = \"ONT-V13\";"
+      },
+      {
+        "line": 213,
+        "text": "    pub const V14: &str = \"ONT-V14\";"
+      },
+      {
+        "line": 215,
+        "text": "    pub const V15: &str = \"ONT-V15\";"
+      },
+      {
+        "line": 217,
+        "text": "    pub const V16: &str = \"ONT-V16\";"
+      },
+      {
+        "line": 219,
+        "text": "    pub const V17: &str = \"ONT-V17\";"
+      },
+      {
+        "line": 221,
+        "text": "    pub const V18: &str = \"ONT-V18\";"
+      },
+      {
+        "line": 224,
+        "text": "    pub const V19: &str = \"ONT-V19\";"
+      },
+      {
+        "line": 226,
+        "text": "    pub const V20: &str = \"ONT-V20\";"
+      },
+      {
+        "line": 230,
+        "text": "    pub const V21: &str = \"ONT-V21\";"
+      },
+      {
+        "line": 234,
+        "text": "    pub const V22: &str = \"ONT-V22\";"
+      },
+      {
+        "line": 237,
+        "text": "    pub const V23: &str = \"ONT-V23\";"
+      },
+      {
+        "line": 240,
+        "text": "    pub const V24: &str = \"ONT-V24\";"
+      },
+      {
+        "line": 243,
+        "text": "    pub const V25: &str = \"ONT-V25\";"
+      },
+      {
+        "line": 246,
+        "text": "    pub const V26: &str = \"ONT-V26\";"
+      },
+      {
+        "line": 249,
+        "text": "    pub const V27: &str = \"ONT-V27\";"
+      },
+      {
+        "line": 257,
+        "text": "    fn phase3_codes() {"
+      },
+      {
+        "line": 273,
+        "text": "    fn custom_error_round_trips() {"
+      },
+      {
+        "line": 274,
+        "text": "        let s = custom_de_error(codes::V07, \"bad name\", Some(\"use Flight\"));"
+      },
+      {
+        "line": 276,
+        "text": "        assert_eq!(parsed.code, \"ONT-V07\");"
+      },
+      {
+        "line": 283,
+        "text": "    fn did_you_mean_picks_closest_and_ignores_far_names() {"
+      },
+      {
+        "line": 293,
+        "text": "    fn offset_to_line_col_takes_byte_offsets_and_counts_char_columns() {"
+      },
+      {
+        "line": 294,
+        "text": "        assert_eq!(offset_to_line_col(\"ab\\ncd\", 0), (1, 1));"
+      },
+      {
+        "line": 295,
+        "text": "        assert_eq!(offset_to_line_col(\"ab\\ncd\", 4), (2, 2));"
+      },
+      {
+        "line": 297,
+        "text": "        assert_eq!(offset_to_line_col(\"éa\", 2), (1, 2));"
+      },
+      {
+        "line": 299,
+        "text": "        assert_eq!(offset_to_line_col(\"éa\", 1), (1, 1));"
+      },
+      {
+        "line": 300,
+        "text": "        assert_eq!(offset_to_line_col(\"ab\", 99), (1, 3));"
+      },
+      {
+        "line": 304,
+        "text": "    fn sort_is_by_file_line_column_code() {"
+      },
+      {
+        "line": 313,
+        "text": "            Diagnostic::error(codes::V05, \"b\", &at(\"b.yaml\", 1)),"
+      },
+      {
+        "line": 314,
+        "text": "            Diagnostic::error(codes::V04, \"a\", &at(\"a.yaml\", 9)),"
+      },
+      {
+        "line": 315,
+        "text": "            Diagnostic::error(codes::V04, \"a\", &at(\"a.yaml\", 2)),"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge/src/render.rs",
+    "sha256": "40234cca316f436b579ea568975bc350f65104ced8144c0a4be742421765ac18",
+    "lines": [
+      {
+        "line": 12,
+        "text": "pub enum Format {"
+      },
+      {
+        "line": 18,
+        "text": "pub enum ColorChoice {"
+      },
+      {
+        "line": 25,
+        "text": "pub fn render(diags: &[Diagnostic], sources: &SourceMap, format: Format, color: bool) -> String {"
+      },
+      {
+        "line": 36,
+        "text": "fn render_human(diags: &[Diagnostic], sources: &SourceMap, color: bool) -> String {"
+      },
+      {
+        "line": 48,
+        "text": "        out.push('\\n');"
+      },
+      {
+        "line": 53,
+        "text": "fn to_report(d: &Diagnostic, sources: &SourceMap) -> Report {"
+      },
+      {
+        "line": 55,
+        "text": "        Severity::Error => MietteSeverity::Error,"
+      },
+      {
+        "line": 100,
+        "text": "pub fn sanitize(text: &str) -> String {"
+      },
+      {
+        "line": 117,
+        "text": "            out.push(c);"
+      },
+      {
+        "line": 126,
+        "text": "pub fn exit_code(diags: &[Diagnostic], deny_warnings: bool) -> u8 {"
+      },
+      {
+        "line": 128,
+        "text": "        Severity::Error => true,"
+      },
+      {
+        "line": 140,
+        "text": "    fn sanitize_preserves_byte_length_and_strips_escapes() {"
+      },
+      {
+        "line": 151,
+        "text": "    fn carriage_return_and_bidi_controls_are_replaced() {"
+      },
+      {
+        "line": 160,
+        "text": "    fn file_name_cannot_drive_the_terminal() {"
+      },
+      {
+        "line": 172,
+        "text": "            &[Diagnostic::error(\"ONT-V01\", \"x\", &at)],"
+      },
+      {
+        "line": 184,
+        "text": "    fn located_diagnostic_without_source_names_the_place() {"
+      },
+      {
+        "line": 203,
+        "text": "    fn multibyte_text_is_untouched() {"
+      },
+      {
+        "line": 208,
+        "text": "    fn exit_codes() {"
+      },
+      {
+        "line": 216,
+        "text": "        let err = Diagnostic::error(\"ONT-V01\", \"x\", &at);"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/ir/names.rs",
+    "sha256": "a0a7f1e25f5fde58cc5476ee810faf0fccca72a79a3d97626c56d4e290bdd27a",
+    "lines": [
+      {
+        "line": 4,
+        "text": "//! `ONT-V07` through the normal deserialization error path."
+      },
+      {
+        "line": 16,
+        "text": "pub const RESERVED_API_NAMES: [&str; 9] = ["
+      },
+      {
+        "line": 30,
+        "text": "/// these do not parse, so those names may not be one (WR-03, ONT-V07)."
+      },
+      {
+        "line": 31,
+        "text": "pub const CEL_RESERVED_WORDS: [&str; 21] = ["
+      },
+      {
+        "line": 55,
+        "text": "const MAX_LEN: usize = 100;"
+      },
+      {
+        "line": 63,
+        "text": "fn well_formed(raw: &str, initial: Initial) -> bool {"
+      },
+      {
+        "line": 68,
+        "text": "    first_ok && raw.len() <= MAX_LEN && raw.chars().all(|c| c.is_ascii_alphanumeric())"
+      },
+      {
+        "line": 71,
+        "text": "fn reserved(raw: &str) -> Option<&'static str> {"
+      },
+      {
+        "line": 79,
+        "text": "fn canonical(raw: &str, initial: Initial) -> Option<String> {"
+      },
+      {
+        "line": 87,
+        "text": "fn check("
+      },
+      {
+        "line": 97,
+        "text": "            codes::V07,"
+      },
+      {
+        "line": 104,
+        "text": "            codes::V07,"
+      },
+      {
+        "line": 111,
+        "text": "            codes::V07,"
+      },
+      {
+        "line": 128,
+        "text": "        #[serde(try_from = \"String\")]"
+      },
+      {
+        "line": 129,
+        "text": "        pub struct $name(String);"
+      },
+      {
+        "line": 132,
+        "text": "            pub fn as_str(&self) -> &str {"
+      },
+      {
+        "line": 138,
+        "text": "            type Error = String;"
+      },
+      {
+        "line": 140,
+        "text": "            fn try_from(value: String) -> Result<Self, String> {"
+      },
+      {
+        "line": 147,
+        "text": "            fn serialize<S: Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {"
+      },
+      {
+        "line": 153,
+        "text": "            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {"
+      },
+      {
+        "line": 159,
+        "text": "            fn borrow(&self) -> &str {"
+      },
+      {
+        "line": 165,
+        "text": "            fn schema_name() -> Cow<'static, str> {"
+      },
+      {
+        "line": 169,
+        "text": "            fn json_schema(_generator: &mut SchemaGenerator) -> Schema {"
+      },
+      {
+        "line": 218,
+        "text": "#[serde(try_from = \"String\")]"
+      },
+      {
+        "line": 219,
+        "text": "pub struct ProfileName(String);"
+      },
+      {
+        "line": 222,
+        "text": "    pub fn as_str(&self) -> &str {"
+      },
+      {
+        "line": 228,
+        "text": "    type Error = String;"
+      },
+      {
+        "line": 230,
+        "text": "    fn try_from(value: String) -> Result<Self, String> {"
+      },
+      {
+        "line": 249,
+        "text": "    fn serialize<S: Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {"
+      },
+      {
+        "line": 255,
+        "text": "    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {"
+      },
+      {
+        "line": 261,
+        "text": "    fn borrow(&self) -> &str {"
+      },
+      {
+        "line": 267,
+        "text": "    fn schema_name() -> Cow<'static, str> {"
+      },
+      {
+        "line": 271,
+        "text": "    fn json_schema(_generator: &mut SchemaGenerator) -> Schema {"
+      },
+      {
+        "line": 282,
+        "text": "    fn profile_name_rules() {"
+      },
+      {
+        "line": 310,
+        "text": "    fn profile_name_schema_has_pattern() {"
+      },
+      {
+        "line": 320,
+        "text": "    fn profile_name_deserializes_through_serde() {"
+      },
+      {
+        "line": 327,
+        "text": "    fn err(r: Result<ObjectTypeName, String>) -> crate::diag::CustomDeError {"
+      },
+      {
+        "line": 332,
+        "text": "    fn valid_names_are_accepted() {"
+      },
+      {
+        "line": 338,
+        "text": "    fn lowercase_object_type_gets_a_canonical_suggestion() {"
+      },
+      {
+        "line": 340,
+        "text": "        assert_eq!(e.code, \"ONT-V07\");"
+      },
+      {
+        "line": 345,
+        "text": "    fn separators_are_folded_into_camel_case() {"
+      },
+      {
+        "line": 351,
+        "text": "    fn help_of<T: TryFrom<String, Error = String>>(raw: &str) -> Option<String> {"
+      },
+      {
+        "line": 357,
+        "text": "    fn acronym_prefix_is_lowered_as_a_word() {"
+      },
+      {
+        "line": 369,
+        "text": "    fn non_ascii_names_get_no_misleading_suggestion() {"
+      },
+      {
+        "line": 375,
+        "text": "    fn unfixable_names_get_no_help() {"
+      },
+      {
+        "line": 385,
+        "text": "    fn reserved_words_match_case_insensitively() {"
+      },
+      {
+        "line": 394,
+        "text": "    fn length_is_capped_at_one_hundred() {"
+      },
+      {
+        "line": 400,
+        "text": "    fn schema_carries_the_pattern() {"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/loader/discover.rs",
+    "sha256": "331dd628af6ababf11c9bc5b398b2abbdb779b2fe37fbe8a5f314a675b6003fa",
+    "lines": [
+      {
+        "line": 14,
+        "text": "const DEFAULT_INCLUDE: [&str; 3] = [\"**/*.yaml\", \"**/*.yml\", \"**/*.json\"];\r"
+      },
+      {
+        "line": 20,
+        "text": "pub const BINDINGS_DIR: &str = \"bindings\";\r"
+      },
+      {
+        "line": 29,
+        "text": "pub fn is_json_file(name: &str) -> bool {\r"
+      },
+      {
+        "line": 36,
+        "text": "pub fn normalize(path: &str) -> String {\r"
+      },
+      {
+        "line": 40,
+        "text": "fn dir_is_skipped(name: &str) -> bool {\r"
+      },
+      {
+        "line": 47,
+        "text": "fn is_candidate(rel: &str) -> bool {\r"
+      },
+      {
+        "line": 60,
+        "text": "pub fn profile_dir(rel: &str) -> Option<&str> {\r"
+      },
+      {
+        "line": 74,
+        "text": "fn is_binding_fixture(rel: &str) -> bool {\r"
+      },
+      {
+        "line": 87,
+        "text": "pub fn fixture_path(binding_file: &str, fixture_file: &str) -> Result<String, String> {\r"
+      },
+      {
+        "line": 141,
+        "text": "/// V14 for a root file that is the manifest in other letter case: it is opened as\r"
+      },
+      {
+        "line": 143,
+        "text": "fn miscased_manifest(rel: &str) -> Option<Diagnostic> {\r"
+      },
+      {
+        "line": 146,
+        "text": "            codes::V14,\r"
+      },
+      {
+        "line": 147,
+        "text": "            Severity::Error,\r"
+      },
+      {
+        "line": 158,
+        "text": "pub fn walk(root: &Utf8Path) -> (Vec<String>, Vec<Diagnostic>) {\r"
+      },
+      {
+        "line": 160,
+        "text": "        .follow_links(false)\r"
+      },
+      {
+        "line": 179,
+        "text": "                        codes::V14,\r"
+      },
+      {
+        "line": 180,
+        "text": "                        Severity::Error,\r"
+      },
+      {
+        "line": 196,
+        "text": "                codes::V14,\r"
+      },
+      {
+        "line": 197,
+        "text": "                Severity::Error,\r"
+      },
+      {
+        "line": 208,
+        "text": "pub struct Selection {\r"
+      },
+      {
+        "line": 217,
+        "text": "pub fn select(\r"
+      },
+      {
+        "line": 225,
+        "text": "        || DEFAULT_INCLUDE.to_vec(),\r"
+      },
+      {
+        "line": 235,
+        "text": "            diagnostics.push(\r"
+      },
+      {
+        "line": 237,
+        "text": "                    codes::V14,\r"
+      },
+      {
+        "line": 249,
+        "text": "            Err(e) => diagnostics.push(Diagnostic::error(\r"
+      },
+      {
+        "line": 250,
+        "text": "                codes::V14,\r"
+      },
+      {
+        "line": 280,
+        "text": "        diagnostics.push(\r"
+      },
+      {
+        "line": 282,
+        "text": "                codes::V14,\r"
+      },
+      {
+        "line": 288,
+        "text": "                DEFAULT_INCLUDE.join(\", \")\r"
+      },
+      {
+        "line": 298,
+        "text": "pub fn select_scope(candidates: Vec<String>) -> Vec<String> {\r"
+      },
+      {
+        "line": 313,
+        "text": "fn escapes_root(pattern: &str) -> bool {\r"
+      },
+      {
+        "line": 324,
+        "text": "    fn json_extension_is_case_insensitive() {\r"
+      },
+      {
+        "line": 330,
+        "text": "    fn candidates_skip_manifest_lint_config_and_hidden_dirs() {\r"
+      },
+      {
+        "line": 343,
+        "text": "    fn scope_selection_takes_yaml_and_json_candidates() {\r"
+      },
+      {
+        "line": 362,
+        "text": "    fn fixture_path_rules() {\r"
+      },
+      {
+        "line": 408,
+        "text": "    fn profile_dir_is_the_second_segment_under_bindings() {\r"
+      },
+      {
+        "line": 418,
+        "text": "    fn only_binding_fixture_directories_are_excluded() {\r"
+      },
+      {
+        "line": 428,
+        "text": "    fn walk_lists_nested_files_and_prunes_dirs() {\r"
+      }
+    ]
+  },
+  {
+    "file": "Cargo.toml",
+    "sha256": "6ff37b0773c9cbf86f8738a11f008d32b41ac8e6153c5da37dafea0da33d4dd5",
+    "lines": []
+  },
+  {
+    "file": ".gitattributes",
+    "sha256": "66a217b6eaefd653b4e2d2fca5e61262849aa513f47a9ef9bf8b2e87362671f6",
+    "lines": []
+  },
+  {
+    "file": ".github/workflows/ci.yml",
+    "sha256": "b4a802a680e268303a5cdfa66f51f876f0b8128822ff364616c3fe7c3b7f77e8",
+    "lines": []
+  },
+  {
+    "file": "CONTRIBUTING.md",
+    "sha256": "28689b187772d8a5cf9baf59c121dfbd6fb83463d58c0db3be31a402115e91b5",
+    "lines": [
+      {
+        "line": 111,
+        "text": "- 目录名前缀决定期望的诊断码，例如 `v04-unknown-field` 期望 `ONT-V04`。"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/loader/parse.rs",
+    "sha256": "3a4db45c5a16eadf3c3e43cd4c12b8da088f727d18ba7a15ee3ac8cdc9fd89dd",
+    "lines": [
+      {
+        "line": 13,
+        "text": "use crate::diag::offset_to_line_col;"
+      },
+      {
+        "line": 16,
+        "text": "const MAX_DEPTH: usize = 32;"
+      },
+      {
+        "line": 19,
+        "text": "pub struct Node {"
+      },
+      {
+        "line": 25,
+        "text": "pub enum Kind {"
+      },
+      {
+        "line": 36,
+        "text": "    fn deserialize<D: Deserializer<'de>>(d: D) -> Result<Self, D::Error> {"
+      },
+      {
+        "line": 46,
+        "text": "    fn deserialize<D: Deserializer<'de>>(d: D) -> Result<Self, D::Error> {"
+      },
+      {
+        "line": 51,
+        "text": "            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {"
+      },
+      {
+        "line": 54,
+        "text": "            fn visit_unit<E>(self) -> Result<Kind, E> {"
+      },
+      {
+        "line": 57,
+        "text": "            fn visit_bool<E>(self, v: bool) -> Result<Kind, E> {"
+      },
+      {
+        "line": 60,
+        "text": "            fn visit_i64<E>(self, v: i64) -> Result<Kind, E> {"
+      },
+      {
+        "line": 63,
+        "text": "            fn visit_u64<E: de::Error>(self, v: u64) -> Result<Kind, E> {"
+      },
+      {
+        "line": 66,
+        "text": "            fn visit_f64<E>(self, v: f64) -> Result<Kind, E> {"
+      },
+      {
+        "line": 69,
+        "text": "            fn visit_str<E>(self, v: &str) -> Result<Kind, E> {"
+      },
+      {
+        "line": 72,
+        "text": "            fn visit_seq<A: SeqAccess<'de>>(self, mut a: A) -> Result<Kind, A::Error> {"
+      },
+      {
+        "line": 79,
+        "text": "            fn visit_map<A: MapAccess<'de>>(self, mut a: A) -> Result<Kind, A::Error> {"
+      },
+      {
+        "line": 93,
+        "text": "    pub fn to_value(&self) -> serde_json::Value {"
+      },
+      {
+        "line": 112,
+        "text": "    pub fn get(&self, key: &str) -> Option<(&Spanned<String>, &Node)> {"
+      },
+      {
+        "line": 125,
+        "text": "pub struct ParseError {"
+      },
+      {
+        "line": 133,
+        "text": "fn options() -> Options {"
+      },
+      {
+        "line": 136,
+        "text": "    o.duplicate_keys = DuplicateKeyPolicy::Error;"
+      },
+      {
+        "line": 137,
+        "text": "    o.merge_keys = MergeKeyPolicy::Error;"
+      },
+      {
+        "line": 141,
+        "text": "    budget.max_depth = MAX_DEPTH;"
+      },
+      {
+        "line": 149,
+        "text": "pub fn parse_documents(text: &str, json: bool) -> Result<Vec<Node>, ParseError> {"
+      },
+      {
+        "line": 157,
+        "text": "            ParseError {"
+      },
+      {
+        "line": 181,
+        "text": "fn precheck_json(text: &str) -> Result<(), ParseError> {"
+      },
+      {
+        "line": 188,
+        "text": "            ParseError {"
+      },
+      {
+        "line": 192,
+        "text": "                column: u64::from(offset_to_line_col(body, offset).1),"
+      },
+      {
+        "line": 200,
+        "text": "fn offset_of(text: &str, line: usize, column: usize) -> usize {"
+      },
+      {
+        "line": 216,
+        "text": "fn strip_position(first_line: &str) -> String {"
+      },
+      {
+        "line": 224,
+        "text": "fn budget_message(breach: &str) -> String {"
+      },
+      {
+        "line": 228,
+        "text": "        \"Depth\" => format!(\"document nests deeper than {MAX_DEPTH} levels\"),"
+      },
+      {
+        "line": 251,
+        "text": "fn json_message(raw: &str) -> String {"
+      },
+      {
+        "line": 260,
+        "text": "fn clean_message(raw: &str) -> String {"
+      },
+      {
+        "line": 281,
+        "text": "    fn multi_document_yaml_yields_one_node_each() {"
+      },
+      {
+        "line": 287,
+        "text": "    fn json_array_is_flattened() {"
+      },
+      {
+        "line": 293,
+        "text": "    fn json_trailing_comma_reports_line_and_offset() {"
+      },
+      {
+        "line": 300,
+        "text": "    fn yaml_1_1_booleans_stay_strings() {"
+      },
+      {
+        "line": 306,
+        "text": "    fn duplicate_keys_are_an_error_without_the_position_suffix() {"
+      },
+      {
+        "line": 313,
+        "text": "    fn depth_budget_message_names_the_limit() {"
+      },
+      {
+        "line": 328,
+        "text": "    fn only_the_trailing_position_is_stripped() {"
+      },
+      {
+        "line": 337,
+        "text": "    fn node_budget_message_is_readable() {"
+      },
+      {
+        "line": 352,
+        "text": "    fn null_key_message_has_no_rust_types() {"
+      },
+      {
+        "line": 359,
+        "text": "    fn nesting_beyond_the_budget_is_an_error() {"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/ir/object.rs",
+    "sha256": "12faf758624b52f42b9e2c408fd3335a0750c573c096077c1f9df6006c68d1b4",
+    "lines": [
+      {
+        "line": 13,
+        "text": "#[serde(deny_unknown_fields, rename_all = \"camelCase\")]"
+      },
+      {
+        "line": 14,
+        "text": "pub struct ObjectType {"
+      },
+      {
+        "line": 22,
+        "text": "    #[serde(default)]"
+      },
+      {
+        "line": 25,
+        "text": "    #[serde(default)]"
+      },
+      {
+        "line": 42,
+        "text": "    pub fn effective_title_key(&self) -> &PropertyName {"
+      },
+      {
+        "line": 49,
+        "text": "#[serde(deny_unknown_fields, rename_all = \"camelCase\")]"
+      },
+      {
+        "line": 50,
+        "text": "pub struct PropertyDef {"
+      },
+      {
+        "line": 52,
+        "text": "    #[serde(rename = \"type\")]"
+      },
+      {
+        "line": 55,
+        "text": "    #[serde(default)]"
+      },
+      {
+        "line": 72,
+        "text": "    #[serde(default)]"
+      },
+      {
+        "line": 77,
+        "text": "pub const DEFAULT_DECIMAL_PRECISION: u32 = 38;"
+      },
+      {
+        "line": 80,
+        "text": "pub const DEFAULT_DECIMAL_SCALE: u32 = 10;"
+      },
+      {
+        "line": 87,
+        "text": "    pub fn effective_decimal(&self) -> (u32, u32) {"
+      },
+      {
+        "line": 89,
+        "text": "            self.precision.unwrap_or(DEFAULT_DECIMAL_PRECISION),"
+      },
+      {
+        "line": 90,
+        "text": "            self.scale.unwrap_or(DEFAULT_DECIMAL_SCALE),"
+      },
+      {
+        "line": 99,
+        "text": "    fn decimal(precision: Option<u32>, scale: Option<u32>) -> PropertyDef {"
+      },
+      {
+        "line": 113,
+        "text": "    fn effective_decimal_defaults() {"
+      },
+      {
+        "line": 118,
+        "text": "        assert_eq!((DEFAULT_DECIMAL_PRECISION, DEFAULT_DECIMAL_SCALE), (38, 10));"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/ir/basetype.rs",
+    "sha256": "e2a3a66aa781b461bd46bedeecba3f472f390069d2b8176572702d88fb8ddf6c",
+    "lines": [
+      {
+        "line": 9,
+        "text": "#[serde(rename_all = \"camelCase\")]"
+      },
+      {
+        "line": 10,
+        "text": "pub enum BaseType {"
+      },
+      {
+        "line": 28,
+        "text": "    pub fn as_str(self) -> &'static str {"
+      },
+      {
+        "line": 49,
+        "text": "pub enum PkSuitability {"
+      },
+      {
+        "line": 54,
+        "text": "    /// Rejected by `validate` (`ONT-V10`)."
+      },
+      {
+        "line": 58,
+        "text": "/// Primary key suitability of `t`. Defined once; `validate` (V10) and lint (E09)"
+      },
+      {
+        "line": 60,
+        "text": "pub fn pk_suitability(t: BaseType) -> PkSuitability {"
+      },
+      {
+        "line": 78,
+        "text": "pub fn is_title_suitable(t: BaseType, items: Option<BaseType>) -> bool {"
+      },
+      {
+        "line": 88,
+        "text": "pub fn widens_to(from: BaseType, to: BaseType) -> bool {"
+      },
+      {
+        "line": 106,
+        "text": "pub fn check_literal(v: &Value, t: BaseType, items: Option<BaseType>) -> Result<(), String> {"
+      },
+      {
+        "line": 162,
+        "text": "fn describe(v: &Value) -> &'static str {"
+      },
+      {
+        "line": 173,
+        "text": "fn integer_in(v: &Value, name: &str, lo: i64, hi: i64) -> Result<(), String> {"
+      },
+      {
+        "line": 185,
+        "text": "fn is_decimal(s: &str) -> bool {"
+      },
+      {
+        "line": 192,
+        "text": "fn is_date(s: &str) -> bool {"
+      },
+      {
+        "line": 197,
+        "text": "fn geopoint(s: &str) -> Result<(), String> {"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/validate/objects.rs",
+    "sha256": "66794e6c3c9b700e1a5a7474d9bbd541cb54df51408556ff8fef84b63d5f8167",
+    "lines": [
+      {
+        "line": 13,
+        "text": "pub fn check(ontology: &Ontology, sources: &SourceMap, out: &mut Vec<Diagnostic>) {"
+      },
+      {
+        "line": 32,
+        "text": "fn suggest(d: Diagnostic, name: &PropertyName, object: &ObjectType) -> Diagnostic {"
+      },
+      {
+        "line": 40,
+        "text": "fn primary_key(object: &ObjectType, at: &At, out: &mut Vec<Diagnostic>) {"
+      },
+      {
+        "line": 44,
+        "text": "            codes::V10,"
+      },
+      {
+        "line": 51,
+        "text": "        out.push(suggest(d, pk, object));"
+      },
+      {
+        "line": 55,
+        "text": "        out.push("
+      },
+      {
+        "line": 57,
+        "text": "                codes::V10,"
+      },
+      {
+        "line": 65,
+        "text": "        out.push("
+      },
+      {
+        "line": 67,
+        "text": "                codes::V10,"
+      },
+      {
+        "line": 79,
+        "text": "fn title_key(object: &ObjectType, at: &At, out: &mut Vec<Diagnostic>) {"
+      },
+      {
+        "line": 87,
+        "text": "        codes::V10,"
+      },
+      {
+        "line": 94,
+        "text": "    out.push(suggest(d, title, object));"
+      },
+      {
+        "line": 97,
+        "text": "fn items(object: &ObjectType, at: &At, out: &mut Vec<Diagnostic>) {"
+      },
+      {
+        "line": 101,
+        "text": "            (BaseType::Array, None) => out.push("
+      },
+      {
+        "line": 103,
+        "text": "                    codes::V05,"
+      },
+      {
+        "line": 109,
+        "text": "            (t, Some(_)) if t != BaseType::Array => out.push("
+      },
+      {
+        "line": 111,
+        "text": "                    codes::V06,"
+      },
+      {
+        "line": 127,
+        "text": "fn decimal_arguments(object: &ObjectType, at: &At, out: &mut Vec<Diagnostic>) {"
+      },
+      {
+        "line": 140,
+        "text": "                out.push("
+      },
+      {
+        "line": 142,
+        "text": "                        codes::V06,"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/ir/link.rs",
+    "sha256": "4cc8501bb69d2e7d3f4c75b8c0c9e723ca4139ce4506f59d59a860a398aad7a8",
+    "lines": [
+      {
+        "line": 11,
+        "text": "#[serde(rename_all = \"camelCase\")]"
+      },
+      {
+        "line": 12,
+        "text": "pub enum Cardinality {"
+      },
+      {
+        "line": 31,
+        "text": "#[serde(deny_unknown_fields, rename_all = \"camelCase\")]"
+      },
+      {
+        "line": 32,
+        "text": "pub struct LinkType {"
+      },
+      {
+        "line": 53,
+        "text": "#[serde(deny_unknown_fields, rename_all = \"camelCase\")]"
+      },
+      {
+        "line": 54,
+        "text": "pub struct LinkEnd {"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/validate/links.rs",
+    "sha256": "6cf9f5c8ebb6688095db106e37ee8730f459c05471f5953e25ab3cf48c4f4511",
+    "lines": [
+      {
+        "line": 1,
+        "text": "//! Link type structural checks (hard errors): references (V09), cardinality and"
+      },
+      {
+        "line": 2,
+        "text": "//! foreign key consistency (V11), `backing` placement (V05, V11), and accessor"
+      },
+      {
+        "line": 3,
+        "text": "//! names on each object type (V08)."
+      },
+      {
+        "line": 5,
+        "text": "//! A link whose end types do not exist reports V09 and the `backing` check; the"
+      },
+      {
+        "line": 21,
+        "text": "pub fn check(ontology: &Ontology, sources: &SourceMap, out: &mut Vec<Diagnostic>) {"
+      },
+      {
+        "line": 44,
+        "text": "fn backing(link: &LinkType, at: &At, out: &mut Vec<Diagnostic>) {"
+      },
+      {
+        "line": 47,
+        "text": "        (Cardinality::ManyToMany, None) => out.push("
+      },
+      {
+        "line": 49,
+        "text": "                codes::V05,"
+      },
+      {
+        "line": 55,
+        "text": "        (Cardinality::OneToOne | Cardinality::OneToMany, Some(_)) => out.push("
+      },
+      {
+        "line": 57,
+        "text": "                codes::V11,"
+      },
+      {
+        "line": 72,
+        "text": "fn end_types<'a>("
+      },
+      {
+        "line": 88,
+        "text": "            codes::V09,"
+      },
+      {
+        "line": 96,
+        "text": "        out.push(match did_you_mean(end.object_type.as_str(), names) {"
+      },
+      {
+        "line": 107,
+        "text": "fn foreign_key("
+      },
+      {
+        "line": 118,
+        "text": "                out.push("
+      },
+      {
+        "line": 120,
+        "text": "                        codes::V11,"
+      },
+      {
+        "line": 132,
+        "text": "        out.push("
+      },
+      {
+        "line": 134,
+        "text": "                codes::V11,"
+      },
+      {
+        "line": 142,
+        "text": "        out.push("
+      },
+      {
+        "line": 144,
+        "text": "                codes::V11,"
+      },
+      {
+        "line": 161,
+        "text": "            codes::V09,"
+      },
+      {
+        "line": 166,
+        "text": "        out.push(match did_you_mean(fk.as_str(), names) {"
+      },
+      {
+        "line": 172,
+        "text": "    // A missing or malformed primary key is V10's job."
+      },
+      {
+        "line": 177,
+        "text": "        out.push("
+      },
+      {
+        "line": 179,
+        "text": "                codes::V11,"
+      },
+      {
+        "line": 194,
+        "text": "fn cardinality_name(c: Cardinality) -> &'static str {"
+      },
+      {
+        "line": 204,
+        "text": "fn end_names<'a>("
+      },
+      {
+        "line": 215,
+        "text": "            out.push("
+      },
+      {
+        "line": 217,
+        "text": "                    codes::V08,"
+      },
+      {
+        "line": 231,
+        "text": "                out.push("
+      },
+      {
+        "line": 233,
+        "text": "                        codes::V08,"
+      }
+    ]
+  },
+  {
+    "file": "examples/ontologies/aviation/links.yaml",
+    "sha256": "3196a91f1e97232b61a181e1d35756055fc1461fb968f34009b1d35265080239",
+    "lines": []
+  },
+  {
+    "file": "crates/ontoforge-schema/src/ir/action.rs",
+    "sha256": "e7304754dc24f6d757daa3611a8980e6efd439ceba4264a553efa8f9b5b1ec69",
+    "lines": [
+      {
+        "line": 15,
+        "text": "#[serde(deny_unknown_fields, rename_all = \"camelCase\")]"
+      },
+      {
+        "line": 16,
+        "text": "pub struct ActionType {"
+      },
+      {
+        "line": 24,
+        "text": "    #[serde(default)]"
+      },
+      {
+        "line": 30,
+        "text": "    #[serde(default)]"
+      },
+      {
+        "line": 36,
+        "text": "#[serde(deny_unknown_fields, rename_all = \"camelCase\")]"
+      },
+      {
+        "line": 37,
+        "text": "pub struct ParameterDef {"
+      },
+      {
+        "line": 39,
+        "text": "    #[serde(rename = \"type\")]"
+      },
+      {
+        "line": 44,
+        "text": "    #[serde(default)]"
+      },
+      {
+        "line": 57,
+        "text": "#[serde(rename_all = \"camelCase\")]"
+      },
+      {
+        "line": 58,
+        "text": "pub enum ParamType {"
+      },
+      {
+        "line": 78,
+        "text": "    pub fn base_type(&self) -> Option<BaseType> {"
+      },
+      {
+        "line": 103,
+        "text": "#[serde(rename_all = \"camelCase\")]"
+      },
+      {
+        "line": 104,
+        "text": "#[schemars(tag = \"kind\")]"
+      },
+      {
+        "line": 105,
+        "text": "pub enum Rule {"
+      },
+      {
+        "line": 121,
+        "text": "#[serde(deny_unknown_fields, rename_all = \"camelCase\")]"
+      },
+      {
+        "line": 122,
+        "text": "pub struct CreateObjectRule {"
+      },
+      {
+        "line": 130,
+        "text": "#[serde(deny_unknown_fields, rename_all = \"camelCase\")]"
+      },
+      {
+        "line": 131,
+        "text": "pub struct ModifyObjectRule {"
+      },
+      {
+        "line": 139,
+        "text": "#[serde(deny_unknown_fields, rename_all = \"camelCase\")]"
+      },
+      {
+        "line": 140,
+        "text": "pub struct DeleteObjectRule {"
+      },
+      {
+        "line": 146,
+        "text": "#[serde(deny_unknown_fields, rename_all = \"camelCase\")]"
+      },
+      {
+        "line": 147,
+        "text": "pub struct ReleaseObjectRule {"
+      },
+      {
+        "line": 154,
+        "text": "#[serde(deny_unknown_fields, rename_all = \"camelCase\")]"
+      },
+      {
+        "line": 155,
+        "text": "pub struct LinkRule {"
+      },
+      {
+        "line": 166,
+        "text": "#[serde(rename_all = \"camelCase\")]"
+      },
+      {
+        "line": 167,
+        "text": "pub enum ValueSource {"
+      },
+      {
+        "line": 180,
+        "text": "    pub fn key(&self) -> &'static str {"
+      },
+      {
+        "line": 192,
+        "text": "#[serde(deny_unknown_fields)]"
+      },
+      {
+        "line": 193,
+        "text": "pub struct Empty {}"
+      },
+      {
+        "line": 197,
+        "text": "#[serde(deny_unknown_fields, rename_all = \"camelCase\")]"
+      },
+      {
+        "line": 198,
+        "text": "pub struct SubmissionCriterion {"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/validate/actions.rs",
+    "sha256": "5be86e83fed3d2030b7a939958234fb7df728345515288bc9956b52dbfeaa04a",
+    "lines": [
+      {
+        "line": 1,
+        "text": "//! Action type structural checks (hard errors): references (V09) and parameter,"
+      },
+      {
+        "line": 2,
+        "text": "//! rule and value-source consistency (V12)."
+      },
+      {
+        "line": 25,
+        "text": "    fn at(&self, path: &[Seg], part: Part) -> SourceLocation {"
+      },
+      {
+        "line": 30,
+        "text": "    fn rule_at(&self, i: usize, rest: &[&str], part: Part) -> SourceLocation {"
+      },
+      {
+        "line": 37,
+        "text": "fn key(name: &str) -> Seg {"
+      },
+      {
+        "line": 41,
+        "text": "pub fn check(ontology: &Ontology, sources: &SourceMap, out: &mut Vec<Diagnostic>) {"
+      },
+      {
+        "line": 55,
+        "text": "            out.push("
+      },
+      {
+        "line": 57,
+        "text": "                    codes::V12,"
+      },
+      {
+        "line": 75,
+        "text": "                        out.push(Diagnostic::error("
+      },
+      {
+        "line": 76,
+        "text": "                            codes::V12,"
+      },
+      {
+        "line": 89,
+        "text": "fn suggest<'a>(d: Diagnostic, input: &str, names: impl IntoIterator<Item = &'a str>) -> Diagnostic {"
+      },
+      {
+        "line": 96,
+        "text": "fn type_name(t: BaseType, items: Option<BaseType>) -> String {"
+      },
+      {
+        "line": 103,
+        "text": "fn parameters(cx: &Cx, out: &mut Vec<Diagnostic>) {"
+      },
+      {
+        "line": 121,
+        "text": "                        codes::V09,"
+      },
+      {
+        "line": 126,
+        "text": "                    out.push(suggest(d, target.as_str(), names));"
+      },
+      {
+        "line": 129,
+        "text": "            (_, Some(BaseType::Array), None) => out.push("
+      },
+      {
+        "line": 131,
+        "text": "                    codes::V05,"
+      },
+      {
+        "line": 140,
+        "text": "            out.push("
+      },
+      {
+        "line": 142,
+        "text": "                    codes::V06,"
+      },
+      {
+        "line": 155,
+        "text": "            None => out.push("
+      },
+      {
+        "line": 157,
+        "text": "                    codes::V12,"
+      },
+      {
+        "line": 165,
+        "text": "                    out.push(Diagnostic::error("
+      },
+      {
+        "line": 166,
+        "text": "                        codes::V12,"
+      },
+      {
+        "line": 179,
+        "text": "fn criteria(cx: &Cx, out: &mut Vec<Diagnostic>) {"
+      },
+      {
+        "line": 190,
+        "text": "                out.push(Diagnostic::error("
+      },
+      {
+        "line": 191,
+        "text": "                    codes::V12,"
+      },
+      {
+        "line": 200,
+        "text": "fn create_object(cx: &Cx, i: usize, r: &CreateObjectRule, out: &mut Vec<Diagnostic>) {"
+      },
+      {
+        "line": 203,
+        "text": "            codes::V09,"
+      },
+      {
+        "line": 211,
+        "text": "        out.push(suggest(d, r.object_type.as_str(), names));"
+      },
+      {
+        "line": 223,
+        "text": "        out.push("
+      },
+      {
+        "line": 225,
+        "text": "                codes::V12,"
+      },
+      {
+        "line": 238,
+        "text": "fn modify_object(cx: &Cx, i: usize, r: &ModifyObjectRule, out: &mut Vec<Diagnostic>) {"
+      },
+      {
+        "line": 244,
+        "text": "            out.push("
+      },
+      {
+        "line": 246,
+        "text": "                    codes::V12,"
+      },
+      {
+        "line": 260,
+        "text": "fn link_rule(cx: &Cx, i: usize, r: &LinkRule, out: &mut Vec<Diagnostic>) {"
+      },
+      {
+        "line": 263,
+        "text": "            codes::V09,"
+      },
+      {
+        "line": 268,
+        "text": "        out.push(suggest(d, r.link.as_str(), names));"
+      },
+      {
+        "line": 277,
+        "text": "            out.push(Diagnostic::error("
+      },
+      {
+        "line": 278,
+        "text": "                codes::V12,"
+      },
+      {
+        "line": 290,
+        "text": "/// parameter (V09) or one that is not an object reference (V12)."
+      },
+      {
+        "line": 291,
+        "text": "fn object_param<'a>("
+      },
+      {
+        "line": 303,
+        "text": "fn reference_param<'a>("
+      },
+      {
+        "line": 313,
+        "text": "            codes::V09,"
+      },
+      {
+        "line": 318,
+        "text": "        out.push(suggest(d, name.as_str(), names));"
+      },
+      {
+        "line": 324,
+        "text": "    out.push("
+      },
+      {
+        "line": 326,
+        "text": "            codes::V12,"
+      },
+      {
+        "line": 335,
+        "text": "fn properties("
+      },
+      {
+        "line": 345,
+        "text": "                codes::V09,"
+      },
+      {
+        "line": 350,
+        "text": "            out.push(suggest(d, name.as_str(), names));"
+      },
+      {
+        "line": 357,
+        "text": "fn value_source("
+      },
+      {
+        "line": 371,
+        "text": "                    codes::V09,"
+      },
+      {
+        "line": 376,
+        "text": "                out.push(suggest(d, param.as_str(), names));"
+      },
+      {
+        "line": 380,
+        "text": "                out.push("
+      },
+      {
+        "line": 382,
+        "text": "                        codes::V12,"
+      },
+      {
+        "line": 393,
+        "text": "                out.push(Diagnostic::error("
+      },
+      {
+        "line": 394,
+        "text": "                    codes::V12,"
+      },
+      {
+        "line": 413,
+        "text": "                out.push(Diagnostic::error("
+      },
+      {
+        "line": 414,
+        "text": "                    codes::V12,"
+      },
+      {
+        "line": 423,
+        "text": "            out.push(Diagnostic::error("
+      },
+      {
+        "line": 424,
+        "text": "                codes::V12,"
+      },
+      {
+        "line": 430,
+        "text": "            out.push(Diagnostic::error("
+      },
+      {
+        "line": 431,
+        "text": "                codes::V12,"
+      },
+      {
+        "line": 442,
+        "text": "fn compatible(from: (BaseType, Option<BaseType>), to: (BaseType, Option<BaseType>)) -> bool {"
+      }
+    ]
+  },
+  {
+    "file": "examples/ontologies/aviation/actions.yaml",
+    "sha256": "61756c751a174f664fab9d7cb07822711682b14fec3131af47dac2acbeb3a980",
+    "lines": []
+  },
+  {
+    "file": "crates/ontoforge-expr/src/analyze.rs",
+    "sha256": "4c391ab7e58f967d937890e0d73ce588d90d1ca06be5b084a89653f40e6ef720",
+    "lines": [
+      {
+        "line": 5,
+        "text": "use crate::limits::{MAX_EXPR_CHARS, MAX_EXPR_NESTING, precheck};"
+      },
+      {
+        "line": 14,
+        "text": "pub enum ExprError {"
+      },
+      {
+        "line": 34,
+        "text": "impl fmt::Display for ExprError {"
+      },
+      {
+        "line": 35,
+        "text": "    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {"
+      },
+      {
+        "line": 39,
+        "text": "                \"expression has {chars} characters, the limit is {MAX_EXPR_CHARS}\""
+      },
+      {
+        "line": 43,
+        "text": "                \"expression nesting reaches {depth} levels, the limit is {MAX_EXPR_NESTING}\""
+      },
+      {
+        "line": 58,
+        "text": "impl std::error::Error for ExprError {}"
+      },
+      {
+        "line": 64,
+        "text": "/// AST safely. A panic in either becomes [`ExprError::Internal`]."
+      },
+      {
+        "line": 65,
+        "text": "pub fn analyze<R, F>(src: &str, f: F) -> Result<R, ExprError>"
+      },
+      {
+        "line": 73,
+        "text": "            .stack_size(ANALYZE_STACK_BYTES)"
+      },
+      {
+        "line": 74,
+        "text": "            .spawn_scoped(scope, || compile_and_run(src, f))"
+      },
+      {
+        "line": 75,
+        "text": "            .map_err(|_| ExprError::Internal)?"
+      },
+      {
+        "line": 77,
+        "text": "            .map_err(|_| ExprError::Internal)?"
+      },
+      {
+        "line": 81,
+        "text": "fn compile_and_run<R>(src: &str, f: impl FnOnce(&cel::Program) -> R) -> Result<R, ExprError> {"
+      },
+      {
+        "line": 85,
+        "text": "        // `OtherError(ParseError { .. })`, sometimes after follow-on errors such as"
+      },
+      {
+        "line": 93,
+        "text": "            Err(ExprError::ParserLimit)"
+      },
+      {
+        "line": 96,
+        "text": "            || ExprError::Syntax {"
+      },
+      {
+        "line": 101,
+        "text": "            |e| ExprError::Syntax {"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-expr/src/limits.rs",
+    "sha256": "609d19aa148ecb8052cbfaf840bdee4ebf182397fc9b82a320b014a0c856e43c",
+    "lines": [
+      {
+        "line": 10,
+        "text": "use crate::analyze::ExprError;"
+      },
+      {
+        "line": 13,
+        "text": "pub const MAX_EXPR_CHARS: usize = 4096;"
+      },
+      {
+        "line": 15,
+        "text": "pub const MAX_EXPR_NESTING: usize = 32;"
+      },
+      {
+        "line": 18,
+        "text": "pub fn precheck(src: &str) -> Result<(), ExprError> {"
+      },
+      {
+        "line": 20,
+        "text": "    if chars > MAX_EXPR_CHARS {"
+      },
+      {
+        "line": 21,
+        "text": "        return Err(ExprError::TooLong { chars });"
+      },
+      {
+        "line": 29,
+        "text": "                if depth > MAX_EXPR_NESTING {"
+      },
+      {
+        "line": 30,
+        "text": "                    return Err(ExprError::TooDeep { depth });"
+      },
+      {
+        "line": 60,
+        "text": "    fn new(src: &str) -> Self {"
+      },
+      {
+        "line": 69,
+        "text": "    fn peek(&self, ahead: usize) -> Option<char> {"
+      },
+      {
+        "line": 73,
+        "text": "    fn bump(&mut self) {"
+      },
+      {
+        "line": 85,
+        "text": "    fn bump_n(&mut self, n: usize) {"
+      },
+      {
+        "line": 91,
+        "text": "    fn syntax(line: usize, column: usize, message: &str) -> ExprError {"
+      },
+      {
+        "line": 92,
+        "text": "        ExprError::Syntax {"
+      },
+      {
+        "line": 101,
+        "text": "    fn identifier_or_prefixed_string(&mut self) -> Result<(), ExprError> {"
+      },
+      {
+        "line": 119,
+        "text": "    fn number(&mut self) {"
+      },
+      {
+        "line": 150,
+        "text": "    fn string(&mut self, raw: bool) -> Result<(), ExprError> {"
+      },
+      {
+        "line": 182,
+        "text": "    fn escape(&mut self) -> Result<(), ExprError> {"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-expr/src/walk.rs",
+    "sha256": "51ce9cb320cb774c848a7934219c464b494ca435a6f4a2f81140f6ff01c15111",
+    "lines": [
+      {
+        "line": 10,
+        "text": "use ontoforge_schema::diag::offset_to_line_col;"
+      },
+      {
+        "line": 15,
+        "text": "pub struct MemberPath {"
+      },
+      {
+        "line": 26,
+        "text": "fn step(e: &IdedExpr) -> Option<(Option<&str>, &IdedExpr)> {"
+      },
+      {
+        "line": 45,
+        "text": "pub fn member_paths(program: &cel::Program, src: &str) -> Vec<MemberPath> {"
+      },
+      {
+        "line": 58,
+        "text": "/// with a multi-byte literal), which is what `offset_to_line_col` takes."
+      },
+      {
+        "line": 59,
+        "text": "pub(crate) fn char_pos(src: &str, offset: usize) -> (usize, usize) {"
+      },
+      {
+        "line": 60,
+        "text": "    let (line, column) = offset_to_line_col(src, offset);"
+      },
+      {
+        "line": 73,
+        "text": "    fn pos(&self, ids: &[u64]) -> Option<(usize, usize)> {"
+      },
+      {
+        "line": 80,
+        "text": "    fn in_scope(&self, name: &str) -> bool {"
+      },
+      {
+        "line": 84,
+        "text": "    fn visit(&mut self, e: &'a IdedExpr) {"
+      },
+      {
+        "line": 90,
+        "text": "                    self.out.push(MemberPath {"
+      },
+      {
+        "line": 141,
+        "text": "    fn select(&mut self, outermost: &'a IdedExpr) {"
+      },
+      {
+        "line": 167,
+        "text": "                self.out.push(MemberPath {"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge/src/lint_cmd.rs",
+    "sha256": "26a8b3f981d54e8f1afef41060e3059de8b356d45c4d1fc59ee07b5e3b2d90a1",
+    "lines": [
+      {
+        "line": 7,
+        "text": "use ontoforge_schema::diag::{has_errors, sort_diagnostics};"
+      },
+      {
+        "line": 16,
+        "text": "/// Structural errors (`ONT-V*`) and configuration errors (`ONT-V15`) stop the run"
+      },
+      {
+        "line": 18,
+        "text": "pub fn lint(root: &Utf8Path, config: Option<&Utf8Path>, profile: Option<&str>) -> LoadOutput {"
+      },
+      {
+        "line": 20,
+        "text": "    if has_errors(&out.diagnostics) {"
+      },
+      {
+        "line": 27,
+        "text": "    let config_failed = has_errors(&config_diags);"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/e08.rs",
+    "sha256": "e3cca0376bde105b84e07dfbc9dd7de99aa2c2940b41479526e20064c9e9b8a6",
+    "lines": [
+      {
+        "line": 11,
+        "text": "//! (`kind: function` is `ONT-V03`), modifying before creating (`modifyObject` only"
+      },
+      {
+        "line": 13,
+        "text": "//! the primary key (`ONT-V12`)."
+      },
+      {
+        "line": 26,
+        "text": "    fn id(&self) -> &'static str {"
+      },
+      {
+        "line": 30,
+        "text": "    fn default_level(&self) -> Level {"
+      },
+      {
+        "line": 31,
+        "text": "        Level::Error"
+      },
+      {
+        "line": 34,
+        "text": "    fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {"
+      },
+      {
+        "line": 41,
+        "text": "fn key(name: &str) -> Seg {"
+      },
+      {
+        "line": 45,
+        "text": "fn check_action(cx: &LintCx<'_>, action: &ActionType, out: &mut Vec<Finding>) {"
+      },
+      {
+        "line": 89,
+        "text": "                out.push(finding("
+      },
+      {
+        "line": 105,
+        "text": "                    out.push(finding(i, \"object\", message, None));"
+      },
+      {
+        "line": 114,
+        "text": "                    out.push(finding(i, \"object\", message, None));"
+      },
+      {
+        "line": 121,
+        "text": "                    out.push(finding("
+      },
+      {
+        "line": 140,
+        "text": "                    out.push(finding(i, \"objectType\", message, None));"
+      },
+      {
+        "line": 150,
+        "text": "fn primary_key_source<'a>(cx: &LintCx<'_>, rule: &'a CreateObjectRule) -> Option<&'a ValueSource> {"
+      },
+      {
+        "line": 156,
+        "text": "fn duplicate_create("
+      },
+      {
+        "line": 318,
+        "text": "    fn run(actions: &str, config: Option<&str>) -> Vec<Diagnostic> {"
+      },
+      {
+        "line": 332,
+        "text": "    fn triggers() {"
+      },
+      {
+        "line": 338,
+        "text": "                .all(|d| d.code == \"ONT-E08\" && d.severity == Severity::Error)"
+      },
+      {
+        "line": 344,
+        "text": "    fn clean() {"
+      },
+      {
+        "line": 351,
+        "text": "    fn link_help_points_at_the_foreign_key() {"
+      },
+      {
+        "line": 361,
+        "text": "    fn config_off_disables_the_rule() {"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/e09.rs",
+    "sha256": "8a080c45ed6d1ae2a131750a6bd7bfb31e1fd1b16deec8dade3ade452d4b7c1b",
+    "lines": [
+      {
+        "line": 5,
+        "text": "//!   boolean, byte, long) is a warning. Invalid key types are `ONT-V10`, not here."
+      },
+      {
+        "line": 25,
+        "text": "    fn id(&self) -> &'static str {"
+      },
+      {
+        "line": 29,
+        "text": "    fn default_level(&self) -> Level {"
+      },
+      {
+        "line": 30,
+        "text": "        Level::Error"
+      },
+      {
+        "line": 33,
+        "text": "    fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {"
+      },
+      {
+        "line": 53,
+        "text": "                out.push(finding("
+      },
+      {
+        "line": 68,
+        "text": "                out.push(finding("
+      },
+      {
+        "line": 80,
+        "text": "                    out.push(finding("
+      },
+      {
+        "line": 95,
+        "text": "                    out.push(Finding {"
+      },
+      {
+        "line": 171,
+        "text": "    fn run(objects: &str, config: Option<&str>) -> Vec<Diagnostic> {"
+      },
+      {
+        "line": 180,
+        "text": "    fn triggers() {"
+      },
+      {
+        "line": 189,
+        "text": "                (20, Severity::Error)"
+      },
+      {
+        "line": 196,
+        "text": "    fn clean() {"
+      },
+      {
+        "line": 204,
+        "text": "    fn nested_array_parameter_is_an_error() {"
+      },
+      {
+        "line": 223,
+        "text": "        assert_eq!(d.severity, Severity::Error);"
+      },
+      {
+        "line": 230,
+        "text": "    fn e09_config_override_applies_to_all_findings() {"
+      },
+      {
+        "line": 233,
+        "text": "        assert!(found.iter().all(|d| d.severity == Severity::Error));"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/mod.rs",
+    "sha256": "e2b95df43d7f74c09fd4abf4e2b4e39d4bbc8a663c81a6d0cb8f8b95fcc60980",
+    "lines": [
+      {
+        "line": 26,
+        "text": "pub enum Level {"
+      },
+      {
+        "line": 30,
+        "text": "    Error,"
+      },
+      {
+        "line": 35,
+        "text": "    pub const NAMES: [&'static str; 4] = [\"off\", \"info\", \"warn\", \"error\"];"
+      },
+      {
+        "line": 37,
+        "text": "    pub fn parse(s: &str) -> Option<Self> {"
+      },
+      {
+        "line": 42,
+        "text": "            \"error\" => Some(Self::Error),"
+      },
+      {
+        "line": 48,
+        "text": "    pub fn severity(self) -> Option<Severity> {"
+      },
+      {
+        "line": 53,
+        "text": "            Self::Error => Some(Severity::Error),"
+      },
+      {
+        "line": 60,
+        "text": "pub struct Finding {"
+      },
+      {
+        "line": 72,
+        "text": "pub struct LintCx<'a> {"
+      },
+      {
+        "line": 82,
+        "text": "    pub fn option_usize(&self, key: &str, default: usize) -> usize {"
+      },
+      {
+        "line": 91,
+        "text": "    pub fn option_f64(&self, key: &str, default: f64) -> f64 {"
+      },
+      {
+        "line": 100,
+        "text": "    pub fn option_str_list(&self, key: &str, default: &[&str]) -> Vec<String> {"
+      },
+      {
+        "line": 110,
+        "text": "/// `ONT-V15` (WR-05), so a rule never silently falls back to its default."
+      },
+      {
+        "line": 112,
+        "text": "pub enum OptionKind {"
+      },
+      {
+        "line": 122,
+        "text": "    pub fn accepts(self, value: &OptionValue) -> bool {"
+      },
+      {
+        "line": 132,
+        "text": "    pub fn describe(self) -> &'static str {"
+      },
+      {
+        "line": 144,
+        "text": "    fn id(&self) -> &'static str;"
+      },
+      {
+        "line": 145,
+        "text": "    fn default_level(&self) -> Level;"
+      },
+      {
+        "line": 147,
+        "text": "    fn option_keys(&self) -> &'static [(&'static str, OptionKind)] {"
+      },
+      {
+        "line": 150,
+        "text": "    fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>);"
+      },
+      {
+        "line": 156,
+        "text": "pub const KNOWN_RULE_IDS: [&str; 18] = ["
+      },
+      {
+        "line": 164,
+        "text": "pub fn registry() -> Vec<&'static dyn LintRule> {"
+      },
+      {
+        "line": 173,
+        "text": "pub fn run(ontology: &Ontology, sources: &SourceMap, config: &LintConfig) -> Vec<Diagnostic> {"
+      },
+      {
+        "line": 177,
+        "text": "fn run_rules("
+      },
+      {
+        "line": 208,
+        "text": "            out.push(d);"
+      },
+      {
+        "line": 218,
+        "text": "pub(crate) fn lint_rule_on("
+      },
+      {
+        "line": 225,
+        "text": "        !crate::diag::has_errors(&out.diagnostics),"
+      },
+      {
+        "line": 258,
+        "text": "        fn id(&self) -> &'static str {"
+      },
+      {
+        "line": 261,
+        "text": "        fn default_level(&self) -> Level {"
+      },
+      {
+        "line": 264,
+        "text": "        fn option_keys(&self) -> &'static [(&'static str, OptionKind)] {"
+      },
+      {
+        "line": 267,
+        "text": "        fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {"
+      },
+      {
+        "line": 269,
+        "text": "                out.push(Finding {"
+      },
+      {
+        "line": 287,
+        "text": "    fn loaded() -> crate::LoadOutput {"
+      },
+      {
+        "line": 293,
+        "text": "    fn run_probe(probe: &Probe, toml: &str) -> Vec<Diagnostic> {"
+      },
+      {
+        "line": 301,
+        "text": "    fn probe(default: Level, own: Option<Severity>) -> Probe {"
+      },
+      {
+        "line": 306,
+        "text": "    fn level_resolution() {"
+      },
+      {
+        "line": 308,
+        "text": "        let d = run_probe(&probe(Level::Warn, Some(Severity::Error)), \"\");"
+      },
+      {
+        "line": 312,
+        "text": "            (\"ONT-W01\", Severity::Error)"
+      },
+      {
+        "line": 316,
+        "text": "        let d = run_probe(&probe(Level::Error, None), \"\");"
+      },
+      {
+        "line": 317,
+        "text": "        assert_eq!(d[0].severity, Severity::Error);"
+      },
+      {
+        "line": 320,
+        "text": "        let own = Some(Severity::Error);"
+      },
+      {
+        "line": 334,
+        "text": "    fn findings_are_located_in_the_source() {"
+      },
+      {
+        "line": 346,
+        "text": "    fn rule_options_reach_the_rule() {"
+      },
+      {
+        "line": 367,
+        "text": "    fn lint_rule_on_panics_for_an_unregistered_rule() {"
+      },
+      {
+        "line": 376,
+        "text": "    fn registry_ids_are_known_and_unique() {"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/config.rs",
+    "sha256": "6fed4edd5c63f6534730e36671265a88051cf64bed88d69bb14089823122ccc7",
+    "lines": [
+      {
+        "line": 14,
+        "text": "//! Anything unrecognized is `ONT-V15`, so a typo never silently disables nothing."
+      },
+      {
+        "line": 16,
+        "text": "//! Positions come from `toml::Spanned`: the file is read into a `toml::de::DeTable`"
+      },
+      {
+        "line": 24,
+        "text": "use toml::de::{DeString, DeTable, DeValue};"
+      },
+      {
+        "line": 27,
+        "text": "use crate::diag::{Diagnostic, Severity, SourceLocation, codes, did_you_mean, offset_to_line_col};"
+      },
+      {
+        "line": 28,
+        "text": "use crate::loader::{MAX_FILE_BYTES, ReadFailure, SourceMap, read_limited, too_large};"
+      },
+      {
+        "line": 31,
+        "text": "pub const CONFIG_FILE: &str = \"ontoforge.toml\";"
+      },
+      {
+        "line": 35,
+        "text": "pub enum OptionValue {"
+      },
+      {
+        "line": 44,
+        "text": "pub struct LintConfig {"
+      },
+      {
+        "line": 51,
+        "text": "    pub fn level(&self, rule_id: &str) -> Option<Level> {"
+      },
+      {
+        "line": 56,
+        "text": "    pub fn options(&self, rule_id: &str) -> Option<&HashMap<String, OptionValue>> {"
+      },
+      {
+        "line": 69,
+        "text": "pub fn parse_config("
+      },
+      {
+        "line": 81,
+        "text": "    match DeTable::parse(text) {"
+      },
+      {
+        "line": 111,
+        "text": "fn zero_padded(id: &str) -> Option<&'static str> {"
+      },
+      {
+        "line": 121,
+        "text": "fn levels_help() -> String {"
+      },
+      {
+        "line": 127,
+        "text": "    fn at(&self, span: &Range<usize>) -> SourceLocation {"
+      },
+      {
+        "line": 129,
+        "text": "        let (line, column) = offset_to_line_col(self.text, start);"
+      },
+      {
+        "line": 140,
+        "text": "    fn problem(&mut self, span: Range<usize>, message: impl Into<String>, help: Option<String>) {"
+      },
+      {
+        "line": 141,
+        "text": "        let mut d = Diagnostic::error(codes::V15, message, &self.at(&span));"
+      },
+      {
+        "line": 147,
+        "text": "    fn id_problem(&mut self, key: &Key<'_>, extra: &[&str]) -> bool {"
+      },
+      {
+        "line": 174,
+        "text": "    fn lint(&mut self, value: Value<'_>) {"
+      },
+      {
+        "line": 193,
+        "text": "    fn level(&mut self, id: &str, value: &Value<'_>) {"
+      },
+      {
+        "line": 213,
+        "text": "    fn options(&mut self, value: Value<'_>) {"
+      },
+      {
+        "line": 287,
+        "text": "fn option_value(value: &Value<'_>) -> Result<OptionValue, Range<usize>> {"
+      },
+      {
+        "line": 317,
+        "text": "pub fn load_config("
+      },
+      {
+        "line": 328,
+        "text": "        let d = Diagnostic::without_location(codes::V15, Severity::Error, message, name.clone());"
+      },
+      {
+        "line": 333,
+        "text": "    let bytes = match read_limited(path.as_std_path(), required, MAX_FILE_BYTES) {"
+      },
+      {
+        "line": 335,
+        "text": "        Err(ReadFailure::Io(std::io::ErrorKind::NotFound)) if !required => {"
+      },
+      {
+        "line": 338,
+        "text": "        Err(ReadFailure::Io(std::io::ErrorKind::NotFound)) => {"
+      },
+      {
+        "line": 370,
+        "text": "        fn id(&self) -> &'static str {"
+      },
+      {
+        "line": 373,
+        "text": "        fn default_level(&self) -> Level {"
+      },
+      {
+        "line": 376,
+        "text": "        fn option_keys(&self) -> &'static [(&'static str, OptionKind)] {"
+      },
+      {
+        "line": 379,
+        "text": "        fn check(&self, _: &LintCx<'_>, _: &mut Vec<Finding>) {}"
+      },
+      {
+        "line": 403,
+        "text": "    fn rules() -> Vec<&'static dyn LintRule> {"
+      },
+      {
+        "line": 407,
+        "text": "    fn parse(text: &str) -> (LintConfig, Vec<Diagnostic>) {"
+      },
+      {
+        "line": 411,
+        "text": "    /// The single V15 diagnostic of `text`, with the text it points at."
+      },
+      {
+        "line": 412,
+        "text": "    fn one_problem(text: &str) -> (Diagnostic, String) {"
+      },
+      {
+        "line": 416,
+        "text": "        assert_eq!(d.code, codes::V15);"
+      },
+      {
+        "line": 417,
+        "text": "        assert_eq!(d.severity, Severity::Error);"
+      },
+      {
+        "line": 424,
+        "text": "    fn config_levels_parse() {"
+      },
+      {
+        "line": 433,
+        "text": "    fn config_options_parse() {"
+      },
+      {
+        "line": 448,
+        "text": "    fn empty_and_lint_only_files_are_fine() {"
+      },
+      {
+        "line": 454,
+        "text": "    fn unknown_lint_rule_id_is_error() {"
+      },
+      {
+        "line": 464,
+        "text": "    fn validate_codes_cannot_be_configured() {"
+      },
+      {
+        "line": 465,
+        "text": "        let (d, at) = one_problem(\"[lint]\\n\\\"ONT-V04\\\" = \\\"off\\\"\\n\");"
+      },
+      {
+        "line": 466,
+        "text": "        assert_eq!(at, \"\\\"ONT-V04\\\"\");"
+      },
+      {
+        "line": 472,
+        "text": "    fn invalid_level_is_error() {"
+      },
+      {
+        "line": 485,
+        "text": "    fn unknown_section_is_error() {"
+      },
+      {
+        "line": 493,
+        "text": "    fn unknown_key_in_lint_section_is_error() {"
+      },
+      {
+        "line": 499,
+        "text": "    fn undeclared_option_is_error() {"
+      },
+      {
+        "line": 510,
+        "text": "    fn option_for_unknown_rule_or_with_bad_value_is_error() {"
+      },
+      {
+        "line": 523,
+        "text": "    fn option_of_the_wrong_kind_is_error() {"
+      },
+      {
+        "line": 545,
+        "text": "    fn datetime_and_out_of_range_integers_are_unsupported_values() {"
+      },
+      {
+        "line": 554,
+        "text": "    fn lint_must_be_a_table() {"
+      },
+      {
+        "line": 560,
+        "text": "    fn toml_syntax_error_is_v15_at_its_span() {"
+      },
+      {
+        "line": 566,
+        "text": "    fn every_problem_is_reported() {"
+      },
+      {
+        "line": 572,
+        "text": "    fn missing_config_file_uses_defaults() {"
+      },
+      {
+        "line": 582,
+        "text": "    fn root_file_is_read_and_registered() {"
+      },
+      {
+        "line": 599,
+        "text": "    fn override_path_replaces_the_root_file() {"
+      },
+      {
+        "line": 617,
+        "text": "    fn root_config_that_is_not_a_file_is_error() {"
+      },
+      {
+        "line": 624,
+        "text": "        assert_eq!(diags[0].code, codes::V15);"
+      },
+      {
+        "line": 630,
+        "text": "    fn symlinked_root_config_is_not_followed() {"
+      },
+      {
+        "line": 653,
+        "text": "    fn missing_override_path_is_error() {"
+      },
+      {
+        "line": 663,
+        "text": "        assert_eq!(diags[0].code, codes::V15);"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge/src/cli.rs",
+    "sha256": "3d046c054134c1e7e2fdc27714e045d127ba76f283e3f462080c2f27478e3fdd",
+    "lines": [
+      {
+        "line": 15,
+        "text": "pub struct Cli {"
+      },
+      {
+        "line": 21,
+        "text": "pub enum Command {"
+      },
+      {
+        "line": 48,
+        "text": "pub struct McpArgs {"
+      },
+      {
+        "line": 58,
+        "text": "pub struct WebhookWorkerArgs {"
+      },
+      {
+        "line": 65,
+        "text": "pub struct ServeArgs {"
+      },
+      {
+        "line": 108,
+        "text": "    fn from_arg_matches(matches: &clap::ArgMatches) -> Result<Self, clap::Error> {"
+      },
+      {
+        "line": 111,
+        "text": "            return Err(clap::Error::raw("
+      },
+      {
+        "line": 112,
+        "text": "                clap::error::ErrorKind::MissingRequiredArgument,"
+      },
+      {
+        "line": 117,
+        "text": "            return Err(clap::Error::raw("
+      },
+      {
+        "line": 118,
+        "text": "                clap::error::ErrorKind::ArgumentConflict,"
+      },
+      {
+        "line": 150,
+        "text": "    fn update_from_arg_matches(&mut self, matches: &clap::ArgMatches) -> Result<(), clap::Error> {"
+      },
+      {
+        "line": 157,
+        "text": "    fn augment_args(cmd: clap::Command) -> clap::Command {"
+      },
+      {
+        "line": 161,
+        "text": "    fn augment_args_for_update(cmd: clap::Command) -> clap::Command {"
+      },
+      {
+        "line": 166,
+        "text": "pub(crate) fn mcp_defaults() -> ontoforge_engine::printer::l2::McpDefaults {"
+      },
+      {
+        "line": 176,
+        "text": "pub(crate) fn dev_options() -> DevCliOptions {"
+      },
+      {
+        "line": 185,
+        "text": "pub struct SchemaArgs {"
+      },
+      {
+        "line": 191,
+        "text": "pub enum SchemaCommand {"
+      },
+      {
+        "line": 201,
+        "text": "pub struct LintArgs {"
+      },
+      {
+        "line": 214,
+        "text": "pub struct ValidateArgs {"
+      },
+      {
+        "line": 245,
+        "text": "pub struct ReloadArgs {"
+      },
+      {
+        "line": 262,
+        "text": "pub struct MigrateArgs {"
+      },
+      {
+        "line": 298,
+        "text": "pub struct ScopeArgs {"
+      },
+      {
+        "line": 304,
+        "text": "pub enum ScopeCommand {"
+      },
+      {
+        "line": 313,
+        "text": "pub struct ScopeSourceArgs {"
+      },
+      {
+        "line": 329,
+        "text": "pub struct ScopePlanArgs {"
+      },
+      {
+        "line": 335,
+        "text": "pub struct ScopeApplyArgs {"
+      },
+      {
+        "line": 346,
+        "text": "pub enum OnExistingArg {"
+      },
+      {
+        "line": 348,
+        "text": "    Error,"
+      },
+      {
+        "line": 357,
+        "text": "pub struct ImportArgs {"
+      },
+      {
+        "line": 373,
+        "text": "    #[arg(long, value_enum, default_value_t = OnExistingArg::Error)]"
+      },
+      {
+        "line": 398,
+        "text": "pub struct DevTokenArgs {"
+      },
+      {
+        "line": 422,
+        "text": "pub struct ProfileArgs {"
+      },
+      {
+        "line": 430,
+        "text": "pub struct OutputArgs {"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/schema_export.rs",
+    "sha256": "044762e6ff5ae3b9a5ae2ff18796bc73ccb050fa8a30b99a62fb81b780a75d78",
+    "lines": [
+      {
+        "line": 15,
+        "text": "#[serde(untagged)]"
+      },
+      {
+        "line": 25,
+        "text": "#[serde(untagged)]"
+      },
+      {
+        "line": 32,
+        "text": "fn with_header(mut schema: Value, title: &str, description: &str) -> Value {"
+      },
+      {
+        "line": 43,
+        "text": "fn describe_def(schema: &mut Value, name: &str, description: &str) {"
+      },
+      {
+        "line": 53,
+        "text": "pub fn definition_schema() -> Value {"
+      },
+      {
+        "line": 74,
+        "text": "pub fn manifest_schema() -> Value {"
+      },
+      {
+        "line": 83,
+        "text": "pub fn scope_schema() -> Value {"
+      },
+      {
+        "line": 99,
+        "text": "pub fn rendered_schemas() -> Vec<(&'static str, String)> {"
+      }
+    ]
+  },
+  {
+    "file": "examples/ontologies/aviation/objects.yaml",
+    "sha256": "80dcfe86d5657a8c38a717e91c581cf8111692d726dbcad8a99096c73815877d",
+    "lines": []
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/naming/w01.rs",
+    "sha256": "a058389bc76eca9a4a49ff550b0f7ed83ed21b22e20910dd0d68abc945521e3e",
+    "lines": [
+      {
+        "line": 33,
+        "text": "    fn id(&self) -> &'static str {"
+      },
+      {
+        "line": 37,
+        "text": "    fn default_level(&self) -> Level {"
+      },
+      {
+        "line": 41,
+        "text": "    fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {"
+      },
+      {
+        "line": 47,
+        "text": "                out.push(type_finding("
+      },
+      {
+        "line": 55,
+        "text": "                out.push(type_finding("
+      },
+      {
+        "line": 66,
+        "text": "fn singular_of(name: &str, last: Option<&String>) -> Option<String> {"
+      },
+      {
+        "line": 90,
+        "text": "    fn triggers() {"
+      },
+      {
+        "line": 109,
+        "text": "    fn clean() {"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/naming/w02.rs",
+    "sha256": "dbfe4b8fdd1bda112a64f6937769cd5fcd20d180a3d1ac56ff5a0c5c33715934",
+    "lines": [
+      {
+        "line": 20,
+        "text": "    fn id(&self) -> &'static str {"
+      },
+      {
+        "line": 24,
+        "text": "    fn default_level(&self) -> Level {"
+      },
+      {
+        "line": 28,
+        "text": "    fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {"
+      },
+      {
+        "line": 46,
+        "text": "                out.push(property_finding("
+      },
+      {
+        "line": 65,
+        "text": "fn capitalized(word: &str) -> String {"
+      },
+      {
+        "line": 78,
+        "text": "    fn triggers() {"
+      },
+      {
+        "line": 94,
+        "text": "    fn clean() {"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/naming/w03.rs",
+    "sha256": "b535f1630043fd3ed1871ad175ff287a67e75f518e829180dfa94d5532f8bb47",
+    "lines": [
+      {
+        "line": 11,
+        "text": "//! branches of the original table are covered by `ONT-V07` and are not repeated."
+      },
+      {
+        "line": 30,
+        "text": "    fn id(&self) -> &'static str {"
+      },
+      {
+        "line": 34,
+        "text": "    fn default_level(&self) -> Level {"
+      },
+      {
+        "line": 38,
+        "text": "    fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {"
+      },
+      {
+        "line": 42,
+        "text": "                    out.push(property_finding("
+      },
+      {
+        "line": 65,
+        "text": "    fn triggers() {"
+      },
+      {
+        "line": 86,
+        "text": "    fn clean() {"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/naming/w04.rs",
+    "sha256": "44302d3d252c83e5e15e08872de4a81c57732fe22b234d3fe70c3da16f6716b5",
+    "lines": [
+      {
+        "line": 26,
+        "text": "    fn describe(self) -> &'static str {"
+      },
+      {
+        "line": 34,
+        "text": "fn style_of(name: &str) -> Option<Style> {"
+      },
+      {
+        "line": 56,
+        "text": "    fn id(&self) -> &'static str {"
+      },
+      {
+        "line": 60,
+        "text": "    fn default_level(&self) -> Level {"
+      },
+      {
+        "line": 64,
+        "text": "    fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {"
+      },
+      {
+        "line": 87,
+        "text": "            out.push(property_finding("
+      },
+      {
+        "line": 110,
+        "text": "    fn triggers() {"
+      },
+      {
+        "line": 131,
+        "text": "    fn equal_counts_report_the_b_style() {"
+      },
+      {
+        "line": 141,
+        "text": "    fn clean() {"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/naming/w05.rs",
+    "sha256": "f3172f386bb036bcd440eea8b1ca7f67b7f8fa8b2bd65d9b6f89c96cd5232a0e",
+    "lines": [
+      {
+        "line": 5,
+        "text": "//! `internal record id`. The leading underscore variant is covered by `ONT-V07`."
+      },
+      {
+        "line": 30,
+        "text": "    fn id(&self) -> &'static str {"
+      },
+      {
+        "line": 34,
+        "text": "    fn default_level(&self) -> Level {"
+      },
+      {
+        "line": 38,
+        "text": "    fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {"
+      },
+      {
+        "line": 46,
+        "text": "                    out.push(property_finding("
+      },
+      {
+        "line": 69,
+        "text": "    fn triggers() {"
+      },
+      {
+        "line": 96,
+        "text": "    fn clean() {"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/naming/mod.rs",
+    "sha256": "f05ee5b6340eadce0dd7a34d18bd5840df2552874bc1e2d973c2f05f4cedd969",
+    "lines": [
+      {
+        "line": 16,
+        "text": "pub(super) fn rules() -> Vec<&'static dyn LintRule> {"
+      },
+      {
+        "line": 22,
+        "text": "fn off_hint(rule_id: &str) -> String {"
+      },
+      {
+        "line": 29,
+        "text": "fn type_finding(object: &ObjectType, message: String, help: String) -> Finding {"
+      },
+      {
+        "line": 41,
+        "text": "fn property_finding(object: &ObjectType, property: &str, message: String, help: String) -> Finding {"
+      },
+      {
+        "line": 55,
+        "text": "fn def_key(object: &ObjectType) -> DefKey {"
+      },
+      {
+        "line": 63,
+        "text": "fn last_word(name: &str) -> Option<String> {"
+      },
+      {
+        "line": 77,
+        "text": "    pub fn objects(specs: &[(&str, &[(&str, &str)])]) -> String {"
+      },
+      {
+        "line": 100,
+        "text": "    pub fn run(rule_id: &str, objects: &str) -> Vec<Diagnostic> {"
+      },
+      {
+        "line": 109,
+        "text": "    pub fn flagged<'a>(objects: &'a str, found: &[Diagnostic]) -> Vec<&'a str> {"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/structure/w06.rs",
+    "sha256": "62dff4a55bb05257021c8008b463298eddc2c970d60424bad04ae2f45c9671b2",
+    "lines": [
+      {
+        "line": 16,
+        "text": "const DEFAULT_MAX_PROPERTIES: usize = 60;"
+      },
+      {
+        "line": 23,
+        "text": "    fn id(&self) -> &'static str {"
+      },
+      {
+        "line": 27,
+        "text": "    fn default_level(&self) -> Level {"
+      },
+      {
+        "line": 31,
+        "text": "    fn option_keys(&self) -> &'static [(&'static str, OptionKind)] {"
+      },
+      {
+        "line": 35,
+        "text": "    fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {"
+      },
+      {
+        "line": 36,
+        "text": "        let max = cx.option_usize(\"max_properties\", DEFAULT_MAX_PROPERTIES);"
+      },
+      {
+        "line": 40,
+        "text": "                out.push(type_finding("
+      },
+      {
+        "line": 59,
+        "text": "                    out.push(type_finding("
+      },
+      {
+        "line": 82,
+        "text": "    fn wide(name: &str, total: usize, extra: &[(&str, &str)]) -> String {"
+      },
+      {
+        "line": 92,
+        "text": "    fn triggers() {"
+      },
+      {
+        "line": 108,
+        "text": "    fn clean() {"
+      },
+      {
+        "line": 120,
+        "text": "    fn max_properties_option_applies() {"
+      },
+      {
+        "line": 130,
+        "text": "    fn unknown_option_key_is_rejected() {"
+      },
+      {
+        "line": 138,
+        "text": "        assert_eq!(diags[0].code, \"ONT-V15\");"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/structure/w07.rs",
+    "sha256": "3b8a0be43ac1e36cd146848be069f43426c6f91656663d5592f46a28de3ecab1",
+    "lines": [
+      {
+        "line": 27,
+        "text": "const DEFAULT_PREFIXES: [&str; 4] = [\"hr\", \"sales\", \"billing\", \"crm\"];"
+      },
+      {
+        "line": 30,
+        "text": "const MIN_SIMILARITY: f64 = 0.6;"
+      },
+      {
+        "line": 32,
+        "text": "const MIN_PROPERTIES: usize = 4;"
+      },
+      {
+        "line": 39,
+        "text": "    fn id(&self) -> &'static str {"
+      },
+      {
+        "line": 43,
+        "text": "    fn default_level(&self) -> Level {"
+      },
+      {
+        "line": 47,
+        "text": "    fn option_keys(&self) -> &'static [(&'static str, OptionKind)] {"
+      },
+      {
+        "line": 51,
+        "text": "    fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {"
+      },
+      {
+        "line": 52,
+        "text": "        let prefixes = cx.option_str_list(\"silo_prefixes\", &DEFAULT_PREFIXES);"
+      },
+      {
+        "line": 58,
+        "text": "                out.push(type_finding("
+      },
+      {
+        "line": 76,
+        "text": "const MAX_LISTED: usize = 20;"
+      },
+      {
+        "line": 81,
+        "text": "fn similar_pairs(cx: &LintCx<'_>, rule_id: &str, out: &mut Vec<Finding>) {"
+      },
+      {
+        "line": 88,
+        "text": "        if object.properties.len() < MIN_PROPERTIES {"
+      },
+      {
+        "line": 109,
+        "text": "                if similarity >= MIN_SIMILARITY {"
+      },
+      {
+        "line": 122,
+        "text": "                .take(MAX_LISTED)"
+      },
+      {
+        "line": 131,
+        "text": "                if indices.len() > MAX_LISTED {"
+      },
+      {
+        "line": 132,
+        "text": "                    names.push(format!(\"{} more\", indices.len() - MAX_LISTED));"
+      },
+      {
+        "line": 140,
+        "text": "            out.push(type_finding("
+      },
+      {
+        "line": 159,
+        "text": "    fn new(len: usize) -> Self {"
+      },
+      {
+        "line": 166,
+        "text": "    fn root(&mut self, mut i: usize) -> usize {"
+      },
+      {
+        "line": 174,
+        "text": "    fn join(&mut self, a: usize, b: usize, similarity: f64) {"
+      },
+      {
+        "line": 183,
+        "text": "    fn into_groups(mut self) -> Vec<(Vec<usize>, f64)> {"
+      },
+      {
+        "line": 209,
+        "text": "    fn triggers() {"
+      },
+      {
+        "line": 239,
+        "text": "    fn clean() {"
+      },
+      {
+        "line": 274,
+        "text": "    fn many_similar_types_are_reported_once() {"
+      },
+      {
+        "line": 298,
+        "text": "    fn a_cluster_lists_every_member() {"
+      },
+      {
+        "line": 313,
+        "text": "    fn silo_prefixes_option_applies() {"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/structure/w08.rs",
+    "sha256": "6be7a8cb45c5512c22f402e94b7cbe4660aea6eb09a325a12c967d6093087707",
+    "lines": [
+      {
+        "line": 14,
+        "text": "//! [`MAX_COMBINATIONS`] combinations the rule reports that it did not run instead."
+      },
+      {
+        "line": 23,
+        "text": "const MIN_TYPES: usize = 3;"
+      },
+      {
+        "line": 25,
+        "text": "const MIN_SHARED: usize = 3;"
+      },
+      {
+        "line": 27,
+        "text": "const MAX_COMBINATIONS: usize = 500;"
+      },
+      {
+        "line": 34,
+        "text": "    fn id(&self) -> &'static str {"
+      },
+      {
+        "line": 38,
+        "text": "    fn default_level(&self) -> Level {"
+      },
+      {
+        "line": 42,
+        "text": "    fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {"
+      },
+      {
+        "line": 56,
+        "text": "                .filter(|key| counts[key] >= MIN_TYPES)"
+      },
+      {
+        "line": 58,
+        "text": "            if frequent.len() >= MIN_SHARED {"
+      },
+      {
+        "line": 66,
+        "text": "        if combinations.len() > MAX_COMBINATIONS {"
+      },
+      {
+        "line": 83,
+        "text": "                if shared.len() >= MIN_SHARED {"
+      },
+      {
+        "line": 91,
+        "text": "        found.retain(|_, types| types.len() >= MIN_TYPES);"
+      },
+      {
+        "line": 104,
+        "text": "            out.push(type_finding("
+      },
+      {
+        "line": 122,
+        "text": "    fn too_many("
+      },
+      {
+        "line": 136,
+        "text": "        out.push(type_finding("
+      },
+      {
+        "line": 139,
+        "text": "                \"{} object types hold {} different combinations of commonly shared properties, more than the {MAX_COMBINATIONS} this rule compares, so shared property sets were not checked\","
+      },
+      {
+        "line": 154,
+        "text": "fn keys_of(object: &ObjectType) -> impl Iterator<Item = Key<'_>> {"
+      },
+      {
+        "line": 172,
+        "text": "    fn triggers() {"
+      },
+      {
+        "line": 195,
+        "text": "    fn clean() {"
+      },
+      {
+        "line": 225,
+        "text": "    fn a_shared_set_is_reported_once_for_four_types() {"
+      },
+      {
+        "line": 239,
+        "text": "    fn many_types_with_the_same_shared_set_finish_quickly() {"
+      },
+      {
+        "line": 250,
+        "text": "    fn many_types_with_different_shared_sets_finish_quickly() {"
+      },
+      {
+        "line": 273,
+        "text": "    fn too_many_combinations_are_reported_once() {"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/structure/w09.rs",
+    "sha256": "75c1a88efaae505712e7dd9b08f6e14950a98cb65cda1bde0c586154ed11f53b",
+    "lines": [
+      {
+        "line": 24,
+        "text": "const DEFAULT_MAX_ACTIONS: usize = 10;"
+      },
+      {
+        "line": 34,
+        "text": "    fn id(&self) -> &'static str {"
+      },
+      {
+        "line": 38,
+        "text": "    fn default_level(&self) -> Level {"
+      },
+      {
+        "line": 42,
+        "text": "    fn option_keys(&self) -> &'static [(&'static str, OptionKind)] {"
+      },
+      {
+        "line": 46,
+        "text": "    fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {"
+      },
+      {
+        "line": 47,
+        "text": "        let max = cx.option_usize(\"max_actions_per_type\", DEFAULT_MAX_ACTIONS);"
+      },
+      {
+        "line": 67,
+        "text": "                out.push(Finding {"
+      },
+      {
+        "line": 91,
+        "text": "                out.push(type_finding("
+      },
+      {
+        "line": 108,
+        "text": "fn referenced_type<'a>(action: &'a ActionType, param: &str) -> Option<&'a str> {"
+      },
+      {
+        "line": 116,
+        "text": "fn is_single_property_setter(action: &ActionType) -> bool {"
+      },
+      {
+        "line": 125,
+        "text": "    fn flight() -> String {"
+      },
+      {
+        "line": 133,
+        "text": "    fn pilot() -> String {"
+      },
+      {
+        "line": 138,
+        "text": "    fn modify(name: &str, target: &str, props: &[&str]) -> String {"
+      },
+      {
+        "line": 149,
+        "text": "    fn create_flight(name: &str) -> String {"
+      },
+      {
+        "line": 156,
+        "text": "    fn triggers() {"
+      },
+      {
+        "line": 170,
+        "text": "    fn clean() {"
+      },
+      {
+        "line": 186,
+        "text": "    fn max_actions_per_type_option_applies() {"
+      },
+      {
+        "line": 197,
+        "text": "    fn create_and_modify_count_for_the_same_type() {"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/structure/w10.rs",
+    "sha256": "b22013c293ce2af14bdee522400c4c4e7e817582f8781b86088513e6143ab474",
+    "lines": [
+      {
+        "line": 27,
+        "text": "    fn id(&self) -> &'static str {"
+      },
+      {
+        "line": 31,
+        "text": "    fn default_level(&self) -> Level {"
+      },
+      {
+        "line": 35,
+        "text": "    fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {"
+      },
+      {
+        "line": 43,
+        "text": "                    out.push(Finding {"
+      },
+      {
+        "line": 60,
+        "text": "                out.push(type_finding("
+      },
+      {
+        "line": 78,
+        "text": "    fn triggers() {"
+      },
+      {
+        "line": 102,
+        "text": "    fn clean() {"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/structure/w11.rs",
+    "sha256": "f5ff66ca30579851e80cdbc80c5c83a79a13877aed6cec6bb4db2cf5fb99ee78",
+    "lines": [
+      {
+        "line": 7,
+        "text": "//! format makes both end `apiName`s required (a missing one is `ONT-V05`), so that"
+      },
+      {
+        "line": 21,
+        "text": "fn is_generic(name: &str) -> bool {"
+      },
+      {
+        "line": 30,
+        "text": "    fn id(&self) -> &'static str {"
+      },
+      {
+        "line": 34,
+        "text": "    fn default_level(&self) -> Level {"
+      },
+      {
+        "line": 38,
+        "text": "    fn check(&self, cx: &LintCx<'_>, out: &mut Vec<Finding>) {"
+      },
+      {
+        "line": 51,
+        "text": "                    out.push(Finding {"
+      },
+      {
+        "line": 73,
+        "text": "    fn link(name: &str, from_end: &str, to_end: &str, fk: &str) -> String {"
+      },
+      {
+        "line": 79,
+        "text": "    fn types() -> [String; 2] {"
+      },
+      {
+        "line": 95,
+        "text": "    fn triggers() {"
+      },
+      {
+        "line": 114,
+        "text": "    fn clean() {"
+      },
+      {
+        "line": 138,
+        "text": "    fn matching_ignores_case() {"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-schema/src/lint/structure/mod.rs",
+    "sha256": "fe4b962a88e4f36c3e5a86c6d259caef684c62cd9408178bc5623c8a865f654f",
+    "lines": [
+      {
+        "line": 16,
+        "text": "pub(super) fn rules() -> Vec<&'static dyn LintRule> {"
+      },
+      {
+        "line": 29,
+        "text": "fn off_hint(rule_id: &str) -> String {"
+      },
+      {
+        "line": 34,
+        "text": "fn type_finding(object: &ObjectType, message: String, help: String) -> Finding {"
+      },
+      {
+        "line": 58,
+        "text": "    pub fn object(name: &str, pk: &str, props: &[(&str, &str)]) -> String {"
+      },
+      {
+        "line": 76,
+        "text": "    pub fn join(docs: &[String]) -> String {"
+      },
+      {
+        "line": 80,
+        "text": "    pub fn run(rule_id: &str, text: &str) -> Vec<Diagnostic> {"
+      },
+      {
+        "line": 84,
+        "text": "    pub fn run_with(rule_id: &str, text: &str, config: Option<&str>) -> Vec<Diagnostic> {"
+      },
+      {
+        "line": 95,
+        "text": "    pub fn run_within(seconds: u64, rule_id: &'static str, text: String) -> Vec<Diagnostic> {"
+      },
+      {
+        "line": 105,
+        "text": "    pub fn flagged<'a>(text: &'a str, found: &[Diagnostic]) -> Vec<&'a str> {"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-expr/src/check.rs",
+    "sha256": "c58e9a1065353966a5ab205f0be41817c69103ebc1cfe1b963944aef1ca8259d",
+    "lines": [
+      {
+        "line": 1,
+        "text": "//! Static checks of submission criteria (ONT-V13, D-09)."
+      },
+      {
+        "line": 17,
+        "text": "use crate::{ExprError, analyze};"
+      },
+      {
+        "line": 23,
+        "text": "/// `ONT-V13` error located at the criterion's `condition` value."
+      },
+      {
+        "line": 25,
+        "text": "pub fn check_ontology(ontology: &Ontology, sources: &SourceMap) -> Vec<Diagnostic> {"
+      },
+      {
+        "line": 59,
+        "text": "    fn new(message: String, help: impl Into<Option<String>>, pos: Option<(usize, usize)>) -> Self {"
+      },
+      {
+        "line": 67,
+        "text": "    fn into_diagnostic(self, at: &SourceLocation) -> Diagnostic {"
+      },
+      {
+        "line": 74,
+        "text": "        let diagnostic = Diagnostic::error(codes::V13, message, at);"
+      },
+      {
+        "line": 82,
+        "text": "fn check_condition("
+      },
+      {
+        "line": 106,
+        "text": "fn analyzer_problem(error: &ExprError) -> Problem {"
+      },
+      {
+        "line": 108,
+        "text": "        ExprError::Syntax {"
+      },
+      {
+        "line": 122,
+        "text": "fn reference_problems("
+      },
+      {
+        "line": 135,
+        "text": "fn path_problem(path: &MemberPath, ontology: &Ontology, action: &ActionType) -> Option<Problem> {"
+      },
+      {
+        "line": 141,
+        "text": "fn dynamic_problem(path: &MemberPath) -> Option<Problem> {"
+      },
+      {
+        "line": 161,
+        "text": "fn name_problem(path: &MemberPath, ontology: &Ontology, action: &ActionType) -> Option<Problem> {"
+      },
+      {
+        "line": 203,
+        "text": "fn object_problem("
+      },
+      {
+        "line": 231,
+        "text": "    // A missing target type is reported by validate (V09) before this runs."
+      },
+      {
+        "line": 251,
+        "text": "fn suggest(name: &str, candidates: &[&str], what: &str) -> String {"
+      }
+    ]
+  },
+  {
+    "file": "crates/ontoforge-expr/src/infer.rs",
+    "sha256": "0862cfd94365ec332656af9bc9295114f4689bed2a99669dca5e7541e8f81dcd",
+    "lines": [
+      {
+        "line": 24,
+        "text": "pub enum Ty {"
+      },
+      {
+        "line": 35,
+        "text": "    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {"
+      },
+      {
+        "line": 48,
+        "text": "    fn is_numeric(&self) -> bool {"
+      },
+      {
+        "line": 53,
+        "text": "    fn compatible(&self, other: &Self) -> bool {"
+      },
+      {
+        "line": 62,
+        "text": "fn base_ty(base: BaseType, items: Option<BaseType>) -> Ty {"
+      },
+      {
+        "line": 75,
+        "text": "pub struct TypeEnv {"
+      },
+      {
+        "line": 83,
+        "text": "    pub fn for_action(action: &ActionType, ontology: &Ontology) -> Self {"
+      },
+      {
+        "line": 106,
+        "text": "    fn lookup(&self, segments: &[&str]) -> Ty {"
+      },
+      {
+        "line": 120,
+        "text": "pub struct TypeIssue {"
+      },
+      {
+        "line": 129,
+        "text": "pub fn type_issues(program: &cel::Program, src: &str, env: &TypeEnv) -> Vec<TypeIssue> {"
+      },
+      {
+        "line": 158,
+        "text": "    fn issue(&mut self, id: u64, message: String) {"
+      },
+      {
+        "line": 166,
+        "text": "    fn scoped(&self, name: &str) -> Option<&Ty> {"
+      },
+      {
+        "line": 174,
+        "text": "    fn infer(&mut self, e: &'a IdedExpr) -> Ty {"
+      },
+      {
+        "line": 225,
+        "text": "    fn entries(&mut self, entries: &'a [cel::common::ast::IdedEntryExpr]) {"
+      },
+      {
+        "line": 242,
+        "text": "    fn select(&mut self, e: &'a IdedExpr) -> Ty {"
+      },
+      {
+        "line": 271,
+        "text": "    fn call(&mut self, id: u64, call: &'a CallExpr) -> Ty {"
+      },
+      {
+        "line": 329,
+        "text": "fn arithmetic(left: &Ty, right: &Ty) -> Result<Ty, ()> {"
+      }
+    ]
+  },
+  {
+    "file": "Cargo.lock",
+    "sha256": "7ccd6827bf948238d62ceb492bea930e30ae7d289a1dd3fc04f94d08afafb2ee",
+    "lines": []
+  },
+  {
+    "file": ".zed/settings.json",
+    "sha256": "9b081c2e875fdcb517d0f0f191df98f80186b6896afd254cf180596c3e7c7840",
+    "lines": []
+  },
+  {
+    "file": ".vscode/settings.json",
+    "sha256": "5b83ca55e8b082e6133f176e5334e1343a1f435f15b896b6c0d3ecf03e178368",
+    "lines": []
+  },
+  {
+    "file": "crates/ontoforge-schema/tests/schema_export.rs",
+    "sha256": "14f01c453cb107599df604743681abfbb6ce936f93a9b030da5145b96f5aecfc",
+    "lines": [
+      {
+        "line": 10,
+        "text": "fn example_dir(name: &str) -> std::path::PathBuf {"
+      },
+      {
+        "line": 16,
+        "text": "fn read(path: &std::path::Path) -> String {"
+      },
+      {
+        "line": 22,
+        "text": "fn yaml_documents(path: &std::path::Path) -> Vec<Value> {"
+      },
+      {
+        "line": 29,
+        "text": "fn json_document(path: &std::path::Path) -> Value {"
+      },
+      {
+        "line": 33,
+        "text": "fn validator(schema: &Value) -> jsonschema::Validator {"
+      },
+      {
+        "line": 38,
+        "text": "fn consts(value: &Value, out: &mut Vec<String>) {"
+      },
+      {
+        "line": 45,
+        "text": "                    out.push(s.to_owned());"
+      },
+      {
+        "line": 56,
+        "text": "fn definition_schema_is_draft_2020_12() {"
+      },
+      {
+        "line": 66,
+        "text": "fn definition_variants_are_discriminated_by_kind() {"
+      },
+      {
+        "line": 99,
+        "text": "fn rule_variants_are_discriminated_by_kind() {"
+      },
+      {
+        "line": 114,
+        "text": "fn committed_schemas_are_up_to_date() {"
+      },
+      {
+        "line": 134,
+        "text": "fn rendering_is_deterministic() {"
+      },
+      {
+        "line": 139,
+        "text": "fn aviation_documents_validate() {"
+      },
+      {
+        "line": 175,
+        "text": "fn invalid_examples_fail_schema() {"
+      },
+      {
+        "line": 192,
+        "text": "fn repo_path(relative: &str) -> std::path::PathBuf {"
+      },
+      {
+        "line": 197,
+        "text": "fn strict_json(relative: &str) -> Value {"
+      },
+      {
+        "line": 202,
+        "text": "fn only_key<'a>(value: &'a Value, expected: &str, at: &str) -> &'a Value {"
+      },
+      {
+        "line": 216,
+        "text": "fn glob(pattern: &str, at: &str) -> globset::GlobMatcher {"
+      },
+      {
+        "line": 225,
+        "text": "fn editor_configs_associate_definition_schema_with_examples() {"
+      },
+      {
+        "line": 337,
+        "text": "fn aviation_definition_documents_start_with_modeline() {"
+      },
+      {
+        "line": 406,
+        "text": "fn aviation_bindings_validate() {"
+      },
+      {
+        "line": 437,
+        "text": "fn scope_example_dir() -> std::path::PathBuf {"
+      },
+      {
+        "line": 442,
+        "text": "fn scope_schema_is_the_third_exported_file() {"
+      },
+      {
+        "line": 455,
+        "text": "fn scope_variants_are_discriminated_by_kind() {"
+      },
+      {
+        "line": 480,
+        "text": "fn aviation_scope_documents_validate() {"
+      },
+      {
+        "line": 512,
+        "text": "fn invalid_scope_documents_fail_schema() {"
+      }
+    ]
+  }
+]

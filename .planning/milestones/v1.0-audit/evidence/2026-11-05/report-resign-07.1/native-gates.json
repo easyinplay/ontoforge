@@ -1,0 +1,99 @@
+[
+  {
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:/Users/easyi/.codex/gsd-core/bin/gsd-tools.cjs",
+      "query",
+      "verify.artifacts",
+      ".planning/phases/07.1-source-cardinality-gap-closure/07.1-01-PLAN.md"
+    ],
+    "exit_code": 0,
+    "stdout": "{\n  \"all_passed\": true,\n  \"passed\": 4,\n  \"total\": 4,\n  \"artifacts\": [\n    {\n      \"path\": \"crates/ontoforge-engine/src/cardinality_check.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-engine/src/printer/ast.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge/tests/cli_check_cardinality.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-engine/tests/cardinality_check.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    }\n  ]\n}",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:/Users/easyi/.codex/gsd-core/bin/gsd-tools.cjs",
+      "query",
+      "verify.key-links",
+      ".planning/phases/07.1-source-cardinality-gap-closure/07.1-01-PLAN.md"
+    ],
+    "exit_code": 1,
+    "stdout": "{\n  \"all_verified\": false,\n  \"verified\": 0,\n  \"pending\": 0,\n  \"total\": 3,\n  \"links\": [\n    {\n      \"from\": \"crates/ontoforge/src/cli.rs\",\n      \"to\": \"crates/ontoforge/src/online.rs\",\n      \"via\": \"ValidateArgs.check_cardinality传入Trino与Fixtures两个compare_all调用\",\n      \"verified\": false,\n      \"detail\": \"Target not referenced in source\"\n    },\n    {\n      \"from\": \"crates/ontoforge/src/online.rs\",\n      \"to\": \"crates/ontoforge-engine/src/cardinality_check.rs\",\n      \"via\": \"可用object BindingKey集合 → cardinality_targets → 逐target check_cardinality\",\n      \"verified\": false,\n      \"detail\": \"Target not referenced in source\"\n    },\n    {\n      \"from\": \"crates/ontoforge-engine/src/cardinality_check.rs\",\n      \"to\": \"crates/ontoforge-engine/src/printer/dialect.rs\",\n      \"via\": \"Select/Expr::CountDistinct → print_select → Engine::execute\",\n      \"verified\": false,\n      \"detail\": \"Target not referenced in source\"\n    }\n  ]\n}",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:/Users/easyi/.codex/gsd-core/bin/gsd-tools.cjs",
+      "query",
+      "verify.artifacts",
+      ".planning/phases/07.1-source-cardinality-gap-closure/07.1-02-PLAN.md"
+    ],
+    "exit_code": 0,
+    "stdout": "{\n  \"all_passed\": true,\n  \"passed\": 3,\n  \"total\": 3,\n  \"artifacts\": [\n    {\n      \"path\": \"crates/ontoforge-engine/tests/cardinality_check.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge/tests/cli_check_cardinality.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-engine/src/printer/tests.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    }\n  ]\n}",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:/Users/easyi/.codex/gsd-core/bin/gsd-tools.cjs",
+      "query",
+      "verify.key-links",
+      ".planning/phases/07.1-source-cardinality-gap-closure/07.1-02-PLAN.md"
+    ],
+    "exit_code": 1,
+    "stdout": "{\n  \"all_verified\": false,\n  \"verified\": 0,\n  \"pending\": 0,\n  \"total\": 3,\n  \"links\": [\n    {\n      \"from\": \"crates/ontoforge/src/online.rs\",\n      \"to\": \"crates/ontoforge-engine/src/cardinality_check.rs\",\n      \"via\": \"预检可用BindingKey集合限制实际扫描，两个flags分别调用既有/新检查\",\n      \"verified\": false,\n      \"detail\": \"Target not referenced in source\"\n    },\n    {\n      \"from\": \"crates/ontoforge-engine/src/cardinality_check.rs\",\n      \"to\": \"crates/ontoforge/src/online.rs\",\n      \"via\": \"完整性先于findings解码与clean判定；逐target错误保留previous findings\",\n      \"verified\": false,\n      \"detail\": \"Target not referenced in source\"\n    },\n    {\n      \"from\": \"crates/ontoforge/src/online.rs\",\n      \"to\": \"crates/ontoforge-engine/src/lib.rs\",\n      \"via\": \"退出检查前await Engine::drain_cancellations，失败追加V19\",\n      \"verified\": false,\n      \"detail\": \"Target not referenced in source\"\n    }\n  ]\n}",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:/Users/easyi/.codex/gsd-core/bin/gsd-tools.cjs",
+      "query",
+      "verify.artifacts",
+      ".planning/phases/07.1-source-cardinality-gap-closure/07.1-03-PLAN.md"
+    ],
+    "exit_code": 0,
+    "stdout": "{\n  \"all_passed\": true,\n  \"passed\": 3,\n  \"total\": 3,\n  \"artifacts\": [\n    {\n      \"path\": \"crates/ontoforge/tests/cli_trino_it.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"ci/pg/seed.sql\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"docs/source-binding.md\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    }\n  ]\n}",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:/Users/easyi/.codex/gsd-core/bin/gsd-tools.cjs",
+      "query",
+      "verify.key-links",
+      ".planning/phases/07.1-source-cardinality-gap-closure/07.1-03-PLAN.md"
+    ],
+    "exit_code": 1,
+    "stdout": "{\n  \"all_verified\": false,\n  \"verified\": 1,\n  \"pending\": 0,\n  \"total\": 3,\n  \"links\": [\n    {\n      \"from\": \"ci/pg/seed.sql\",\n      \"to\": \"crates/ontoforge/tests/cli_trino_it.rs\",\n      \"via\": \"demo.aviation.cardinality_records专用数据被新test绑定\",\n      \"verified\": true,\n      \"detail\": \"Target referenced in source\"\n    },\n    {\n      \"from\": \".github/workflows/ci.yml\",\n      \"to\": \"crates/ontoforge/tests/cli_trino_it.rs\",\n      \"via\": \"既有cargo test -p ontoforge --test cli_trino_it --locked -- --ignored覆盖新增case\",\n      \"verified\": false,\n      \"detail\": \"Target not referenced in source\"\n    },\n    {\n      \"from\": \"docs/source-binding.md\",\n      \"to\": \"crates/ontoforge/src/cli.rs\",\n      \"via\": \"实际validate --help、warning和exit code逐项核对\",\n      \"verified\": false,\n      \"detail\": \"Target not referenced in source\"\n    }\n  ]\n}",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:/Users/easyi/.codex/gsd-core/bin/gsd-tools.cjs",
+      "query",
+      "roadmap.get-phase",
+      "07.1",
+      "--raw"
+    ],
+    "exit_code": 0,
+    "stdout": "### Phase 7.1: Source Cardinality Gap Closure (INSERTED)\n\n**Goal:** As a ontology维护者, I want to 显式运行source OneToOne基数检查并获得有界诊断, so that 我能发现违反声明的FK唯一性而不改变默认在线验证和业务读取行为.\n**Requirements**: STORE-05\n**Depends on:** Phase 7\n**Plans:** 3/3 plans complete；2026-11-04验收passed，详: `.planning/phases/07.1-source-cardinality-gap-closure/07.1-VERIFICATION.md`\n- [x] 07.1-01-PLAN.md\n- [x] 07.1-02-PLAN.md\n- [x] 07.1-03-PLAN.md\n\n**Success Criteria**:\n1. 显式online基数检查对source-backed link.to的非空FK按不同对象PK计数并报告OneToOne冲突；NULL和重复物理行语义明确。\n2. 默认online与check-pk无额外FK扫描；基数warning默认0/deny-warnings1，未完成3；有整个检查总deadline及真实CLI测试。\n3. typed SQL、限额、取消与错误边界通过SQLite/Trino验证；STORE-05以独立验收结果更新。\n\n**Details**: `.planning/phases/07.1-source-cardinality-gap-closure/`",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:/Users/easyi/.codex/gsd-core/bin/gsd-tools.cjs",
+      "query",
+      "roadmap.analyze",
+      "--raw"
+    ],
+    "exit_code": 0,
+    "stdout": "{\n  \"milestones\": [],\n  \"phases\": [\n    {\n      \"number\": \"1\",\n      \"name\": \"Workspace, Schema & Lint\",\n      \"goal\": \"As a ontology 开发者, I want to 用 YAML/JSON 编写 ontology，并通过 `ontoforge validate` / `ontoforge lint` 得到带源码定位的诊断，且仓库在 Windows 本机 `cargo test` 全绿, so that 我能在本机可靠地编写和验证定义.\",\n      \"mode\": \"mvp\",\n      \"depends_on\": \"Nothing (first phase)\",\n      \"plan_count\": 14,\n      \"summary_count\": 14,\n      \"has_context\": true,\n      \"has_research\": true,\n      \"disk_status\": \"executed\",\n      \"roadmap_complete\": false,\n      \"context_read_error\": null,\n      \"context_scope\": \"complete\"\n    },\n    {\n      \"number\": \"2\",\n      \"name\": \"Source Binding & Engine\",\n      \"goal\": \"As a ontology 开发者, I want to 把 object type / M:N link 绑定到 Trino 物理表，由 ontoforge 经自写 client 连接已有 Trino 并校验绑定，并在 Windows 本机用 SQLite 替身零外部依赖跑通, so that 定义能够使用真实数据源且支持本机验证.\",\n      \"mode\": \"mvp\",\n      \"depends_on\": \"Phase 1\",\n      \"plan_count\": 10,\n      \"summary_count\": 10,\n      \"has_context\": true,\n      \"has_research\": true,\n      \"disk_status\": \"executed\",\n      \"roadmap_complete\": false,\n      \"context_read_error\": null,\n      \"context_scope\": \"complete\"\n    },\n    {\n      \"number\": \"3\",\n      \"name\": \"Edit Store & Scope Model\",\n      \"goal\": \"As a 平台管理员, I want to 让 edit store 按 object type 生成强类型表并安全演进、所有写入有不可变 edit log，配置用户 / 组 / 角色与 scope 规则，并使同一份 CEL 行谓词的 SQL 编译与 Rust 单行求值结果一致, so that 存储和权限行为可以安全演进并接受审计.\",\n      \"mode\": \"mvp\",\n      \"depends_on\": \"Phase 2\",\n      \"plan_count\": 23,\n      \"summary_count\": 23,\n      \"has_context\": true,\n      \"has_research\": true,\n      \"disk_status\": \"executed\",\n      \"roadmap_complete\": true,\n      \"context_read_error\": null,\n      \"context_scope\": \"complete\"\n    },\n    {\n      \"number\": \"4\",\n      \"name\": \"Scoped L0 Read\",\n      \"goal\": \"As a 调用者, I want to 仅在自己的 scope 内通过 pk、过滤、排序分页、searchAround、集合运算与聚合读取对象，由 Rust 编排叠加且 Trino 只承担单表查询, so that 各种读取方式都遵守一致的授权边界.\",\n      \"mode\": \"mvp\",\n      \"depends_on\": \"Phase 3\",\n      \"plan_count\": 7,\n      \"summary_count\": 7,\n      \"has_context\": true,\n      \"has_research\": true,\n      \"disk_status\": \"executed\",\n      \"roadmap_complete\": true,\n      \"context_read_error\": null,\n      \"context_scope\": \"complete\"\n    },\n    {\n      \"number\": \"5\",\n      \"name\": \"Online Action\",\n      \"goal\": \"As a caller with Action permission, I want to modify the object graph through scoped online Actions, so that each change is atomic, auditable, safe to retry, and notifies downstream systems.\",\n      \"mode\": \"mvp\",\n      \"depends_on\": \"Phase 4\",\n      \"plan_count\": 7,\n      \"summary_count\": 7,\n      \"has_context\": true,\n      \"has_research\": true,\n      \"disk_status\": \"executed\",\n      \"roadmap_complete\": true,\n      \"context_read_error\": null,\n      \"context_scope\": \"complete\"\n    },\n    {\n      \"number\": \"6\",\n      \"name\": \"L2 Raw DQL, Toolsets & Audit\",\n      \"goal\": \"As a 受信主体, I want to 在 allow-list 内执行仅在 Trino 侧权限可证明安全时才开放的只读 Trino SQL, so that 所有级别的读取都留下元数据审计且定义与授权的变更只经部署方与管理通道.\",\n      \"mode\": \"mvp\",\n      \"depends_on\": \"Phase 5\",\n      \"plan_count\": 11,\n      \"summary_count\": 11,\n      \"has_context\": true,\n      \"has_research\": true,\n      \"disk_status\": \"executed\",\n      \"roadmap_complete\": true,\n      \"context_read_error\": null,\n      \"context_scope\": \"complete\"\n    },\n    {\n      \"number\": \"7\",\n      \"name\": \"REST & MCP Shell\",\n      \"goal\": \"As a 应用开发者与 agent 使用者, I want to 经 REST（OpenAPI 3.1、Rust / TS client）和 MCP（按主体过滤的 toolset）使用全部能力，以 `ontoforge serve --dev` 单二进制在本机跑通端到端演示，并通过 release workflow 发布 Linux / macOS / Windows 二进制, so that 应用与 agent 能按相同授权使用并验证完整平台能力.\",\n      \"mode\": \"mvp\",\n      \"depends_on\": \"Phase 6\",\n      \"plan_count\": 16,\n      \"summary_count\": 16,\n      \"has_context\": true,\n      \"has_research\": true,\n      \"disk_status\": \"complete\",\n      \"roadmap_complete\": true,\n      \"context_read_error\": null,\n      \"context_scope\": \"complete\"\n    },\n    {\n      \"number\": \"7.1\",\n      \"name\": \"Source Cardinality Gap Closure\",\n      \"goal\": \"As a ontology维护者, I want to 显式运行source OneToOne基数检查并获得有界诊断, so that 我能发现违反声明的FK唯一性而不改变默认在线验证和业务读取行为.\",\n      \"mode\": null,\n      \"depends_on\": \"Phase 7\",\n      \"plan_count\": 3,\n      \"summary_count\": 3,\n      \"has_context\": true,\n      \"has_research\": true,\n      \"disk_status\": \"executed\",\n      \"roadmap_complete\": true,\n      \"context_read_error\": null,\n      \"context_scope\": \"complete\"\n    },\n    {\n      \"number\": \"07.2\",\n      \"name\": \"MinIO Contract Gap Closure\",\n      \"goal\": \"恢复ENGINE-05的MinIO/S3与JDBC Iceberg原合同，完成483/484真实环境及nightly补证。\",\n      \"mode\": null,\n      \"depends_on\": \"Phase 7\",\n      \"plan_count\": 2,\n      \"summary_count\": 2,\n      \"has_context\": true,\n      \"has_research\": true,\n      \"disk_status\": \"complete\",\n      \"roadmap_complete\": true,\n      \"context_read_error\": null,\n      \"context_scope\": \"complete\"\n    }\n  ],\n  \"phase_count\": 9,\n  \"completed_phases\": 2,\n  \"total_plans\": 93,\n  \"total_summaries\": 93,\n  \"progress_percent\": null,\n  \"progress_scope\": \"unscoped\",\n  \"current_phase\": \"1\",\n  \"next_phase\": null,\n  \"checkbox_conflict\": [\n    {\n      \"number\": \"3\",\n      \"roadmap_complete\": true,\n      \"disk_status\": \"executed\",\n      \"plan_count\": 23,\n      \"summary_count\": 23\n    },\n    {\n      \"number\": \"4\",\n      \"roadmap_complete\": true,\n      \"disk_status\": \"executed\",\n      \"plan_count\": 7,\n      \"summary_count\": 7\n    },\n    {\n      \"number\": \"5\",\n      \"roadmap_complete\": true,\n      \"disk_status\": \"executed\",\n      \"plan_count\": 7,\n      \"summary_count\": 7\n    },\n    {\n      \"number\": \"6\",\n      \"roadmap_complete\": true,\n      \"disk_status\": \"executed\",\n      \"plan_count\": 11,\n      \"summary_count\": 11\n    },\n    {\n      \"number\": \"7.1\",\n      \"roadmap_complete\": true,\n      \"disk_status\": \"executed\",\n      \"plan_count\": 3,\n      \"summary_count\": 3\n    }\n  ],\n  \"missing_phase_details\": [\n    \"7.2\"\n  ],\n  \"scope\": \"unscoped\"\n}",
+    "stderr": ""
+  }
+]

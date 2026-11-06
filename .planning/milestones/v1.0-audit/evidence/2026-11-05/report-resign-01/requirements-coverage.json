@@ -1,0 +1,130 @@
+{
+  "requirements": [
+    {
+      "id": "DX-03",
+      "description": "- [x] **DX-03**: Windows 本机 `cargo test` 不依赖 Docker 即可全部通过",
+      "plans": [
+        "01-01-PLAN.md",
+        "01-02-PLAN.md",
+        "01-11-PLAN.md"
+      ],
+      "status": "SATISFIED_TECHNICAL",
+      "boundary": "relevant judgment-tier prohibition remains UNCERTAIN; do not infer whole-milestone satisfaction"
+    },
+    {
+      "id": "SCHEMA-01",
+      "description": "- [x] **SCHEMA-01**: 开发者可以用 YAML（或等价 JSON）在多个文件中定义一个 ontology，`ontoforge validate` 把它们合并加载为单一 IR",
+      "plans": [
+        "01-01-PLAN.md",
+        "01-03-PLAN.md",
+        "01-06-PLAN.md"
+      ],
+      "status": "SATISFIED_TECHNICAL",
+      "boundary": ""
+    },
+    {
+      "id": "SCHEMA-06",
+      "description": "- [x] **SCHEMA-06**: 定义有错时，开发者看到带文件名与 line:col 的诊断信息",
+      "plans": [
+        "01-01-PLAN.md",
+        "01-03-PLAN.md",
+        "01-04-PLAN.md",
+        "01-05-PLAN.md",
+        "01-06-PLAN.md",
+        "01-12-PLAN.md",
+        "01-13-PLAN.md"
+      ],
+      "status": "SATISFIED_TECHNICAL",
+      "boundary": "relevant judgment-tier prohibition remains UNCERTAIN; do not infer whole-milestone satisfaction"
+    },
+    {
+      "id": "SCHEMA-02",
+      "description": "- [x] **SCHEMA-02**: 开发者可以定义 object type：`apiName`、primary key、title key、displayName、description、aliases、hidden",
+      "plans": [
+        "01-04-PLAN.md"
+      ],
+      "status": "SATISFIED_TECHNICAL",
+      "boundary": ""
+    },
+    {
+      "id": "SCHEMA-03",
+      "description": "- [x] **SCHEMA-03**: 开发者可以为属性选择 base type：Byte / Short / Integer / Long / Float / Double / Decimal、String、Boolean、Date、Timestamp、Array、Geopoint，并声明 required",
+      "plans": [
+        "01-04-PLAN.md"
+      ],
+      "status": "SATISFIED_TECHNICAL",
+      "boundary": ""
+    },
+    {
+      "id": "SCHEMA-04",
+      "description": "- [x] **SCHEMA-04**: 开发者可以定义 link type：1:1、1:N（外键属性）、M:N（join 定义），两个方向各有 apiName",
+      "plans": [
+        "01-05-PLAN.md"
+      ],
+      "status": "SATISFIED_TECHNICAL",
+      "boundary": ""
+    },
+    {
+      "id": "SCHEMA-05",
+      "description": "- [x] **SCHEMA-05**: 开发者可以定义 action type：参数（类型、required、默认值）、rules（create / modify / delete object，add / remove link）、submission criteria（CEL）",
+      "plans": [
+        "01-06-PLAN.md",
+        "01-07-PLAN.md",
+        "01-12-PLAN.md"
+      ],
+      "status": "SATISFIED_TECHNICAL",
+      "boundary": ""
+    },
+    {
+      "id": "LINT-01",
+      "description": "- [x] **LINT-01**: `ontoforge lint` 对 ontology 运行 E 级规则（适用于 v1 schema 范围的 ONT-E 规则），有 E 级问题时退出码非 0",
+      "plans": [
+        "01-08-PLAN.md"
+      ],
+      "status": "SATISFIED_TECHNICAL",
+      "boundary": ""
+    },
+    {
+      "id": "LINT-03",
+      "description": "- [x] **LINT-03**: lint 结果可输出为人类可读格式（带源码定位）和 JSON 格式",
+      "plans": [
+        "01-08-PLAN.md",
+        "01-13-PLAN.md"
+      ],
+      "status": "SATISFIED_TECHNICAL",
+      "boundary": ""
+    },
+    {
+      "id": "LINT-04",
+      "description": "- [x] **LINT-04**: 开发者可以在配置中按规则 ID 关闭或调整严重级",
+      "plans": [
+        "01-08-PLAN.md",
+        "01-13-PLAN.md"
+      ],
+      "status": "SATISFIED_TECHNICAL",
+      "boundary": "relevant judgment-tier prohibition remains UNCERTAIN; do not infer whole-milestone satisfaction"
+    },
+    {
+      "id": "SCHEMA-07",
+      "description": "- [x] **SCHEMA-07**: 开发者可以导出 ontology 定义的 JSON Schema，用于编辑器补全与 LLM 生成",
+      "plans": [
+        "01-09-PLAN.md",
+        "01-14-PLAN.md"
+      ],
+      "status": "SATISFIED_TECHNICAL",
+      "boundary": "editor experience retained prior override; no new visual observation"
+    },
+    {
+      "id": "LINT-02",
+      "description": "- [x] **LINT-02**: `ontoforge lint` 运行 W01–W11 命名与结构警告",
+      "plans": [
+        "01-10-PLAN.md",
+        "01-11-PLAN.md"
+      ],
+      "status": "SATISFIED_TECHNICAL",
+      "boundary": ""
+    }
+  ],
+  "orphaned": [],
+  "readOnly": true
+}

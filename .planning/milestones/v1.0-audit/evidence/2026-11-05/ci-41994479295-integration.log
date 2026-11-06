@@ -1,0 +1,1494 @@
+﻿2026-11-05T08:26:35.3991021Z Current runner version: '2.338.2'
+2026-11-05T08:26:35.4007102Z ##[group]Runner Image Provisioner
+2026-11-05T08:26:35.4007689Z Hosted Compute Agent
+2026-11-05T08:26:35.4008072Z Version: 20261028.624
+2026-11-05T08:26:35.4008462Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+2026-11-05T08:26:35.4008892Z Build Date: 2026-10-28T21:51:42Z
+2026-11-05T08:26:35.4009284Z Worker ID: {5f41ba52-876d-4a40-b63a-978e698443e5}
+2026-11-05T08:26:35.4009712Z Region: westus2
+2026-11-05T08:26:35.4010037Z Cloud: Azure
+2026-11-05T08:26:35.4010559Z ##[endgroup]
+2026-11-05T08:26:35.4011323Z ##[group]Operating System
+2026-11-05T08:26:35.4011670Z Ubuntu
+2026-11-05T08:26:35.4012011Z 26.04.1
+2026-11-05T08:26:35.4012345Z LTS
+2026-11-05T08:26:35.4012637Z ##[endgroup]
+2026-11-05T08:26:35.4012989Z ##[group]Runner Image
+2026-11-05T08:26:35.4013338Z Image: ubuntu-26.04
+2026-11-05T08:26:35.4013687Z Version: 20261101.186.1
+2026-11-05T08:26:35.4014454Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261101.186/images/ubuntu/Ubuntu2604-Readme.md
+2026-11-05T08:26:35.4015326Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261101.186
+2026-11-05T08:26:35.4015869Z ##[endgroup]
+2026-11-05T08:26:35.4016542Z ##[group]GITHUB_TOKEN Permissions
+2026-11-05T08:26:35.4017667Z Contents: read
+2026-11-05T08:26:35.4018042Z Metadata: read
+2026-11-05T08:26:35.4018405Z ##[endgroup]
+2026-11-05T08:26:35.4019619Z Secret source: Actions
+2026-11-05T08:26:35.4020490Z Cache mode: write
+2026-11-05T08:26:35.4020901Z Prepare workflow directory
+2026-11-05T08:26:35.4252972Z Prepare all required actions
+2026-11-05T08:26:35.4284451Z Getting action download info
+2026-11-05T08:26:35.7608540Z Download action repository 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-11-05T08:26:35.8887674Z Download action repository 'dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f' (SHA:e2a55d2ffb04f378e9626c28d38b36d230d1e12f)
+2026-11-05T08:26:36.0540880Z Download action repository 'Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6' (SHA:6323deb102c322ba6fcbdcafc7e3dddab59af2b6)
+2026-11-05T08:26:36.3013952Z Download action repository 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-11-05T08:26:36.5449410Z Complete job name: integration
+2026-11-05T08:26:36.6102927Z ##[group]Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+2026-11-05T08:26:36.6103466Z with:
+2026-11-05T08:26:36.6103714Z   repository: easyinplay/ontoforge
+2026-11-05T08:26:36.6105928Z   token: ***
+2026-11-05T08:26:36.6106167Z   ssh-strict: true
+2026-11-05T08:26:36.6106409Z   ssh-user: git
+2026-11-05T08:26:36.6106654Z   persist-credentials: true
+2026-11-05T08:26:36.6106922Z   clean: true
+2026-11-05T08:26:36.6107172Z   sparse-checkout-cone-mode: true
+2026-11-05T08:26:36.6107462Z   fetch-depth: 1
+2026-11-05T08:26:36.6107708Z   fetch-tags: false
+2026-11-05T08:26:36.6107953Z   show-progress: true
+2026-11-05T08:26:36.6108212Z   lfs: false
+2026-11-05T08:26:36.6108443Z   submodules: false
+2026-11-05T08:26:36.6108694Z   set-safe-directory: true
+2026-11-05T08:26:36.6108976Z   allow-unsafe-pr-checkout: false
+2026-11-05T08:26:36.6109325Z env:
+2026-11-05T08:26:36.6109549Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:26:36.6109801Z   PGHOST: localhost
+2026-11-05T08:26:36.6110290Z   PGUSER: postgres
+2026-11-05T08:26:36.6110539Z ##[endgroup]
+2026-11-05T08:26:36.8472839Z Syncing repository: easyinplay/ontoforge
+2026-11-05T08:26:36.8474690Z ##[group]Getting Git version info
+2026-11-05T08:26:36.8475383Z Working directory is '/home/runner/work/ontoforge/ontoforge'
+2026-11-05T08:26:36.8476426Z [command]/usr/bin/git version
+2026-11-05T08:26:36.8476919Z git version 2.56.0
+2026-11-05T08:26:36.8480765Z ##[endgroup]
+2026-11-05T08:26:36.8487748Z Temporarily overriding HOME='/home/runner/work/_temp/c41e6876-e315-48d9-9296-840ba01a516f' before making global git config changes
+2026-11-05T08:26:36.8489323Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-05T08:26:36.8491468Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/ontoforge/ontoforge
+2026-11-05T08:26:36.8542318Z Deleting the contents of '/home/runner/work/ontoforge/ontoforge'
+2026-11-05T08:26:36.8544282Z ##[group]Determining repository object format
+2026-11-05T08:26:36.8545292Z ##[endgroup]
+2026-11-05T08:26:36.8546032Z ##[group]Initializing the repository
+2026-11-05T08:26:36.8548335Z [command]/usr/bin/git init /home/runner/work/ontoforge/ontoforge
+2026-11-05T08:26:36.8649246Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-05T08:26:36.8650339Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-05T08:26:36.8650919Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-05T08:26:36.8651459Z hint: call:
+2026-11-05T08:26:36.8651792Z hint:
+2026-11-05T08:26:36.8652109Z hint: 	git config --global init.defaultBranch <name>
+2026-11-05T08:26:36.8652495Z hint:
+2026-11-05T08:26:36.8652837Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-05T08:26:36.8653387Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-05T08:26:36.8653947Z hint:
+2026-11-05T08:26:36.8654199Z hint: 	git branch -m <name>
+2026-11-05T08:26:36.8654478Z hint:
+2026-11-05T08:26:36.8654850Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-05T08:26:36.8662876Z Initialized empty Git repository in /home/runner/work/ontoforge/ontoforge/.git/
+2026-11-05T08:26:36.8668807Z [command]/usr/bin/git remote add origin https://github.com/easyinplay/ontoforge
+2026-11-05T08:26:36.8708511Z ##[endgroup]
+2026-11-05T08:26:36.8709006Z ##[group]Disabling automatic garbage collection
+2026-11-05T08:26:36.8711129Z [command]/usr/bin/git config --local gc.auto 0
+2026-11-05T08:26:36.8737080Z ##[endgroup]
+2026-11-05T08:26:36.8737645Z ##[group]Setting up auth
+2026-11-05T08:26:36.8737973Z Removing SSH command configuration
+2026-11-05T08:26:36.8740381Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-05T08:26:36.8765214Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-05T08:26:36.9112802Z Removing HTTP extra header
+2026-11-05T08:26:36.9115593Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-05T08:26:36.9141253Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-05T08:26:36.9341982Z Removing includeIf entries pointing to credentials config files
+2026-11-05T08:26:36.9344212Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-05T08:26:36.9369333Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-05T08:26:36.9575965Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-461855fc-238e-4a46-b1ac-867021440916.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-05T08:26:36.9605596Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/ontoforge/ontoforge/.git.path /home/runner/work/_temp/git-credentials-461855fc-238e-4a46-b1ac-867021440916.config
+2026-11-05T08:26:36.9630515Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/ontoforge/ontoforge/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-461855fc-238e-4a46-b1ac-867021440916.config
+2026-11-05T08:26:36.9657511Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-461855fc-238e-4a46-b1ac-867021440916.config
+2026-11-05T08:26:36.9682086Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-461855fc-238e-4a46-b1ac-867021440916.config
+2026-11-05T08:26:36.9705689Z ##[endgroup]
+2026-11-05T08:26:36.9706370Z ##[group]Fetching the repository
+2026-11-05T08:26:36.9709410Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +060019fe52005c6b85ae5c5f59da9868f464e579:refs/remotes/origin/main
+2026-11-05T08:26:38.1497837Z From https://github.com/easyinplay/ontoforge
+2026-11-05T08:26:38.1498772Z  * [new ref]         060019fe52005c6b85ae5c5f59da9868f464e579 -> origin/main
+2026-11-05T08:26:38.1506487Z [command]/usr/bin/git branch --list --remote origin/main
+2026-11-05T08:26:38.1529179Z   origin/main
+2026-11-05T08:26:38.1535161Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+2026-11-05T08:26:38.1555313Z 060019fe52005c6b85ae5c5f59da9868f464e579
+2026-11-05T08:26:38.1558362Z ##[endgroup]
+2026-11-05T08:26:38.1558801Z ##[group]Determining the checkout info
+2026-11-05T08:26:38.1559339Z ##[endgroup]
+2026-11-05T08:26:38.1561666Z [command]/usr/bin/git sparse-checkout disable
+2026-11-05T08:26:38.1603000Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-05T08:26:38.1627317Z ##[group]Checking out the ref
+2026-11-05T08:26:38.1629487Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-11-05T08:26:38.2556568Z Switched to a new branch 'main'
+2026-11-05T08:26:38.2559427Z branch 'main' set up to track 'origin/main'.
+2026-11-05T08:26:38.2567099Z ##[endgroup]
+2026-11-05T08:26:38.2609700Z [command]/usr/bin/git log -1 --format=%H
+2026-11-05T08:26:38.2632087Z 060019fe52005c6b85ae5c5f59da9868f464e579
+2026-11-05T08:26:38.2920437Z ##[group]Run dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f
+2026-11-05T08:26:38.2920715Z with:
+2026-11-05T08:26:38.2920862Z   toolchain: 1.98.0
+2026-11-05T08:26:38.2921014Z env:
+2026-11-05T08:26:38.2921163Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:26:38.2921327Z   PGHOST: localhost
+2026-11-05T08:26:38.2921496Z   PGUSER: postgres
+2026-11-05T08:26:38.2921646Z ##[endgroup]
+2026-11-05T08:26:38.2963391Z ##[start-action display=Parse toolchain version;id=__dtolnay_rust-toolchain.parse]
+2026-11-05T08:26:38.2999437Z ##[group]Run if [[ -z $toolchain ]]; then
+2026-11-05T08:26:38.2999743Z [36;1mif [[ -z $toolchain ]]; then[0m
+2026-11-05T08:26:38.3000246Z [36;1m  # GitHub does not enforce `required: true` inputs itself. https://github.com/actions/runner/issues/1070[0m
+2026-11-05T08:26:38.3000638Z [36;1m  echo "'toolchain' is a required input" >&2[0m
+2026-11-05T08:26:38.3000843Z [36;1m  exit 1[0m
+2026-11-05T08:26:38.3001106Z [36;1melif [[ $toolchain =~ ^stable' '[0-9]+' '(year|month|week|day)s?' 'ago$ ]]; then[0m
+2026-11-05T08:26:38.3001378Z [36;1m  if [[ Linux == macOS ]]; then[0m
+2026-11-05T08:26:38.3001715Z [36;1m    echo "toolchain=1.$((($(date -v-$(sed 's/stable \([0-9]*\) \(.\).*/\1\2/' <<< $toolchain) +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-11-05T08:26:38.3002037Z [36;1m  else[0m
+2026-11-05T08:26:38.3002304Z [36;1m    echo "toolchain=1.$((($(date --date "${toolchain#stable }" +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-11-05T08:26:38.3002594Z [36;1m  fi[0m
+2026-11-05T08:26:38.3002799Z [36;1melif [[ $toolchain =~ ^stable' 'minus' '[0-9]+' 'releases?$ ]]; then[0m
+2026-11-05T08:26:38.3003133Z [36;1m  echo "toolchain=1.$((($(date +%s)/60/60/24-16569)/7/6-${toolchain//[^0-9]/}))" >> $GITHUB_OUTPUT[0m
+2026-11-05T08:26:38.3003428Z [36;1melif [[ $toolchain =~ ^1\.[0-9]+$ ]]; then[0m
+2026-11-05T08:26:38.3003763Z [36;1m  echo "toolchain=1.$((i=${toolchain#1.}, c=($(date +%s)/60/60/24-16569)/7/6, i+9*i*(10*i<=c)+90*i*(100*i<=c)))" >> $GITHUB_OUTPUT[0m
+2026-11-05T08:26:38.3004070Z [36;1melse[0m
+2026-11-05T08:26:38.3004226Z [36;1m  delimiter=EOF[0m
+2026-11-05T08:26:38.3004445Z [36;1m  while [[ $toolchain == *$delimiter* ]]; do delimiter+=_; done[0m
+2026-11-05T08:26:38.3004770Z [36;1m  printf 'toolchain<<%s\n%s\n%s\n' "$delimiter" "$toolchain" "$delimiter" >> $GITHUB_OUTPUT[0m
+2026-11-05T08:26:38.3005191Z [36;1mfi[0m
+2026-11-05T08:26:38.3048406Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-05T08:26:38.3048645Z env:
+2026-11-05T08:26:38.3048791Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:26:38.3048949Z   PGHOST: localhost
+2026-11-05T08:26:38.3049098Z   PGUSER: postgres
+2026-11-05T08:26:38.3049250Z   toolchain: 1.98.0
+2026-11-05T08:26:38.3049400Z ##[endgroup]
+2026-11-05T08:26:38.3128769Z ##[end-action id=__dtolnay_rust-toolchain.parse;outcome=success;conclusion=success;duration_ms=16]
+2026-11-05T08:26:38.3130599Z ##[start-action display=Set $CARGO_HOME;id=__dtolnay_rust-toolchain.__run]
+2026-11-05T08:26:38.3151586Z ##[group]Run echo CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV
+2026-11-05T08:26:38.3151908Z [36;1mecho CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV[0m
+2026-11-05T08:26:38.3186290Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-05T08:26:38.3186510Z env:
+2026-11-05T08:26:38.3186663Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:26:38.3186819Z   PGHOST: localhost
+2026-11-05T08:26:38.3186971Z   PGUSER: postgres
+2026-11-05T08:26:38.3187117Z ##[endgroup]
+2026-11-05T08:26:38.3242447Z ##[end-action id=__dtolnay_rust-toolchain.__run;outcome=success;conclusion=success;duration_ms=11]
+2026-11-05T08:26:38.3243951Z ##[start-action display=Install rustup if needed;id=__dtolnay_rust-toolchain.__run_2]
+2026-11-05T08:26:38.3261010Z ##[group]Run if ! command -v rustup &>/dev/null; then
+2026-11-05T08:26:38.3261257Z [36;1mif ! command -v rustup &>/dev/null; then[0m
+2026-11-05T08:26:38.3261842Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+2026-11-05T08:26:38.3262274Z [36;1m  echo "$CARGO_HOME/bin" >> $GITHUB_PATH[0m
+2026-11-05T08:26:38.3262465Z [36;1mfi[0m
+2026-11-05T08:26:38.3296864Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-05T08:26:38.3297082Z env:
+2026-11-05T08:26:38.3297235Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:26:38.3318897Z   PGHOST: localhost
+2026-11-05T08:26:38.3319087Z   PGUSER: postgres
+2026-11-05T08:26:38.3319255Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:26:38.3319437Z ##[endgroup]
+2026-11-05T08:26:38.3374545Z ##[end-action id=__dtolnay_rust-toolchain.__run_2;outcome=success;conclusion=success;duration_ms=13]
+2026-11-05T08:26:38.3376058Z ##[start-action display=Install rustup if needed on windows;id=__dtolnay_rust-toolchain.__run_3]
+2026-11-05T08:26:38.3380692Z ##[end-action id=__dtolnay_rust-toolchain.__run_3;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-11-05T08:26:38.3389220Z ##[start-action display=rustup toolchain install 1.98.0;id=__dtolnay_rust-toolchain.__run_4]
+2026-11-05T08:26:38.3401644Z ##[group]Run set -f  # split targets and components on commas and whitespace, without glob expansion
+2026-11-05T08:26:38.3402053Z [36;1mset -f  # split targets and components on commas and whitespace, without glob expansion[0m
+2026-11-05T08:26:38.3402333Z [36;1mflags=()[0m
+2026-11-05T08:26:38.3402523Z [36;1mfor t in ${targets//,/ }; do flags+=(--target "$t"); done[0m
+2026-11-05T08:26:38.3402784Z [36;1mfor c in ${components//,/ }; do flags+=(--component "$c"); done[0m
+2026-11-05T08:26:38.3403102Z [36;1mif [[ $toolchain == nightly && -n $components ]]; then flags+=(--allow-downgrade); fi[0m
+2026-11-05T08:26:38.3403366Z [36;1mlog=$(mktemp)[0m
+2026-11-05T08:26:38.3403535Z [36;1mtrap 'rm -f "$log"' EXIT[0m
+2026-11-05T08:26:38.3403714Z [36;1mfor attempt in 1 2 3 4 5; do[0m
+2026-11-05T08:26:38.3404061Z [36;1m  if rustup toolchain install "$toolchain" "${flags[@]}" --profile minimal --no-self-update --force-non-host 2>&1 | tee "$log"; then[0m
+2026-11-05T08:26:38.3404401Z [36;1m    break[0m
+2026-11-05T08:26:38.3404545Z [36;1m  else[0m
+2026-11-05T08:26:38.3404693Z [36;1m    status=$?[0m
+2026-11-05T08:26:38.3404850Z [36;1m  fi[0m
+2026-11-05T08:26:38.3405044Z [36;1m  if [[ $attempt == 5 ]] || ! grep -Fq 'checksum failed for ' "$log" \[0m
+2026-11-05T08:26:38.3405490Z [36;1m      || ! grep -Fq 'this is likely due to an ongoing update of the official release server' "$log"; then[0m
+2026-11-05T08:26:38.3405777Z [36;1m    exit "$status"[0m
+2026-11-05T08:26:38.3405938Z [36;1m  fi[0m
+2026-11-05T08:26:38.3406168Z [36;1m  echo "Retrying rustup toolchain install in 30 seconds (retry $attempt of 4)" >&2[0m
+2026-11-05T08:26:38.3406427Z [36;1m  sleep 30[0m
+2026-11-05T08:26:38.3406575Z [36;1mdone[0m
+2026-11-05T08:26:38.3440993Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-05T08:26:38.3441210Z env:
+2026-11-05T08:26:38.3441352Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:26:38.3441509Z   PGHOST: localhost
+2026-11-05T08:26:38.3441669Z   PGUSER: postgres
+2026-11-05T08:26:38.3441824Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:26:38.3441996Z   toolchain: 1.98.0
+2026-11-05T08:26:38.3442143Z   targets: 
+2026-11-05T08:26:38.3442280Z   components: 
+2026-11-05T08:26:38.3442432Z   RUSTUP_PERMIT_COPY_RENAME: 1
+2026-11-05T08:26:38.3442607Z ##[endgroup]
+2026-11-05T08:26:38.8502615Z info: syncing channel updates for 1.98.0-x86_64-unknown-linux-gnu
+2026-11-05T08:26:39.1322324Z info: latest update on 2026-08-20 for version 1.98.0 (88d9e12ae 2026-08-18)
+2026-11-05T08:26:39.1362139Z info: downloading 3 components
+2026-11-05T08:26:45.3573892Z 
+2026-11-05T08:26:45.3633662Z   1.98.0-x86_64-unknown-linux-gnu installed - rustc 1.98.0 (88d9e12ae 2026-08-18)
+2026-11-05T08:26:45.3634133Z 
+2026-11-05T08:26:45.3887481Z ##[end-action id=__dtolnay_rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=7049]
+2026-11-05T08:26:45.3894998Z ##[start-action display=rustup default 1.98.0;id=__dtolnay_rust-toolchain.__run_5]
+2026-11-05T08:26:45.3908778Z ##[group]Run rustup default "$toolchain" --force-non-host
+2026-11-05T08:26:45.3909021Z [36;1mrustup default "$toolchain" --force-non-host[0m
+2026-11-05T08:26:45.3950367Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-05T08:26:45.3950551Z env:
+2026-11-05T08:26:45.3950678Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:26:45.3950803Z   PGHOST: localhost
+2026-11-05T08:26:45.3950924Z   PGUSER: postgres
+2026-11-05T08:26:45.3951050Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:26:45.3951191Z   toolchain: 1.98.0
+2026-11-05T08:26:45.3951309Z ##[endgroup]
+2026-11-05T08:26:45.4036003Z info: using existing install for 1.98.0-x86_64-unknown-linux-gnu
+2026-11-05T08:26:45.4041457Z info: default toolchain set to 1.98.0-x86_64-unknown-linux-gnu
+2026-11-05T08:26:45.4041611Z 
+2026-11-05T08:26:45.4094420Z   1.98.0-x86_64-unknown-linux-gnu unchanged - rustc 1.98.0 (88d9e12ae 2026-08-18)
+2026-11-05T08:26:45.4094680Z 
+2026-11-05T08:26:45.4096782Z info: note that the toolchain '1.98.0-x86_64-unknown-linux-gnu' is currently in use (overridden by '/home/runner/work/ontoforge/ontoforge/rust-toolchain.toml')
+2026-11-05T08:26:45.4107715Z ##[end-action id=__dtolnay_rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=21]
+2026-11-05T08:26:45.4110258Z ##[start-action display=Create cachekey;id=__dtolnay_rust-toolchain.rustc-version]
+2026-11-05T08:26:45.4122449Z ##[group]Run DATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')
+2026-11-05T08:26:45.4122909Z [36;1mDATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')[0m
+2026-11-05T08:26:45.4123264Z [36;1mHASH=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-hash: //p')[0m
+2026-11-05T08:26:45.4123537Z [36;1mecho "cachekey=$(echo $DATE$HASH | head -c12)" >> $GITHUB_OUTPUT[0m
+2026-11-05T08:26:45.4158412Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-05T08:26:45.4158599Z env:
+2026-11-05T08:26:45.4158714Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:26:45.4158836Z   PGHOST: localhost
+2026-11-05T08:26:45.4158951Z   PGUSER: postgres
+2026-11-05T08:26:45.4159075Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:26:45.4159211Z   toolchain: 1.98.0
+2026-11-05T08:26:45.4159327Z ##[endgroup]
+2026-11-05T08:26:45.4421603Z ##[end-action id=__dtolnay_rust-toolchain.rustc-version;outcome=success;conclusion=success;duration_ms=31]
+2026-11-05T08:26:45.4423566Z ##[start-action display=Disable incremental compilation;id=__dtolnay_rust-toolchain.__run_6]
+2026-11-05T08:26:45.4437123Z ##[group]Run if [ -z "${CARGO_INCREMENTAL+set}" ]; then
+2026-11-05T08:26:45.4437332Z [36;1mif [ -z "${CARGO_INCREMENTAL+set}" ]; then[0m
+2026-11-05T08:26:45.4437512Z [36;1m  echo CARGO_INCREMENTAL=0 >> $GITHUB_ENV[0m
+2026-11-05T08:26:45.4437673Z [36;1mfi[0m
+2026-11-05T08:26:45.4476354Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-05T08:26:45.4476539Z env:
+2026-11-05T08:26:45.4476665Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:26:45.4476788Z   PGHOST: localhost
+2026-11-05T08:26:45.4476904Z   PGUSER: postgres
+2026-11-05T08:26:45.4477028Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:26:45.4477168Z ##[endgroup]
+2026-11-05T08:26:45.4530481Z ##[end-action id=__dtolnay_rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=10]
+2026-11-05T08:26:45.4531820Z ##[start-action display=Enable colors in Cargo output;id=__dtolnay_rust-toolchain.__run_7]
+2026-11-05T08:26:45.4543242Z ##[group]Run if [ -z "${CARGO_TERM_COLOR+set}" ]; then
+2026-11-05T08:26:45.4543443Z [36;1mif [ -z "${CARGO_TERM_COLOR+set}" ]; then[0m
+2026-11-05T08:26:45.4543624Z [36;1m  echo CARGO_TERM_COLOR=always >> $GITHUB_ENV[0m
+2026-11-05T08:26:45.4543789Z [36;1mfi[0m
+2026-11-05T08:26:45.4577840Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-05T08:26:45.4578023Z env:
+2026-11-05T08:26:45.4578135Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:26:45.4578257Z   PGHOST: localhost
+2026-11-05T08:26:45.4578507Z   PGUSER: postgres
+2026-11-05T08:26:45.4578628Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:26:45.4578770Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:26:45.4578892Z ##[endgroup]
+2026-11-05T08:26:45.4629721Z ##[end-action id=__dtolnay_rust-toolchain.__run_7;outcome=success;conclusion=success;duration_ms=9]
+2026-11-05T08:26:45.4631941Z ##[start-action display=Enable Cargo sparse registry;id=__dtolnay_rust-toolchain.__run_8]
+2026-11-05T08:26:45.4644059Z ##[group]Run # implemented in 1.66, stabilized in 1.68, made default in 1.70
+2026-11-05T08:26:45.4644330Z [36;1m# implemented in 1.66, stabilized in 1.68, made default in 1.70[0m
+2026-11-05T08:26:45.4644699Z [36;1mif [ -z "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL+set}" -o -f "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol ]; then[0m
+2026-11-05T08:26:45.4645086Z [36;1m  if rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[89]\.'; then[0m
+2026-11-05T08:26:45.4645422Z [36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-11-05T08:26:45.4645712Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse >> $GITHUB_ENV[0m
+2026-11-05T08:26:45.4645994Z [36;1m  elif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[67]\.'; then[0m
+2026-11-05T08:26:45.4646302Z [36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-11-05T08:26:45.4646580Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git >> $GITHUB_ENV[0m
+2026-11-05T08:26:45.4646766Z [36;1m  fi[0m
+2026-11-05T08:26:45.4646875Z [36;1mfi[0m
+2026-11-05T08:26:45.4680380Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-05T08:26:45.4680560Z env:
+2026-11-05T08:26:45.4680682Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:26:45.4680805Z   PGHOST: localhost
+2026-11-05T08:26:45.4680921Z   PGUSER: postgres
+2026-11-05T08:26:45.4681043Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:26:45.4681186Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:26:45.4681312Z   CARGO_TERM_COLOR: always
+2026-11-05T08:26:45.4681436Z   toolchain: 1.98.0
+2026-11-05T08:26:45.4681556Z ##[endgroup]
+2026-11-05T08:26:45.4903638Z ##[end-action id=__dtolnay_rust-toolchain.__run_8;outcome=success;conclusion=success;duration_ms=27]
+2026-11-05T08:26:45.4906473Z ##[start-action display=Work around spurious network errors in curl 8.0;id=__dtolnay_rust-toolchain.__run_9]
+2026-11-05T08:26:45.4919678Z ##[group]Run # https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation
+2026-11-05T08:26:45.4920274Z [36;1m# https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation[0m
+2026-11-05T08:26:45.4920608Z [36;1mif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.7[01]\.'; then[0m
+2026-11-05T08:26:45.4920860Z [36;1m  echo CARGO_HTTP_MULTIPLEXING=false >> $GITHUB_ENV[0m
+2026-11-05T08:26:45.4921033Z [36;1mfi[0m
+2026-11-05T08:26:45.4958601Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-05T08:26:45.4958781Z env:
+2026-11-05T08:26:45.4958919Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:26:45.4959039Z   PGHOST: localhost
+2026-11-05T08:26:45.4959153Z   PGUSER: postgres
+2026-11-05T08:26:45.4959273Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:26:45.4959413Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:26:45.4959533Z   CARGO_TERM_COLOR: always
+2026-11-05T08:26:45.4959668Z   toolchain: 1.98.0
+2026-11-05T08:26:45.4959783Z ##[endgroup]
+2026-11-05T08:26:45.5096435Z ##[end-action id=__dtolnay_rust-toolchain.__run_9;outcome=success;conclusion=success;duration_ms=18]
+2026-11-05T08:26:45.5099415Z ##[start-action display=rustc +1.98.0 --version --verbose;id=__dtolnay_rust-toolchain.__run_10]
+2026-11-05T08:26:45.5111006Z ##[group]Run rustc +"$toolchain" --version --verbose
+2026-11-05T08:26:45.5111210Z [36;1mrustc +"$toolchain" --version --verbose[0m
+2026-11-05T08:26:45.5146335Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-05T08:26:45.5146515Z env:
+2026-11-05T08:26:45.5146625Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:26:45.5146858Z   PGHOST: localhost
+2026-11-05T08:26:45.5146981Z   PGUSER: postgres
+2026-11-05T08:26:45.5147103Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:26:45.5147242Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:26:45.5147363Z   CARGO_TERM_COLOR: always
+2026-11-05T08:26:45.5147486Z   toolchain: 1.98.0
+2026-11-05T08:26:45.5147605Z ##[endgroup]
+2026-11-05T08:26:45.5271260Z rustc 1.98.0 (88d9e12ae 2026-08-18)
+2026-11-05T08:26:45.5271536Z binary: rustc
+2026-11-05T08:26:45.5272050Z commit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea
+2026-11-05T08:26:45.5272292Z commit-date: 2026-08-18
+2026-11-05T08:26:45.5272483Z host: x86_64-unknown-linux-gnu
+2026-11-05T08:26:45.5272719Z release: 1.98.0
+2026-11-05T08:26:45.5272943Z LLVM version: 22.1.8
+2026-11-05T08:26:45.5295913Z ##[end-action id=__dtolnay_rust-toolchain.__run_10;outcome=success;conclusion=success;duration_ms=19]
+2026-11-05T08:26:45.5369309Z ##[group]Run Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
+2026-11-05T08:26:45.5369518Z with:
+2026-11-05T08:26:45.5369632Z   prefix-key: v0-rust
+2026-11-05T08:26:45.5369754Z   add-job-id-key: true
+2026-11-05T08:26:45.5369894Z   add-rust-environment-hash-key: true
+2026-11-05T08:26:45.5370045Z   cache-targets: true
+2026-11-05T08:26:45.5370332Z   cache-all-crates: false
+2026-11-05T08:26:45.5370470Z   cache-workspace-crates: false
+2026-11-05T08:26:45.5370614Z   save-if: true
+2026-11-05T08:26:45.5370730Z   cache-provider: github
+2026-11-05T08:26:45.5370851Z   cache-bin: true
+2026-11-05T08:26:45.5370963Z   lookup-only: false
+2026-11-05T08:26:45.5371075Z   cmd-format: {0}
+2026-11-05T08:26:45.5371182Z env:
+2026-11-05T08:26:45.5371286Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:26:45.5371401Z   PGHOST: localhost
+2026-11-05T08:26:45.5371518Z   PGUSER: postgres
+2026-11-05T08:26:45.5371638Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:26:45.5371778Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:26:45.5371916Z   CARGO_TERM_COLOR: always
+2026-11-05T08:26:45.5372041Z ##[endgroup]
+2026-11-05T08:26:47.8333768Z ##[group]Cache Configuration
+2026-11-05T08:26:47.8334329Z Cache Provider:
+2026-11-05T08:26:47.8334660Z     github
+2026-11-05T08:26:47.8334834Z Workspaces:
+2026-11-05T08:26:47.8345418Z     /home/runner/work/ontoforge/ontoforge
+2026-11-05T08:26:47.8345689Z Cache Paths:
+2026-11-05T08:26:47.8345867Z     /home/runner/.cargo/bin
+2026-11-05T08:26:47.8346080Z     /home/runner/.cargo/.crates.toml
+2026-11-05T08:26:47.8346578Z     /home/runner/.cargo/.crates2.json
+2026-11-05T08:26:47.8346729Z     /home/runner/.cargo/registry
+2026-11-05T08:26:47.8346868Z     /home/runner/.cargo/git
+2026-11-05T08:26:47.8347020Z     /home/runner/work/ontoforge/ontoforge/target
+2026-11-05T08:26:47.8347180Z Restore Key:
+2026-11-05T08:26:47.8347312Z     v0-rust-integration-Linux-x64-fb4bddd2
+2026-11-05T08:26:47.8347465Z Cache Key:
+2026-11-05T08:26:47.8347605Z     v0-rust-integration-Linux-x64-fb4bddd2-bcf60ea6
+2026-11-05T08:26:47.8347793Z .. Prefix:
+2026-11-05T08:26:47.8347919Z   - v0-rust-integration-Linux-x64
+2026-11-05T08:26:47.8348072Z .. Environment considered:
+2026-11-05T08:26:47.8348205Z   - Rust Versions:
+2026-11-05T08:26:47.8348393Z     - 1.98.0 x86_64-unknown-linux-gnu 88d9e12ae178fab0fb5cc050a94da85685d449ea
+2026-11-05T08:26:47.8348662Z     - 1.99.1 x86_64-unknown-linux-gnu 58cf8f9c35b355199727627d07ae34a4e2846d67
+2026-11-05T08:26:47.8348865Z   - CARGO_BUILD_JOBS
+2026-11-05T08:26:47.8348991Z   - CARGO_HOME
+2026-11-05T08:26:47.8349110Z   - CARGO_INCREMENTAL
+2026-11-05T08:26:47.8349230Z   - CARGO_TERM_COLOR
+2026-11-05T08:26:47.8349358Z .. Lockfiles considered:
+2026-11-05T08:26:47.8349510Z   - /home/runner/work/ontoforge/ontoforge/Cargo.lock
+2026-11-05T08:26:47.8349746Z   - /home/runner/work/ontoforge/ontoforge/crates/ontoforge-action/Cargo.toml
+2026-11-05T08:26:47.8350201Z   - /home/runner/work/ontoforge/ontoforge/crates/ontoforge-api/Cargo.toml
+2026-11-05T08:26:47.8350634Z   - /home/runner/work/ontoforge/ontoforge/crates/ontoforge-auth/Cargo.toml
+2026-11-05T08:26:47.8350964Z   - /home/runner/work/ontoforge/ontoforge/crates/ontoforge-client/Cargo.toml
+2026-11-05T08:26:47.8351228Z   - /home/runner/work/ontoforge/ontoforge/crates/ontoforge-engine/Cargo.toml
+2026-11-05T08:26:47.8351492Z   - /home/runner/work/ontoforge/ontoforge/crates/ontoforge-expr/Cargo.toml
+2026-11-05T08:26:47.8351761Z   - /home/runner/work/ontoforge/ontoforge/crates/ontoforge-query/Cargo.toml
+2026-11-05T08:26:47.8352035Z   - /home/runner/work/ontoforge/ontoforge/crates/ontoforge-schema/Cargo.toml
+2026-11-05T08:26:47.8352300Z   - /home/runner/work/ontoforge/ontoforge/crates/ontoforge-server/Cargo.toml
+2026-11-05T08:26:47.8352569Z   - /home/runner/work/ontoforge/ontoforge/crates/ontoforge-storage/Cargo.toml
+2026-11-05T08:26:47.8352830Z   - /home/runner/work/ontoforge/ontoforge/crates/ontoforge/Cargo.toml
+2026-11-05T08:26:47.8353063Z   - /home/runner/work/ontoforge/ontoforge/rust-toolchain.toml
+2026-11-05T08:26:47.8353418Z ##[endgroup]
+2026-11-05T08:26:47.8353704Z 
+2026-11-05T08:26:47.8353760Z ... Restoring cache ...
+2026-11-05T08:26:48.0690912Z Cache hit for: v0-rust-integration-Linux-x64-fb4bddd2-bcf60ea6
+2026-11-05T08:26:49.3746887Z Received 33554432 of 1271556817 (2.6%), 32.0 MBs/sec
+2026-11-05T08:26:50.3746293Z Received 134217728 of 1271556817 (10.6%), 64.0 MBs/sec
+2026-11-05T08:26:51.3748204Z Received 268435456 of 1271556817 (21.1%), 85.3 MBs/sec
+2026-11-05T08:26:52.3946986Z Received 402653184 of 1271556817 (31.7%), 95.6 MBs/sec
+2026-11-05T08:26:53.3932797Z Received 511705088 of 1271556817 (40.2%), 97.2 MBs/sec
+2026-11-05T08:26:54.3935200Z Received 528482304 of 1271556817 (41.6%), 83.7 MBs/sec
+2026-11-05T08:26:55.3937525Z Received 624951296 of 1271556817 (49.1%), 84.9 MBs/sec
+2026-11-05T08:26:56.3948073Z Received 729808896 of 1271556817 (57.4%), 86.8 MBs/sec
+2026-11-05T08:26:57.3952557Z Received 792723456 of 1271556817 (62.3%), 83.8 MBs/sec
+2026-11-05T08:26:58.3991080Z Received 876609536 of 1271556817 (68.9%), 83.4 MBs/sec
+2026-11-05T08:26:59.3968709Z Received 956301312 of 1271556817 (75.2%), 82.7 MBs/sec
+2026-11-05T08:27:00.3972994Z Received 1069547520 of 1271556817 (84.1%), 84.8 MBs/sec
+2026-11-05T08:27:01.4015824Z Received 1132462080 of 1271556817 (89.1%), 82.9 MBs/sec
+2026-11-05T08:27:02.4086454Z Received 1207959552 of 1271556817 (95.0%), 82.1 MBs/sec
+2026-11-05T08:27:03.0863770Z Received 1271556817 of 1271556817 (100.0%), 82.4 MBs/sec
+2026-11-05T08:27:03.0864171Z Cache Size: ~1213 MB (1271556817 B)
+2026-11-05T08:27:03.0938806Z [command]/usr/bin/tar -xf /home/runner/work/_temp/5e0aee4b-cf99-4a4a-9305-ddb99fb4d8c7/cache.tzst -P -C /home/runner/work/ontoforge/ontoforge --use-compress-program unzstd
+2026-11-05T08:27:28.2674455Z Cache restored successfully
+2026-11-05T08:27:28.3173620Z Restored from cache key "v0-rust-integration-Linux-x64-fb4bddd2-bcf60ea6" full match: true.
+2026-11-05T08:27:28.4955259Z ##[group]Run bash ci/query-services.sh postgres
+2026-11-05T08:27:28.4955502Z [36;1mbash ci/query-services.sh postgres[0m
+2026-11-05T08:27:28.4997295Z shell: /usr/bin/bash -e {0}
+2026-11-05T08:27:28.4997446Z env:
+2026-11-05T08:27:28.4997563Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:27:28.4997694Z   PGHOST: localhost
+2026-11-05T08:27:28.4997819Z   PGUSER: postgres
+2026-11-05T08:27:28.4997960Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:27:28.4998113Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:27:28.4998243Z   CARGO_TERM_COLOR: always
+2026-11-05T08:27:28.4998382Z   CACHE_ON_FAILURE: false
+2026-11-05T08:27:28.4998523Z ##[endgroup]
+2026-11-05T08:27:30.1879049Z Unable to find image 'postgres:17.11@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3' locally
+2026-11-05T08:27:30.9590000Z docker.io/library/postgres@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3: Pulling from library/postgres
+2026-11-05T08:27:31.2165513Z b86134c2eeb6: Pulling fs layer
+2026-11-05T08:27:31.2166351Z fcdd3a481359: Pulling fs layer
+2026-11-05T08:27:31.2166679Z 52fc2be321a4: Pulling fs layer
+2026-11-05T08:27:31.2166915Z 8aebe6431dc8: Pulling fs layer
+2026-11-05T08:27:31.2167144Z c5602f014e9e: Pulling fs layer
+2026-11-05T08:27:31.2167373Z e30751283c57: Pulling fs layer
+2026-11-05T08:27:31.2167604Z dc30f2779c66: Pulling fs layer
+2026-11-05T08:27:31.2167855Z ecc510c1e359: Pulling fs layer
+2026-11-05T08:27:31.2168077Z 57644501a07f: Pulling fs layer
+2026-11-05T08:27:31.2168291Z 99ce35cabaf9: Pulling fs layer
+2026-11-05T08:27:31.2168514Z affbe3357b39: Pulling fs layer
+2026-11-05T08:27:31.2168695Z c9432d362cca: Pulling fs layer
+2026-11-05T08:27:31.2168849Z 3be737420556: Pulling fs layer
+2026-11-05T08:27:31.2168988Z d43ee31e40df: Pulling fs layer
+2026-11-05T08:27:31.4901031Z 8aebe6431dc8: Download complete
+2026-11-05T08:27:31.4901426Z 99ce35cabaf9: Download complete
+2026-11-05T08:27:31.4905455Z c5602f014e9e: Download complete
+2026-11-05T08:27:31.4907875Z fcdd3a481359: Download complete
+2026-11-05T08:27:31.4913524Z 52fc2be321a4: Download complete
+2026-11-05T08:27:31.4914040Z dc30f2779c66: Download complete
+2026-11-05T08:27:31.4916775Z d43ee31e40df: Download complete
+2026-11-05T08:27:31.4918577Z e30751283c57: Download complete
+2026-11-05T08:27:31.4920501Z b86134c2eeb6: Download complete
+2026-11-05T08:27:31.5903145Z affbe3357b39: Download complete
+2026-11-05T08:27:31.5903512Z 3be737420556: Download complete
+2026-11-05T08:27:31.5907198Z 57644501a07f: Download complete
+2026-11-05T08:27:31.7899094Z 3de48e9ae1ea: Download complete
+2026-11-05T08:27:31.7899692Z ecc510c1e359: Download complete
+2026-11-05T08:27:31.7901931Z a7cb71218182: Download complete
+2026-11-05T08:27:32.4903961Z c9432d362cca: Download complete
+2026-11-05T08:27:32.4937713Z fcdd3a481359: Pull complete
+2026-11-05T08:27:32.4998057Z ecc510c1e359: Pull complete
+2026-11-05T08:27:32.5959409Z b86134c2eeb6: Pull complete
+2026-11-05T08:27:32.5982530Z 57644501a07f: Pull complete
+2026-11-05T08:27:32.6954450Z affbe3357b39: Pull complete
+2026-11-05T08:27:32.6963023Z 3be737420556: Pull complete
+2026-11-05T08:27:32.7920678Z c5602f014e9e: Pull complete
+2026-11-05T08:27:32.7955668Z e30751283c57: Pull complete
+2026-11-05T08:27:34.0931637Z c9432d362cca: Pull complete
+2026-11-05T08:27:34.3926294Z dc30f2779c66: Pull complete
+2026-11-05T08:27:34.3930472Z d43ee31e40df: Pull complete
+2026-11-05T08:27:34.5898633Z 8aebe6431dc8: Pull complete
+2026-11-05T08:27:34.5911774Z 99ce35cabaf9: Pull complete
+2026-11-05T08:27:34.5919337Z 52fc2be321a4: Pull complete
+2026-11-05T08:27:34.5970927Z Digest: sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3
+2026-11-05T08:27:34.5974509Z Status: Downloaded newer image for postgres@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3
+2026-11-05T08:27:42.0733627Z 11f8b06b24b692a5620c3b607f7e34566e7fe028e94f9afaf3302d1670d5f91d
+2026-11-05T08:27:44.8378310Z ##[group]Run psql -v ON_ERROR_STOP=1 -d postgres -c 'CREATE DATABASE demo' -c 'CREATE DATABASE editstore'
+2026-11-05T08:27:44.8378731Z [36;1mpsql -v ON_ERROR_STOP=1 -d postgres -c 'CREATE DATABASE demo' -c 'CREATE DATABASE editstore'[0m
+2026-11-05T08:27:44.8379140Z [36;1mpsql -v ON_ERROR_STOP=1 -v fixtures="$PWD/examples/ontologies/aviation/bindings/dev/fixtures" -d demo -f ci/pg/seed.sql[0m
+2026-11-05T08:27:44.8379518Z [36;1m# The fixed row predicate corpus of the Trino differential test (D-09).[0m
+2026-11-05T08:27:44.8379796Z [36;1mpsql -v ON_ERROR_STOP=1 -d demo -f ci/pg/rowpred_corpus.sql[0m
+2026-11-05T08:27:44.8380041Z [36;1mpsql -v ON_ERROR_STOP=1 -d demo -f ci/pg/query_corpus.sql[0m
+2026-11-05T08:27:44.8420593Z shell: /usr/bin/bash -e {0}
+2026-11-05T08:27:44.8420746Z env:
+2026-11-05T08:27:44.8420885Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:27:44.8421021Z   PGHOST: localhost
+2026-11-05T08:27:44.8421154Z   PGUSER: postgres
+2026-11-05T08:27:44.8421313Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:27:44.8421466Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:27:44.8421602Z   CARGO_TERM_COLOR: always
+2026-11-05T08:27:44.8421747Z   CACHE_ON_FAILURE: false
+2026-11-05T08:27:44.8421935Z   TRINO_CATALOG_DIR: /home/runner/work/_temp/trino-catalog.szl82DHg
+2026-11-05T08:27:44.8422777Z   PGPASSWORD: ***
+2026-11-05T08:27:44.8423216Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore
+2026-11-05T08:27:44.8423386Z ##[endgroup]
+2026-11-05T08:27:45.1366890Z CREATE DATABASE
+2026-11-05T08:27:45.1667097Z CREATE DATABASE
+2026-11-05T08:27:45.1992406Z BEGIN
+2026-11-05T08:27:45.1994961Z CREATE SCHEMA
+2026-11-05T08:27:45.2008459Z CREATE TABLE
+2026-11-05T08:27:45.2012109Z COPY 23
+2026-11-05T08:27:45.2027089Z CREATE TABLE
+2026-11-05T08:27:45.2032260Z INSERT 0 23
+2026-11-05T08:27:45.2038492Z CREATE TABLE
+2026-11-05T08:27:45.2040824Z COPY 23
+2026-11-05T08:27:45.2047687Z CREATE TABLE
+2026-11-05T08:27:45.2053779Z INSERT 0 23
+2026-11-05T08:27:45.2058147Z CREATE TABLE
+2026-11-05T08:27:45.2060255Z COPY 23
+2026-11-05T08:27:45.2066644Z CREATE TABLE
+2026-11-05T08:27:45.2068905Z INSERT 0 23
+2026-11-05T08:27:45.2073589Z CREATE TABLE
+2026-11-05T08:27:45.2075885Z COPY 22
+2026-11-05T08:27:45.2083625Z CREATE TABLE
+2026-11-05T08:27:45.2087076Z INSERT 0 22
+2026-11-05T08:27:45.2091673Z CREATE TABLE
+2026-11-05T08:27:45.2094440Z COPY 43
+2026-11-05T08:27:45.2101117Z CREATE TABLE
+2026-11-05T08:27:45.2104548Z INSERT 0 43
+2026-11-05T08:27:45.2110908Z CREATE TABLE
+2026-11-05T08:27:45.2113163Z INSERT 0 5
+2026-11-05T08:27:45.2116135Z CREATE TABLE
+2026-11-05T08:27:45.2118462Z INSERT 0 14
+2026-11-05T08:27:45.2125922Z CREATE VIEW
+2026-11-05T08:27:45.2129011Z CREATE VIEW
+2026-11-05T08:27:45.2132253Z CREATE VIEW
+2026-11-05T08:27:45.2151909Z COMMIT
+2026-11-05T08:27:45.2368689Z BEGIN
+2026-11-05T08:27:45.2370752Z CREATE SCHEMA
+2026-11-05T08:27:45.2383706Z CREATE TABLE
+2026-11-05T08:27:45.2388018Z INSERT 0 24
+2026-11-05T08:27:45.2390254Z COMMIT
+2026-11-05T08:27:45.2589310Z BEGIN
+2026-11-05T08:27:45.2595332Z INSERT 0 6
+2026-11-05T08:27:45.2597501Z INSERT 0 5
+2026-11-05T08:27:45.2599573Z COMMIT
+2026-11-05T08:27:45.2635387Z ##[group]Run cargo test -p ontoforge-storage --locked --test conformance_pg --test reload_pg --test scope_store --test migrate_pg --test history_masking --test import -- --ignored
+2026-11-05T08:27:45.2636016Z [36;1mcargo test -p ontoforge-storage --locked --test conformance_pg --test reload_pg --test scope_store --test migrate_pg --test history_masking --test import -- --ignored[0m
+2026-11-05T08:27:45.2674538Z shell: /usr/bin/bash -e {0}
+2026-11-05T08:27:45.2674681Z env:
+2026-11-05T08:27:45.2674819Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:27:45.2674952Z   PGHOST: localhost
+2026-11-05T08:27:45.2675074Z   PGUSER: postgres
+2026-11-05T08:27:45.2675205Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:27:45.2675361Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:27:45.2675634Z   CARGO_TERM_COLOR: always
+2026-11-05T08:27:45.2675771Z   CACHE_ON_FAILURE: false
+2026-11-05T08:27:45.2675962Z   TRINO_CATALOG_DIR: /home/runner/work/_temp/trino-catalog.szl82DHg
+2026-11-05T08:27:45.2676347Z   PGPASSWORD: ***
+2026-11-05T08:27:45.2676710Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore
+2026-11-05T08:27:45.2676880Z ##[endgroup]
+2026-11-05T08:27:45.3167105Z [1m[92m    Updating[0m crates.io index
+2026-11-05T08:27:46.2528880Z [1m[92m   Compiling[0m ontoforge-schema v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-schema)
+2026-11-05T08:27:47.4360303Z [1m[92m   Compiling[0m ontoforge-engine v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-engine)
+2026-11-05T08:27:50.3791124Z [1m[92m   Compiling[0m ontoforge-expr v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-expr)
+2026-11-05T08:27:50.8349936Z [1m[92m   Compiling[0m ontoforge-auth v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-auth)
+2026-11-05T08:27:52.0737110Z [1m[92m   Compiling[0m ontoforge-storage v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-storage)
+2026-11-05T08:28:04.3683574Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 19.07s
+2026-11-05T08:28:04.3952280Z [1m[92m     Running[0m tests/conformance_pg.rs (target/debug/deps/conformance_pg-b7239af1cdb261b2)
+2026-11-05T08:28:04.3973466Z 
+2026-11-05T08:28:04.3973832Z running 45 tests
+2026-11-05T08:28:05.7611769Z test action_batch_stale_definition_leaves_no_action_rows ... ok
+2026-11-05T08:28:07.1014968Z test action_batch_guard_interleaves_reads_and_edits ... ok
+2026-11-05T08:28:07.2382598Z test action_batch_principal_scopes_command_id ... ok
+2026-11-05T08:28:07.2819013Z test action_batch_migration_constraints_match_contract ... ok
+2026-11-05T08:28:07.3159781Z test action_cas_conflict_rolls_back_version_zero_skeleton ... ok
+2026-11-05T08:28:07.3297528Z test action_batch_writes_one_command_and_outbox ... ok
+2026-11-05T08:28:07.5083138Z test append_only_rejects_sqlite_replace_writes ... ok
+2026-11-05T08:28:07.5832589Z test action_cas_rejects_stale_no_token_without_side_effects ... ok
+2026-11-05T08:28:07.6851150Z test append_only_rejects_truncate_on_pg ... ok
+2026-11-05T08:28:07.7131039Z test append_only_rejects_update_and_delete ... ok
+2026-11-05T08:28:07.7742961Z test audit_batch_retention_parity ... ok
+2026-11-05T08:28:07.8382537Z test audit_cancelled_shutdown_retry_waits_for_durability ... ok
+2026-11-05T08:28:07.9132031Z test audit_concurrent_shutdown_waits_for_durability ... ok
+2026-11-05T08:28:08.0370888Z test audit_shutdown_drains_inflight_guard ... ok
+2026-11-05T08:28:08.2619252Z test audit_pg_connection_interruption_recovers ... ok
+2026-11-05T08:28:08.6411201Z test audit_sink_failure_rejects_inflight_finish ... ok
+2026-11-05T08:28:08.7377917Z test audit_batch_rejection_is_atomic ... ok
+2026-11-05T08:28:08.7760638Z test commit_appends_one_log_record ... ok
+2026-11-05T08:28:08.8862398Z test commit_set_creates_edit_row ... ok
+2026-11-05T08:28:08.9273889Z test audit_cleanup_rejection_rolls_back_batch ... ok
+2026-11-05T08:28:08.9310784Z test commit_writes_history_snapshot ... ok
+2026-11-05T08:28:09.0672439Z test concurrent_commits_on_same_pk_serialize ... ok
+2026-11-05T08:28:09.1199565Z test duplicate_link_add_keeps_one_live_row ... ok
+2026-11-05T08:28:09.1723977Z test audit_shutdown_failure_is_sticky ... ok
+2026-11-05T08:28:09.1900966Z test concurrent_fk_claims_one_wins ... ok
+2026-11-05T08:28:09.2693571Z test edit_only_rules ... ok
+2026-11-05T08:28:09.3327676Z test every_value_type_round_trips ... ok
+2026-11-05T08:28:09.3892913Z test import_actor_is_stored_as_system_import ... ok
+2026-11-05T08:28:09.4533837Z test invalid_values_are_rejected_without_writes ... ok
+2026-11-05T08:28:09.4892258Z test link_add_creates_link_row ... ok
+2026-11-05T08:28:09.5412060Z test link_add_remove_toggle ... ok
+2026-11-05T08:28:09.6200665Z test link_remove_rules ... ok
+2026-11-05T08:28:09.6901185Z test log_records_every_op ... ok
+2026-11-05T08:28:09.7899393Z test one_to_one_violation_is_reported ... ok
+2026-11-05T08:28:09.8873864Z test read_log_pages_by_seq ... ok
+2026-11-05T08:28:10.3240667Z test replay_detects_version_divergence ... ok
+2026-11-05T08:28:10.4751032Z test replay_rebuilds_edit_store ... ok
+2026-11-05T08:28:10.5446812Z test same_commit_twice_creates_two_records ... ok
+2026-11-05T08:28:10.5982088Z test replay_rebuilds_overlay_operations ... ok
+2026-11-05T08:28:10.6750861Z test second_set_patches_only_given_properties ... ok
+2026-11-05T08:28:10.7749461Z test source_object_lifecycle ... ok
+2026-11-05T08:28:10.8057424Z test stale_def_version_rejected ... ok
+2026-11-05T08:28:10.8826589Z test two_edits_of_one_object_bump_each_version ... ok
+2026-11-05T08:28:10.9165349Z test pg_sessions_use_the_pinned_settings ... ok
+2026-11-05T08:28:10.9638801Z test values_postgres_cannot_store_are_refused_on_every_backend ... ok
+2026-11-05T08:28:10.9639064Z 
+2026-11-05T08:28:10.9639239Z test result: ok. 45 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.57s
+2026-11-05T08:28:10.9639482Z 
+2026-11-05T08:28:10.9650934Z [1m[92m     Running[0m tests/history_masking.rs (target/debug/deps/history_masking-19aae83e6d158689)
+2026-11-05T08:28:10.9672675Z 
+2026-11-05T08:28:10.9672813Z running 1 test
+2026-11-05T08:28:11.1225758Z test pg_history_masks_and_pages ... ok
+2026-11-05T08:28:11.1226117Z 
+2026-11-05T08:28:11.1226711Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 12 filtered out; finished in 0.16s
+2026-11-05T08:28:11.1227337Z 
+2026-11-05T08:28:11.1235132Z [1m[92m     Running[0m tests/import.rs (target/debug/deps/import-884a30f79b256691)
+2026-11-05T08:28:11.1255962Z 
+2026-11-05T08:28:11.1256073Z running 2 tests
+2026-11-05T08:28:11.2604684Z test pg_cells_and_keys_of_every_kind ... ok
+2026-11-05T08:28:11.2988796Z test pg_import_modes_and_links ... ok
+2026-11-05T08:28:11.2989256Z 
+2026-11-05T08:28:11.2989765Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 16 filtered out; finished in 0.17s
+2026-11-05T08:28:11.2990204Z 
+2026-11-05T08:28:11.2991913Z [1m[92m     Running[0m tests/migrate_pg.rs (target/debug/deps/migrate_pg-2147b408954aa050)
+2026-11-05T08:28:11.3010470Z 
+2026-11-05T08:28:11.3010563Z running 4 tests
+2026-11-05T08:28:11.5464122Z test rename_property_and_type_on_pg ... ok
+2026-11-05T08:28:11.5810548Z test archive_removed_property_on_pg ... ok
+2026-11-05T08:28:11.6286958Z test primary_key_change_then_drop_archived_on_pg ... ok
+2026-11-05T08:28:11.6455670Z test pg_migrate_rechecks_applied_roles ... ok
+2026-11-05T08:28:11.6455920Z 
+2026-11-05T08:28:11.6456153Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+2026-11-05T08:28:11.6456464Z 
+2026-11-05T08:28:11.6465245Z [1m[92m     Running[0m tests/reload_pg.rs (target/debug/deps/reload_pg-1e8b78b22fce35f5)
+2026-11-05T08:28:11.6486988Z 
+2026-11-05T08:28:11.6487180Z running 11 tests
+2026-11-05T08:28:11.9203667Z test first_reload_on_pg_puts_edit_tables_in_edit_schema ... ok
+2026-11-05T08:28:11.9301543Z test additive_reload_on_pg_adds_columns ... ok
+2026-11-05T08:28:12.2051724Z test indexes_on_pg ... ok
+2026-11-05T08:28:12.6165151Z test definition_lock_is_shared_and_bounded_by_lock_timeout ... ok
+2026-11-05T08:28:13.2313919Z test in_flight_commit_blocks_switch_on_pg ... ok
+2026-11-05T08:28:14.7902490Z test long_names_on_pg ... ok
+2026-11-05T08:28:14.7932714Z test concurrent_reloads_single_flight_on_pg ... ok
+2026-11-05T08:28:14.9559824Z test second_reload_on_pg_is_noop ... ok
+2026-11-05T08:28:15.2238567Z test lock_timeout_keeps_old_definition ... ok
+2026-11-05T08:28:16.2747158Z test pending_switch_on_pg_serves_the_old_definition_until_visible ... ok
+2026-11-05T08:28:16.3716599Z test reload_racing_commits_never_lets_an_old_write_through_on_pg ... ok
+2026-11-05T08:28:16.3741369Z [1m[92m     Running[0m tests/scope_store.rs (target/debug/deps/scope_store-cad1bee945540038)
+2026-11-05T08:28:16.3741753Z 
+2026-11-05T08:28:16.3742002Z test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.72s
+2026-11-05T08:28:16.3742318Z 
+2026-11-05T08:28:16.3750753Z 
+2026-11-05T08:28:16.3751311Z running 3 tests
+2026-11-05T08:28:16.6475914Z test pg_scope_apply ... ok
+2026-11-05T08:28:16.6589953Z test pg_audit_is_append_only_and_login_is_recorded ... ok
+2026-11-05T08:28:17.1651199Z test pg_concurrent_scope_apply_serializes ... ok
+2026-11-05T08:28:17.1651776Z 
+2026-11-05T08:28:17.1652291Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 12 filtered out; finished in 0.79s
+2026-11-05T08:28:17.1652757Z 
+2026-11-05T08:28:17.1765263Z ##[group]Run set -euo pipefail
+2026-11-05T08:28:17.1765590Z [36;1mset -euo pipefail[0m
+2026-11-05T08:28:17.1765919Z [36;1m: "${ONTOFORGE_PG_URL:?PostgreSQL service must set ONTOFORGE_PG_URL}"[0m
+2026-11-05T08:28:17.1766483Z [36;1moutput=$(cargo test -p ontoforge-storage --test conformance_pg --locked audit_ -- --ignored --list)[0m
+2026-11-05T08:28:17.1767055Z [36;1mcount=$(printf '%s\n' "$output" | awk '/audit_.*: test$/ { n++ } END { print n+0 }')[0m
+2026-11-05T08:28:17.1767554Z [36;1mecho "postgres-audit: $count ignored tests discovered at ${GITHUB_SHA}"[0m
+2026-11-05T08:28:17.1767968Z [36;1mif [ "$count" -eq 0 ]; then echo "::error::postgres-audit discovered zero tests"; exit 1; fi[0m
+2026-11-05T08:28:17.1768326Z [36;1mcargo test -p ontoforge-storage --test conformance_pg --locked audit_ -- --ignored --nocapture[0m
+2026-11-05T08:28:17.1812005Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-05T08:28:17.1812208Z env:
+2026-11-05T08:28:17.1812360Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:28:17.1812494Z   PGHOST: localhost
+2026-11-05T08:28:17.1812619Z   PGUSER: postgres
+2026-11-05T08:28:17.1812752Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:28:17.1812902Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:28:17.1813032Z   CARGO_TERM_COLOR: always
+2026-11-05T08:28:17.1813168Z   CACHE_ON_FAILURE: false
+2026-11-05T08:28:17.1813352Z   TRINO_CATALOG_DIR: /home/runner/work/_temp/trino-catalog.szl82DHg
+2026-11-05T08:28:17.1813746Z   PGPASSWORD: ***
+2026-11-05T08:28:17.1814299Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore
+2026-11-05T08:28:17.1814571Z ##[endgroup]
+2026-11-05T08:28:17.3315492Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+2026-11-05T08:28:17.3395218Z [1m[92m     Running[0m tests/conformance_pg.rs (target/debug/deps/conformance_pg-b7239af1cdb261b2)
+2026-11-05T08:28:17.3522111Z postgres-audit: 9 ignored tests discovered at 060019fe52005c6b85ae5c5f59da9868f464e579
+2026-11-05T08:28:17.4982255Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+2026-11-05T08:28:17.5061810Z [1m[92m     Running[0m tests/conformance_pg.rs (target/debug/deps/conformance_pg-b7239af1cdb261b2)
+2026-11-05T08:28:17.5084237Z 
+2026-11-05T08:28:17.5084452Z running 9 tests
+2026-11-05T08:28:17.7365426Z test audit_batch_retention_parity ... ok
+2026-11-05T08:28:17.7455623Z test audit_cancelled_shutdown_retry_waits_for_durability ... ok
+2026-11-05T08:28:17.8541921Z test audit_concurrent_shutdown_waits_for_durability ... ok
+2026-11-05T08:28:17.9582265Z test audit_shutdown_drains_inflight_guard ... ok
+2026-11-05T08:28:18.1953805Z test audit_pg_connection_interruption_recovers ... ok
+2026-11-05T08:28:18.5846441Z test audit_sink_failure_rejects_inflight_finish ... ok
+2026-11-05T08:28:18.7234506Z read audit sink did not recover before the pending age limit
+2026-11-05T08:28:18.7274220Z test audit_cleanup_rejection_rolls_back_batch ... ok
+2026-11-05T08:28:18.7698201Z read audit sink did not recover before the pending age limit
+2026-11-05T08:28:18.7738012Z test audit_batch_rejection_is_atomic ... ok
+2026-11-05T08:28:19.1346908Z read audit sink did not recover before the pending age limit
+2026-11-05T08:28:19.1391956Z test audit_shutdown_failure_is_sticky ... ok
+2026-11-05T08:28:19.1392173Z 
+2026-11-05T08:28:19.1392495Z test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 36 filtered out; finished in 1.63s
+2026-11-05T08:28:19.1392797Z 
+2026-11-05T08:28:19.1498719Z ##[group]Run set -euo pipefail
+2026-11-05T08:28:19.1498933Z [36;1mset -euo pipefail[0m
+2026-11-05T08:28:19.1499288Z [36;1m: "${ONTOFORGE_PG_URL:?PostgreSQL service must set ONTOFORGE_PG_URL}"[0m
+2026-11-05T08:28:19.1499503Z [36;1mrun_ignored() {[0m
+2026-11-05T08:28:19.1499649Z [36;1m  local name="$1"; shift[0m
+2026-11-05T08:28:19.1499795Z [36;1m  local output count[0m
+2026-11-05T08:28:19.1499959Z [36;1m  output=$(cargo test "$@" -- --ignored --list)[0m
+2026-11-05T08:28:19.1500407Z [36;1m  count=$(printf '%s\n' "$output" | awk '/: test$/ { n++ } END { print n+0 }')[0m
+2026-11-05T08:28:19.1500652Z [36;1m  echo "$name: $count ignored tests discovered"[0m
+2026-11-05T08:28:19.1500902Z [36;1m  if [ "$count" -eq 0 ]; then echo "::error::$name discovered zero tests"; exit 1; fi[0m
+2026-11-05T08:28:19.1501150Z [36;1m  cargo test "$@" -- --ignored --nocapture[0m
+2026-11-05T08:28:19.1501315Z [36;1m}[0m
+2026-11-05T08:28:19.1501633Z [36;1mrun_ignored action-atomicity -p ontoforge-storage --features test-support --test conformance_pg --locked action_atomic[0m
+2026-11-05T08:28:19.1502077Z [36;1mrun_ignored action-same-pk -p ontoforge-action --features test-support --test action_pg --locked concurrent_[0m
+2026-11-05T08:28:19.1502511Z [36;1mrun_ignored action-idempotency -p ontoforge-action --features test-support --test idempotency_pg --locked pg_[0m
+2026-11-05T08:28:19.1502907Z [36;1mrun_ignored action-webhook-pg -p ontoforge-action --test outbox_pg --locked postgres_outbox_[0m
+2026-11-05T08:28:19.1542080Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-05T08:28:19.1542272Z env:
+2026-11-05T08:28:19.1542389Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:28:19.1542515Z   PGHOST: localhost
+2026-11-05T08:28:19.1542636Z   PGUSER: postgres
+2026-11-05T08:28:19.1542765Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:28:19.1542911Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:28:19.1543040Z   CARGO_TERM_COLOR: always
+2026-11-05T08:28:19.1543178Z   CACHE_ON_FAILURE: false
+2026-11-05T08:28:19.1543362Z   TRINO_CATALOG_DIR: /home/runner/work/_temp/trino-catalog.szl82DHg
+2026-11-05T08:28:19.1543711Z   PGPASSWORD: ***
+2026-11-05T08:28:19.1544063Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore
+2026-11-05T08:28:19.1544228Z ##[endgroup]
+2026-11-05T08:28:19.3066955Z [1m[92m   Compiling[0m ontoforge-storage v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-storage)
+2026-11-05T08:28:25.5827848Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 6.40s
+2026-11-05T08:28:25.5986924Z [1m[92m     Running[0m tests/conformance_pg.rs (target/debug/deps/conformance_pg-e5ba453e8b706e0d)
+2026-11-05T08:28:25.6116173Z action-atomicity: 5 ignored tests discovered
+2026-11-05T08:28:25.7603315Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+2026-11-05T08:28:25.7683615Z [1m[92m     Running[0m tests/conformance_pg.rs (target/debug/deps/conformance_pg-e5ba453e8b706e0d)
+2026-11-05T08:28:25.7706083Z 
+2026-11-05T08:28:25.7706444Z running 5 tests
+2026-11-05T08:28:27.3471819Z test action_atomic_after_command_failure ... ok
+2026-11-05T08:28:27.9767988Z test action_atomic_after_outbox_failure ... ok
+2026-11-05T08:28:27.9970880Z test action_atomic_after_log_failure ... ok
+2026-11-05T08:28:28.0167260Z test action_atomic_after_edits_failure ... ok
+2026-11-05T08:28:28.0443995Z test action_atomic_success_changes_all_domains_once ... ok
+2026-11-05T08:28:28.0444664Z 
+2026-11-05T08:28:28.0445165Z test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 45 filtered out; finished in 2.27s
+2026-11-05T08:28:28.0445641Z 
+2026-11-05T08:28:28.3504264Z [1m[92m   Compiling[0m ontoforge-schema v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-schema)
+2026-11-05T08:28:29.5573686Z [1m[92m   Compiling[0m ontoforge-expr v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-expr)
+2026-11-05T08:28:30.0202517Z [1m[92m   Compiling[0m ontoforge-engine v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-engine)
+2026-11-05T08:28:32.4913346Z [1m[92m   Compiling[0m ontoforge-auth v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-auth)
+2026-11-05T08:28:33.8544178Z [1m[92m   Compiling[0m ontoforge-storage v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-storage)
+2026-11-05T08:28:35.6379014Z [1m[92m   Compiling[0m ontoforge-query v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-query)
+2026-11-05T08:28:37.6973239Z [1m[92m   Compiling[0m ontoforge-action v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-action)
+2026-11-05T08:28:41.0591503Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 12.98s
+2026-11-05T08:28:41.0769452Z [1m[92m     Running[0m tests/action_pg.rs (target/debug/deps/action_pg-c8d3ab2cee71bb5b)
+2026-11-05T08:28:41.0914112Z action-same-pk: 4 ignored tests discovered
+2026-11-05T08:28:41.2461847Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.13s
+2026-11-05T08:28:41.2549698Z [1m[92m     Running[0m tests/action_pg.rs (target/debug/deps/action_pg-c8d3ab2cee71bb5b)
+2026-11-05T08:28:41.2577858Z 
+2026-11-05T08:28:41.2578085Z running 4 tests
+2026-11-05T08:28:41.5664301Z test concurrent_absent_edit_create_is_serialized ... ok
+2026-11-05T08:28:41.6163981Z test concurrent_same_pk_without_token_has_one_winner ... ok
+2026-11-05T08:28:41.6333287Z test concurrent_same_pk_with_token_has_one_winner ... ok
+2026-11-05T08:28:41.6613840Z test concurrent_multirow_reverse_request_order_does_not_deadlock ... ok
+2026-11-05T08:28:41.6614257Z 
+2026-11-05T08:28:41.6614643Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.40s
+2026-11-05T08:28:41.6614971Z 
+2026-11-05T08:28:41.8272533Z [1m[92m   Compiling[0m ontoforge-action v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-action)
+2026-11-05T08:28:43.8770457Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 2.18s
+2026-11-05T08:28:43.8940137Z [1m[92m     Running[0m tests/idempotency_pg.rs (target/debug/deps/idempotency_pg-747a50556352001f)
+2026-11-05T08:28:43.9062624Z action-idempotency: 6 ignored tests discovered
+2026-11-05T08:28:44.0605053Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.13s
+2026-11-05T08:28:44.0698562Z [1m[92m     Running[0m tests/idempotency_pg.rs (target/debug/deps/idempotency_pg-747a50556352001f)
+2026-11-05T08:28:44.0726365Z 
+2026-11-05T08:28:44.0726616Z running 6 tests
+2026-11-05T08:28:45.0411192Z test pg_response_lost_retry_reads_completed_receipt ... ok
+2026-11-05T08:28:45.0641719Z test pg_same_command_id_for_different_principals_is_independent ... ok
+2026-11-05T08:28:45.0651050Z test pg_same_key_different_params_has_one_winner_and_one_reused ... ok
+2026-11-05T08:28:45.1573859Z test pg_expired_command_concurrent_replacement_has_one_new_winner ... ok
+2026-11-05T08:28:45.2964803Z test pg_same_key_same_params_has_one_winner_and_one_replay ... ok
+2026-11-05T08:28:45.4031557Z test pg_winner_abort_allows_loser_to_claim ... ok
+2026-11-05T08:28:45.4032175Z 
+2026-11-05T08:28:45.4032721Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.33s
+2026-11-05T08:28:45.4033373Z 
+2026-11-05T08:28:45.5639358Z [1m[92m   Compiling[0m ontoforge-storage v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-storage)
+2026-11-05T08:28:47.2578191Z [1m[92m   Compiling[0m ontoforge-query v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-query)
+2026-11-05T08:28:49.2619962Z [1m[92m   Compiling[0m ontoforge-action v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-action)
+2026-11-05T08:28:52.8205521Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 7.39s
+2026-11-05T08:28:52.8382646Z [1m[92m     Running[0m tests/outbox_pg.rs (target/debug/deps/outbox_pg-d0ae3442197aafdd)
+2026-11-05T08:28:52.8507446Z action-webhook-pg: 2 ignored tests discovered
+2026-11-05T08:28:53.0059652Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.13s
+2026-11-05T08:28:53.0148112Z [1m[92m     Running[0m tests/outbox_pg.rs (target/debug/deps/outbox_pg-d0ae3442197aafdd)
+2026-11-05T08:28:53.0174891Z 
+2026-11-05T08:28:53.0175102Z running 2 tests
+2026-11-05T08:28:53.3752864Z test postgres_outbox_after_send_crash_reclaims_with_same_payload ... ok
+2026-11-05T08:28:53.3798772Z test postgres_outbox_parallel_workers_claim_one_generation ... ok
+2026-11-05T08:28:53.3799356Z 
+2026-11-05T08:28:53.3799810Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.36s
+2026-11-05T08:28:53.3800378Z 
+2026-11-05T08:28:53.3907271Z ##[group]Run set -euo pipefail
+2026-11-05T08:28:53.3907470Z [36;1mset -euo pipefail[0m
+2026-11-05T08:28:53.3907810Z [36;1mtests=$(cargo test -p ontoforge-action --features embedded-pg --test source --locked source_guard_absent_target_insert_race -- --exact --list)[0m
+2026-11-05T08:28:53.3908230Z [36;1mprintf '%s\n' "$tests" | grep -Fxq 'source_guard_absent_target_insert_race: test'[0m
+2026-11-05T08:28:53.3908637Z [36;1mcargo test -p ontoforge-action --features embedded-pg --test source --locked source_guard_absent_target_insert_race -- --exact --nocapture[0m
+2026-11-05T08:28:53.3947520Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-05T08:28:53.3947707Z env:
+2026-11-05T08:28:53.3947822Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:28:53.3947949Z   PGHOST: localhost
+2026-11-05T08:28:53.3948070Z   PGUSER: postgres
+2026-11-05T08:28:53.3948203Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:28:53.3948350Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:28:53.3948507Z   CARGO_TERM_COLOR: always
+2026-11-05T08:28:53.3948644Z   CACHE_ON_FAILURE: false
+2026-11-05T08:28:53.3948828Z   TRINO_CATALOG_DIR: /home/runner/work/_temp/trino-catalog.szl82DHg
+2026-11-05T08:28:53.3949182Z   PGPASSWORD: ***
+2026-11-05T08:28:53.3949554Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore
+2026-11-05T08:28:53.3949718Z ##[endgroup]
+2026-11-05T08:28:53.5648642Z [1m[92m   Compiling[0m ontoforge-storage v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-storage)
+2026-11-05T08:28:55.2497542Z [1m[92m   Compiling[0m ontoforge-query v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-query)
+2026-11-05T08:28:57.2529849Z [1m[92m   Compiling[0m ontoforge-action v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-action)
+2026-11-05T08:29:00.7956397Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 7.37s
+2026-11-05T08:29:00.8128602Z [1m[92m     Running[0m tests/source.rs (target/debug/deps/source-5cac9b2c93598058)
+2026-11-05T08:29:00.9816444Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.13s
+2026-11-05T08:29:00.9909228Z [1m[92m     Running[0m tests/source.rs (target/debug/deps/source-5cac9b2c93598058)
+2026-11-05T08:29:00.9938172Z 
+2026-11-05T08:29:00.9938330Z running 1 test
+2026-11-05T08:29:01.6489848Z test source_guard_absent_target_insert_race ... ok
+2026-11-05T08:29:01.6490267Z 
+2026-11-05T08:29:01.6490463Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 11 filtered out; finished in 0.65s
+2026-11-05T08:29:01.6490677Z 
+2026-11-05T08:29:01.6586193Z ##[group]Run bash ci/query-services.sh trino
+2026-11-05T08:29:01.6586424Z [36;1mbash ci/query-services.sh trino[0m
+2026-11-05T08:29:01.6625638Z shell: /usr/bin/bash -e {0}
+2026-11-05T08:29:01.6625782Z env:
+2026-11-05T08:29:01.6625896Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:29:01.6626027Z   PGHOST: localhost
+2026-11-05T08:29:01.6626152Z   PGUSER: postgres
+2026-11-05T08:29:01.6626281Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:29:01.6626427Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:29:01.6626563Z   CARGO_TERM_COLOR: always
+2026-11-05T08:29:01.6626701Z   CACHE_ON_FAILURE: false
+2026-11-05T08:29:01.6626886Z   TRINO_CATALOG_DIR: /home/runner/work/_temp/trino-catalog.szl82DHg
+2026-11-05T08:29:01.6627261Z   PGPASSWORD: ***
+2026-11-05T08:29:01.6627724Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore
+2026-11-05T08:29:01.6627896Z ##[endgroup]
+2026-11-05T08:29:01.6793599Z Unable to find image 'trinodb/trino:483@sha256:db58cc93e593a2706553745f276bb119c9810e69918be56ecde088ba7ccb0534' locally
+2026-11-05T08:29:02.3980569Z docker.io/trinodb/trino@sha256:db58cc93e593a2706553745f276bb119c9810e69918be56ecde088ba7ccb0534: Pulling from trinodb/trino
+2026-11-05T08:29:02.6526872Z 7ca313254707: Pulling fs layer
+2026-11-05T08:29:02.6527156Z b5d3898c6bf2: Pulling fs layer
+2026-11-05T08:29:02.6527485Z dbfcb7cc9f51: Pulling fs layer
+2026-11-05T08:29:02.6527717Z 5611db73d10f: Pulling fs layer
+2026-11-05T08:29:02.6527959Z 52abf0999971: Pulling fs layer
+2026-11-05T08:29:02.6528705Z f96b29caf4c6: Pulling fs layer
+2026-11-05T08:29:02.6528937Z 24ef5c6eaca4: Pulling fs layer
+2026-11-05T08:29:02.6529088Z c06312a4f1df: Pulling fs layer
+2026-11-05T08:29:02.6529229Z af565a4b3dc8: Pulling fs layer
+2026-11-05T08:29:02.7821104Z af565a4b3dc8: Download complete
+2026-11-05T08:29:02.8817036Z b5d3898c6bf2: Download complete
+2026-11-05T08:29:02.9825224Z c06312a4f1df: Download complete
+2026-11-05T08:29:03.0831265Z 24ef5c6eaca4: Download complete
+2026-11-05T08:29:03.0846267Z 7ca313254707: Download complete
+2026-11-05T08:29:03.0864463Z 5611db73d10f: Download complete
+2026-11-05T08:29:03.4887743Z 7ca313254707: Pull complete
+2026-11-05T08:29:03.7815622Z f96b29caf4c6: Download complete
+2026-11-05T08:29:04.3813373Z dbfcb7cc9f51: Download complete
+2026-11-05T08:29:06.3848002Z dbfcb7cc9f51: Pull complete
+2026-11-05T08:29:07.9857788Z f96b29caf4c6: Pull complete
+2026-11-05T08:29:09.9825734Z c06312a4f1df: Pull complete
+2026-11-05T08:29:11.3839528Z 5611db73d10f: Pull complete
+2026-11-05T08:29:11.4819841Z 52abf0999971: Download complete
+2026-11-05T08:29:14.9857474Z 52abf0999971: Pull complete
+2026-11-05T08:29:15.8825028Z 24ef5c6eaca4: Pull complete
+2026-11-05T08:29:16.3821344Z af565a4b3dc8: Pull complete
+2026-11-05T08:29:17.1824081Z b5d3898c6bf2: Pull complete
+2026-11-05T08:29:17.3483194Z Digest: sha256:db58cc93e593a2706553745f276bb119c9810e69918be56ecde088ba7ccb0534
+2026-11-05T08:29:17.3483618Z Status: Downloaded newer image for trinodb/trino@sha256:db58cc93e593a2706553745f276bb119c9810e69918be56ecde088ba7ccb0534
+2026-11-05T08:29:22.3254728Z e734bf15e49e1a88933bf7d77ba346f624314df8ede6c00929d077257b0ea093
+2026-11-05T08:29:22.3846038Z ##[group]Run deadline=$((SECONDS + 180))
+2026-11-05T08:29:22.3846356Z [36;1mdeadline=$((SECONDS + 180))[0m
+2026-11-05T08:29:22.3846786Z [36;1muntil curl -fsS http://localhost:8080/v1/info | jq -e '.starting == false' >/dev/null 2>&1; do[0m
+2026-11-05T08:29:22.3847219Z [36;1m  if [ "$SECONDS" -ge "$deadline" ]; then[0m
+2026-11-05T08:29:22.3847539Z [36;1m    echo "Trino did not finish starting within 180 s"[0m
+2026-11-05T08:29:22.3847828Z [36;1m    docker logs trino[0m
+2026-11-05T08:29:22.3848041Z [36;1m    exit 1[0m
+2026-11-05T08:29:22.3848227Z [36;1m  fi[0m
+2026-11-05T08:29:22.3848400Z [36;1m  sleep 2[0m
+2026-11-05T08:29:22.3848582Z [36;1mdone[0m
+2026-11-05T08:29:22.3848812Z [36;1mecho "Trino is ready after ${SECONDS} s"[0m
+2026-11-05T08:29:22.3896415Z shell: /usr/bin/bash -e {0}
+2026-11-05T08:29:22.3896568Z env:
+2026-11-05T08:29:22.3896745Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:29:22.3896888Z   PGHOST: localhost
+2026-11-05T08:29:22.3897020Z   PGUSER: postgres
+2026-11-05T08:29:22.3897172Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:29:22.3897318Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:29:22.3897497Z   CARGO_TERM_COLOR: always
+2026-11-05T08:29:22.3897656Z   CACHE_ON_FAILURE: false
+2026-11-05T08:29:22.3897842Z   TRINO_CATALOG_DIR: /home/runner/work/_temp/trino-catalog.szl82DHg
+2026-11-05T08:29:22.3898221Z   PGPASSWORD: ***
+2026-11-05T08:29:22.3898590Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore
+2026-11-05T08:29:22.3898755Z ##[endgroup]
+2026-11-05T08:29:22.4002926Z curl: (7) Failed to connect to localhost port 8080 after 0 ms: Could not connect to server
+2026-11-05T08:29:29.1139760Z Trino is ready after 7 s
+2026-11-05T08:29:29.1162905Z ##[group]Run bash ci/query-services.sh trino-l2
+2026-11-05T08:29:29.1163120Z [36;1mbash ci/query-services.sh trino-l2[0m
+2026-11-05T08:29:29.1272540Z shell: /usr/bin/bash -e {0}
+2026-11-05T08:29:29.1272690Z env:
+2026-11-05T08:29:29.1272807Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:29:29.1272942Z   PGHOST: localhost
+2026-11-05T08:29:29.1273224Z   PGUSER: postgres
+2026-11-05T08:29:29.1273355Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:29:29.1273505Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:29:29.1273640Z   CARGO_TERM_COLOR: always
+2026-11-05T08:29:29.1273778Z   CACHE_ON_FAILURE: false
+2026-11-05T08:29:29.1273963Z   TRINO_CATALOG_DIR: /home/runner/work/_temp/trino-catalog.szl82DHg
+2026-11-05T08:29:29.1274322Z   PGPASSWORD: ***
+2026-11-05T08:29:29.1274709Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore
+2026-11-05T08:29:29.1274900Z ##[endgroup]
+2026-11-05T08:29:30.7816251Z a1ceb5dedc298296368162dd8ca99483e60e7fc4ef9ac7221c18765f1d741dcf
+2026-11-05T08:29:41.9621704Z CREATE SCHEMA
+2026-11-05T08:29:42.2013075Z CREATE TABLE: 1 row
+2026-11-05T08:29:42.2723038Z CREATE TABLE: 1 row
+2026-11-05T08:29:42.3571707Z CREATE TABLE: 1 row
+2026-11-05T08:29:42.4350688Z CREATE TABLE: 1 row
+2026-11-05T08:29:42.5022969Z 05754366c880dd7cad10e663da4f55702e85258551ffc79fd959bcfc7cf203ef
+2026-11-05T08:29:50.0215698Z CREATE SCHEMA
+2026-11-05T08:29:50.5782172Z CREATE TABLE: 1 row
+2026-11-05T08:29:50.6833713Z CREATE TABLE: 1 row
+2026-11-05T08:29:50.7784140Z CREATE TABLE: 1 row
+2026-11-05T08:29:50.8920979Z CREATE TABLE: 1 row
+2026-11-05T08:29:50.9287398Z ##[group]Run set -euo pipefail
+2026-11-05T08:29:50.9287610Z [36;1mset -euo pipefail[0m
+2026-11-05T08:29:50.9287866Z [36;1moutput=$(cargo test -p ontoforge-engine --test trino_l2_acl_it --locked -- --ignored --list)[0m
+2026-11-05T08:29:50.9288193Z [36;1mcount=$(printf '%s\n' "$output" | awk '/: test$/ { n++ } END { print n+0 }')[0m
+2026-11-05T08:29:50.9288484Z [36;1mecho "trino_l2_acl_it: $count ignored tests discovered at ${GITHUB_SHA}"[0m
+2026-11-05T08:29:50.9288787Z [36;1mif [ "$count" -eq 0 ]; then echo "::error::trino_l2_acl_it discovered zero tests"; exit 1; fi[0m
+2026-11-05T08:29:50.9289126Z [36;1mcargo test -p ontoforge-engine --test trino_l2_acl_it --locked -- --ignored --nocapture[0m
+2026-11-05T08:29:50.9331033Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-05T08:29:50.9331230Z env:
+2026-11-05T08:29:50.9331350Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:29:50.9331485Z   PGHOST: localhost
+2026-11-05T08:29:50.9331605Z   PGUSER: postgres
+2026-11-05T08:29:50.9331766Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:29:50.9331918Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:29:50.9332048Z   CARGO_TERM_COLOR: always
+2026-11-05T08:29:50.9332184Z   CACHE_ON_FAILURE: false
+2026-11-05T08:29:50.9332367Z   TRINO_CATALOG_DIR: /home/runner/work/_temp/trino-catalog.szl82DHg
+2026-11-05T08:29:50.9332723Z   PGPASSWORD: ***
+2026-11-05T08:29:50.9333056Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore
+2026-11-05T08:29:50.9333252Z   ONTOFORGE_TRINO_L2_URL: http://127.0.0.1:58081
+2026-11-05T08:29:50.9333445Z   ONTOFORGE_TRINO_L2_LOOSE_URL: http://127.0.0.1:58082
+2026-11-05T08:29:50.9333617Z ##[endgroup]
+2026-11-05T08:29:51.0832362Z [1m[92m   Compiling[0m ontoforge-schema v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-schema)
+2026-11-05T08:29:52.3257384Z [1m[92m   Compiling[0m ontoforge-engine v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-engine)
+2026-11-05T08:29:57.6130904Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 6.65s
+2026-11-05T08:29:57.6287704Z [1m[92m     Running[0m tests/trino_l2_acl_it.rs (target/debug/deps/trino_l2_acl_it-a419d58e25d7c900)
+2026-11-05T08:29:57.6407137Z trino_l2_acl_it: 6 ignored tests discovered at 060019fe52005c6b85ae5c5f59da9868f464e579
+2026-11-05T08:29:57.7953573Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+2026-11-05T08:29:57.8033439Z [1m[92m     Running[0m tests/trino_l2_acl_it.rs (target/debug/deps/trino_l2_acl_it-a419d58e25d7c900)
+2026-11-05T08:29:57.8052781Z 
+2026-11-05T08:29:57.8052972Z running 6 tests
+2026-11-05T08:29:58.5761251Z test trino_l2_acl_rejects_existing_outside_and_edit_tables ... ok
+2026-11-05T08:29:59.7411551Z test trino_l2_monitor_short_query_does_not_prove_active_isolation ... ok
+2026-11-05T08:30:00.1773172Z G01: FINISHED, 1 row(s)
+2026-11-05T08:30:01.1593538Z test trino_l2_monitor_loose_acl_fails_closed ... ok
+2026-11-05T08:30:01.3569041Z G02: FINISHED, 1 row(s)
+2026-11-05T08:30:01.4971856Z G03: FINISHED, 1 row(s)
+2026-11-05T08:30:01.5170256Z test trino_l2_acl_loosened_rule_fails_closed ... ok
+2026-11-05T08:30:01.7821834Z test trino_l2_monitor_startup_cancels_real_active_probe ... ok
+2026-11-05T08:30:01.8224713Z G04: FINISHED, 3 row(s)
+2026-11-05T08:30:01.9242685Z G05: FINISHED, 1 row(s)
+2026-11-05T08:30:01.9654108Z G09: FINISHED, 1 row(s)
+2026-11-05T08:30:02.0171169Z G12: FINISHED, 1 row(s)
+2026-11-05T08:30:02.0490478Z G13: FINISHED, 1 row(s)
+2026-11-05T08:30:02.2089333Z G14: FINISHED, 1 row(s)
+2026-11-05T08:30:02.2681899Z G15: FINISHED, 1 row(s)
+2026-11-05T08:30:02.3211567Z G16: FINISHED, 0 row(s)
+2026-11-05T08:30:02.3615043Z G17: FINISHED, 1 row(s)
+2026-11-05T08:30:02.4173641Z G18: FINISHED, 2 row(s)
+2026-11-05T08:30:02.4951317Z G20: FINISHED, 1 row(s)
+2026-11-05T08:30:02.5355027Z G21: FINISHED, 1 row(s)
+2026-11-05T08:30:02.5860201Z G22: FINISHED, 0 row(s)
+2026-11-05T08:30:02.6260612Z G24: FINISHED, 1 row(s)
+2026-11-05T08:30:02.6577761Z G26: FINISHED, 1 row(s)
+2026-11-05T08:30:02.6833596Z G28: FINISHED, 1 row(s)
+2026-11-05T08:30:02.7156496Z G31: FINISHED, 1 row(s)
+2026-11-05T08:30:02.7554477Z G32: FINISHED, 1 row(s)
+2026-11-05T08:30:02.8087537Z G33: FINISHED, 1 row(s)
+2026-11-05T08:30:02.8326565Z G34: FINISHED, 1 row(s)
+2026-11-05T08:30:02.8626733Z G35: FINISHED, 1 row(s)
+2026-11-05T08:30:02.9043878Z G36: FINISHED, 1 row(s)
+2026-11-05T08:30:03.0704423Z G38: FINISHED, 1 row(s)
+2026-11-05T08:30:03.1074090Z G39: FINISHED, 1 row(s)
+2026-11-05T08:30:03.1372978Z G40: FINISHED, 1 row(s)
+2026-11-05T08:30:03.2089011Z G42: FINISHED, 1 row(s)
+2026-11-05T08:30:03.2311575Z G47: FINISHED, 1 row(s)
+2026-11-05T08:30:03.2571692Z B51: FINISHED, 1 row(s)
+2026-11-05T08:30:03.2846435Z B53: FINISHED, 1 row(s)
+2026-11-05T08:30:03.2861215Z test trino_l2_acl_hides_known_active_other_query_and_attests_engine ... ok
+2026-11-05T08:30:03.2861795Z 
+2026-11-05T08:30:03.2862316Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.48s
+2026-11-05T08:30:03.2862820Z 
+2026-11-05T08:30:03.3049203Z ##[group]Run cargo test -p ontoforge-engine --test trino_it --locked -- --ignored
+2026-11-05T08:30:03.3049748Z [36;1mcargo test -p ontoforge-engine --test trino_it --locked -- --ignored[0m
+2026-11-05T08:30:03.3102187Z shell: /usr/bin/bash -e {0}
+2026-11-05T08:30:03.3102437Z env:
+2026-11-05T08:30:03.3102625Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:30:03.3102841Z   PGHOST: localhost
+2026-11-05T08:30:03.3103055Z   PGUSER: postgres
+2026-11-05T08:30:03.3103273Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:30:03.3103527Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:30:03.3103752Z   CARGO_TERM_COLOR: always
+2026-11-05T08:30:03.3103987Z   CACHE_ON_FAILURE: false
+2026-11-05T08:30:03.3104304Z   TRINO_CATALOG_DIR: /home/runner/work/_temp/trino-catalog.szl82DHg
+2026-11-05T08:30:03.3104898Z   PGPASSWORD: ***
+2026-11-05T08:30:03.3105418Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore
+2026-11-05T08:30:03.3105750Z   ONTOFORGE_TRINO_URL: http://localhost:8080
+2026-11-05T08:30:03.3106031Z ##[endgroup]
+2026-11-05T08:30:03.4640171Z [1m[92m   Compiling[0m ontoforge-engine v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-engine)
+2026-11-05T08:30:04.7561720Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 1.41s
+2026-11-05T08:30:04.7714622Z [1m[92m     Running[0m tests/trino_it.rs (target/debug/deps/trino_it-1b4aa6fb92201485)
+2026-11-05T08:30:04.7733972Z 
+2026-11-05T08:30:04.7734424Z running 9 tests
+2026-11-05T08:30:05.6338142Z test catalogs_visible ... ok
+2026-11-05T08:30:05.6972655Z test describe_demo_flights ... ok
+2026-11-05T08:30:05.7162073Z test iceberg_table_is_readable ... ok
+2026-11-05T08:30:05.7781835Z test describe_types_golden ... ok
+2026-11-05T08:30:05.9584813Z test drift_is_healthy_on_ci_trino ... ok
+2026-11-05T08:30:05.9593962Z test select_one ... ok
+2026-11-05T08:30:06.3173084Z test decode_golden ... ok
+2026-11-05T08:30:07.0862537Z test timeout_cancels_server_query ... ok
+2026-11-05T08:30:07.4834229Z test printer_corpus_round_trips ... ok
+2026-11-05T08:30:07.4834701Z 
+2026-11-05T08:30:07.4835155Z test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 2.71s
+2026-11-05T08:30:07.4835617Z 
+2026-11-05T08:30:07.4990625Z ##[group]Run cargo test -p ontoforge --test cli_trino_it --locked -- --ignored
+2026-11-05T08:30:07.4991122Z [36;1mcargo test -p ontoforge --test cli_trino_it --locked -- --ignored[0m
+2026-11-05T08:30:07.5042159Z shell: /usr/bin/bash -e {0}
+2026-11-05T08:30:07.5043563Z env:
+2026-11-05T08:30:07.5043752Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:30:07.5043954Z   PGHOST: localhost
+2026-11-05T08:30:07.5044134Z   PGUSER: postgres
+2026-11-05T08:30:07.5044329Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:30:07.5044555Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:30:07.5044757Z   CARGO_TERM_COLOR: always
+2026-11-05T08:30:07.5044959Z   CACHE_ON_FAILURE: false
+2026-11-05T08:30:07.5045235Z   TRINO_CATALOG_DIR: /home/runner/work/_temp/trino-catalog.szl82DHg
+2026-11-05T08:30:07.5045747Z   PGPASSWORD: ***
+2026-11-05T08:30:07.5046220Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore
+2026-11-05T08:30:07.5046500Z   ONTOFORGE_TRINO_URL: http://localhost:8080
+2026-11-05T08:30:07.5046737Z ##[endgroup]
+2026-11-05T08:30:07.8567920Z [1m[92m   Compiling[0m ontoforge-schema v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-schema)
+2026-11-05T08:30:07.8629880Z [1m[92m   Compiling[0m ontoforge-api v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-api)
+2026-11-05T08:30:09.2895935Z [1m[92m   Compiling[0m ontoforge-expr v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-expr)
+2026-11-05T08:30:09.9405521Z [1m[92m   Compiling[0m ontoforge-engine v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-engine)
+2026-11-05T08:30:12.4403580Z [1m[92m   Compiling[0m ontoforge-auth v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-auth)
+2026-11-05T08:30:13.9397984Z [1m[92m   Compiling[0m ontoforge-storage v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-storage)
+2026-11-05T08:30:15.8788411Z [1m[92m   Compiling[0m ontoforge-query v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-query)
+2026-11-05T08:30:18.0433469Z [1m[92m   Compiling[0m ontoforge-action v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-action)
+2026-11-05T08:30:18.8572309Z [1m[92m   Compiling[0m ontoforge-server v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-server)
+2026-11-05T08:30:20.0283456Z [1m[92m   Compiling[0m ontoforge v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge)
+2026-11-05T08:30:32.3197636Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 24.78s
+2026-11-05T08:30:32.3899859Z [1m[92m     Running[0m tests/cli_trino_it.rs (target/debug/deps/cli_trino_it-4518dc188915b177)
+2026-11-05T08:30:32.3912331Z 
+2026-11-05T08:30:32.3913806Z running 4 tests
+2026-11-05T08:30:33.0922344Z test check_cardinality_counts_distinct_objects_on_ci_trino ... ok
+2026-11-05T08:30:33.1940246Z test check_pk_finds_duplicate_and_null_keys_on_ci_trino ... ok
+2026-11-05T08:30:33.8611167Z test check_cardinality_aliases_on_ci_trino ... ok
+2026-11-05T08:30:33.9268670Z test validate_online_against_ci_trino ... ok
+2026-11-05T08:30:33.9272900Z 
+2026-11-05T08:30:33.9273564Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 1.54s
+2026-11-05T08:30:33.9274086Z 
+2026-11-05T08:30:33.9409703Z ##[group]Run cargo test -p ontoforge-auth --locked --test rowpred_trino_it -- --ignored
+2026-11-05T08:30:33.9430598Z [36;1mcargo test -p ontoforge-auth --locked --test rowpred_trino_it -- --ignored[0m
+2026-11-05T08:30:33.9485451Z shell: /usr/bin/bash -e {0}
+2026-11-05T08:30:33.9485626Z env:
+2026-11-05T08:30:33.9485758Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:30:33.9485914Z   PGHOST: localhost
+2026-11-05T08:30:33.9486052Z   PGUSER: postgres
+2026-11-05T08:30:33.9486195Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:30:33.9486535Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:30:33.9486685Z   CARGO_TERM_COLOR: always
+2026-11-05T08:30:33.9486835Z   CACHE_ON_FAILURE: false
+2026-11-05T08:30:33.9487035Z   TRINO_CATALOG_DIR: /home/runner/work/_temp/trino-catalog.szl82DHg
+2026-11-05T08:30:33.9487491Z   PGPASSWORD: ***
+2026-11-05T08:30:33.9487939Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore
+2026-11-05T08:30:33.9488147Z   ONTOFORGE_TRINO_URL: http://localhost:8080
+2026-11-05T08:30:33.9488357Z ##[endgroup]
+2026-11-05T08:30:34.1489067Z [1m[92m   Compiling[0m ontoforge-schema v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-schema)
+2026-11-05T08:30:35.4174902Z [1m[92m   Compiling[0m ontoforge-expr v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-expr)
+2026-11-05T08:30:35.9278207Z [1m[92m   Compiling[0m ontoforge-engine v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-engine)
+2026-11-05T08:30:38.5566647Z [1m[92m   Compiling[0m ontoforge-auth v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-auth)
+2026-11-05T08:30:42.2840604Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 8.31s
+2026-11-05T08:30:42.3007650Z [1m[92m     Running[0m tests/rowpred_trino_it.rs (target/debug/deps/rowpred_trino_it-735d3873224fd6be)
+2026-11-05T08:30:42.3028507Z 
+2026-11-05T08:30:42.3028914Z running 3 tests
+2026-11-05T08:30:42.4637334Z test trino_table_equals_the_corpus_rows ... ok
+2026-11-05T08:30:48.6463935Z test trino_matches_rust_on_the_corpus_cases ... ok
+2026-11-05T08:30:57.5312684Z test trino_matches_rust_on_seeded_predicates ... ok
+2026-11-05T08:30:57.5312966Z 
+2026-11-05T08:30:57.5313189Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 15.23s
+2026-11-05T08:30:57.5313499Z 
+2026-11-05T08:30:57.5419291Z ##[group]Run cargo test -p ontoforge-storage --locked --test reload_trino_it -- --ignored --test-threads=1
+2026-11-05T08:30:57.5419725Z [36;1mcargo test -p ontoforge-storage --locked --test reload_trino_it -- --ignored --test-threads=1[0m
+2026-11-05T08:30:57.5460603Z shell: /usr/bin/bash -e {0}
+2026-11-05T08:30:57.5460763Z env:
+2026-11-05T08:30:57.5460892Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:30:57.5461031Z   PGHOST: localhost
+2026-11-05T08:30:57.5461173Z   PGUSER: postgres
+2026-11-05T08:30:57.5461314Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:30:57.5461475Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:30:57.5461630Z   CARGO_TERM_COLOR: always
+2026-11-05T08:30:57.5461782Z   CACHE_ON_FAILURE: false
+2026-11-05T08:30:57.5461981Z   TRINO_CATALOG_DIR: /home/runner/work/_temp/trino-catalog.szl82DHg
+2026-11-05T08:30:57.5462400Z   PGPASSWORD: ***
+2026-11-05T08:30:57.5462750Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore
+2026-11-05T08:30:57.5462989Z   ONTOFORGE_TRINO_URL: http://localhost:8080
+2026-11-05T08:30:57.5463167Z ##[endgroup]
+2026-11-05T08:30:57.7154024Z [1m[92m   Compiling[0m ontoforge-storage v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-storage)
+2026-11-05T08:30:59.9408684Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 2.35s
+2026-11-05T08:30:59.9457424Z [1m[92m     Running[0m tests/reload_trino_it.rs (target/debug/deps/reload_trino_it-c76e201474e5ec53)
+2026-11-05T08:30:59.9706436Z 
+2026-11-05T08:30:59.9706726Z running 3 tests
+2026-11-05T08:31:01.2422063Z test a_new_column_is_visible_when_its_definition_becomes_active ... ok
+2026-11-05T08:31:03.6622617Z test cached_column_requires_flush_before_definition_switch ... ok
+2026-11-05T08:31:03.9032581Z test reload_activates_once_trino_sees_the_new_tables ... ok
+2026-11-05T08:31:03.9033164Z 
+2026-11-05T08:31:03.9035997Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.96s
+2026-11-05T08:31:03.9036354Z 
+2026-11-05T08:31:03.9225125Z ##[group]Run cargo test -p ontoforge-storage --test query_read_pg --locked -- --ignored --test-threads=1
+2026-11-05T08:31:03.9227447Z [36;1mcargo test -p ontoforge-storage --test query_read_pg --locked -- --ignored --test-threads=1[0m
+2026-11-05T08:31:03.9629599Z shell: /usr/bin/bash -e {0}
+2026-11-05T08:31:03.9631897Z env:
+2026-11-05T08:31:03.9634675Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:31:03.9636497Z   PGHOST: localhost
+2026-11-05T08:31:03.9638546Z   PGUSER: postgres
+2026-11-05T08:31:03.9640441Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:31:03.9644024Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:31:03.9645538Z   CARGO_TERM_COLOR: always
+2026-11-05T08:31:03.9647384Z   CACHE_ON_FAILURE: false
+2026-11-05T08:31:03.9649214Z   TRINO_CATALOG_DIR: /home/runner/work/_temp/trino-catalog.szl82DHg
+2026-11-05T08:31:03.9651551Z   PGPASSWORD: ***
+2026-11-05T08:31:03.9653730Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore
+2026-11-05T08:31:03.9655458Z ##[endgroup]
+2026-11-05T08:31:04.1232948Z [1m[92m   Compiling[0m ontoforge-storage v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-storage)
+2026-11-05T08:31:05.7926104Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 1.79s
+2026-11-05T08:31:05.8088518Z [1m[92m     Running[0m tests/query_read_pg.rs (target/debug/deps/query_read_pg-dacf0acf66711ef6)
+2026-11-05T08:31:05.8108171Z 
+2026-11-05T08:31:05.8110025Z running 2 tests
+2026-11-05T08:31:05.9617188Z test sqlite_and_postgres_link_reads_match ... ok
+2026-11-05T08:31:06.1103364Z test sqlite_and_postgres_object_reads_match ... ok
+2026-11-05T08:31:06.1103708Z 
+2026-11-05T08:31:06.1105414Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.30s
+2026-11-05T08:31:06.1105788Z 
+2026-11-05T08:31:06.1639473Z ##[group]Run cargo test -p ontoforge-query --test trino_query_it --locked -- --ignored --test-threads=1
+2026-11-05T08:31:06.1641944Z [36;1mcargo test -p ontoforge-query --test trino_query_it --locked -- --ignored --test-threads=1[0m
+2026-11-05T08:31:06.1691052Z shell: /usr/bin/bash -e {0}
+2026-11-05T08:31:06.1693262Z env:
+2026-11-05T08:31:06.1695259Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:31:06.1696958Z   PGHOST: localhost
+2026-11-05T08:31:06.1697159Z   PGUSER: postgres
+2026-11-05T08:31:06.1698988Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:31:06.1700668Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:31:06.1702285Z   CARGO_TERM_COLOR: always
+2026-11-05T08:31:06.1704162Z   CACHE_ON_FAILURE: false
+2026-11-05T08:31:06.1706391Z   TRINO_CATALOG_DIR: /home/runner/work/_temp/trino-catalog.szl82DHg
+2026-11-05T08:31:06.1706801Z   PGPASSWORD: ***
+2026-11-05T08:31:06.1709140Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore
+2026-11-05T08:31:06.1710827Z   ONTOFORGE_TRINO_URL: http://localhost:8080
+2026-11-05T08:31:06.1712773Z   ONTOFORGE_QUERY_PLAN_DIR: /home/runner/work/ontoforge/ontoforge/target/query-plans
+2026-11-05T08:31:06.1714633Z ##[endgroup]
+2026-11-05T08:31:06.5115096Z [1m[92m   Compiling[0m ontoforge-engine v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-engine)
+2026-11-05T08:31:07.7943270Z [1m[92m   Compiling[0m ontoforge-auth v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-auth)
+2026-11-05T08:31:09.2843068Z [1m[92m   Compiling[0m ontoforge-storage v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-storage)
+2026-11-05T08:31:11.4826857Z [1m[92m   Compiling[0m ontoforge-query v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-query)
+2026-11-05T08:31:17.4845836Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 11.28s
+2026-11-05T08:31:17.5046799Z [1m[92m     Running[0m tests/trino_query_it.rs (target/debug/deps/trino_query_it-dd0a686b643c9465)
+2026-11-05T08:31:17.5049293Z 
+2026-11-05T08:31:17.5049428Z running 5 tests
+2026-11-05T08:31:20.5283715Z test aggregate_corpus_and_distributed_explain ... ok
+2026-11-05T08:31:21.4342424Z test fixed_semantics_and_cursor_refill ... ok
+2026-11-05T08:31:21.7243701Z test real_physical_errors_are_sanitized ... ok
+2026-11-05T08:31:23.0103600Z test real_security_roles_and_cursor_replay ... ok
+2026-11-05T08:31:28.6373786Z test where_search_set_and_relationship_corpus ... ok
+2026-11-05T08:31:28.6378441Z 
+2026-11-05T08:31:28.6381662Z test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 11.13s
+2026-11-05T08:31:28.6382484Z 
+2026-11-05T08:31:28.6574509Z ##[group]Run cargo test -p ontoforge-query --test query_bench_it --locked -- --ignored --test-threads=1
+2026-11-05T08:31:28.6574920Z [36;1mcargo test -p ontoforge-query --test query_bench_it --locked -- --ignored --test-threads=1[0m
+2026-11-05T08:31:28.6617831Z shell: /usr/bin/bash -e {0}
+2026-11-05T08:31:28.6617982Z env:
+2026-11-05T08:31:28.6618144Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:31:28.6618280Z   PGHOST: localhost
+2026-11-05T08:31:28.6618420Z   PGUSER: postgres
+2026-11-05T08:31:28.6618560Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:31:28.6618717Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:31:28.6618864Z   CARGO_TERM_COLOR: always
+2026-11-05T08:31:28.6619010Z   CACHE_ON_FAILURE: false
+2026-11-05T08:31:28.6619206Z   TRINO_CATALOG_DIR: /home/runner/work/_temp/trino-catalog.szl82DHg
+2026-11-05T08:31:28.6619546Z   PGPASSWORD: ***
+2026-11-05T08:31:28.6619899Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore
+2026-11-05T08:31:28.6620192Z   ONTOFORGE_TRINO_URL: http://localhost:8080
+2026-11-05T08:31:28.6620399Z   ONTOFORGE_BENCH_MODE: smoke
+2026-11-05T08:31:28.6620634Z   ONTOFORGE_BENCH_ARTIFACT_DIR: /home/runner/work/ontoforge/ontoforge/target/query-bench
+2026-11-05T08:31:28.6620879Z ##[endgroup]
+2026-11-05T08:31:28.8376791Z [1m[92m   Compiling[0m ontoforge-query v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-query)
+2026-11-05T08:31:31.0313949Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 2.34s
+2026-11-05T08:31:31.0477549Z [1m[92m     Running[0m tests/query_bench_it.rs (target/debug/deps/query_bench_it-816701f1ff39b912)
+2026-11-05T08:31:31.0499617Z 
+2026-11-05T08:31:31.0510770Z running 1 test
+2026-11-05T08:31:34.4237012Z test phase4_real_backend_p95 ... ok
+2026-11-05T08:31:34.4237305Z 
+2026-11-05T08:31:34.4237474Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 3.37s
+2026-11-05T08:31:34.4237675Z 
+2026-11-05T08:31:34.4359781Z ##[group]Run set -euo pipefail
+2026-11-05T08:31:34.4360015Z [36;1mset -euo pipefail[0m
+2026-11-05T08:31:34.4360492Z [36;1m: "${ONTOFORGE_PG_URL:?PostgreSQL service must set ONTOFORGE_PG_URL}"[0m
+2026-11-05T08:31:34.4360924Z [36;1m: "${ONTOFORGE_TRINO_URL:?Trino service must set ONTOFORGE_TRINO_URL}"[0m
+2026-11-05T08:31:34.4361291Z [36;1moutput=$(cargo test -p ontoforge-action --test trino_action_it --locked trino_action_ -- --ignored --list)[0m
+2026-11-05T08:31:34.4361653Z [36;1mcount=$(printf '%s\n' "$output" | awk '/: test$/ { n++ } END { print n+0 }')[0m
+2026-11-05T08:31:34.4361934Z [36;1mecho "trino_action_it: $count ignored tests discovered"[0m
+2026-11-05T08:31:34.4362228Z [36;1mif [ "$count" -eq 0 ]; then echo "::error::trino_action_it discovered zero tests"; exit 1; fi[0m
+2026-11-05T08:31:34.4362701Z [36;1mcargo test -p ontoforge-action --test trino_action_it --locked trino_action_ -- --ignored --nocapture[0m
+2026-11-05T08:31:34.4412284Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-05T08:31:34.4412613Z env:
+2026-11-05T08:31:34.4412801Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:31:34.4413019Z   PGHOST: localhost
+2026-11-05T08:31:34.4413223Z   PGUSER: postgres
+2026-11-05T08:31:34.4413429Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:31:34.4413674Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:31:34.4413884Z   CARGO_TERM_COLOR: always
+2026-11-05T08:31:34.4414089Z   CACHE_ON_FAILURE: false
+2026-11-05T08:31:34.4414412Z   TRINO_CATALOG_DIR: /home/runner/work/_temp/trino-catalog.szl82DHg
+2026-11-05T08:31:34.4414878Z   PGPASSWORD: ***
+2026-11-05T08:31:34.4415411Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore
+2026-11-05T08:31:34.4415723Z   ONTOFORGE_TRINO_URL: http://localhost:8080
+2026-11-05T08:31:34.4415993Z ##[endgroup]
+2026-11-05T08:31:34.6601343Z [1m[92m   Compiling[0m ontoforge-action v0.1.0 (/home/runner/work/ontoforge/ontoforge/crates/ontoforge-action)
+2026-11-05T08:31:38.9853080Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 4.51s
+2026-11-05T08:31:39.0029490Z [1m[92m     Running[0m tests/trino_action_it.rs (target/debug/deps/trino_action_it-d68c5565976494ca)
+2026-11-05T08:31:39.0209832Z trino_action_it: 4 ignored tests discovered
+2026-11-05T08:31:39.1808840Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.13s
+2026-11-05T08:31:39.1898861Z [1m[92m     Running[0m tests/trino_action_it.rs (target/debug/deps/trino_action_it-d68c5565976494ca)
+2026-11-05T08:31:39.1929062Z 
+2026-11-05T08:31:39.1929394Z running 4 tests
+2026-11-05T08:31:39.5779762Z test trino_action_all_patched_does_not_contact_trino ... ok
+2026-11-05T08:31:39.6660640Z test trino_action_duplicate_pk_is_ambiguous ... ok
+2026-11-05T08:31:39.6960308Z test trino_action_unique_source_executes ... ok
+2026-11-05T08:31:41.2023248Z test trino_action_source_unavailable_is_engine_unavailable ... ok
+2026-11-05T08:31:41.2026139Z 
+2026-11-05T08:31:41.2038228Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 2.01s
+2026-11-05T08:31:41.2038765Z 
+2026-11-05T08:31:41.2136959Z ##[group]Run set -euo pipefail
+2026-11-05T08:31:41.2137181Z [36;1mset -euo pipefail[0m
+2026-11-05T08:31:41.2137328Z [36;1mtargets=([0m
+2026-11-05T08:31:41.2137482Z [36;1m  "ontoforge-engine trino_it"[0m
+2026-11-05T08:31:41.2137664Z [36;1m  "ontoforge-engine trino_l2_acl_it"[0m
+2026-11-05T08:31:41.2137846Z [36;1m  "ontoforge cli_trino_it"[0m
+2026-11-05T08:31:41.2138023Z [36;1m  "ontoforge-storage conformance_pg"[0m
+2026-11-05T08:31:41.2138229Z [36;1m  "ontoforge-storage reload_pg"[0m
+2026-11-05T08:31:41.2138476Z [36;1m  "ontoforge-storage scope_store"[0m
+2026-11-05T08:31:41.2138723Z [36;1m  "ontoforge-storage migrate_pg"[0m
+2026-11-05T08:31:41.2140795Z [36;1m  "ontoforge-storage history_masking"[0m
+2026-11-05T08:31:41.2140982Z [36;1m  "ontoforge-storage import"[0m
+2026-11-05T08:31:41.2141157Z [36;1m  "ontoforge-storage reload_trino_it"[0m
+2026-11-05T08:31:41.2141351Z [36;1m  "ontoforge-storage query_read_pg"[0m
+2026-11-05T08:31:41.2141617Z [36;1m  "ontoforge-auth rowpred_trino_it"[0m
+2026-11-05T08:31:41.2141868Z [36;1m  "ontoforge-query trino_query_it"[0m
+2026-11-05T08:31:41.2142108Z [36;1m  "ontoforge-query query_bench_it"[0m
+2026-11-05T08:31:41.2142352Z [36;1m  "ontoforge-action outbox_pg"[0m
+2026-11-05T08:31:41.2142545Z [36;1m  "ontoforge-action trino_action_it"[0m
+2026-11-05T08:31:41.2142713Z [36;1m)[0m
+2026-11-05T08:31:41.2142852Z [36;1mfor target in "${targets[@]}"; do[0m
+2026-11-05T08:31:41.2143014Z [36;1m  set -- $target[0m
+2026-11-05T08:31:41.2143331Z [36;1m  if ! count=$(cargo test -p "$1" --test "$2" --locked -- --ignored --list | awk '/: test$/ { n++ } END { print n+0; exit(n > 0 ? 0 : 1) }'); then[0m
+2026-11-05T08:31:41.2143708Z [36;1m    echo "::error::$2 discovery failed or lists no ignored tests"[0m
+2026-11-05T08:31:41.2143920Z [36;1m    exit 1[0m
+2026-11-05T08:31:41.2144048Z [36;1m  fi[0m
+2026-11-05T08:31:41.2144187Z [36;1m  echo "$2: $count ignored tests"[0m
+2026-11-05T08:31:41.2144350Z [36;1mdone[0m
+2026-11-05T08:31:41.2183842Z shell: /usr/bin/bash -e {0}
+2026-11-05T08:31:41.2183990Z env:
+2026-11-05T08:31:41.2184119Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:31:41.2184256Z   PGHOST: localhost
+2026-11-05T08:31:41.2184389Z   PGUSER: postgres
+2026-11-05T08:31:41.2184529Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:31:41.2184684Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:31:41.2184824Z   CARGO_TERM_COLOR: always
+2026-11-05T08:31:41.2184968Z   CACHE_ON_FAILURE: false
+2026-11-05T08:31:41.2185168Z   TRINO_CATALOG_DIR: /home/runner/work/_temp/trino-catalog.szl82DHg
+2026-11-05T08:31:41.2185506Z   PGPASSWORD: ***
+2026-11-05T08:31:41.2185867Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore
+2026-11-05T08:31:41.2186043Z ##[endgroup]
+2026-11-05T08:31:41.3855150Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.14s
+2026-11-05T08:31:41.3932986Z [1m[92m     Running[0m tests/trino_it.rs (target/debug/deps/trino_it-1b4aa6fb92201485)
+2026-11-05T08:31:41.4034163Z trino_it: 9 ignored tests
+2026-11-05T08:31:41.5462613Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+2026-11-05T08:31:41.5538108Z [1m[92m     Running[0m tests/trino_l2_acl_it.rs (target/debug/deps/trino_l2_acl_it-a419d58e25d7c900)
+2026-11-05T08:31:41.5639765Z trino_l2_acl_it: 6 ignored tests
+2026-11-05T08:31:41.7749702Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.19s
+2026-11-05T08:31:41.7862947Z [1m[92m     Running[0m tests/cli_trino_it.rs (target/debug/deps/cli_trino_it-4518dc188915b177)
+2026-11-05T08:31:41.7967425Z cli_trino_it: 4 ignored tests
+2026-11-05T08:31:41.9552619Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.13s
+2026-11-05T08:31:41.9630946Z [1m[92m     Running[0m tests/conformance_pg.rs (target/debug/deps/conformance_pg-b7239af1cdb261b2)
+2026-11-05T08:31:41.9841570Z conformance_pg: 45 ignored tests
+2026-11-05T08:31:42.1289298Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+2026-11-05T08:31:42.1372817Z [1m[92m     Running[0m tests/reload_pg.rs (target/debug/deps/reload_pg-1e8b78b22fce35f5)
+2026-11-05T08:31:42.1600887Z reload_pg: 11 ignored tests
+2026-11-05T08:31:42.3130537Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.13s
+2026-11-05T08:31:42.3221889Z [1m[92m     Running[0m tests/scope_store.rs (target/debug/deps/scope_store-cad1bee945540038)
+2026-11-05T08:31:42.3446025Z scope_store: 3 ignored tests
+2026-11-05T08:31:42.4928873Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+2026-11-05T08:31:42.5010879Z [1m[92m     Running[0m tests/migrate_pg.rs (target/debug/deps/migrate_pg-2147b408954aa050)
+2026-11-05T08:31:42.5224440Z migrate_pg: 4 ignored tests
+2026-11-05T08:31:42.6737851Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.13s
+2026-11-05T08:31:42.6818907Z [1m[92m     Running[0m tests/history_masking.rs (target/debug/deps/history_masking-19aae83e6d158689)
+2026-11-05T08:31:42.7014778Z history_masking: 1 ignored tests
+2026-11-05T08:31:42.8472240Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+2026-11-05T08:31:42.8563007Z [1m[92m     Running[0m tests/import.rs (target/debug/deps/import-884a30f79b256691)
+2026-11-05T08:31:42.8761745Z import: 2 ignored tests
+2026-11-05T08:31:43.0201185Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+2026-11-05T08:31:43.0281276Z [1m[92m     Running[0m tests/reload_trino_it.rs (target/debug/deps/reload_trino_it-c76e201474e5ec53)
+2026-11-05T08:31:43.0387183Z reload_trino_it: 3 ignored tests
+2026-11-05T08:31:43.1903614Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.13s
+2026-11-05T08:31:43.1981532Z [1m[92m     Running[0m tests/query_read_pg.rs (target/debug/deps/query_read_pg-dacf0acf66711ef6)
+2026-11-05T08:31:43.2072340Z query_read_pg: 2 ignored tests
+2026-11-05T08:31:43.3714123Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.14s
+2026-11-05T08:31:43.3840926Z [1m[92m     Running[0m tests/rowpred_trino_it.rs (target/debug/deps/rowpred_trino_it-735d3873224fd6be)
+2026-11-05T08:31:43.3952690Z rowpred_trino_it: 3 ignored tests
+2026-11-05T08:31:43.5472377Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.13s
+2026-11-05T08:31:43.5555088Z [1m[92m     Running[0m tests/trino_query_it.rs (target/debug/deps/trino_query_it-dd0a686b643c9465)
+2026-11-05T08:31:43.5641097Z trino_query_it: 5 ignored tests
+2026-11-05T08:31:43.7066337Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+2026-11-05T08:31:43.7151079Z [1m[92m     Running[0m tests/query_bench_it.rs (target/debug/deps/query_bench_it-816701f1ff39b912)
+2026-11-05T08:31:43.7247888Z query_bench_it: 1 ignored tests
+2026-11-05T08:31:43.8843482Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.13s
+2026-11-05T08:31:43.8936903Z [1m[92m     Running[0m tests/outbox_pg.rs (target/debug/deps/outbox_pg-d0ae3442197aafdd)
+2026-11-05T08:31:43.9051905Z outbox_pg: 2 ignored tests
+2026-11-05T08:31:44.0642041Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.13s
+2026-11-05T08:31:44.0734969Z [1m[92m     Running[0m tests/trino_action_it.rs (target/debug/deps/trino_action_it-d68c5565976494ca)
+2026-11-05T08:31:44.0848805Z trino_action_it: 4 ignored tests
+2026-11-05T08:31:44.0939890Z ##[group]Run bash ci/query-services.sh check-artifacts target/query-plans target/query-bench
+2026-11-05T08:31:44.0942240Z [36;1mbash ci/query-services.sh check-artifacts target/query-plans target/query-bench[0m
+2026-11-05T08:31:44.0985565Z shell: /usr/bin/bash -e {0}
+2026-11-05T08:31:44.0985778Z env:
+2026-11-05T08:31:44.0987522Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:31:44.0990228Z   PGHOST: localhost
+2026-11-05T08:31:44.0992008Z   PGUSER: postgres
+2026-11-05T08:31:44.0993714Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:31:44.0996412Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:31:44.0998248Z   CARGO_TERM_COLOR: always
+2026-11-05T08:31:44.1000164Z   CACHE_ON_FAILURE: false
+2026-11-05T08:31:44.1000426Z   TRINO_CATALOG_DIR: /home/runner/work/_temp/trino-catalog.szl82DHg
+2026-11-05T08:31:44.1003177Z   PGPASSWORD: ***
+2026-11-05T08:31:44.1006597Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore
+2026-11-05T08:31:44.1006809Z ##[endgroup]
+2026-11-05T08:31:44.1234696Z ##[group]Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+2026-11-05T08:31:44.1234935Z with:
+2026-11-05T08:31:44.1235066Z   name: phase4-query-plans
+2026-11-05T08:31:44.1235223Z   path: target/query-plans/*.txt
+2026-11-05T08:31:44.1235385Z   if-no-files-found: error
+2026-11-05T08:31:44.1235527Z   compression-level: 6
+2026-11-05T08:31:44.1235664Z   overwrite: false
+2026-11-05T08:31:44.1235799Z   include-hidden-files: false
+2026-11-05T08:31:44.1235939Z env:
+2026-11-05T08:31:44.1236049Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:31:44.1236173Z   PGHOST: localhost
+2026-11-05T08:31:44.1236309Z   PGUSER: postgres
+2026-11-05T08:31:44.1236437Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:31:44.1236585Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:31:44.1236714Z   CARGO_TERM_COLOR: always
+2026-11-05T08:31:44.1236857Z   CACHE_ON_FAILURE: false
+2026-11-05T08:31:44.1237040Z   TRINO_CATALOG_DIR: /home/runner/work/_temp/trino-catalog.szl82DHg
+2026-11-05T08:31:44.1237352Z   PGPASSWORD: ***
+2026-11-05T08:31:44.1237681Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore
+2026-11-05T08:31:44.1237847Z ##[endgroup]
+2026-11-05T08:31:44.3928938Z (node:11408) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-05T08:31:44.3929635Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-05T08:31:44.4058397Z With the provided path, there will be 137 files uploaded
+2026-11-05T08:31:44.4061835Z Artifact name is valid!
+2026-11-05T08:31:44.4062073Z Root directory input is valid!
+2026-11-05T08:31:44.7938321Z Beginning upload of artifact content to blob storage
+2026-11-05T08:31:44.8855243Z (node:11408) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-11-05T08:31:45.3233003Z Uploaded bytes 104451
+2026-11-05T08:31:45.3948363Z Finished uploading artifact content to blob storage!
+2026-11-05T08:31:45.3948929Z SHA256 digest of uploaded artifact zip is 46961f5d0fe12222ab5a6cc7e77651322f601c27cb971886592dec969de197d4
+2026-11-05T08:31:45.3950275Z Finalizing artifact upload
+2026-11-05T08:31:45.9774153Z Artifact phase4-query-plans.zip successfully finalized. Artifact ID 13399737209
+2026-11-05T08:31:45.9774973Z Artifact phase4-query-plans has been successfully uploaded! Final size is 104451 bytes. Artifact ID is 13399737209
+2026-11-05T08:31:45.9779388Z Artifact download URL: https://github.com/easyinplay/ontoforge/actions/runs/41994479295/artifacts/13399737209
+2026-11-05T08:31:45.9956978Z ##[group]Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+2026-11-05T08:31:45.9957368Z with:
+2026-11-05T08:31:45.9957574Z   name: phase4-query-bench-smoke
+2026-11-05T08:31:45.9957832Z   path: target/query-bench/*.json
+2026-11-05T08:31:45.9958089Z   if-no-files-found: error
+2026-11-05T08:31:45.9958329Z   compression-level: 6
+2026-11-05T08:31:45.9958551Z   overwrite: false
+2026-11-05T08:31:45.9958760Z   include-hidden-files: false
+2026-11-05T08:31:45.9958989Z env:
+2026-11-05T08:31:45.9959165Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:31:45.9959377Z   PGHOST: localhost
+2026-11-05T08:31:45.9959585Z   PGUSER: postgres
+2026-11-05T08:31:45.9959792Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:31:45.9960040Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:31:45.9960416Z   CARGO_TERM_COLOR: always
+2026-11-05T08:31:45.9960646Z   CACHE_ON_FAILURE: false
+2026-11-05T08:31:45.9960950Z   TRINO_CATALOG_DIR: /home/runner/work/_temp/trino-catalog.szl82DHg
+2026-11-05T08:31:45.9961467Z   PGPASSWORD: ***
+2026-11-05T08:31:45.9962003Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore
+2026-11-05T08:31:45.9962284Z ##[endgroup]
+2026-11-05T08:31:46.1007666Z (node:11443) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-05T08:31:46.1008247Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-05T08:31:46.1043099Z With the provided path, there will be 1 file uploaded
+2026-11-05T08:31:46.1045956Z Artifact name is valid!
+2026-11-05T08:31:46.1046432Z Root directory input is valid!
+2026-11-05T08:31:46.4435118Z Beginning upload of artifact content to blob storage
+2026-11-05T08:31:46.4582383Z (node:11443) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-11-05T08:31:46.7212728Z Uploaded bytes 2704
+2026-11-05T08:31:46.7948951Z Finished uploading artifact content to blob storage!
+2026-11-05T08:31:46.7949637Z SHA256 digest of uploaded artifact zip is 6780d35a91e66f90beb9ddb402b25e6e5983b0ae85a711452ac7fc447f1b9806
+2026-11-05T08:31:46.7950949Z Finalizing artifact upload
+2026-11-05T08:31:47.2688942Z Artifact phase4-query-bench-smoke.zip successfully finalized. Artifact ID 13399951669
+2026-11-05T08:31:47.2689510Z Artifact phase4-query-bench-smoke has been successfully uploaded! Final size is 2704 bytes. Artifact ID is 13399951669
+2026-11-05T08:31:47.2693387Z Artifact download URL: https://github.com/easyinplay/ontoforge/actions/runs/41994479295/artifacts/13399951669
+2026-11-05T08:31:47.2830537Z ##[group]Run bash ci/query-services.sh cleanup
+2026-11-05T08:31:47.2830870Z [36;1mbash ci/query-services.sh cleanup[0m
+2026-11-05T08:31:47.2874537Z shell: /usr/bin/bash -e {0}
+2026-11-05T08:31:47.2874701Z env:
+2026-11-05T08:31:47.2874826Z   CARGO_BUILD_JOBS: 2
+2026-11-05T08:31:47.2874968Z   PGHOST: localhost
+2026-11-05T08:31:47.2875100Z   PGUSER: postgres
+2026-11-05T08:31:47.2875262Z   CARGO_HOME: /home/runner/.cargo
+2026-11-05T08:31:47.2875424Z   CARGO_INCREMENTAL: 0
+2026-11-05T08:31:47.2875570Z   CARGO_TERM_COLOR: always
+2026-11-05T08:31:47.2875744Z   CACHE_ON_FAILURE: false
+2026-11-05T08:31:47.2875946Z   TRINO_CATALOG_DIR: /home/runner/work/_temp/trino-catalog.szl82DHg
+2026-11-05T08:31:47.2876287Z   PGPASSWORD: ***
+2026-11-05T08:31:47.2876625Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore
+2026-11-05T08:31:47.2876809Z ##[endgroup]
+2026-11-05T08:31:50.0918364Z Post job cleanup.
+2026-11-05T08:31:50.1754565Z Cache up-to-date.
+2026-11-05T08:31:50.1902153Z Post job cleanup.
+2026-11-05T08:31:50.2464822Z [command]/usr/bin/git version
+2026-11-05T08:31:50.2497445Z git version 2.56.0
+2026-11-05T08:31:50.2516462Z Temporarily overriding HOME='/home/runner/work/_temp/7a1b6082-f5fa-4b64-8f21-fafdf9c15fda' before making global git config changes
+2026-11-05T08:31:50.2517167Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-05T08:31:50.2519261Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/ontoforge/ontoforge
+2026-11-05T08:31:50.2544738Z Removing SSH command configuration
+2026-11-05T08:31:50.2548347Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-05T08:31:50.2574311Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-05T08:31:50.2896851Z Removing HTTP extra header
+2026-11-05T08:31:50.2900896Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-05T08:31:50.2929682Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-05T08:31:50.3150484Z Removing includeIf entries pointing to credentials config files
+2026-11-05T08:31:50.3156379Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-05T08:31:50.3180431Z includeif.gitdir:/home/runner/work/ontoforge/ontoforge/.git.path
+2026-11-05T08:31:50.3181119Z includeif.gitdir:/home/runner/work/ontoforge/ontoforge/.git/worktrees/*.path
+2026-11-05T08:31:50.3181730Z includeif.gitdir:/github/workspace/.git.path
+2026-11-05T08:31:50.3182205Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-05T08:31:50.3187008Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/ontoforge/ontoforge/.git.path
+2026-11-05T08:31:50.3207203Z /home/runner/work/_temp/git-credentials-461855fc-238e-4a46-b1ac-867021440916.config
+2026-11-05T08:31:50.3214419Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/ontoforge/ontoforge/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-461855fc\-238e\-4a46\-b1ac\-867021440916\.config
+2026-11-05T08:31:50.3252229Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/ontoforge/ontoforge/.git/worktrees/*.path
+2026-11-05T08:31:50.3273745Z /home/runner/work/_temp/git-credentials-461855fc-238e-4a46-b1ac-867021440916.config
+2026-11-05T08:31:50.3279600Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/ontoforge/ontoforge/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-461855fc\-238e\-4a46\-b1ac\-867021440916\.config
+2026-11-05T08:31:50.3306179Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-11-05T08:31:50.3324890Z /github/runner_temp/git-credentials-461855fc-238e-4a46-b1ac-867021440916.config
+2026-11-05T08:31:50.3331018Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-461855fc\-238e\-4a46\-b1ac\-867021440916\.config
+2026-11-05T08:31:50.3358405Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-05T08:31:50.3377478Z /github/runner_temp/git-credentials-461855fc-238e-4a46-b1ac-867021440916.config
+2026-11-05T08:31:50.3382898Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-461855fc\-238e\-4a46\-b1ac\-867021440916\.config
+2026-11-05T08:31:50.3409327Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-05T08:31:50.3612937Z Removing credentials config '/home/runner/work/_temp/git-credentials-461855fc-238e-4a46-b1ac-867021440916.config'
+2026-11-05T08:31:50.3746565Z Cleaning up orphan processes
+2026-11-05T08:31:50.4298322Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

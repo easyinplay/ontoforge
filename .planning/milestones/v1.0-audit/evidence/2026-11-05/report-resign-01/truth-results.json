@@ -1,0 +1,3278 @@
+[
+  {
+    "id": "01-01.1",
+    "truth": "D-02、D-08 与 RESEARCH A1（LinkType 形状）构成的定义格式契约在写任何实现代码之前经用户在 checkpoint 确认，确认结果写入 .planning/adr/0012-definition-document-shape.md",
+    "status": "VERIFIED",
+    "assertion": "ADR-0012 records status accepted, user recommended and selected accessor semantics; chronological git evidence records ADR before implementation.",
+    "sources": [
+      ".planning/adr/0012-definition-document-shape.md"
+    ],
+    "tests": [],
+    "test_evidence": [],
+    "source_assertions": [
+      {
+        "file": ".planning/adr/0012-definition-document-shape.md",
+        "sha256": "1233163cf93f93e2711d02d3d72b200de13c1749ad20f0445d98785d88875cee",
+        "lines": 42
+      }
+    ]
+  },
+  {
+    "id": "01-01.2",
+    "truth": "cargo run -p ontoforge -- validate examples/ontologies/aviation 退出码为 0（D-01 manifest + D-02 kind 文档 + D-03 内联 properties 被加载为 IR）",
+    "status": "VERIFIED",
+    "assertion": "CLI validate calls pipeline/check_with_profile, loader reads real aviation directory and success is process exit 0.",
+    "sources": [
+      "crates/ontoforge/src/lib.rs",
+      "crates/ontoforge/src/pipeline.rs",
+      "crates/ontoforge-schema/src/loader/mod.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge/tests/cli.rs",
+        "name": "validate_aviation_succeeds_silently"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge/tests/cli.rs@validate_aviation_succeeds_silently"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge/src/lib.rs",
+        "sha256": "7740d3899fcde34ca1e638063badda1eda81dae6af436bda3859c07e6f9b120f",
+        "lines": 212
+      },
+      {
+        "file": "crates/ontoforge/src/pipeline.rs",
+        "sha256": "0c1fbd95f77c0d7dec14ffeec821688b83ffe3b1b3724982d39133ba9f6eb453",
+        "lines": 88
+      },
+      {
+        "file": "crates/ontoforge-schema/src/loader/mod.rs",
+        "sha256": "00abcd4d66270e78e96381b47bc9d8b9a2d41668963a11e83d25f00d182ec08f",
+        "lines": 957
+      }
+    ]
+  },
+  {
+    "id": "01-01.3",
+    "truth": "对 examples/ontologies/invalid/v04-unknown-field 运行 validate 时退出码为 1，输出 ONT-V04、文件名 objects.yaml、写错 key 的 line 3 column 1，help 含 primaryKey 建议（D-05、D-10、D-11 节点级 span）",
+    "status": "VERIFIED",
+    "assertion": "Unknown field maps to V04 at key span; CLI asserts objects.yaml line 3 column 1 and primaryKey help.",
+    "sources": [
+      "crates/ontoforge-schema/src/loader/dispatch.rs",
+      "crates/ontoforge-schema/src/loader/sourcemap.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge/tests/cli.rs",
+        "name": "validate_unknown_field_points_at_the_misspelled_key"
+      },
+      {
+        "file": "crates/ontoforge/tests/cli.rs",
+        "name": "validate_human_output_for_unknown_field"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge/tests/cli.rs@validate_unknown_field_points_at_the_misspelled_key",
+      "crates/ontoforge/tests/cli.rs@validate_human_output_for_unknown_field"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/loader/dispatch.rs",
+        "sha256": "d53d6edf5faa386fe50c31b83bb664a67dafaf3727f6cc0932379a7ab0c8b2e5",
+        "lines": 353
+      },
+      {
+        "file": "crates/ontoforge-schema/src/loader/sourcemap.rs",
+        "sha256": "62e7459b928b1dff8c5dc48cad152d5f04140e2a385a4e63755076814a7dd1b2",
+        "lines": 303
+      }
+    ]
+  },
+  {
+    "id": "01-01.4",
+    "truth": "--format json 输出 D-10 模型 code/severity/message/file/line/column/span/help 的 JSON 数组，stdout 不含 ANSI 转义字符",
+    "status": "VERIFIED",
+    "assertion": "Serialize Diagnostic emits exactly documented fields; JSON render bypasses ANSI human renderer.",
+    "sources": [
+      "crates/ontoforge-schema/src/diag.rs",
+      "crates/ontoforge/src/render.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge/tests/cli.rs",
+        "name": "json_output_has_exactly_the_documented_fields_and_no_ansi"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge/tests/cli.rs@json_output_has_exactly_the_documented_fields_and_no_ansi"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/diag.rs",
+        "sha256": "fad8d8b85fd305c25218b088281f92377a77a6031e1d9ce352b1f137a638f535",
+        "lines": 322
+      },
+      {
+        "file": "crates/ontoforge/src/render.rs",
+        "sha256": "40234cca316f436b579ea568975bc350f65104ced8144c0a4be742421765ac18",
+        "lines": 224
+      }
+    ]
+  },
+  {
+    "id": "01-01.5",
+    "truth": "manifest ontology.yaml 缺失时报 ONT-V14 且退出码为 1（D-01）",
+    "status": "VERIFIED",
+    "assertion": "Missing manifest returns V14 with no location; process returns 1.",
+    "sources": [
+      "crates/ontoforge-schema/src/loader/mod.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge/tests/cli.rs",
+        "name": "missing_manifest_is_reported_as_v14"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge/tests/cli.rs@missing_manifest_is_reported_as_v14"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/loader/mod.rs",
+        "sha256": "00abcd4d66270e78e96381b47bc9d8b9a2d41668963a11e83d25f00d182ec08f",
+        "lines": 957
+      }
+    ]
+  },
+  {
+    "id": "01-01.6",
+    "truth": "未知 kind 报 ONT-V03 并附近似名建议；Interface / ValueType / SharedProperty 报 v1 不支持（D-02）",
+    "status": "VERIFIED",
+    "assertion": "Dispatch rejects unknown/reserved kinds and supplies close-name help.",
+    "sources": [
+      "crates/ontoforge-schema/src/loader/dispatch.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/diagnostics.rs",
+        "name": "unknown_kind_is_v03_with_a_close_name"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/diagnostics.rs",
+        "name": "reserved_kind_is_v03_not_supported_in_v1"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/diagnostics.rs@unknown_kind_is_v03_with_a_close_name",
+      "crates/ontoforge-schema/tests/diagnostics.rs@reserved_kind_is_v03_not_supported_in_v1"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/loader/dispatch.rs",
+        "sha256": "d53d6edf5faa386fe50c31b83bb664a67dafaf3727f6cc0932379a7ab0c8b2e5",
+        "lines": 353
+      }
+    ]
+  },
+  {
+    "id": "01-01.7",
+    "truth": "apiName 违反 D-04 正则或命中保留字（大小写不敏感）时报 ONT-V07，help 给出规范化写法",
+    "status": "VERIFIED",
+    "assertion": "Names enforce regex and case-insensitive reserved set; canonical normalizes suggestions.",
+    "sources": [
+      "crates/ontoforge-schema/src/ir/names.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/diagnostics.rs",
+        "name": "lowercase_object_type_name_is_v07_with_canonical_help"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/diagnostics.rs",
+        "name": "reserved_word_is_v07_case_insensitively"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/diagnostics.rs@lowercase_object_type_name_is_v07_with_canonical_help",
+      "crates/ontoforge-schema/tests/diagnostics.rs@reserved_word_is_v07_case_insensitively"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/ir/names.rs",
+        "sha256": "a0a7f1e25f5fde58cc5476ee810faf0fccca72a79a3d97626c56d4e290bdd27a",
+        "lines": 409
+      }
+    ]
+  },
+  {
+    "id": "01-01.8",
+    "truth": "诊断的 file 字段是相对 ontology 根目录、以 / 分隔的路径，不含盘符、用户名或反斜杠",
+    "status": "VERIFIED",
+    "assertion": "Discovery normalizes separators; SourceMap carries relative candidate name, no root join in Diagnostic file.",
+    "sources": [
+      "crates/ontoforge-schema/src/loader/discover.rs",
+      "crates/ontoforge-schema/src/loader/sourcemap.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/loader.rs",
+        "name": "diagnostic_paths_use_forward_slash"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/loader.rs@diagnostic_paths_use_forward_slash"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/loader/discover.rs",
+        "sha256": "331dd628af6ababf11c9bc5b398b2abbdb779b2fe37fbe8a5f314a675b6003fa",
+        "lines": 442
+      },
+      {
+        "file": "crates/ontoforge-schema/src/loader/sourcemap.rs",
+        "sha256": "62e7459b928b1dff8c5dc48cad152d5f04140e2a385a4e63755076814a7dd1b2",
+        "lines": 303
+      }
+    ]
+  },
+  {
+    "id": "01-01.9",
+    "truth": "根 Cargo.toml 为 resolver 3、edition 2024、rust-version 1.98，[workspace.lints] 含 unsafe_code = forbid（D-17）；.gitattributes 设置 * text=auto eol=lf（D-17）",
+    "status": "VERIFIED",
+    "assertion": "Root workspace version/edition/resolver, forbid unsafe and LF attributes remain literal declared values.",
+    "sources": [
+      "Cargo.toml",
+      ".gitattributes"
+    ],
+    "tests": [],
+    "test_evidence": [],
+    "source_assertions": [
+      {
+        "file": "Cargo.toml",
+        "sha256": "6ff37b0773c9cbf86f8738a11f008d32b41ac8e6153c5da37dafea0da33d4dd5",
+        "lines": 67
+      },
+      {
+        "file": ".gitattributes",
+        "sha256": "66a217b6eaefd653b4e2d2fca5e61262849aa513f47a9ef9bf8b2e87362671f6",
+        "lines": 9
+      }
+    ]
+  },
+  {
+    "id": "01-02.1",
+    "truth": "workspace 含 ADR-0011 列出的全部 10 个 ontoforge-* crate，每个 crate 都能编译并至少有一个通过的占位测试（D-17）",
+    "status": "VERIFIED",
+    "assertion": "All ten manifests inherit workspace and current local workspace log contains passing crate tests; historical skeletons have become substantive downstream crates.",
+    "sources": [
+      "Cargo.toml",
+      ".planning/adr/0011-workspace-layout.md"
+    ],
+    "tests": [],
+    "test_evidence": [],
+    "source_assertions": [
+      {
+        "file": "Cargo.toml",
+        "sha256": "6ff37b0773c9cbf86f8738a11f008d32b41ac8e6153c5da37dafea0da33d4dd5",
+        "lines": 67
+      },
+      {
+        "file": ".planning/adr/0011-workspace-layout.md",
+        "sha256": "a61043bb5e089b5bde28c7b50941aab88eff9064c78706d796e9d5923b4a8620",
+        "lines": 25
+      }
+    ]
+  },
+  {
+    "id": "01-02.2",
+    "truth": "crate 间 path 依赖符合 ADR-0011 方向：schema ← expr / query ← storage ← action ← server ← cli，api 只依赖 schema 与 query，client 只依赖 api",
+    "status": "VERIFIED",
+    "assertion": "All ten path dependency manifests inspected against ADR-0011 and later approved layering; no new back-edge to CLI.",
+    "sources": [
+      ".planning/adr/0011-workspace-layout.md"
+    ],
+    "tests": [],
+    "test_evidence": [],
+    "source_assertions": [
+      {
+        "file": ".planning/adr/0011-workspace-layout.md",
+        "sha256": "a61043bb5e089b5bde28c7b50941aab88eff9064c78706d796e9d5923b4a8620",
+        "lines": 25
+      }
+    ]
+  },
+  {
+    "id": "01-02.3",
+    "truth": "Windows 本机不依赖 Docker 执行 cargo test --workspace 全部通过（DX-03）",
+    "status": "VERIFIED",
+    "assertion": "Existing local log header binds HEAD060019f; command workspace locked serial exits0; no Docker command in workspace runner.",
+    "sources": [
+      ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-run.ps1"
+    ],
+    "tests": [],
+    "test_evidence": [],
+    "source_assertions": [
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-run.ps1",
+        "sha256": "cedc8337fe6b6921b8cd0a11efceb3c11870b08c7166c89b178e3321fcac44d0",
+        "lines": 35
+      }
+    ]
+  },
+  {
+    "id": "01-02.4",
+    "truth": ".github/workflows/ci.yml 在 windows-latest 与 ubuntu-latest 上运行 cargo fmt --all --check、cargo clippy --workspace --all-targets -- -D warnings、cargo test --workspace，权限为 contents: read（D-18）",
+    "status": "VERIFIED",
+    "assertion": "Actual CI jobs run Windows/Ubuntu fmt, clippy locked and workspace test; contents read and snapshot update disabled.",
+    "sources": [
+      ".github/workflows/ci.yml"
+    ],
+    "tests": [],
+    "test_evidence": [],
+    "source_assertions": [
+      {
+        "file": ".github/workflows/ci.yml",
+        "sha256": "b4a802a680e268303a5cdfa66f51f876f0b8128822ff364616c3fe7c3b7f77e8",
+        "lines": 378
+      }
+    ]
+  },
+  {
+    "id": "01-02.5",
+    "truth": "ADR-0003 的 Open (spike) 节被 Spike S1 结论替换，并指向 ADR-0012",
+    "status": "VERIFIED",
+    "assertion": "ADR-0003 contains Spike S1 results and ADR-0012 pointer, not open spike.",
+    "sources": [
+      ".planning/adr/0003-ontology-definition-format.md"
+    ],
+    "tests": [],
+    "test_evidence": [],
+    "source_assertions": [
+      {
+        "file": ".planning/adr/0003-ontology-definition-format.md",
+        "sha256": "daafdffe64dfd6b8878612535f4cb7bea295929b795b9845cfe25355efd6a6ec",
+        "lines": 20
+      }
+    ]
+  },
+  {
+    "id": "01-02.6",
+    "truth": "CONTRIBUTING.md 写明快照更新方式 INSTA_UPDATE=always、CI 不写快照、invalid 样例目录命名约定与诊断码不可复用规则",
+    "status": "VERIFIED",
+    "assertion": "CONTRIBUTING documents INSTA_UPDATE=always, CI no writes, invalid naming and non-reused diagnostic codes.",
+    "sources": [
+      "CONTRIBUTING.md"
+    ],
+    "tests": [],
+    "test_evidence": [],
+    "source_assertions": [
+      {
+        "file": "CONTRIBUTING.md",
+        "sha256": "28689b187772d8a5cf9baf59c121dfbd6fb83463d58c0db3be31a402115e91b5",
+        "lines": 133
+      }
+    ]
+  },
+  {
+    "id": "01-03.1",
+    "truth": "manifest 的 include glob（默认 **/*.yaml、**/*.yml、**/*.json）决定加载哪些文件，子目录中的定义文件被合并进同一 IR（D-01、SCHEMA-01）",
+    "status": "VERIFIED",
+    "assertion": "Manifest include defaults drive candidate glob filtering and assemble merges real selected files.",
+    "sources": [
+      "crates/ontoforge-schema/src/loader/discover.rs",
+      "crates/ontoforge-schema/src/loader/mod.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/loader.rs",
+        "name": "nested_files_are_merged"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/loader.rs",
+        "name": "custom_include_restricts_files"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/loader.rs@nested_files_are_merged",
+      "crates/ontoforge-schema/tests/loader.rs@custom_include_restricts_files"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/loader/discover.rs",
+        "sha256": "331dd628af6ababf11c9bc5b398b2abbdb779b2fe37fbe8a5f314a675b6003fa",
+        "lines": 442
+      },
+      {
+        "file": "crates/ontoforge-schema/src/loader/mod.rs",
+        "sha256": "00abcd4d66270e78e96381b47bc9d8b9a2d41668963a11e83d25f00d182ec08f",
+        "lines": 957
+      }
+    ]
+  },
+  {
+    "id": "01-03.2",
+    "truth": "include 含 .. 路径段或为绝对路径时报 ONT-V14，位置为该 pattern 值；遍历不跟随符号链接，跳过以 . 开头的目录与 target、node_modules（D-01）",
+    "status": "VERIFIED",
+    "assertion": "escapes_root rejects absolute/parent patterns; WalkDir follow_links false and filter_entry prune hidden/build directories.",
+    "sources": [
+      "crates/ontoforge-schema/src/loader/discover.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/loader.rs",
+        "name": "include_with_parent_segment_is_rejected"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/loader.rs",
+        "name": "absolute_include_is_rejected"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/loader.rs",
+        "name": "dot_dirs_and_build_dirs_are_skipped"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/loader.rs",
+        "name": "symlinked_file_is_not_followed"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/loader.rs@include_with_parent_segment_is_rejected",
+      "crates/ontoforge-schema/tests/loader.rs@absolute_include_is_rejected",
+      "crates/ontoforge-schema/tests/loader.rs@dot_dirs_and_build_dirs_are_skipped",
+      "crates/ontoforge-schema/tests/loader.rs@symlinked_file_is_not_followed"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/loader/discover.rs",
+        "sha256": "331dd628af6ababf11c9bc5b398b2abbdb779b2fe37fbe8a5f314a675b6003fa",
+        "lines": 442
+      }
+    ]
+  },
+  {
+    "id": "01-03.3",
+    "truth": "manifest 自身与 ontoforge.toml 永远不被当作定义文件；include 一个文件都没匹配到时报 ONT-V14",
+    "status": "VERIFIED",
+    "assertion": "is_candidate excludes manifest/config; select emits V14 on empty match.",
+    "sources": [
+      "crates/ontoforge-schema/src/loader/discover.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/loader.rs",
+        "name": "manifest_and_lint_config_are_not_definitions"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/loader.rs@manifest_and_lint_config_are_not_definitions"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/loader/discover.rs",
+        "sha256": "331dd628af6ababf11c9bc5b398b2abbdb779b2fe37fbe8a5f314a675b6003fa",
+        "lines": 442
+      }
+    ]
+  },
+  {
+    "id": "01-03.4",
+    "truth": "单个文件超过 4 MiB 报 ONT-V14 并跳过；非 UTF-8 文件报 ONT-V01",
+    "status": "VERIFIED",
+    "assertion": "MAX_FILE_BYTES=4MiB, read_limited checks budget and UTF8 errors become V01.",
+    "sources": [
+      "crates/ontoforge-schema/src/loader/mod.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/loader.rs",
+        "name": "oversized_file_is_rejected"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/loader.rs",
+        "name": "non_utf8_file_is_v01"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/loader.rs@oversized_file_is_rejected",
+      "crates/ontoforge-schema/tests/loader.rs@non_utf8_file_is_v01"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/loader/mod.rs",
+        "sha256": "00abcd4d66270e78e96381b47bc9d8b9a2d41668963a11e83d25f00d182ec08f",
+        "lines": 957
+      }
+    ]
+  },
+  {
+    "id": "01-03.5",
+    "truth": ".json 文件先经 serde_json 严格语法预检，尾逗号与注释报 ONT-V01 且带 line:col（D-11 对 JSON 同样要求 line:col）",
+    "status": "VERIFIED",
+    "assertion": "precheck_json uses serde_json before YAML-compatible parse; maps byte position back to chars.",
+    "sources": [
+      "crates/ontoforge-schema/src/loader/parse.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/loader.rs",
+        "name": "json_trailing_comma_is_rejected"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/loader.rs",
+        "name": "json_comment_is_rejected"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/loader.rs@json_trailing_comma_is_rejected",
+      "crates/ontoforge-schema/tests/loader.rs@json_comment_is_rejected"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/loader/parse.rs",
+        "sha256": "3a4db45c5a16eadf3c3e43cd4c12b8da088f727d18ba7a15ee3ac8cdc9fd89dd",
+        "lines": 368
+      }
+    ]
+  },
+  {
+    "id": "01-03.6",
+    "truth": "在 1 MiB 栈的线程上加载 200 层嵌套的 YAML 或 JSON 返回 ONT-V01 诊断，进程不崩溃",
+    "status": "VERIFIED",
+    "assertion": "load_dir/load_from_memory isolated on32MiB; depth budgets reject200nested on1MiB caller stack without crashing.",
+    "sources": [
+      "crates/ontoforge-schema/src/loader/mod.rs",
+      "crates/ontoforge-schema/src/loader/parse.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/loader.rs",
+        "name": "deeply_nested_yaml_is_rejected_not_crashing"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/loader.rs",
+        "name": "deeply_nested_json_is_rejected_not_crashing"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/loader.rs@deeply_nested_yaml_is_rejected_not_crashing",
+      "crates/ontoforge-schema/tests/loader.rs@deeply_nested_json_is_rejected_not_crashing"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/loader/mod.rs",
+        "sha256": "00abcd4d66270e78e96381b47bc9d8b9a2d41668963a11e83d25f00d182ec08f",
+        "lines": 957
+      },
+      {
+        "file": "crates/ontoforge-schema/src/loader/parse.rs",
+        "sha256": "3a4db45c5a16eadf3c3e43cd4c12b8da088f727d18ba7a15ee3ac8cdc9fd89dd",
+        "lines": 368
+      }
+    ]
+  },
+  {
+    "id": "01-03.7",
+    "truth": "YAML 的 yes/no/on/off 保持字符串；重复 key、<< merge key、未支持的 tag 报 ONT-V01 且带位置",
+    "status": "VERIFIED",
+    "assertion": "saphyr options select strict YAML semantics and reject duplicate/merge/tag, positions preserved.",
+    "sources": [
+      "crates/ontoforge-schema/src/loader/parse.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/loader.rs",
+        "name": "yaml_yes_no_stay_strings"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/loader.rs",
+        "name": "duplicate_key_is_v01_with_location"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/loader.rs",
+        "name": "merge_key_is_v01"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/loader.rs",
+        "name": "unsupported_tag_is_v01"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/loader.rs@yaml_yes_no_stay_strings",
+      "crates/ontoforge-schema/tests/loader.rs@duplicate_key_is_v01_with_location",
+      "crates/ontoforge-schema/tests/loader.rs@merge_key_is_v01",
+      "crates/ontoforge-schema/tests/loader.rs@unsupported_tag_is_v01"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/loader/parse.rs",
+        "sha256": "3a4db45c5a16eadf3c3e43cd4c12b8da088f727d18ba7a15ee3ac8cdc9fd89dd",
+        "lines": 368
+      }
+    ]
+  },
+  {
+    "id": "01-03.8",
+    "truth": "BOM、CRLF、制表符、中文字符的文件报出的 line:col 正确，span 的字节偏移能从原文精确切出对应文本（D-11）",
+    "status": "VERIFIED",
+    "assertion": "SourceMap location uses shared character column conversion and original byte offset.",
+    "sources": [
+      "crates/ontoforge-schema/src/loader/sourcemap.rs",
+      "crates/ontoforge-schema/src/diag.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/loader.rs",
+        "name": "bom_crlf_tab_and_cjk_locations_are_exact"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/loader.rs",
+        "name": "json_syntax_error_column_counts_characters"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/loader.rs@bom_crlf_tab_and_cjk_locations_are_exact",
+      "crates/ontoforge-schema/tests/loader.rs@json_syntax_error_column_counts_characters"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/loader/sourcemap.rs",
+        "sha256": "62e7459b928b1dff8c5dc48cad152d5f04140e2a385a4e63755076814a7dd1b2",
+        "lines": 303
+      },
+      {
+        "file": "crates/ontoforge-schema/src/diag.rs",
+        "sha256": "fad8d8b85fd305c25218b088281f92377a77a6031e1d9ce352b1f137a638f535",
+        "lines": 322
+      }
+    ]
+  },
+  {
+    "id": "01-03.9",
+    "truth": "properties 的声明顺序在 IR 中保持；同一组文件以不同顺序传入 load_from_memory 得到相等的 Ontology（D-02 多文档、确定性）",
+    "status": "VERIFIED",
+    "assertion": "IndexMap properties preserve order; BTreeMap normalized file candidates ensure deterministic merge.",
+    "sources": [
+      "crates/ontoforge-schema/src/ir/object.rs",
+      "crates/ontoforge-schema/src/loader/mod.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/loader.rs",
+        "name": "properties_keep_declared_order"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/loader.rs",
+        "name": "file_order_does_not_change_ir"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/loader.rs@properties_keep_declared_order",
+      "crates/ontoforge-schema/tests/loader.rs@file_order_does_not_change_ir"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/ir/object.rs",
+        "sha256": "12faf758624b52f42b9e2c408fd3335a0750c573c096077c1f9df6006c68d1b4",
+        "lines": 121
+      },
+      {
+        "file": "crates/ontoforge-schema/src/loader/mod.rs",
+        "sha256": "00abcd4d66270e78e96381b47bc9d8b9a2d41668963a11e83d25f00d182ec08f",
+        "lines": 957
+      }
+    ]
+  },
+  {
+    "id": "01-03.10",
+    "truth": "嵌套目录中文件的诊断 file 字段形如 sub/dir/x.yaml，使用 / 分隔",
+    "status": "VERIFIED",
+    "assertion": "normalize replaces backslashes and stored source path is ontology-relative.",
+    "sources": [
+      "crates/ontoforge-schema/src/loader/discover.rs",
+      "crates/ontoforge-schema/src/loader/sourcemap.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/loader.rs",
+        "name": "diagnostic_paths_use_forward_slash"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/loader.rs@diagnostic_paths_use_forward_slash"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/loader/discover.rs",
+        "sha256": "331dd628af6ababf11c9bc5b398b2abbdb779b2fe37fbe8a5f314a675b6003fa",
+        "lines": 442
+      },
+      {
+        "file": "crates/ontoforge-schema/src/loader/sourcemap.rs",
+        "sha256": "62e7459b928b1dff8c5dc48cad152d5f04140e2a385a4e63755076814a7dd1b2",
+        "lines": 303
+      }
+    ]
+  },
+  {
+    "id": "01-04.1",
+    "truth": "object type 支持 apiName、primaryKey、titleKey、displayName、description、aliases、hidden，titleKey 缺省时等于 primaryKey（SCHEMA-02）",
+    "status": "VERIFIED",
+    "assertion": "ObjectType carries declared optional fields; titleKey defaults to primaryKey accessor.",
+    "sources": [
+      "crates/ontoforge-schema/src/ir/object.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/object_types.rs",
+        "name": "object_type_optional_fields_default"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/object_types.rs",
+        "name": "full_object_type_round_trips"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/object_types.rs@object_type_optional_fields_default",
+      "crates/ontoforge-schema/tests/object_types.rs@full_object_type_round_trips"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/ir/object.rs",
+        "sha256": "12faf758624b52f42b9e2c408fd3335a0750c573c096077c1f9df6006c68d1b4",
+        "lines": 121
+      }
+    ]
+  },
+  {
+    "id": "01-04.2",
+    "truth": "13 个 v1 base type（byte、short、integer、long、float、double、decimal、string、boolean、date、timestamp、array、geopoint）与 required 均可声明，属性以 apiName 为 key 内联在 properties 下（SCHEMA-03、D-03）",
+    "status": "VERIFIED",
+    "assertion": "BaseType enum all13 plus items and required; inline properties deserialized with preserved order.",
+    "sources": [
+      "crates/ontoforge-schema/src/ir/basetype.rs",
+      "crates/ontoforge-schema/src/ir/object.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/object_types.rs",
+        "name": "all_v1_base_types_parse"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/object_types.rs@all_v1_base_types_parse"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/ir/basetype.rs",
+        "sha256": "e2a3a66aa781b461bd46bedeecba3f472f390069d2b8176572702d88fb8ddf6c",
+        "lines": 213
+      },
+      {
+        "file": "crates/ontoforge-schema/src/ir/object.rs",
+        "sha256": "12faf758624b52f42b9e2c408fd3335a0750c573c096077c1f9df6006c68d1b4",
+        "lines": 121
+      }
+    ]
+  },
+  {
+    "id": "01-04.3",
+    "truth": "array 属性必须声明 items，非 array 属性出现 items 报 ONT-V06；未知 base type 报 ONT-V06 并给出近似名（D-06）",
+    "status": "VERIFIED",
+    "assertion": "array/items consistency and nearest unknown base type validated asV06.",
+    "sources": [
+      "crates/ontoforge-schema/src/validate/objects.rs",
+      "crates/ontoforge-schema/src/ir/basetype.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/object_types.rs",
+        "name": "array_requires_items"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/object_types.rs",
+        "name": "items_only_for_arrays"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/object_types.rs",
+        "name": "unknown_base_type_suggests_nearest"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/object_types.rs@array_requires_items",
+      "crates/ontoforge-schema/tests/object_types.rs@items_only_for_arrays",
+      "crates/ontoforge-schema/tests/object_types.rs@unknown_base_type_suggests_nearest"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/validate/objects.rs",
+        "sha256": "66794e6c3c9b700e1a5a7474d9bbd541cb54df51408556ff8fef84b63d5f8167",
+        "lines": 157
+      },
+      {
+        "file": "crates/ontoforge-schema/src/ir/basetype.rs",
+        "sha256": "e2a3a66aa781b461bd46bedeecba3f472f390069d2b8176572702d88fb8ddf6c",
+        "lines": 213
+      }
+    ]
+  },
+  {
+    "id": "01-04.4",
+    "truth": "主键属性必须存在、必须声明 required: true、类型不能是 float / double / decimal / geopoint / array，否则报 ONT-V10；titleKey 必须指向存在的属性（D-06）",
+    "status": "VERIFIED",
+    "assertion": "PK exists, required true and allowed type checks produceV10; titleKey existence checked.",
+    "sources": [
+      "crates/ontoforge-schema/src/validate/objects.rs",
+      "crates/ontoforge-schema/src/ir/basetype.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/object_types.rs",
+        "name": "primary_key_must_be_required"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/object_types.rs",
+        "name": "invalid_primary_key_types_are_v10"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/object_types.rs",
+        "name": "title_key_must_exist"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/object_types.rs@primary_key_must_be_required",
+      "crates/ontoforge-schema/tests/object_types.rs@invalid_primary_key_types_are_v10",
+      "crates/ontoforge-schema/tests/object_types.rs@title_key_must_exist"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/validate/objects.rs",
+        "sha256": "66794e6c3c9b700e1a5a7474d9bbd541cb54df51408556ff8fef84b63d5f8167",
+        "lines": 157
+      },
+      {
+        "file": "crates/ontoforge-schema/src/ir/basetype.rs",
+        "sha256": "e2a3a66aa781b461bd46bedeecba3f472f390069d2b8176572702d88fb8ddf6c",
+        "lines": 213
+      }
+    ]
+  },
+  {
+    "id": "01-04.5",
+    "truth": "object type apiName 违反 PascalCase 正则时报 ONT-V07，help 给出规范化写法（D-04）",
+    "status": "VERIFIED",
+    "assertion": "ObjectTypeName typed constructor checks PascalCase and canonical help.",
+    "sources": [
+      "crates/ontoforge-schema/src/ir/names.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/diagnostics.rs",
+        "name": "lowercase_object_type_name_is_v07_with_canonical_help"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/diagnostics.rs@lowercase_object_type_name_is_v07_with_canonical_help"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/ir/names.rs",
+        "sha256": "a0a7f1e25f5fde58cc5476ee810faf0fccca72a79a3d97626c56d4e290bdd27a",
+        "lines": 409
+      }
+    ]
+  },
+  {
+    "id": "01-04.6",
+    "truth": "同一 ontology 中重复的 object type apiName 报 ONT-V08，消息包含首次定义的 file:line:col（D-04）",
+    "status": "VERIFIED",
+    "assertion": "merge refuses duplicate API name and formats first location.",
+    "sources": [
+      "crates/ontoforge-schema/src/loader/mod.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/object_types.rs",
+        "name": "duplicate_object_type_reports_first_location"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/object_types.rs@duplicate_object_type_reports_first_location"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/loader/mod.rs",
+        "sha256": "00abcd4d66270e78e96381b47bc9d8b9a2d41668963a11e83d25f00d182ec08f",
+        "lines": 957
+      }
+    ]
+  },
+  {
+    "id": "01-04.7",
+    "truth": "未知字段报 ONT-V04 并附 did-you-mean 建议（D-05）",
+    "status": "VERIFIED",
+    "assertion": "deny_unknown_fields plus serde_path_to_error locates offending key and suggests known field.",
+    "sources": [
+      "crates/ontoforge-schema/src/loader/dispatch.rs",
+      "crates/ontoforge-schema/src/ir/object.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/diagnostics.rs",
+        "name": "unknown_field_is_v04_at_the_key_with_a_suggestion"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/diagnostics.rs@unknown_field_is_v04_at_the_key_with_a_suggestion"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/loader/dispatch.rs",
+        "sha256": "d53d6edf5faa386fe50c31b83bb664a67dafaf3727f6cc0932379a7ab0c8b2e5",
+        "lines": 353
+      },
+      {
+        "file": "crates/ontoforge-schema/src/ir/object.rs",
+        "sha256": "12faf758624b52f42b9e2c408fd3335a0750c573c096077c1f9df6006c68d1b4",
+        "lines": 121
+      }
+    ]
+  },
+  {
+    "id": "01-04.8",
+    "truth": "examples/ontologies/aviation 与 examples/ontologies/aviation-json 加载得到相等的 Ontology，且均无诊断（D-16、SCHEMA-01）",
+    "status": "VERIFIED",
+    "assertion": "Real YAML/JSON fixture directories are loaded; diagnostics empty and full ontology equality asserted.",
+    "sources": [
+      "crates/ontoforge-schema/src/loader/mod.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/load_examples.rs",
+        "name": "aviation_yaml_and_json_produce_identical_ir"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/load_examples.rs",
+        "name": "aviation_examples_have_no_diagnostics"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/load_examples.rs@aviation_yaml_and_json_produce_identical_ir",
+      "crates/ontoforge-schema/tests/load_examples.rs@aviation_examples_have_no_diagnostics"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/loader/mod.rs",
+        "sha256": "00abcd4d66270e78e96381b47bc9d8b9a2d41668963a11e83d25f00d182ec08f",
+        "lines": 957
+      }
+    ]
+  },
+  {
+    "id": "01-05.1",
+    "truth": "link type 作为独立文档（kind: LinkType）定义，两端都写在 link type 里，支持 oneToOne、oneToMany（外键属性）、manyToMany（由系统 join 承担），两个方向各有 apiName（SCHEMA-04、D-03）",
+    "status": "VERIFIED",
+    "assertion": "Typed LinkCardinality supports three variants; ends own names and FK on to only.",
+    "sources": [
+      "crates/ontoforge-schema/src/ir/link.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/link_types.rs",
+        "name": "parses_all_three_cardinalities"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/link_types.rs",
+        "name": "link_ir_is_typed"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/link_types.rs@parses_all_three_cardinalities",
+      "crates/ontoforge-schema/tests/link_types.rs@link_ir_is_typed"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/ir/link.rs",
+        "sha256": "4cc8501bb69d2e7d3f4c75b8c0c9e723ca4139ce4506f59d59a860a398aad7a8",
+        "lines": 70
+      }
+    ]
+  },
+  {
+    "id": "01-05.2",
+    "truth": "link type 的字段形状与端 apiName 语义严格按 ADR-0012（01-01 checkpoint 确认的 RESEARCH A1 结论）",
+    "status": "VERIFIED",
+    "assertion": "ADR0012 accessor semantics match LinkEnd field description and validation namespace.",
+    "sources": [
+      ".planning/adr/0012-definition-document-shape.md",
+      "crates/ontoforge-schema/src/ir/link.rs",
+      "crates/ontoforge-schema/src/validate/links.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/link_types.rs",
+        "name": "link_ir_is_typed"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/link_types.rs",
+        "name": "end_name_clashes_with_property_is_v08"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/link_types.rs@link_ir_is_typed",
+      "crates/ontoforge-schema/tests/link_types.rs@end_name_clashes_with_property_is_v08"
+    ],
+    "source_assertions": [
+      {
+        "file": ".planning/adr/0012-definition-document-shape.md",
+        "sha256": "1233163cf93f93e2711d02d3d72b200de13c1749ad20f0445d98785d88875cee",
+        "lines": 42
+      },
+      {
+        "file": "crates/ontoforge-schema/src/ir/link.rs",
+        "sha256": "4cc8501bb69d2e7d3f4c75b8c0c9e723ca4139ce4506f59d59a860a398aad7a8",
+        "lines": 70
+      },
+      {
+        "file": "crates/ontoforge-schema/src/validate/links.rs",
+        "sha256": "6cf9f5c8ebb6688095db106e37ee8730f459c05471f5953e25ab3cf48c4f4511",
+        "lines": 249
+      }
+    ]
+  },
+  {
+    "id": "01-05.3",
+    "truth": "link 端引用不存在的 object type 或外键属性时报 ONT-V09，并给出近似名",
+    "status": "VERIFIED",
+    "assertion": "Referenced end objects and FK properties looked up, V09 with suggestions on miss.",
+    "sources": [
+      "crates/ontoforge-schema/src/validate/links.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/link_types.rs",
+        "name": "unknown_end_object_type_is_v09"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/link_types.rs",
+        "name": "unknown_foreign_key_property_is_v09"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/link_types.rs@unknown_end_object_type_is_v09",
+      "crates/ontoforge-schema/tests/link_types.rs@unknown_foreign_key_property_is_v09"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/validate/links.rs",
+        "sha256": "6cf9f5c8ebb6688095db106e37ee8730f459c05471f5953e25ab3cf48c4f4511",
+        "lines": 249
+      }
+    ]
+  },
+  {
+    "id": "01-05.4",
+    "truth": "manyToMany 写了 foreignKey、oneToOne / oneToMany 缺 foreignKey、外键类型与 from 端主键类型不同，均报 ONT-V11（D-06）",
+    "status": "VERIFIED",
+    "assertion": "V11 enforces FK for nonM:N, no FK on M:N and matching primary type.",
+    "sources": [
+      "crates/ontoforge-schema/src/validate/links.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/link_types.rs",
+        "name": "many_to_many_with_foreign_key_is_v11"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/link_types.rs",
+        "name": "one_to_many_without_foreign_key_is_v11"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/link_types.rs",
+        "name": "foreign_key_type_must_match_primary_key"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/link_types.rs@many_to_many_with_foreign_key_is_v11",
+      "crates/ontoforge-schema/tests/link_types.rs@one_to_many_without_foreign_key_is_v11",
+      "crates/ontoforge-schema/tests/link_types.rs@foreign_key_type_must_match_primary_key"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/validate/links.rs",
+        "sha256": "6cf9f5c8ebb6688095db106e37ee8730f459c05471f5953e25ab3cf48c4f4511",
+        "lines": 249
+      }
+    ]
+  },
+  {
+    "id": "01-05.5",
+    "truth": "端 apiName 在其所属 object type 范围内唯一且不与该类型的属性同名，否则报 ONT-V08；link type apiName 在 ontology 内唯一（D-04）",
+    "status": "VERIFIED",
+    "assertion": "Namespace checks compare end names to properties and other ends; merge checks link duplicates.",
+    "sources": [
+      "crates/ontoforge-schema/src/validate/links.rs",
+      "crates/ontoforge-schema/src/loader/mod.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/link_types.rs",
+        "name": "end_name_clashes_with_property_is_v08"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/link_types.rs",
+        "name": "duplicate_end_names_on_same_type_is_v08"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/link_types.rs",
+        "name": "duplicate_link_type_is_v08"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/link_types.rs@end_name_clashes_with_property_is_v08",
+      "crates/ontoforge-schema/tests/link_types.rs@duplicate_end_names_on_same_type_is_v08",
+      "crates/ontoforge-schema/tests/link_types.rs@duplicate_link_type_is_v08"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/validate/links.rs",
+        "sha256": "6cf9f5c8ebb6688095db106e37ee8730f459c05471f5953e25ab3cf48c4f4511",
+        "lines": 249
+      },
+      {
+        "file": "crates/ontoforge-schema/src/loader/mod.rs",
+        "sha256": "00abcd4d66270e78e96381b47bc9d8b9a2d41668963a11e83d25f00d182ec08f",
+        "lines": 957
+      }
+    ]
+  },
+  {
+    "id": "01-05.6",
+    "truth": "aviation 示例包含 3 种基数的 5 个 link type，YAML 与 JSON 版本仍得到相等的 IR（D-16）",
+    "status": "VERIFIED",
+    "assertion": "Real aviation5links span all3 cardinalities, full YAML/JSON equality asserted.",
+    "sources": [
+      "examples/ontologies/aviation/links.yaml"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/load_examples.rs",
+        "name": "aviation_yaml_and_json_produce_identical_ir"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/load_examples.rs",
+        "name": "aviation_examples_have_no_diagnostics"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/load_examples.rs@aviation_yaml_and_json_produce_identical_ir",
+      "crates/ontoforge-schema/tests/load_examples.rs@aviation_examples_have_no_diagnostics"
+    ],
+    "source_assertions": [
+      {
+        "file": "examples/ontologies/aviation/links.yaml",
+        "sha256": "3196a91f1e97232b61a181e1d35756055fc1461fb968f34009b1d35265080239",
+        "lines": 49
+      }
+    ]
+  },
+  {
+    "id": "01-06.1",
+    "truth": "action type 的 parameters 是以 apiName 为 key 的 map，字段为 type（base type 或 objectReference）、items、required、default、description（D-07、SCHEMA-05）",
+    "status": "VERIFIED",
+    "assertion": "ActionType parameters typed IndexMap with default/required/items/description and objectReference variant.",
+    "sources": [
+      "crates/ontoforge-schema/src/ir/action.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/action_types.rs",
+        "name": "parameter_types"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/action_types.rs",
+        "name": "parameter_items_follow_the_property_rules"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/action_types.rs@parameter_types",
+      "crates/ontoforge-schema/tests/action_types.rs@parameter_items_follow_the_property_rules"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/ir/action.rs",
+        "sha256": "e7304754dc24f6d757daa3611a8980e6efd439ceba4264a553efa8f9b5b1ec69",
+        "lines": 204
+      }
+    ]
+  },
+  {
+    "id": "01-06.2",
+    "truth": "rules 是有序列表，每条 kind 为 createObject / modifyObject / deleteObject / addLink / removeLink；值来源为 { param: x } / { static: v } / { currentUser: {} } / { currentTime: {} }，形状按 ADR-0012（D-08）",
+    "status": "VERIFIED",
+    "assertion": "Rules typed ordered Vec and ValueSource single-key deserializer; all original5 kinds and4sources checked.",
+    "sources": [
+      "crates/ontoforge-schema/src/ir/action.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/action_types.rs",
+        "name": "parses_all_rule_kinds"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/action_types.rs",
+        "name": "parses_all_value_sources"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/action_types.rs",
+        "name": "value_source_with_two_keys_is_v06"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/action_types.rs@parses_all_rule_kinds",
+      "crates/ontoforge-schema/tests/action_types.rs@parses_all_value_sources",
+      "crates/ontoforge-schema/tests/action_types.rs@value_source_with_two_keys_is_v06"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/ir/action.rs",
+        "sha256": "e7304754dc24f6d757daa3611a8980e6efd439ceba4264a553efa8f9b5b1ec69",
+        "lines": 204
+      }
+    ]
+  },
+  {
+    "id": "01-06.3",
+    "truth": "submissionCriteria 是 { condition, failureMessage } 列表，condition 以字符串保存进 IR，CEL 检查由 01-07 与 01-12 完成（D-09）",
+    "status": "VERIFIED",
+    "assertion": "SubmissionCriterion stores string condition and failureMessage, actual criteria preserved across formats.",
+    "sources": [
+      "crates/ontoforge-schema/src/ir/action.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/load_examples.rs",
+        "name": "aviation_yaml_and_json_produce_identical_ir"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/load_examples.rs",
+        "name": "aviation_examples_have_no_diagnostics"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/load_examples.rs@aviation_yaml_and_json_produce_identical_ir",
+      "crates/ontoforge-schema/tests/load_examples.rs@aviation_examples_have_no_diagnostics"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/ir/action.rs",
+        "sha256": "e7304754dc24f6d757daa3611a8980e6efd439ceba4264a553efa8f9b5b1ec69",
+        "lines": 204
+      }
+    ]
+  },
+  {
+    "id": "01-06.4",
+    "truth": "rule 写 kind: function 报 ONT-V03（v1 不支持），未知 rule kind 报 ONT-V03 并给近似名",
+    "status": "VERIFIED",
+    "assertion": "rewrite_rules dispatch rejects function and unknown rule kind withV03 and suggestions.",
+    "sources": [
+      "crates/ontoforge-schema/src/loader/dispatch.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/action_types.rs",
+        "name": "function_rule_is_v03"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/action_types.rs",
+        "name": "unknown_rule_kind_suggests"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/action_types.rs@function_rule_is_v03",
+      "crates/ontoforge-schema/tests/action_types.rs@unknown_rule_kind_suggests"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/loader/dispatch.rs",
+        "sha256": "d53d6edf5faa386fe50c31b83bb664a67dafaf3727f6cc0932379a7ab0c8b2e5",
+        "lines": 353
+      }
+    ]
+  },
+  {
+    "id": "01-06.5",
+    "truth": "rule 引用不存在的 object type、属性、link、参数报 ONT-V09；createObject 未给主键或 required 属性赋值、modifyObject 修改主键、参数与 rule 目标类型不符、值来源与属性类型不兼容、static / default 字面量非法、currentUser 赋给非 string、currentTime 赋给非 timestamp，均报 ONT-V12（D-06）",
+    "status": "VERIFIED",
+    "assertion": "validate/actions resolves references and type/literal invariants before returning IR.",
+    "sources": [
+      "crates/ontoforge-schema/src/validate/actions.rs",
+      "crates/ontoforge-schema/src/ir/basetype.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/action_types.rs",
+        "name": "references_must_exist"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/action_types.rs",
+        "name": "create_must_assign_primary_key_and_required"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/action_types.rs",
+        "name": "modify_cannot_assign_primary_key"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/action_types.rs",
+        "name": "current_user_only_on_string"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/action_types.rs",
+        "name": "current_time_only_on_timestamp"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/action_types.rs",
+        "name": "static_literal_must_match_property_type"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/action_types.rs",
+        "name": "parameter_default_must_be_valid_literal"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/action_types.rs",
+        "name": "numeric_values_only_widen"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/action_types.rs@references_must_exist",
+      "crates/ontoforge-schema/tests/action_types.rs@create_must_assign_primary_key_and_required",
+      "crates/ontoforge-schema/tests/action_types.rs@modify_cannot_assign_primary_key",
+      "crates/ontoforge-schema/tests/action_types.rs@current_user_only_on_string",
+      "crates/ontoforge-schema/tests/action_types.rs@current_time_only_on_timestamp",
+      "crates/ontoforge-schema/tests/action_types.rs@static_literal_must_match_property_type",
+      "crates/ontoforge-schema/tests/action_types.rs@parameter_default_must_be_valid_literal",
+      "crates/ontoforge-schema/tests/action_types.rs@numeric_values_only_widen"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/validate/actions.rs",
+        "sha256": "5be86e83fed3d2030b7a939958234fb7df728345515288bc9956b52dbfeaa04a",
+        "lines": 451
+      },
+      {
+        "file": "crates/ontoforge-schema/src/ir/basetype.rs",
+        "sha256": "e2a3a66aa781b461bd46bedeecba3f472f390069d2b8176572702d88fb8ddf6c",
+        "lines": 213
+      }
+    ]
+  },
+  {
+    "id": "01-06.6",
+    "truth": "aviation 示例含 assignPilot、delayFlight、recordMaintenance 三个 action，覆盖 addLink、modifyObject、createObject 与全部四种值来源；YAML 与 JSON 版本得到相等 IR（D-16、SCHEMA-01）",
+    "status": "VERIFIED",
+    "assertion": "Real3actions cover addLink/modifyObject/createObject and4sources; full fixture equality asserted.",
+    "sources": [
+      "examples/ontologies/aviation/actions.yaml"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/load_examples.rs",
+        "name": "aviation_yaml_and_json_produce_identical_ir"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/load_examples.rs",
+        "name": "aviation_examples_have_no_diagnostics"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/load_examples.rs@aviation_yaml_and_json_produce_identical_ir",
+      "crates/ontoforge-schema/tests/load_examples.rs@aviation_examples_have_no_diagnostics"
+    ],
+    "source_assertions": [
+      {
+        "file": "examples/ontologies/aviation/actions.yaml",
+        "sha256": "61756c751a174f664fab9d7cb07822711682b14fec3131af47dac2acbeb3a980",
+        "lines": 61
+      }
+    ]
+  },
+  {
+    "id": "01-07.1",
+    "truth": "submission criteria 的 condition 只编译不求值（D-09）：analyze 先做长度与嵌套预检，再在库内 32 MiB 栈的作用域线程中调用 cel 编译，并在同一线程内运行调用方闭包，只把闭包产出的自有数据带出线程；闭包 panic 变为 ExprError::Internal，不向上传播",
+    "status": "VERIFIED",
+    "assertion": "analyze prechecks then spawn_scoped32MiB, program lives only inside closure and join maps panic toInternal.",
+    "sources": [
+      "crates/ontoforge-expr/src/analyze.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-expr/tests/analyze.rs",
+        "name": "closure_panic_becomes_internal"
+      },
+      {
+        "file": "crates/ontoforge-expr/tests/analyze.rs",
+        "name": "flat_recursive_forms_do_not_crash_on_a_small_stack"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-expr/tests/analyze.rs@closure_panic_becomes_internal",
+      "crates/ontoforge-expr/tests/analyze.rs@flat_recursive_forms_do_not_crash_on_a_small_stack"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-expr/src/analyze.rs",
+        "sha256": "4c391ab7e58f967d937890e0d73ce588d90d1ca06be5b084a89653f40e6ef720",
+        "lines": 109
+      }
+    ]
+  },
+  {
+    "id": "01-07.2",
+    "truth": "长度超过 4096 字符或括号嵌套超过 32 层的表达式直接返回错误，不调用编译器；预检按 CEL 词法跳过字符串字面量（单引号、双引号、三引号、r / b 前缀），字符串内的括号不计入嵌套，未闭合的字符串同样不进入编译器",
+    "status": "VERIFIED",
+    "assertion": "Lexical precheck length4096 nesting32 excludes string delimiters and rejects unterminated strings before closure.",
+    "sources": [
+      "crates/ontoforge-expr/src/limits.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-expr/tests/analyze.rs",
+        "name": "too_long_expression_is_rejected_without_compiling"
+      },
+      {
+        "file": "crates/ontoforge-expr/tests/analyze.rs",
+        "name": "max_length_expression_is_accepted"
+      },
+      {
+        "file": "crates/ontoforge-expr/tests/analyze.rs",
+        "name": "brackets_inside_strings_do_not_count"
+      },
+      {
+        "file": "crates/ontoforge-expr/tests/analyze.rs",
+        "name": "triple_quoted_and_raw_strings_follow_cel_lexing"
+      },
+      {
+        "file": "crates/ontoforge-expr/tests/analyze.rs",
+        "name": "unterminated_string_is_rejected_without_compiling"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-expr/tests/analyze.rs@too_long_expression_is_rejected_without_compiling",
+      "crates/ontoforge-expr/tests/analyze.rs@max_length_expression_is_accepted",
+      "crates/ontoforge-expr/tests/analyze.rs@brackets_inside_strings_do_not_count",
+      "crates/ontoforge-expr/tests/analyze.rs@triple_quoted_and_raw_strings_follow_cel_lexing",
+      "crates/ontoforge-expr/tests/analyze.rs@unterminated_string_is_rejected_without_compiling"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-expr/src/limits.rs",
+        "sha256": "609d19aa148ecb8052cbfaf840bdee4ebf182397fc9b82a320b014a0c856e43c",
+        "lines": 203
+      }
+    ]
+  },
+  {
+    "id": "01-07.3",
+    "truth": "在 1 MiB 栈的线程上检查 31 层嵌套的表达式不崩溃，33 层返回超限错误（编译在库内 32 MiB 栈线程中执行，与调用方栈大小无关）",
+    "status": "VERIFIED",
+    "assertion": "31nested compiles inside large stack,33fails before parser; caller thread explicitly1MiB and join asserted.",
+    "sources": [
+      "crates/ontoforge-expr/src/analyze.rs",
+      "crates/ontoforge-expr/src/limits.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-expr/tests/analyze.rs",
+        "name": "deeply_nested_expression_is_rejected_not_crashing"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-expr/tests/analyze.rs@deeply_nested_expression_is_rejected_not_crashing"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-expr/src/analyze.rs",
+        "sha256": "4c391ab7e58f967d937890e0d73ce588d90d1ca06be5b084a89653f40e6ef720",
+        "lines": 109
+      },
+      {
+        "file": "crates/ontoforge-expr/src/limits.rs",
+        "sha256": "609d19aa148ecb8052cbfaf840bdee4ebf182397fc9b82a320b014a0c856e43c",
+        "lines": 203
+      }
+    ]
+  },
+  {
+    "id": "01-07.4",
+    "truth": "语法错误返回 ExprError::Syntax，带表达式内 1 起的 line:col（`params.x +` 为 (1, 11)），供 01-12 拼进 ONT-V13 消息（D-09）",
+    "status": "VERIFIED",
+    "assertion": "cel syntax error pos converted to ExprError::Syntax and test asserts1:11 for params.x+.",
+    "sources": [
+      "crates/ontoforge-expr/src/analyze.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-expr/tests/analyze.rs",
+        "name": "syntax_error_has_expression_position"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-expr/tests/analyze.rs@syntax_error_has_expression_position"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-expr/src/analyze.rs",
+        "sha256": "4c391ab7e58f967d937890e0d73ce588d90d1ca06be5b084a89653f40e6ef720",
+        "lines": 109
+      }
+    ]
+  },
+  {
+    "id": "01-07.5",
+    "truth": "member_paths 用作用域感知遍历收集自由变量根下的成员路径：comprehension 的迭代变量与累加变量不算自由变量，has() 宏产出被测路径，Select 链还原为完整路径，并带表达式内 1 起 line:col（列按字符计）；不使用 cel 自带的引用枚举",
+    "status": "VERIFIED",
+    "assertion": "walk pushes iter/accumulator scope, excludes scoped roots, handles has/select path and char coordinates.",
+    "sources": [
+      "crates/ontoforge-expr/src/walk.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-expr/tests/analyze.rs",
+        "name": "comprehension_vars_are_scoped"
+      },
+      {
+        "file": "crates/ontoforge-expr/tests/analyze.rs",
+        "name": "nested_comprehension_scopes"
+      },
+      {
+        "file": "crates/ontoforge-expr/tests/analyze.rs",
+        "name": "has_macro_yields_member_path"
+      },
+      {
+        "file": "crates/ontoforge-expr/tests/analyze.rs",
+        "name": "select_chain_is_full_path"
+      },
+      {
+        "file": "crates/ontoforge-expr/tests/analyze.rs",
+        "name": "positions_are_line_and_char_column"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-expr/tests/analyze.rs@comprehension_vars_are_scoped",
+      "crates/ontoforge-expr/tests/analyze.rs@nested_comprehension_scopes",
+      "crates/ontoforge-expr/tests/analyze.rs@has_macro_yields_member_path",
+      "crates/ontoforge-expr/tests/analyze.rs@select_chain_is_full_path",
+      "crates/ontoforge-expr/tests/analyze.rs@positions_are_line_and_char_column"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-expr/src/walk.rs",
+        "sha256": "51ce9cb320cb774c848a7934219c464b494ca435a6f4a2f81140f6ff01c15111",
+        "lines": 178
+      }
+    ]
+  },
+  {
+    "id": "01-08.1",
+    "truth": "ontoforge lint 只在 validate（含 CEL 检查）没有 error 时运行 lint 规则；validate 失败时输出 ONT-V 诊断并以 1 退出（D-06）",
+    "status": "VERIFIED",
+    "assertion": "lint_cmd returns before config/rules on validation errors; pipeline runs CEL before lint.",
+    "sources": [
+      "crates/ontoforge/src/lint_cmd.rs",
+      "crates/ontoforge/src/pipeline.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge/tests/cli_lint.rs",
+        "name": "lint_skips_rules_when_validation_fails"
+      },
+      {
+        "file": "crates/ontoforge/tests/cli_lint.rs",
+        "name": "validate_codes_cannot_be_turned_off_by_config"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge/tests/cli_lint.rs@lint_skips_rules_when_validation_fails",
+      "crates/ontoforge/tests/cli_lint.rs@validate_codes_cannot_be_turned_off_by_config"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge/src/lint_cmd.rs",
+        "sha256": "26a8b3f981d54e8f1afef41060e3059de8b356d45c4d1fc59ee07b5e3b2d90a1",
+        "lines": 36
+      },
+      {
+        "file": "crates/ontoforge/src/pipeline.rs",
+        "sha256": "0c1fbd95f77c0d7dec14ffeec821688b83ffe3b1b3724982d39133ba9f6eb453",
+        "lines": 88
+      }
+    ]
+  },
+  {
+    "id": "01-08.2",
+    "truth": "ONT-E08 检查 addLink / removeLink 只能用于 manyToMany、同一对象删除后不得再修改或删除、同一 action 不得重复创建同一对象；ONT-E09 对 Discouraged 主键类型给 warning、对嵌套 array 给 error（D-12）",
+    "status": "VERIFIED",
+    "assertion": "E08 action ordering/creation/m2m restrictions; E09 discouraged PK warning and nested-array error.",
+    "sources": [
+      "crates/ontoforge-schema/src/lint/e08.rs",
+      "crates/ontoforge-schema/src/lint/e09.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/e08.rs",
+        "name": "triggers"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/e08.rs",
+        "name": "clean"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/e09.rs",
+        "name": "triggers"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/e09.rs",
+        "name": "clean"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/e09.rs",
+        "name": "nested_array_parameter_is_an_error"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/src/lint/e08.rs@triggers",
+      "crates/ontoforge-schema/src/lint/e08.rs@clean",
+      "crates/ontoforge-schema/src/lint/e09.rs@triggers",
+      "crates/ontoforge-schema/src/lint/e09.rs@clean",
+      "crates/ontoforge-schema/src/lint/e09.rs@nested_array_parameter_is_an_error"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/e08.rs",
+        "sha256": "e3cca0376bde105b84e07dfbc9dd7de99aa2c2940b41479526e20064c9e9b8a6",
+        "lines": 366
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/e09.rs",
+        "sha256": "8a080c45ed6d1ae2a131750a6bd7bfb31e1fd1b16deec8dade3ade452d4b7c1b",
+        "lines": 238
+      }
+    ]
+  },
+  {
+    "id": "01-08.3",
+    "truth": "有 error 级 lint 结果时 ontoforge lint 退出码为 1；只有 warning 时为 0，--deny-warnings 时为 1（LINT-01、D-10）",
+    "status": "VERIFIED",
+    "assertion": "render exit_code uses severity and deny_warnings; actual subprocess statuses checked.",
+    "sources": [
+      "crates/ontoforge/src/render.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge/tests/cli_lint.rs",
+        "name": "lint_error_rule_exits_1"
+      },
+      {
+        "file": "crates/ontoforge/tests/cli_lint.rs",
+        "name": "warning_only_exit_codes"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge/tests/cli_lint.rs@lint_error_rule_exits_1",
+      "crates/ontoforge/tests/cli_lint.rs@warning_only_exit_codes"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge/src/render.rs",
+        "sha256": "40234cca316f436b579ea568975bc350f65104ced8144c0a4be742421765ac18",
+        "lines": 224
+      }
+    ]
+  },
+  {
+    "id": "01-08.4",
+    "truth": "lint 结果与 validate 共用 Diagnostic 模型，可输出为带源码定位的人类可读格式与 --format json 的 JSON 数组（LINT-03、D-10）",
+    "status": "VERIFIED",
+    "assertion": "lint output shares Diagnostic and render; human snapshot and JSON noANSI checked.",
+    "sources": [
+      "crates/ontoforge/src/render.rs",
+      "crates/ontoforge-schema/src/lint/mod.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge/tests/cli_lint.rs",
+        "name": "e08_human"
+      },
+      {
+        "file": "crates/ontoforge/tests/cli_lint.rs",
+        "name": "lint_json_has_no_ansi"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge/tests/cli_lint.rs@e08_human",
+      "crates/ontoforge/tests/cli_lint.rs@lint_json_has_no_ansi"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge/src/render.rs",
+        "sha256": "40234cca316f436b579ea568975bc350f65104ced8144c0a4be742421765ac18",
+        "lines": 224
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/mod.rs",
+        "sha256": "e2b95df43d7f74c09fd4abf4e2b4e39d4bbc8a663c81a6d0cb8f8b95fcc60980",
+        "lines": 392
+      }
+    ]
+  },
+  {
+    "id": "01-08.5",
+    "truth": "ontology 根目录的 ontoforge.toml 中 [lint] 段可按规则 ID 设为 off / info / warn / error，--config 可覆盖配置文件路径（LINT-04、D-14）",
+    "status": "VERIFIED",
+    "assertion": "load_config selects explicit config over root; rules resolve Off/Info/Warn/Error.",
+    "sources": [
+      "crates/ontoforge-schema/src/lint/config.rs",
+      "crates/ontoforge-schema/src/lint/mod.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge/tests/cli_lint.rs",
+        "name": "config_off_disables_rule"
+      },
+      {
+        "file": "crates/ontoforge/tests/cli_lint.rs",
+        "name": "config_info_level_never_fails"
+      },
+      {
+        "file": "crates/ontoforge/tests/cli_lint.rs",
+        "name": "config_error_level_fails"
+      },
+      {
+        "file": "crates/ontoforge/tests/cli_lint.rs",
+        "name": "config_flag_overrides_root_file"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge/tests/cli_lint.rs@config_off_disables_rule",
+      "crates/ontoforge/tests/cli_lint.rs@config_info_level_never_fails",
+      "crates/ontoforge/tests/cli_lint.rs@config_error_level_fails",
+      "crates/ontoforge/tests/cli_lint.rs@config_flag_overrides_root_file"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/config.rs",
+        "sha256": "6fed4edd5c63f6534730e36671265a88051cf64bed88d69bb14089823122ccc7",
+        "lines": 667
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/mod.rs",
+        "sha256": "e2b95df43d7f74c09fd4abf4e2b4e39d4bbc8a663c81a6d0cb8f8b95fcc60980",
+        "lines": 392
+      }
+    ]
+  },
+  {
+    "id": "01-08.6",
+    "truth": "配置中的未知规则 ID、非法级别、未知 section、未声明的选项报 ONT-V15 并附近似名（unknown_lint_rule_id_is_error）",
+    "status": "VERIFIED",
+    "assertion": "Parser rejects unknown IDs/levels/sections/options and returnsV15 with span/help.",
+    "sources": [
+      "crates/ontoforge-schema/src/lint/config.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/config.rs",
+        "name": "unknown_lint_rule_id_is_error"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/config.rs",
+        "name": "invalid_level_is_error"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/config.rs",
+        "name": "unknown_section_is_error"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/config.rs",
+        "name": "undeclared_option_is_error"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/src/lint/config.rs@unknown_lint_rule_id_is_error",
+      "crates/ontoforge-schema/src/lint/config.rs@invalid_level_is_error",
+      "crates/ontoforge-schema/src/lint/config.rs@unknown_section_is_error",
+      "crates/ontoforge-schema/src/lint/config.rs@undeclared_option_is_error"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/config.rs",
+        "sha256": "6fed4edd5c63f6534730e36671265a88051cf64bed88d69bb14089823122ccc7",
+        "lines": 667
+      }
+    ]
+  },
+  {
+    "id": "01-08.7",
+    "truth": "每条 lint 规则一个模块，每条规则都有触发与不触发两组 fixture 的 insta 快照（D-15）",
+    "status": "VERIFIED",
+    "assertion": "Separate rule modules registered and trigger/clean snapshots assert output.",
+    "sources": [
+      "crates/ontoforge-schema/src/lint/e08.rs",
+      "crates/ontoforge-schema/src/lint/e09.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/e08.rs",
+        "name": "triggers"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/e08.rs",
+        "name": "clean"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/e09.rs",
+        "name": "triggers"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/e09.rs",
+        "name": "clean"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/src/lint/e08.rs@triggers",
+      "crates/ontoforge-schema/src/lint/e08.rs@clean",
+      "crates/ontoforge-schema/src/lint/e09.rs@triggers",
+      "crates/ontoforge-schema/src/lint/e09.rs@clean"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/e08.rs",
+        "sha256": "e3cca0376bde105b84e07dfbc9dd7de99aa2c2940b41479526e20064c9e9b8a6",
+        "lines": 366
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/e09.rs",
+        "sha256": "8a080c45ed6d1ae2a131750a6bd7bfb31e1fd1b16deec8dade3ade452d4b7c1b",
+        "lines": 238
+      }
+    ]
+  },
+  {
+    "id": "01-08.8",
+    "truth": "aviation 与 aviation-json 在默认配置下 lint 结果为空",
+    "status": "VERIFIED",
+    "assertion": "Actual fixture directories run lint with default config and no findings.",
+    "sources": [
+      "crates/ontoforge-schema/src/lint/mod.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge/tests/cli_lint.rs",
+        "name": "lint_aviation_is_clean"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/lint_examples.rs",
+        "name": "aviation_lints_clean"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge/tests/cli_lint.rs@lint_aviation_is_clean",
+      "crates/ontoforge-schema/tests/lint_examples.rs@aviation_lints_clean"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/mod.rs",
+        "sha256": "e2b95df43d7f74c09fd4abf4e2b4e39d4bbc8a663c81a6d0cb8f8b95fcc60980",
+        "lines": 392
+      }
+    ]
+  },
+  {
+    "id": "01-09.1",
+    "truth": "ontoforge schema export 把定义文档与 manifest 的 JSON Schema（draft 2020-12）写入 --out-dir（默认 schemas），产物入库（SCHEMA-07，Claude's Discretion：schema export 子命令 + 入库快照）",
+    "status": "VERIFIED",
+    "assertion": "Command Schema Export writes rendered schemas into chosen dir; default schemas via clap.",
+    "sources": [
+      "crates/ontoforge/src/cli.rs",
+      "crates/ontoforge/src/lib.rs",
+      "crates/ontoforge-schema/src/schema_export.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge/tests/cli_schema.rs",
+        "name": "schema_export_writes_committed_files"
+      },
+      {
+        "file": "crates/ontoforge/tests/cli_schema.rs",
+        "name": "schema_export_creates_missing_dir"
+      },
+      {
+        "file": "crates/ontoforge/tests/cli_schema.rs",
+        "name": "schema_export_reports_io_failure"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge/tests/cli_schema.rs@schema_export_writes_committed_files",
+      "crates/ontoforge/tests/cli_schema.rs@schema_export_creates_missing_dir",
+      "crates/ontoforge/tests/cli_schema.rs@schema_export_reports_io_failure"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge/src/cli.rs",
+        "sha256": "3d046c054134c1e7e2fdc27714e045d127ba76f283e3f462080c2f27478e3fdd",
+        "lines": 441
+      },
+      {
+        "file": "crates/ontoforge/src/lib.rs",
+        "sha256": "7740d3899fcde34ca1e638063badda1eda81dae6af436bda3859c07e6f9b120f",
+        "lines": 212
+      },
+      {
+        "file": "crates/ontoforge-schema/src/schema_export.rs",
+        "sha256": "044762e6ff5ae3b9a5ae2ff18796bc73ccb050fa8a30b99a62fb81b780a75d78",
+        "lines": 114
+      }
+    ]
+  },
+  {
+    "id": "01-09.2",
+    "truth": "定义文档 schema 以 oneOf 表达 ObjectType / LinkType / ActionType，每个分支 kind 为 const；rules 每项同样以 kind const 区分，未知字段被 additionalProperties: false 拒绝（D-02、D-05）",
+    "status": "VERIFIED",
+    "assertion": "Schema generator uses kind discriminators and strict additionalProperties; tests inspect generated values.",
+    "sources": [
+      "crates/ontoforge-schema/src/schema_export.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/schema_export.rs",
+        "name": "definition_schema_is_draft_2020_12"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/schema_export.rs",
+        "name": "definition_variants_are_discriminated_by_kind"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/schema_export.rs",
+        "name": "rule_variants_are_discriminated_by_kind"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/schema_export.rs@definition_schema_is_draft_2020_12",
+      "crates/ontoforge-schema/tests/schema_export.rs@definition_variants_are_discriminated_by_kind",
+      "crates/ontoforge-schema/tests/schema_export.rs@rule_variants_are_discriminated_by_kind"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/schema_export.rs",
+        "sha256": "044762e6ff5ae3b9a5ae2ff18796bc73ccb050fa8a30b99a62fb81b780a75d78",
+        "lines": 114
+      }
+    ]
+  },
+  {
+    "id": "01-09.3",
+    "truth": "examples/ontologies/aviation 的每个 YAML 文档、aviation-json 的每个 JSON 文件、两个 manifest 都通过导出的 schema 校验",
+    "status": "VERIFIED",
+    "assertion": "Validator consumes exported real schemas and actual YAML docs/JSON files/manifests.",
+    "sources": [
+      "crates/ontoforge-schema/src/schema_export.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/schema_export.rs",
+        "name": "aviation_documents_validate"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/schema_export.rs@aviation_documents_validate"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/schema_export.rs",
+        "sha256": "044762e6ff5ae3b9a5ae2ff18796bc73ccb050fa8a30b99a62fb81b780a75d78",
+        "lines": 114
+      }
+    ]
+  },
+  {
+    "id": "01-09.4",
+    "truth": "v04-unknown-field、v06-unknown-base-type、v07-bad-object-type-name 三个 invalid 样例的定义文档不通过 schema 校验",
+    "status": "VERIFIED",
+    "assertion": "Independent invalid fixtures are rejected for unknown field/type/name by schema validator.",
+    "sources": [
+      "crates/ontoforge-schema/src/schema_export.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/schema_export.rs",
+        "name": "invalid_examples_fail_schema"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/schema_export.rs@invalid_examples_fail_schema"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/schema_export.rs",
+        "sha256": "044762e6ff5ae3b9a5ae2ff18796bc73ccb050fa8a30b99a62fb81b780a75d78",
+        "lines": 114
+      }
+    ]
+  },
+  {
+    "id": "01-09.5",
+    "truth": "入库的 schemas/*.json 与当前 IR 生成的结果逐字节一致，IR 改动而未重新导出时测试失败",
+    "status": "VERIFIED",
+    "assertion": "committed schema bytes compared to current generated strings, no update env in recorded executions.",
+    "sources": [
+      "crates/ontoforge-schema/src/schema_export.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/schema_export.rs",
+        "name": "committed_schemas_are_up_to_date"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/schema_export.rs",
+        "name": "rendering_is_deterministic"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/schema_export.rs@committed_schemas_are_up_to_date",
+      "crates/ontoforge-schema/tests/schema_export.rs@rendering_is_deterministic"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/schema_export.rs",
+        "sha256": "044762e6ff5ae3b9a5ae2ff18796bc73ccb050fa8a30b99a62fb81b780a75d78",
+        "lines": 114
+      }
+    ]
+  },
+  {
+    "id": "01-09.6",
+    "truth": "aviation 的 YAML 文件首行带 yaml-language-server 的 $schema 注释，编辑器可据此补全",
+    "status": "VERIFIED",
+    "assertion": "Each aviation YAML starts correct relative modeline resolving committed schema.",
+    "sources": [
+      "examples/ontologies/aviation/objects.yaml"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/schema_export.rs",
+        "name": "aviation_definition_documents_start_with_modeline"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/schema_export.rs@aviation_definition_documents_start_with_modeline"
+    ],
+    "source_assertions": [
+      {
+        "file": "examples/ontologies/aviation/objects.yaml",
+        "sha256": "80dcfe86d5657a8c38a717e91c581cf8111692d726dbcad8a99096c73815877d",
+        "lines": 78
+      }
+    ]
+  },
+  {
+    "id": "01-10.1",
+    "truth": "ONT-W01 对全部由泛化词（Data、Item、Record、Info、Object、Entity）构成或看起来是复数的 object type 名给 warning，Status、Address 等白名单词不报（D-13 静态部分）",
+    "status": "VERIFIED",
+    "assertion": "Generic/plural names and whitelist checks.",
+    "sources": [
+      "crates/ontoforge-schema/src/lint/naming/w01.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/naming/w01.rs",
+        "name": "triggers"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/naming/w01.rs",
+        "name": "clean"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/src/lint/naming/w01.rs@triggers",
+      "crates/ontoforge-schema/src/lint/naming/w01.rs@clean"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/naming/w01.rs",
+        "sha256": "a058389bc76eca9a4a49ff550b0f7ed83ed21b22e20910dd0d68abc945521e3e",
+        "lines": 123
+      }
+    ]
+  },
+  {
+    "id": "01-10.2",
+    "truth": "ONT-W02 对未限定的泛化属性名（value、type、status、date、name、quantity、score）在同一 object type 存在同后缀属性时给 warning",
+    "status": "VERIFIED",
+    "assertion": "Generic property suffix collision checks.",
+    "sources": [
+      "crates/ontoforge-schema/src/lint/naming/w02.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/naming/w02.rs",
+        "name": "triggers"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/naming/w02.rs",
+        "name": "clean"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/src/lint/naming/w02.rs@triggers",
+      "crates/ontoforge-schema/src/lint/naming/w02.rs@clean"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/naming/w02.rs",
+        "sha256": "dbfe4b8fdd1bda112a64f6937769cd5fcd20d180a3d1ac56ff5a0c5c33715934",
+        "lines": 105
+      }
+    ]
+  },
+  {
+    "id": "01-10.3",
+    "truth": "ONT-W03 对编码式属性名（^dt[A-Z]、^n[A-Z]{2,}、两位以上数字结尾、^field[A-Z0-9]）给 warning",
+    "status": "VERIFIED",
+    "assertion": "Encoded property regex checks.",
+    "sources": [
+      "crates/ontoforge-schema/src/lint/naming/w03.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/naming/w03.rs",
+        "name": "triggers"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/naming/w03.rs",
+        "name": "clean"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/src/lint/naming/w03.rs@triggers",
+      "crates/ontoforge-schema/src/lint/naming/w03.rs@clean"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/naming/w03.rs",
+        "sha256": "b535f1630043fd3ed1871ad175ff287a67e75f518e829180dfa94d5532f8bb47",
+        "lines": 101
+      }
+    ]
+  },
+  {
+    "id": "01-10.4",
+    "truth": "ONT-W04 在同一 ontology 混用 xxxDate / xxxAt 与 dateOfXxx 风格的 date / timestamp 属性时，对少数风格的属性给 warning",
+    "status": "VERIFIED",
+    "assertion": "Mixed date styles reports minority style.",
+    "sources": [
+      "crates/ontoforge-schema/src/lint/naming/w04.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/naming/w04.rs",
+        "name": "triggers"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/naming/w04.rs",
+        "name": "clean"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/src/lint/naming/w04.rs@triggers",
+      "crates/ontoforge-schema/src/lint/naming/w04.rs@clean"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/naming/w04.rs",
+        "sha256": "44302d3d252c83e5e15e08872de4a81c57732fe22b234d3fe70c3da16f6716b5",
+        "lines": 158
+      }
+    ]
+  },
+  {
+    "id": "01-10.5",
+    "truth": "ONT-W05 对 etl、extractedAt、receivedAt、batchedAt、sequence、tableVersion、internalRecordId 等管道簿记属性名给 warning",
+    "status": "VERIFIED",
+    "assertion": "Bookkeeping property words checks.",
+    "sources": [
+      "crates/ontoforge-schema/src/lint/naming/w05.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/naming/w05.rs",
+        "name": "triggers"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/naming/w05.rs",
+        "name": "clean"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/src/lint/naming/w05.rs@triggers",
+      "crates/ontoforge-schema/src/lint/naming/w05.rs@clean"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/naming/w05.rs",
+        "sha256": "f3172f386bb036bcd440eea8b1ca7f67b7f8fa8b2bd65d9b6f89c96cd5232a0e",
+        "lines": 110
+      }
+    ]
+  },
+  {
+    "id": "01-10.6",
+    "truth": "W01-W05 每条规则一个模块，各有触发与不触发 fixture 的 insta 快照（D-15），并经 lint::registry 运行",
+    "status": "VERIFIED",
+    "assertion": "registry extends naming::rules and unit registry uniqueness; all5trigger/clean snapshots active.",
+    "sources": [
+      "crates/ontoforge-schema/src/lint/mod.rs",
+      "crates/ontoforge-schema/src/lint/naming/mod.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/naming/w01.rs",
+        "name": "triggers"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/naming/w01.rs",
+        "name": "clean"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/naming/w02.rs",
+        "name": "triggers"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/naming/w02.rs",
+        "name": "clean"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/naming/w03.rs",
+        "name": "triggers"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/naming/w03.rs",
+        "name": "clean"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/naming/w04.rs",
+        "name": "triggers"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/naming/w04.rs",
+        "name": "clean"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/naming/w05.rs",
+        "name": "triggers"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/naming/w05.rs",
+        "name": "clean"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/src/lint/naming/w01.rs@triggers",
+      "crates/ontoforge-schema/src/lint/naming/w01.rs@clean",
+      "crates/ontoforge-schema/src/lint/naming/w02.rs@triggers",
+      "crates/ontoforge-schema/src/lint/naming/w02.rs@clean",
+      "crates/ontoforge-schema/src/lint/naming/w03.rs@triggers",
+      "crates/ontoforge-schema/src/lint/naming/w03.rs@clean",
+      "crates/ontoforge-schema/src/lint/naming/w04.rs@triggers",
+      "crates/ontoforge-schema/src/lint/naming/w04.rs@clean",
+      "crates/ontoforge-schema/src/lint/naming/w05.rs@triggers",
+      "crates/ontoforge-schema/src/lint/naming/w05.rs@clean"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/mod.rs",
+        "sha256": "e2b95df43d7f74c09fd4abf4e2b4e39d4bbc8a663c81a6d0cb8f8b95fcc60980",
+        "lines": 392
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/naming/mod.rs",
+        "sha256": "f05ee5b6340eadce0dd7a34d18bd5840df2552874bc1e2d973c2f05f4cedd969",
+        "lines": 116
+      }
+    ]
+  },
+  {
+    "id": "01-10.7",
+    "truth": "aviation 示例在加入这 5 条规则后 lint 结果仍为空",
+    "status": "VERIFIED",
+    "assertion": "Real aviation fixtures lint empty after all naming rules registered.",
+    "sources": [
+      "crates/ontoforge-schema/src/lint/mod.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge/tests/cli_lint.rs",
+        "name": "lint_aviation_is_clean"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/lint_examples.rs",
+        "name": "aviation_lints_clean"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge/tests/cli_lint.rs@lint_aviation_is_clean",
+      "crates/ontoforge-schema/tests/lint_examples.rs@aviation_lints_clean"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/mod.rs",
+        "sha256": "e2b95df43d7f74c09fd4abf4e2b4e39d4bbc8a663c81a6d0cb8f8b95fcc60980",
+        "lines": 392
+      }
+    ]
+  },
+  {
+    "id": "01-11.1",
+    "truth": "ONT-W06 只检查静态部分：属性数超过 max_properties（默认 60），或存在 *Type / *Subtype 的 string 判别属性且属性数超过 max_properties 的一半；空值率分支不实现（D-13，空值率检测属 Deferred）",
+    "status": "VERIFIED",
+    "assertion": "W06 default60, discriminator threshold half; no dynamic null-rate query.",
+    "sources": [
+      "crates/ontoforge-schema/src/lint/structure/w06.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w06.rs",
+        "name": "triggers"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w06.rs",
+        "name": "clean"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w06.rs",
+        "name": "max_properties_option_applies"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/src/lint/structure/w06.rs@triggers",
+      "crates/ontoforge-schema/src/lint/structure/w06.rs@clean",
+      "crates/ontoforge-schema/src/lint/structure/w06.rs@max_properties_option_applies"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w06.rs",
+        "sha256": "62dff4a55bb05257021c8008b463298eddc2c970d60424bad04ae2f45c9671b2",
+        "lines": 141
+      }
+    ]
+  },
+  {
+    "id": "01-11.2",
+    "truth": "ONT-W07 对带系统 / 部门前缀（默认 hr、sales、billing、crm）的类型名，以及主键同名同类型、属性 (name, type) 集合 Jaccard ≥ 0.6 且各自至少 4 个属性的两个类型给 warning（D-13：只基于属性名和类型集合）",
+    "status": "VERIFIED",
+    "assertion": "W07 default prefixes and4properties Jaccard>=.6 plus PK type/name guards; cluster dedup.",
+    "sources": [
+      "crates/ontoforge-schema/src/lint/structure/w07.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w07.rs",
+        "name": "triggers"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w07.rs",
+        "name": "clean"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w07.rs",
+        "name": "many_similar_types_are_reported_once"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/src/lint/structure/w07.rs@triggers",
+      "crates/ontoforge-schema/src/lint/structure/w07.rs@clean",
+      "crates/ontoforge-schema/src/lint/structure/w07.rs@many_similar_types_are_reported_once"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w07.rs",
+        "sha256": "3b8a0be43ac1e36cd146848be069f43426c6f91656663d5592f46a28de3ecab1",
+        "lines": 321
+      }
+    ]
+  },
+  {
+    "id": "01-11.3",
+    "truth": "ONT-W08 在 3 个及以上 object type 共享 3 个及以上同名同类型属性时建议提取 interface / shared property，每个共享属性集合只报一次",
+    "status": "VERIFIED",
+    "assertion": "W08 requires3types and3same properties, reports shared set once.",
+    "sources": [
+      "crates/ontoforge-schema/src/lint/structure/w08.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w08.rs",
+        "name": "triggers"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w08.rs",
+        "name": "clean"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w08.rs",
+        "name": "a_shared_set_is_reported_once_for_four_types"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/src/lint/structure/w08.rs@triggers",
+      "crates/ontoforge-schema/src/lint/structure/w08.rs@clean",
+      "crates/ontoforge-schema/src/lint/structure/w08.rs@a_shared_set_is_reported_once_for_four_types"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w08.rs",
+        "sha256": "6be7a8cb45c5512c22f402e94b7cbe4660aea6eb09a325a12c967d6093087707",
+        "lines": 296
+      }
+    ]
+  },
+  {
+    "id": "01-11.4",
+    "truth": "ONT-W09 在单个 object type 关联的 action 超过 max_actions_per_type（默认 10），或 action 名为 set / update 开头且只用一条 modifyObject 改一个属性时给 warning",
+    "status": "VERIFIED",
+    "assertion": "W09 default10 and setter action single modify single property.",
+    "sources": [
+      "crates/ontoforge-schema/src/lint/structure/w09.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w09.rs",
+        "name": "triggers"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w09.rs",
+        "name": "clean"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w09.rs",
+        "name": "max_actions_per_type_option_applies"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/src/lint/structure/w09.rs@triggers",
+      "crates/ontoforge-schema/src/lint/structure/w09.rs@clean",
+      "crates/ontoforge-schema/src/lint/structure/w09.rs@max_actions_per_type_option_applies"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w09.rs",
+        "sha256": "75c1a88efaae505712e7dd9b08f6e14950a98cb65cda1bde0c586154ed11f53b",
+        "lines": 206
+      }
+    ]
+  },
+  {
+    "id": "01-11.5",
+    "truth": "ONT-W10 对 version、revision、isCurrent 属性与以 4 位年份或 v 加数字结尾的类型名给 warning；ONT-W11 对以 related 开头或 link 加数字的 link / 端 apiName 给 warning",
+    "status": "VERIFIED",
+    "assertion": "W10 version attrs/year suffix andW11 generic relationship names.",
+    "sources": [
+      "crates/ontoforge-schema/src/lint/structure/w10.rs",
+      "crates/ontoforge-schema/src/lint/structure/w11.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w10.rs",
+        "name": "triggers"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w10.rs",
+        "name": "clean"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w11.rs",
+        "name": "triggers"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w11.rs",
+        "name": "clean"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/src/lint/structure/w10.rs@triggers",
+      "crates/ontoforge-schema/src/lint/structure/w10.rs@clean",
+      "crates/ontoforge-schema/src/lint/structure/w11.rs@triggers",
+      "crates/ontoforge-schema/src/lint/structure/w11.rs@clean"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w10.rs",
+        "sha256": "b22013c293ce2af14bdee522400c4c4e7e817582f8781b86088513e6143ab474",
+        "lines": 117
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w11.rs",
+        "sha256": "f5ff66ca30579851e80cdbc80c5c83a79a13877aed6cec6bb4db2cf5fb99ee78",
+        "lines": 147
+      }
+    ]
+  },
+  {
+    "id": "01-11.6",
+    "truth": "ontoforge.toml 的 [lint.options.\"ONT-W06\"] max_properties、[lint.options.\"ONT-W07\"] silo_prefixes、[lint.options.\"ONT-W09\"] max_actions_per_type 生效，其他选项键报 ONT-V15（D-14）",
+    "status": "VERIFIED",
+    "assertion": "Declared option_keys validated, actual options passed to each rule and affect findings.",
+    "sources": [
+      "crates/ontoforge-schema/src/lint/config.rs",
+      "crates/ontoforge-schema/src/lint/structure/mod.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w06.rs",
+        "name": "max_properties_option_applies"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w06.rs",
+        "name": "unknown_option_key_is_rejected"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w07.rs",
+        "name": "silo_prefixes_option_applies"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w09.rs",
+        "name": "max_actions_per_type_option_applies"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/src/lint/structure/w06.rs@max_properties_option_applies",
+      "crates/ontoforge-schema/src/lint/structure/w06.rs@unknown_option_key_is_rejected",
+      "crates/ontoforge-schema/src/lint/structure/w07.rs@silo_prefixes_option_applies",
+      "crates/ontoforge-schema/src/lint/structure/w09.rs@max_actions_per_type_option_applies"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/config.rs",
+        "sha256": "6fed4edd5c63f6534730e36671265a88051cf64bed88d69bb14089823122ccc7",
+        "lines": 667
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/mod.rs",
+        "sha256": "fe4b962a88e4f36c3e5a86c6d259caef684c62cd9408178bc5623c8a865f654f",
+        "lines": 112
+      }
+    ]
+  },
+  {
+    "id": "01-11.7",
+    "truth": "W06-W11 每条规则一个模块，各有触发与不触发 fixture 的 insta 快照（D-15）；aviation 示例 lint 结果仍为空",
+    "status": "VERIFIED",
+    "assertion": "Every W06-W11 has trigger/clean snapshots and all registered on real clean aviation.",
+    "sources": [
+      "crates/ontoforge-schema/src/lint/mod.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w06.rs",
+        "name": "triggers"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w06.rs",
+        "name": "clean"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w07.rs",
+        "name": "triggers"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w07.rs",
+        "name": "clean"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w08.rs",
+        "name": "triggers"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w08.rs",
+        "name": "clean"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w09.rs",
+        "name": "triggers"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w09.rs",
+        "name": "clean"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w10.rs",
+        "name": "triggers"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w10.rs",
+        "name": "clean"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w11.rs",
+        "name": "triggers"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/structure/w11.rs",
+        "name": "clean"
+      },
+      {
+        "file": "crates/ontoforge/tests/cli_lint.rs",
+        "name": "lint_aviation_is_clean"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/lint_examples.rs",
+        "name": "aviation_lints_clean"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/src/lint/structure/w06.rs@triggers",
+      "crates/ontoforge-schema/src/lint/structure/w06.rs@clean",
+      "crates/ontoforge-schema/src/lint/structure/w07.rs@triggers",
+      "crates/ontoforge-schema/src/lint/structure/w07.rs@clean",
+      "crates/ontoforge-schema/src/lint/structure/w08.rs@triggers",
+      "crates/ontoforge-schema/src/lint/structure/w08.rs@clean",
+      "crates/ontoforge-schema/src/lint/structure/w09.rs@triggers",
+      "crates/ontoforge-schema/src/lint/structure/w09.rs@clean",
+      "crates/ontoforge-schema/src/lint/structure/w10.rs@triggers",
+      "crates/ontoforge-schema/src/lint/structure/w10.rs@clean",
+      "crates/ontoforge-schema/src/lint/structure/w11.rs@triggers",
+      "crates/ontoforge-schema/src/lint/structure/w11.rs@clean",
+      "crates/ontoforge/tests/cli_lint.rs@lint_aviation_is_clean",
+      "crates/ontoforge-schema/tests/lint_examples.rs@aviation_lints_clean"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/mod.rs",
+        "sha256": "e2b95df43d7f74c09fd4abf4e2b4e39d4bbc8a663c81a6d0cb8f8b95fcc60980",
+        "lines": 392
+      }
+    ]
+  },
+  {
+    "id": "01-11.8",
+    "truth": "Windows 本机 cargo test --workspace、cargo clippy --workspace --all-targets -- -D warnings、cargo fmt --all --check 全部通过（DX-03 phase 门禁）",
+    "status": "VERIFIED",
+    "assertion": "FinalHEAD WindowsCI fmt/clippy/workspace and local workspace success are raw command evidence.",
+    "sources": [
+      ".github/workflows/ci.yml"
+    ],
+    "tests": [],
+    "test_evidence": [],
+    "source_assertions": [
+      {
+        "file": ".github/workflows/ci.yml",
+        "sha256": "b4a802a680e268303a5cdfa66f51f876f0b8128822ff364616c3fe7c3b7f77e8",
+        "lines": 378
+      }
+    ]
+  },
+  {
+    "id": "01-12.1",
+    "truth": "CEL 上下文变量固定为 params、user、objects；自由变量根不在其中、params.<x> 不是已声明参数、objects.<x> 不是 objectReference 参数、objects.<x>.<prop> 的属性不存在、user.<f> 不是 id 或 groups 时报 ONT-V13 并给近似名（D-09）",
+    "status": "VERIFIED",
+    "assertion": "Reference checking only params/user/objects roots with typed declared paths and suggestions.",
+    "sources": [
+      "crates/ontoforge-expr/src/check.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-expr/tests/criteria.rs",
+        "name": "unknown_root_variable"
+      },
+      {
+        "file": "crates/ontoforge-expr/tests/criteria.rs",
+        "name": "unknown_parameter_suggests"
+      },
+      {
+        "file": "crates/ontoforge-expr/tests/criteria.rs",
+        "name": "objects_requires_object_reference_param"
+      },
+      {
+        "file": "crates/ontoforge-expr/tests/criteria.rs",
+        "name": "unknown_object_property_suggests"
+      },
+      {
+        "file": "crates/ontoforge-expr/tests/criteria.rs",
+        "name": "user_fields_are_id_and_groups"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-expr/tests/criteria.rs@unknown_root_variable",
+      "crates/ontoforge-expr/tests/criteria.rs@unknown_parameter_suggests",
+      "crates/ontoforge-expr/tests/criteria.rs@objects_requires_object_reference_param",
+      "crates/ontoforge-expr/tests/criteria.rs@unknown_object_property_suggests",
+      "crates/ontoforge-expr/tests/criteria.rs@user_fields_are_id_and_groups"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-expr/src/check.rs",
+        "sha256": "c58e9a1065353966a5ab205f0be41817c69103ebc1cfe1b963944aef1ca8259d",
+        "lines": 258
+      }
+    ]
+  },
+  {
+    "id": "01-12.2",
+    "truth": "comprehension 的迭代变量不被当作未知变量（引用检查基于 01-07 的作用域感知 member_paths）",
+    "status": "VERIFIED",
+    "assertion": "Scope-aware walker does not report comprehension variables.",
+    "sources": [
+      "crates/ontoforge-expr/src/walk.rs",
+      "crates/ontoforge-expr/src/check.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-expr/tests/criteria.rs",
+        "name": "comprehension_variable_is_not_reported"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-expr/tests/criteria.rs@comprehension_variable_is_not_reported"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-expr/src/walk.rs",
+        "sha256": "51ce9cb320cb774c848a7934219c464b494ca435a6f4a2f81140f6ff01c15111",
+        "lines": 178
+      },
+      {
+        "file": "crates/ontoforge-expr/src/check.rs",
+        "sha256": "c58e9a1065353966a5ab205f0be41817c69103ebc1cfe1b963944aef1ca8259d",
+        "lines": 258
+      }
+    ]
+  },
+  {
+    "id": "01-12.3",
+    "truth": "可推断时顶层结果必须为 bool、比较两侧类型必须兼容，否则报 ONT-V13；无法推断时视为 Any，不报错（RESEARCH A7）",
+    "status": "VERIFIED",
+    "assertion": "Inference bool top-level and comparison compatibility; unresolved types Any.",
+    "sources": [
+      "crates/ontoforge-expr/src/infer.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-expr/tests/criteria.rs",
+        "name": "non_bool_condition"
+      },
+      {
+        "file": "crates/ontoforge-expr/tests/criteria.rs",
+        "name": "comparison_type_mismatch"
+      },
+      {
+        "file": "crates/ontoforge-expr/tests/criteria.rs",
+        "name": "unknown_types_are_any"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-expr/tests/criteria.rs@non_bool_condition",
+      "crates/ontoforge-expr/tests/criteria.rs@comparison_type_mismatch",
+      "crates/ontoforge-expr/tests/criteria.rs@unknown_types_are_any"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-expr/src/infer.rs",
+        "sha256": "0862cfd94365ec332656af9bc9295114f4689bed2a99669dca5e7541e8f81dcd",
+        "lines": 337
+      }
+    ]
+  },
+  {
+    "id": "01-12.4",
+    "truth": "01-07 的 analyze 返回的超长、超深、语法错误各成为一条 ONT-V13；成员路径收集与类型推断都在 analyze 的 32 MiB 栈线程闭包内运行",
+    "status": "VERIFIED",
+    "assertion": "analyze error mapped toV13; member_paths and type_issues called inside one analyzer closure.",
+    "sources": [
+      "crates/ontoforge-expr/src/check.rs",
+      "crates/ontoforge-expr/src/analyze.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-expr/tests/criteria.rs",
+        "name": "analyzer_errors_become_v13"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-expr/tests/criteria.rs@analyzer_errors_become_v13"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-expr/src/check.rs",
+        "sha256": "c58e9a1065353966a5ab205f0be41817c69103ebc1cfe1b963944aef1ca8259d",
+        "lines": 258
+      },
+      {
+        "file": "crates/ontoforge-expr/src/analyze.rs",
+        "sha256": "4c391ab7e58f967d937890e0d73ce588d90d1ca06be5b084a89653f40e6ef720",
+        "lines": 109
+      }
+    ]
+  },
+  {
+    "id": "01-12.5",
+    "truth": "每条 V13 的 file / line / column 指向 YAML 中该 condition 的值，消息末尾附「(at L:C in expression)」（D-09、D-10）",
+    "status": "VERIFIED",
+    "assertion": "Condition SourceMap value position joined with expression internal position in message.",
+    "sources": [
+      "crates/ontoforge-expr/src/check.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-expr/tests/criteria.rs",
+        "name": "diagnostic_points_at_condition_value"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-expr/tests/criteria.rs@diagnostic_points_at_condition_value"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-expr/src/check.rs",
+        "sha256": "c58e9a1065353966a5ab205f0be41817c69103ebc1cfe1b963944aef1ca8259d",
+        "lines": 258
+      }
+    ]
+  },
+  {
+    "id": "01-12.6",
+    "truth": "ontoforge validate 在 IR 构建成功后执行 CEL 检查，V13 为不可关闭的 hard error，aviation 示例的 3 个 criteria 全部通过（D-06）",
+    "status": "VERIFIED",
+    "assertion": "Pipeline runs check_ontology and clears ontology on error; valid3aviation conditions pass.",
+    "sources": [
+      "crates/ontoforge/src/pipeline.rs",
+      "crates/ontoforge-expr/src/check.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-expr/tests/criteria.rs",
+        "name": "aviation_criteria_pass"
+      },
+      {
+        "file": "crates/ontoforge/tests/invalid_examples.rs",
+        "name": "invalid_examples_produce_their_code_and_a_stable_snapshot"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-expr/tests/criteria.rs@aviation_criteria_pass",
+      "crates/ontoforge/tests/invalid_examples.rs@invalid_examples_produce_their_code_and_a_stable_snapshot"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge/src/pipeline.rs",
+        "sha256": "0c1fbd95f77c0d7dec14ffeec821688b83ffe3b1b3724982d39133ba9f6eb453",
+        "lines": 88
+      },
+      {
+        "file": "crates/ontoforge-expr/src/check.rs",
+        "sha256": "c58e9a1065353966a5ab205f0be41817c69103ebc1cfe1b963944aef1ca8259d",
+        "lines": 258
+      }
+    ]
+  },
+  {
+    "id": "01-12.7",
+    "truth": "ADR-0006 的 Open (spike) 节被 Spike S2 结论替换",
+    "status": "VERIFIED",
+    "assertion": "ADR0006 SpikeS2 resolved records only compile, lexical guards and scoped analysis API.",
+    "sources": [
+      ".planning/adr/0006-expression-language.md"
+    ],
+    "tests": [],
+    "test_evidence": [],
+    "source_assertions": [
+      {
+        "file": ".planning/adr/0006-expression-language.md",
+        "sha256": "9dcc9fe9d0673e040c153e07efa3517918aab47a6a22eb74c1775d6fab12f661",
+        "lines": 14
+      }
+    ]
+  },
+  {
+    "id": "01-13.1",
+    "truth": "lint/config.rs 不再依赖 toml 内部私有键 $__toml_private_datetime：Raw 树、RawVisitor、DATETIME_KEY 删除，改用 toml::de::DeTable::parse（REUSE-AUDIT #1，LINT-04 行为不变）",
+    "status": "VERIFIED",
+    "assertion": "Public DeTable::parse/DeValue replaces Raw/RawVisitor/private datetime constant; datetime still error.",
+    "sources": [
+      "crates/ontoforge-schema/src/lint/config.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/config.rs",
+        "name": "datetime_and_out_of_range_integers_are_unsupported_values"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/config.rs",
+        "name": "toml_syntax_error_is_v15_at_its_span"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/config.rs",
+        "name": "config_levels_parse"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/src/lint/config.rs@datetime_and_out_of_range_integers_are_unsupported_values",
+      "crates/ontoforge-schema/src/lint/config.rs@toml_syntax_error_is_v15_at_its_span",
+      "crates/ontoforge-schema/src/lint/config.rs@config_levels_parse"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/lint/config.rs",
+        "sha256": "6fed4edd5c63f6534730e36671265a88051cf64bed88d69bb14089823122ccc7",
+        "lines": 667
+      }
+    ]
+  },
+  {
+    "id": "01-13.2",
+    "truth": "names::canonical 用 heck 0.5 生成建议名；HTTPServer 的建议为 httpServer，含非 ASCII 字符的名字不再给出误导性建议（REUSE-AUDIT #2，SCHEMA-06）",
+    "status": "VERIFIED",
+    "assertion": "heck canonical plus nonASCII guard; explicit HTTPServer->httpServer and no misleadingUnicode help.",
+    "sources": [
+      "crates/ontoforge-schema/src/ir/names.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/src/ir/names.rs",
+        "name": "acronym_prefix_is_lowered_as_a_word"
+      },
+      {
+        "file": "crates/ontoforge-schema/src/ir/names.rs",
+        "name": "non_ascii_names_get_no_misleading_suggestion"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/src/ir/names.rs@acronym_prefix_is_lowered_as_a_word",
+      "crates/ontoforge-schema/src/ir/names.rs@non_ascii_names_get_no_misleading_suggestion"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/ir/names.rs",
+        "sha256": "a0a7f1e25f5fde58cc5476ee810faf0fccca72a79a3d97626c56d4e290bdd27a",
+        "lines": 409
+      }
+    ]
+  },
+  {
+    "id": "01-13.3",
+    "truth": "--color auto 由 anstream::AutoStream::choice 判定：NO_COLOR 为空字符串时不关色，支持 CLICOLOR=0、CLICOLOR_FORCE、TERM=dumb；--color 参数与帮助文本不变（REUSE-AUDIT #3，LINT-03）",
+    "status": "VERIFIED",
+    "assertion": "print_rendered calls anstream AutoStream::choice; real subprocess test checks6env modes and JSON noANSI.",
+    "sources": [
+      "crates/ontoforge/src/lib.rs",
+      "crates/ontoforge/src/render.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge/tests/cli_color.rs",
+        "name": "color_environment_controls_human_output_and_never_colors_json"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge/tests/cli_color.rs@color_environment_controls_human_output_and_never_colors_json"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge/src/lib.rs",
+        "sha256": "7740d3899fcde34ca1e638063badda1eda81dae6af436bda3859c07e6f9b120f",
+        "lines": 212
+      },
+      {
+        "file": "crates/ontoforge/src/render.rs",
+        "sha256": "40234cca316f436b579ea568975bc350f65104ced8144c0a4be742421765ac18",
+        "lines": 224
+      }
+    ]
+  },
+  {
+    "id": "01-13.4",
+    "truth": "字节偏移转 line:col（列按字符计）只有一个实现，parse.rs、config.rs、walk.rs 共用（REUSE-AUDIT CONSIDER-LATER 行列换算去重）",
+    "status": "VERIFIED",
+    "assertion": "One offset_to_line_col definition and3real callers; chars not bytes tested independently.",
+    "sources": [
+      "crates/ontoforge-schema/src/diag.rs",
+      "crates/ontoforge-schema/src/loader/parse.rs",
+      "crates/ontoforge-schema/src/lint/config.rs",
+      "crates/ontoforge-expr/src/walk.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/src/diag.rs",
+        "name": "offset_to_line_col_takes_byte_offsets_and_counts_char_columns"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/loader.rs",
+        "name": "bom_crlf_tab_and_cjk_locations_are_exact"
+      },
+      {
+        "file": "crates/ontoforge-expr/tests/analyze.rs",
+        "name": "positions_are_line_and_char_column"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/src/diag.rs@offset_to_line_col_takes_byte_offsets_and_counts_char_columns",
+      "crates/ontoforge-schema/tests/loader.rs@bom_crlf_tab_and_cjk_locations_are_exact",
+      "crates/ontoforge-expr/tests/analyze.rs@positions_are_line_and_char_column"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/src/diag.rs",
+        "sha256": "fad8d8b85fd305c25218b088281f92377a77a6031e1d9ce352b1f137a638f535",
+        "lines": 322
+      },
+      {
+        "file": "crates/ontoforge-schema/src/loader/parse.rs",
+        "sha256": "3a4db45c5a16eadf3c3e43cd4c12b8da088f727d18ba7a15ee3ac8cdc9fd89dd",
+        "lines": 368
+      },
+      {
+        "file": "crates/ontoforge-schema/src/lint/config.rs",
+        "sha256": "6fed4edd5c63f6534730e36671265a88051cf64bed88d69bb14089823122ccc7",
+        "lines": 667
+      },
+      {
+        "file": "crates/ontoforge-expr/src/walk.rs",
+        "sha256": "51ce9cb320cb774c848a7934219c464b494ca435a6f4a2f81140f6ff01c15111",
+        "lines": 178
+      }
+    ]
+  },
+  {
+    "id": "01-13.5",
+    "truth": "没有新增下载：heck 0.5.0、anstream 1.0.0 已在 Cargo.lock 中",
+    "status": "VERIFIED",
+    "assertion": "Historical d021687..07a0e06 Cargo.lock diff changes edges only, heck0.5/anstream1 already locked; not a ban on later phases dependencies.",
+    "sources": [
+      "Cargo.lock",
+      "Cargo.toml"
+    ],
+    "tests": [],
+    "test_evidence": [],
+    "source_assertions": [
+      {
+        "file": "Cargo.lock",
+        "sha256": "7ccd6827bf948238d62ceb492bea930e30ae7d289a1dd3fc04f94d08afafb2ee",
+        "lines": 4735
+      },
+      {
+        "file": "Cargo.toml",
+        "sha256": "6ff37b0773c9cbf86f8738a11f008d32b41ac8e6153c5da37dafea0da33d4dd5",
+        "lines": 67
+      }
+    ]
+  },
+  {
+    "id": "01-14.1",
+    "truth": "在 Zed / VS Code（Red Hat YAML 扩展）中打开 aviation 的 objects.yaml、links.yaml、actions.yaml，任意一个 document（含在文件末尾 --- 之后新追加的 document）输入 kind: 后按 Ctrl+Space 列出 ObjectType / LinkType / ActionType，未知字段被标红（G-1-2）",
+    "status": "PASSED (override)",
+    "assertion": "Existing UAT Test2 explicit acceptance carried forward; schema assignment observed, completion popup/narrowing/bogus andJSONmanifest not individually observed. No new editor claim.",
+    "sources": [
+      ".planning/phases/01-workspace-schema-lint/01-UAT.md",
+      ".zed/settings.json",
+      ".vscode/settings.json"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/schema_export.rs",
+        "name": "editor_configs_associate_definition_schema_with_examples"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/schema_export.rs@editor_configs_associate_definition_schema_with_examples"
+    ],
+    "source_assertions": [
+      {
+        "file": ".planning/phases/01-workspace-schema-lint/01-UAT.md",
+        "sha256": "33e06f89f3e6d191b77a584611bb9966d97790614a7533e648a524f363da75d3",
+        "lines": 68
+      },
+      {
+        "file": ".zed/settings.json",
+        "sha256": "9b081c2e875fdcb517d0f0f191df98f80186b6896afd254cf180596c3e7c7840",
+        "lines": 17
+      },
+      {
+        "file": ".vscode/settings.json",
+        "sha256": "5b83ca55e8b082e6133f176e5334e1343a1f435f15b896b6c0d3ecf03e178368",
+        "lines": 9
+      }
+    ]
+  },
+  {
+    "id": "01-14.2",
+    "truth": ".zed/settings.json 与 .vscode/settings.json 是严格 JSON，yaml.schemas 映射完全相同：键 ./schemas/ontoforge-definition.schema.json 指向入库的导出 schema，第一个 glob 为 examples/ontologies/**/*.yaml（编排决策 1）",
+    "status": "VERIFIED",
+    "assertion": "Strict JSON two local settings, equal schema mapping and expected leading glob.",
+    "sources": [
+      ".zed/settings.json",
+      ".vscode/settings.json"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/schema_export.rs",
+        "name": "editor_configs_associate_definition_schema_with_examples"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/schema_export.rs@editor_configs_associate_definition_schema_with_examples"
+    ],
+    "source_assertions": [
+      {
+        "file": ".zed/settings.json",
+        "sha256": "9b081c2e875fdcb517d0f0f191df98f80186b6896afd254cf180596c3e7c7840",
+        "lines": 17
+      },
+      {
+        "file": ".vscode/settings.json",
+        "sha256": "5b83ca55e8b082e6133f176e5334e1343a1f435f15b896b6c0d3ecf03e178368",
+        "lines": 9
+      }
+    ]
+  },
+  {
+    "id": "01-14.3",
+    "truth": "examples/ontologies 下所有 ontology.yaml 都不被关联到定义 schema（排除 glob !examples/ontologies/**/ontology.yaml），aviation/ontology.yaml 仍由自己的 manifest modeline 校验；28 个没有 modeline 的 manifest 不出现误报",
+    "status": "VERIFIED",
+    "assertion": "Manifest exclusion glob applies to every current example manifest; manifest own modeline separate.",
+    "sources": [
+      ".zed/settings.json",
+      ".vscode/settings.json"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/schema_export.rs",
+        "name": "editor_configs_associate_definition_schema_with_examples"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/schema_export.rs@editor_configs_associate_definition_schema_with_examples"
+    ],
+    "source_assertions": [
+      {
+        "file": ".zed/settings.json",
+        "sha256": "9b081c2e875fdcb517d0f0f191df98f80186b6896afd254cf180596c3e7c7840",
+        "lines": 17
+      },
+      {
+        "file": ".vscode/settings.json",
+        "sha256": "5b83ca55e8b082e6133f176e5334e1343a1f435f15b896b6c0d3ecf03e178368",
+        "lines": 9
+      }
+    ]
+  },
+  {
+    "id": "01-14.4",
+    "truth": "aviation 定义文件的每个 YAML document 第一行都是定义 schema 的 modeline（objects 5、links 5、actions 3，共 13 行，其中新增 10 行，编排决策 2），ontoforge validate 与 lint --deny-warnings 仍然 clean，YAML / JSON 两种写法的 IR 仍然相同",
+    "status": "VERIFIED",
+    "assertion": "All13originaldocuments carry modelines, validate/lint clean and YAMLJSON equality maintained.",
+    "sources": [
+      "examples/ontologies/aviation/objects.yaml",
+      "examples/ontologies/aviation/links.yaml",
+      "examples/ontologies/aviation/actions.yaml"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/schema_export.rs",
+        "name": "aviation_definition_documents_start_with_modeline"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/load_examples.rs",
+        "name": "aviation_yaml_and_json_produce_identical_ir"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/load_examples.rs",
+        "name": "aviation_examples_have_no_diagnostics"
+      },
+      {
+        "file": "crates/ontoforge/tests/cli_lint.rs",
+        "name": "lint_aviation_is_clean"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/lint_examples.rs",
+        "name": "aviation_lints_clean"
+      },
+      {
+        "file": "crates/ontoforge/tests/cli.rs",
+        "name": "validate_aviation_succeeds_silently"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/schema_export.rs@aviation_definition_documents_start_with_modeline",
+      "crates/ontoforge-schema/tests/load_examples.rs@aviation_yaml_and_json_produce_identical_ir",
+      "crates/ontoforge-schema/tests/load_examples.rs@aviation_examples_have_no_diagnostics",
+      "crates/ontoforge/tests/cli_lint.rs@lint_aviation_is_clean",
+      "crates/ontoforge-schema/tests/lint_examples.rs@aviation_lints_clean",
+      "crates/ontoforge/tests/cli.rs@validate_aviation_succeeds_silently"
+    ],
+    "source_assertions": [
+      {
+        "file": "examples/ontologies/aviation/objects.yaml",
+        "sha256": "80dcfe86d5657a8c38a717e91c581cf8111692d726dbcad8a99096c73815877d",
+        "lines": 78
+      },
+      {
+        "file": "examples/ontologies/aviation/links.yaml",
+        "sha256": "3196a91f1e97232b61a181e1d35756055fc1461fb968f34009b1d35265080239",
+        "lines": 49
+      },
+      {
+        "file": "examples/ontologies/aviation/actions.yaml",
+        "sha256": "61756c751a174f664fab9d7cb07822711682b14fec3131af47dac2acbeb3a980",
+        "lines": 61
+      }
+    ]
+  },
+  {
+    "id": "01-14.5",
+    "truth": "CONTRIBUTING.md 有「编辑器接入」一节，写明 modeline 只作用于所在 document（vscode-yaml#1066）、多文档文件靠项目 yaml.schemas、JetBrains 的 JSON Schema Mappings 路径、kind: 后需要 Ctrl+Space（编排决策 3）",
+    "status": "VERIFIED",
+    "assertion": "Editor section states document-only modeline, project mapping,JetBrains path andCtrlSpace.",
+    "sources": [
+      "CONTRIBUTING.md"
+    ],
+    "tests": [],
+    "test_evidence": [],
+    "source_assertions": [
+      {
+        "file": "CONTRIBUTING.md",
+        "sha256": "28689b187772d8a5cf9baf59c121dfbd6fb83463d58c0db3be31a402115e91b5",
+        "lines": 133
+      }
+    ]
+  },
+  {
+    "id": "01-14.6",
+    "truth": "回归测试守住以上配置与 modeline：配置文件改坏、schema 改名、glob 漏掉示例、新 document 漏写 modeline 都会让 cargo test 失败（编排决策 4）",
+    "status": "VERIFIED",
+    "assertion": "Tests assert strict keys/local known schema, glob covers actualnonempty examples and modelinecount=docs.",
+    "sources": [
+      "crates/ontoforge-schema/tests/schema_export.rs"
+    ],
+    "tests": [
+      {
+        "file": "crates/ontoforge-schema/tests/schema_export.rs",
+        "name": "editor_configs_associate_definition_schema_with_examples"
+      },
+      {
+        "file": "crates/ontoforge-schema/tests/schema_export.rs",
+        "name": "aviation_definition_documents_start_with_modeline"
+      }
+    ],
+    "test_evidence": [
+      "crates/ontoforge-schema/tests/schema_export.rs@editor_configs_associate_definition_schema_with_examples",
+      "crates/ontoforge-schema/tests/schema_export.rs@aviation_definition_documents_start_with_modeline"
+    ],
+    "source_assertions": [
+      {
+        "file": "crates/ontoforge-schema/tests/schema_export.rs",
+        "sha256": "14f01c453cb107599df604743681abfbb6ce936f93a9b030da5145b96f5aecfc",
+        "lines": 545
+      }
+    ]
+  }
+]

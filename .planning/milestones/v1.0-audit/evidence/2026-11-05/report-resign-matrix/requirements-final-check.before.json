@@ -1,0 +1,21 @@
+{
+  "checked_utc": "2026-11-05T09:46:57.852Z",
+  "head": "060019fe52005c6b85ae5c5f59da9868f464e579",
+  "check_command": [
+    "node",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/requirements-final-recompute.cjs",
+    "--check"
+  ],
+  "exit_code": 0,
+  "stdout": "{\n  \"result\": \"PASS\",\n  \"mode\": \"read-only\",\n  \"head\": \"060019fe52005c6b85ae5c5f59da9868f464e579\",\n  \"counts\": {\n    \"requirements\": 79,\n    \"root_plans\": 93,\n    \"root_summaries\": 93,\n    \"formal_verifications\": 9,\n    \"checked\": 78,\n    \"summary_declared_ids\": 79,\n    \"metadata_gap_ids\": 0,\n    \"summary_missing_field_files\": 4,\n    \"summary_explicit_empty_files\": 26,\n    \"verification_covered_ids\": 79,\n    \"orphaned\": 0,\n    \"historical_three_source_claims\": 78,\n    \"workflow_satisfied\": 16,\n    \"workflow_partial\": 55,\n    \"workflow_unsatisfied\": 8,\n    \"confirmed_current_functional_failures\": 0,\n    \"full_contract_partial\": 1,\n    \"current_execution_evidence_ids\": 78,\n    \"mapped_tests_executed_ids\": 77,\n    \"partial_current_execution_ids\": 1,\n    \"historical_only_ids\": 1,\n    \"owner_signed_current_phase07_scope_ids\": 21,\n    \"owner_signed_phase07_only_responsibility_ids\": 15,\n    \"owner_signed_crossphase_scope_ids\": 6,\n    \"current_execution_report_resign_pending_ids\": 56\n  }\n}\n",
+  "stderr": "",
+  "diff_check": {
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": "warning: in the working copy of '.planning/milestones/v1.0-audit/progress.md', CRLF will be replaced by LF the next time Git touches it\n"
+  },
+  "covered_files": 248,
+  "evidence_index_entries": 56,
+  "scope_preservation_verified": true,
+  "previous_check_snapshot": "requirements-final-check-232-superseded.json"
+}

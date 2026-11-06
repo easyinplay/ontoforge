@@ -1,0 +1,37 @@
+ci-41994479295-integration.log: sha256=bdc51412697da080151c6b7f68e42f88c0e74bb21ecbfe67acc2fdaba23b449e; head=true; errors=0
+{"command":"cargo test -p ontoforge-storage --locked --test conformance_pg --test reload_pg --test scope_store --test migrate_pg --test history_masking --test import -- --ignored","line":554,"targets":6,"totals":{"passed":66,"failed":0,"ignored":0,"filtered":40},"node":[]}
+{"command":"set -euo pipefail","line":678,"targets":1,"totals":{"passed":9,"failed":0,"ignored":0,"filtered":36},"node":[]}
+{"command":"set -euo pipefail","line":721,"targets":4,"totals":{"passed":17,"failed":0,"ignored":0,"filtered":45},"node":[]}
+{"command":"set -euo pipefail","line":819,"targets":1,"totals":{"passed":1,"failed":0,"ignored":0,"filtered":11},"node":[]}
+{"command":"set -euo pipefail","line":950,"targets":1,"totals":{"passed":6,"failed":0,"ignored":0,"filtered":0},"node":[]}
+{"command":"cargo test -p ontoforge-engine --test trino_it --locked -- --ignored","line":1022,"targets":1,"totals":{"passed":9,"failed":0,"ignored":0,"filtered":2},"node":[]}
+{"command":"cargo test -p ontoforge --test cli_trino_it --locked -- --ignored","line":1055,"targets":1,"totals":{"passed":4,"failed":0,"ignored":0,"filtered":3},"node":[]}
+{"command":"cargo test -p ontoforge-auth --locked --test rowpred_trino_it -- --ignored","line":1092,"targets":1,"totals":{"passed":3,"failed":0,"ignored":0,"filtered":1},"node":[]}
+{"command":"cargo test -p ontoforge-storage --locked --test reload_trino_it -- --ignored --test-threads=1","line":1122,"targets":1,"totals":{"passed":3,"failed":0,"ignored":0,"filtered":0},"node":[]}
+{"command":"cargo test -p ontoforge-storage --test query_read_pg --locked -- --ignored --test-threads=1","line":1149,"targets":1,"totals":{"passed":2,"failed":0,"ignored":0,"filtered":0},"node":[]}
+{"command":"cargo test -p ontoforge-query --test trino_query_it --locked -- --ignored --test-threads=1","line":1174,"targets":1,"totals":{"passed":5,"failed":0,"ignored":0,"filtered":1},"node":[]}
+{"command":"cargo test -p ontoforge-query --test query_bench_it --locked -- --ignored --test-threads=1","line":1207,"targets":1,"totals":{"passed":1,"failed":0,"ignored":0,"filtered":2},"node":[]}
+{"command":"set -euo pipefail","line":1234,"targets":1,"totals":{"passed":4,"failed":0,"ignored":0,"filtered":1},"node":[]}
+{"discovery":[{"line":701,"text":"postgres-audit: 9 ignored tests discovered at 060019fe52005c6b85ae5c5f59da9868f464e579","count":9},{"line":753,"text":"action-atomicity: 5 ignored tests discovered","count":5},{"line":775,"text":"action-same-pk: 4 ignored tests discovered","count":4},{"line":790,"text":"action-idempotency: 6 ignored tests discovered","count":6},{"line":809,"text":"action-webhook-pg: 2 ignored tests discovered","count":2},{"line":976,"text":"trino_l2_acl_it: 6 ignored tests discovered at 060019fe52005c6b85ae5c5f59da9868f464e579","count":6},{"line":1260,"text":"trino_action_it: 4 ignored tests discovered","count":4}],"bench":[],"python":[]}
+ci-41994479295-isolated-query-bench.log: sha256=dbfefa449e95c858c9e9c11f3ef7690ae47b80dfbfa4a73c9a88d56a4828aa99; head=true; errors=0
+{"command":"cargo test -p ontoforge-query --test query_bench_it --locked -- --ignored --test-threads=1 --nocapture","line":600,"targets":1,"totals":{"passed":1,"failed":0,"ignored":0,"filtered":2},"node":[]}
+{"discovery":[],"bench":[{"line":1174,"text":"source_pk: p95=Some(107.64879099999999)ms threshold=500ms passed=true"},{"line":1175,"text":"filtered_list_page: p95=Some(472.588841)ms threshold=1000ms passed=true"},{"line":1176,"text":"aggregate: p95=Some(407.73213499999997)ms threshold=1500ms passed=true"},{"line":1177,"text":"edited_pg_direct_pk: p95=Some(1.1279739999999998)ms threshold=50ms passed=true"}],"python":[]}
+ci-41994479295-phase7-real-services.log: sha256=5cad89dc1e75935cc5bdaa3ca82e5e1f4df06c81c56e7dc64425b0996820c727; head=true; errors=0
+{"command":"bash ci/server-services.sh verify","line":425,"targets":7,"totals":{"passed":26,"failed":0,"ignored":0,"filtered":2},"node":[{"line":793,"text":"ℹ tests 17"},{"line":795,"text":"ℹ pass 17"},{"line":796,"text":"ℹ fail 0"},{"line":797,"text":"ℹ cancelled 0"},{"line":798,"text":"ℹ skipped 0"},{"line":799,"text":"ℹ todo 0"}]}
+{"discovery":[],"bench":[],"python":[]}
+ci-41994479295-ubuntu.log: sha256=ae3d8ed246f84a5ba0ea323ee3a84311f76a8119e8deffeb7679da6161e723c8; head=true; errors=0
+{"command":"python -B -m unittest discover -s ci -p test_tls_deps.py -v","line":441,"targets":0,"totals":{"passed":0,"failed":0,"ignored":0,"filtered":0},"node":[]}
+{"command":"bash ci/check-tls-deps.sh","line":464,"targets":0,"totals":{"passed":0,"failed":0,"ignored":0,"filtered":0},"node":[]}
+{"command":"cargo test --workspace --locked -- --test-threads=1","line":1041,"targets":152,"totals":{"passed":1535,"failed":0,"ignored":119,"filtered":0},"node":[]}
+{"command":"set -euo pipefail","line":3840,"targets":1,"totals":{"passed":6,"failed":0,"ignored":0,"filtered":10},"node":[]}
+{"command":"cargo test -p ontoforge-action --locked -- --nocapture","line":3938,"targets":14,"totals":{"passed":64,"failed":0,"ignored":6,"filtered":0},"node":[]}
+{"command":"set -euo pipefail","line":4152,"targets":1,"totals":{"passed":5,"failed":0,"ignored":0,"filtered":43},"node":[]}
+{"discovery":[{"line":3924,"text":"l2_corpus: 6 tests discovered at 060019fe52005c6b85ae5c5f59da9868f464e579","count":6}],"bench":[],"python":[{"line":461,"text":"Ran 6 tests in 0.027s"}]}
+ci-41994479295-windows.log: sha256=243cf6436c9e9c7ca1b081cd0ce1df3ca486a25d7b678d10303e5ad9adda1753; head=true; errors=0
+{"command":"python -B -m unittest discover -s ci -p test_tls_deps.py -v","line":430,"targets":0,"totals":{"passed":0,"failed":0,"ignored":0,"filtered":0},"node":[]}
+{"command":"bash ci/check-tls-deps.sh","line":453,"targets":0,"totals":{"passed":0,"failed":0,"ignored":0,"filtered":0},"node":[]}
+{"command":"cargo test --workspace --locked -- --test-threads=1","line":1029,"targets":152,"totals":{"passed":1528,"failed":0,"ignored":119,"filtered":0},"node":[]}
+{"command":"set -euo pipefail","line":3850,"targets":1,"totals":{"passed":6,"failed":0,"ignored":0,"filtered":10},"node":[]}
+{"command":"cargo test -p ontoforge-action --locked -- --nocapture","line":3948,"targets":14,"totals":{"passed":64,"failed":0,"ignored":6,"filtered":0},"node":[]}
+{"command":"set -euo pipefail","line":4174,"targets":1,"totals":{"passed":5,"failed":0,"ignored":0,"filtered":43},"node":[]}
+{"discovery":[{"line":3934,"text":"l2_corpus: 6 tests discovered at 060019fe52005c6b85ae5c5f59da9868f464e579","count":6}],"bench":[],"python":[{"line":450,"text":"Ran 6 tests in 0.434s"},{"line":3847,"text":"Ran 11 tests in 13.376s"}]}

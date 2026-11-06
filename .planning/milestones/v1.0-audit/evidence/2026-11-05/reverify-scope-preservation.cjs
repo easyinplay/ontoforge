@@ -1,0 +1,56 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const crypto = require('node:crypto');
+const cp = require('node:child_process');
+const dir = __dirname;
+const phase = '.planning/phases/07-rest-mcp-shell';
+const read = name => JSON.parse(fs.readFileSync(path.join(dir, name), 'utf8'));
+const hash = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+const historic = JSON.parse(fs.readFileSync(path.join(dir, 'reverify-phase7-before.md'), 'utf8').match(/^covered_files: (.*)$/m)[1]);
+const superseded = read('reverify-fingerprint-232-superseded.json');
+const current = read('reverify-fingerprint.json');
+const baseline = read('reverify-scope-preservation-before.json');
+const expectedNew = ['ci/pg/seed.sql','crates/ontoforge-action/tests/trino_action_it.rs','crates/ontoforge-engine/src/cardinality_check.rs','crates/ontoforge-engine/src/printer/ast.rs','crates/ontoforge-engine/src/printer/dialect.rs','crates/ontoforge-engine/src/printer/tests.rs','crates/ontoforge-engine/tests/cardinality_check.rs','crates/ontoforge-schema/src/diag.rs','crates/ontoforge/src/online.rs','crates/ontoforge/tests/cli_check_cardinality.rs','crates/ontoforge/tests/cli_trino_it.rs'];
+const governance = ['07-SECURITY.md','07-UAT.md','07-VALIDATION.md','COVERAGE.md','reviews/07-14-IMPLEMENTATION.md','reviews/07-BRIDGE-SECURITY-EVIDENCE.md','reviews/07-E6-SECURITY-RECHECK.md','reviews/07-EXPLAIN-EVIDENCE.md','reviews/07-FINAL-SIMPLIFICATION.md','reviews/07-FINAL-SPEC-REVIEW.md','reviews/07-FINAL-STAFF-REVIEW.md','reviews/07-FINAL-STANDARDS-REVIEW.md','reviews/07-SDK-SECURITY-EVIDENCE.md','reviews/07-SECURITY-EVIDENCE-GAPS.md','reviews/07-T08-SECURITY-RECHECK.md','reviews/07-T24-SECURITY-RECHECK.md'].map(file => `${phase}/${file}`);
+console.log(`started_utc=${new Date().toISOString()}`);
+assert.equal(historic.length, 237);
+assert.equal(superseded.covered_files.length, 232);
+assert.equal(current.covered_files.length, 248);
+assert.equal(new Set(current.covered_files).size, 248);
+assert(historic.every(file => current.covered_files.includes(file)));
+assert.deepEqual(current.covered_files.filter(file => !historic.includes(file)).sort(), expectedNew.sort());
+assert.deepEqual(historic.filter(file => !superseded.covered_files.includes(file)).sort(), governance.sort());
+assert(governance.every(file => current.covered_files.includes(file)));
+console.log('PASS old237_subset_current248; new_implementation_fixture=11; restored_governance=16; no_duplicates=true');
+for (const file of governance) console.log(`RESTORED ${file}`);
+for (const group of ['production_inputs', 'original_logs']) {
+  for (const entry of baseline[group]) {
+    assert.equal(fs.statSync(entry.file).size, entry.bytes, entry.file);
+    assert.equal(hash(entry.file), entry.sha256, entry.file);
+  }
+  console.log(`PASS byte_unchanged_${group}=${baseline[group].length}`);
+}
+const priorIndex = read('reverify-final-evidence-index-232-superseded.json');
+for (const entry of priorIndex.entries.filter(entry => entry.file.endsWith('.log'))) assert.equal(hash(entry.file), entry.sha256, entry.file);
+console.log('PASS original_logs_match_previous_final_index; original_final_validation_log_preserved=true');
+assert.equal(cp.execFileSync('git', ['rev-parse','HEAD'], {encoding:'utf8'}).trim(), baseline.head);
+assert.equal(cp.spawnSync('git', ['diff','--exit-code','--','crates','clients','ci','.github','Cargo.toml','Cargo.lock','schemas','examples','tools']).status, 0);
+console.log('PASS HEAD_unchanged; uncommitted_production_diff=0');
+const tool = 'C:/Users/easyi/.codex/gsd-core/bin/gsd-tools.cjs';
+const fingerprint = cp.spawnSync(process.execPath, [tool,'query','verification.fingerprint',phase,...current.covered_files], {encoding:'utf8',maxBuffer:1024*1024});
+assert.equal(fingerprint.status, 0, fingerprint.stderr);
+const regenerated = JSON.parse(fingerprint.stdout);
+assert.deepEqual(current.covered_files, regenerated.covered_files);
+assert.equal(current.covered_digest, regenerated.covered_digest);
+const report = fs.readFileSync(`${phase}/07-VERIFICATION.md`, 'utf8');
+assert.deepEqual(JSON.parse(report.match(/^covered_files: (.*)$/m)[1]), current.covered_files);
+assert.equal(JSON.parse(report.match(/^covered_digest: (.*)$/m)[1]), current.covered_digest);
+console.log(`PASS actual_GSD_248_input_output_and_canonical_equal; digest=${current.covered_digest}`);
+const status = cp.spawnSync(process.execPath, [tool,'query','verification.status',phase], {encoding:'utf8'});
+assert.equal(status.status, 0, status.stderr);
+assert.equal(JSON.parse(status.stdout).status, 'passed');
+fs.writeFileSync(path.join(dir, 'reverify-status-after.json'), status.stdout);
+console.log('PASS GSD_owner_status=passed; query_exit=0');
+console.log('product_tests_rerun=false; CI_redispatch=false; scope_only_correction=true');
+console.log(`ended_utc=${new Date().toISOString()}`);

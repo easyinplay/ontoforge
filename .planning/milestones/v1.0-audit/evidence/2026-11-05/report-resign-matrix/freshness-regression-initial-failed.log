@@ -1,0 +1,59 @@
+recorded_utc=2026-11-05T11:06:13.842Z
+command=node --test .planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-matrix/freshness.test.cjs
+source_sha256=f6ef7667da266abc7fa3b538fa4f4f3d4ee5d2fc0a73ef105e956e86eace94e7
+pending_metric_semantics=positive current execution evidence AND at least one assigned canonical report gate not passed; includes partial ENGINE-05 while pending, excludes historical-only DX-04
+✔ passed assigned reports make non-Phase07 execution current without extending owner signature (46.7016ms)
+✔ stale canonical gate keeps executed evidence pending despite a passed raw claim (34.6878ms)
+✔ human_needed canonical gate keeps executed evidence pending despite a passed raw claim (31.3477ms)
+✔ gaps_found canonical gate keeps executed evidence pending despite a passed raw claim (38.7211ms)
+✔ passed Phase3 report makes STORE-01 execution current without a Phase07 owner signature (33.2285ms)
+✔ passed Phase5 report makes ACTION-01 execution current without a Phase07 owner signature (31.4552ms)
+✔ passed Phase6 report makes L2-01 execution current without a Phase07 owner signature (30.3805ms)
+✔ passed Phase7.1 report makes STORE-05 execution current without a Phase07 owner signature (30.9653ms)
+✔ one stale assigned crossphase gate blocks freshness after the other report passes (31.3562ms)
+✔ duplicate passed report cannot cover a different missing assigned phase (31.4016ms)
+✔ pending metric counts executed evidence with unresolved gates rather than freshness labels or owner signatures (31.6782ms)
+✖ existing 79-requirement assignment retains exactly 21 Phase07 scoped signatures (38.7781ms)
+✔ all assigned crossphase gates passed make current evidence reports current (33.7254ms)
+✔ Phase07 owner signature cannot cover another assigned phase human gate (36.0985ms)
+✔ Phase07-only passed report retains its scoped owner signature alongside report freshness (33.0379ms)
+✔ a stale Phase07 gate grants neither owner signature nor report freshness (35.1532ms)
+✔ DX-04 stays historical-only without executed-evidence pending count when report is passed (31.0989ms)
+✔ DX-04 stays historical-only without executed-evidence pending count when report is stale (28.2151ms)
+✔ ENGINE-05 stays partial with report gate passed and counts only actual pending gates (29.6677ms)
+✔ ENGINE-05 stays partial with report gate gaps_found and counts only actual pending gates (31.9913ms)
+✔ missing assigned canonical report remains pending rather than vacuously current (29.766ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 20
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 806.9892
+
+✖ failing tests:
+
+test at .planning\milestones\v1.0-audit\evidence\2026-11-05\report-resign-matrix\freshness.test.cjs:94:1
+✖ existing 79-requirement assignment retains exactly 21 Phase07 scoped signatures (38.7781ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  15 !== 16
+  
+      at TestContext.<anonymous> (D:\DataSpellProjects\ontoforge\.planning\milestones\v1.0-audit\evidence\2026-11-05\report-resign-matrix\freshness.test.cjs:100:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 15,
+    expected: 16,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+
+exit_code=1

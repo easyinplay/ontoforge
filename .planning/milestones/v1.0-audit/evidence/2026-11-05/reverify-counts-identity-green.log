@@ -1,0 +1,12 @@
+command=node --test reverify-counts.test.cjs (zero + identity regression)
+✔ required target with zero discovery cannot complete beside a passing target (54.4484ms)
+✔ duplicate execution identity cannot conceal a missing required target (49.1441ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 168.8027
+exit_code=0

@@ -1,0 +1,78 @@
+{
+  "recorded_utc": "2026-11-05T14:23:56.804Z",
+  "head": "060019fe52005c6b85ae5c5f59da9868f464e579",
+  "required_head": "060019fe52005c6b85ae5c5f59da9868f464e579",
+  "head_matches": true,
+  "plan_count": 14,
+  "summary_count": 14,
+  "truth_results": 97,
+  "plan_verified": 96,
+  "plan_prior_override": 1,
+  "roadmap_sc": 5,
+  "legacy_must_haves": 11,
+  "judgment_uncertain": 3,
+  "backstop_verified": 1,
+  "artifacts": 58,
+  "links": 32,
+  "selected_named_tests": 164,
+  "selected_named_tests_three_execution_sources": 164,
+  "old_covered": 315,
+  "new_covered": 346,
+  "covered_deleted": 0,
+  "covered_added": 31,
+  "input_hashes_checked": 329,
+  "input_hash_differences": [],
+  "original_report_copy_hash_matches": true,
+  "current_report_hash": "98c80776c3170489cf0d72007fcaf942e88dbd605207cb713a5b300257adc310",
+  "native_gate_exit": 0,
+  "native_gate": "human_needed",
+  "git_diff_check": {
+    "command": "git",
+    "args": [
+      "diff",
+      "--check",
+      "--",
+      ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+      ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-01"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "production_diff_head": {
+    "exit": 0,
+    "empty": true,
+    "stderr": ""
+  },
+  "no_rust_or_ci_reexecution": true,
+  "new_defects": [],
+  "new_overrides": 0,
+  "scope": "bounded Phase01 full original-contract review; no milestone/phase pass",
+  "final_receipts_utc": "2026-11-05T14:28:39.363Z",
+  "integration_format_regression": {
+    "status": "fixed_after_integration_red",
+    "red": "requirements-final-recompute.cjs:131: 12 !== 0 (12 orphan)",
+    "before_rows": 0,
+    "before_orphaned": 12,
+    "after_rows": 12,
+    "after_orphaned": 0,
+    "scope": "exact unchanged Requirements Coverage parser slice; full matrix left to main session",
+    "evidence": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-01/integration-requirements-format-regression.json",
+    "native_gate_command": {
+      "command": "node",
+      "args": [
+        "C:/Users/easyi/.codex/gsd-core/bin/gsd-tools.cjs",
+        "query",
+        "verification.status",
+        ".planning/phases/01-workspace-schema-lint",
+        "--pick",
+        "status"
+      ],
+      "exit": 0,
+      "stdout": "human_needed",
+      "stderr": ""
+    },
+    "covered_inputs_changed": false,
+    "prohibition_judgments_accepted": false
+  }
+}

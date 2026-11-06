@@ -1,0 +1,50 @@
+[
+  {
+    "name": "workspace-discovery-c",
+    "command": "cargo test --workspace --locked -- --list",
+    "exit_code": 0,
+    "log": "D:\\DataSpellProjects\\ontoforge\\.planning\\milestones\\v1.0-audit\\evidence\\2026-11-05\\reverify-workspace-discovery-c.log",
+    "started_utc": "2026-11-05T08:31:17.9196602Z",
+    "ended_utc": "2026-11-05T08:43:50.2814821Z"
+  },
+  {
+    "name": "workspace",
+    "command": "cargo test --workspace --locked -- --test-threads=1",
+    "exit_code": 0,
+    "log": "D:\\DataSpellProjects\\ontoforge\\.planning\\milestones\\v1.0-audit\\evidence\\2026-11-05\\reverify-workspace.log",
+    "started_utc": "2026-11-05T08:43:50.3003373Z",
+    "ended_utc": "2026-11-05T08:51:34.9379799Z"
+  },
+  {
+    "name": "sqlite-atomic-discovery",
+    "command": "cargo test -p ontoforge-storage --features test-support --test conformance_sqlite --locked action_atomic_ -- --list",
+    "exit_code": 0,
+    "log": "D:\\DataSpellProjects\\ontoforge\\.planning\\milestones\\v1.0-audit\\evidence\\2026-11-05\\reverify-sqlite-atomic-discovery.log",
+    "started_utc": "2026-11-05T08:51:34.9420662Z",
+    "ended_utc": "2026-11-05T08:53:01.1743459Z"
+  },
+  {
+    "name": "sqlite-atomic",
+    "command": "cargo test -p ontoforge-storage --features test-support --test conformance_sqlite --locked action_atomic_ -- --nocapture --test-threads=1",
+    "exit_code": 0,
+    "log": "D:\\DataSpellProjects\\ontoforge\\.planning\\milestones\\v1.0-audit\\evidence\\2026-11-05\\reverify-sqlite-atomic.log",
+    "started_utc": "2026-11-05T08:53:01.1772874Z",
+    "ended_utc": "2026-11-05T08:53:02.0574045Z"
+  },
+  {
+    "name": "tls-hermetic",
+    "command": "python -B -m unittest discover -s ci -p test_tls_deps.py -v",
+    "exit_code": 0,
+    "log": "D:\\DataSpellProjects\\ontoforge\\.planning\\milestones\\v1.0-audit\\evidence\\2026-11-05\\reverify-tls-hermetic.log",
+    "started_utc": "2026-11-05T08:53:02.0626453Z",
+    "ended_utc": "2026-11-05T08:53:02.7640569Z"
+  },
+  {
+    "name": "tls-real",
+    "command": "C:/Program Files/Git/bin/bash.exe ci/check-tls-deps.sh",
+    "exit_code": 0,
+    "log": "D:\\DataSpellProjects\\ontoforge\\.planning\\milestones\\v1.0-audit\\evidence\\2026-11-05\\reverify-tls-real.log",
+    "started_utc": "2026-11-05T08:53:02.7667249Z",
+    "ended_utc": "2026-11-05T08:53:03.2904155Z"
+  }
+]

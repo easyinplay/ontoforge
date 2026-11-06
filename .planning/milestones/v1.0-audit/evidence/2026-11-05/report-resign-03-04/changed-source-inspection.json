@@ -1,0 +1,106 @@
+{
+  "head": {
+    "command": "git",
+    "args": [
+      "rev-parse",
+      "HEAD"
+    ],
+    "exit": 0,
+    "stdout": "060019fe52005c6b85ae5c5f59da9868f464e579\n",
+    "stderr": ""
+  },
+  "workingSource": {
+    "command": "git",
+    "args": [
+      "diff",
+      "--name-only",
+      "HEAD",
+      "--",
+      "crates",
+      "Cargo.toml",
+      "Cargo.lock",
+      "ci",
+      ".github",
+      "examples",
+      "schemas"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "moved": [
+    "CONTRIBUTING.md",
+    "Cargo.toml",
+    "ci/pg/seed.sql",
+    "crates/ontoforge-engine/src/lib.rs",
+    "crates/ontoforge-engine/src/printer/ast.rs",
+    "crates/ontoforge-engine/src/printer/dialect.rs",
+    "crates/ontoforge-engine/src/printer/tests.rs",
+    "crates/ontoforge-schema/src/diag.rs",
+    "crates/ontoforge/src/cli.rs",
+    "crates/ontoforge/src/lib.rs",
+    "ci/trino/iceberg/iceberg.properties",
+    "crates/ontoforge-engine/tests/doc_type_table.rs",
+    "crates/ontoforge-engine/tests/l2_monitor.rs"
+  ],
+  "diffFromPriorHead": {
+    "command": "git",
+    "args": [
+      "diff",
+      "f8851ca",
+      "HEAD",
+      "--",
+      "CONTRIBUTING.md",
+      "Cargo.toml",
+      "ci/pg/seed.sql",
+      "crates/ontoforge-engine/src/lib.rs",
+      "crates/ontoforge-engine/src/printer/ast.rs",
+      "crates/ontoforge-engine/src/printer/dialect.rs",
+      "crates/ontoforge-engine/src/printer/tests.rs",
+      "crates/ontoforge-schema/src/diag.rs",
+      "crates/ontoforge/src/cli.rs",
+      "crates/ontoforge/src/lib.rs",
+      "ci/trino/iceberg/iceberg.properties",
+      "crates/ontoforge-engine/tests/doc_type_table.rs",
+      "crates/ontoforge-engine/tests/l2_monitor.rs"
+    ],
+    "exit": 0,
+    "stdout": "diff --git a/CONTRIBUTING.md b/CONTRIBUTING.md\nindex 35e20bd..08230e9 100644\n--- a/CONTRIBUTING.md\n+++ b/CONTRIBUTING.md\n@@ -63,7 +63,24 @@ CI 对应的步骤在 `integration` 作业：`Edit store conformance (PostgreSQL\n \n ### nightly Iceberg 作业\n \n-`.github/workflows/nightly.yml` 每天运行一次（也可手动触发 `workflow_dispatch`），在 Trino 483 与 484 上重复上述步骤，并额外配置 Iceberg catalog（`ci/trino/iceberg/iceberg.properties`：JDBC catalog 存在同一 PostgreSQL 的 `iceberg_catalog` 库，表由 `ci/pg/iceberg_catalog.sql` 创建，warehouse 用 Trino 本地文件系统），把 `demo.aviation.flights` 复制成 `iceberg.aviation.flights` 后以 `ONTOFORGE_TRINO_ICEBERG=1` 运行 `trino_it`。任一版本失败时，独立的 `report-failure` 作业创建带 `nightly-failure` 标签的 issue，已有未关闭的同标签 issue 时改为追加评论。只有该作业拥有 `issues: write`，测试作业只有 `contents: read`。\n+`.github/workflows/nightly.yml` 每天运行一次，也可手动触发 `workflow_dispatch`。Trino 483/484 使用 PostgreSQL JDBC catalog 与真实 MinIO S3 warehouse。`ci/minio/Dockerfile` 固定官方 MinIO source commit 和 Go builder digest，复用原依赖图生成 scratch 测试镜像；自建产物保留 DEVELOPMENT 标识，不宣称官方预编译或 bit-reproducibility。版本、SHA256、source/runner 身份及运行证据写入 `target/phase072-minio/<run-id>/provenance.json`。\n+\n+```bash\n+# Linux or Windows Git Bash; one owner per host, CARGO_BUILD_JOBS=2.\n+bash ci/iceberg-services.sh contract --trino 483\n+bash ci/iceberg-services.sh contract --trino 484\n+bash ci/iceberg-services.sh nightly --trino 483\n+\n+# Verify the SDK helper extracted from the built image.\n+ONTOFORGE_ICEBERG_STATE=/path/to/private/helper-state.json bash ci/iceberg-services.sh helper-test\n+\n+# Recovery cleanup; set ONTOFORGE_ICEBERG_STATE before starting the run.\n+bash ci/iceberg-services.sh cleanup --state /path/to/private/state.json\n+```\n+\n+`contract` 验证 source/copy 均为29行、精确 Rust 测试、PG 的 `s3://warehouse/` metadata 与非空对象，并只重启 MinIO/Trino后复验，不重新 CTAS。`nightly` 再执行原有 Action atomicity/race/idempotency/outbox、Trino Action、完整 Engine/CLI corpus；各目标必须发现且实际执行非零测试。容器、network、volumes 按本次 owner label 和身份清理，已有服务不受影响；PG/Trino只发布 loopback 随机端口。\n+\n+临时凭据只进入私有 env/catalog，Trino使用环境凭据 provider；原始日志按本次真实凭据扫描通过后才可公开。CI为主fixture和helper分别保存私有state，并用两个独立 `always()` 步骤补偿清理，第一项失败也会尝试第二项。helper在创建容器前持久化owner和lock token；清理失败保留state供重试。state不存在时无操作，资源或锁身份无法核验时拒绝删除。只有 **schedule 触发且失败** 才运行拥有 `issues: write` 的 `report-failure`；手动触发不创建 issue/comment，测试job始终只有 `contents: read`。\n \n ### 私有 fixture（SQL Server 等公司环境）\n \ndiff --git a/ci/pg/seed.sql b/ci/pg/seed.sql\nindex 9a40151..696c35c 100644\n--- a/ci/pg/seed.sql\n+++ b/ci/pg/seed.sql\n@@ -167,4 +167,38 @@ INSERT INTO aviation.flights_dup (flight_id, status) VALUES\n     (NULL, 'scheduled'),\n     (NULL, 'delayed');\n \n+-- Independent source OneToOne corpus: logical object cardinality is distinct PKs per FK.\n+-- Duplicate physical rows and NULL keys deliberately have no database constraints.\n+CREATE TABLE aviation.cardinality_records (\n+    record_id varchar(16),\n+    tail_number varchar(16)\n+);\n+INSERT INTO aviation.cardinality_records (record_id, tail_number) VALUES\n+    ('DUP', 'ROW-DUP'),\n+    ('DUP', 'ROW-DUP'),\n+    ('DUP', 'ROW-DUP'),\n+    ('CONFLICT-1', 'CONFLICT'),\n+    ('CONFLICT-1', 'CONFLICT'),\n+    ('CONFLICT-2', 'CONFLICT'),\n+    ('NULL-FK-1', NULL),\n+    ('NULL-FK-2', NULL),\n+    ('ONLY-VALID-PK', 'NULL-PK'),\n+    (NULL, 'NULL-PK'),\n+    (NULL, 'NULL-PK'),\n+    (NULL, 'ALL-NULL-PK'),\n+    (NULL, 'ALL-NULL-PK'),\n+    ('CLEAN', 'UNIQUE');\n+\n+-- Independent alias corpus: 25 equal-cardinality groups expose ORDER BY name resolution.\n+CREATE VIEW aviation.cardinality_alias_fk_n AS\n+SELECT 'M' || group_id::text || suffix AS fk, chr(65 + group_id) AS n\n+FROM generate_series(0, 24) AS groups(group_id)\n+CROSS JOIN (VALUES ('a'), ('b')) AS copies(suffix);\n+\n+CREATE VIEW aviation.cardinality_alias_fk_upper AS\n+SELECT fk AS id, n AS \"N\" FROM aviation.cardinality_alias_fk_n;\n+\n+CREATE VIEW aviation.cardinality_alias_pk_n AS\n+SELECT fk AS n, n AS aircraft_id FROM aviation.cardinality_alias_fk_n;\n+\n COMMIT;\ndiff --git a/ci/trino/iceberg/iceberg.properties b/ci/trino/iceberg/iceberg.properties\nindex 28e5388..7ee9d81 100644\n--- a/ci/trino/iceberg/iceberg.properties\n+++ b/ci/trino/iceberg/iceberg.properties\n@@ -1,15 +1,13 @@\n-# Iceberg catalog of the nightly CI Trino (D9): JDBC catalog in the PostgreSQL database\n-# `iceberg_catalog` (tables created by ci/pg/iceberg_catalog.sql), warehouse on Trino's local\n-# file system. Public MinIO images are no longer published, and ontoforge only talks to Trino,\n-# never to the object store, so a local warehouse exercises the same Iceberg connector without\n-# another third-party image. The password only exists inside the CI containers.\n+# JDBC + S3 fixture. The runner injects temporary credentials into a private copy.\n connector.name=iceberg\n iceberg.catalog.type=jdbc\n iceberg.jdbc-catalog.catalog-name=ontoforge_ci\n iceberg.jdbc-catalog.driver-class=org.postgresql.Driver\n iceberg.jdbc-catalog.connection-url=jdbc:postgresql://localhost:5432/iceberg_catalog\n iceberg.jdbc-catalog.connection-user=postgres\n-iceberg.jdbc-catalog.connection-password=ontoforge-ci-only\n-iceberg.jdbc-catalog.default-warehouse-dir=local:///warehouse\n-fs.local.enabled=true\n-local.location=/tmp/iceberg\n+iceberg.jdbc-catalog.connection-password=\n+iceberg.jdbc-catalog.default-warehouse-dir=s3://warehouse/\n+fs.s3.enabled=true\n+s3.endpoint=http://minio:9000\n+s3.path-style-access=true\n+s3.region=us-east-1\ndiff --git a/crates/ontoforge-engine/src/lib.rs b/crates/ontoforge-engine/src/lib.rs\nindex f3e144e..d3c00cb 100644\n--- a/crates/ontoforge-engine/src/lib.rs\n+++ b/crates/ontoforge-engine/src/lib.rs\n@@ -8,6 +8,7 @@ use std::collections::BTreeMap;\n use std::time::Duration;\n \n pub mod bind_check;\n+pub mod cardinality_check;\n pub mod config;\n pub mod error;\n pub mod pk_check;\ndiff --git a/crates/ontoforge-engine/src/printer/ast.rs b/crates/ontoforge-engine/src/printer/ast.rs\nindex a437645..9e67975 100644\n--- a/crates/ontoforge-engine/src/printer/ast.rs\n+++ b/crates/ontoforge-engine/src/printer/ast.rs\n@@ -38,6 +38,7 @@ pub enum Expr {\n         otherwise: Box<Expr>,\n     },\n     CountStar,\n+    CountDistinct(Box<Expr>),\n     Aggregate {\n         func: AggregateFunc,\n         arg: Box<Expr>,\ndiff --git a/crates/ontoforge-engine/src/printer/dialect.rs b/crates/ontoforge-engine/src/printer/dialect.rs\nindex 77ef59b..a93a1c0 100644\n--- a/crates/ontoforge-engine/src/printer/dialect.rs\n+++ b/crates/ontoforge-engine/src/printer/dialect.rs\n@@ -122,6 +122,7 @@ fn expr(e: &Expr, dialect: Dialect) -> Result<String, PrintError> {\n             expr(otherwise, dialect)?\n         )),\n         Expr::CountStar => Ok(\"count(*)\".to_owned()),\n+        Expr::CountDistinct(arg) => Ok(format!(\"count(DISTINCT {})\", expr(arg, dialect)?)),\n         Expr::Aggregate { func, arg } => Ok(format!(\n             \"{}({})\",\n             aggregate_name(*func),\ndiff --git a/crates/ontoforge-engine/src/printer/tests.rs b/crates/ontoforge-engine/src/printer/tests.rs\nindex a8febae..a1e17db 100644\n--- a/crates/ontoforge-engine/src/printer/tests.rs\n+++ b/crates/ontoforge-engine/src/printer/tests.rs\n@@ -8,6 +8,48 @@ fn col(name: &str) -> Expr {\n     Expr::Column(name.to_owned())\n }\n \n+#[test]\n+fn count_distinct_quotes_identifiers() {\n+    let pk = \"pk\\\"; DROP TABLE victim; --\";\n+    let fk = \"fk\\\" /*comment*/\";\n+    let mut query = sample();\n+    query.projection = vec![SelectItem {\n+        expr: Expr::CountDistinct(Box::new(col(pk))),\n+        alias: None,\n+    }];\n+    query.from = Some(TableRef {\n+        catalog: \"cat\\\"; --\".to_owned(),\n+        schema: \"schema\\\"/* */\".to_owned(),\n+        table: \"table\\\"; DROP TABLE victim; --\".to_owned(),\n+    });\n+    query.filter = None;\n+    query.group_by = vec![col(fk)];\n+    query.having = None;\n+    query.order_by.clear();\n+    for dialect in [Dialect::Sqlite, Dialect::Trino] {\n+        let sql = print_select(&query, dialect).expect(\"quoted identifiers\");\n+        assert!(\n+            sql.as_str()\n+                .contains(\"count(DISTINCT \\\"pk\\\"\\\"; DROP TABLE victim; --\\\")\"),\n+            \"{sql}\"\n+        );\n+        assert!(\n+            sql.as_str().contains(\"GROUP BY \\\"fk\\\"\\\" /*comment*/\\\"\"),\n+            \"{sql}\"\n+        );\n+        assert!(\n+            sql.as_str()\n+                .contains(\"\\\"table\\\"\\\"; DROP TABLE victim; --\\\"\"),\n+            \"{sql}\"\n+        );\n+        let statements =\n+            sqlparser::parser::Parser::parse_sql(&sqlparser::dialect::AnsiDialect {}, sql.as_str())\n+                .expect(\"one legal query\");\n+        assert_eq!(statements.len(), 1, \"{sql}\");\n+        assert!(matches!(statements[0], sqlparser::ast::Statement::Query(_)));\n+    }\n+}\n+\n fn sample() -> Select {\n     Select {\n         projection: vec![\ndiff --git a/crates/ontoforge-engine/tests/doc_type_table.rs b/crates/ontoforge-engine/tests/doc_type_table.rs\nindex a819358..8442504 100644\n--- a/crates/ontoforge-engine/tests/doc_type_table.rs\n+++ b/crates/ontoforge-engine/tests/doc_type_table.rs\n@@ -194,7 +194,11 @@ fn doc_diagnostic_codes_exist() {\n         codes::V19,\n         codes::V20,\n     ];\n-    let known: BTreeSet<&str> = validate_codes.into_iter().chain(KNOWN_RULE_IDS).collect();\n+    let known: BTreeSet<&str> = validate_codes\n+        .into_iter()\n+        .chain(KNOWN_RULE_IDS)\n+        .chain([codes::W18])\n+        .collect();\n     for code in &mentioned {\n         assert!(\n             known.contains(code),\n@@ -208,6 +212,7 @@ fn doc_diagnostic_codes_exist() {\n         codes::V18,\n         codes::V19,\n         codes::V20,\n+        codes::W18,\n         \"ONT-E13\",\n         \"ONT-E14\",\n         \"ONT-E15\",\ndiff --git a/crates/ontoforge-engine/tests/l2_monitor.rs b/crates/ontoforge-engine/tests/l2_monitor.rs\nindex c3b8199..f56b603 100644\n--- a/crates/ontoforge-engine/tests/l2_monitor.rs\n+++ b/crates/ontoforge-engine/tests/l2_monitor.rs\n@@ -24,6 +24,7 @@ struct Fixture {\n     foreign_uri: Mutex<Option<String>>,\n     origin: Mutex<String>,\n     delayed: AtomicBool,\n+    probe_post_delayed: AtomicBool,\n     observations: AtomicUsize,\n     unknown: AtomicBool,\n     finish_after_visibility: AtomicBool,\n@@ -166,7 +167,12 @@ impl Respond for Fixture {\n             json!({\"columns\":[{\"name\":\"ok\",\"type\":\"integer\"}],\"data\":[[1]]})\n         };\n         let template = ResponseTemplate::new(200).set_body_json(response);\n-        if self.delayed.load(Ordering::SeqCst) && sql.contains(\"system.runtime.queries\") {\n+        if self.probe_post_delayed.load(Ordering::SeqCst)\n+            && request.method == \"POST\"\n+            && sql.contains(\"count(*)\")\n+        {\n+            template.set_delay(Duration::from_millis(150))\n+        } else if self.delayed.load(Ordering::SeqCst) && sql.contains(\"system.runtime.queries\") {\n             template.set_delay(Duration::from_millis(400))\n         } else {\n             template\n@@ -443,16 +449,35 @@ async fn monitor_foreign_next_uri_never_receives_get_or_cancel() {\n #[tokio::test]\n async fn monitor_cancelled_startup_cleans_up_and_stays_disabled() {\n     let (server, fixture) = fixture().await;\n+    fixture.probe_post_delayed.store(true, Ordering::SeqCst);\n     fixture.delayed.store(true, Ordering::SeqCst);\n     let (l2, ontology) = engines(&server.uri(), Some(PROBE));\n-    assert!(\n-        tokio::time::timeout(\n-            Duration::from_millis(80),\n-            l2.clone().start_l2_acl_monitor(ontology.clone())\n-        )\n-        .await\n-        .is_err()\n-    );\n+    let startup_l2 = l2.clone();\n+    let startup_ontology = ontology.clone();\n+    let startup =\n+        tokio::spawn(async move { startup_l2.start_l2_acl_monitor(startup_ontology).await });\n+    tokio::time::timeout(Duration::from_secs(1), async {\n+        while fixture.observations.load(Ordering::SeqCst) == 0 {\n+            tokio::time::sleep(Duration::from_millis(5)).await;\n+        }\n+    })\n+    .await\n+    .expect(\"probe registered before startup cancellation\");\n+    let active_probe = fixture\n+        .queries\n+        .lock()\n+        .expect(\"queries\")\n+        .keys()\n+        .next()\n+        .expect(\"active probe\")\n+        .clone();\n+    assert!(!startup.is_finished(), \"startup must still be in progress\");\n+    let deletes_before_cancel = fixture.deletes.load(Ordering::SeqCst);\n+    startup.abort();\n+    let Err(cancelled) = startup.await else {\n+        panic!(\"startup must be cancelled\");\n+    };\n+    assert!(cancelled.is_cancelled());\n     wait_status(\n         &l2,\n         L2HealthStatus::Disabled {\n@@ -461,19 +486,34 @@ async fn monitor_cancelled_startup_cleans_up_and_stays_disabled() {\n     )\n     .await;\n     tokio::time::timeout(Duration::from_secs(1), async {\n-        while fixture.deletes.load(Ordering::SeqCst) == 0 {\n+        while fixture.deletes.load(Ordering::SeqCst) <= deletes_before_cancel\n+            || fixture\n+                .queries\n+                .lock()\n+                .expect(\"queries\")\n+                .contains_key(&active_probe)\n+        {\n             tokio::time::sleep(Duration::from_millis(5)).await;\n         }\n     })\n     .await\n     .expect(\"probe cancelled\");\n+    assert!(\n+        !fixture\n+            .queries\n+            .lock()\n+            .expect(\"queries\")\n+            .contains_key(&active_probe)\n+    );\n+    fixture.probe_post_delayed.store(false, Ordering::SeqCst);\n     fixture.delayed.store(false, Ordering::SeqCst);\n-    l2.start_l2_acl_monitor(ontology)\n-        .await\n-        .expect(\"new monitor after cancellation\")\n-        .shutdown()\n+    let monitor = l2\n+        .clone()\n+        .start_l2_acl_monitor(ontology)\n         .await\n-        .expect(\"shutdown\");\n+        .expect(\"new monitor after cancellation\");\n+    assert_eq!(l2.l2_status(), Some(L2HealthStatus::Enabled));\n+    monitor.shutdown().await.expect(\"shutdown\");\n }\n \n #[tokio::test]\ndiff --git a/crates/ontoforge-schema/src/diag.rs b/crates/ontoforge-schema/src/diag.rs\nindex b5850fd..1bbeffb 100644\n--- a/crates/ontoforge-schema/src/diag.rs\n+++ b/crates/ontoforge-schema/src/diag.rs\n@@ -181,6 +181,8 @@ pub fn did_you_mean<'a>(\n /// downgraded in `ontoforge.toml`, but scope, row-predicate and destructive-change\n /// failures must never be silenced (SCOPE-06, D-07, STORE-02).\n pub mod codes {\n+    /// Online source `OneToOne` foreign key shared by distinct objects; not an offline lint.\n+    pub const W18: &str = \"ONT-W18\";\n     /// Syntax error, duplicate key, budget exceeded, or non-UTF-8 input.\n     pub const V01: &str = \"ONT-V01\";\n     /// Document shape: not a mapping, missing `kind`, or `kind` is not a string.\ndiff --git a/crates/ontoforge/src/cli.rs b/crates/ontoforge/src/cli.rs\nindex 21503bf..323651f 100644\n--- a/crates/ontoforge/src/cli.rs\n+++ b/crates/ontoforge/src/cli.rs\n@@ -229,6 +229,9 @@ pub struct ValidateArgs {\n     /// explicit only).\n     #[arg(long, requires = \"online\")]\n     pub check_pk: bool,\n+    /// Report source `OneToOne` foreign keys shared by distinct objects (full table scan).\n+    #[arg(long, requires = \"online\")]\n+    pub check_cardinality: bool,\n     /// Server configuration with the Trino connection and the profile to engine mapping.\n     #[arg(long, value_name = \"FILE\", requires = \"online\")]\n     pub server_config: Option<Utf8PathBuf>,\ndiff --git a/crates/ontoforge/src/lib.rs b/crates/ontoforge/src/lib.rs\nindex d0ff1f5..1a3b8c5 100644\n--- a/crates/ontoforge/src/lib.rs\n+++ b/crates/ontoforge/src/lib.rs\n@@ -120,8 +120,18 @@ fn validate_online(args: &ValidateArgs) -> u8 {\n     let run = online::run_online(args);\n     print_diagnostics(&run.out, &args.output);\n     if args.output.format == Format::Human {\n+        let warnings = run\n+            .out\n+            .diagnostics\n+            .iter()\n+            .filter(|d| d.severity == Severity::Warning)\n+            .count();\n         let summary = match (&run.out.ontology, &run.profile) {\n             _ if run.code == 3 => engine_summary(&run.out),\n+            (Some(ontology), Some(profile)) if run.code == 0 && warnings > 0 => format!(\n+                \"ontology `{}`, profile `{profile}`, {} binding(s) checked online; {warnings} warning(s) found\",\n+                ontology.api_name, run.bindings\n+            ),\n             (Some(ontology), Some(profile)) if run.code == 0 => format!(\n                 \"ok: ontology `{}`, profile `{profile}`, {} binding(s) checked online\",\n                 ontology.api_name, run.bindings\n",
+    "stderr": ""
+  },
+  "phase03ManifestHistory": {
+    "command": "git",
+    "args": [
+      "log",
+      "--format=%h %s",
+      "e6d4823..1df4a7f",
+      "--",
+      "Cargo.toml",
+      "Cargo.lock",
+      "crates/ontoforge-storage/Cargo.toml",
+      "crates/ontoforge-auth/Cargo.toml",
+      "crates/ontoforge-expr/Cargo.toml",
+      "crates/ontoforge/Cargo.toml"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "baselineHeadSourceDiff": {
+    "command": "git",
+    "args": [
+      "diff",
+      "--name-only",
+      "f8851ca",
+      "HEAD",
+      "--",
+      "crates/ontoforge-storage",
+      "crates/ontoforge-auth",
+      "crates/ontoforge-expr",
+      "crates/ontoforge-query"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+}

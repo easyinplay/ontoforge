@@ -1,0 +1,13 @@
+{
+  "command": "node",
+  "args": [
+    "C:/Users/easyi/.codex/gsd-core/bin/gsd-tools.cjs",
+    "query",
+    "user-story.validate",
+    "--story",
+    "As a ontology 开发者, I want to 用 YAML/JSON 编写 ontology，并通过 `ontoforge validate` / `ontoforge lint` 得到带源码定位的诊断，且仓库在 Windows 本机 `cargo test` 全绿, so that 我能在本机可靠地编写和验证定义."
+  ],
+  "exit": 0,
+  "stdout": "{\n  \"valid\": true,\n  \"errors\": [],\n  \"slots\": {\n    \"role\": \"ontology 开发者\",\n    \"capability\": \"用 YAML/JSON 编写 ontology，并通过 `ontoforge validate` / `ontoforge lint` 得到带源码定位的诊断，且仓库在 Windows 本机 `cargo test` 全绿\",\n    \"outcome\": \"我能在本机可靠地编写和验证定义\"\n  }\n}",
+  "stderr": ""
+}

@@ -1,0 +1,42 @@
+[
+  {
+    "path": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-final.json",
+    "bytes": 19631,
+    "sha256": "3947bcf089a3641d0c0afa8bdf525ebd1974778e615c39150e977cad6ae4fc47"
+  },
+  {
+    "path": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-initial.json",
+    "bytes": 256,
+    "sha256": "586f42431fe318f0a5b9bea9a4e3a20a1d9e53cb735e469f3267c28fbd374d28"
+  },
+  {
+    "path": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-integration.log",
+    "bytes": 116188,
+    "sha256": "bdc51412697da080151c6b7f68e42f88c0e74bb21ecbfe67acc2fdaba23b449e"
+  },
+  {
+    "path": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-isolated-query-bench.log",
+    "bytes": 100182,
+    "sha256": "dbfefa449e95c858c9e9c11f3ef7690ae47b80dfbfa4a73c9a88d56a4828aa99"
+  },
+  {
+    "path": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-phase7-real-services.log",
+    "bytes": 71087,
+    "sha256": "5cad89dc1e75935cc5bdaa3ca82e5e1f4df06c81c56e7dc64425b0996820c727"
+  },
+  {
+    "path": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-progress.json",
+    "bytes": 19375,
+    "sha256": "97fe46cd57b7b24998274d2a8ce118eefe5bc46a51daf19c67a6c638aacb7151"
+  },
+  {
+    "path": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-ubuntu.log",
+    "bytes": 337902,
+    "sha256": "ae3d8ed246f84a5ba0ea323ee3a84311f76a8119e8deffeb7679da6161e723c8"
+  },
+  {
+    "path": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-windows.log",
+    "bytes": 341785,
+    "sha256": "243cf6436c9e9c7ca1b081cd0ce1df3ca486a25d7b678d10303e5ad9adda1753"
+  }
+]

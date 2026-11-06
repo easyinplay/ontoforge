@@ -1,0 +1,13 @@
+✔ required target with zero discovery cannot complete beside a passing target (60.8911ms)
+✔ duplicate execution identity cannot conceal a missing required target (58.1961ms)
+✔ explicitly named empty doctest harness is exempt and never counted successful (58.5932ms)
+✔ explicitly ignored documentation example remains excluded not nonignored success (55.9301ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 308.8785
+exit_code=0

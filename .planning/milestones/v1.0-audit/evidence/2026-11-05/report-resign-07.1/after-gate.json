@@ -1,0 +1,45 @@
+{
+  "recorded_at": "2026-11-05T10:59:16.591Z",
+  "status": {
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:/Users/easyi/.codex/gsd-core/bin/gsd-tools.cjs",
+      "query",
+      "verification.status",
+      ".planning/phases/07.1-source-cardinality-gap-closure"
+    ],
+    "exit_code": 0,
+    "stdout": "{\n  \"status\": \"passed\",\n  \"next_action\": \"Verification passed — continue.\",\n  \"next_command\": \"\",\n  \"route\": \"\"\n}",
+    "stderr": ""
+  },
+  "picked": {
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:/Users/easyi/.codex/gsd-core/bin/gsd-tools.cjs",
+      "query",
+      "verification.status",
+      ".planning/phases/07.1-source-cardinality-gap-closure",
+      "--pick",
+      "status"
+    ],
+    "exit_code": 0,
+    "stdout": "passed",
+    "stderr": ""
+  },
+  "coverage_before": 256,
+  "coverage_after": 269,
+  "removed": [],
+  "old_covered_input_drift_during_verification": [],
+  "report_sha256": "5d29883b4c0c06808e2e64689d2c51888ae4dd7b4455c59eae6c8226ff85cf13",
+  "head": "060019fe52005c6b85ae5c5f59da9868f464e579",
+  "git_status": {
+    "command": [
+      "git",
+      "status",
+      "--short"
+    ],
+    "exit_code": 0,
+    "stdout": " D .planning/HANDOFF.json\n M .planning/PROJECT.md\n M .planning/ROADMAP.md\n M .planning/STATE.md\n D .planning/milestones/v1.0-audit/.continue-here.md\n M .planning/milestones/v1.0-audit/INTEGRATION.md\n M .planning/milestones/v1.0-audit/REQUIREMENTS-AUDIT.md\n M .planning/milestones/v1.0-audit/findings.md\n M .planning/milestones/v1.0-audit/progress.md\n M .planning/milestones/v1.0-audit/requirements-matrix.json\n M .planning/milestones/v1.0-audit/task_plan.md\n M .planning/phases/07-rest-mcp-shell/07-VERIFICATION.md\n M .planning/phases/07.1-source-cardinality-gap-closure/07.1-VERIFICATION.md\n M .planning/v1.0-MILESTONE-AUDIT.md\n?? .planning/milestones/v1.0-audit/FINAL-REVERIFY.md\n?? .planning/milestones/v1.0-audit/FINAL-REVIEW.md\n?? .planning/milestones/v1.0-audit/SUMMARY.md\n?? .planning/milestones/v1.0-audit/VERIFICATION.md\n?? .planning/milestones/v1.0-audit/evidence/2026-11-05/\n?? .planning/phases/02-source-binding-engine/.review-diagnostics/\n?? .planning/phases/07-rest-mcp-shell/07-05-workspace-regression.log\n?? docs/README.md\n?? docs/foundry/\n?? docs/images/\n",
+    "stderr": ""
+  }
+}

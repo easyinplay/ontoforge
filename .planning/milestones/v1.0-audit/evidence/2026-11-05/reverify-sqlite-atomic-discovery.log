@@ -1,0 +1,105 @@
+started_utc=2026-11-05T08:51:34.9420662Z
+head=060019fe52005c6b85ae5c5f59da9868f464e579
+command=cargo test -p ontoforge-storage --features test-support --test conformance_sqlite --locked action_atomic_ -- --list
+CARGO_BUILD_JOBS=2
+CARGO_TARGET_DIR=C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105
+   Compiling syn v3.0.9
+   Compiling futures-sink v0.3.34
+   Compiling slab v0.4.12
+   Compiling futures-util v0.3.34
+   Compiling num-traits v0.2.19
+   Compiling synstructure v0.14.0
+   Compiling windows-sys v0.61.2
+   Compiling serde_derive v1.0.229
+   Compiling zerofrom-derive v0.1.8
+   Compiling serde v1.0.229
+   Compiling zerofrom v0.1.8
+   Compiling yoke-derive v0.8.4
+   Compiling zerovec-derive v0.11.7
+   Compiling yoke v0.8.4
+   Compiling displaydoc v0.2.7
+   Compiling zerovec v0.11.9
+   Compiling smallvec v1.16.4
+   Compiling zerotrie v0.2.5
+   Compiling tinystr v0.8.5
+   Compiling icu_locale_core v2.4.0
+   Compiling potential_utf v0.1.6
+   Compiling icu_collections v2.4.0
+   Compiling icu_provider v2.4.0
+   Compiling thiserror-impl v2.0.21
+   Compiling icu_properties v2.4.0
+   Compiling tokio-macros v2.7.2
+   Compiling serde_json v1.0.154
+   Compiling indexmap v2.14.2
+   Compiling tokio v1.54.1
+   Compiling icu_normalizer v2.4.0
+   Compiling parking_lot_core v0.9.12
+   Compiling chrono v0.4.45
+   Compiling parking_lot v0.12.5
+   Compiling idna_adapter v1.2.2
+   Compiling mio v1.2.4
+   Compiling socket2 v0.6.5
+   Compiling thiserror v2.0.21
+   Compiling idna v1.1.0
+   Compiling url v2.5.8
+   Compiling tokio-stream v0.1.19
+   Compiling futures-intrusive v0.5.0
+   Compiling either v1.19.0
+   Compiling futures-channel v0.3.34
+   Compiling sqlx-core v0.9.0
+   Compiling flume v0.12.0
+   Compiling futures-executor v0.3.34
+   Compiling regex-automata v0.4.18
+   Compiling rand v0.10.3
+   Compiling etcetera v0.11.0
+   Compiling sqlx-postgres v0.9.0
+   Compiling sqlx-sqlite v0.9.0
+   Compiling ref-cast-impl v1.0.27
+   Compiling atoi v2.0.0
+   Compiling serde_derive_internals v0.30.0
+   Compiling anstyle v1.0.14
+   Compiling annotate-snippets v0.12.17
+   Compiling hyper v1.12.0
+   Compiling granit-parser v2.0.0
+   Compiling schemars_derive v1.2.3
+   Compiling ref-cast v1.0.27
+   Compiling chrono-tz v0.10.4
+   Compiling sqlx-macros-core v0.9.0
+   Compiling regex v1.13.1
+   Compiling schemars v1.2.3
+   Compiling tower v0.5.3
+   Compiling hyper-util v0.1.21
+   Compiling serde-saphyr v2.0.0
+   Compiling globset v0.4.21
+   Compiling sqlx-macros v0.9.0
+   Compiling tokio-rustls v0.26.6
+   Compiling uuid v1.29.0
+   Compiling antlr4rust v0.6.0
+   Compiling ontoforge-schema v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-schema)
+   Compiling hyper-rustls v0.27.10
+   Compiling sqlx v0.9.0
+   Compiling tower-http v0.6.11
+   Compiling sqlparser_derive v0.6.0
+   Compiling cel v0.15.0
+   Compiling sqlparser v0.63.0
+   Compiling reqwest v0.13.5
+   Compiling jsonwebtoken v11.1.0
+   Compiling ontoforge-expr v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-expr)
+   Compiling sea-query v1.0.2
+   Compiling sea-query-sqlx v0.9.1
+   Compiling ontoforge-engine v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-engine)
+   Compiling ontoforge-auth v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-auth)
+   Compiling proptest v1.12.0
+   Compiling insta v1.49.0
+   Compiling ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+    Finished `test` profile [unoptimized] target(s) in 1m 24s
+     Running tests\conformance_sqlite.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\conformance_sqlite-22287a7e012d662f.exe)
+action_atomic_after_command_failure: test
+action_atomic_after_edits_failure: test
+action_atomic_after_log_failure: test
+action_atomic_after_outbox_failure: test
+action_atomic_success_changes_all_domains_once: test
+
+5 tests, 0 benchmarks
+exit_code=0
+ended_utc=2026-11-05T08:53:01.1720848Z

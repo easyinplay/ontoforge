@@ -1,0 +1,4544 @@
+{
+  "generated_at": "2026-11-05T08:59:32.556Z",
+  "run": 41994479295,
+  "head": "060019fe52005c6b85ae5c5f59da9868f464e579",
+  "note": "Per-invocation counts, not unique tests. Workspace, later target reruns, integration and platforms must not be summed as a unique total. Original logs are read-only; timestamps and ANSI removed only in parser memory.",
+  "jobs": [
+    {
+      "file": "ci-41994479295-integration.log",
+      "sha256": "bdc51412697da080151c6b7f68e42f88c0e74bb21ecbfe67acc2fdaba23b449e",
+      "bytes": 116188,
+      "raw_ansi_preserved": true,
+      "head_present": true,
+      "lines": 1495,
+      "steps": [
+        {
+          "command": "cargo test -p ontoforge-storage --locked --test conformance_pg --test reload_pg --test scope_store --test migrate_pg --test history_masking --test import -- --ignored",
+          "line": 554,
+          "targets": [
+            {
+              "target": "Running tests/conformance_pg.rs (target/debug/deps/conformance_pg-b7239af1cdb261b2)",
+              "announced": 45,
+              "line": 625,
+              "status": "ok",
+              "passed": 45,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/history_masking.rs (target/debug/deps/history_masking-19aae83e6d158689)",
+              "announced": 1,
+              "line": 632,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 12
+            },
+            {
+              "target": "Running tests/import.rs (target/debug/deps/import-884a30f79b256691)",
+              "announced": 2,
+              "line": 640,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 16
+            },
+            {
+              "target": "Running tests/migrate_pg.rs (target/debug/deps/migrate_pg-2147b408954aa050)",
+              "announced": 4,
+              "line": 650,
+              "status": "ok",
+              "passed": 4,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/reload_pg.rs (target/debug/deps/reload_pg-1e8b78b22fce35f5)",
+              "announced": 11,
+              "line": 668,
+              "status": "ok",
+              "passed": 11,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/scope_store.rs (target/debug/deps/scope_store-cad1bee945540038)",
+              "announced": 3,
+              "line": 676,
+              "status": "ok",
+              "passed": 3,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 12
+            }
+          ],
+          "node": [],
+          "totals": {
+            "passed": 66,
+            "failed": 0,
+            "ignored": 0,
+            "filtered": 40
+          }
+        },
+        {
+          "command": "set -euo pipefail",
+          "line": 678,
+          "targets": [
+            {
+              "target": "Running tests/conformance_pg.rs (target/debug/deps/conformance_pg-b7239af1cdb261b2)",
+              "announced": 9,
+              "line": 719,
+              "status": "ok",
+              "passed": 9,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 36
+            }
+          ],
+          "node": [],
+          "totals": {
+            "passed": 9,
+            "failed": 0,
+            "ignored": 0,
+            "filtered": 36
+          }
+        },
+        {
+          "command": "set -euo pipefail",
+          "line": 721,
+          "targets": [
+            {
+              "target": "Running tests/conformance_pg.rs (target/debug/deps/conformance_pg-e5ba453e8b706e0d)",
+              "announced": 5,
+              "line": 764,
+              "status": "ok",
+              "passed": 5,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 45
+            },
+            {
+              "target": "Running tests/action_pg.rs (target/debug/deps/action_pg-c8d3ab2cee71bb5b)",
+              "announced": 4,
+              "line": 785,
+              "status": "ok",
+              "passed": 4,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/idempotency_pg.rs (target/debug/deps/idempotency_pg-747a50556352001f)",
+              "announced": 6,
+              "line": 802,
+              "status": "ok",
+              "passed": 6,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/outbox_pg.rs (target/debug/deps/outbox_pg-d0ae3442197aafdd)",
+              "announced": 2,
+              "line": 817,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            }
+          ],
+          "node": [],
+          "totals": {
+            "passed": 17,
+            "failed": 0,
+            "ignored": 0,
+            "filtered": 45
+          }
+        },
+        {
+          "command": "set -euo pipefail",
+          "line": 819,
+          "targets": [
+            {
+              "target": "Running tests/source.rs (target/debug/deps/source-5cac9b2c93598058)",
+              "announced": 1,
+              "line": 848,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 11
+            }
+          ],
+          "node": [],
+          "totals": {
+            "passed": 1,
+            "failed": 0,
+            "ignored": 0,
+            "filtered": 11
+          }
+        },
+        {
+          "command": "set -euo pipefail",
+          "line": 950,
+          "targets": [
+            {
+              "target": "Running tests/trino_l2_acl_it.rs (target/debug/deps/trino_l2_acl_it-a419d58e25d7c900)",
+              "announced": 6,
+              "line": 1020,
+              "status": "ok",
+              "passed": 6,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            }
+          ],
+          "node": [],
+          "totals": {
+            "passed": 6,
+            "failed": 0,
+            "ignored": 0,
+            "filtered": 0
+          }
+        },
+        {
+          "command": "cargo test -p ontoforge-engine --test trino_it --locked -- --ignored",
+          "line": 1022,
+          "targets": [
+            {
+              "target": "Running tests/trino_it.rs (target/debug/deps/trino_it-1b4aa6fb92201485)",
+              "announced": 9,
+              "line": 1053,
+              "status": "ok",
+              "passed": 9,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 2
+            }
+          ],
+          "node": [],
+          "totals": {
+            "passed": 9,
+            "failed": 0,
+            "ignored": 0,
+            "filtered": 2
+          }
+        },
+        {
+          "command": "cargo test -p ontoforge --test cli_trino_it --locked -- --ignored",
+          "line": 1055,
+          "targets": [
+            {
+              "target": "Running tests/cli_trino_it.rs (target/debug/deps/cli_trino_it-4518dc188915b177)",
+              "announced": 4,
+              "line": 1090,
+              "status": "ok",
+              "passed": 4,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 3
+            }
+          ],
+          "node": [],
+          "totals": {
+            "passed": 4,
+            "failed": 0,
+            "ignored": 0,
+            "filtered": 3
+          }
+        },
+        {
+          "command": "cargo test -p ontoforge-auth --locked --test rowpred_trino_it -- --ignored",
+          "line": 1092,
+          "targets": [
+            {
+              "target": "Running tests/rowpred_trino_it.rs (target/debug/deps/rowpred_trino_it-735d3873224fd6be)",
+              "announced": 3,
+              "line": 1120,
+              "status": "ok",
+              "passed": 3,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 1
+            }
+          ],
+          "node": [],
+          "totals": {
+            "passed": 3,
+            "failed": 0,
+            "ignored": 0,
+            "filtered": 1
+          }
+        },
+        {
+          "command": "cargo test -p ontoforge-storage --locked --test reload_trino_it -- --ignored --test-threads=1",
+          "line": 1122,
+          "targets": [
+            {
+              "target": "Running tests/reload_trino_it.rs (target/debug/deps/reload_trino_it-c76e201474e5ec53)",
+              "announced": 3,
+              "line": 1147,
+              "status": "ok",
+              "passed": 3,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            }
+          ],
+          "node": [],
+          "totals": {
+            "passed": 3,
+            "failed": 0,
+            "ignored": 0,
+            "filtered": 0
+          }
+        },
+        {
+          "command": "cargo test -p ontoforge-storage --test query_read_pg --locked -- --ignored --test-threads=1",
+          "line": 1149,
+          "targets": [
+            {
+              "target": "Running tests/query_read_pg.rs (target/debug/deps/query_read_pg-dacf0acf66711ef6)",
+              "announced": 2,
+              "line": 1172,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            }
+          ],
+          "node": [],
+          "totals": {
+            "passed": 2,
+            "failed": 0,
+            "ignored": 0,
+            "filtered": 0
+          }
+        },
+        {
+          "command": "cargo test -p ontoforge-query --test trino_query_it --locked -- --ignored --test-threads=1",
+          "line": 1174,
+          "targets": [
+            {
+              "target": "Running tests/trino_query_it.rs (target/debug/deps/trino_query_it-dd0a686b643c9465)",
+              "announced": 5,
+              "line": 1205,
+              "status": "ok",
+              "passed": 5,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 1
+            }
+          ],
+          "node": [],
+          "totals": {
+            "passed": 5,
+            "failed": 0,
+            "ignored": 0,
+            "filtered": 1
+          }
+        },
+        {
+          "command": "cargo test -p ontoforge-query --test query_bench_it --locked -- --ignored --test-threads=1",
+          "line": 1207,
+          "targets": [
+            {
+              "target": "Running tests/query_bench_it.rs (target/debug/deps/query_bench_it-816701f1ff39b912)",
+              "announced": 1,
+              "line": 1232,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 2
+            }
+          ],
+          "node": [],
+          "totals": {
+            "passed": 1,
+            "failed": 0,
+            "ignored": 0,
+            "filtered": 2
+          }
+        },
+        {
+          "command": "set -euo pipefail",
+          "line": 1234,
+          "targets": [
+            {
+              "target": "Running tests/trino_action_it.rs (target/debug/deps/trino_action_it-d68c5565976494ca)",
+              "announced": 4,
+              "line": 1270,
+              "status": "ok",
+              "passed": 4,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 1
+            }
+          ],
+          "node": [],
+          "totals": {
+            "passed": 4,
+            "failed": 0,
+            "ignored": 0,
+            "filtered": 1
+          }
+        }
+      ],
+      "discovery": [
+        {
+          "line": 701,
+          "text": "postgres-audit: 9 ignored tests discovered at 060019fe52005c6b85ae5c5f59da9868f464e579",
+          "count": 9
+        },
+        {
+          "line": 753,
+          "text": "action-atomicity: 5 ignored tests discovered",
+          "count": 5
+        },
+        {
+          "line": 775,
+          "text": "action-same-pk: 4 ignored tests discovered",
+          "count": 4
+        },
+        {
+          "line": 790,
+          "text": "action-idempotency: 6 ignored tests discovered",
+          "count": 6
+        },
+        {
+          "line": 809,
+          "text": "action-webhook-pg: 2 ignored tests discovered",
+          "count": 2
+        },
+        {
+          "line": 976,
+          "text": "trino_l2_acl_it: 6 ignored tests discovered at 060019fe52005c6b85ae5c5f59da9868f464e579",
+          "count": 6
+        },
+        {
+          "line": 1260,
+          "text": "trino_action_it: 4 ignored tests discovered",
+          "count": 4
+        }
+      ],
+      "bench": [],
+      "python": [],
+      "errors": []
+    },
+    {
+      "file": "ci-41994479295-isolated-query-bench.log",
+      "sha256": "dbfefa449e95c858c9e9c11f3ef7690ae47b80dfbfa4a73c9a88d56a4828aa99",
+      "bytes": 100182,
+      "raw_ansi_preserved": true,
+      "head_present": true,
+      "lines": 1331,
+      "steps": [
+        {
+          "command": "cargo test -p ontoforge-query --test query_bench_it --locked -- --ignored --test-threads=1 --nocapture",
+          "line": 600,
+          "targets": [
+            {
+              "target": "Running tests/query_bench_it.rs (target/debug/deps/query_bench_it-816701f1ff39b912)",
+              "announced": 1,
+              "line": 1180,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 2
+            }
+          ],
+          "node": [],
+          "totals": {
+            "passed": 1,
+            "failed": 0,
+            "ignored": 0,
+            "filtered": 2
+          }
+        }
+      ],
+      "discovery": [],
+      "bench": [
+        {
+          "line": 1174,
+          "text": "source_pk: p95=Some(107.64879099999999)ms threshold=500ms passed=true"
+        },
+        {
+          "line": 1175,
+          "text": "filtered_list_page: p95=Some(472.588841)ms threshold=1000ms passed=true"
+        },
+        {
+          "line": 1176,
+          "text": "aggregate: p95=Some(407.73213499999997)ms threshold=1500ms passed=true"
+        },
+        {
+          "line": 1177,
+          "text": "edited_pg_direct_pk: p95=Some(1.1279739999999998)ms threshold=50ms passed=true"
+        }
+      ],
+      "python": [],
+      "errors": []
+    },
+    {
+      "file": "ci-41994479295-phase7-real-services.log",
+      "sha256": "5cad89dc1e75935cc5bdaa3ca82e5e1f4df06c81c56e7dc64425b0996820c727",
+      "bytes": 71087,
+      "raw_ansi_preserved": true,
+      "head_present": true,
+      "lines": 889,
+      "steps": [
+        {
+          "command": "bash ci/server-services.sh verify",
+          "line": 425,
+          "targets": [
+            {
+              "target": "Running tests/postgres_http_it.rs (target/debug/deps/postgres_http_it-122bb4634faff3b0)",
+              "announced": 4,
+              "line": 606,
+              "status": "ok",
+              "passed": 4,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/source_drift_trino_it.rs (target/debug/deps/source_drift_trino_it-ea9bb66ce4b7deb1)",
+              "announced": 2,
+              "line": 618,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/request_snapshot.rs (target/debug/deps/request_snapshot-2615e302592ffb7a)",
+              "announced": 1,
+              "line": 633,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 2
+            },
+            {
+              "target": "Running tests/trino_http_it.rs (target/debug/deps/trino_http_it-de14eac7b86d7c80)",
+              "announced": 2,
+              "line": 645,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/health_trino_it.rs (target/debug/deps/health_trino_it-3b32b0813b323298)",
+              "announced": 2,
+              "line": 657,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/trino_l2_acl_it.rs (target/debug/deps/trino_l2_acl_it-a419d58e25d7c900)",
+              "announced": 6,
+              "line": 706,
+              "status": "ok",
+              "passed": 6,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/contract.rs (target/debug/deps/contract-f1b278f81762e226)",
+              "announced": 9,
+              "line": 731,
+              "status": "ok",
+              "passed": 9,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            }
+          ],
+          "node": [
+            {
+              "line": 793,
+              "text": "ℹ tests 17"
+            },
+            {
+              "line": 795,
+              "text": "ℹ pass 17"
+            },
+            {
+              "line": 796,
+              "text": "ℹ fail 0"
+            },
+            {
+              "line": 797,
+              "text": "ℹ cancelled 0"
+            },
+            {
+              "line": 798,
+              "text": "ℹ skipped 0"
+            },
+            {
+              "line": 799,
+              "text": "ℹ todo 0"
+            }
+          ],
+          "totals": {
+            "passed": 26,
+            "failed": 0,
+            "ignored": 0,
+            "filtered": 2
+          }
+        }
+      ],
+      "discovery": [],
+      "bench": [],
+      "python": [],
+      "errors": []
+    },
+    {
+      "file": "ci-41994479295-ubuntu.log",
+      "sha256": "ae3d8ed246f84a5ba0ea323ee3a84311f76a8119e8deffeb7679da6161e723c8",
+      "bytes": 337902,
+      "raw_ansi_preserved": true,
+      "head_present": true,
+      "lines": 4244,
+      "steps": [
+        {
+          "command": "python -B -m unittest discover -s ci -p test_tls_deps.py -v",
+          "line": 441,
+          "targets": [],
+          "node": [],
+          "totals": {
+            "passed": 0,
+            "failed": 0,
+            "ignored": 0,
+            "filtered": 0
+          }
+        },
+        {
+          "command": "bash ci/check-tls-deps.sh",
+          "line": 464,
+          "targets": [],
+          "node": [],
+          "totals": {
+            "passed": 0,
+            "failed": 0,
+            "ignored": 0,
+            "filtered": 0
+          }
+        },
+        {
+          "command": "cargo test --workspace --locked -- --test-threads=1",
+          "line": 1041,
+          "targets": [
+            {
+              "target": "Running unittests src/lib.rs (target/debug/deps/ontoforge-7db74a789e67af14)",
+              "announced": 25,
+              "line": 1302,
+              "status": "ok",
+              "passed": 25,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running unittests src/main.rs (target/debug/deps/ontoforge-f297a626fb0e5200)",
+              "announced": 0,
+              "line": 1308,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/cli.rs (target/debug/deps/cli-7e962d69593dfe36)",
+              "announced": 8,
+              "line": 1322,
+              "status": "ok",
+              "passed": 8,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/cli_check_cardinality.rs (target/debug/deps/cli_check_cardinality-0d3a5732b9f06d7c)",
+              "announced": 13,
+              "line": 1341,
+              "status": "ok",
+              "passed": 13,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/cli_check_pk.rs (target/debug/deps/cli_check_pk-1618accc54f532ea)",
+              "announced": 8,
+              "line": 1355,
+              "status": "ok",
+              "passed": 8,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/cli_color.rs (target/debug/deps/cli_color-e4f5d43a4fea4610)",
+              "announced": 1,
+              "line": 1362,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/cli_dev_token.rs (target/debug/deps/cli_dev_token-d1a4a9bd837fc41b)",
+              "announced": 12,
+              "line": 1381,
+              "status": "ok",
+              "passed": 12,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/cli_import.rs (target/debug/deps/cli_import-0c187fb203062c84)",
+              "announced": 8,
+              "line": 1394,
+              "status": "ok",
+              "passed": 8,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/cli_l2_identity.rs (target/debug/deps/cli_l2_identity-5ca8ad590ddc8723)",
+              "announced": 11,
+              "line": 1411,
+              "status": "ok",
+              "passed": 11,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/cli_lint.rs (target/debug/deps/cli_lint-6c467c8eb0904e17)",
+              "announced": 17,
+              "line": 1434,
+              "status": "ok",
+              "passed": 17,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/cli_migrate.rs (target/debug/deps/cli_migrate-11dec55d3e2fd971)",
+              "announced": 10,
+              "line": 1450,
+              "status": "ok",
+              "passed": 10,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/cli_online.rs (target/debug/deps/cli_online-564330e459410bc5)",
+              "announced": 12,
+              "line": 1469,
+              "status": "ok",
+              "passed": 12,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/cli_online_trino.rs (target/debug/deps/cli_online_trino-83cc9ee0e2944c22)",
+              "announced": 15,
+              "line": 1489,
+              "status": "ok",
+              "passed": 15,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/cli_reload.rs (target/debug/deps/cli_reload-1333ba2fa773745b)",
+              "announced": 8,
+              "line": 1503,
+              "status": "ok",
+              "passed": 8,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/cli_schema.rs (target/debug/deps/cli_schema-366a14309f3e1b87)",
+              "announced": 4,
+              "line": 1513,
+              "status": "ok",
+              "passed": 4,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/cli_scope.rs (target/debug/deps/cli_scope-8445a7efb1f7f4e3)",
+              "announced": 8,
+              "line": 1527,
+              "status": "ok",
+              "passed": 8,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/cli_shutdown.rs (target/debug/deps/cli_shutdown-3919981841735516)",
+              "announced": 9,
+              "line": 1542,
+              "status": "ok",
+              "passed": 9,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/cli_stdio.rs (target/debug/deps/cli_stdio-88dfde40a9c83156)",
+              "announced": 11,
+              "line": 1559,
+              "status": "ok",
+              "passed": 11,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/cli_trino_it.rs (target/debug/deps/cli_trino_it-1e8c1ba14e7dc028)",
+              "announced": 7,
+              "line": 1573,
+              "status": "ok",
+              "passed": 3,
+              "failed": 0,
+              "ignored": 4,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/cli_webhook_worker.rs (target/debug/deps/cli_webhook_worker-2a7c01a24c3484df)",
+              "announced": 3,
+              "line": 1581,
+              "status": "ok",
+              "passed": 3,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/dev_lifecycle.rs (target/debug/deps/dev_lifecycle-77b5231bb72a55b1)",
+              "announced": 12,
+              "line": 1599,
+              "status": "ok",
+              "passed": 12,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/invalid_examples.rs (target/debug/deps/invalid_examples-5354b57f413a270f)",
+              "announced": 1,
+              "line": 1606,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/private_fixtures.rs (target/debug/deps/private_fixtures-df46605575d3c3f0)",
+              "announced": 3,
+              "line": 1615,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 1,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running unittests src/lib.rs (target/debug/deps/ontoforge_action-359897a74362fec4)",
+              "announced": 4,
+              "line": 1625,
+              "status": "ok",
+              "passed": 4,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/action.rs (target/debug/deps/action-270a83922d0cb819)",
+              "announced": 6,
+              "line": 1637,
+              "status": "ok",
+              "passed": 6,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/action_pg.rs (target/debug/deps/action_pg-9aa6a04a5305b736)",
+              "announced": 0,
+              "line": 1643,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/entrypoints.rs (target/debug/deps/entrypoints-b6ae1f0dd09d266e)",
+              "announced": 4,
+              "line": 1653,
+              "status": "ok",
+              "passed": 4,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/frozen_definition.rs (target/debug/deps/frozen_definition-6785b63c5d26dff2)",
+              "announced": 3,
+              "line": 1662,
+              "status": "ok",
+              "passed": 3,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/idempotency.rs (target/debug/deps/idempotency-7ee69b8444b6b4b9)",
+              "announced": 9,
+              "line": 1677,
+              "status": "ok",
+              "passed": 9,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/idempotency_pg.rs (target/debug/deps/idempotency_pg-bce47d12b17a5300)",
+              "announced": 0,
+              "line": 1683,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/outbox.rs (target/debug/deps/outbox-ef4b8cd140fcbcc5)",
+              "announced": 11,
+              "line": 1700,
+              "status": "ok",
+              "passed": 11,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/outbox_pg.rs (target/debug/deps/outbox_pg-d5603870137b279b)",
+              "announced": 2,
+              "line": 1708,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 2,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/security.rs (target/debug/deps/security-ad7f32bf6c7ca20c)",
+              "announced": 10,
+              "line": 1724,
+              "status": "ok",
+              "passed": 10,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/source.rs (target/debug/deps/source-58def03c4d289113)",
+              "announced": 11,
+              "line": 1741,
+              "status": "ok",
+              "passed": 11,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/trino_action_it.rs (target/debug/deps/trino_action_it-ef077dd296f80def)",
+              "announced": 5,
+              "line": 1752,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 4,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/version.rs (target/debug/deps/version-e8a45a3a46baf004)",
+              "announced": 5,
+              "line": 1763,
+              "status": "ok",
+              "passed": 5,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running unittests src/lib.rs (target/debug/deps/ontoforge_api-3f5984bb45a0c2c4)",
+              "announced": 1,
+              "line": 1770,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/openapi_snapshot.rs (target/debug/deps/openapi_snapshot-b771a474d619862b)",
+              "announced": 8,
+              "line": 1784,
+              "status": "ok",
+              "passed": 8,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running unittests src/lib.rs (target/debug/deps/ontoforge_auth-03209117eb059fc2)",
+              "announced": 3,
+              "line": 1793,
+              "status": "ok",
+              "passed": 3,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/criteria_coverage.rs (target/debug/deps/criteria_coverage-3969bee12e721db8)",
+              "announced": 6,
+              "line": 1805,
+              "status": "ok",
+              "passed": 6,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/crypto_backend.rs (target/debug/deps/crypto_backend-ca83804714700e92)",
+              "announced": 1,
+              "line": 1812,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/dev_token.rs (target/debug/deps/dev_token-5ef676f2c5dde5e8)",
+              "announced": 17,
+              "line": 1835,
+              "status": "ok",
+              "passed": 17,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/oidc.rs (target/debug/deps/oidc-1c1d4d2c6f71ce59)",
+              "announced": 31,
+              "line": 1872,
+              "status": "ok",
+              "passed": 31,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/rowpred_diff.rs (target/debug/deps/rowpred_diff-7ec4366a6bbfb6e2)",
+              "announced": 6,
+              "line": 1884,
+              "status": "ok",
+              "passed": 6,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/rowpred_trino_it.rs (target/debug/deps/rowpred_trino_it-8826ea2a9b94086d)",
+              "announced": 4,
+              "line": 1894,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 3,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/scope_compile.rs (target/debug/deps/scope_compile-653a5092dc6368ae)",
+              "announced": 21,
+              "line": 1921,
+              "status": "ok",
+              "passed": 21,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/scope_merge.rs (target/debug/deps/scope_merge-f6cae87a2f447b39)",
+              "announced": 9,
+              "line": 1936,
+              "status": "ok",
+              "passed": 9,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running unittests src/lib.rs (target/debug/deps/ontoforge_client-9d1292d9536796d6)",
+              "announced": 6,
+              "line": 1948,
+              "status": "ok",
+              "passed": 6,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/contract.rs (target/debug/deps/contract-d6befc4dd222c9cd)",
+              "announced": 9,
+              "line": 1963,
+              "status": "ok",
+              "passed": 9,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/error_diagnostics.rs (target/debug/deps/error_diagnostics-7f3f463d84466ad4)",
+              "announced": 4,
+              "line": 1973,
+              "status": "ok",
+              "passed": 4,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running unittests src/lib.rs (target/debug/deps/ontoforge_engine-a697011c1a4229f4)",
+              "announced": 56,
+              "line": 2035,
+              "status": "ok",
+              "passed": 56,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/bind_check_isolation.rs (target/debug/deps/bind_check_isolation-ce9a1f589d414c4e)",
+              "announced": 2,
+              "line": 2043,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/cardinality_check.rs (target/debug/deps/cardinality_check-c67db4a890b033f4)",
+              "announced": 11,
+              "line": 2060,
+              "status": "ok",
+              "passed": 11,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/doc_type_table.rs (target/debug/deps/doc_type_table-6ce5cd67780cb61d)",
+              "announced": 2,
+              "line": 2068,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/drift.rs (target/debug/deps/drift-02b56767ca42815d)",
+              "announced": 8,
+              "line": 2082,
+              "status": "ok",
+              "passed": 8,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/drift_budget.rs (target/debug/deps/drift_budget-ed9b208d5477e93a)",
+              "announced": 2,
+              "line": 2090,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/l2_explain.rs (target/debug/deps/l2_explain-5176a1e0f275d490)",
+              "announced": 2,
+              "line": 2098,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/l2_gate.rs (target/debug/deps/l2_gate-e01168f1d254a25f)",
+              "announced": 16,
+              "line": 2120,
+              "status": "ok",
+              "passed": 16,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/l2_health.rs (target/debug/deps/l2_health-31aba7f5e2ce3817)",
+              "announced": 10,
+              "line": 2137,
+              "status": "ok",
+              "passed": 10,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/l2_monitor.rs (target/debug/deps/l2_monitor-d35fe8bf9f537104)",
+              "announced": 19,
+              "line": 2161,
+              "status": "ok",
+              "passed": 19,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/pk_check.rs (target/debug/deps/pk_check-b38dd74a7886d3f0)",
+              "announced": 6,
+              "line": 2173,
+              "status": "ok",
+              "passed": 6,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/printer_literals.rs (target/debug/deps/printer_literals-6c62b5686b3ffb24)",
+              "announced": 8,
+              "line": 2187,
+              "status": "ok",
+              "passed": 8,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/printer_prop.rs (target/debug/deps/printer_prop-b22ec1d63036d83a)",
+              "announced": 6,
+              "line": 2199,
+              "status": "ok",
+              "passed": 6,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/server_config.rs (target/debug/deps/server_config-cbb7c00256703fe6)",
+              "announced": 35,
+              "line": 2240,
+              "status": "ok",
+              "passed": 35,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/sql_text_only_from_printer.rs (target/debug/deps/sql_text_only_from_printer-c4ade72a3236d343)",
+              "announced": 1,
+              "line": 2247,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/sqlite_engine.rs (target/debug/deps/sqlite_engine-2d4b7638f5ab927a)",
+              "announced": 28,
+              "line": 2281,
+              "status": "ok",
+              "passed": 28,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/trino_client.rs (target/debug/deps/trino_client-30b0cf84fdb89556)",
+              "announced": 23,
+              "line": 2310,
+              "status": "ok",
+              "passed": 23,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/trino_it.rs (target/debug/deps/trino_it-8497101654cbc6d3)",
+              "announced": 11,
+              "line": 2327,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 9,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/trino_l2_acl_it.rs (target/debug/deps/trino_l2_acl_it-a488641aeb3d5967)",
+              "announced": 6,
+              "line": 2339,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 6,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/trino_resilience.rs (target/debug/deps/trino_resilience-bfbd2c74013b9ab0)",
+              "announced": 31,
+              "line": 2376,
+              "status": "ok",
+              "passed": 31,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running unittests src/lib.rs (target/debug/deps/ontoforge_expr-61428d1604948b75)",
+              "announced": 3,
+              "line": 2385,
+              "status": "ok",
+              "passed": 3,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/analyze.rs (target/debug/deps/analyze-77af435a6c74a52c)",
+              "announced": 21,
+              "line": 2412,
+              "status": "ok",
+              "passed": 21,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/criteria.rs (target/debug/deps/criteria-dc77eadfcb96c4c5)",
+              "announced": 20,
+              "line": 2439,
+              "status": "ok",
+              "passed": 20,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/rowpred_eval.rs (target/debug/deps/rowpred_eval-a19f05ad16ad1254)",
+              "announced": 14,
+              "line": 2458,
+              "status": "ok",
+              "passed": 14,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/rowpred_subset.rs (target/debug/deps/rowpred_subset-45b5eb82b3d5c313)",
+              "announced": 13,
+              "line": 2477,
+              "status": "ok",
+              "passed": 13,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running unittests src/lib.rs (target/debug/deps/ontoforge_query-1cfd7add4aa4dfb7)",
+              "announced": 5,
+              "line": 2488,
+              "status": "ok",
+              "passed": 5,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/aggregate.rs (target/debug/deps/aggregate-ec557023031797ea)",
+              "announced": 7,
+              "line": 2501,
+              "status": "ok",
+              "passed": 7,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/audit_l0.rs (target/debug/deps/audit_l0-a3eefde025eaa423)",
+              "announced": 10,
+              "line": 2517,
+              "status": "ok",
+              "passed": 9,
+              "failed": 0,
+              "ignored": 1,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/audit_pk.rs (target/debug/deps/audit_pk-fdc71e112d4ce425)",
+              "announced": 13,
+              "line": 2536,
+              "status": "ok",
+              "passed": 13,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/definition_snapshot.rs (target/debug/deps/definition_snapshot-612bc914f5250f3d)",
+              "announced": 2,
+              "line": 2544,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/l2_discovery.rs (target/debug/deps/l2_discovery-cdb732b2e803ea04)",
+              "announced": 9,
+              "line": 2559,
+              "status": "ok",
+              "passed": 9,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/l2_execute.rs (target/debug/deps/l2_execute-d2e545b747315e88)",
+              "announced": 15,
+              "line": 2580,
+              "status": "ok",
+              "passed": 15,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/overlay_prop.rs (target/debug/deps/overlay_prop-6345232e8c2ed4a6)",
+              "announced": 11,
+              "line": 2597,
+              "status": "ok",
+              "passed": 11,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/pk_read.rs (target/debug/deps/pk_read-839d2bdf57c6027f)",
+              "announced": 11,
+              "line": 2614,
+              "status": "ok",
+              "passed": 11,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/query_bench_it.rs (target/debug/deps/query_bench_it-dd1d8b955b72272c)",
+              "announced": 3,
+              "line": 2623,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 1,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/search_around.rs (target/debug/deps/search_around-8ea54fb764f0bcf9)",
+              "announced": 6,
+              "line": 2635,
+              "status": "ok",
+              "passed": 6,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/security.rs (target/debug/deps/security-f5c4f7668191fb7d)",
+              "announced": 23,
+              "line": 2664,
+              "status": "ok",
+              "passed": 23,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/set_ops.rs (target/debug/deps/set_ops-44431f16b8a3644e)",
+              "announced": 5,
+              "line": 2675,
+              "status": "ok",
+              "passed": 5,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/sql_shape.rs (target/debug/deps/sql_shape-a630d97ce2455975)",
+              "announced": 6,
+              "line": 2687,
+              "status": "ok",
+              "passed": 6,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/sqlite_query.rs (target/debug/deps/sqlite_query-dd645a8bd86bc73d)",
+              "announced": 10,
+              "line": 2703,
+              "status": "ok",
+              "passed": 10,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/trino_query_it.rs (target/debug/deps/trino_query_it-3db34e5cb87c8a21)",
+              "announced": 6,
+              "line": 2715,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 5,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running unittests src/lib.rs (target/debug/deps/ontoforge_schema-7fc483840ed64f7e)",
+              "announced": 140,
+              "line": 2861,
+              "status": "ok",
+              "passed": 140,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/action_types.rs (target/debug/deps/action_types-3ea9609a3de6839f)",
+              "announced": 28,
+              "line": 2895,
+              "status": "ok",
+              "passed": 28,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/bindings.rs (target/debug/deps/bindings-7006f751fa9b72ba)",
+              "announced": 33,
+              "line": 2934,
+              "status": "ok",
+              "passed": 33,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/diagnostics.rs (target/debug/deps/diagnostics-23df60453e67289d)",
+              "announced": 16,
+              "line": 2956,
+              "status": "ok",
+              "passed": 16,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/link_types.rs (target/debug/deps/link_types-10584c87e5e084ca)",
+              "announced": 21,
+              "line": 2983,
+              "status": "ok",
+              "passed": 21,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/lint_examples.rs (target/debug/deps/lint_examples-6416dc7a7085dbc9)",
+              "announced": 1,
+              "line": 2990,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/load_examples.rs (target/debug/deps/load_examples-2d7b34392b8f1819)",
+              "announced": 6,
+              "line": 3002,
+              "status": "ok",
+              "passed": 6,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/loader.rs (target/debug/deps/loader-4466207b446c9b09)",
+              "announced": 34,
+              "line": 3042,
+              "status": "ok",
+              "passed": 34,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/object_types.rs (target/debug/deps/object_types-e12fc2795fa2174b)",
+              "announced": 21,
+              "line": 3069,
+              "status": "ok",
+              "passed": 21,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/schema_export.rs (target/debug/deps/schema_export-d19ab8248b3503ca)",
+              "announced": 14,
+              "line": 3089,
+              "status": "ok",
+              "passed": 14,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/scope_documents.rs (target/debug/deps/scope_documents-6368abe494f29a25)",
+              "announced": 16,
+              "line": 3111,
+              "status": "ok",
+              "passed": 16,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running unittests src/lib.rs (target/debug/deps/ontoforge_server-2ff903123c4e1c6b)",
+              "announced": 25,
+              "line": 3142,
+              "status": "ok",
+              "passed": 25,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/action_source_budget.rs (target/debug/deps/action_source_budget-e63357476117b1a5)",
+              "announced": 5,
+              "line": 3153,
+              "status": "ok",
+              "passed": 5,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/health_lifecycle_it.rs (target/debug/deps/health_lifecycle_it-8f33d14f64067a96)",
+              "announced": 4,
+              "line": 3163,
+              "status": "ok",
+              "passed": 4,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/health_trino_it.rs (target/debug/deps/health_trino_it-77ef9bb390986e38)",
+              "announced": 2,
+              "line": 3171,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 2,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/history_errors.rs (target/debug/deps/history_errors-e69eb3abfc78a337)",
+              "announced": 7,
+              "line": 3184,
+              "status": "ok",
+              "passed": 7,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/history_pagination.rs (target/debug/deps/history_pagination-2c37c1e3c4f429e5)",
+              "announced": 7,
+              "line": 3197,
+              "status": "ok",
+              "passed": 7,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/http_action_diagnostics.rs (target/debug/deps/http_action_diagnostics-eea74513fde65981)",
+              "announced": 5,
+              "line": 3208,
+              "status": "ok",
+              "passed": 5,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/http_action_safety.rs (target/debug/deps/http_action_safety-d3454862e8030c6a)",
+              "announced": 3,
+              "line": 3217,
+              "status": "ok",
+              "passed": 3,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/http_actions.rs (target/debug/deps/http_actions-90c0092a085f1165)",
+              "announced": 3,
+              "line": 3226,
+              "status": "ok",
+              "passed": 3,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/http_contract.rs (target/debug/deps/http_contract-978c63811605827e)",
+              "announced": 3,
+              "line": 3235,
+              "status": "ok",
+              "passed": 3,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/mcp_actions.rs (target/debug/deps/mcp_actions-efe1191734ca2ee4)",
+              "announced": 10,
+              "line": 3251,
+              "status": "ok",
+              "passed": 10,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/mcp_contract.rs (target/debug/deps/mcp_contract-68e339d920156183)",
+              "announced": 16,
+              "line": 3273,
+              "status": "ok",
+              "passed": 16,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/mcp_execution_admission.rs (target/debug/deps/mcp_execution_admission-37ec82c2ecc18e11)",
+              "announced": 4,
+              "line": 3283,
+              "status": "ok",
+              "passed": 4,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/mcp_l2.rs (target/debug/deps/mcp_l2-c64d284072f972cb)",
+              "announced": 2,
+              "line": 3291,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/mcp_l2_defaults.rs (target/debug/deps/mcp_l2_defaults-aa9c4b0898f4e7d9)",
+              "announced": 15,
+              "line": 3312,
+              "status": "ok",
+              "passed": 15,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/mcp_transport.rs (target/debug/deps/mcp_transport-141492fdb56cae0b)",
+              "announced": 11,
+              "line": 3329,
+              "status": "ok",
+              "passed": 11,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/postgres_http_it.rs (target/debug/deps/postgres_http_it-261d3ae2e892e4b9)",
+              "announced": 4,
+              "line": 3339,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 4,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/source_drift.rs (target/debug/deps/source_drift-9f7dfd5f2fd0d65c)",
+              "announced": 20,
+              "line": 3365,
+              "status": "ok",
+              "passed": 20,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/source_drift_cleanup.rs (target/debug/deps/source_drift_cleanup-cb16ba10c2cdc2ff)",
+              "announced": 2,
+              "line": 3373,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/source_drift_trino_it.rs (target/debug/deps/source_drift_trino_it-975991aa7e624367)",
+              "announced": 2,
+              "line": 3381,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 2,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/trino_http_it.rs (target/debug/deps/trino_http_it-709a2faf61ac87e4)",
+              "announced": 2,
+              "line": 3389,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 2,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running unittests src/lib.rs (target/debug/deps/ontoforge_storage-faed4700a20483e6)",
+              "announced": 49,
+              "line": 3444,
+              "status": "ok",
+              "passed": 49,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/conformance_pg.rs (target/debug/deps/conformance_pg-3fcc3f88ca046315)",
+              "announced": 45,
+              "line": 3496,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 45,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/conformance_sqlite.rs (target/debug/deps/conformance_sqlite-001d3d6f7864c8e3)",
+              "announced": 43,
+              "line": 3544,
+              "status": "ok",
+              "passed": 43,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/frozen_history.rs (target/debug/deps/frozen_history-916429d8b9a486a2)",
+              "announced": 1,
+              "line": 3551,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/history_masking.rs (target/debug/deps/history_masking-11ca2acb4be6fd9d)",
+              "announced": 13,
+              "line": 3570,
+              "status": "ok",
+              "passed": 12,
+              "failed": 0,
+              "ignored": 1,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/import.rs (target/debug/deps/import-cdb15609a5a1d298)",
+              "announced": 18,
+              "line": 3594,
+              "status": "ok",
+              "passed": 16,
+              "failed": 0,
+              "ignored": 2,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/migrate.rs (target/debug/deps/migrate-1f2588838fd58086)",
+              "announced": 15,
+              "line": 3615,
+              "status": "ok",
+              "passed": 15,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/migrate_pg.rs (target/debug/deps/migrate_pg-1cf741136a47f5d9)",
+              "announced": 4,
+              "line": 3625,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 4,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/model_prop.rs (target/debug/deps/model_prop-ec14731c954262e9)",
+              "announced": 1,
+              "line": 3632,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/query_read.rs (target/debug/deps/query_read-2eeaac0e77fabd46)",
+              "announced": 11,
+              "line": 3649,
+              "status": "ok",
+              "passed": 11,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/query_read_pg.rs (target/debug/deps/query_read_pg-fc7a01e0227a15ea)",
+              "announced": 2,
+              "line": 3657,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 2,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/reload.rs (target/debug/deps/reload-a06c149eec95f75a)",
+              "announced": 32,
+              "line": 3695,
+              "status": "ok",
+              "passed": 32,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/reload_pg.rs (target/debug/deps/reload_pg-aea85e89033c9834)",
+              "announced": 11,
+              "line": 3713,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 11,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/reload_trino_it.rs (target/debug/deps/reload_trino_it-204f35a3380739dc)",
+              "announced": 3,
+              "line": 3721,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 3,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/request_snapshot.rs (target/debug/deps/request_snapshot-a323fa46965eb5e0)",
+              "announced": 3,
+              "line": 3730,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 1,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/scope_store.rs (target/debug/deps/scope_store-fb28918a6857f471)",
+              "announced": 15,
+              "line": 3751,
+              "status": "ok",
+              "passed": 12,
+              "failed": 0,
+              "ignored": 3,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/sql_exit_guard.rs (target/debug/deps/sql_exit_guard-aef328df2ffc8c8d)",
+              "announced": 1,
+              "line": 3758,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/sqlite_connection.rs (target/debug/deps/sqlite_connection-6a8743f068c87e7a)",
+              "announced": 4,
+              "line": 3768,
+              "status": "ok",
+              "passed": 4,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Doc-tests ontoforge",
+              "announced": 0,
+              "line": 3774,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Doc-tests ontoforge_action",
+              "announced": 0,
+              "line": 3780,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Doc-tests ontoforge_api",
+              "announced": 0,
+              "line": 3786,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Doc-tests ontoforge_auth",
+              "announced": 0,
+              "line": 3792,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Doc-tests ontoforge_client",
+              "announced": 0,
+              "line": 3798,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Doc-tests ontoforge_engine",
+              "announced": 1,
+              "line": 3805,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 1,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Doc-tests ontoforge_expr",
+              "announced": 0,
+              "line": 3812,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Doc-tests ontoforge_query",
+              "announced": 2,
+              "line": 3820,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Doc-tests ontoforge_schema",
+              "announced": 0,
+              "line": 3826,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Doc-tests ontoforge_server",
+              "announced": 0,
+              "line": 3832,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Doc-tests ontoforge_storage",
+              "announced": 0,
+              "line": 3838,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            }
+          ],
+          "node": [],
+          "totals": {
+            "passed": 1535,
+            "failed": 0,
+            "ignored": 119,
+            "filtered": 0
+          }
+        },
+        {
+          "command": "set -euo pipefail",
+          "line": 3840,
+          "targets": [
+            {
+              "target": "Running tests/l2_gate.rs (target/debug/deps/l2_gate-4ade3de931d5de0a)",
+              "announced": 6,
+              "line": 3936,
+              "status": "ok",
+              "passed": 6,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 10
+            }
+          ],
+          "node": [],
+          "totals": {
+            "passed": 6,
+            "failed": 0,
+            "ignored": 0,
+            "filtered": 10
+          }
+        },
+        {
+          "command": "cargo test -p ontoforge-action --locked -- --nocapture",
+          "line": 3938,
+          "targets": [
+            {
+              "target": "Running unittests src/lib.rs (target/debug/deps/ontoforge_action-2145a1a36b325103)",
+              "announced": 4,
+              "line": 4006,
+              "status": "ok",
+              "passed": 4,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/action.rs (target/debug/deps/action-0ce3ae0616e12640)",
+              "announced": 6,
+              "line": 4018,
+              "status": "ok",
+              "passed": 6,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/action_pg.rs (target/debug/deps/action_pg-8fc0e8bbef88f823)",
+              "announced": 0,
+              "line": 4024,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/entrypoints.rs (target/debug/deps/entrypoints-180518ce59e103fb)",
+              "announced": 4,
+              "line": 4034,
+              "status": "ok",
+              "passed": 4,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/frozen_definition.rs (target/debug/deps/frozen_definition-be011d47c7827500)",
+              "announced": 3,
+              "line": 4043,
+              "status": "ok",
+              "passed": 3,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/idempotency.rs (target/debug/deps/idempotency-839c8a77a128da29)",
+              "announced": 9,
+              "line": 4058,
+              "status": "ok",
+              "passed": 9,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/idempotency_pg.rs (target/debug/deps/idempotency_pg-b27602869c6a7cea)",
+              "announced": 0,
+              "line": 4064,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/outbox.rs (target/debug/deps/outbox-da001121c5433f93)",
+              "announced": 11,
+              "line": 4081,
+              "status": "ok",
+              "passed": 11,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/outbox_pg.rs (target/debug/deps/outbox_pg-ff88bfb830f55a0d)",
+              "announced": 2,
+              "line": 4089,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 2,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/security.rs (target/debug/deps/security-4fb914ef5ff1f70b)",
+              "announced": 10,
+              "line": 4105,
+              "status": "ok",
+              "passed": 10,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/source.rs (target/debug/deps/source-ab2f13490de03685)",
+              "announced": 11,
+              "line": 4122,
+              "status": "ok",
+              "passed": 11,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/trino_action_it.rs (target/debug/deps/trino_action_it-10e5a99678cd1d91)",
+              "announced": 5,
+              "line": 4133,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 4,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests/version.rs (target/debug/deps/version-0e7abd1569237e5c)",
+              "announced": 5,
+              "line": 4144,
+              "status": "ok",
+              "passed": 5,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Doc-tests ontoforge_action",
+              "announced": 0,
+              "line": 4150,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            }
+          ],
+          "node": [],
+          "totals": {
+            "passed": 64,
+            "failed": 0,
+            "ignored": 6,
+            "filtered": 0
+          }
+        },
+        {
+          "command": "set -euo pipefail",
+          "line": 4152,
+          "targets": [
+            {
+              "target": "Running tests/conformance_sqlite.rs (target/debug/deps/conformance_sqlite-5296d7231da75255)",
+              "announced": 5,
+              "line": 4207,
+              "status": "ok",
+              "passed": 5,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 43
+            }
+          ],
+          "node": [],
+          "totals": {
+            "passed": 5,
+            "failed": 0,
+            "ignored": 0,
+            "filtered": 43
+          }
+        }
+      ],
+      "discovery": [
+        {
+          "line": 3924,
+          "text": "l2_corpus: 6 tests discovered at 060019fe52005c6b85ae5c5f59da9868f464e579",
+          "count": 6
+        }
+      ],
+      "bench": [],
+      "python": [
+        {
+          "line": 461,
+          "text": "Ran 6 tests in 0.027s"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "file": "ci-41994479295-windows.log",
+      "sha256": "243cf6436c9e9c7ca1b081cd0ce1df3ca486a25d7b678d10303e5ad9adda1753",
+      "bytes": 341785,
+      "raw_ansi_preserved": true,
+      "head_present": true,
+      "lines": 4267,
+      "steps": [
+        {
+          "command": "python -B -m unittest discover -s ci -p test_tls_deps.py -v",
+          "line": 430,
+          "targets": [],
+          "node": [],
+          "totals": {
+            "passed": 0,
+            "failed": 0,
+            "ignored": 0,
+            "filtered": 0
+          }
+        },
+        {
+          "command": "bash ci/check-tls-deps.sh",
+          "line": 453,
+          "targets": [],
+          "node": [],
+          "totals": {
+            "passed": 0,
+            "failed": 0,
+            "ignored": 0,
+            "filtered": 0
+          }
+        },
+        {
+          "command": "cargo test --workspace --locked -- --test-threads=1",
+          "line": 1029,
+          "targets": [
+            {
+              "target": "Running unittests src\\lib.rs (target\\debug\\deps\\ontoforge-fbe28d3212af503b.exe)",
+              "announced": 25,
+              "line": 1291,
+              "status": "ok",
+              "passed": 25,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running unittests src\\main.rs (target\\debug\\deps\\ontoforge-59cfc5af2bc1f8a6.exe)",
+              "announced": 0,
+              "line": 1297,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\cli.rs (target\\debug\\deps\\cli-a1f6a1f2899b9d41.exe)",
+              "announced": 8,
+              "line": 1311,
+              "status": "ok",
+              "passed": 8,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\cli_check_cardinality.rs (target\\debug\\deps\\cli_check_cardinality-84e0de09c2cb2dc2.exe)",
+              "announced": 13,
+              "line": 1330,
+              "status": "ok",
+              "passed": 13,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\cli_check_pk.rs (target\\debug\\deps\\cli_check_pk-d943fb8d8d9b7306.exe)",
+              "announced": 8,
+              "line": 1344,
+              "status": "ok",
+              "passed": 8,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\cli_color.rs (target\\debug\\deps\\cli_color-44eba0533d427a18.exe)",
+              "announced": 1,
+              "line": 1351,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\cli_dev_token.rs (target\\debug\\deps\\cli_dev_token-9e40c738f683b9b5.exe)",
+              "announced": 12,
+              "line": 1369,
+              "status": "ok",
+              "passed": 12,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\cli_import.rs (target\\debug\\deps\\cli_import-e7251a58118db03a.exe)",
+              "announced": 8,
+              "line": 1383,
+              "status": "ok",
+              "passed": 8,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\cli_l2_identity.rs (target\\debug\\deps\\cli_l2_identity-7f4f9c6d84f09087.exe)",
+              "announced": 11,
+              "line": 1400,
+              "status": "ok",
+              "passed": 11,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\cli_lint.rs (target\\debug\\deps\\cli_lint-c09e40815b50ee74.exe)",
+              "announced": 17,
+              "line": 1423,
+              "status": "ok",
+              "passed": 17,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\cli_migrate.rs (target\\debug\\deps\\cli_migrate-ad3c0cebe93cab2e.exe)",
+              "announced": 10,
+              "line": 1439,
+              "status": "ok",
+              "passed": 10,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\cli_online.rs (target\\debug\\deps\\cli_online-7ce24738df9dcaac.exe)",
+              "announced": 12,
+              "line": 1457,
+              "status": "ok",
+              "passed": 12,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\cli_online_trino.rs (target\\debug\\deps\\cli_online_trino-c602d3f29135aea2.exe)",
+              "announced": 15,
+              "line": 1478,
+              "status": "ok",
+              "passed": 15,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\cli_reload.rs (target\\debug\\deps\\cli_reload-7db721905c6f0af9.exe)",
+              "announced": 8,
+              "line": 1492,
+              "status": "ok",
+              "passed": 8,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\cli_schema.rs (target\\debug\\deps\\cli_schema-bbfab5487b54e631.exe)",
+              "announced": 4,
+              "line": 1502,
+              "status": "ok",
+              "passed": 4,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\cli_scope.rs (target\\debug\\deps\\cli_scope-afef32d3ff54ffc0.exe)",
+              "announced": 8,
+              "line": 1516,
+              "status": "ok",
+              "passed": 8,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\cli_shutdown.rs (target\\debug\\deps\\cli_shutdown-0d618b3bf0798bb9.exe)",
+              "announced": 9,
+              "line": 1531,
+              "status": "ok",
+              "passed": 9,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\cli_stdio.rs (target\\debug\\deps\\cli_stdio-228f4b3c569a9087.exe)",
+              "announced": 11,
+              "line": 1548,
+              "status": "ok",
+              "passed": 11,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\cli_trino_it.rs (target\\debug\\deps\\cli_trino_it-c947f7a52d733823.exe)",
+              "announced": 7,
+              "line": 1561,
+              "status": "ok",
+              "passed": 3,
+              "failed": 0,
+              "ignored": 4,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\cli_webhook_worker.rs (target\\debug\\deps\\cli_webhook_worker-83e0f393f56e4ef2.exe)",
+              "announced": 3,
+              "line": 1570,
+              "status": "ok",
+              "passed": 3,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\dev_lifecycle.rs (target\\debug\\deps\\dev_lifecycle-f47023658560fe40.exe)",
+              "announced": 8,
+              "line": 1584,
+              "status": "ok",
+              "passed": 8,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\invalid_examples.rs (target\\debug\\deps\\invalid_examples-11b0788db472575b.exe)",
+              "announced": 1,
+              "line": 1591,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\private_fixtures.rs (target\\debug\\deps\\private_fixtures-d510e4f5aef31594.exe)",
+              "announced": 3,
+              "line": 1600,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 1,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running unittests src\\lib.rs (target\\debug\\deps\\ontoforge_action-12af55fbf9985149.exe)",
+              "announced": 4,
+              "line": 1610,
+              "status": "ok",
+              "passed": 4,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\action.rs (target\\debug\\deps\\action-3b5b59e86310b018.exe)",
+              "announced": 6,
+              "line": 1622,
+              "status": "ok",
+              "passed": 6,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\action_pg.rs (target\\debug\\deps\\action_pg-96d6ffad486cfa75.exe)",
+              "announced": 0,
+              "line": 1628,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\entrypoints.rs (target\\debug\\deps\\entrypoints-5b1e02a623dea16b.exe)",
+              "announced": 4,
+              "line": 1638,
+              "status": "ok",
+              "passed": 4,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\frozen_definition.rs (target\\debug\\deps\\frozen_definition-c148bab54ffa992b.exe)",
+              "announced": 3,
+              "line": 1647,
+              "status": "ok",
+              "passed": 3,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\idempotency.rs (target\\debug\\deps\\idempotency-f68b514a9f4fded1.exe)",
+              "announced": 9,
+              "line": 1662,
+              "status": "ok",
+              "passed": 9,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\idempotency_pg.rs (target\\debug\\deps\\idempotency_pg-8394f8fa2a79d11c.exe)",
+              "announced": 0,
+              "line": 1668,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\outbox.rs (target\\debug\\deps\\outbox-1883f726aa714dbe.exe)",
+              "announced": 11,
+              "line": 1685,
+              "status": "ok",
+              "passed": 11,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\outbox_pg.rs (target\\debug\\deps\\outbox_pg-6ae8c6053b056d64.exe)",
+              "announced": 2,
+              "line": 1693,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 2,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\security.rs (target\\debug\\deps\\security-15c992afffffbd1a.exe)",
+              "announced": 10,
+              "line": 1709,
+              "status": "ok",
+              "passed": 10,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\source.rs (target\\debug\\deps\\source-bba0b2c56e69ccbb.exe)",
+              "announced": 11,
+              "line": 1726,
+              "status": "ok",
+              "passed": 11,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\trino_action_it.rs (target\\debug\\deps\\trino_action_it-2503f8d3d1fb8d44.exe)",
+              "announced": 5,
+              "line": 1737,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 4,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\version.rs (target\\debug\\deps\\version-ea4789e482b606f6.exe)",
+              "announced": 5,
+              "line": 1748,
+              "status": "ok",
+              "passed": 5,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running unittests src\\lib.rs (target\\debug\\deps\\ontoforge_api-7308d7855d0729c1.exe)",
+              "announced": 1,
+              "line": 1755,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\openapi_snapshot.rs (target\\debug\\deps\\openapi_snapshot-5c2a64293b928a81.exe)",
+              "announced": 8,
+              "line": 1769,
+              "status": "ok",
+              "passed": 8,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running unittests src\\lib.rs (target\\debug\\deps\\ontoforge_auth-6904197be5f707b8.exe)",
+              "announced": 3,
+              "line": 1778,
+              "status": "ok",
+              "passed": 3,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\criteria_coverage.rs (target\\debug\\deps\\criteria_coverage-b16dab3b5ccb6517.exe)",
+              "announced": 6,
+              "line": 1790,
+              "status": "ok",
+              "passed": 6,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\crypto_backend.rs (target\\debug\\deps\\crypto_backend-252ec181722de789.exe)",
+              "announced": 1,
+              "line": 1797,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\dev_token.rs (target\\debug\\deps\\dev_token-6a0a69bc62ee5c2a.exe)",
+              "announced": 16,
+              "line": 1819,
+              "status": "ok",
+              "passed": 16,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\oidc.rs (target\\debug\\deps\\oidc-c6d2dfd97f87e13f.exe)",
+              "announced": 31,
+              "line": 1856,
+              "status": "ok",
+              "passed": 31,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\rowpred_diff.rs (target\\debug\\deps\\rowpred_diff-56163be408efcee0.exe)",
+              "announced": 6,
+              "line": 1868,
+              "status": "ok",
+              "passed": 6,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\rowpred_trino_it.rs (target\\debug\\deps\\rowpred_trino_it-8896d766c014cb37.exe)",
+              "announced": 4,
+              "line": 1878,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 3,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\scope_compile.rs (target\\debug\\deps\\scope_compile-16481824647433bc.exe)",
+              "announced": 21,
+              "line": 1905,
+              "status": "ok",
+              "passed": 21,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\scope_merge.rs (target\\debug\\deps\\scope_merge-f1eb46432386ed27.exe)",
+              "announced": 9,
+              "line": 1920,
+              "status": "ok",
+              "passed": 9,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running unittests src\\lib.rs (target\\debug\\deps\\ontoforge_client-a5c3328cad67aaad.exe)",
+              "announced": 6,
+              "line": 1932,
+              "status": "ok",
+              "passed": 6,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\contract.rs (target\\debug\\deps\\contract-ff4051b569195d1b.exe)",
+              "announced": 9,
+              "line": 1947,
+              "status": "ok",
+              "passed": 9,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\error_diagnostics.rs (target\\debug\\deps\\error_diagnostics-9b8b4306bc1043aa.exe)",
+              "announced": 4,
+              "line": 1957,
+              "status": "ok",
+              "passed": 4,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running unittests src\\lib.rs (target\\debug\\deps\\ontoforge_engine-dd597ee697813be0.exe)",
+              "announced": 56,
+              "line": 2019,
+              "status": "ok",
+              "passed": 56,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\bind_check_isolation.rs (target\\debug\\deps\\bind_check_isolation-87bc59cc004fb276.exe)",
+              "announced": 2,
+              "line": 2027,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\cardinality_check.rs (target\\debug\\deps\\cardinality_check-8fbfd6e99236d224.exe)",
+              "announced": 11,
+              "line": 2044,
+              "status": "ok",
+              "passed": 11,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\doc_type_table.rs (target\\debug\\deps\\doc_type_table-ee448b8b0ecbdaa9.exe)",
+              "announced": 2,
+              "line": 2052,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\drift.rs (target\\debug\\deps\\drift-f06a3b5a4fd622ea.exe)",
+              "announced": 8,
+              "line": 2066,
+              "status": "ok",
+              "passed": 8,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\drift_budget.rs (target\\debug\\deps\\drift_budget-89e4729661903791.exe)",
+              "announced": 2,
+              "line": 2074,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\l2_explain.rs (target\\debug\\deps\\l2_explain-146fa04c23897a86.exe)",
+              "announced": 2,
+              "line": 2082,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\l2_gate.rs (target\\debug\\deps\\l2_gate-6777d11b1c123a86.exe)",
+              "announced": 16,
+              "line": 2104,
+              "status": "ok",
+              "passed": 16,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\l2_health.rs (target\\debug\\deps\\l2_health-55cf1ddff777213f.exe)",
+              "announced": 10,
+              "line": 2120,
+              "status": "ok",
+              "passed": 10,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\l2_monitor.rs (target\\debug\\deps\\l2_monitor-601b3635f6a44324.exe)",
+              "announced": 19,
+              "line": 2145,
+              "status": "ok",
+              "passed": 19,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\pk_check.rs (target\\debug\\deps\\pk_check-e62fd4b78b0ec249.exe)",
+              "announced": 6,
+              "line": 2157,
+              "status": "ok",
+              "passed": 6,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\printer_literals.rs (target\\debug\\deps\\printer_literals-906e5afdbb355948.exe)",
+              "announced": 8,
+              "line": 2171,
+              "status": "ok",
+              "passed": 8,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\printer_prop.rs (target\\debug\\deps\\printer_prop-fef8fc367b6a104e.exe)",
+              "announced": 6,
+              "line": 2183,
+              "status": "ok",
+              "passed": 6,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\server_config.rs (target\\debug\\deps\\server_config-68cfb61a4116eb87.exe)",
+              "announced": 35,
+              "line": 2224,
+              "status": "ok",
+              "passed": 35,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\sql_text_only_from_printer.rs (target\\debug\\deps\\sql_text_only_from_printer-ee022a2576f17b1e.exe)",
+              "announced": 1,
+              "line": 2231,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\sqlite_engine.rs (target\\debug\\deps\\sqlite_engine-3b37899e776b98b8.exe)",
+              "announced": 28,
+              "line": 2265,
+              "status": "ok",
+              "passed": 28,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\trino_client.rs (target\\debug\\deps\\trino_client-60f4d784c3cc0388.exe)",
+              "announced": 23,
+              "line": 2294,
+              "status": "ok",
+              "passed": 23,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\trino_it.rs (target\\debug\\deps\\trino_it-a151cb15dcf31516.exe)",
+              "announced": 11,
+              "line": 2311,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 9,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\trino_l2_acl_it.rs (target\\debug\\deps\\trino_l2_acl_it-837a182814b3b013.exe)",
+              "announced": 6,
+              "line": 2323,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 6,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\trino_resilience.rs (target\\debug\\deps\\trino_resilience-bb97f8decf180092.exe)",
+              "announced": 31,
+              "line": 2360,
+              "status": "ok",
+              "passed": 31,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running unittests src\\lib.rs (target\\debug\\deps\\ontoforge_expr-cf40b6968a06a326.exe)",
+              "announced": 3,
+              "line": 2369,
+              "status": "ok",
+              "passed": 3,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\analyze.rs (target\\debug\\deps\\analyze-35a6a7caf1a38ba5.exe)",
+              "announced": 21,
+              "line": 2396,
+              "status": "ok",
+              "passed": 21,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\criteria.rs (target\\debug\\deps\\criteria-0791925df87fe135.exe)",
+              "announced": 20,
+              "line": 2422,
+              "status": "ok",
+              "passed": 20,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\rowpred_eval.rs (target\\debug\\deps\\rowpred_eval-3436ab1421f930f9.exe)",
+              "announced": 14,
+              "line": 2442,
+              "status": "ok",
+              "passed": 14,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\rowpred_subset.rs (target\\debug\\deps\\rowpred_subset-f94fb953e819a740.exe)",
+              "announced": 13,
+              "line": 2461,
+              "status": "ok",
+              "passed": 13,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running unittests src\\lib.rs (target\\debug\\deps\\ontoforge_query-95e6abf7c19fad24.exe)",
+              "announced": 5,
+              "line": 2472,
+              "status": "ok",
+              "passed": 5,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\aggregate.rs (target\\debug\\deps\\aggregate-0c871d0862df2fb3.exe)",
+              "announced": 7,
+              "line": 2485,
+              "status": "ok",
+              "passed": 7,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\audit_l0.rs (target\\debug\\deps\\audit_l0-48aeaa7314cd37f1.exe)",
+              "announced": 10,
+              "line": 2501,
+              "status": "ok",
+              "passed": 9,
+              "failed": 0,
+              "ignored": 1,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\audit_pk.rs (target\\debug\\deps\\audit_pk-0d37475020d41f53.exe)",
+              "announced": 13,
+              "line": 2520,
+              "status": "ok",
+              "passed": 13,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\definition_snapshot.rs (target\\debug\\deps\\definition_snapshot-3cffdc84bbbc61b6.exe)",
+              "announced": 2,
+              "line": 2528,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\l2_discovery.rs (target\\debug\\deps\\l2_discovery-8d461782117b6d08.exe)",
+              "announced": 9,
+              "line": 2543,
+              "status": "ok",
+              "passed": 9,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\l2_execute.rs (target\\debug\\deps\\l2_execute-8cfb1fe5fc7868fb.exe)",
+              "announced": 15,
+              "line": 2564,
+              "status": "ok",
+              "passed": 15,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\overlay_prop.rs (target\\debug\\deps\\overlay_prop-bc8f4903f1cb6d9b.exe)",
+              "announced": 11,
+              "line": 2581,
+              "status": "ok",
+              "passed": 11,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\pk_read.rs (target\\debug\\deps\\pk_read-6c9a081d82f520eb.exe)",
+              "announced": 11,
+              "line": 2598,
+              "status": "ok",
+              "passed": 11,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\query_bench_it.rs (target\\debug\\deps\\query_bench_it-447b493d1fb2ea24.exe)",
+              "announced": 3,
+              "line": 2607,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 1,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\search_around.rs (target\\debug\\deps\\search_around-e33b32936ef9425a.exe)",
+              "announced": 6,
+              "line": 2619,
+              "status": "ok",
+              "passed": 6,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\security.rs (target\\debug\\deps\\security-91b8c1195ec68b8e.exe)",
+              "announced": 23,
+              "line": 2648,
+              "status": "ok",
+              "passed": 23,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\set_ops.rs (target\\debug\\deps\\set_ops-b0d290c1e3475979.exe)",
+              "announced": 5,
+              "line": 2659,
+              "status": "ok",
+              "passed": 5,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\sql_shape.rs (target\\debug\\deps\\sql_shape-1f51f857f42bac36.exe)",
+              "announced": 6,
+              "line": 2671,
+              "status": "ok",
+              "passed": 6,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\sqlite_query.rs (target\\debug\\deps\\sqlite_query-c75085e81f2ddd2a.exe)",
+              "announced": 10,
+              "line": 2687,
+              "status": "ok",
+              "passed": 10,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\trino_query_it.rs (target\\debug\\deps\\trino_query_it-b52b2a1ab76f7960.exe)",
+              "announced": 6,
+              "line": 2699,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 5,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running unittests src\\lib.rs (target\\debug\\deps\\ontoforge_schema-7305d5c45cc88728.exe)",
+              "announced": 139,
+              "line": 2844,
+              "status": "ok",
+              "passed": 139,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\action_types.rs (target\\debug\\deps\\action_types-dfd1ee8f7699255e.exe)",
+              "announced": 28,
+              "line": 2878,
+              "status": "ok",
+              "passed": 28,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\bindings.rs (target\\debug\\deps\\bindings-21aace36e47530a3.exe)",
+              "announced": 32,
+              "line": 2916,
+              "status": "ok",
+              "passed": 32,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\diagnostics.rs (target\\debug\\deps\\diagnostics-019cce52ca1a7d0a.exe)",
+              "announced": 16,
+              "line": 2938,
+              "status": "ok",
+              "passed": 16,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\link_types.rs (target\\debug\\deps\\link_types-3e1dbb92d05c7c2e.exe)",
+              "announced": 21,
+              "line": 2965,
+              "status": "ok",
+              "passed": 21,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\lint_examples.rs (target\\debug\\deps\\lint_examples-bfdf8ee33cc5c43d.exe)",
+              "announced": 1,
+              "line": 2972,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\load_examples.rs (target\\debug\\deps\\load_examples-187bbf3650bf4a66.exe)",
+              "announced": 6,
+              "line": 2984,
+              "status": "ok",
+              "passed": 6,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\loader.rs (target\\debug\\deps\\loader-fef368c4c135a1bf.exe)",
+              "announced": 34,
+              "line": 3024,
+              "status": "ok",
+              "passed": 34,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\object_types.rs (target\\debug\\deps\\object_types-668900c7d12493b9.exe)",
+              "announced": 21,
+              "line": 3051,
+              "status": "ok",
+              "passed": 21,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\schema_export.rs (target\\debug\\deps\\schema_export-2aacfa39efc49f1c.exe)",
+              "announced": 14,
+              "line": 3071,
+              "status": "ok",
+              "passed": 14,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\scope_documents.rs (target\\debug\\deps\\scope_documents-30a7c8cefa8e3de0.exe)",
+              "announced": 16,
+              "line": 3093,
+              "status": "ok",
+              "passed": 16,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running unittests src\\lib.rs (target\\debug\\deps\\ontoforge_server-40cd0be86a05599c.exe)",
+              "announced": 25,
+              "line": 3124,
+              "status": "ok",
+              "passed": 25,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\action_source_budget.rs (target\\debug\\deps\\action_source_budget-aa0f8ddd9f6dada0.exe)",
+              "announced": 5,
+              "line": 3135,
+              "status": "ok",
+              "passed": 5,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\health_lifecycle_it.rs (target\\debug\\deps\\health_lifecycle_it-45146197d62e8882.exe)",
+              "announced": 4,
+              "line": 3145,
+              "status": "ok",
+              "passed": 4,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\health_trino_it.rs (target\\debug\\deps\\health_trino_it-2a22b9c18e6edd91.exe)",
+              "announced": 2,
+              "line": 3153,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 2,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\history_errors.rs (target\\debug\\deps\\history_errors-994aa655f7d918ee.exe)",
+              "announced": 7,
+              "line": 3166,
+              "status": "ok",
+              "passed": 7,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\history_pagination.rs (target\\debug\\deps\\history_pagination-a4c6097c6565977c.exe)",
+              "announced": 7,
+              "line": 3179,
+              "status": "ok",
+              "passed": 7,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\http_action_diagnostics.rs (target\\debug\\deps\\http_action_diagnostics-26c4e84f46b91aa0.exe)",
+              "announced": 5,
+              "line": 3190,
+              "status": "ok",
+              "passed": 5,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\http_action_safety.rs (target\\debug\\deps\\http_action_safety-256b2d6078941c00.exe)",
+              "announced": 3,
+              "line": 3199,
+              "status": "ok",
+              "passed": 3,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\http_actions.rs (target\\debug\\deps\\http_actions-89eaee842b864e43.exe)",
+              "announced": 3,
+              "line": 3208,
+              "status": "ok",
+              "passed": 3,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\http_contract.rs (target\\debug\\deps\\http_contract-3d70bfb17bf18dc5.exe)",
+              "announced": 3,
+              "line": 3217,
+              "status": "ok",
+              "passed": 3,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\mcp_actions.rs (target\\debug\\deps\\mcp_actions-44afebad75c2e60f.exe)",
+              "announced": 10,
+              "line": 3233,
+              "status": "ok",
+              "passed": 10,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\mcp_contract.rs (target\\debug\\deps\\mcp_contract-978a0a16184b93ef.exe)",
+              "announced": 16,
+              "line": 3255,
+              "status": "ok",
+              "passed": 16,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\mcp_execution_admission.rs (target\\debug\\deps\\mcp_execution_admission-57f95d5cd7d7fbbd.exe)",
+              "announced": 4,
+              "line": 3265,
+              "status": "ok",
+              "passed": 4,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\mcp_l2.rs (target\\debug\\deps\\mcp_l2-665d247b7edfc9e7.exe)",
+              "announced": 2,
+              "line": 3273,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\mcp_l2_defaults.rs (target\\debug\\deps\\mcp_l2_defaults-7cb1f2d3d72d956c.exe)",
+              "announced": 15,
+              "line": 3294,
+              "status": "ok",
+              "passed": 15,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\mcp_transport.rs (target\\debug\\deps\\mcp_transport-ce3b45bd93e3f3b2.exe)",
+              "announced": 11,
+              "line": 3311,
+              "status": "ok",
+              "passed": 11,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\postgres_http_it.rs (target\\debug\\deps\\postgres_http_it-031a3162ed342f50.exe)",
+              "announced": 4,
+              "line": 3321,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 4,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\source_drift.rs (target\\debug\\deps\\source_drift-822cc59ca058285e.exe)",
+              "announced": 20,
+              "line": 3347,
+              "status": "ok",
+              "passed": 20,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\source_drift_cleanup.rs (target\\debug\\deps\\source_drift_cleanup-cafb1318fbf15558.exe)",
+              "announced": 2,
+              "line": 3355,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\source_drift_trino_it.rs (target\\debug\\deps\\source_drift_trino_it-fef7a8cde2063cc4.exe)",
+              "announced": 2,
+              "line": 3363,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 2,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\trino_http_it.rs (target\\debug\\deps\\trino_http_it-8455493ade653e33.exe)",
+              "announced": 2,
+              "line": 3371,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 2,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running unittests src\\lib.rs (target\\debug\\deps\\ontoforge_storage-b861aaf24effc27d.exe)",
+              "announced": 49,
+              "line": 3426,
+              "status": "ok",
+              "passed": 49,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\conformance_pg.rs (target\\debug\\deps\\conformance_pg-6e1a67f4d83a0acf.exe)",
+              "announced": 45,
+              "line": 3477,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 45,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\conformance_sqlite.rs (target\\debug\\deps\\conformance_sqlite-286d97147bb96e52.exe)",
+              "announced": 43,
+              "line": 3526,
+              "status": "ok",
+              "passed": 43,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\frozen_history.rs (target\\debug\\deps\\frozen_history-79d1d1f6f10c5512.exe)",
+              "announced": 1,
+              "line": 3533,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\history_masking.rs (target\\debug\\deps\\history_masking-3d754214abfbd20c.exe)",
+              "announced": 13,
+              "line": 3552,
+              "status": "ok",
+              "passed": 12,
+              "failed": 0,
+              "ignored": 1,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\import.rs (target\\debug\\deps\\import-3442dfcabaeffa11.exe)",
+              "announced": 18,
+              "line": 3576,
+              "status": "ok",
+              "passed": 16,
+              "failed": 0,
+              "ignored": 2,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\migrate.rs (target\\debug\\deps\\migrate-559c35c1e54ca0b8.exe)",
+              "announced": 15,
+              "line": 3597,
+              "status": "ok",
+              "passed": 15,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\migrate_pg.rs (target\\debug\\deps\\migrate_pg-c82bca4eabba7b09.exe)",
+              "announced": 4,
+              "line": 3607,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 4,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\model_prop.rs (target\\debug\\deps\\model_prop-1ded370bf4b82d98.exe)",
+              "announced": 1,
+              "line": 3614,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\query_read.rs (target\\debug\\deps\\query_read-0d4fde8456f5d85a.exe)",
+              "announced": 11,
+              "line": 3631,
+              "status": "ok",
+              "passed": 11,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\query_read_pg.rs (target\\debug\\deps\\query_read_pg-fba053d23de5db89.exe)",
+              "announced": 2,
+              "line": 3639,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 2,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\reload.rs (target\\debug\\deps\\reload-aeccea678a096af3.exe)",
+              "announced": 32,
+              "line": 3677,
+              "status": "ok",
+              "passed": 32,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\reload_pg.rs (target\\debug\\deps\\reload_pg-181387145679bc34.exe)",
+              "announced": 11,
+              "line": 3694,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 11,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\reload_trino_it.rs (target\\debug\\deps\\reload_trino_it-a69493e382f61c94.exe)",
+              "announced": 3,
+              "line": 3703,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 3,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\request_snapshot.rs (target\\debug\\deps\\request_snapshot-fc053e43b43ad421.exe)",
+              "announced": 3,
+              "line": 3712,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 1,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\scope_store.rs (target\\debug\\deps\\scope_store-360e2c095d4b1b7a.exe)",
+              "announced": 15,
+              "line": 3733,
+              "status": "ok",
+              "passed": 12,
+              "failed": 0,
+              "ignored": 3,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\sql_exit_guard.rs (target\\debug\\deps\\sql_exit_guard-20ee73d3a73125d6.exe)",
+              "announced": 1,
+              "line": 3740,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\sqlite_connection.rs (target\\debug\\deps\\sqlite_connection-8d53d24eff736232.exe)",
+              "announced": 4,
+              "line": 3750,
+              "status": "ok",
+              "passed": 4,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Doc-tests ontoforge",
+              "announced": 0,
+              "line": 3756,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Doc-tests ontoforge_action",
+              "announced": 0,
+              "line": 3762,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Doc-tests ontoforge_api",
+              "announced": 0,
+              "line": 3768,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Doc-tests ontoforge_auth",
+              "announced": 0,
+              "line": 3774,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Doc-tests ontoforge_client",
+              "announced": 0,
+              "line": 3780,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Doc-tests ontoforge_engine",
+              "announced": 1,
+              "line": 3787,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 1,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Doc-tests ontoforge_expr",
+              "announced": 0,
+              "line": 3794,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Doc-tests ontoforge_query",
+              "announced": 2,
+              "line": 3802,
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Doc-tests ontoforge_schema",
+              "announced": 0,
+              "line": 3808,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Doc-tests ontoforge_server",
+              "announced": 0,
+              "line": 3814,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Doc-tests ontoforge_storage",
+              "announced": 0,
+              "line": 3820,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            }
+          ],
+          "node": [],
+          "totals": {
+            "passed": 1528,
+            "failed": 0,
+            "ignored": 119,
+            "filtered": 0
+          }
+        },
+        {
+          "command": "set -euo pipefail",
+          "line": 3850,
+          "targets": [
+            {
+              "target": "Running tests\\l2_gate.rs (target\\debug\\deps\\l2_gate-acfab9fae1aa8e65.exe)",
+              "announced": 6,
+              "line": 3946,
+              "status": "ok",
+              "passed": 6,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 10
+            }
+          ],
+          "node": [],
+          "totals": {
+            "passed": 6,
+            "failed": 0,
+            "ignored": 0,
+            "filtered": 10
+          }
+        },
+        {
+          "command": "cargo test -p ontoforge-action --locked -- --nocapture",
+          "line": 3948,
+          "targets": [
+            {
+              "target": "Running unittests src\\lib.rs (target\\debug\\deps\\ontoforge_action-3a15287aba2c23bc.exe)",
+              "announced": 4,
+              "line": 4028,
+              "status": "ok",
+              "passed": 4,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\action.rs (target\\debug\\deps\\action-d1f8660f6c5c7616.exe)",
+              "announced": 6,
+              "line": 4040,
+              "status": "ok",
+              "passed": 6,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\action_pg.rs (target\\debug\\deps\\action_pg-9780ea5bcf22cf80.exe)",
+              "announced": 0,
+              "line": 4046,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\entrypoints.rs (target\\debug\\deps\\entrypoints-bdf7e39385708c9d.exe)",
+              "announced": 4,
+              "line": 4056,
+              "status": "ok",
+              "passed": 4,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\frozen_definition.rs (target\\debug\\deps\\frozen_definition-40b8487ef5950145.exe)",
+              "announced": 3,
+              "line": 4065,
+              "status": "ok",
+              "passed": 3,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\idempotency.rs (target\\debug\\deps\\idempotency-84617110afa4b6eb.exe)",
+              "announced": 9,
+              "line": 4080,
+              "status": "ok",
+              "passed": 9,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\idempotency_pg.rs (target\\debug\\deps\\idempotency_pg-0e291dc2d882cc6b.exe)",
+              "announced": 0,
+              "line": 4086,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\outbox.rs (target\\debug\\deps\\outbox-ed8b158f52013850.exe)",
+              "announced": 11,
+              "line": 4103,
+              "status": "ok",
+              "passed": 11,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\outbox_pg.rs (target\\debug\\deps\\outbox_pg-9f9f50cb245f5fb3.exe)",
+              "announced": 2,
+              "line": 4111,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 2,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\security.rs (target\\debug\\deps\\security-73fef99de31438f2.exe)",
+              "announced": 10,
+              "line": 4127,
+              "status": "ok",
+              "passed": 10,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\source.rs (target\\debug\\deps\\source-5d1dd9d76a7f0a1f.exe)",
+              "announced": 11,
+              "line": 4144,
+              "status": "ok",
+              "passed": 11,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\trino_action_it.rs (target\\debug\\deps\\trino_action_it-c4851c011b4493a5.exe)",
+              "announced": 5,
+              "line": 4155,
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 4,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Running tests\\version.rs (target\\debug\\deps\\version-b401864607f6024c.exe)",
+              "announced": 5,
+              "line": 4166,
+              "status": "ok",
+              "passed": 5,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            },
+            {
+              "target": "Doc-tests ontoforge_action",
+              "announced": 0,
+              "line": 4172,
+              "status": "ok",
+              "passed": 0,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 0
+            }
+          ],
+          "node": [],
+          "totals": {
+            "passed": 64,
+            "failed": 0,
+            "ignored": 6,
+            "filtered": 0
+          }
+        },
+        {
+          "command": "set -euo pipefail",
+          "line": 4174,
+          "targets": [
+            {
+              "target": "Running tests\\conformance_sqlite.rs (target\\debug\\deps\\conformance_sqlite-22287a7e012d662f.exe)",
+              "announced": 5,
+              "line": 4229,
+              "status": "ok",
+              "passed": 5,
+              "failed": 0,
+              "ignored": 0,
+              "measured": 0,
+              "filtered": 43
+            }
+          ],
+          "node": [],
+          "totals": {
+            "passed": 5,
+            "failed": 0,
+            "ignored": 0,
+            "filtered": 43
+          }
+        }
+      ],
+      "discovery": [
+        {
+          "line": 3934,
+          "text": "l2_corpus: 6 tests discovered at 060019fe52005c6b85ae5c5f59da9868f464e579",
+          "count": 6
+        }
+      ],
+      "bench": [],
+      "python": [
+        {
+          "line": 450,
+          "text": "Ran 6 tests in 0.434s"
+        },
+        {
+          "line": 3847,
+          "text": "Ran 11 tests in 13.376s"
+        }
+      ],
+      "errors": []
+    }
+  ]
+}

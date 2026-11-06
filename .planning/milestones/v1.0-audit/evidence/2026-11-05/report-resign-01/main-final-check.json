@@ -1,0 +1,163 @@
+{
+  "checked_at": "2026-11-05T14:33:27.207Z",
+  "head": "060019fe52005c6b85ae5c5f59da9868f464e579",
+  "scope": "Phase01 complete original-contract review; human boundaries retained",
+  "delivery_status": "complete",
+  "phase01_status": "human_needed",
+  "milestone_status": "gaps_found",
+  "phase01": {
+    "plans": 14,
+    "summaries": 14,
+    "plan_truths": 97,
+    "roadmap_sc": 5,
+    "legacy_must_haves": 11,
+    "contract_truth_indexes": 102,
+    "verified_contract_indexes": 101,
+    "prior_editor_override": 1,
+    "new_overrides": 0,
+    "unresolved_judgments": 3,
+    "human_boundaries_unchanged": true,
+    "named_tests_mapped_to_three_prior_execution_sources": 164,
+    "no_new_rust_or_ci_execution": true,
+    "old_covered": 315,
+    "current_covered": 346,
+    "deleted": 0,
+    "report_sha256": "98c80776c3170489cf0d72007fcaf942e88dbd605207cb713a5b300257adc310"
+  },
+  "phase_gates": [
+    {
+      "phase": "01-workspace-schema-lint",
+      "raw_status": "human_needed",
+      "canonical_status": "human_needed",
+      "score": "102/102 contract truths checked (101 VERIFIED; 1 prior override)"
+    },
+    {
+      "phase": "02-source-binding-engine",
+      "raw_status": "gaps_found",
+      "canonical_status": "gaps_found",
+      "score": "100/103 must-haves verified"
+    },
+    {
+      "phase": "03-edit-store-scope-model",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "139/139 must-haves verified"
+    },
+    {
+      "phase": "04-scoped-l0-read",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "36/36 must-haves verified"
+    },
+    {
+      "phase": "05-online-action",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "36/36 must-haves verified"
+    },
+    {
+      "phase": "06-l2-raw-dql-toolsets-audit",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "22/22 must-haves verified"
+    },
+    {
+      "phase": "07-rest-mcp-shell",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "80/80 must-haves verified"
+    },
+    {
+      "phase": "07.1-source-cardinality-gap-closure",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "18/18 must-haves verified"
+    },
+    {
+      "phase": "07.2-minio-contract-gap-closure",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "9/9 must-haves verified"
+    }
+  ],
+  "requirements": {
+    "check": "PASS",
+    "counts": {
+      "requirements": 79,
+      "root_plans": 93,
+      "root_summaries": 93,
+      "formal_verifications": 9,
+      "checked": 78,
+      "summary_declared_ids": 79,
+      "metadata_gap_ids": 0,
+      "summary_missing_field_files": 4,
+      "summary_explicit_empty_files": 26,
+      "verification_covered_ids": 79,
+      "orphaned": 0,
+      "historical_three_source_claims": 78,
+      "workflow_satisfied": 59,
+      "workflow_partial": 12,
+      "workflow_unsatisfied": 8,
+      "confirmed_current_functional_failures": 0,
+      "full_contract_partial": 1,
+      "current_execution_evidence_ids": 78,
+      "mapped_tests_executed_ids": 77,
+      "partial_current_execution_ids": 1,
+      "historical_only_ids": 1,
+      "owner_signed_current_phase07_scope_ids": 21,
+      "owner_signed_phase07_only_responsibility_ids": 15,
+      "owner_signed_crossphase_scope_ids": 6,
+      "current_execution_reports_current_ids": 58,
+      "current_execution_report_resign_pending_ids": 20
+    },
+    "input_manifest_entries": 267,
+    "sha256_mismatches": []
+  },
+  "regression": {
+    "command": "node --test .../report-resign-matrix/freshness.test.cjs",
+    "exit": 0,
+    "passed": 22,
+    "failed": 0,
+    "log": "main-freshness-regression.log"
+  },
+  "integration_format_regression": {
+    "red": "main-recompute.integration-red.log",
+    "diagnosis": "12 parser orphans after Requirements Coverage table became bullets",
+    "fix": "restore original parser-compatible table; no derivation or scoring change",
+    "green": "main-recompute.integration-green.log",
+    "complete_recomputation_passed": true
+  },
+  "integrity": {
+    "original_runtime_entries": 56,
+    "runtime_mismatches": [],
+    "phase01_review_immutable_inputs": 326,
+    "phase01_review_immutable_mismatches": [],
+    "expected_mutable_planning_changes": [
+      {
+        "file": ".planning/milestones/v1.0-audit/task_plan.md",
+        "expected": "fd849dbcc55894741060bd5ff71d354d4c571589ebf224628b174a6e7f0325a9",
+        "actual": "820de69921a35f87b269249ee9a12208b82ba012d61823768818701bf9bf0c68"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/progress.md",
+        "expected": "d320e27056ea74060e8d35c6099b2d2c365f42ae571b45e5d209dfbb94538a71",
+        "actual": "ab8b740f05a7558b07d029775aa982aa3c7475c124c80bf4efa9e1b429b09bd2"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/findings.md",
+        "expected": "bf19f6ae96eda73a2db4572317f539e8cd232695da0d3dc883d4b4836011e6aa",
+        "actual": "ddfc17392d186be0f19b451b0c046d639de0b51c47d68c8569277066018d3ebe"
+      }
+    ],
+    "prior_106_index_preserved_as_historical": true
+  },
+  "guards": {
+    "state_lines": 53,
+    "production_diff_empty": true,
+    "git_diff_check_exit": 0,
+    "protected_paths_not_operated": true,
+    "containers_not_operated": true,
+    "no_commit_push_release_archive": true
+  },
+  "current_index": "main-evidence-index.json"
+}

@@ -1,0 +1,524 @@
+{
+  "created_at": "2026-11-05T08:59:13.400Z",
+  "discovery_exit": "0",
+  "execution_exit": "0",
+  "discovered_targets": 152,
+  "executed_targets": 152,
+  "discovered_tests": 1647,
+  "identities_match": true,
+  "successful_targets": 128,
+  "totals": {
+    "passed": 1528,
+    "failed": 0,
+    "ignored": 119,
+    "measured": 0,
+    "filtered": 0
+  },
+  "complete": true,
+  "targets": [
+    {
+      "target": "Running unittests src\\main.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\ontoforge-59cfc5af2bc1f8a6.exe)",
+      "identity": "ontoforge-59cfc5af2bc1f8a6.exe",
+      "discovered": 0,
+      "named_executed": 0,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "empty_harness",
+        "reason": "CLI main has no unit tests; CLI behavior runs in named integration targets"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_EMPTY_HARNESS"
+    },
+    {
+      "target": "Running tests\\action_pg.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\action_pg-96d6ffad486cfa75.exe)",
+      "identity": "action_pg-96d6ffad486cfa75.exe",
+      "discovered": 0,
+      "named_executed": 0,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "empty_harness",
+        "reason": "action_pg.rs:1 requires test-support; CI integration explicitly enables it and executes 4"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_EMPTY_HARNESS"
+    },
+    {
+      "target": "Running tests\\idempotency_pg.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\idempotency_pg-8394f8fa2a79d11c.exe)",
+      "identity": "idempotency_pg-8394f8fa2a79d11c.exe",
+      "discovered": 0,
+      "named_executed": 0,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "empty_harness",
+        "reason": "idempotency_pg.rs:1 requires test-support; CI integration explicitly enables it and executes 6"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_EMPTY_HARNESS"
+    },
+    {
+      "target": "Running tests\\outbox_pg.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\outbox_pg-6ae8c6053b056d64.exe)",
+      "identity": "outbox_pg-6ae8c6053b056d64.exe",
+      "discovered": 2,
+      "named_executed": 0,
+      "named_ignored": 2,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 2,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "ignored_only",
+        "reason": "External PG; CI integration explicitly executes webhook 2"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_IGNORED_ONLY"
+    },
+    {
+      "target": "Running tests\\trino_l2_acl_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\trino_l2_acl_it-837a182814b3b013.exe)",
+      "identity": "trino_l2_acl_it-837a182814b3b013.exe",
+      "discovered": 6,
+      "named_executed": 0,
+      "named_ignored": 6,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 6,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "ignored_only",
+        "reason": "External Trino; CI phase7-real-services executes ACL 6"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_IGNORED_ONLY"
+    },
+    {
+      "target": "Running tests\\health_trino_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\health_trino_it-2a22b9c18e6edd91.exe)",
+      "identity": "health_trino_it-2a22b9c18e6edd91.exe",
+      "discovered": 2,
+      "named_executed": 0,
+      "named_ignored": 2,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 2,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "ignored_only",
+        "reason": "External Trino; CI phase7-real-services executes health 2"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_IGNORED_ONLY"
+    },
+    {
+      "target": "Running tests\\postgres_http_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\postgres_http_it-031a3162ed342f50.exe)",
+      "identity": "postgres_http_it-031a3162ed342f50.exe",
+      "discovered": 4,
+      "named_executed": 0,
+      "named_ignored": 4,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 4,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "ignored_only",
+        "reason": "External PG; CI phase7-real-services executes HTTP 4"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_IGNORED_ONLY"
+    },
+    {
+      "target": "Running tests\\source_drift_trino_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\source_drift_trino_it-fef7a8cde2063cc4.exe)",
+      "identity": "source_drift_trino_it-fef7a8cde2063cc4.exe",
+      "discovered": 2,
+      "named_executed": 0,
+      "named_ignored": 2,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 2,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "ignored_only",
+        "reason": "External Trino; CI phase7-real-services executes source drift 2"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_IGNORED_ONLY"
+    },
+    {
+      "target": "Running tests\\trino_http_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\trino_http_it-8455493ade653e33.exe)",
+      "identity": "trino_http_it-8455493ade653e33.exe",
+      "discovered": 2,
+      "named_executed": 0,
+      "named_ignored": 2,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 2,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "ignored_only",
+        "reason": "External Trino; CI phase7-real-services executes HTTP 2"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_IGNORED_ONLY"
+    },
+    {
+      "target": "Running tests\\conformance_pg.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\conformance_pg-6e1a67f4d83a0acf.exe)",
+      "identity": "conformance_pg-6e1a67f4d83a0acf.exe",
+      "discovered": 45,
+      "named_executed": 0,
+      "named_ignored": 45,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 45,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "ignored_only",
+        "reason": "External PG; CI integration explicitly executes conformance 45"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_IGNORED_ONLY"
+    },
+    {
+      "target": "Running tests\\migrate_pg.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\migrate_pg-c82bca4eabba7b09.exe)",
+      "identity": "migrate_pg-c82bca4eabba7b09.exe",
+      "discovered": 4,
+      "named_executed": 0,
+      "named_ignored": 4,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 4,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "ignored_only",
+        "reason": "External PG; CI integration explicitly executes migrations 4"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_IGNORED_ONLY"
+    },
+    {
+      "target": "Running tests\\query_read_pg.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\query_read_pg-fba053d23de5db89.exe)",
+      "identity": "query_read_pg-fba053d23de5db89.exe",
+      "discovered": 2,
+      "named_executed": 0,
+      "named_ignored": 2,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 2,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "ignored_only",
+        "reason": "External PG; CI integration explicitly executes query reads 2"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_IGNORED_ONLY"
+    },
+    {
+      "target": "Running tests\\reload_pg.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\reload_pg-181387145679bc34.exe)",
+      "identity": "reload_pg-181387145679bc34.exe",
+      "discovered": 11,
+      "named_executed": 0,
+      "named_ignored": 11,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 11,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "ignored_only",
+        "reason": "External PG; CI integration explicitly executes reload 11"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_IGNORED_ONLY"
+    },
+    {
+      "target": "Running tests\\reload_trino_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\reload_trino_it-a69493e382f61c94.exe)",
+      "identity": "reload_trino_it-a69493e382f61c94.exe",
+      "discovered": 3,
+      "named_executed": 0,
+      "named_ignored": 3,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 3,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "ignored_only",
+        "reason": "External Trino; CI integration explicitly executes reload 3"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_IGNORED_ONLY"
+    },
+    {
+      "target": "Doc-tests ontoforge",
+      "identity": "Doc-tests ontoforge",
+      "discovered": 0,
+      "named_executed": 0,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "empty_harness",
+        "reason": "Named empty doctest harness at HEAD 060019f; no passing tests claimed"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_EMPTY_HARNESS"
+    },
+    {
+      "target": "Doc-tests ontoforge_action",
+      "identity": "Doc-tests ontoforge_action",
+      "discovered": 0,
+      "named_executed": 0,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "empty_harness",
+        "reason": "Named empty doctest harness at HEAD 060019f; no passing tests claimed"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_EMPTY_HARNESS"
+    },
+    {
+      "target": "Doc-tests ontoforge_api",
+      "identity": "Doc-tests ontoforge_api",
+      "discovered": 0,
+      "named_executed": 0,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "empty_harness",
+        "reason": "Named empty doctest harness at HEAD 060019f; no passing tests claimed"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_EMPTY_HARNESS"
+    },
+    {
+      "target": "Doc-tests ontoforge_auth",
+      "identity": "Doc-tests ontoforge_auth",
+      "discovered": 0,
+      "named_executed": 0,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "empty_harness",
+        "reason": "Named empty doctest harness at HEAD 060019f; no passing tests claimed"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_EMPTY_HARNESS"
+    },
+    {
+      "target": "Doc-tests ontoforge_client",
+      "identity": "Doc-tests ontoforge_client",
+      "discovered": 0,
+      "named_executed": 0,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "empty_harness",
+        "reason": "Named empty doctest harness at HEAD 060019f; no passing tests claimed"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_EMPTY_HARNESS"
+    },
+    {
+      "target": "Doc-tests ontoforge_engine",
+      "identity": "Doc-tests ontoforge_engine",
+      "discovered": 1,
+      "named_executed": 0,
+      "named_ignored": 1,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 1,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "ignored_only",
+        "reason": "Explicit ignore code example in src/trino/l2_monitor.rs:123; not runtime evidence"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_IGNORED_ONLY"
+    },
+    {
+      "target": "Doc-tests ontoforge_expr",
+      "identity": "Doc-tests ontoforge_expr",
+      "discovered": 0,
+      "named_executed": 0,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "empty_harness",
+        "reason": "Named empty doctest harness at HEAD 060019f; no passing tests claimed"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_EMPTY_HARNESS"
+    },
+    {
+      "target": "Doc-tests ontoforge_schema",
+      "identity": "Doc-tests ontoforge_schema",
+      "discovered": 0,
+      "named_executed": 0,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "empty_harness",
+        "reason": "Named empty doctest harness at HEAD 060019f; no passing tests claimed"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_EMPTY_HARNESS"
+    },
+    {
+      "target": "Doc-tests ontoforge_server",
+      "identity": "Doc-tests ontoforge_server",
+      "discovered": 0,
+      "named_executed": 0,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "empty_harness",
+        "reason": "Named empty doctest harness at HEAD 060019f; no passing tests claimed"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_EMPTY_HARNESS"
+    },
+    {
+      "target": "Doc-tests ontoforge_storage",
+      "identity": "Doc-tests ontoforge_storage",
+      "discovered": 0,
+      "named_executed": 0,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "empty_harness",
+        "reason": "Named empty doctest harness at HEAD 060019f; no passing tests claimed"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_EMPTY_HARNESS"
+    }
+  ]
+}

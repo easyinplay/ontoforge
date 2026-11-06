@@ -1,0 +1,85 @@
+{
+  "scope": "Phase01 compatibility only; exact unchanged parser slice, not full matrix recomputation",
+  "reported_integration_red": {
+    "source": "user supplied main-session actual recomputation failure",
+    "script": ".planning/milestones/v1.0-audit/evidence/2026-11-05/requirements-final-recompute.cjs",
+    "line": 131,
+    "error": "12 !== 0",
+    "orphaned": 12
+  },
+  "parser_sha256": "5e8827c6c3043ee7c25360c07a8c765c75afeb8c3b64ba3ab9e1e1a45828794c",
+  "report_before_sha256": "9110129fe795220238f364cf9e3909b29de5aa399e0341976aa9741f48f3391f",
+  "red": {
+    "parsed_rows": 0,
+    "orphaned_ids": [
+      "DX-03",
+      "SCHEMA-01",
+      "SCHEMA-06",
+      "SCHEMA-02",
+      "SCHEMA-03",
+      "SCHEMA-04",
+      "SCHEMA-05",
+      "LINT-01",
+      "LINT-03",
+      "LINT-04",
+      "SCHEMA-07",
+      "LINT-02"
+    ],
+    "execution": {
+      "command": "node",
+      "args": [
+        "-e",
+        "const fs=require('node:fs'); const ids=new Set([\"DX-03\",\"SCHEMA-01\",\"SCHEMA-06\",\"SCHEMA-02\",\"SCHEMA-03\",\"SCHEMA-04\",\"SCHEMA-05\",\"LINT-01\",\"LINT-03\",\"LINT-04\",\"SCHEMA-07\",\"LINT-02\"]);\nfunction expandIds(text) {\n  const found = [];\n  for (const match of text.matchAll(/([A-Z][A-Z0-9]*)-(\\d{2})(?:(?:\\.\\.|-|–)(\\d{2}))?((?:\\/\\d{2})*)/g)) {\n    const numbers = match[3] ? Array.from({ length: Number(match[3]) - Number(match[2]) + 1 }, (_, offset) => Number(match[2]) + offset) : [Number(match[2]), ...match[4].split('/').filter(Boolean).map(Number)];\n    for (const number of numbers) {\n      const id = match[1] + '-' + String(number).padStart(2, '0');\n      if (ids.has(id)) found.push(id);\n    }\n  }\n  return [...new Set(found)];\n}\n\nconst verificationRows=[]; const item={text:fs.readFileSync(\".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md\",'utf8'),phase:'1',path:\".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md\"};\n  let inSection = false;\n  let headingLevel = 0;\n  let statusIndex = -1;\n  item.text.split(/\\r?\\n/).forEach((line, index) => {\n    const heading = line.match(/^(#{1,6})\\s+(.*)/);\n    if (heading) {\n      if (/Requirements Coverage|PLAN \\/ Requirements Coverage|Requirements \\/ PLAN Coverage/.test(heading[2])) { inSection = true; headingLevel = heading[1].length; statusIndex = -1; }\n      else if (heading[1].length <= headingLevel) inSection = false;\n      return;\n    }\n    if (!inSection || !line.startsWith('|')) return;\n    const cells = line.split('|').slice(1, -1).map(cell => cell.trim());\n    if (cells.some(cell => /^(Status|状态)$/i.test(cell))) { statusIndex = cells.findIndex(cell => /^(Status|状态)$/i.test(cell)); return; }\n    const rowIds = expandIds(cells[item.phase === '1' ? 1 : 0] || '');\n    const rowStatus = cells[statusIndex] || cells.find(cell => /SATISFIED|PARTIAL|BLOCKED|VERIFIED/.test(cell)) || 'UNCLASSIFIED';\n    for (const id of rowIds) verificationRows.push({ id, path: item.path, phase: item.phase, line: index + 1, status: rowStatus, source_row: line, local_pass_claim: /SATISFIED|VERIFIED/.test(rowStatus) && !/PARTIAL|BLOCKED|UNSATISFIED/.test(rowStatus) });\n  });\n\nconsole.log(JSON.stringify({rows:verificationRows,orphaned:[...ids].filter(id=>!verificationRows.some(row=>row.id===id))}));"
+      ],
+      "exit": 0,
+      "stdout": "{\"rows\":[],\"orphaned\":[\"DX-03\",\"SCHEMA-01\",\"SCHEMA-06\",\"SCHEMA-02\",\"SCHEMA-03\",\"SCHEMA-04\",\"SCHEMA-05\",\"LINT-01\",\"LINT-03\",\"LINT-04\",\"SCHEMA-07\",\"LINT-02\"]}\n",
+      "stderr": ""
+    }
+  },
+  "parser_source": "  let inSection = false;\n  let headingLevel = 0;\n  let statusIndex = -1;\n  item.text.split(/\\r?\\n/).forEach((line, index) => {\n    const heading = line.match(/^(#{1,6})\\s+(.*)/);\n    if (heading) {\n      if (/Requirements Coverage|PLAN \\/ Requirements Coverage|Requirements \\/ PLAN Coverage/.test(heading[2])) { inSection = true; headingLevel = heading[1].length; statusIndex = -1; }\n      else if (heading[1].length <= headingLevel) inSection = false;\n      return;\n    }\n    if (!inSection || !line.startsWith('|')) return;\n    const cells = line.split('|').slice(1, -1).map(cell => cell.trim());\n    if (cells.some(cell => /^(Status|状态)$/i.test(cell))) { statusIndex = cells.findIndex(cell => /^(Status|状态)$/i.test(cell)); return; }\n    const rowIds = expandIds(cells[item.phase === '1' ? 1 : 0] || '');\n    const rowStatus = cells[statusIndex] || cells.find(cell => /SATISFIED|PARTIAL|BLOCKED|VERIFIED/.test(cell)) || 'UNCLASSIFIED';\n    for (const id of rowIds) verificationRows.push({ id, path: item.path, phase: item.phase, line: index + 1, status: rowStatus, source_row: line, local_pass_claim: /SATISFIED|VERIFIED/.test(rowStatus) && !/PARTIAL|BLOCKED|UNSATISFIED/.test(rowStatus) });\n  });\n",
+  "green": {
+    "parsed_rows": 12,
+    "orphaned_ids": [],
+    "execution": {
+      "command": "node",
+      "args": [
+        "-e",
+        "const fs=require('node:fs'); const ids=new Set([\"DX-03\",\"SCHEMA-01\",\"SCHEMA-06\",\"SCHEMA-02\",\"SCHEMA-03\",\"SCHEMA-04\",\"SCHEMA-05\",\"LINT-01\",\"LINT-03\",\"LINT-04\",\"SCHEMA-07\",\"LINT-02\"]);\nfunction expandIds(text) {\n  const found = [];\n  for (const match of text.matchAll(/([A-Z][A-Z0-9]*)-(\\d{2})(?:(?:\\.\\.|-|–)(\\d{2}))?((?:\\/\\d{2})*)/g)) {\n    const numbers = match[3] ? Array.from({ length: Number(match[3]) - Number(match[2]) + 1 }, (_, offset) => Number(match[2]) + offset) : [Number(match[2]), ...match[4].split('/').filter(Boolean).map(Number)];\n    for (const number of numbers) {\n      const id = match[1] + '-' + String(number).padStart(2, '0');\n      if (ids.has(id)) found.push(id);\n    }\n  }\n  return [...new Set(found)];\n}\n\nconst verificationRows=[]; const item={text:fs.readFileSync(\".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md\",'utf8'),phase:'1',path:\".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md\"};\n  let inSection = false;\n  let headingLevel = 0;\n  let statusIndex = -1;\n  item.text.split(/\\r?\\n/).forEach((line, index) => {\n    const heading = line.match(/^(#{1,6})\\s+(.*)/);\n    if (heading) {\n      if (/Requirements Coverage|PLAN \\/ Requirements Coverage|Requirements \\/ PLAN Coverage/.test(heading[2])) { inSection = true; headingLevel = heading[1].length; statusIndex = -1; }\n      else if (heading[1].length <= headingLevel) inSection = false;\n      return;\n    }\n    if (!inSection || !line.startsWith('|')) return;\n    const cells = line.split('|').slice(1, -1).map(cell => cell.trim());\n    if (cells.some(cell => /^(Status|状态)$/i.test(cell))) { statusIndex = cells.findIndex(cell => /^(Status|状态)$/i.test(cell)); return; }\n    const rowIds = expandIds(cells[item.phase === '1' ? 1 : 0] || '');\n    const rowStatus = cells[statusIndex] || cells.find(cell => /SATISFIED|PARTIAL|BLOCKED|VERIFIED/.test(cell)) || 'UNCLASSIFIED';\n    for (const id of rowIds) verificationRows.push({ id, path: item.path, phase: item.phase, line: index + 1, status: rowStatus, source_row: line, local_pass_claim: /SATISFIED|VERIFIED/.test(rowStatus) && !/PARTIAL|BLOCKED|UNSATISFIED/.test(rowStatus) });\n  });\n\nconsole.log(JSON.stringify({rows:verificationRows,orphaned:[...ids].filter(id=>!verificationRows.some(row=>row.id===id))}));"
+      ],
+      "exit": 0,
+      "stdout": "{\"rows\":[{\"id\":\"DX-03\",\"path\":\".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md\",\"phase\":\"1\",\"line\":187,\"status\":\"SATISFIED_TECHNICAL\",\"source_row\":\"| 01-01-PLAN.md, 01-02-PLAN.md, 01-11-PLAN.md | DX-03 | Windows 本机 `cargo test` 不依赖 Docker 即可全部通过 | SATISFIED_TECHNICAL | 技术执行证据不解除3项judgment；phase保持human_needed |\",\"local_pass_claim\":true},{\"id\":\"SCHEMA-01\",\"path\":\".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md\",\"phase\":\"1\",\"line\":188,\"status\":\"SATISFIED_TECHNICAL\",\"source_row\":\"| 01-01-PLAN.md, 01-03-PLAN.md, 01-06-PLAN.md | SCHEMA-01 | 开发者可以用 YAML（或等价 JSON）在多个文件中定义一个 ontology，`ontoforge validate` 把它们合并加载为单一 IR | SATISFIED_TECHNICAL | 仅技术覆盖，不解除原创出处、路径/用户名、ONT-V三项judgment或原editor观察限制 |\",\"local_pass_claim\":true},{\"id\":\"SCHEMA-06\",\"path\":\".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md\",\"phase\":\"1\",\"line\":189,\"status\":\"SATISFIED_TECHNICAL\",\"source_row\":\"| 01-01-PLAN.md, 01-03-PLAN.md, 01-04-PLAN.md, 01-05-PLAN.md, 01-06-PLAN.md, 01-12-PLAN.md, 01-13-PLAN.md | SCHEMA-06 | 定义有错时，开发者看到带文件名与 line:col 的诊断信息 | SATISFIED_TECHNICAL | 路径/用户名judgment仍为UNCERTAIN/WARNING，需显式人工resolution |\",\"local_pass_claim\":true},{\"id\":\"SCHEMA-02\",\"path\":\".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md\",\"phase\":\"1\",\"line\":190,\"status\":\"SATISFIED_TECHNICAL\",\"source_row\":\"| 01-04-PLAN.md | SCHEMA-02 | 开发者可以定义 object type：`apiName`、primary key、title key、displayName、description、aliases、hidden | SATISFIED_TECHNICAL | 仅技术覆盖，不解除原创出处、路径/用户名、ONT-V三项judgment或原editor观察限制 |\",\"local_pass_claim\":true},{\"id\":\"SCHEMA-03\",\"path\":\".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md\",\"phase\":\"1\",\"line\":191,\"status\":\"SATISFIED_TECHNICAL\",\"source_row\":\"| 01-04-PLAN.md | SCHEMA-03 | 开发者可以为属性选择 base type：Byte / Short / Integer / Long / Float / Double / Decimal、String、Boolean、Date、Timestamp、Array、Geopoint，并声明 required | SATISFIED_TECHNICAL | 仅技术覆盖，不解除原创出处、路径/用户名、ONT-V三项judgment或原editor观察限制 |\",\"local_pass_claim\":true},{\"id\":\"SCHEMA-04\",\"path\":\".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md\",\"phase\":\"1\",\"line\":192,\"status\":\"SATISFIED_TECHNICAL\",\"source_row\":\"| 01-05-PLAN.md | SCHEMA-04 | 开发者可以定义 link type：1:1、1:N（外键属性）、M:N（join 定义），两个方向各有 apiName | SATISFIED_TECHNICAL | 仅技术覆盖，不解除原创出处、路径/用户名、ONT-V三项judgment或原editor观察限制 |\",\"local_pass_claim\":true},{\"id\":\"SCHEMA-05\",\"path\":\".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md\",\"phase\":\"1\",\"line\":193,\"status\":\"SATISFIED_TECHNICAL\",\"source_row\":\"| 01-06-PLAN.md, 01-07-PLAN.md, 01-12-PLAN.md | SCHEMA-05 | 开发者可以定义 action type：参数（类型、required、默认值）、rules（create / modify / delete object，add / remove link）、submission criteria（CEL） | SATISFIED_TECHNICAL | 仅技术覆盖，不解除原创出处、路径/用户名、ONT-V三项judgment或原editor观察限制 |\",\"local_pass_claim\":true},{\"id\":\"LINT-01\",\"path\":\".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md\",\"phase\":\"1\",\"line\":194,\"status\":\"SATISFIED_TECHNICAL\",\"source_row\":\"| 01-08-PLAN.md | LINT-01 | `ontoforge lint` 对 ontology 运行 E 级规则（适用于 v1 schema 范围的 ONT-E 规则），有 E 级问题时退出码非 0 | SATISFIED_TECHNICAL | 仅技术覆盖，不解除原创出处、路径/用户名、ONT-V三项judgment或原editor观察限制 |\",\"local_pass_claim\":true},{\"id\":\"LINT-03\",\"path\":\".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md\",\"phase\":\"1\",\"line\":195,\"status\":\"SATISFIED_TECHNICAL\",\"source_row\":\"| 01-08-PLAN.md, 01-13-PLAN.md | LINT-03 | lint 结果可输出为人类可读格式（带源码定位）和 JSON 格式 | SATISFIED_TECHNICAL | 仅技术覆盖，不解除原创出处、路径/用户名、ONT-V三项judgment或原editor观察限制 |\",\"local_pass_claim\":true},{\"id\":\"LINT-04\",\"path\":\".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md\",\"phase\":\"1\",\"line\":196,\"status\":\"SATISFIED_TECHNICAL\",\"source_row\":\"| 01-08-PLAN.md, 01-13-PLAN.md | LINT-04 | 开发者可以在配置中按规则 ID 关闭或调整严重级 | SATISFIED_TECHNICAL | ONT-V不可关闭/降级judgment仍为UNCERTAIN/WARNING，需显式人工resolution |\",\"local_pass_claim\":true},{\"id\":\"SCHEMA-07\",\"path\":\".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md\",\"phase\":\"1\",\"line\":197,\"status\":\"SATISFIED_TECHNICAL\",\"source_row\":\"| 01-09-PLAN.md, 01-14-PLAN.md | SCHEMA-07 | 开发者可以导出 ontology 定义的 JSON Schema，用于编辑器补全与 LLM 生成 | SATISFIED_TECHNICAL | 沿01-UAT Test2既有editor override，不代表新增实机观察；3项judgment不解除 |\",\"local_pass_claim\":true},{\"id\":\"LINT-02\",\"path\":\".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md\",\"phase\":\"1\",\"line\":198,\"status\":\"SATISFIED_TECHNICAL\",\"source_row\":\"| 01-10-PLAN.md, 01-11-PLAN.md | LINT-02 | `ontoforge lint` 运行 W01–W11 命名与结构警告 | SATISFIED_TECHNICAL | 仅技术覆盖，不解除原创出处、路径/用户名、ONT-V三项judgment或原editor观察限制 |\",\"local_pass_claim\":true}],\"orphaned\":[]}\n",
+      "stderr": ""
+    },
+    "full_matrix_not_rerun": true
+  },
+  "recorded_utc": "2026-11-05T14:28:39.288Z",
+  "report_after_sha256": "98c80776c3170489cf0d72007fcaf942e88dbd605207cb713a5b300257adc310",
+  "native_gate": {
+    "command": "node",
+    "args": [
+      "C:/Users/easyi/.codex/gsd-core/bin/gsd-tools.cjs",
+      "query",
+      "verification.status",
+      ".planning/phases/01-workspace-schema-lint",
+      "--pick",
+      "status"
+    ],
+    "exit": 0,
+    "stdout": "human_needed",
+    "stderr": ""
+  },
+  "git_diff_check": {
+    "command": "git",
+    "args": [
+      "diff",
+      "--check",
+      "--",
+      ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
+      ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-01"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "derived_script_unchanged": true
+}

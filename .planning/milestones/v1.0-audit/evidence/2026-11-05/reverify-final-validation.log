@@ -1,0 +1,32 @@
+started_utc=2026-11-05T09:04:35.6211372Z
+✔ required target with zero discovery cannot complete beside a passing target (54.5804ms)
+✔ duplicate execution identity cannot conceal a missing required target (50.7634ms)
+✔ explicitly named empty doctest harness is exempt and never counted successful (50.623ms)
+✔ explicitly ignored documentation example remains excluded not nonignored success (50.4979ms)
+✔ unknown ignored-only required target is not successful execution (49.772ms)
+✔ unknown empty doctest is not automatically exempt (48.522ms)
+✔ duplicate discovery identities are rejected even with equal aggregate counts (52.9309ms)
+✔ different identity sets cannot complete with equal counts (52.8593ms)
+✔ one-to-one target identities may execute in a different order (52.8703ms)
+✔ a named empty exemption cannot hide missing execution or create success alone (102.6557ms)
+✔ ignored-only policy requires its exact reviewed discovery count (51.0337ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 683.7946
+node_test_exit_code=0
+HEAD/source equivalence/uncommitted production diff/fingerprint equality/owner status: PASS
+01-workspace-schema-lint human_needed stale
+02-source-binding-engine gaps_found gaps_found
+03-edit-store-scope-model passed stale
+04-scoped-l0-read passed stale
+05-online-action passed stale
+06-l2-raw-dql-toolsets-audit passed stale
+07-rest-mcp-shell passed passed
+final_assert_exit_code=0
+cargo_rustc_processes=0
+ended_utc=2026-11-05T09:04:39.6233241Z

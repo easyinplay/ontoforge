@@ -1,0 +1,17 @@
+recorded_utc=2026-11-05T11:07:46.346Z
+source_sha256=f6ef7667da266abc7fa3b538fa4f4f3d4ee5d2fc0a73ef105e956e86eace94e7
+before_source_sha256=9a0baafc255bd6a790a33507f757d0636fdcfffafaa4a10bc5346bb2390f154a
+reverse_three_substitutions_matches_original=true
+changed_original_lines=3
+raw_log_parsing_and_existing_validation_unchanged=true
+dynamic_owner_signed_and_Phase07_signature_scope_unchanged=true
+original_index_entries_validated=56
+original_indexed_bytes_and_sha256_unchanged=true
+node_check_exit_code=0
+pending_metric_semantics=positive current execution evidence AND any assigned canonical gate missing or not passed; partial ENGINE-05 included only while its report gates are pending; historical-only DX-04 excluded
+current_execution_reports_current_ids_semantics=mapped-tests-executed requirements whose assigned canonical gates all passed; not full-contract functional completion
+test_evidence=freshness-red.log (behavioral RED), freshness-green.log (tracer GREEN), assigned-gate-red.log (missing gate RED), freshness-regression-initial-failed.log (incorrect split oracle retained), freshness-regression-green.log (21 passed, 0 failed)
+matrix_json_written=false
+shared_documents_written=false
+cargo_or_containers_invoked=false
+exit_code=0

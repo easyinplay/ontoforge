@@ -1,0 +1,32 @@
+command=node --test --test-name-pattern="explicitly named empty" reverify-counts.test.cjs
+✖ explicitly named empty doctest harness is exempt and never counted successful (53.1513ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 121.8082
+
+✖ failing tests:
+
+test at .planning\milestones\v1.0-audit\evidence\2026-11-05\reverify-counts.test.cjs:28:1
+✖ explicitly named empty doctest harness is exempt and never counted successful (53.1513ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (D:\DataSpellProjects\ontoforge\.planning\milestones\v1.0-audit\evidence\2026-11-05\reverify-counts.test.cjs:30:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+exit_code=1

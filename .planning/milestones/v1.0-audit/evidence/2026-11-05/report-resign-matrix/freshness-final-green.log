@@ -1,0 +1,42 @@
+recorded_utc=2026-11-05T11:09:48.436Z
+command=node --test .planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-matrix/freshness.test.cjs
+source_path=.planning/milestones/v1.0-audit/evidence/2026-11-05/requirements-final-dynamic.cjs
+source_sha256=f6ef7667da266abc7fa3b538fa4f4f3d4ee5d2fc0a73ef105e956e86eace94e7
+test_path=.planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-matrix/freshness.test.cjs
+test_sha256=1f8885fbee8fb6a29f8526fe2ede84b338f9205a2038e6c78dc7a3907fe09aad
+phase03_human_needed_boundary=retained; no override; Phase07 owner signature cannot clear assigned Phase03 gate
+source_changed_in_this_round=false
+source_or_test_changed_during_run=false
+✔ passed assigned reports make non-Phase07 execution current without extending owner signature (47.1157ms)
+✔ stale canonical gate keeps executed evidence pending despite a passed raw claim (36.9758ms)
+✔ human_needed canonical gate keeps executed evidence pending despite a passed raw claim (35.201ms)
+✔ gaps_found canonical gate keeps executed evidence pending despite a passed raw claim (33.7251ms)
+✔ passed Phase3 report makes STORE-01 execution current without a Phase07 owner signature (34.2268ms)
+✔ passed Phase5 report makes ACTION-01 execution current without a Phase07 owner signature (33.1009ms)
+✔ passed Phase6 report makes L2-01 execution current without a Phase07 owner signature (31.3056ms)
+✔ passed Phase7.1 report makes STORE-05 execution current without a Phase07 owner signature (31.0737ms)
+✔ one stale assigned crossphase gate blocks freshness after the other report passes (30.5083ms)
+✔ duplicate passed report cannot cover a different missing assigned phase (30.4555ms)
+✔ pending metric counts executed evidence with unresolved gates rather than freshness labels or owner signatures (31.283ms)
+✔ existing 79-requirement assignment retains exactly 21 Phase07 scoped signatures (45.7728ms)
+✔ all assigned crossphase gates passed make current evidence reports current (31.0933ms)
+✔ Phase07 owner signature cannot cover another assigned phase human gate (31.2977ms)
+✔ Phase07-only passed report retains its scoped owner signature alongside report freshness (31.1771ms)
+✔ Phase03 historical human approval remains pending across Phase06 and signed Phase07 (28.854ms)
+✔ a stale Phase07 gate grants neither owner signature nor report freshness (29.7824ms)
+✔ DX-04 stays historical-only without executed-evidence pending count when report is passed (31.0382ms)
+✔ DX-04 stays historical-only without executed-evidence pending count when report is stale (29.5784ms)
+✔ ENGINE-05 stays partial with report gate passed and counts only actual pending gates (30.8229ms)
+✔ ENGINE-05 stays partial with report gate gaps_found and counts only actual pending gates (29.864ms)
+✔ missing assigned canonical report remains pending rather than vacuously current (28.4517ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 829.6859
+
+
+exit_code=0

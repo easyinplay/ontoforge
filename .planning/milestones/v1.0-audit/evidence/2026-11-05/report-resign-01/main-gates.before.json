@@ -1,0 +1,59 @@
+{
+  "checked_at": "2026-11-05T14:00:02.272Z",
+  "gates": [
+    {
+      "phase": "01-workspace-schema-lint",
+      "raw_status": "human_needed",
+      "canonical_status": "stale",
+      "score": "11/11 must-haves verified"
+    },
+    {
+      "phase": "02-source-binding-engine",
+      "raw_status": "gaps_found",
+      "canonical_status": "gaps_found",
+      "score": "100/103 must-haves verified"
+    },
+    {
+      "phase": "03-edit-store-scope-model",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "139/139 must-haves verified"
+    },
+    {
+      "phase": "04-scoped-l0-read",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "36/36 must-haves verified"
+    },
+    {
+      "phase": "05-online-action",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "36/36 must-haves verified"
+    },
+    {
+      "phase": "06-l2-raw-dql-toolsets-audit",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "22/22 must-haves verified"
+    },
+    {
+      "phase": "07-rest-mcp-shell",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "80/80 must-haves verified"
+    },
+    {
+      "phase": "07.1-source-cardinality-gap-closure",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "18/18 must-haves verified"
+    },
+    {
+      "phase": "07.2-minio-contract-gap-closure",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "9/9 must-haves verified"
+    }
+  ]
+}

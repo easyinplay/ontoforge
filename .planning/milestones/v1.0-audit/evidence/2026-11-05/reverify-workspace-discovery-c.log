@@ -1,0 +1,2473 @@
+started_utc=2026-11-05T08:31:17.9196602Z
+head=060019fe52005c6b85ae5c5f59da9868f464e579
+command=cargo test --workspace --locked -- --list
+CARGO_BUILD_JOBS=2
+CARGO_TARGET_DIR=C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.27
+   Compiling quote v1.0.47
+   Compiling cfg-if v1.0.5
+   Compiling serde v1.0.229
+   Compiling windows-link v0.2.1
+   Compiling syn v3.0.9
+   Compiling memchr v2.8.3
+   Compiling rand_core v0.10.1
+   Compiling getrandom v0.4.3
+   Compiling serde_core v1.0.229
+   Compiling scopeguard v1.2.0
+   Compiling itoa v1.0.18
+   Compiling parking_lot_core v0.9.12
+   Compiling lock_api v0.4.14
+   Compiling once_cell v1.21.4
+   Compiling equivalent v1.0.3
+   Compiling syn v2.0.119
+   Compiling serde_derive v1.0.229
+   Compiling windows-sys v0.61.2
+   Compiling log v0.4.34
+   Compiling zmij v1.0.23
+   Compiling smallvec v1.16.4
+   Compiling synstructure v0.14.0
+   Compiling foldhash v0.2.0
+   Compiling allocator-api2 v0.2.21
+   Compiling jobserver v0.1.35
+   Compiling find-msvc-tools v0.1.15
+   Compiling shlex v2.0.1
+   Compiling cc v1.10.0
+   Compiling zerofrom-derive v0.1.8
+   Compiling autocfg v1.5.1
+   Compiling yoke-derive v0.8.4
+   Compiling pin-project-lite v0.2.17
+   Compiling bytes v1.12.1
+   Compiling futures-core v0.3.34
+   Compiling hashbrown v0.17.1
+   Compiling zerovec-derive v0.11.7
+   Compiling indexmap v2.14.2
+   Compiling percent-encoding v2.3.2
+   Compiling parking_lot v0.12.5
+   Compiling displaydoc v0.2.7
+   Compiling tokio-macros v2.7.2
+   Compiling serde_json v1.0.154
+   Compiling num-traits v0.2.19
+   Compiling thiserror v2.0.21
+   Compiling futures-sink v0.3.34
+   Compiling thiserror-impl v2.0.21
+   Compiling libc v0.2.191
+   Compiling cmake v0.1.58
+   Compiling dunce v1.0.5
+   Compiling fs_extra v1.3.0
+   Compiling slab v0.4.12
+   Compiling aws-lc-sys v0.47.0
+   Compiling futures-channel v0.3.34
+   Compiling futures-macro v0.3.34
+   Compiling futures-io v0.3.34
+   Compiling futures-task v0.3.34
+   Compiling base64 v0.23.1
+   Compiling utf8_iter v1.0.4
+   Compiling futures-util v0.3.34
+   Compiling tracing-attributes v0.1.31
+   Compiling tracing-core v0.1.36
+   Compiling tracing v0.1.44
+   Compiling version_check v0.9.5
+   Compiling ryu v1.0.23
+   Compiling regex-syntax v0.8.11
+   Compiling icu_normalizer_data v2.4.0
+   Compiling icu_properties_data v2.4.0
+   Compiling rustls v0.23.46
+   Compiling untrusted v0.9.0
+   Compiling form_urlencoded v1.2.2
+   Compiling fnv v1.0.7
+   Compiling subtle v2.6.1
+   Compiling http v1.5.0
+   Compiling zerofrom v0.1.8
+   Compiling stable_deref_trait v1.2.1
+   Compiling yoke v0.8.4
+   Compiling chrono v0.4.45
+   Compiling heck v0.5.0
+   Compiling bitflags v2.13.2
+   Compiling zerovec v0.11.9
+   Compiling http-body v1.1.0
+   Compiling mio v1.2.4
+   Compiling socket2 v0.6.5
+   Compiling writeable v0.6.4
+   Compiling typenum v1.20.1
+   Compiling tokio v1.54.1
+   Compiling aho-corasick v1.1.5
+   Compiling rustversion v1.0.23
+   Compiling ref-cast v1.0.27
+   Compiling tower-service v0.3.3
+   Compiling regex-automata v0.4.18
+   Compiling tinystr v0.8.5
+   Compiling ref-cast-impl v1.0.27
+   Compiling anstyle v1.0.14
+   Compiling httparse v1.10.1
+   Compiling atomic-waker v1.1.2
+   Compiling cpufeatures v0.3.1
+   Compiling litemap v0.8.3
+   Compiling icu_locale_core v2.4.0
+   Compiling potential_utf v0.1.6
+   Compiling zerotrie v0.2.5
+   Compiling try-lock v0.2.5
+   Compiling want v0.3.2
+   Compiling icu_provider v2.4.0
+   Compiling encoding_rs v0.8.42
+   Compiling chacha20 v0.10.2
+   Compiling zeroize_derive v1.5.0
+   Compiling siphasher v1.0.4
+   Compiling core_detect v1.0.0
+   Compiling unicode-width v0.2.3
+   Compiling phf_shared v0.12.1
+   Compiling zeroize v1.9.1
+   Compiling rand v0.10.3
+   Compiling icu_collections v2.4.0
+   Compiling regex v1.13.1
+   Compiling serde_derive_internals v0.30.0
+   Compiling chrono-tz v0.10.4
+   Compiling simdutf8 v0.1.5
+   Compiling aws-lc-rs v1.19.0
+   Compiling multiversion_no_op v1.0.0
+   Compiling schemars_derive v1.2.3
+   Compiling phf v0.12.1
+   Compiling sync_wrapper v1.0.2
+   Compiling winapi-util v0.1.11
+   Compiling serde_path_to_error v0.1.20
+   Compiling dyn-clone v1.0.20
+   Compiling arraydeque v0.5.1
+   Compiling ipnet v2.12.2
+   Compiling winnow v1.0.4
+   Compiling tower-layer v0.3.3
+   Compiling camino v1.2.6
+   Compiling strsim v0.11.1
+   Compiling toml_parser v1.1.5+spec-1.1.0
+   Compiling granit-parser v2.0.0
+   Compiling schemars v1.2.3
+   Compiling same-file v1.0.6
+   Compiling encoding_rs_io v0.1.8
+   Compiling rustls-pki-types v1.15.1
+   Compiling annotate-snippets v0.12.17
+   Compiling generic-array v0.14.7
+   Compiling toml_datetime v1.1.2+spec-1.1.0
+   Compiling serde_spanned v1.1.2
+   Compiling bstr v1.13.1
+   Compiling csv-core v0.1.13
+   Compiling nohash-hasher v0.2.0
+   Compiling toml_writer v1.1.3+spec-1.1.0
+   Compiling toml v1.1.8+spec-1.1.0
+   Compiling serde-saphyr v2.0.0
+   Compiling csv v1.4.0
+   Compiling globset v0.4.21
+   Compiling walkdir v2.5.0
+   Compiling http-body-util v0.1.5
+   Compiling fastrand v2.5.0
+   Compiling untrusted v0.7.1
+   Compiling rustls-webpki v0.103.16
+   Compiling icu_properties v2.4.0
+   Compiling icu_normalizer v2.4.0
+   Compiling idna_adapter v1.2.2
+   Compiling ontoforge-schema v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-schema)
+   Compiling idna v1.1.0
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling base64 v0.22.1
+   Compiling digest v0.10.7
+   Compiling url v2.5.8
+   Compiling futures-executor v0.3.34
+   Compiling cpufeatures v0.2.17
+   Compiling sha2 v0.10.9
+   Compiling tempfile v3.27.0
+   Compiling tokio-util v0.7.20
+   Compiling hybrid-array v0.4.15
+   Compiling h2 v0.4.20
+   Compiling byteorder v1.5.0
+   Compiling httpdate v1.0.3
+   Compiling crossbeam-utils v0.8.23
+   Compiling vcpkg v0.2.15
+   Compiling cmov v0.5.4
+   Compiling pkg-config v0.3.34
+   Compiling ctutils v0.4.7
+   Compiling block-buffer v0.12.1
+   Compiling hyper v1.12.0
+   Compiling hyper-util v0.1.21
+   Compiling crypto-common v0.2.2
+   Compiling hashbrown v0.16.1
+   Compiling parking v2.2.1
+   Compiling crc-catalog v2.5.0
+   Compiling crc v3.4.0
+   Compiling hashlink v0.11.1
+   Compiling event-listener v5.4.2
+   Compiling digest v0.11.3
+   Compiling crossbeam-queue v0.3.14
+   Compiling tower v0.5.3
+   Compiling hex v0.4.3
+   Compiling serde_urlencoded v0.7.1
+   Compiling bit-vec v0.10.1
+   Compiling lazy_static v1.5.1
+   Compiling bit-set v0.11.1
+   Compiling tokio-rustls v0.26.6
+   Compiling object v0.39.1
+   Compiling tinyvec v1.13.3
+   Compiling hyper-rustls v0.27.10
+   Compiling unicode-normalization v0.1.26
+   Compiling tower-http v0.6.11
+   Compiling hmac v0.13.0
+   Compiling libsqlite3-sys v0.37.0
+   Compiling rustls-platform-verifier v0.7.1
+   Compiling webpki-roots v1.0.11
+   Compiling tokio-stream v0.1.19
+   Compiling futures-intrusive v0.5.0
+   Compiling either v1.19.0
+   Compiling spin v0.9.9
+   Compiling unicode-bidi v0.3.18
+   Compiling unicode-properties v0.1.4
+   Compiling stringprep v0.1.5
+   Compiling sqlx-core v0.9.0
+   Compiling flume v0.12.0
+   Compiling reqwest v0.13.5
+   Compiling hkdf v0.13.0
+   Compiling atoi v2.0.0
+   Compiling sha2 v0.11.1
+   Compiling md-5 v0.11.0
+   Compiling dotenvy v0.15.7
+   Compiling whoami v2.1.3
+   Compiling ar_archive_writer v0.5.3
+   Compiling etcetera v0.11.0
+   Compiling sqlx-postgres v0.9.0
+   Compiling psm v0.1.32
+   Compiling sqlx-sqlite v0.9.0
+   Compiling sqlx-macros-core v0.9.0
+   Compiling stacker v0.1.25
+   Compiling sqlx-macros v0.9.0
+   Compiling sqlx v0.9.0
+   Compiling recursive-proc-macro-impl v0.1.1
+   Compiling recursive v0.1.1
+   Compiling sqlparser_derive v0.6.0
+   Compiling secrecy v0.10.3
+   Compiling num-integer v0.1.47
+   Compiling sqlparser v0.63.0
+   Compiling num-bigint v0.4.8
+   Compiling uuid v1.29.0
+   Compiling pastey v0.2.3
+   Compiling murmur3 v0.4.1
+   Compiling typed-arena v2.0.2
+   Compiling minimal-lexical v0.2.1
+   Compiling nom v7.1.3
+   Compiling antlr4rust v0.6.0
+   Compiling cel v0.15.0
+   Compiling ontoforge-engine v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-engine)
+   Compiling futures v0.3.34
+   Compiling ontoforge-expr v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-expr)
+   Compiling num-conv v0.2.2
+   Compiling time-core v0.1.9
+   Compiling time-macros v0.2.32
+   Compiling powerfmt v0.2.1
+   Compiling deranged v0.5.9
+   Compiling pem v3.0.6
+   Compiling signature v2.2.0
+   Compiling time v0.3.55
+   Compiling sea-query v1.0.2
+   Compiling simple_asn1 v0.6.4
+   Compiling jsonwebtoken v11.1.0
+   Compiling sea-query-sqlx v0.9.1
+   Compiling ontoforge-auth v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-auth)
+   Compiling ulid v3.0.0
+   Compiling encode_unicode v1.0.0
+   Compiling ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+   Compiling console v0.16.6
+   Compiling similar v2.7.0
+   Compiling insta v1.49.0
+   Compiling num_cpus v1.17.0
+   Compiling deadpool-runtime v0.1.4
+   Compiling deadpool v0.12.3
+   Compiling assert-json-diff v2.0.2
+   Compiling wiremock v0.6.5
+   Compiling ontoforge-query v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-query)
+   Compiling async-trait v0.1.92
+   Compiling matchit v0.8.4
+   Compiling quick-error v1.2.3
+   Compiling wait-timeout v0.2.1
+   Compiling rand_xorshift v0.5.0
+   Compiling rusty-fork v0.3.1
+   Compiling unarray v0.1.4
+   Compiling ontoforge-action v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-action)
+   Compiling proptest v1.12.0
+   Compiling mime v0.3.17
+   Compiling axum-core v0.5.6
+   Compiling utoipa-gen v6.0.1
+   Compiling rmcp v3.8.0
+   Compiling axum v0.8.9
+   Compiling sse-stream v0.2.6
+   Compiling utoipa v6.0.0
+   Compiling ontoforge-api v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-api)
+   Compiling utoipa-axum v0.3.0
+   Compiling icu_locale_fallback_data v2.4.0
+   Compiling icu_segmenter_data v2.4.0
+   Compiling utf8parse v0.2.2
+   Compiling once_cell_polyfill v1.70.2
+   Compiling anstyle-wincon v3.0.11
+   Compiling anstyle-parse v1.0.0
+   Compiling icu_locale_fallback v2.4.0
+   Compiling anstyle-query v1.1.5
+   Compiling colorchoice v1.0.5
+   Compiling is_terminal_polyfill v1.70.2
+   Compiling rustc-demangle v0.1.28
+   Compiling backtrace v0.3.77
+   Compiling anstream v1.0.0
+   Compiling icu_segmenter v2.4.0
+   Compiling is_ci v1.2.0
+   Compiling clap_lex v1.1.1
+   Compiling clap_builder v4.6.7
+   Compiling supports-color v3.0.2
+   Compiling textwrap v0.16.4
+   Compiling ontoforge-server v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-server)
+   Compiling backtrace-ext v0.2.1
+   Compiling clap_derive v4.6.7
+   Compiling terminal_size v0.4.4
+   Compiling miette-derive v7.6.0
+   Compiling owo-colors v4.4.0
+   Compiling supports-hyperlinks v3.2.0
+   Compiling anyhow v1.0.104
+   Compiling unicode-width v0.1.14
+   Compiling supports-unicode v3.0.0
+   Compiling miette v7.6.0
+   Compiling clap v4.6.7
+   Compiling ontoforge v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge)
+   Compiling crc32fast v1.5.3
+   Compiling retry-policies v0.5.2
+   Compiling simd-adler32 v0.3.10
+   Compiling target-triple v1.0.1
+   Compiling adler2 v2.0.1
+   Compiling miniz_oxide v0.9.1
+   Compiling reqwest-middleware v0.5.2
+   Compiling filetime v0.2.29
+   Compiling tar v0.4.46
+   Compiling flate2 v1.1.10
+   Compiling regex-lite v0.1.9
+   Compiling semver v1.0.28
+   Compiling reqwest-tracing v0.7.1
+   Compiling reqwest-retry v0.9.1
+   Compiling getrandom v0.3.4
+   Compiling zerocopy v0.8.63
+   Compiling postgresql_archive v0.21.0
+   Compiling ahash v0.8.12
+   Compiling postgresql_embedded v0.21.0
+   Compiling num-rational v0.4.2
+   Compiling num-iter v0.1.46
+   Compiling num-complex v0.4.6
+   Compiling num v0.4.3
+   Compiling postgresql_commands v0.21.0
+   Compiling unicode-general-category v1.1.0
+   Compiling borrow-or-share v0.2.4
+   Compiling bit-vec v0.8.0
+   Compiling jsonschema-value v0.58.6
+   Compiling bit-set v0.8.0
+   Compiling fluent-uri v0.4.1
+   Compiling fraction v0.17.0
+   Compiling strum_macros v0.28.0
+   Compiling bytecount v0.6.9
+   Compiling vsimd v0.8.0
+   Compiling micromap v0.3.0
+   Compiling outref v0.5.2
+   Compiling num-cmp v0.1.0
+   Compiling strum v0.28.0
+   Compiling uuid-simd v0.8.0
+   Compiling referencing v0.58.6
+   Compiling fancy-regex v0.19.2
+   Compiling jsonschema-regex v0.58.6
+   Compiling email_address v0.2.9
+   Compiling data-encoding v2.11.1
+   Compiling ontoforge-client v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-client)
+   Compiling jsonschema v0.58.6
+    Finished `test` profile [unoptimized] target(s) in 10m 33s
+     Running unittests src\lib.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\ontoforge-fbe28d3212af503b.exe)
+dev::tests::lock_acquisition_rechecks_marker_before_reset_deletes_assets: test
+dev::tests::lock_acquisition_rechecks_new_entries_before_initialization: test
+mcp::tests::bridge_configuration_bounds_concurrency_and_redacts_errors: test
+mcp::tests::bridge_configuration_disables_reinit_and_rejects_url_credentials: test
+online::tests::cardinality_cleanup_failure_after_metadata_error: test
+online::tests::cardinality_cleanup_failure_after_success: test
+online::tests::cardinality_total_deadline_configuration: test
+online::tests::cardinality_total_deadline_is_shared: test
+online::tests::query_context_uses_defaults_and_timeout_flag: test
+online::tests::trino_context_sends_the_configured_client_tags: test
+online::tests::trino_context_takes_the_configured_limits: test
+reload::tests::a_postgres_store_read_by_trino_on_a_trino_profile_is_probed: test
+reload::tests::nothing_to_wait_for_without_trino_in_front_of_postgres: test
+reload::tests::the_default_profile_of_the_manifest_decides_without_an_option: test
+render::tests::carriage_return_and_bidi_controls_are_replaced: test
+render::tests::exit_codes: test
+render::tests::file_name_cannot_drive_the_terminal: test
+render::tests::located_diagnostic_without_source_names_the_place: test
+render::tests::multibyte_text_is_untouched: test
+render::tests::sanitize_preserves_byte_length_and_strips_escapes: test
+serve::tests::openapi_export_without_store_is_deterministic: test
+serve::tests::serve_args_validate_config_and_address: test
+serve::tests::serve_query_key_rejects_missing_short_and_oversized_files_before_listen: test
+serve::tests::serve_query_key_survives_restart_and_is_independent_of_auth: test
+serve::tests::serve_real_listener_auth_and_shutdown: test
+
+25 tests, 0 benchmarks
+     Running unittests src\main.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\ontoforge-59cfc5af2bc1f8a6.exe)
+0 tests, 0 benchmarks
+     Running tests\cli.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\cli-a1f6a1f2899b9d41.exe)
+aviation_is_clean_under_dev: test
+json_output_has_exactly_the_documented_fields_and_no_ansi: test
+missing_manifest_is_reported_as_v14: test
+profile_precedence: test
+validate_aviation_succeeds_silently: test
+validate_human_output_for_unknown_field: test
+validate_summary_names_the_profile: test
+validate_unknown_field_points_at_the_misspelled_key: test
+
+8 tests, 0 benchmarks
+     Running tests\cli_check_cardinality.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\cli_check_cardinality-84e0de09c2cb2dc2.exe)
+cardinality_budget_starts_after_precheck_and_pk: test
+cardinality_flag_contract: test
+cardinality_total_deadline_is_shared: test
+cardinality_tracer_reports_conflict: test
+cleanup_transport_failure_is_reported: test
+failure_preserves_findings_and_drains: test
+incomplete_scan_is_not_clean: test
+long_sample_values_are_bounded: test
+no_flag_means_no_cardinality_scan: test
+non_candidates_are_not_scanned: test
+precheck_errors_skip_cardinality_scan: test
+repeated_check_is_read_only: test
+warning_output_and_exit_codes: test
+
+13 tests, 0 benchmarks
+     Running tests\cli_check_pk.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\cli_check_pk-d943fb8d8d9b7306.exe)
+check_pk_clean_on_aviation: test
+check_pk_engine_failure_keeps_earlier_findings: test
+check_pk_on_trino: test
+check_pk_reports_duplicates: test
+check_pk_reports_null_keys: test
+check_pk_skips_mismatched_bindings: test
+check_pk_without_flag_runs_no_scan: test
+exit_code_table: test
+
+8 tests, 0 benchmarks
+     Running tests\cli_color.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\cli_color-44eba0533d427a18.exe)
+color_environment_controls_human_output_and_never_colors_json: test
+
+1 test, 0 benchmarks
+     Running tests\cli_dev_token.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\cli_dev_token-9e40c738f683b9b5.exe)
+attr_values_of_the_wrong_type_are_rejected: test
+empty_groups_value_means_no_groups: test
+example_config_dev_token_works_from_a_fresh_tree: test
+groups_are_trimmed_and_deduplicated: test
+issues_token_verifiable_by_dev_verifier: test
+key_file_flag_wins_and_the_key_is_reused: test
+missing_server_config_is_a_v20_diagnostic: test
+no_key_file_anywhere_fails: test
+rejected_arguments_leave_no_key_file_behind: test
+scalar_attrs_are_converted_by_declared_type: test
+ttl_bounds: test
+undeclared_attr_is_rejected: test
+
+12 tests, 0 benchmarks
+     Running tests\cli_import.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\cli_import-e7251a58118db03a.exe)
+a_directory_that_was_not_reloaded_is_flagged: test
+command_line_mistakes_are_reported: test
+existing_objects_block_create_only: test
+imports_airports_csv: test
+imports_airports_json: test
+json_output_reports_the_result: test
+link_import_and_partial_failure: test
+source_backed_type_is_rejected: test
+
+8 tests, 0 benchmarks
+     Running tests\cli_l2_identity.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\cli_l2_identity-7f4f9c6d84f09087.exe)
+production_assembly::openapi_export_without_store_is_deterministic: test
+production_assembly::same_host_l2_unverified_failed_and_expired_proofs_reject_all_six_tools: test
+production_assembly::serve_args_validate_config_and_address: test
+production_assembly::serve_l2_queries_use_l2_identity_after_monitor_attestation: test
+production_assembly::serve_l2_requires_dedicated_proved_identity_for_all_six_tools: test
+production_assembly::serve_query_key_rejects_missing_short_and_oversized_files_before_listen: test
+production_assembly::serve_query_key_survives_restart_and_is_independent_of_auth: test
+production_assembly::serve_real_listener_auth_and_shutdown: test
+production_assembly::serve_shutdown_reports_failed_or_timed_out_trino_delete: test
+production_assembly::serve_shutdown_waits_for_trino_delete_completion: test
+production_assembly::source_monitor_classifier_preserves_every_nonmatching_request: test
+
+11 tests, 0 benchmarks
+     Running tests\cli_lint.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\cli_lint-c09e40815b50ee74.exe)
+config_error_level_fails: test
+config_flag_overrides_root_file: test
+config_info_level_never_fails: test
+config_off_disables_rule: test
+e08_human: test
+e14_can_be_disabled: test
+e14_human: test
+lint_aviation_is_clean: test
+lint_error_rule_exits_1: test
+lint_honors_the_profile_flag_and_variable: test
+lint_json_has_no_ansi: test
+lint_skips_rules_when_validation_fails: test
+lint_summary_counts_by_severity: test
+missing_config_flag_path_fails: test
+unknown_rule_id_in_config_fails: test
+validate_codes_cannot_be_turned_off_by_config: test
+warning_only_exit_codes: test
+
+17 tests, 0 benchmarks
+     Running tests\cli_migrate.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\cli_migrate-ad3c0cebe93cab2e.exe)
+apply_requires_plan_hash: test
+apply_with_a_wrong_hash_exits_1: test
+bad_rename_declarations: test
+drop_archived_plan_and_apply: test
+migrate_before_any_reload_is_refused: test
+migrate_plan_then_apply: test
+migrate_refuses_a_change_that_breaks_an_applied_role: test
+plan_and_apply_are_exclusive_and_one_is_required: test
+plan_json_output: test
+rename_declaration_moves_the_column: test
+
+10 tests, 0 benchmarks
+     Running tests\cli_online.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\cli_online-7ce24738df9dcaac.exe)
+aviation_fixture_data: test
+aviation_json_fixtures_match_yaml_fixtures: test
+float_and_double_properties_are_clean: test
+offline_validate_unchanged: test
+online_aviation_is_clean: test
+online_binding_without_fixture_is_v20: test
+online_missing_column_human: test
+online_missing_explicit_column: test
+online_missing_implicit_column: test
+online_without_profile_says_so: test
+timeout_requires_online: test
+zero_timeout_is_a_usage_error: test
+
+12 tests, 0 benchmarks
+     Running tests\cli_online_trino.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\cli_online_trino-c602d3f29135aea2.exe)
+check_pk_requires_online: test
+config_errors_are_v20_with_location: test
+ignored_fixture_info_passes_deny_warnings: test
+one_catalog_query_error_is_v19_others_checked: test
+rejected_plaintext_secret_never_printed: test
+secret_never_printed: test
+sqlite_profile_uses_fixtures: test
+timed_out_query_is_cancelled_before_exit: test
+timeout_flag_is_sent: test
+trino_missing_table: test
+trino_profile_clean: test
+trino_profile_missing_column: test
+trino_type_mismatch: test
+trino_unavailable_exits_3: test
+unauthorized_exits_3: test
+
+15 tests, 0 benchmarks
+     Running tests\cli_reload.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\cli_reload-7db721905c6f0af9.exe)
+dry_run_prints_ddl_only: test
+example_config_reload_works_from_a_fresh_tree: test
+invalid_definitions_never_open_store: test
+json_output: test
+missing_store_section: test
+reload_creates_tables: test
+reload_reports_role_breakage: test
+store_unavailable: test
+
+8 tests, 0 benchmarks
+     Running tests\cli_schema.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\cli_schema-bbfab5487b54e631.exe)
+aviation_still_validates_with_modelines: test
+schema_export_creates_missing_dir: test
+schema_export_reports_io_failure: test
+schema_export_writes_committed_files: test
+
+4 tests, 0 benchmarks
+     Running tests\cli_scope.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\cli_scope-afef32d3ff54ffc0.exe)
+invalid_scope_writes_nothing: test
+json_plan_is_camel_case: test
+missing_store_section_is_a_configuration_error: test
+ontology_differing_from_the_active_definition_is_refused: test
+plan_lists_removals_and_a_stale_hash_is_refused: test
+plan_then_apply_aviation_scope: test
+scope_before_reload_asks_for_reload: test
+unusable_store_exits_3: test
+
+8 tests, 0 benchmarks
+     Running tests\cli_shutdown.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\cli_shutdown-0d618b3bf0798bb9.exe)
+serve_fixture::occupied_listener_does_not_start_an_l2_probe_owner: test
+serve_fixture::openapi_export_without_store_is_deterministic: test
+serve_fixture::serve_args_validate_config_and_address: test
+serve_fixture::serve_query_key_rejects_missing_short_and_oversized_files_before_listen: test
+serve_fixture::serve_query_key_survives_restart_and_is_independent_of_auth: test
+serve_fixture::serve_real_listener_auth_and_shutdown: test
+serve_fixture::shutdown_cancels_reads_sse_then_durably_drains_audit: test
+serve_fixture::shutdown_finishes_accepted_action_before_dependency_cancel: test
+serve_fixture::shutdown_timeout_sink_and_cleanup_errors_exit_nonzero: test
+
+9 tests, 0 benchmarks
+     Running tests\cli_stdio.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\cli_stdio-228f4b3c569a9087.exe)
+live_stdio_cancellation_maps_string_id_without_cancelling_other_read: test
+live_stdio_closed_upstream_session_never_reinitializes_or_replays: test
+live_stdio_disconnected_before_forward_never_retries_or_commits: test
+live_stdio_legacy_initialize_negotiates_locally: test
+live_stdio_lost_commit_response_requires_explicit_replay: test
+live_stdio_online_bad_token_never_reaches_business_or_leaks_secret: test
+live_stdio_real_redirect_never_connects_to_credential_trap: test
+live_stdio_two_principals_validate_action_history_and_rest_receipt: test
+stdio_absent_server_and_invalid_url_fail_without_leaking_token: test
+stdio_absent_server_exits_with_queued_input: test
+stdio_absent_server_keeps_stdout_empty_and_redacts_token: test
+
+11 tests, 0 benchmarks
+     Running tests\cli_trino_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\cli_trino_it-c947f7a52d733823.exe)
+check_cardinality_aliases_on_ci_trino: test
+check_cardinality_counts_distinct_objects_on_ci_trino: test
+check_pk_finds_duplicate_and_null_keys_on_ci_trino: test
+ci_config_rejects_toml_string_injection: test
+ci_configs_use_dynamic_urls_and_isolated_unchanged_templates: test
+missing_env_panics: test
+validate_online_against_ci_trino: test
+
+7 tests, 0 benchmarks
+     Running tests\cli_webhook_worker.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\cli_webhook_worker-83e0f393f56e4ef2.exe)
+committed_action_is_delivered_by_running_cli_worker: test
+restarted_cli_worker_recovers_failed_delivery: test
+running_cli_worker_retries_after_http_failure: test
+
+3 tests, 0 benchmarks
+     Running tests\dev_lifecycle.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\dev_lifecycle-f47023658560fe40.exe)
+dev_active_instance_and_unsafe_reset_are_rejected: test
+dev_demo_restart_and_reset_preserve_then_reinitialize: test
+dev_distributed_binary_query_action_history_without_checkout: test
+dev_empty_lock_window_never_allows_a_second_owner_or_reset: test
+dev_empty_seed_is_idempotent_and_reset_is_explicit: test
+dev_lock_is_held_for_live_state_and_released_after_process_crash: test
+dev_recovers_unowned_empty_lock_before_first_marker: test
+dev_restart_preserves_action_history_and_receipt: test
+
+8 tests, 0 benchmarks
+     Running tests\invalid_examples.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\invalid_examples-11b0788db472575b.exe)
+invalid_examples_produce_their_code_and_a_stable_snapshot: test
+
+1 test, 0 benchmarks
+     Running tests\private_fixtures.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\private_fixtures-d510e4f5aef31594.exe)
+a_set_needs_ontology_and_server_config: test
+missing_env_panics: test
+private_fixtures_validate_online: test
+
+3 tests, 0 benchmarks
+     Running unittests src\lib.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\ontoforge_action-12af55fbf9985149.exe)
+fingerprint::tests::recursive_keys_are_canonical_but_arrays_keep_order: test
+tests::canonical_request_hash_ignores_object_key_insertion_order: test
+tests::crate_name_has_ontoforge_prefix: test
+tests::tracer_commits_one_action_batch: test
+
+4 tests, 0 benchmarks
+     Running tests\action.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\action-3b5b59e86310b018.exe)
+action_batch_schema_exists: test
+action_request_wire_cannot_override_host_limits: test
+batch_all_rule_kinds_expand_in_declared_order: test
+batch_ordinal_and_same_pk_order_are_stable: test
+params_report_all_errors: test
+validate_only_runs_full_pipeline_without_writes: test
+
+6 tests, 0 benchmarks
+     Running tests\action_pg.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\action_pg-96d6ffad486cfa75.exe)
+0 tests, 0 benchmarks
+     Running tests\entrypoints.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\entrypoints-5b1e02a623dea16b.exe)
+action_request_rejects_privileged_write_fields: test
+import_log_has_reserved_identity_and_source_digest: test
+production_mutation_callers_are_action_import_and_read_audit: test
+source_guard_recognizes_split_and_ufcs_calls: test
+
+4 tests, 0 benchmarks
+     Running tests\frozen_definition.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\frozen_definition-c148bab54ffa992b.exe)
+frozen_action_stale_and_validate_keep_fence_cas_guard: test
+frozen_replay_uses_current_grant_keeps_original_receipt: test
+replay_across_clock_and_definition_change_keeps_winner_time: test
+
+3 tests, 0 benchmarks
+     Running tests\idempotency.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\idempotency-f68b514a9f4fded1.exe)
+expired_clock_boundary_is_seven_days: test
+expired_command_can_be_claimed_as_new_without_deleting_audit: test
+fingerprint_ignores_key_order_but_preserves_explicit_default: test
+replay_across_clock_and_definition_change_keeps_winner_time: test
+replay_cross_principal_lookup_matches_missing: test
+replay_external_definition_removal_does_not_disclose: test
+replay_grant_removal_and_action_missing_deny_both_entries: test
+replay_release_keeps_minimal_receipt_available: test
+replay_row_predicate_change_and_delete_keep_minimal_receipt: test
+
+9 tests, 0 benchmarks
+     Running tests\idempotency_pg.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\idempotency_pg-8394f8fa2a79d11c.exe)
+0 tests, 0 benchmarks
+     Running tests\outbox.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\outbox-1883f726aa714dbe.exe)
+crash_after_success_before_mark_redelivers_same_event_id: test
+crash_before_send_committed_event_survives_restart: test
+http_failure_retries_with_same_event_id: test
+later_event_is_unclaimed_while_first_delivery_is_in_flight: test
+lease_expiry_reclaims_and_stale_attempt_is_fenced: test
+lease_parallel_workers_claim_one_attempt: test
+payload_is_minimal_and_versioned: test
+payload_target_is_only_trusted_configuration: test
+poll_does_not_exceed_batch_limit: test
+retry_backoff_caps_at_five_minutes_without_leaking_response: test
+retry_delay_starts_after_slow_response: test
+
+11 tests, 0 benchmarks
+     Running tests\outbox_pg.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\outbox_pg-6ae8c6053b056d64.exe)
+postgres_outbox_after_send_crash_reclaims_with_same_payload: test
+postgres_outbox_parallel_workers_claim_one_generation: test
+
+2 tests, 0 benchmarks
+     Running tests\security.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\security-15c992afffffbd1a.exe)
+scope_action_grant_is_checked_before_missing_target: test
+scope_criterion_false_uses_configured_message: test
+scope_each_item_criterion_sees_prior_edit_on_same_row: test
+scope_hidden_target_matches_missing_outward_shape: test
+scope_link_requires_both_endpoints: test
+scope_masked_criteria_is_denied_before_evaluation: test
+scope_missing_type_matches_hidden_row_and_missing_target: test
+scope_post_state_must_remain_visible: test
+scope_validate_only_rejects_masked_criteria_without_writes: test
+scope_write_column_must_be_visible: test
+
+10 tests, 0 benchmarks
+     Running tests\source.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\source-bba0b2c56e69ccbb.exe)
+all_patched_object_succeeds_with_engine_offline_and_zero_calls: test
+batch_deduplicates_source_keys_and_enforces_limit: test
+later_alias_criterion_samples_shared_source_key: test
+later_alias_release_samples_shared_source_key: test
+later_item_token_samples_shared_source_key: test
+release_source_visibility_guard: test
+source_backed_query_token_roundtrip_and_source_drift: test
+source_duplicate_is_ambiguous_without_tx: test
+source_required_engine_failure_is_stable_and_pretransaction: test
+source_required_offline_is_engine_unavailable_without_tx: test
+source_unique_is_overlaid_once: test
+
+11 tests, 0 benchmarks
+     Running tests\trino_action_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\trino_action_it-2503f8d3d1fb8d44.exe)
+source_schema_names_are_unique_at_same_timestamp: test
+trino_action_all_patched_does_not_contact_trino: test
+trino_action_duplicate_pk_is_ambiguous: test
+trino_action_source_unavailable_is_engine_unavailable: test
+trino_action_unique_source_executes: test
+
+5 tests, 0 benchmarks
+     Running tests\version.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\version-ea4789e482b606f6.exe)
+observed_no_token_commits_with_current_read_set: test
+token_conflicts_after_edit_scope_or_key_change: test
+token_definition_change_is_rejected_without_action_writes: test
+token_malformed_is_rejected_without_writes: test
+token_query_issued_is_accepted_by_unchanged_action_read_set: test
+
+5 tests, 0 benchmarks
+     Running unittests src\lib.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\ontoforge_api-7308d7855d0729c1.exe)
+tests::crate_name_has_ontoforge_prefix: test
+
+1 test, 0 benchmarks
+     Running tests\openapi_snapshot.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\openapi_snapshot-5c2a64293b928a81.exe)
+action_error_schema_preserves_optional_diagnostics: test
+checked_in_document_matches_static_render: test
+health_schema_includes_optional_l2_status_and_reason: test
+history_error_responses_match_runtime_contract: test
+openapi_31_all_operations_and_security: test
+openapi_recursive_nullable_required_and_unknown_fields: test
+receipt_schema_preserves_every_edit_and_requires_wire_fields: test
+wire_numbers_unicode_and_variant_names: test
+
+8 tests, 0 benchmarks
+     Running unittests src\lib.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\ontoforge_auth-6904197be5f707b8.exe)
+authn::jwks::tests::max_age_is_read_from_cache_control: test
+authn::jwks::tests::ttl_is_clamped_to_the_policy_range: test
+tests::crate_name_has_ontoforge_prefix: test
+
+3 tests, 0 benchmarks
+     Running tests\criteria_coverage.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\criteria_coverage-b16dab3b5ccb6517.exe)
+covered_criteria_compile: test
+criteria_without_object_reads_need_no_properties: test
+dynamic_object_path_is_v23_fail_closed: test
+hidden_criteria_column_is_v23_at_the_action_entry: test
+ungranted_object_type_is_v23: test
+whole_object_read_needs_every_property: test
+
+6 tests, 0 benchmarks
+     Running tests\crypto_backend.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\crypto_backend-252ec181722de789.exe)
+hs256_round_trip_does_not_panic: test
+
+1 test, 0 benchmarks
+     Running tests\dev_token.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\dev_token-6a0a69bc62ee5c2a.exe)
+config_alone_never_enables_dev_tokens: test
+dev_token_round_trip: test
+expired_dev_token_rejected: test
+hs256_with_other_audience_rejected: test
+hs256_with_other_issuer_rejected: test
+issuing_refuses_a_claim_that_would_override_a_reserved_one: test
+issuing_refuses_an_empty_subject: test
+key_file_is_created_once_and_reused: test
+key_file_of_wrong_length_is_a_config_error: test
+list_attr_with_a_null_element_is_rejected: test
+missing_key_directory_is_created: test
+missing_sub_rejected: test
+oidc_still_works_with_dev_enabled: test
+other_hmac_algorithms_are_not_accepted: test
+rs256_token_with_dev_issuer_is_rejected: test
+wrong_key_rejected: test
+
+16 tests, 0 benchmarks
+     Running tests\oidc.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\oidc-c6d2dfd97f87e13f.exe)
+alg_none_is_rejected: test
+algorithm_outside_the_issuer_allow_list_is_rejected: test
+ambiguous_and_non_signature_keys_are_not_used: test
+cache_control_max_age_is_clamped: test
+concurrent_kid_miss_is_single_flight: test
+es256_token_becomes_principal: test
+expired_token_is_rejected: test
+garbage_is_rejected: test
+groups_claim_must_be_an_array_of_strings: test
+header_key_urls_are_never_followed: test
+hs256_with_the_public_key_as_secret_is_rejected: test
+integer_and_boolean_attrs_are_typed_strictly: test
+jwks_is_fetched_once_for_repeated_tokens: test
+jwks_of_exactly_one_mebibyte_is_accepted: test
+kid_miss_refetches_once_then_throttles: test
+leeway_is_honoured_and_then_used_up: test
+list_claim_with_null_or_foreign_element_is_rejected: test
+missing_attr_claim_is_absent: test
+missing_required_claims_are_rejected: test
+not_yet_valid_token_is_rejected: test
+null_attr_claim_is_absent: test
+oversized_jwks_rejected: test
+rs256_token_becomes_principal: test
+scalar_claim_of_the_wrong_type_is_rejected: test
+stale_keys_survive_idp_outage: test
+tampered_token_is_rejected: test
+token_without_kid_is_rejected: test
+two_issuers_namespace_groups: test
+unknown_issuer_is_rejected_when_several_are_trusted: test
+wrong_audience_is_rejected: test
+wrong_issuer_is_rejected: test
+
+31 tests, 0 benchmarks
+     Running tests\rowpred_diff.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\rowpred_diff-56163be408efcee0.exe)
+corpus_cases_match_on_sqlite: test
+empty_list_attr_is_false_on_both_sides: test
+fixed_seed_cases_match_on_sqlite: test
+null_column_comparison_is_unknown_on_both_sides: test
+rust_eval_equals_sqlite: test
+tenant_equality_matches: test
+
+6 tests, 0 benchmarks
+     Running tests\rowpred_trino_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\rowpred_trino_it-8896d766c014cb37.exe)
+missing_env_panics: test
+trino_matches_rust_on_seeded_predicates: test
+trino_matches_rust_on_the_corpus_cases: test
+trino_table_equals_the_corpus_rows: test
+
+4 tests, 0 benchmarks
+     Running tests\scope_compile.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\scope_compile-16481824647433bc.exe)
+all_errors_reported_together: test
+allow_list_without_primary_key_is_v21: test
+aviation_scope_compiles: test
+bad_row_filter_is_v22_located: test
+collation_case_insensitive_is_v22: test
+collation_check_uses_the_selected_profile: test
+duplicate_allow_list_entry_is_v21: test
+empty_object_types_grants_nothing: test
+l2_schema_must_be_catalog_dot_schema: test
+l2_without_raw_level_is_v21: test
+principal_with_two_roles_gets_merged_flight_scope: test
+principal_without_roles_sees_nothing: test
+raw_toolset_without_raw_level_is_v21: test
+raw_with_l2_and_toolset_compiles: test
+scope_compile_diagnostics_json: test
+stored_roles_diagnostics_without_sources: test
+undeclared_attr_is_v22: test
+unknown_action_is_v21: test
+unknown_object_type_is_v21: test
+unknown_property_is_v21: test
+user_subject_binding: test
+
+21 tests, 0 benchmarks
+     Running tests\scope_merge.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\scope_merge-f1eb46432386ed27.exe)
+a_columns_times_b_rows_do_not_leak: test
+a_role_with_only_the_key_column_still_makes_rows_visible: test
+a_role_without_filter_makes_the_row_predicate_true: test
+identical_role_predicates_appear_once: test
+lowered_scope_matches_evaluate_on_sqlite: test
+no_grant_is_invisible: test
+role_without_row_filter_sees_all_rows: test
+same_property_from_two_roles_is_or: test
+visible_columns_are_union_of_true_grants: test
+
+9 tests, 0 benchmarks
+     Running unittests src\lib.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\ontoforge_client-a5c3328cad67aaad.exe)
+tests::crate_name_has_ontoforge_prefix: test
+tests::history_requires_fields_and_rejects_wrong_types: test
+tests::receipt_preserves_item_ordinal_u32_boundaries: test
+tests::receipt_rejects_item_ordinal_above_u32_max: test
+tests::receipt_rejects_negative_item_ordinal: test
+tests::receipt_requires_complete_edits_and_preserves_empty_items: test
+
+6 tests, 0 benchmarks
+     Running tests\contract.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\contract-ff4051b569195d1b.exe)
+rust_client_action_validate_history_result_and_replay: test
+rust_client_auth_scope_revoke_stale_and_transport_errors: test
+rust_client_health_preserves_l2_status_and_disable_reason: test
+rust_client_history_paginates_with_limit_and_before_seq: test
+rust_client_instances_and_concurrent_cancellation_are_isolated: test
+rust_client_metadata_pk_query_aggregate_health: test
+rust_client_transport_failures_never_retry_and_replay_has_one_durable_commit: test
+rust_client_valid_principals_revoke_and_inflight_cancel_are_isolated: test
+rust_client_wire_numbers_and_all_endpoint_groups: test
+
+9 tests, 0 benchmarks
+     Running tests\error_diagnostics.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\error_diagnostics-9b8b4306bc1043aa.exe)
+rust_client_action_error_diagnostics_keep_legacy_envelope_aliases: test
+rust_client_action_error_diagnostics_reject_malformed_fields: test
+rust_client_action_error_diagnostics_survive_real_http: test
+rust_client_recognizes_envelope_before_validating_diagnostics: test
+
+4 tests, 0 benchmarks
+     Running unittests src\lib.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\ontoforge_engine-dd597ee697813be0.exe)
+bind_check::compat_tests::arrays_are_compared_by_element: test
+bind_check::compat_tests::case_collision: test
+bind_check::compat_tests::decimal_integer_digits_and_scale: test
+bind_check::compat_tests::decimal_without_precision_uses_the_effective_defaults: test
+bind_check::compat_tests::floats_accept_real_and_double_only_for_double: test
+bind_check::compat_tests::integers_only_widen: test
+bind_check::compat_tests::link_ends_are_compared_with_the_primary_keys: test
+bind_check::compat_tests::strings_booleans_and_dates: test
+bind_check::compat_tests::timestamps_are_checked_against_the_declared_zone: test
+bind_check::compat_tests::unbounded_numbers_are_refused_with_a_cast_hint: test
+bind_check::compat_tests::unsupported_types_are_errors_with_a_view_hint: test
+bind_check::compat_tests::warnings_point_at_the_binding_like_errors: test
+bind_check::tests::column_names_are_compared_in_lower_case: test
+bind_check::tests::expected_columns_come_from_bound_columns_and_effective_decimal: test
+bind_check::tests::matching_table_has_no_mismatch: test
+bind_check::tests::missing_explicit_column_points_at_the_column_value: test
+bind_check::tests::missing_implicit_column_points_at_the_table: test
+bind_check::tests::online_missing_table: test
+bind_check::tests::online_type_family_mismatch: test
+bind_check::tests::warnings_do_not_degrade: test
+printer::tests::case_arms_are_typed_and_escape_each_literal: test
+printer::tests::case_when_masks_only_projection: test
+printer::tests::count_distinct_quotes_identifiers: test
+printer::tests::distributed_explain_wraps_executed_printed_sql: test
+printer::tests::distributed_explain_wraps_typed_select: test
+printer::tests::flush_metadata_cache_is_a_call_of_the_catalog_procedure: test
+printer::tests::flush_metadata_cache_quotes_the_catalog: test
+printer::tests::flush_metadata_cache_rejects_an_empty_catalog: test
+printer::tests::glob_pattern_escapes_the_glob_metacharacters: test
+printer::tests::print_trino_and_sqlite: test
+printer::tests::string_match_escapes_wildcards_in_both_dialects: test
+printer::tests::string_match_is_parenthesized_inside_connectives: test
+printer::tests::string_match_kinds_place_the_wildcards: test
+printer::tests::string_match_quotes_the_needle_and_rejects_nul: test
+sqlite::tests::collations_are_total_orders: test
+sqlite::tests::deadline_interrupts_a_running_statement: test
+sqlite::tests::decimal_and_timestamp_compare_by_value: test
+sqlite::tests::max_bytes_truncates: test
+sqlite::tests::max_rows_truncates: test
+sqlite::tests::query_only_after_load: test
+sqlite::tests::sqlite_ddl_round_trip: test
+sqlite::tests::timeout_covers_waiting_for_the_connection: test
+sqlite::tests::total_fixture_bytes_capped: test
+trino::cancel::tests::a_finished_guard_holds_nothing_to_send: test
+trino::cancel::tests::dropping_an_unfinished_guard_without_a_runtime_does_not_panic: test
+trino::classify::tests::backoff_doubles_from_50ms_up_to_one_second: test
+trino::classify::tests::post_retries_only_what_was_not_accepted: test
+trino::classify::tests::retry_after_is_whole_seconds_capped_at_five: test
+trino::classify::tests::statuses_without_a_retry_rule: test
+trino::classify::tests::the_fifth_retry_is_the_last: test
+trino::headers::tests::basic_and_bearer_headers: test
+trino::l2_health::tests::l2_health_expired_attestation_is_disabled: test
+trino::l2_monitor::tests::old_cleanup_response_and_owner_cannot_clear_or_cancel_new_probe: test
+value::tests::array_nesting_is_bounded: test
+value::tests::physical_type_parse_table: test
+value::tests::split_decimal_rules: test
+
+56 tests, 0 benchmarks
+     Running tests\bind_check_isolation.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\bind_check_isolation-87bc59cc004fb276.exe)
+engine_wide_error_aborts_round: test
+query_error_isolated_to_its_catalog: test
+
+2 tests, 0 benchmarks
+     Running tests\cardinality_check.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\cardinality_check-8fbfd6e99236d224.exe)
+count_alias_cannot_change_indexed_fk_sample_order: test
+count_distinct_quotes_identifiers_on_sqlite: test
+distinct_objects_sharing_fk_are_reported: test
+duplicate_physical_rows_are_one_object: test
+incomplete_or_malformed_results_are_not_clean: test
+independent_runs_observe_current_source: test
+mapped_to_binding_is_the_only_source: test
+null_keys_and_clean_links_have_no_finding: test
+repeated_check_is_read_only: test
+samples_have_twenty_plus_sentinel_bound: test
+tighter_budgets_are_not_widened: test
+
+11 tests, 0 benchmarks
+     Running tests\doc_type_table.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\doc_type_table-ee448b8b0ecbdaa9.exe)
+doc_diagnostic_codes_exist: test
+doc_type_table_matches_compare_binding: test
+
+2 tests, 0 benchmarks
+     Running tests\drift.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\drift-f06a3b5a4fd622ea.exe)
+aviation_is_healthy: test
+degrade_reason_code: test
+engine_error_is_not_a_report: test
+missing_column_degrades_only_flight: test
+missing_table_is_drift: test
+query_error_degrades_only_that_target: test
+unreadable_reason_keeps_engine_text_out_of_the_exposable_fields: test
+warnings_do_not_degrade: test
+
+8 tests, 0 benchmarks
+     Running tests\drift_budget.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\drift_budget-89e4729661903791.exe)
+expired_drift_budget_sends_no_catalog_probe: test
+online_description_retains_per_query_timeout_while_drift_shares_budget: test
+
+2 tests, 0 benchmarks
+     Running tests\l2_explain.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\l2_explain-146fa04c23897a86.exe)
+l2_explain_four_types_preserve_validated_ast: test
+l2_table_name_defaults_qualification_and_injection: test
+
+2 tests, 0 benchmarks
+     Running tests\l2_gate.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\l2_gate-6777d11b1c123a86.exe)
+l2_corpus_b53_posts_only_validated_display: test
+l2_corpus_each_case_runs_production_gate: test
+l2_corpus_g11_rejects_lossy_row_type: test
+l2_corpus_g16_prints_trino_offset_fetch: test
+l2_corpus_has_104_unique_constructed_equivalents: test
+l2_corpus_rejections_send_no_post: test
+l2_gate_accepts_only_validated_display: test
+l2_gate_bounded_parser_stack_handles_deep_or_long_input: test
+l2_gate_bounds_input_and_rejects_malformed_or_dynamic_limits: test
+l2_gate_handles_cte_join_and_subquery: test
+l2_gate_preserves_offset_when_capping: test
+l2_gate_rejection_cannot_send_trino_post: test
+l2_gate_rejects_hidden_relations_and_table_functions: test
+l2_gate_rejects_mutation_multiple_statements_and_scalar_qualified_calls: test
+l2_gate_rejects_unauthorized_relation: test
+l2_gate_requires_raw_grant_and_rejects_system_even_if_granted: test
+
+16 tests, 0 benchmarks
+     Running tests\l2_health.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\l2_health-55cf1ddff777213f.exe)
+l2_health_finished_query_cannot_attest_active_isolation: test
+l2_health_loose_acl_and_non_permission_error_fail_closed: test
+l2_health_missing_negative_object_and_unsafe_query_id_disable: test
+l2_health_other_query_leak_disables_l2: test
+l2_health_recheck_revocation_disables_public_execution: test
+l2_health_rejects_other_coordinator_without_network: test
+l2_health_rejects_probe_for_wrong_edit_catalog: test
+l2_health_rejects_reused_ontology_identity: test
+l2_health_requires_exact_denial_and_known_query_isolation: test
+l2_health_unverified_identity_never_submits_a_statement: test
+
+10 tests, 0 benchmarks
+     Running tests\l2_monitor.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\l2_monitor-601b3635f6a44324.exe)
+monitor_cancel_failure_disables_but_404_is_cleanup_success: test
+monitor_cancelled_shutdown_keeps_drop_retry_in_retained_cleanup_handle: test
+monitor_cancelled_startup_cleans_up_and_stays_disabled: test
+monitor_cannot_enable_before_delete_response_succeeds: test
+monitor_cleanup_failure_cannot_be_bypassed_by_manual_recheck: test
+monitor_cleanup_handle_only_checks_its_generation_and_never_retries: test
+monitor_cross_coordinator_is_invalid_before_network: test
+monitor_deadline_includes_waiting_for_recheck_lock: test
+monitor_duplicate_and_drop_cannot_reenable: test
+monitor_finished_missing_and_leaked_query_disable: test
+monitor_foreign_next_uri_never_receives_get_or_cancel: test
+monitor_missing_or_unsafe_probe_never_submits: test
+monitor_periodic_failure_and_fresh_recovery: test
+monitor_restart_must_clean_previous_generation_before_enabling: test
+monitor_shutdown_drains_its_ontology_instance_and_reports_delete_failure: test
+monitor_shutdown_during_periodic_check_cannot_reenable: test
+monitor_shutdown_reports_inherited_cleanup_failure: test
+monitor_startup_owns_fresh_probe_limits_and_cleanup: test
+monitor_whole_cycle_deadline_disables_and_cleans_up: test
+
+19 tests, 0 benchmarks
+     Running tests\pk_check.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\pk_check-e62fd4b78b0ec249.exe)
+clean_and_empty_tables_have_no_finding: test
+display_value_is_short_text: test
+duplicates_and_nulls_found: test
+nulls_are_not_duplicates: test
+pk_queries_are_printed: test
+twenty_groups_are_not_more: test
+
+6 tests, 0 benchmarks
+     Running tests\printer_literals.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\printer_literals-906e5afdbb355948.exe)
+compare_operands_are_parenthesised: test
+empty_lists_are_rejected: test
+i64_min_is_printed_without_overflow: test
+i64_min_reads_back_as_integer_on_sqlite: test
+invalid_literals_are_rejected: test
+order_by_always_spells_out_nulls: test
+sqlite_literals_are_plain: test
+trino_literals_carry_type_prefixes: test
+
+8 tests, 0 benchmarks
+     Running tests\printer_prop.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\printer_prop-fef8fc367b6a104e.exe)
+ansi_dialect_has_no_backslash_escape: test
+identifier_round_trips_on_sqlite: test
+nul_in_identifier_is_rejected: test
+string_literal_keeps_statement_structure: test
+string_literal_round_trips_on_sqlite: test
+string_match_matches_rust_on_sqlite: test
+
+6 tests, 0 benchmarks
+     Running tests\server_config.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\server_config-68cfb61a4116eb87.exe)
+accepts_trusted_webhook_worker_config: test
+basic_over_http_is_rejected: test
+basic_requires_exactly_one_secret_ref: test
+ca_file_is_loaded: test
+dev_auth_key_file: test
+engine_debug_names_the_identity_user: test
+library_rejects_credentials_over_http: test
+library_rejects_cross_scheme_origin: test
+load_server_config_reads_the_file: test
+oidc_issuer_rules: test
+oidc_numeric_bounds: test
+oidc_rejects_symmetric_and_none_algorithms: test
+oidc_two_issuers_with_defaults: test
+parses_full_example: test
+plaintext_password_is_rejected: test
+principal_attrs_types: test
+profile_engine_has_no_library_path: test
+profile_key_must_be_profile_name: test
+query_context_from_config: test
+query_signing_key_reference_is_optional_and_trusted: test
+rejects_invalid_webhook_worker_limits_and_target: test
+secret_from_env: test
+secret_from_file_follows_symlink_and_trims: test
+secret_never_in_debug_or_errors: test
+secret_written_into_a_reference_key_is_never_echoed: test
+store_and_auth_are_optional: test
+store_plaintext_url_is_rejected: test
+store_postgres_requires_exactly_one_url_source: test
+store_postgres_with_trino_catalog: test
+store_schema_names_are_validated: test
+store_sqlite_defaults: test
+store_sqlite_rejects_url_and_postgres_rejects_path: test
+trino_profile_needs_trino_section: test
+unknown_key_in_store_or_auth_is_v20: test
+unknown_key_is_rejected: test
+
+35 tests, 0 benchmarks
+     Running tests\sql_text_only_from_printer.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\sql_text_only_from_printer-ee022a2576f17b1e.exe)
+sql_text_only_from_printer: test
+
+1 test, 0 benchmarks
+     Running tests\sqlite_engine.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\sqlite_engine-3b37899e776b98b8.exe)
+arrays: test
+attach_limit: test
+booleans_and_dates: test
+csv_empty_cell_is_null_for_every_type: test
+decimal_boundaries_12_2: test
+describe_tables_rejects_mixed_catalogs: test
+double_columns_report_double: test
+empty_identifier_is_print_error: test
+engine_wide_classification: test
+error_codes_are_upper_snake: test
+fixture_behind_directory_link_is_refused: test
+fixture_error_has_line: test
+fixture_errors_never_repeat_cell_contents: test
+float_columns_report_real: test
+floats_must_be_finite: test
+header_only_csv_loads_an_empty_table: test
+integer_ranges: test
+json_fixture_loads: test
+nul_in_string_is_print_error: test
+out_of_range_decimal_type_is_refused: test
+printed_literal_round_trips_through_sqlite: test
+query_context_defaults: test
+ragged_records_are_refused_with_their_line: test
+shared_table_conflicts_are_errors: test
+shared_table_loaded_once: test
+status_is_available: test
+timestamps: test
+unmapped_columns_are_kept_as_text: test
+
+28 tests, 0 benchmarks
+     Running tests\trino_client.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\trino_client-60f4d784c3cc0388.exe)
+bad_trace_token_is_config_error: test
+call_that_is_queued_first_still_ends_empty: test
+call_without_columns_returns_empty_output: test
+data_spans_pages: test
+decode_special_doubles_and_zone_forms: test
+decode_types: test
+describe_missing_tables_absent: test
+describe_mixed_catalogs_is_config_error: test
+describe_single_table_uses_a_single_condition: test
+describe_tables_batches_one_catalog: test
+describe_tables_lowercases_names: test
+describe_truncated_metadata_is_error: test
+foreign_next_uri_is_rejected: test
+kept_row_that_is_not_an_array_is_protocol_error: test
+next_uri_scheme_mismatch_is_rejected: test
+query_error_maps_to_query: test
+request_headers: test
+rows_past_the_row_limit_are_not_parsed: test
+select_one_round_trip: test
+set_session_header_is_ignored: test
+status_available_and_unavailable: test
+trace_token_of_128_characters_is_accepted: test
+two_identities_use_separate_clients: test
+
+23 tests, 0 benchmarks
+     Running tests\trino_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\trino_it-a151cb15dcf31516.exe)
+catalogs_visible: test
+decode_golden: test
+describe_demo_flights: test
+describe_types_golden: test
+drift_is_healthy_on_ci_trino: test
+iceberg_table_is_readable: test
+missing_env_panics: test
+present_env_is_used: test
+printer_corpus_round_trips: test
+select_one: test
+timeout_cancels_server_query: test
+
+11 tests, 0 benchmarks
+     Running tests\trino_l2_acl_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\trino_l2_acl_it-837a182814b3b013.exe)
+trino_l2_acl_hides_known_active_other_query_and_attests_engine: test
+trino_l2_acl_loosened_rule_fails_closed: test
+trino_l2_acl_rejects_existing_outside_and_edit_tables: test
+trino_l2_monitor_loose_acl_fails_closed: test
+trino_l2_monitor_short_query_does_not_prove_active_isolation: test
+trino_l2_monitor_startup_cancels_real_active_probe: test
+
+6 tests, 0 benchmarks
+     Running tests\trino_resilience.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\trino_resilience-bb97f8decf180092.exe)
+cancellation_drain_preserves_original_timeout_error: test
+cancellation_drain_rejects_failed_or_timed_out_delete_and_accepts_gone: test
+cancellation_drain_survives_cancel_now_waiter_drop: test
+cancellation_drain_waits_for_delete_and_is_instance_local: test
+closed_port_is_unavailable: test
+connect_failure_is_retried_with_backoff: test
+dns_failure_is_unavailable: test
+dropped_future_sends_delete: test
+exhausted_503_is_unavailable: test
+failed_query_sends_no_delete: test
+finished_query_sends_no_delete: test
+get_502_and_504_are_retried: test
+get_503_then_success: test
+hanging_submission_times_out_without_delete: test
+http_503_with_shutting_down_body_is_unavailable: test
+limits_not_reached_do_not_truncate: test
+max_bytes_truncates_and_deletes: test
+max_rows_truncates_and_deletes: test
+oversized_page_is_protocol_error: test
+post_502_is_not_retried: test
+post_503_starting_up_is_retried: test
+post_plain_503_is_not_retried: test
+retries_respect_timeout: test
+retry_after_is_capped: test
+retry_after_is_honoured: test
+server_shutting_down_is_unavailable: test
+server_starting_up_is_unavailable: test
+status_reports_unavailable: test
+syntax_error_is_query: test
+timeout_sends_delete: test
+unauthorized_is_not_unavailable: test
+
+31 tests, 0 benchmarks
+     Running unittests src\lib.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\ontoforge_expr-cf40b6968a06a326.exe)
+rowpred::value::tests::attrs_list_rejects_null_element: test
+rowpred::value::tests::attrs_missing_is_null: test
+tests::crate_name_has_ontoforge_prefix: test
+
+3 tests, 0 benchmarks
+     Running tests\analyze.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\analyze-35a6a7caf1a38ba5.exe)
+brackets_inside_strings_do_not_count: test
+closure_panic_becomes_internal: test
+comments_do_not_open_strings: test
+deeply_nested_expression_is_rejected_not_crashing: test
+flat_recursive_forms_do_not_crash_on_a_small_stack: test
+invalid_escape_is_rejected_without_compiling: test
+max_length_expression_is_accepted: test
+raw_prefix_requires_a_token_boundary: test
+syntax_error_has_expression_position: test
+too_long_expression_is_rejected_without_compiling: test
+triple_quoted_and_raw_strings_follow_cel_lexing: test
+unterminated_string_is_rejected_without_compiling: test
+walk::bare_identifier_is_a_path: test
+walk::comprehension_vars_are_scoped: test
+walk::has_macro_yields_member_path: test
+walk::has_on_comprehension_variable_yields_nothing: test
+walk::index_breaks_path: test
+walk::map_list_and_method_targets_are_walked: test
+walk::nested_comprehension_scopes: test
+walk::positions_are_line_and_char_column: test
+walk::select_chain_is_full_path: test
+
+21 tests, 0 benchmarks
+     Running tests\criteria.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\criteria-0791925df87fe135.exe)
+analyzer_errors_become_v13: test
+aviation_criteria_pass: test
+builtin_functions_have_known_result_types: test
+comparison_type_mismatch: test
+comprehension_result_types: test
+comprehension_variable_is_not_reported: test
+diagnostic_points_at_condition_value: test
+dynamic_index_on_a_checked_root_is_an_error: test
+literal_index_is_checked_like_a_field: test
+mixed_int_and_double_arithmetic_is_an_error: test
+non_bool_condition: test
+objects_requires_object_reference_param: test
+parser_recursion_limit_has_a_clean_message: test
+same_path_reported_once: test
+unknown_object_property_suggests: test
+unknown_parameter_suggests: test
+unknown_reference_is_any: test
+unknown_root_variable: test
+unknown_types_are_any: test
+user_fields_are_id_and_groups: test
+
+20 tests, 0 benchmarks
+     Running tests\rowpred_eval.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\rowpred_eval-3436ab1421f930f9.exe)
+display_round_trip: test
+explicit_null_branch_visible: test
+in_attribute_list_follows_the_same_rules: test
+in_empty_list_is_false_even_for_null: test
+in_integer_lists: test
+in_literal_list_is_three_valued: test
+kleene_laws: test
+missing_attr_is_unknown_and_invisible: test
+null_column_not_equal_is_unknown: test
+ordering_follows_value_families: test
+string_match_is_case_sensitive_and_literal: test
+tenant_equality_visible: test
+tenant_mismatch_false: test
+unknown_root_rejected: test
+
+14 tests, 0 benchmarks
+     Running tests\rowpred_subset.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\rowpred_subset-f94fb953e819a740.exe)
+a_literal_target_with_a_column_needle_reports_both: test
+accepts_in_lists_literal_and_attribute: test
+accepts_logic_with_cel_precedence_and_left_association: test
+accepts_string_matching: test
+accepts_the_six_comparisons: test
+accepts_two_columns_and_constants: test
+all_issues_are_collected: test
+issue_messages_say_what_to_change: test
+null_on_either_side_becomes_is_null: test
+positions_point_into_the_expression: test
+rejects_everything_outside_the_subset: test
+string_literals_keep_their_escapes: test
+syntax_and_size_problems_are_issues_too: test
+
+13 tests, 0 benchmarks
+     Running unittests src\lib.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\ontoforge_query-95e6abf7c19fad24.exe)
+aggregate::tests::count_sum_avg_random_old_new_correction_matches_reference: test
+aggregate::tests::group_distinct_group_and_bucket_bounds_are_inclusive: test
+aggregate::tests::group_distinct_treats_negative_and_positive_zero_as_one_value: test
+aggregate::tests::group_distinct_value_and_memory_bounds_are_inclusive_and_shared: test
+execute::tests::source_and_edit_lanes_are_polled_before_first_merge: test
+
+5 tests, 0 benchmarks
+     Running tests\aggregate.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\aggregate-0c871d0862df2fb3.exe)
+aggregate_wire_request_rejects_capabilities: test
+count_sum_avg_connector_capability_selects_supported_plan: test
+count_sum_avg_limits_phase4_defaults_are_exact: test
+count_sum_avg_match_full_materialization_reference: test
+group_distinct_matches_visible_merged_reference: test
+min_max_edited_values_can_win_or_remove_winner: test
+min_max_refill_past_invalid_top_rows: test
+
+7 tests, 0 benchmarks
+     Running tests\audit_l0.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\audit_l0-48aeaa7314cd37f1.exe)
+audit_aggregate_cancellation_records_event: test
+audit_aggregate_partial_and_fallback_each_record_once: test
+audit_aggregate_sink_failure_closes_gate_without_result: test
+audit_aggregate_source_error_and_truncation_record_status: test
+audit_aggregate_unavailable_keeps_error_identity_and_no_result: test
+audit_list_cancellation_records_event_and_releases_slot: test
+audit_list_denied_source_error_and_truncation_record_status: test
+audit_list_pg_only_edit_store_records_once: test
+audit_list_sink_failure_closes_gate_without_releasing_result: test
+audit_list_type_filter_set_and_search_around_record_once: test
+
+10 tests, 0 benchmarks
+     Running tests\audit_pk.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\audit_pk-0d37475020d41f53.exe)
+audit_observed_wrappers_report_single_reservation_and_never_report_failed_reserve: test
+audit_pk_cancelled_in_flight_records_without_result: test
+audit_pk_denied_before_source_and_source_failure_have_distinct_statuses: test
+audit_pk_execution_finish_failure_retains_reserved_id: test
+audit_pk_execution_reserve_failure_has_no_audit_id: test
+audit_pk_execution_returns_durable_id_for_success_and_denial: test
+audit_pk_full_queue_rejects_before_releasing_another_result: test
+audit_pk_success_records_one_metadata_row: test
+audit_worker_pending_age_closes_gate_until_blocked_writer_recovers: test
+audit_worker_persistent_sink_failure_stops_and_reports_failed_drain: test
+audit_worker_rejects_invalid_limits: test
+audit_worker_shutdown_drains_and_reopen_recovers: test
+audit_worker_transient_sink_failure_recovers_before_retry_limit: test
+
+13 tests, 0 benchmarks
+     Running tests\definition_snapshot.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\definition_snapshot-3cffdc84bbbc61b6.exe)
+l0_inflight_reload_and_scope_apply_keep_request_snapshot: test
+l2_inflight_reload_and_scope_apply_keep_request_snapshot: test
+
+2 tests, 0 benchmarks
+     Running tests\l2_discovery.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\l2_discovery-8d461782117b6d08.exe)
+l2_catalog_cancelled_inflight_audits_once: test
+l2_catalog_filters_and_audits_catalogs_and_schemas: test
+l2_catalog_rejects_ungranted_input_without_post: test
+l2_catalog_truncation_source_error_and_audit_failure: test
+l2_table_denials_never_post_or_reflect_input: test
+l2_table_lists_only_granted_tables_and_describes_columns: test
+l2_table_schema_cancellation_and_quoted_name: test
+l2_table_schema_field_limit_is_truncated_and_audited: test
+l2_table_truncation_source_error_and_audit_failure: test
+
+9 tests, 0 benchmarks
+     Running tests\l2_execute.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\l2_execute-8cfb1fe5fc7868fb.exe)
+l2_execute_byte_cap_truncates_without_releasing_partial_row: test
+l2_execute_inflight_cancellation_records_event: test
+l2_execute_only_submits_display_sql_after_attestation_and_audits_result: test
+l2_execute_rejections_are_audited_without_post: test
+l2_execute_source_error_and_audit_failure_never_release_rows: test
+l2_execute_sqlite_v5_audit_upgrade_preserves_rows: test
+l2_execute_timeout_is_audited_without_result: test
+l2_execute_truncation_returns_narrowing_hint_and_audit_status: test
+l2_explain_all_types_share_admission_and_audit: test
+l2_explain_all_types_timeout_cancel_concurrency: test
+l2_explain_inflight_cancellation_records_event: test
+l2_explain_invalid_and_unauthorized_sql_never_posts: test
+l2_explain_old_wrapper_and_rejection_contract: test
+l2_explain_requires_attestation_and_submits_only_validated_display: test
+l2_explain_truncation_source_error_and_audit_fault: test
+
+15 tests, 0 benchmarks
+     Running tests\overlay_prop.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\overlay_prop-bc8f4903f1cb6d9b.exe)
+hidden_columns_never_reach_sort_filter_or_projection: test
+ordering_case_insensitive_unicode_uses_final_rust_recheck: test
+ordering_decimal_uses_numeric_magnitude: test
+ordering_is_total_and_deterministic: test
+overlay_matches_independent_reference: test
+overlay_multikey_order_matches_reference: test
+overlay_partial_patch_and_explicit_null: test
+pagination_budget_rejects_overflow_and_untrusted_limits: test
+pagination_execution_limit_boundaries_are_inclusive: test
+scope_and_predicate_run_on_merged_row: test
+tombstone_release_and_duplicate_candidates_are_idempotent: test
+
+11 tests, 0 benchmarks
+     Running tests\pk_read.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\pk_read-6c9a081d82f520eb.exe)
+edited_pk_uses_store_only: test
+execution_limits_phase4_defaults_are_exact: test
+execution_limits_reject_zero_and_overflow: test
+missing_read_has_no_side_effect: test
+partial_edit_without_source_is_not_found: test
+patch_null_and_unset_are_distinct: test
+pk_read_obeys_host_raw_candidate_budget: test
+scope_runs_after_overlay: test
+source_pk_uses_limit_two_and_rejects_ambiguous_rows: test
+tombstone_is_not_found_and_release_reads_source: test
+unedited_pk_uses_single_source_query: test
+
+11 tests, 0 benchmarks
+     Running tests\query_bench_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\query_bench_it-447b493d1fb2ea24.exe)
+nearest_rank_uses_all_samples_and_rejects_failures: test
+phase4_real_backend_p95: test
+truncated_distributed_explain_is_rejected_before_fragment_count: test
+
+3 tests, 0 benchmarks
+     Running tests\search_around.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\search_around-e33b32936ef9425a.exe)
+duplicate_edits_use_highest_version_independent_of_input_order: test
+edge_overlay_matches_independent_reference: test
+many_to_many_hydrates_257_targets_in_bounded_batches: test
+many_to_many_merges_source_and_link_edits_fixed: test
+outbound_fk_uses_scoped_merged_object_value: test
+search_around_wire_uses_only_logical_names: test
+
+6 tests, 0 benchmarks
+     Running tests\security.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\security-91b8c1195ec68b8e.exe)
+aggregate_invalid_names_and_limits_fail_before_backend_access: test
+cap_counts_final_masked_row_and_version: test
+cursor_multikey_null_pages_have_no_duplicates_or_omissions: test
+cursor_rejects_same_principal_when_attributes_change: test
+cursor_rejects_tamper_and_context_replay: test
+final_row_and_byte_caps_truncate: test
+pagination_backfill_batches_never_exceed_256: test
+pagination_backfill_rejects_conflicting_duplicate_pk: test
+pagination_budget_exhaustion_returns_no_partial_page: test
+pagination_case_insensitive_order_scans_pk_windows_before_rust_sort: test
+pagination_cursor_seeks_source_on_first_window: test
+pagination_list_source_keyset_and_has_more: test
+pagination_refills_across_three_false_positive_windows: test
+pagination_refills_after_source_scope_false_positives: test
+pagination_refills_after_tombstone_and_patch_moves_row_into_filter: test
+pagination_source_and_edit_share_all_work_budgets: test
+pagination_stops_after_eligible_lookahead: test
+physical_names_never_escape: test
+pk_probe_is_indistinguishable: test
+token_tamper_fails_closed: test
+version_changes_with_principal_scope_definition_and_row: test
+version_claims_are_canonical_and_format_tagged: test
+version_query_uses_format_tag_and_changes_with_scope: test
+
+23 tests, 0 benchmarks
+     Running tests\set_ops.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\set_ops-b0d290c1e3475979.exe)
+nested_set_wire_accepts_logical_names_only: test
+set_ops_match_independent_btreeset_model: test
+set_ops_match_independent_btreeset_model_fixed: test
+set_result_reuses_normal_hydration_order_and_cursor: test
+valid_same_type_set_and_cross_type_rejection: test
+
+5 tests, 0 benchmarks
+     Running tests\sql_shape.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\sql_shape-1f51f857f42bac36.exe)
+aggregate_topn_uses_one_typed_bounded_source_table: test
+all_source_variants_have_one_table_and_logical_aliases: test
+collation_forces_recheck_and_disables_source_order: test
+scope_row_and_filter_are_anded_without_role_crossing: test
+source_select_has_exactly_one_table: test
+unbounded_page_is_rejected: test
+
+6 tests, 0 benchmarks
+     Running tests\sqlite_query.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\sqlite_query-c75085e81f2ddd2a.exe)
+canonical_decimal_and_string_order_differ: test
+every_compile_limit_is_enforced: test
+every_where_operator_validates_and_evaluates: test
+hidden_column_is_rejected_before_execution: test
+limits_reject_before_recursion: test
+multi_role_grant_is_bound_to_its_row: test
+null_unknown_and_wrong_types_are_checked: test
+sqlite_matches_rust_fixed_corpus: test
+sqlite_multi_role_column_grant_does_not_cross_rows: test
+term_search_is_whitespace_any_or_all: test
+
+10 tests, 0 benchmarks
+     Running tests\trino_query_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\trino_query_it-b52b2a1ab76f7960.exe)
+aggregate_corpus_and_distributed_explain: test
+distributed_fragment_parser_rejects_bad_evidence: test
+fixed_semantics_and_cursor_refill: test
+real_physical_errors_are_sanitized: test
+real_security_roles_and_cursor_replay: test
+where_search_set_and_relationship_corpus: test
+
+6 tests, 0 benchmarks
+     Running unittests src\lib.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\ontoforge_schema-7305d5c45cc88728.exe)
+diag::tests::custom_error_round_trips: test
+diag::tests::did_you_mean_picks_closest_and_ignores_far_names: test
+diag::tests::offset_to_line_col_takes_byte_offsets_and_counts_char_columns: test
+diag::tests::phase3_codes: test
+diag::tests::sort_is_by_file_line_column_code: test
+ir::attrs::tests::is_list_only_for_list_types: test
+ir::names::tests::acronym_prefix_is_lowered_as_a_word: test
+ir::names::tests::length_is_capped_at_one_hundred: test
+ir::names::tests::lowercase_object_type_gets_a_canonical_suggestion: test
+ir::names::tests::non_ascii_names_get_no_misleading_suggestion: test
+ir::names::tests::profile_name_deserializes_through_serde: test
+ir::names::tests::profile_name_rules: test
+ir::names::tests::profile_name_schema_has_pattern: test
+ir::names::tests::reserved_words_match_case_insensitively: test
+ir::names::tests::schema_carries_the_pattern: test
+ir::names::tests::separators_are_folded_into_camel_case: test
+ir::names::tests::unfixable_names_get_no_help: test
+ir::names::tests::valid_names_are_accepted: test
+ir::object::tests::effective_decimal_defaults: test
+lint::binding::e13::tests::clean: test
+lint::binding::e13::tests::e13_can_be_downgraded: test
+lint::binding::e13::tests::triggers: test
+lint::binding::e14::tests::clean: test
+lint::binding::e14::tests::e14_array_of_timestamps: test
+lint::binding::e14::tests::e14_can_be_turned_off: test
+lint::binding::e14::tests::e14_link_end_with_timestamp_key: test
+lint::binding::e14::tests::e14_multi_profile: test
+lint::binding::e14::tests::triggers: test
+lint::binding::e15::tests::clean: test
+lint::binding::e15::tests::e15_link_end: test
+lint::binding::e15::tests::triggers: test
+lint::binding::e16::tests::clean: test
+lint::binding::e16::tests::triggers: test
+lint::binding::w17::tests::clean: test
+lint::binding::w17::tests::triggers: test
+lint::binding::w17::tests::w17_json_fixture_header_is_the_union_of_keys: test
+lint::binding::w17::tests::w17_off: test
+lint::binding::w17::tests::w17_unreadable_header_warns: test
+lint::config::tests::config_levels_parse: test
+lint::config::tests::config_options_parse: test
+lint::config::tests::datetime_and_out_of_range_integers_are_unsupported_values: test
+lint::config::tests::empty_and_lint_only_files_are_fine: test
+lint::config::tests::every_problem_is_reported: test
+lint::config::tests::invalid_level_is_error: test
+lint::config::tests::lint_must_be_a_table: test
+lint::config::tests::missing_config_file_uses_defaults: test
+lint::config::tests::missing_override_path_is_error: test
+lint::config::tests::option_for_unknown_rule_or_with_bad_value_is_error: test
+lint::config::tests::option_of_the_wrong_kind_is_error: test
+lint::config::tests::override_path_replaces_the_root_file: test
+lint::config::tests::root_config_that_is_not_a_file_is_error: test
+lint::config::tests::root_file_is_read_and_registered: test
+lint::config::tests::symlinked_root_config_is_not_followed: test
+lint::config::tests::toml_syntax_error_is_v15_at_its_span: test
+lint::config::tests::undeclared_option_is_error: test
+lint::config::tests::unknown_key_in_lint_section_is_error: test
+lint::config::tests::unknown_lint_rule_id_is_error: test
+lint::config::tests::unknown_section_is_error: test
+lint::config::tests::validate_codes_cannot_be_configured: test
+lint::e08::tests::clean: test
+lint::e08::tests::config_off_disables_the_rule: test
+lint::e08::tests::link_help_points_at_the_foreign_key: test
+lint::e08::tests::triggers: test
+lint::e09::tests::clean: test
+lint::e09::tests::e09_config_override_applies_to_all_findings: test
+lint::e09::tests::nested_array_parameter_is_an_error: test
+lint::e09::tests::triggers: test
+lint::naming::w01::tests::clean: test
+lint::naming::w01::tests::triggers: test
+lint::naming::w02::tests::clean: test
+lint::naming::w02::tests::triggers: test
+lint::naming::w03::tests::clean: test
+lint::naming::w03::tests::triggers: test
+lint::naming::w04::tests::clean: test
+lint::naming::w04::tests::equal_counts_report_the_b_style: test
+lint::naming::w04::tests::triggers: test
+lint::naming::w05::tests::clean: test
+lint::naming::w05::tests::triggers: test
+lint::structure::w06::tests::clean: test
+lint::structure::w06::tests::max_properties_option_applies: test
+lint::structure::w06::tests::triggers: test
+lint::structure::w06::tests::unknown_option_key_is_rejected: test
+lint::structure::w07::tests::a_cluster_lists_every_member: test
+lint::structure::w07::tests::clean: test
+lint::structure::w07::tests::many_similar_types_are_reported_once: test
+lint::structure::w07::tests::silo_prefixes_option_applies: test
+lint::structure::w07::tests::triggers: test
+lint::structure::w08::tests::a_shared_set_is_reported_once_for_four_types: test
+lint::structure::w08::tests::clean: test
+lint::structure::w08::tests::many_types_with_different_shared_sets_finish_quickly: test
+lint::structure::w08::tests::many_types_with_the_same_shared_set_finish_quickly: test
+lint::structure::w08::tests::too_many_combinations_are_reported_once: test
+lint::structure::w08::tests::triggers: test
+lint::structure::w09::tests::clean: test
+lint::structure::w09::tests::create_and_modify_count_for_the_same_type: test
+lint::structure::w09::tests::max_actions_per_type_option_applies: test
+lint::structure::w09::tests::triggers: test
+lint::structure::w10::tests::clean: test
+lint::structure::w10::tests::triggers: test
+lint::structure::w11::tests::clean: test
+lint::structure::w11::tests::matching_ignores_case: test
+lint::structure::w11::tests::triggers: test
+lint::tests::findings_are_located_in_the_source: test
+lint::tests::level_resolution: test
+lint::tests::lint_rule_on_panics_for_an_unregistered_rule: test
+lint::tests::registry_ids_are_known_and_unique: test
+lint::tests::rule_options_reach_the_rule: test
+lint::words::tests::split_camel_cases: test
+loader::discover::tests::candidates_skip_manifest_lint_config_and_hidden_dirs: test
+loader::discover::tests::fixture_path_rules: test
+loader::discover::tests::json_extension_is_case_insensitive: test
+loader::discover::tests::only_binding_fixture_directories_are_excluded: test
+loader::discover::tests::profile_dir_is_the_second_segment_under_bindings: test
+loader::discover::tests::scope_selection_takes_yaml_and_json_candidates: test
+loader::discover::tests::walk_lists_nested_files_and_prunes_dirs: test
+loader::fixture::tests::fixture_header_errors_do_not_echo_data: test
+loader::fixture::tests::fixture_header_matches_the_engine_rules: test
+loader::fixture::tests::fixture_header_rules: test
+loader::parse::tests::depth_budget_message_names_the_limit: test
+loader::parse::tests::duplicate_keys_are_an_error_without_the_position_suffix: test
+loader::parse::tests::json_array_is_flattened: test
+loader::parse::tests::json_trailing_comma_reports_line_and_offset: test
+loader::parse::tests::multi_document_yaml_yields_one_node_each: test
+loader::parse::tests::nesting_beyond_the_budget_is_an_error: test
+loader::parse::tests::node_budget_message_is_readable: test
+loader::parse::tests::null_key_message_has_no_rust_types: test
+loader::parse::tests::only_the_trailing_position_is_stripped: test
+loader::parse::tests::yaml_1_1_booleans_stay_strings: test
+loader::sourcemap::tests::key_and_value_parts_differ: test
+loader::sourcemap::tests::missing_path_falls_back_to_the_nearest_ancestor: test
+loader::sourcemap::tests::multibyte_values_report_byte_offsets_and_char_columns: test
+loader::sourcemap::tests::nested_keys_and_sequence_indexes_resolve: test
+loader::sourcemap::tests::text_is_available_by_path: test
+loader::tests::fixture_bytes_count_toward_budget: test
+loader::tests::fixture_header_is_captured: test
+loader::tests::fixture_that_is_not_utf8_is_recorded_as_unreadable: test
+loader::tests::read_limited_custom_limit: test
+loader::tests::read_limited_missing_and_directory: test
+loader::tests::shared_fixture_is_counted_once: test
+
+139 tests, 0 benchmarks
+     Running tests\action_types.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\action_types-dfd1ee8f7699255e.exe)
+action_requires_at_least_one_rule: test
+add_link_params_must_match_link_ends: test
+create_must_assign_primary_key_and_required: test
+current_time_only_on_timestamp: test
+current_user_only_on_string: test
+empty_condition_or_failure_message_is_v12: test
+function_rule_is_v03: test
+literal_validation: test
+modify_cannot_assign_primary_key: test
+modify_object_param_must_be_object_reference: test
+numeric_values_only_widen: test
+object_reference_param_cannot_be_assigned: test
+object_reference_param_cannot_have_default: test
+object_reference_target_must_exist: test
+parameter_default_must_be_valid_literal: test
+parameter_items_follow_the_property_rules: test
+parameter_types: test
+parses_all_rule_kinds: test
+parses_all_value_sources: test
+references_must_exist: test
+release_object_is_a_public_rule_kind: test
+release_object_rejects_edit_only_definition: test
+rule_missing_kind_is_v02: test
+static_literal_must_match_property_type: test
+static_null_is_rejected: test
+unknown_field_inside_rule_is_v04: test
+unknown_rule_kind_suggests: test
+value_source_with_two_keys_is_v06: test
+
+28 tests, 0 benchmarks
+     Running tests\bindings.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\bindings-21aace36e47530a3.exe)
+all_edit_only_needs_no_profile: test
+bad_profile_dir_is_v16: test
+binding_directly_under_bindings_is_v16: test
+binding_outside_bindings_dir_is_v16: test
+bound_columns_object_and_link: test
+column_key_unknown_property_is_v09: test
+complete_profile_has_no_diagnostics: test
+definition_inside_bindings_dir_is_v16: test
+duplicate_binding_is_v08: test
+edit_only_type_with_binding_is_v16: test
+fixture_behind_directory_link_is_v16: test
+fixture_reference_rules: test
+fixtures_dir_is_not_scanned: test
+flight_binding_loads_under_dev_profile: test
+link_columns_need_from_and_to: test
+many_to_many_without_binding_is_v16: test
+no_profile_selected_is_v16: test
+one_to_many_link_binding_is_v16: test
+oversized_fixture_is_v16: test
+physical_identifier_rules: test
+precision_on_non_decimal_is_v06: test
+profile_name_length_boundaries: test
+same_target_in_two_profiles_is_not_a_duplicate: test
+source_type_without_binding_is_v16: test
+timezone_value_rules: test
+top_level_fixtures_dir_still_loaded: test
+two_keys_on_one_column_is_v16: test
+unknown_binding_field_is_v04: test
+unknown_link_target_is_v09: test
+unknown_profile_from_flag_is_v16_with_suggestion: test
+unknown_profile_from_manifest_points_at_default_profile: test
+unknown_target_is_v09: test
+
+32 tests, 0 benchmarks
+     Running tests\diagnostics.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\diagnostics-019cce52ca1a7d0a.exe)
+cel_keyword_parameter_or_property_name_is_v07: test
+deeply_nested_yaml_is_rejected_not_crashing: test
+duplicate_api_name_is_v08_and_cites_the_first_definition: test
+duplicate_yaml_key_is_v01: test
+json_trailing_comma_is_v01_even_though_yaml_would_accept_it: test
+lowercase_object_type_name_is_v07_with_canonical_help: test
+missing_manifest_is_v14_without_a_location: test
+missing_required_field_is_v05_at_the_kind_value: test
+primary_key_must_be_a_declared_property: test
+reserved_kind_is_v03_not_supported_in_v1: test
+reserved_word_is_v07_case_insensitively: test
+unknown_base_type_is_v06_at_the_value_with_a_suggestion: test
+unknown_field_is_v04_at_the_key_with_a_suggestion: test
+unknown_kind_is_v03_with_a_close_name: test
+valid_document_loads_into_the_ontology: test
+yaml_and_json_load_to_the_same_ontology: test
+
+16 tests, 0 benchmarks
+     Running tests\link_types.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\link_types-3e1dbb92d05c7c2e.exe)
+duplicate_end_names_on_same_type_is_v08: test
+duplicate_link_type_is_v08: test
+end_name_clashes_with_property_is_v08: test
+foreign_key_on_from_end_is_v11: test
+foreign_key_type_must_match_primary_key: test
+link_checks_are_skipped_for_missing_types: test
+link_end_unknown_field_is_v04: test
+link_ir_is_typed: test
+link_type_api_name_must_be_camel_case: test
+many_to_many_with_backing_loads: test
+many_to_many_with_foreign_key_is_v11: test
+many_to_many_without_backing_is_v05: test
+one_to_many_with_backing_is_v11: test
+one_to_many_without_foreign_key_is_v11: test
+one_to_one_with_backing_is_v11: test
+parses_all_three_cardinalities: test
+self_link_ends_must_differ: test
+self_link_with_distinct_ends_is_valid: test
+unknown_cardinality_is_v06: test
+unknown_end_object_type_is_v09: test
+unknown_foreign_key_property_is_v09: test
+
+21 tests, 0 benchmarks
+     Running tests\lint_examples.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\lint_examples-bfdf8ee33cc5c43d.exe)
+aviation_lints_clean: test
+
+1 test, 0 benchmarks
+     Running tests\load_examples.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\load_examples-187bbf3650bf4a66.exe)
+aviation_cost_property: test
+aviation_dev_profile_binds_every_source_type: test
+aviation_dev_profile_binds_flight: test
+aviation_examples_have_no_diagnostics: test
+aviation_file_order_does_not_matter: test
+aviation_yaml_and_json_produce_identical_ir: test
+
+6 tests, 0 benchmarks
+     Running tests\loader.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\loader-fef368c4c135a1bf.exe)
+absolute_include_is_rejected: test
+bom_crlf_tab_and_cjk_locations_are_exact: test
+custom_include_restricts_files: test
+deeply_nested_json_is_rejected_not_crashing: test
+deeply_nested_yaml_is_rejected_not_crashing: test
+diagnostic_paths_use_forward_slash: test
+dot_dirs_and_build_dirs_are_skipped: test
+duplicate_key_is_v01_with_location: test
+empty_yaml_documents_are_skipped: test
+file_count_budget_stops_reading: test
+file_order_does_not_change_ir: test
+include_with_parent_segment_is_rejected: test
+invalid_glob_is_rejected: test
+json_comment_is_rejected: test
+json_syntax_error_column_counts_characters: test
+json_trailing_comma_is_rejected: test
+load_from_memory_applies_same_include_filter: test
+manifest_and_lint_config_are_not_definitions: test
+manifest_that_is_not_a_file_is_v14: test
+manifest_with_other_letter_case_is_v14_and_not_a_definition: test
+merge_key_is_v01: test
+multi_document_yaml_and_json_array_are_both_loaded: test
+nested_files_are_merged: test
+non_utf8_file_and_directory_names_are_v14: test
+non_utf8_file_is_v01: test
+oversized_file_is_rejected: test
+oversized_in_memory_file_is_rejected: test
+properties_keep_declared_order: test
+symlinked_file_is_not_followed: test
+symlinked_manifest_is_not_followed: test
+total_size_budget_stops_reading: test
+unsupported_tag_is_v01: test
+v01_message_has_no_parser_position_suffix: test
+yaml_yes_no_stay_strings: test
+
+34 tests, 0 benchmarks
+     Running tests\object_types.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\object_types-668900c7d12493b9.exe)
+all_v1_base_types_parse: test
+array_requires_items: test
+aviation_backing_values: test
+both_backing_values_load: test
+discouraged_primary_key_is_not_a_validate_error: test
+duplicate_object_type_reports_first_location: test
+full_object_type_round_trips: test
+indexed_defaults_to_false: test
+indexed_must_be_boolean: test
+indexed_true_is_kept: test
+invalid_primary_key_types_are_v10: test
+items_only_for_arrays: test
+nested_array_is_not_a_validate_error: test
+object_type_optional_fields_default: test
+object_without_backing_is_v05: test
+pk_suitability_table: test
+primary_key_must_be_required: test
+string_field_given_number_suggests_quotes: test
+title_key_must_exist: test
+unknown_backing_value_is_v06: test
+unknown_base_type_suggests_nearest: test
+
+21 tests, 0 benchmarks
+     Running tests\schema_export.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\schema_export-2aacfa39efc49f1c.exe)
+aviation_bindings_validate: test
+aviation_definition_documents_start_with_modeline: test
+aviation_documents_validate: test
+aviation_scope_documents_validate: test
+committed_schemas_are_up_to_date: test
+definition_schema_is_draft_2020_12: test
+definition_variants_are_discriminated_by_kind: test
+editor_configs_associate_definition_schema_with_examples: test
+invalid_examples_fail_schema: test
+invalid_scope_documents_fail_schema: test
+rendering_is_deterministic: test
+rule_variants_are_discriminated_by_kind: test
+scope_schema_is_the_third_exported_file: test
+scope_variants_are_discriminated_by_kind: test
+
+14 tests, 0 benchmarks
+     Running tests\scope_documents.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\scope_documents-30a7c8cefa8e3de0.exe)
+binding_may_precede_its_role_in_file_order: test
+binding_to_unknown_role_is_v21: test
+duplicate_role_is_v08: test
+empty_scope_directory_is_reported: test
+loads_aviation_scope_example: test
+multi_document_file_loads: test
+object_type_in_scope_dir_is_v03: test
+role_binding_in_ontology_dir_is_v03: test
+role_in_ontology_dir_is_v03: test
+scope_diagnostics: test
+second_binding_for_role_is_v08: test
+source_binding_in_scope_dir_is_v03: test
+subject_rules: test
+toolset_value_is_checked: test
+unknown_field_is_v04_with_location: test
+unknown_kind_in_scope_dir_suggests_a_scope_kind: test
+
+16 tests, 0 benchmarks
+     Running unittests src\lib.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\ontoforge_server-40cd0be86a05599c.exe)
+context::admission_tests::slow_body_has_one_bounded_control_reservation_until_deadline: test
+drift::tests::exact_key_isolates_new_version_and_keeps_inflight_view: test
+drift::tests::owner_exit_cannot_leave_future_versions_pending_forever: test
+mcp::error_tests::context_error_bounds_and_filters_body_without_losing_header_id: test
+mcp::error_tests::context_error_preserves_safe_code_and_existing_id_only: test
+mcp::error_tests::context_error_without_valid_header_id_uses_transport_id: test
+rest_tests::rest_equal_sort_keys_empty_nullable_and_pagination: test
+rest_tests::rest_metadata_and_all_l0_operations: test
+rest_tests::rest_reload_and_revoke_freeze_inflight_only: test
+state::session_tests::cancelled_close_is_retried_by_reaper_without_new_requests: test
+state::session_tests::cancelled_close_keeps_real_session_counted_until_removal: test
+state::session_tests::initialization_failure_and_cancelled_request_release_real_sessions: test
+state::session_tests::pending_sessions_count_toward_cap_and_evicted_binding_cannot_revive: test
+state::session_tests::real_http_cancelled_initialize_cleans_before_slow_handler_returns: test
+state::session_tests::real_http_concurrent_initialize_stays_bounded_and_releases_at_shutdown: test
+state::session_tests::real_http_eviction_delete_and_hosts_are_isolated: test
+state::session_tests::real_http_failed_initialize_leaves_no_session: test
+state::session_tests::real_http_idle_ttl_reclaims_without_requests: test
+state::session_tests::real_http_natural_worker_exit_removes_owner_through_wrapper: test
+state::session_tests::real_http_sessions_never_exceed_capacity: test
+state::session_tests::real_http_wrong_owner_never_refreshes_ttl: test
+tests::crate_name_has_ontoforge_prefix: test
+tracer_tests::tracer_authenticated_pk_is_durable_after_shutdown: test
+tracer_tests::tracer_snapshot_releases_lock_before_source: test
+tracer_tests::tracer_unauthenticated_and_forged_context_are_denied: test
+
+25 tests, 0 benchmarks
+     Running tests\action_source_budget.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\action_source_budget-aa0f8ddd9f6dada0.exe)
+mcp_action_disconnect_keeps_domain_source_budget_and_one_receipt: test
+mcp_action_http_deadline_keeps_domain_source_budget_and_one_receipt: test
+rest_action_disconnect_keeps_domain_source_budget_and_one_receipt: test
+rest_action_http_deadline_keeps_domain_source_budget_and_one_receipt: test
+validate_only_preserves_domain_rows_bytes_while_query_stays_limited: test
+
+5 tests, 0 benchmarks
+     Running tests\health_lifecycle_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\health_lifecycle_it-45146197d62e8882.exe)
+health_core_failure_is_503_and_recovery_is_visible: test
+health_l2_failure_and_expiry_are_200_degraded: test
+health_unconfigured_optional_l2_is_healthy: test
+startup_partial_failure_cleans_monitor_and_store: test
+
+4 tests, 0 benchmarks
+     Running tests\health_trino_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\health_trino_it-2a22b9c18e6edd91.exe)
+real_health_l2_failure_expiry_recovery_keeps_core: test
+real_shutdown_action_dependency_audit_and_cleanup: test
+
+2 tests, 0 benchmarks
+     Running tests\history_errors.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\history_errors-994aa655f7d918ee.exe)
+history_audit_unavailable_fails_closed_before_source_dispatch: test
+history_log_store_failure_is_unavailable_with_its_audit_id: test
+history_missing_object_remains_not_found_with_its_audit_id: test
+history_query_store_failure_is_unavailable_with_its_audit_id: test
+history_source_failures_preserve_status_and_audit_id: test
+history_success_uses_its_durable_audit_id: test
+history_truncated_pk_is_cost_exceeded_with_its_audit_id: test
+
+7 tests, 0 benchmarks
+     Running tests\history_pagination.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\history_pagination-a4c6097c6565977c.exe)
+byte_limited_pages_preserve_complete_groups_without_skipping_entries: test
+exact_limit_terminal_page_has_no_continuation: test
+limit_above_500_reports_and_follows_the_real_continuation: test
+oversized_first_group_returns_a_safe_error_without_partial_entries: test
+soft_entry_limit_never_splits_a_record_group: test
+utf8_budget_includes_the_complete_normalized_page: test
+zero_limit_is_normalized_before_continuation_is_decided: test
+
+7 tests, 0 benchmarks
+     Running tests\http_action_diagnostics.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\http_action_diagnostics-26c4e84f46b91aa0.exe)
+http_action_commit_error_omits_internal_message: test
+http_action_criteria_diagnostics_keep_only_configured_message: test
+http_action_other_errors_omit_diagnostics: test
+http_action_parameter_diagnostics_keep_item_and_field: test
+http_action_store_error_keeps_database_details_private: test
+
+5 tests, 0 benchmarks
+     Running tests\http_action_safety.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\http_action_safety-256b2d6078941c00.exe)
+http_replay_revoke_cross_principal_and_changed_params: test
+http_same_command_race_one_commit_original_receipt: test
+http_stale_and_validate_conflicts_never_retry: test
+
+3 tests, 0 benchmarks
+     Running tests\http_actions.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\http_actions-89eaee842b864e43.exe)
+http_action_empty_invalid_and_masked_history: test
+http_action_validate_submit_history_result: test
+http_history_preserves_masked_field_names_and_hides_values: test
+
+3 tests, 0 benchmarks
+     Running tests\http_contract.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\http_contract-3d70bfb17bf18dc5.exe)
+contracts::http_error_utf8_ids_and_l0_redaction: test
+contracts::http_framework_rejections_are_structured: test
+contracts::http_rows_bytes_concurrency_timeout_and_audit_fail_closed: test
+
+3 tests, 0 benchmarks
+     Running tests\mcp_actions.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\mcp_actions-44afebad75c2e60f.exe)
+mcp_action_envelope_optional_params_preserve_business_defaults: test
+mcp_action_envelope_rejects_wrong_shapes_and_unknown_fields: test
+mcp_action_envelope_separates_same_named_business_fields: test
+mcp_action_schema_execution_keeps_admitted_definition: test
+mcp_dynamic_action_schema_matches_real_validation: test
+mcp_float_array_schema_and_validation_agree: test
+mcp_reference_schema_uses_the_fixed_ontology_primary_key_type: test
+mcp_rest_same_command_race_and_receipt: test
+mcp_validate_only_http_zero_business_writes: test
+mcp_validate_only_keeps_fence_cas_guards_and_zero_writes: test
+
+10 tests, 0 benchmarks
+     Running tests\mcp_contract.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\mcp_contract-978a0a16184b93ef.exe)
+mcp_action_criteria_failure_retains_safe_domain_diagnostics: test
+mcp_action_envelope_optional_params_apply_domain_defaults: test
+mcp_action_envelope_preserves_colliding_business_values_and_controls: test
+mcp_action_envelope_rejects_flat_and_invalid_nested_requests: test
+mcp_action_numeric_and_boolean_references_accept_real_pk_values: test
+mcp_core_full_describe_query_history_equal_rest: test
+mcp_describe_links_and_engine_status_match_scoped_rest_metadata: test
+mcp_get_object_budget_error_preserves_durable_audit_id: test
+mcp_get_object_missing_is_distinct_from_budget_exhaustion: test
+mcp_history_byte_budget_matches_rest_without_partial_records: test
+mcp_history_pages_match_rest_and_preserve_complete_records: test
+mcp_inflight_snapshot_and_revoke_on_next_call: test
+mcp_list_filters_before_keyset_and_direct_call_denies: test
+mcp_read_tools_use_declared_argument_shapes: test
+mcp_real_http_client_lists_core_tools_and_rejects_hidden_call: test
+mcp_store_failures_are_safe_and_keep_audit_correlation: test
+
+16 tests, 0 benchmarks
+     Running tests\mcp_execution_admission.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\mcp_execution_admission-57f95d5cd7d7fbbd.exe)
+cancelled_disconnected_action_holds_permit_until_owned_task_finishes: test
+mcp_read_holds_shared_slot_but_real_cancel_and_sse_still_work: test
+rejected_messages_and_large_body_release_reserved_slots: test
+rest_request_blocks_mcp_until_actual_execution_finishes: test
+
+4 tests, 0 benchmarks
+     Running tests\mcp_l2.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\mcp_l2-665d247b7edfc9e7.exe)
+mcp_l2_all_six_names_parameters_and_allowlist: test
+mcp_l2_gate_expiry_revoke_and_audit: test
+
+2 tests, 0 benchmarks
+     Running tests\mcp_l2_defaults.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\mcp_l2_defaults-7cb1f2d3d72d956c.exe)
+l2_reservation_observer_runs_before_source_await_and_survives_drop: test
+mcp_l2_cancellation_and_shutdown_keep_reserved_audit_ids: test
+mcp_l2_custom_edit_catalog_denies_before_any_upstream_request: test
+mcp_l2_custom_edit_catalog_filtered_and_read_catalog_still_works: test
+mcp_l2_default_edit_catalog_denies_before_any_upstream_request: test
+mcp_l2_default_edit_catalog_filtered_and_read_catalog_still_works: test
+mcp_l2_defaults_real_listener_consumes_deployment_context: test
+mcp_l2_errors_are_safe_and_preserve_reserved_audit_ids: test
+mcp_l2_local_rejections_skip_status_execute_and_audit: test
+mcp_l2_missing_context_and_outside_allowlist_deny_before_send: test
+mcp_l2_optional_context_defaults_and_qualified_override: test
+mcp_l2_same_session_real_proof_expiry_zero_send_and_recovery: test
+mcp_l2_same_session_revoke_defaults_and_qualified_zero_send: test
+mcp_l2_typed_explain_concurrency_limit_releases_permit: test
+mcp_l2_without_trino_remains_unavailable_for_all_six_tools: test
+
+15 tests, 0 benchmarks
+     Running tests\mcp_transport.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\mcp_transport-ce3b45bd93e3f3b2.exe)
+cancellation_stops_only_requested_read_and_persists_audit: test
+cancelled_action_survives_transport_shutdown_without_replay: test
+expired_signed_token_rejects_every_session_method: test
+legacy_session_lists_tools: test
+mcp_new_protocol_without_session_requires_metadata: test
+mcp_old_session_reauth_owner_ttl_capacity_delete: test
+shutdown_closes_live_sse_connection: test
+shutdown_deadline_still_closes_audit_after_stuck_action: test
+shutdown_surfaces_owned_action_task_failure: test
+transport_authenticates_initialize_and_control_requests: test
+transport_binds_initialize_owner_before_first_tool: test
+
+11 tests, 0 benchmarks
+     Running tests\postgres_http_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\postgres_http_it-031a3162ed342f50.exe)
+pg_http_action_validate_stale_replay_atomicity: test
+pg_http_definition_stale_barrier_has_zero_business_writes: test
+pg_http_mixed_snapshot_reload_revoke_and_history: test
+pg_mcp_rest_same_command_race_one_persistent_receipt: test
+
+4 tests, 0 benchmarks
+     Running tests\source_drift.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\source_drift-822cc59ca058285e.exe)
+action_type_authorization_precedes_source_drift_for_rest_and_mcp: test
+actual_monitor_panic_becomes_check_failed_and_shutdown_reports_failure: test
+all_targets_degraded_keeps_health_200_without_details: test
+catalog_probes_share_the_round_budget_and_cancel_inflight_metadata: test
+complete_source_patch_remains_readable_and_actionable_during_drift: test
+duplicate_owner_installation_is_rejected_without_stopping_the_first: test
+first_probe_duration_does_not_extend_the_30_second_period: test
+inflight_list_keeps_v1_view_for_second_source_call_after_v2_drift: test
+initial_snapshot_failure_stops_host_and_drains_audit: test
+invalid_duplicate_startup_cannot_close_the_running_owner_or_its_audit: test
+invalid_fresh_startup_does_not_probe_or_take_the_store: test
+later_list_page_and_backfill_recheck_the_logical_target: test
+mcp_authorized_action_preserves_drift_code_in_both_modes_without_side_effects: test
+metadata_engine_failure_remains_503_despite_live_status_success: test
+no_source_definition_is_healthy_without_metadata_calls: test
+search_around_checks_the_link_target_before_reading_join_rows: test
+shutdown_during_initial_probe_cancels_and_joins_owner: test
+source_drift_blocks_list_aggregate_and_both_action_modes_without_writes: test
+source_unreadable_preserves_safe_code_and_zero_source_execution: test
+startup_drift_rejects_source_before_sql_and_preserves_audit_id: test
+
+20 tests, 0 benchmarks
+     Running tests\source_drift_cleanup.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\source_drift_cleanup-cafb1318fbf15558.exe)
+failed_metadata_delete_returns_shutdown_error_and_closes_audit: test
+shutdown_waits_for_inflight_metadata_delete_and_closes_audit: test
+
+2 tests, 0 benchmarks
+     Running tests\source_drift_trino_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\source_drift_trino_it-fef7a8cde2063cc4.exe)
+real_source_drift_external_reload_does_not_publish_old_metadata: test
+real_source_drift_periodic_target_isolation_and_recovery: test
+
+2 tests, 0 benchmarks
+     Running tests\trino_http_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\trino_http_it-8455493ade653e33.exe)
+trino_http_and_mcp_six_l2_tools_all_formats: test
+trino_http_long_read_releases_snapshot_lock: test
+
+2 tests, 0 benchmarks
+     Running unittests src\lib.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\ontoforge_storage-b861aaf24effc27d.exe)
+ddl::tests::add_property_column_is_two_single_operation_statements: test
+ddl::tests::create_table_declares_collation_flags_and_system_columns: test
+ddl::tests::ddl_snapshots: test
+ddl::tests::migration_statements_quote_names_and_qualify_the_old_table_only: test
+ddl::tests::postgres_add_column_is_qualified_and_idempotent: test
+ddl::tests::postgres_collates_the_key_before_its_constraints: test
+ddl::tests::system_columns_match_the_names_physical_checks_against: test
+diff::tests::archived_columns_are_not_removals: test
+diff::tests::diagnostic_is_v25_with_migrate_help: test
+diff::tests::unique_index_leaves_with_its_link_but_a_plain_one_stays: test
+history::tests::limit_is_between_one_and_the_maximum: test
+naming::tests::archive_names_carry_the_definition_version: test
+naming::tests::bounded_names: test
+naming::tests::fnv1a64_matches_the_published_vectors: test
+naming::tests::index_names_stay_within_the_postgres_limit: test
+naming::tests::names_are_snake_cased_with_prefixes: test
+physical::tests::array_of_decimal_keeps_precision: test
+     Running tests\conformance_pg.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\conformance_pg-6e1a67f4d83a0acf.exe)
+physical::tests::array_without_items_is_refused: test
+physical::tests::byte_and_short_stay_distinct: test
+read_audit::tests::audit_shutdown_join_error_is_sticky: test
+state::tests::a_released_object_can_be_set_or_tombstoned_but_not_released_or_unset: test
+state::tests::a_source_backed_object_can_be_tombstoned_without_an_edit_row: test
+state::tests::a_source_backed_object_may_be_patched_without_required_properties: test
+state::tests::a_tombstoned_object_is_not_revived_by_set: test
+state::tests::a_version_zero_row_counts_as_absent: test
+state::tests::an_edit_only_object_keeps_its_required_properties_on_unset: test
+state::tests::an_edit_only_object_needs_its_required_properties: test
+state::tests::an_edit_only_object_that_does_not_exist_cannot_be_changed: test
+state::tests::link_rows_toggle_and_count_every_write: test
+state::tests::removing_an_absent_link_depends_on_its_backing: test
+state::tests::set_creates_a_row_with_version_one: test
+state::tests::set_patches_given_properties_and_bumps_the_version: test
+state::tests::tombstone_keeps_the_set_properties_and_blocks_everything_but_release: test
+state::tests::unset_clears_only_the_named_properties: test
+tests::crate_name_has_ontoforge_prefix: test
+value::tests::array_elements_follow_items_and_may_not_be_null: test
+value::tests::date_is_a_calendar_day_written_as_iso: test
+value::tests::decimal_is_padded_and_never_rounded: test
+value::tests::decimal_json_numbers_must_be_exact_integers: test
+value::tests::float_is_rounded_to_32_bits_once: test
+value::tests::geopoint_is_range_checked: test
+value::tests::integer_ranges_follow_the_type: test
+value::tests::json_round_trips_every_type: test
+value::tests::null_is_refused_for_a_required_property_only: test
+value::tests::only_plain_values_become_predicate_scalars: test
+value::tests::postgres_limits_are_validated: test
+value::tests::text_cells_convert_to_canonical_values: test
+value::tests::text_cells_that_do_not_fit_are_refused: test
+value::tests::timestamp_needs_an_offset_and_is_stored_in_utc_milliseconds: test
+
+49 tests, 0 benchmarks
+action_batch_guard_interleaves_reads_and_edits: test
+action_batch_migration_constraints_match_contract: test
+action_batch_principal_scopes_command_id: test
+action_batch_stale_definition_leaves_no_action_rows: test
+action_batch_writes_one_command_and_outbox: test
+action_cas_conflict_rolls_back_version_zero_skeleton: test
+action_cas_rejects_stale_no_token_without_side_effects: test
+append_only_rejects_sqlite_replace_writes: test
+append_only_rejects_truncate_on_pg: test
+append_only_rejects_update_and_delete: test
+audit_batch_rejection_is_atomic: test
+audit_batch_retention_parity: test
+audit_cancelled_shutdown_retry_waits_for_durability: test
+audit_cleanup_rejection_rolls_back_batch: test
+audit_concurrent_shutdown_waits_for_durability: test
+audit_pg_connection_interruption_recovers: test
+audit_shutdown_drains_inflight_guard: test
+audit_shutdown_failure_is_sticky: test
+audit_sink_failure_rejects_inflight_finish: test
+commit_appends_one_log_record: test
+commit_set_creates_edit_row: test
+commit_writes_history_snapshot: test
+concurrent_commits_on_same_pk_serialize: test
+concurrent_fk_claims_one_wins: test
+duplicate_link_add_keeps_one_live_row: test
+edit_only_rules: test
+every_value_type_round_trips: test
+import_actor_is_stored_as_system_import: test
+invalid_values_are_rejected_without_writes: test
+link_add_creates_link_row: test
+link_add_remove_toggle: test
+link_remove_rules: test
+log_records_every_op: test
+one_to_one_violation_is_reported: test
+pg_sessions_use_the_pinned_settings: test
+read_log_pages_by_seq: test
+replay_detects_version_divergence: test
+replay_rebuilds_edit_store: test
+replay_rebuilds_overlay_operations: test
+same_commit_twice_creates_two_records: test
+second_set_patches_only_given_properties: test
+source_object_lifecycle: test
+stale_def_version_rejected: test
+two_edits_of_one_object_bump_each_version: test
+values_postgres_cannot_store_are_refused_on_every_backend: test
+
+45 tests, 0 benchmarks
+     Running tests\conformance_sqlite.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\conformance_sqlite-286d97147bb96e52.exe)
+action_batch_guard_interleaves_reads_and_edits: test
+action_batch_migration_constraints_match_contract: test
+action_batch_principal_scopes_command_id: test
+action_batch_stale_definition_leaves_no_action_rows: test
+action_batch_writes_one_command_and_outbox: test
+action_cas_conflict_rolls_back_version_zero_skeleton: test
+action_cas_rejects_stale_no_token_without_side_effects: test
+append_only_rejects_sqlite_replace_writes: test
+append_only_rejects_truncate_on_pg: test
+append_only_rejects_update_and_delete: test
+audit_batch_rejection_is_atomic: test
+audit_batch_retention_parity: test
+audit_cancelled_shutdown_retry_waits_for_durability: test
+audit_cleanup_rejection_rolls_back_batch: test
+audit_concurrent_shutdown_waits_for_durability: test
+audit_shutdown_drains_inflight_guard: test
+audit_shutdown_failure_is_sticky: test
+audit_sink_failure_rejects_inflight_finish: test
+commit_appends_one_log_record: test
+commit_set_creates_edit_row: test
+commit_writes_history_snapshot: test
+concurrent_commits_on_same_pk_serialize: test
+concurrent_fk_claims_one_wins: test
+duplicate_link_add_keeps_one_live_row: test
+edit_only_rules: test
+every_value_type_round_trips: test
+import_actor_is_stored_as_system_import: test
+invalid_values_are_rejected_without_writes: test
+link_add_creates_link_row: test
+link_add_remove_toggle: test
+link_remove_rules: test
+log_records_every_op: test
+one_to_one_violation_is_reported: test
+read_log_pages_by_seq: test
+replay_detects_version_divergence: test
+replay_rebuilds_edit_store: test
+replay_rebuilds_overlay_operations: test
+same_commit_twice_creates_two_records: test
+second_set_patches_only_given_properties: test
+source_object_lifecycle: test
+stale_def_version_rejected: test
+two_edits_of_one_object_bump_each_version: test
+values_postgres_cannot_store_are_refused_on_every_backend: test
+
+43 tests, 0 benchmarks
+     Running tests\frozen_history.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\frozen_history-79d1d1f6f10c5512.exe)
+frozen_history_keeps_request_definition_and_current_scope: test
+
+1 test, 0 benchmarks
+     Running tests\history_masking.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\history_masking-3d754214abfbd20c.exe)
+invisible_check_precedes_store_access: test
+invisible_nonexistent_and_ungranted_are_identical: test
+limit_zero_counts_as_one: test
+link_entries_are_not_object_history: test
+ordinary_caller_sees_visible_values_only: test
+pagination_keeps_entries_of_one_commit_together: test
+pagination_with_before_seq: test
+params_hidden_from_ordinary_caller: test
+pg_history_masks_and_pages: test
+serialized_history_never_contains_masked_values: test
+unset_tombstone_release_entries: test
+visibility_uses_current_row: test
+visible_object_without_edits_has_empty_history: test
+
+13 tests, 0 benchmarks
+     Running tests\import.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\import-3442dfcabaeffa11.exe)
+airports_csv_is_imported_as_system_edits: test
+at_most_one_hundred_problems_are_listed: test
+batches_follow_batch_size: test
+editonly_link_import: test
+empty_and_repeated_imports_are_stable: test
+existing_objects_block_create_only: test
+file_level_validation: test
+geopoint_and_decimal_cells: test
+import_goes_through_the_definition_fence: test
+json_decimals_are_never_rounded: test
+json_import_matches_csv: test
+limits_are_enforced: test
+nul_in_a_cell_is_refused_before_anything_is_written: test
+partial_failure_is_reported: test
+pg_cells_and_keys_of_every_kind: test
+pg_import_modes_and_links: test
+source_backed_type_is_rejected: test
+tombstoned_object_is_never_revived: test
+
+18 tests, 0 benchmarks
+     Running tests\migrate.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\migrate-559c35c1e54ca0b8.exe)
+apply_with_stale_hash_is_rejected: test
+archive_removed_property: test
+drop_archived_cleans_up: test
+invalid_rename_decl_is_rejected: test
+migrate_rechecks_applied_roles: test
+migrate_with_roles_applies_when_the_roles_still_compile: test
+primary_key_change_archives_table: test
+reapply_after_success_is_rejected: test
+removed_type_archived: test
+rename_object_type_moves_table: test
+rename_property_moves_data: test
+rename_rebuilds_the_index_of_the_column: test
+rename_with_type_change_is_rejected: test
+type_change_archives_and_adds: test
+undeclared_rename_archives_and_adds_an_empty_column: test
+
+15 tests, 0 benchmarks
+     Running tests\migrate_pg.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\migrate_pg-c82bca4eabba7b09.exe)
+archive_removed_property_on_pg: test
+pg_migrate_rechecks_applied_roles: test
+primary_key_change_then_drop_archived_on_pg: test
+rename_property_and_type_on_pg: test
+
+4 tests, 0 benchmarks
+     Running tests\model_prop.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\model_prop-1ded370bf4b82d98.exe)
+model_matches_store: test
+
+1 test, 0 benchmarks
+     Running tests\query_read.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\query_read-0d4fde8456f5d85a.exe)
+batch_accepts_256_keys_and_all_value_types: test
+batch_preserves_requested_keys_and_distinguishes_null_from_unset: test
+batch_rejects_more_than_256_before_sql: test
+corrupt_property_error_uses_logical_name: test
+get_batch_and_scan_preserve_rows_log_and_definition: test
+link_fk_request_is_rejected_with_logical_name: test
+link_from_or_to_endpoint_is_bounded_and_preserves_removed_edges: test
+link_reads_leave_row_log_and_definition_counts_unchanged: test
+scan_includes_release_and_skips_version_zero: test
+scan_uses_keyset_and_preserves_flags: test
+version_zero_skeleton_is_not_an_edit_and_read_does_not_mutate: test
+
+11 tests, 0 benchmarks
+     Running tests\query_read_pg.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\query_read_pg-fba053d23de5db89.exe)
+sqlite_and_postgres_link_reads_match: test
+sqlite_and_postgres_object_reads_match: test
+
+2 tests, 0 benchmarks
+     Running tests\reload.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\reload-aeccea678a096af3.exe)
+additive_property_adds_columns: test
+array_columns_are_not_probed: test
+aviation_reload_creates_indexes: test
+concurrent_reloads_single_flight: test
+destructive_changes_are_rejected: test
+dry_run_changes_nothing: test
+first_reload_creates_tables: test
+index_added_on_second_reload: test
+link_changes_are_destructive: test
+long_names_round_trip: test
+metadata_only_change_needs_no_probe: test
+metadata_only_change_records_a_version_without_ddl: test
+migrate_waits_for_trino_after_the_switch: test
+new_many_to_many_link_creates_a_table: test
+one_to_one_unique_index_rejects_second_row: test
+precision_and_items_changes_are_destructive: test
+probe_timeout_keeps_pending: test
+probe_waits_until_visible: test
+relaxing_one_to_one_drops_unique_index: test
+reload_after_reopen_is_noop: test
+reload_creates_row_filter_indexes: test
+reload_racing_commits_never_lets_an_old_write_through: test
+reload_rechecks_applied_roles: test
+reload_resumes_after_partial_ddl: test
+removing_indexed_keeps_index: test
+second_reload_is_noop: test
+snake_collision_is_v24: test
+stale_writer_rejected_after_switch: test
+system_column_collision_is_v24: test
+the_old_definition_keeps_serving_while_the_probe_waits: test
+tightening_to_one_to_one_with_conflicts_keeps_old_definition: test
+writer_without_a_loaded_definition_follows_the_database: test
+
+32 tests, 0 benchmarks
+     Running tests\reload_pg.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\reload_pg-181387145679bc34.exe)
+additive_reload_on_pg_adds_columns: test
+concurrent_reloads_single_flight_on_pg: test
+definition_lock_is_shared_and_bounded_by_lock_timeout: test
+first_reload_on_pg_puts_edit_tables_in_edit_schema: test
+in_flight_commit_blocks_switch_on_pg: test
+indexes_on_pg: test
+lock_timeout_keeps_old_definition: test
+long_names_on_pg: test
+pending_switch_on_pg_serves_the_old_definition_until_visible: test
+reload_racing_commits_never_lets_an_old_write_through_on_pg: test
+second_reload_on_pg_is_noop: test
+
+11 tests, 0 benchmarks
+     Running tests\reload_trino_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\reload_trino_it-a69493e382f61c94.exe)
+a_new_column_is_visible_when_its_definition_becomes_active: test
+cached_column_requires_flush_before_definition_switch: test
+reload_activates_once_trino_sees_the_new_tables: test
+
+3 tests, 0 benchmarks
+     Running tests\request_snapshot.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\request_snapshot-fc053e43b43ad421.exe)
+snapshot_lock_is_released_before_compile_or_network: test
+snapshot_pg_never_mixes_definition_roles_bindings: test
+snapshot_sqlite_never_mixes_definition_roles_bindings: test
+
+3 tests, 0 benchmarks
+     Running tests\scope_store.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\scope_store-360e2c095d4b1b7a.exe)
+admin_audit_is_append_only: test
+apply_creates_row_filter_indexes: test
+apply_without_active_definition_fails: test
+apply_writes_roles_bindings_and_audit: test
+audit_insert_failure_rolls_back_scope_and_indexes: test
+full_sync_removes_bindings_and_roles: test
+load_scope_round_trips: test
+login_recorder_writes_once_per_interval: test
+order_independent_hash: test
+pg_audit_is_append_only_and_login_is_recorded: test
+pg_concurrent_scope_apply_serializes: test
+pg_scope_apply: test
+record_login_creates_user_once: test
+scope_tables_written_only_by_scope_store: test
+stale_plan_hash_rejected: test
+
+15 tests, 0 benchmarks
+     Running tests\sql_exit_guard.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\sql_exit_guard-20ee73d3a73125d6.exe)
+sql_text_only_from_sql_exit: test
+
+1 test, 0 benchmarks
+     Running tests\sqlite_connection.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\debug\deps\sqlite_connection-8d53d24eff736232.exe)
+engine_collations_are_registered: test
+every_pooled_connection_has_recursive_triggers: test
+foreign_keys_on: test
+open_creates_the_parent_directories_of_the_sqlite_file: test
+
+4 tests, 0 benchmarks
+   Doc-tests ontoforge
+0 tests, 0 benchmarks
+   Doc-tests ontoforge_action
+0 tests, 0 benchmarks
+   Doc-tests ontoforge_api
+0 tests, 0 benchmarks
+   Doc-tests ontoforge_auth
+0 tests, 0 benchmarks
+   Doc-tests ontoforge_client
+0 tests, 0 benchmarks
+   Doc-tests ontoforge_engine
+crates\ontoforge-engine\src\trino\l2_monitor.rs - trino::l2_monitor::TrinoEngine::start_l2_acl_monitor (line 123): test
+
+1 test, 0 benchmarks
+all doctests ran in 0.44s; merged doctests compilation took 0.36s
+   Doc-tests ontoforge_expr
+0 tests, 0 benchmarks
+   Doc-tests ontoforge_query
+crates\ontoforge-query\src\compile.rs - compile::ValidatedQuery (line 50): test
+crates\ontoforge-query\src\compile.rs - compile::ValidatedQuery (line 60): test
+
+2 tests, 0 benchmarks
+   Doc-tests ontoforge_schema
+0 tests, 0 benchmarks
+   Doc-tests ontoforge_server
+0 tests, 0 benchmarks
+   Doc-tests ontoforge_storage
+0 tests, 0 benchmarks
+exit_code=0
+ended_utc=2026-11-05T08:43:50.2796872Z

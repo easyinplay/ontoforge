@@ -1,0 +1,72 @@
+{
+  "head": {
+    "command": "git",
+    "args": [
+      "rev-parse",
+      "HEAD"
+    ],
+    "exit": 0,
+    "stdout": "060019fe52005c6b85ae5c5f59da9868f464e579\n",
+    "stderr": ""
+  },
+  "workingSource": {
+    "command": "git",
+    "args": [
+      "diff",
+      "--name-only",
+      "HEAD",
+      "--",
+      "crates",
+      "Cargo.toml",
+      "Cargo.lock",
+      "CONTRIBUTING.md",
+      ".github",
+      "ci",
+      "examples",
+      "schemas"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "moved": [
+    "CONTRIBUTING.md",
+    "Cargo.toml",
+    "crates/ontoforge-schema/src/diag.rs",
+    "crates/ontoforge/src/cli.rs",
+    "crates/ontoforge/src/lib.rs"
+  ],
+  "diff": {
+    "command": "git",
+    "args": [
+      "diff",
+      "f8851ca",
+      "HEAD",
+      "--",
+      "CONTRIBUTING.md",
+      "Cargo.toml",
+      "crates/ontoforge-schema/src/diag.rs",
+      "crates/ontoforge/src/cli.rs",
+      "crates/ontoforge/src/lib.rs"
+    ],
+    "exit": 0,
+    "stdout": "diff --git a/CONTRIBUTING.md b/CONTRIBUTING.md\nindex 35e20bd..08230e9 100644\n--- a/CONTRIBUTING.md\n+++ b/CONTRIBUTING.md\n@@ -63,7 +63,24 @@ CI 对应的步骤在 `integration` 作业：`Edit store conformance (PostgreSQL\n \n ### nightly Iceberg 作业\n \n-`.github/workflows/nightly.yml` 每天运行一次（也可手动触发 `workflow_dispatch`），在 Trino 483 与 484 上重复上述步骤，并额外配置 Iceberg catalog（`ci/trino/iceberg/iceberg.properties`：JDBC catalog 存在同一 PostgreSQL 的 `iceberg_catalog` 库，表由 `ci/pg/iceberg_catalog.sql` 创建，warehouse 用 Trino 本地文件系统），把 `demo.aviation.flights` 复制成 `iceberg.aviation.flights` 后以 `ONTOFORGE_TRINO_ICEBERG=1` 运行 `trino_it`。任一版本失败时，独立的 `report-failure` 作业创建带 `nightly-failure` 标签的 issue，已有未关闭的同标签 issue 时改为追加评论。只有该作业拥有 `issues: write`，测试作业只有 `contents: read`。\n+`.github/workflows/nightly.yml` 每天运行一次，也可手动触发 `workflow_dispatch`。Trino 483/484 使用 PostgreSQL JDBC catalog 与真实 MinIO S3 warehouse。`ci/minio/Dockerfile` 固定官方 MinIO source commit 和 Go builder digest，复用原依赖图生成 scratch 测试镜像；自建产物保留 DEVELOPMENT 标识，不宣称官方预编译或 bit-reproducibility。版本、SHA256、source/runner 身份及运行证据写入 `target/phase072-minio/<run-id>/provenance.json`。\n+\n+```bash\n+# Linux or Windows Git Bash; one owner per host, CARGO_BUILD_JOBS=2.\n+bash ci/iceberg-services.sh contract --trino 483\n+bash ci/iceberg-services.sh contract --trino 484\n+bash ci/iceberg-services.sh nightly --trino 483\n+\n+# Verify the SDK helper extracted from the built image.\n+ONTOFORGE_ICEBERG_STATE=/path/to/private/helper-state.json bash ci/iceberg-services.sh helper-test\n+\n+# Recovery cleanup; set ONTOFORGE_ICEBERG_STATE before starting the run.\n+bash ci/iceberg-services.sh cleanup --state /path/to/private/state.json\n+```\n+\n+`contract` 验证 source/copy 均为29行、精确 Rust 测试、PG 的 `s3://warehouse/` metadata 与非空对象，并只重启 MinIO/Trino后复验，不重新 CTAS。`nightly` 再执行原有 Action atomicity/race/idempotency/outbox、Trino Action、完整 Engine/CLI corpus；各目标必须发现且实际执行非零测试。容器、network、volumes 按本次 owner label 和身份清理，已有服务不受影响；PG/Trino只发布 loopback 随机端口。\n+\n+临时凭据只进入私有 env/catalog，Trino使用环境凭据 provider；原始日志按本次真实凭据扫描通过后才可公开。CI为主fixture和helper分别保存私有state，并用两个独立 `always()` 步骤补偿清理，第一项失败也会尝试第二项。helper在创建容器前持久化owner和lock token；清理失败保留state供重试。state不存在时无操作，资源或锁身份无法核验时拒绝删除。只有 **schedule 触发且失败** 才运行拥有 `issues: write` 的 `report-failure`；手动触发不创建 issue/comment，测试job始终只有 `contents: read`。\n \n ### 私有 fixture（SQL Server 等公司环境）\n \ndiff --git a/crates/ontoforge-schema/src/diag.rs b/crates/ontoforge-schema/src/diag.rs\nindex b5850fd..1bbeffb 100644\n--- a/crates/ontoforge-schema/src/diag.rs\n+++ b/crates/ontoforge-schema/src/diag.rs\n@@ -181,6 +181,8 @@ pub fn did_you_mean<'a>(\n /// downgraded in `ontoforge.toml`, but scope, row-predicate and destructive-change\n /// failures must never be silenced (SCOPE-06, D-07, STORE-02).\n pub mod codes {\n+    /// Online source `OneToOne` foreign key shared by distinct objects; not an offline lint.\n+    pub const W18: &str = \"ONT-W18\";\n     /// Syntax error, duplicate key, budget exceeded, or non-UTF-8 input.\n     pub const V01: &str = \"ONT-V01\";\n     /// Document shape: not a mapping, missing `kind`, or `kind` is not a string.\ndiff --git a/crates/ontoforge/src/cli.rs b/crates/ontoforge/src/cli.rs\nindex 21503bf..323651f 100644\n--- a/crates/ontoforge/src/cli.rs\n+++ b/crates/ontoforge/src/cli.rs\n@@ -229,6 +229,9 @@ pub struct ValidateArgs {\n     /// explicit only).\n     #[arg(long, requires = \"online\")]\n     pub check_pk: bool,\n+    /// Report source `OneToOne` foreign keys shared by distinct objects (full table scan).\n+    #[arg(long, requires = \"online\")]\n+    pub check_cardinality: bool,\n     /// Server configuration with the Trino connection and the profile to engine mapping.\n     #[arg(long, value_name = \"FILE\", requires = \"online\")]\n     pub server_config: Option<Utf8PathBuf>,\ndiff --git a/crates/ontoforge/src/lib.rs b/crates/ontoforge/src/lib.rs\nindex d0ff1f5..1a3b8c5 100644\n--- a/crates/ontoforge/src/lib.rs\n+++ b/crates/ontoforge/src/lib.rs\n@@ -120,8 +120,18 @@ fn validate_online(args: &ValidateArgs) -> u8 {\n     let run = online::run_online(args);\n     print_diagnostics(&run.out, &args.output);\n     if args.output.format == Format::Human {\n+        let warnings = run\n+            .out\n+            .diagnostics\n+            .iter()\n+            .filter(|d| d.severity == Severity::Warning)\n+            .count();\n         let summary = match (&run.out.ontology, &run.profile) {\n             _ if run.code == 3 => engine_summary(&run.out),\n+            (Some(ontology), Some(profile)) if run.code == 0 && warnings > 0 => format!(\n+                \"ontology `{}`, profile `{profile}`, {} binding(s) checked online; {warnings} warning(s) found\",\n+                ontology.api_name, run.bindings\n+            ),\n             (Some(ontology), Some(profile)) if run.code == 0 => format!(\n                 \"ok: ontology `{}`, profile `{profile}`, {} binding(s) checked online\",\n                 ontology.api_name, run.bindings\n",
+    "stderr": ""
+  },
+  "history": {
+    "command": "git",
+    "args": [
+      "log",
+      "--format=%h %s",
+      "--",
+      "CONTRIBUTING.md",
+      "Cargo.toml",
+      "crates/ontoforge-schema/src/diag.rs",
+      "crates/ontoforge/src/cli.rs",
+      "crates/ontoforge/src/lib.rs"
+    ],
+    "exit": 0,
+    "stdout": "997f697 fix(07.2-02): 持久化helper状态并独立补偿清理\ndd0ce2b feat(07.2-02): 共用nightly入口并限制通知权限\n6be5c08 test(07.1-03): 稳定总预算测试时钟并修正新增测试lint\n950a320 feat(07.1-01): 显式报告source OneToOne逻辑对象冲突\nc0abe96 chore(cli): 修正服务入口与生命周期测试lint\nd8cc151 feat(07-12): add persistent dev lifecycle\nc2653a9 feat(07-09): bridge MCP stdio to existing HTTP service\n88a8e59 test(07-09): add stdio bridge red tests\n2bb82fd feat(07-16): wire trusted MCP L2 deployment defaults\n3fafb7f feat(07-05): export OpenAPI without server startup\n2e1a698 feat(07-01): 接通serve认证宿主与持久查询签名密钥\n1df4a16 test(07-01): 建立serve参数认证与关闭的真实行为RED\n7897e39 test(07-01): 建立认证读取与审计关联的真实行为RED\n31f7c49 feat(05): 添加常驻 webhook worker 投递入口\n67e33f7 docs(03-20): Trino corpus and reload probe in CI, embedded-pg clippy, edit store deployment guide\n290505c test(03-19): an airports CSV must become system:import edits, batch by batch\n8478ba1 test(03-16): add failing scope plan/apply tracer tests\nfda8315 feat(03-15): migrate archives removed columns behind a plan hash\n32fcc05 test(03-12): add failing dev token tracer tests\n6420212 feat(03-04): ontoforge reload subcommand on the SQLite edit store\n87609b9 feat(03-02): add indexed property flag and diagnostic codes ONT-V21..V27\n17a7f43 test(03-02): add failing tests for indexed property and Phase 3 codes\n6994756 feat(03-01): SQLite edit store connection options and aws-lc-rs JWT backend\n84ddf12 test(03-01): add failing tests for edit store connection and JWT backend\nc474b39 fix(02): WR-C07 give --check-pk on the CI Trino something to find\n3cfdc66 fix(02): WR-C06 pin the CI container images to digests\n5c640ab fix(02): WR-C04 reject --timeout 0 as a usage error\nb6b8dbe fix(02): WR-E05 bound the memory one Trino page can take\nf937f5c feat(02-10): add nightly Iceberg workflow, private fixture entry and integration docs\n61912a8 feat(02-09): validate --online against Trino via --server-config\n4dbac0b test(02-05): add failing tests for validate --online, bind_check and per-catalog error isolation\nf2ef62f feat(02-03): select a profile from --profile, ONTOFORGE_PROFILE or defaultProfile and check binding completeness\nd6310d2 test(02-03): add failing tests for profile selection and binding completeness\n075db99 test(02-02): add failing tracer tests for printer, SQLite engine and error classification\nb199cfc test(02-01): add failing tests for read_limited limit and ProfileName rules\n82ca319 docs(01-14): add editor integration section to CONTRIBUTING\n07a0e06 refactor(01-13): share one offset_to_line_col across parse, config and walk\n2ba8a1d feat(01-13): suggest apiNames with heck and decide color with anstream\n9c7421e feat(01-09): add ontoforge schema export and aviation yaml-language-server modelines\nfdb68ac feat(01-08): ontoforge lint subcommand with config override and exit codes\neb9a4fe docs(01-02): add CI workflow, CONTRIBUTING and ADR-0003 spike conclusion\n9aebf77 feat(01-01): GREEN YAML/JSON loader, IR, SourceMap and validate CLI\n58a214a test(01-01): RED workspace skeleton and failing validate tests\n",
+    "stderr": ""
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "recorded_at": "2026-11-05T13:58:51.608Z",
+  "runtime_evidence": {
+    "checked": 56,
+    "differences": []
+  },
+  "production_diff": {
+    "exit": 0,
+    "stdout": ""
+  },
+  "protected_user_paths_status": "?? .planning/phases/02-source-binding-engine/.review-diagnostics/\n?? .planning/phases/07-rest-mcp-shell/07-05-workspace-regression.log\n?? docs/README.md\n?? docs/foundry/\n?? docs/images/\n",
+  "commands_did_not_operate_containers": true
+}

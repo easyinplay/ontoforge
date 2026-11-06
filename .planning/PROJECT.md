@@ -25,7 +25,7 @@ ontoforge 是一个用 Rust 实现、可自托管的开源 Ontology 操作层，
 
 ### Active
 
-Phase 1–7 的既有计划已实施；milestone审计发现INT-01集成缺口（已修、重验中）及STORE-05 source报告缺口（Phase7.1补齐）。历史fingerprint与发布前债务核查见STATE与各阶段deferred-items。Release、npm发布及PR合并仍未执行。
+Phase 1–7、07.1/07.2既有交付已合入main；最终审计结论为gaps_found，非milestone完成。当前合同、历史judgment与报告门边界见milestones/v1.0-audit/SUMMARY.md，指针见STATE.md；未发布Release/npm，未自动归档milestone。
 
 需求编号与 phase 映射见 `.planning/REQUIREMENTS.md`；方向依据 `docs/designs/trino-engine-sql-tiers.md`。
 

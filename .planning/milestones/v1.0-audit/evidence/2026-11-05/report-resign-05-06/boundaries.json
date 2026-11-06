@@ -1,0 +1,23 @@
+{
+  "production_webhook": {
+    "status": "deferred",
+    "verified": false,
+    "reason": "未执行真实生产接收端配置、服务管理器重启及实际下游联调。隔离 MockServer/真实 CLI 进程只证明开发合同。",
+    "source": "crates/ontoforge/WEBHOOK-WORKER.md"
+  },
+  "formal_gstack": {
+    "status": "BLOCKED/not-reverified",
+    "verified": false,
+    "reason": "05-ENG-REVIEW 的 2026-10-23 正式 plan-eng-review 记录为 BLOCKED；本次仅验证记录与 E1-E7 实现，不把历史替代治理升级为当前正式 gate PASS。"
+  },
+  "time_sensitive_governance": {
+    "status": "not-observed",
+    "verified": false,
+    "reason": "不以历史技术审查或 CI 推断当前人工治理观察、生产健康或持续运行时长。"
+  },
+  "phase7_service_contract": {
+    "status": "deferred-to-Phase7",
+    "verified": false,
+    "reason": "ADR-0028 将宿主持有 monitor、HTTP /health、MCP 工具传输过滤分配给 Phase7；本报告不代替 Phase7 或 milestone 验收。"
+  }
+}

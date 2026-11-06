@@ -1,0 +1,150 @@
+{
+  "checked_utc": "2026-11-05T09:24:22.372Z",
+  "head": "060019fe52005c6b85ae5c5f59da9868f464e579",
+  "check_command": [
+    "node",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/requirements-final-recompute.cjs",
+    "--check"
+  ],
+  "exit_code": 0,
+  "stdout": "{\n  \"result\": \"PASS\",\n  \"mode\": \"read-only\",\n  \"head\": \"060019fe52005c6b85ae5c5f59da9868f464e579\",\n  \"counts\": {\n    \"requirements\": 79,\n    \"root_plans\": 93,\n    \"root_summaries\": 93,\n    \"formal_verifications\": 9,\n    \"checked\": 78,\n    \"summary_declared_ids\": 79,\n    \"metadata_gap_ids\": 0,\n    \"summary_missing_field_files\": 4,\n    \"summary_explicit_empty_files\": 26,\n    \"verification_covered_ids\": 79,\n    \"orphaned\": 0,\n    \"historical_three_source_claims\": 78,\n    \"workflow_satisfied\": 16,\n    \"workflow_partial\": 55,\n    \"workflow_unsatisfied\": 8,\n    \"confirmed_current_functional_failures\": 0,\n    \"full_contract_partial\": 1,\n    \"current_execution_evidence_ids\": 78,\n    \"mapped_tests_executed_ids\": 77,\n    \"partial_current_execution_ids\": 1,\n    \"historical_only_ids\": 1,\n    \"owner_signed_current_phase07_scope_ids\": 21,\n    \"owner_signed_phase07_only_responsibility_ids\": 15,\n    \"owner_signed_crossphase_scope_ids\": 6,\n    \"current_execution_report_resign_pending_ids\": 56\n  }\n}\n",
+  "stderr": "",
+  "diff_check": {
+    "command": [
+      "git",
+      "diff",
+      "--check",
+      "--",
+      ".planning/milestones/v1.0-audit/REQUIREMENTS-AUDIT.md",
+      ".planning/milestones/v1.0-audit/requirements-matrix.json",
+      ".planning/milestones/v1.0-audit/evidence/2026-11-05/requirements-final-*"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "report_frontmatter_status": "gaps_found",
+  "audit_completion": "complete",
+  "dynamic_signature": "scoped_final_owner_evidence_not_blanket_acceptance",
+  "input_manifest_drift": [],
+  "counts": {
+    "requirements": 79,
+    "root_plans": 93,
+    "root_summaries": 93,
+    "formal_verifications": 9,
+    "checked": 78,
+    "summary_declared_ids": 79,
+    "metadata_gap_ids": 0,
+    "summary_missing_field_files": 4,
+    "summary_explicit_empty_files": 26,
+    "verification_covered_ids": 79,
+    "orphaned": 0,
+    "historical_three_source_claims": 78,
+    "workflow_satisfied": 16,
+    "workflow_partial": 55,
+    "workflow_unsatisfied": 8,
+    "confirmed_current_functional_failures": 0,
+    "full_contract_partial": 1,
+    "current_execution_evidence_ids": 78,
+    "mapped_tests_executed_ids": 77,
+    "partial_current_execution_ids": 1,
+    "historical_only_ids": 1,
+    "owner_signed_current_phase07_scope_ids": 21,
+    "owner_signed_phase07_only_responsibility_ids": 15,
+    "owner_signed_crossphase_scope_ids": 6,
+    "current_execution_report_resign_pending_ids": 56
+  },
+  "final_evidence_index": {
+    "path": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-final-evidence-index.json",
+    "entries": 47,
+    "mismatches": [],
+    "raw_byte_sha256_match": true
+  },
+  "phase_statuses": [
+    {
+      "phase": "1",
+      "raw_status": "human_needed",
+      "canonical_status": "stale"
+    },
+    {
+      "phase": "2",
+      "raw_status": "gaps_found",
+      "canonical_status": "gaps_found"
+    },
+    {
+      "phase": "3",
+      "raw_status": "passed",
+      "canonical_status": "stale"
+    },
+    {
+      "phase": "4",
+      "raw_status": "passed",
+      "canonical_status": "stale"
+    },
+    {
+      "phase": "5",
+      "raw_status": "passed",
+      "canonical_status": "stale"
+    },
+    {
+      "phase": "6",
+      "raw_status": "passed",
+      "canonical_status": "stale"
+    },
+    {
+      "phase": "7",
+      "raw_status": "passed",
+      "canonical_status": "passed"
+    },
+    {
+      "phase": "7.1",
+      "raw_status": "passed",
+      "canonical_status": "stale"
+    },
+    {
+      "phase": "7.2",
+      "raw_status": "passed",
+      "canonical_status": "passed"
+    }
+  ],
+  "assertions": {
+    "unique_requirements": 79,
+    "root_summary_native_cli_matches": 93,
+    "formal_phase_reports": 9,
+    "static_link_assertions": 17,
+    "engine05_remains_partial": true,
+    "phase03_to06_remain_stale": true,
+    "no_milestone_completion_claim": true,
+    "platform_totals_not_added": true,
+    "output_scope": "REQUIREMENTS-AUDIT.md, requirements-matrix.json and evidence/2026-11-05/requirements-final-* only",
+    "services_not_rerun_by_this_worker": true,
+    "shared_T1_files_unchanged_by_this_worker": true
+  },
+  "output_hashes": [
+    {
+      "path": ".planning/milestones/v1.0-audit/REQUIREMENTS-AUDIT.md",
+      "bytes": 30434,
+      "sha256": "9c15eeef2417eac24bdc541484e253c81d0b8552a7a266789493beb6de45b0fd"
+    },
+    {
+      "path": ".planning/milestones/v1.0-audit/requirements-matrix.json",
+      "bytes": 589113,
+      "sha256": "1a8e47dc296e3a88039018733a80063bb2b555f7783550b24e2147f1bd3f7553"
+    },
+    {
+      "path": ".planning/milestones/v1.0-audit/evidence/2026-11-05/requirements-final-recompute.cjs",
+      "bytes": 17530,
+      "sha256": "5e8827c6c3043ee7c25360c07a8c765c75afeb8c3b64ba3ab9e1e1a45828794c"
+    },
+    {
+      "path": ".planning/milestones/v1.0-audit/evidence/2026-11-05/requirements-final-dynamic.cjs",
+      "bytes": 19640,
+      "sha256": "101e8506ced84cf045285e2fdfad5dfdc0112538a5a79bd4bbd9b935da6dda42"
+    },
+    {
+      "path": ".planning/milestones/v1.0-audit/evidence/2026-11-05/requirements-final-snapshot.json",
+      "bytes": 137194,
+      "sha256": "b37c4a357a0dc589a3b0d0b45ca638549b405ca4709985d195c43d04e679dea9"
+    }
+  ]
+}
