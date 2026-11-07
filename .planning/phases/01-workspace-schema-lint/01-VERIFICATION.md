@@ -133,20 +133,20 @@ N/A. No Phase 1 plan or summary declares a `scripts/*/tests/probe-*.sh` probe, a
 
 ## Requirements Coverage
 
-| Requirement | Status | Evidence |
-|---|---|---|
-| SCHEMA-01 | SATISFIED | loader multi-file/multi-document merge, aviation YAML/JSON equivalence, current CLI validation |
-| SCHEMA-02 | SATISFIED | ObjectType fields and `effective_title_key`, object type tests |
-| SCHEMA-03 | SATISFIED | all 13 base types, `required`, suitability and literal tests |
-| SCHEMA-04 | SATISFIED | oneToOne/oneToMany/manyToMany IR and link validation tests |
-| SCHEMA-05 | SATISFIED | action IR/rules/value sources and CEL V13 tests |
-| SCHEMA-06 | SATISFIED | SourceMap, CLI line:col, V01-V13 fixtures and snapshots |
-| SCHEMA-07 | SATISFIED | schema export, committed schema drift test, editor configuration/modelines; editor UX accepted by UAT override |
-| LINT-01 | SATISFIED | E08/E09 behavior and nonzero error exit tests |
-| LINT-02 | SATISFIED | W01-W11 registry, trigger/clean snapshots and aviation clean test |
-| LINT-03 | SATISFIED | human and JSON rendering, ANSI/color tests, CLI lint tests |
-| LINT-04 | SATISFIED | `ontoforge.toml`, `--config`, severity overrides and V15 rejection tests |
-| DX-03 | SATISFIED | current Windows workspace test, fmt and locked Clippy gates; CI workflow covers Windows and Ubuntu |
+| PLAN | Requirement ID | Description | Status | Boundary note |
+|---|---|---|---|---|
+| 01-01-PLAN.md, 01-02-PLAN.md, 01-11-PLAN.md | DX-03 | Windows 本机 `cargo test` 不依赖 Docker 即可全部通过 | SATISFIED | Phase 1 passed; this is the current technical coverage. |
+| 01-01-PLAN.md, 01-03-PLAN.md, 01-06-PLAN.md | SCHEMA-01 | 多文件 YAML/JSON ontology 合并为单一 IR | SATISFIED | Current Phase 1 report and evidence remain passed. |
+| 01-01-PLAN.md, 01-03-PLAN.md, 01-04-PLAN.md, 01-05-PLAN.md, 01-06-PLAN.md, 01-12-PLAN.md, 01-13-PLAN.md | SCHEMA-06 | 错误诊断包含文件名与 line:col | SATISFIED | Current Phase 1 report and evidence remain passed. |
+| 01-04-PLAN.md | SCHEMA-02 | object type 字段定义 | SATISFIED | Current Phase 1 report and evidence remain passed. |
+| 01-04-PLAN.md | SCHEMA-03 | 属性 base type 与 required 定义 | SATISFIED | Current Phase 1 report and evidence remain passed. |
+| 01-05-PLAN.md | SCHEMA-04 | 1:1、1:N、M:N link type 定义 | SATISFIED | Current Phase 1 report and evidence remain passed. |
+| 01-06-PLAN.md, 01-07-PLAN.md, 01-12-PLAN.md | SCHEMA-05 | action type 与 CEL criteria 定义 | SATISFIED | Current Phase 1 report and evidence remain passed. |
+| 01-08-PLAN.md | LINT-01 | E 级 lint 规则与非零退出码 | SATISFIED | Current Phase 1 report and evidence remain passed. |
+| 01-08-PLAN.md, 01-13-PLAN.md | LINT-03 | human / JSON lint 输出 | SATISFIED | Current Phase 1 report and evidence remain passed. |
+| 01-08-PLAN.md, 01-13-PLAN.md | LINT-04 | lint 规则配置与 severity 调整 | SATISFIED | Current Phase 1 report and evidence remain passed. |
+| 01-09-PLAN.md, 01-14-PLAN.md | SCHEMA-07 | JSON Schema export 与编辑器关联 | SATISFIED | G-1-2 remains `PASSED (override)` from `01-UAT.md` Test 2; editor completion popup, `bogus` red marking, and `aviation-json` manifest no-error observation were not individually observed. |
+| 01-10-PLAN.md, 01-11-PLAN.md | LINT-02 | W01-W11 naming and structure warnings | SATISFIED | Current Phase 1 report and evidence remain passed. |
 
 No Phase 1 requirement is orphaned in `.planning/REQUIREMENTS.md`.
 
