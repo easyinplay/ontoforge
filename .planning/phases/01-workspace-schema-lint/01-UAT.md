@@ -3,7 +3,7 @@ status: complete
 phase: 01-workspace-schema-lint
 source: [01-VERIFICATION.md]
 started: 2026-10-15T17:44:12Z
-updated: 2026-10-16T12:56:06Z
+updated: 2026-11-07T07:02:26.567Z
 ---
 
 ## Current Test
@@ -30,10 +30,28 @@ expected: push 分支后 `.github/workflows/ci.yml` 两个平台的 fmt / clippy
 result: pass
 note: "PR #1 run 38834599192：windows-latest 2m38s、ubuntu-latest 1m20s，fmt / clippy --locked / test --locked 全绿"
 
+### 4. 确认原创出处与禁止标识符边界
+expected: 确认没有参考仓库代码复制或标识符沿用；现有禁名扫描范围与原创出处不能完备证明的限制已知
+result: pass
+reported: "确认"
+note: "用户确认接受现有证据范围及其限制。"
+
+### 5. 确认路径与用户名禁止项
+expected: 接受相对路径链路、测试与产品快照扫描的证据范围，或要求补查未覆盖产物
+result: pass
+reported: "接受"
+note: "用户确认接受现有证据范围及其限制。"
+
+### 6. 确认 ONT-V 不得降级禁止项
+expected: 确认结构校验先于配置，ONT-V ID 配置被拒绝；具名 negative test 已通过
+result: pass
+reported: "确认"
+note: "用户确认接受现有证据范围及其限制。"
+
 ## Summary
 
-total: 3
-passed: 3
+total: 6
+passed: 6
 issues: 0
 pending: 0
 skipped: 0
