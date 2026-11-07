@@ -6,7 +6,7 @@
     {
       "number": "1",
       "name": "Workspace, Schema & Lint",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "number": "2",
@@ -42,12 +42,17 @@
       "number": "7.1",
       "name": "Source Cardinality Gap Closure",
       "status": "complete"
+    },
+    {
+      "number": "7.2",
+      "name": "MinIO Contract Gap Closure",
+      "status": "complete"
     }
   ],
   "next": {
-    "command": "$gsd-progress --next",
+    "command": "/gsd-progress --next",
     "label": "Advance to the next step (verify)",
-    "reason": "Phase 1 of 9 · 67% · ready to verify"
+    "reason": "Phase 2 of 10 · 89% · ready to verify"
   },
-  "updated_at": "2026-11-04T13:27:28.836Z"
+  "updated_at": "2026-11-07T07:51:28.507Z"
 }

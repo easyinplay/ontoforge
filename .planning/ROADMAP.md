@@ -13,7 +13,7 @@ Milestone审计：2026-11-05追加复核及03-01.1显式override已落地，结�
 - Integer phases (1, 2, 3): 本 milestone 计划内工作
 - Decimal phases (2.1, 2.2): 紧急插入（标注 INSERTED）
 
-- [ ] **Phase 1: Workspace, Schema & Lint** - 历史human_needed保留；详: `.planning/phases/01-workspace-schema-lint/01-VERIFICATION.md`
+- [x] **Phase 1: Workspace, Schema & Lint** - 历史human_needed保留；详: `.planning/phases/01-workspace-schema-lint/01-VERIFICATION.md` (completed 2026-11-07)
 - [ ] **Phase 2: Source Binding & Engine** - 历史gaps_found保留，后继补证与当前范围详: `.planning/milestones/v1.0-audit/SUMMARY.md`
 - [x] **Phase 3: Edit Store & Scope Model** - 2026-11-05复签passed139/139（含1项用户明确接受的override），详: `.planning/phases/03-edit-store-scope-model/03-VERIFICATION.md`。
 - [x] **Phase 4: Scoped L0 Read** - Rust 编排叠加读：pk 读、列表、聚合分解、searchAround、keyset 分页、HMAC 版本令牌 (completed 2026-10-23)
@@ -40,7 +40,7 @@ Milestone审计：2026-11-05追加复核及03-01.1显式override已落地，结�
   4. `ontoforge lint` 运行适用于 v1 schema 范围的 ONT-E 规则与 ONT-W01–W11，输出人类可读（带源码定位）与 JSON 两种格式；有 E 级问题时退出码非 0；配置文件可按规则 ID 关闭规则或调整严重级
   5. 开发者可以导出 ontology 定义的 JSON Schema，仓库内示例 ontology 通过该 Schema 校验
 
-**Plans**: 14/14 plans executed（6 waves + gap closure）
+**Plans**: 14/14 plans complete（6 waves + gap closure）
 
 Plans:
 
@@ -296,7 +296,7 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7 → 7.1；�
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Workspace, Schema & Lint | 14/14 | human_needed | - |
+| 1. Workspace, Schema & Lint | 14/14 | Complete    | 2026-11-07 |
 | 2. Source Binding & Engine | 10/10 | gaps_found | - |
 | 3. Edit Store & Scope Model | 23/23 | Complete (1 accepted override) | 2026-10-22 |
 | 4. Scoped L0 Read | 7/7 | Complete    | 2026-10-23 |
