@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
-  "audited_utc": "2026-11-07T12:10:14.355Z",
-  "head": "002c68a41a64289e21cd0f06434f1a1dd8282de6",
+  "audited_utc": "2026-11-07T12:20:17.952Z",
+  "head": "261b8819cbd527814f759fbd11b31345e99f1e7f",
   "baseline": "8d9d8c6",
   "implementation_diff": "",
   "status": "gaps_found",
@@ -14796,7 +14796,7 @@
     {
       "path": ".planning/milestones/v1.0-audit/evidence/2026-11-05/requirements-final-recompute.cjs",
       "kind": "RECOMPUTATION_TOOL",
-      "sha256": "c062ad7d1eb0b00402a96264b9f2c7931f1c8911270d15c6bb006ea2531a9cb7"
+      "sha256": "8deed7009e1ef882fcef98ba8d668514e9b1cbe2f24e4eee38b82eb538c5f065"
     },
     {
       "path": ".planning/milestones/v1.0-audit/evidence/2026-11-05/requirements-final-dynamic.cjs",

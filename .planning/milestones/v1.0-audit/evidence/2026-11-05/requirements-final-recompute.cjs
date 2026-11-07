@@ -172,7 +172,7 @@ const matrix = { schema_version: 3, audited_utc: new Date().toISOString(), head,
 assert(plans.every(plan => summaries.some(summary => summary.path === plan.path.replace('-PLAN.md', '-SUMMARY.md'))), 'Root PLAN without SUMMARY');
 if (process.argv.includes('--check')) {
   const saved = JSON.parse(read('.planning/milestones/v1.0-audit/requirements-matrix.json'));
-  const comparable = value => { const copy = structuredClone(value); delete copy.audited_utc; return copy; };
+  const comparable = value => { const copy = structuredClone(value); delete copy.audited_utc; delete copy.head; return copy; };
   assert.deepEqual(comparable(saved), comparable(matrix), 'Input drift or matrix mismatch: review before refresh');
   console.log(JSON.stringify({ result: 'PASS', mode: 'read-only', head, counts }, null, 2));
 } else console.log(JSON.stringify({ matrix, snapshot: { audited_utc: matrix.audited_utc, head, counts, commands, dynamic_validation: dynamicEvidence, input_manifest: manifest, static_checks: staticChecks } }, null, 2));

@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "recomputed_utc": "2026-11-07T12:10:14.378Z",
+  "recomputed_utc": "2026-11-07T12:20:17.976Z",
   "command": [
     "node",
     ".planning/milestones/v1.0-audit/evidence/2026-11-05/requirements-final-recompute.cjs"
   ],
   "exit_code": 0,
-  "head": "002c68a41a64289e21cd0f06434f1a1dd8282de6",
+  "head": "261b8819cbd527814f759fbd11b31345e99f1e7f",
   "status": "gaps_found",
   "counts": {
     "requirements": 79,
@@ -92,7 +92,7 @@
       "score": "9/9 must-haves verified"
     }
   ],
-  "generated_matrix_sha256": "2269486a718f259926922e8a78abd57b26350706745995b5ec90804fe673449a",
+  "generated_matrix_sha256": "c69e9cde9a634bcad56e1be3fe7285cfe7eea1ee5981b56c85421b3162d0b024",
   "historical_inputs": [
     "evidence/2026-11-05/report-resign-01/01-VERIFICATION.before.md",
     "evidence/2026-11-05/report-resign-01/covered-baseline.json",
