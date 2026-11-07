@@ -23,7 +23,7 @@ archive_authorized: false
 | 工作 | 实际结果 | 真相源 |
 | --- | --- | --- |
 | 跨阶段静态接线 | 12/12边界、9/9列明流静态WIRED，新增BLOCKER 0；不等于9次动态E2E | INTEGRATION.md |
-| 79项三源审计 | 历史完整声明78/79；当前严格报告门59 satisfied / 12 partial / 8 unsatisfied；orphan0。报告门不等于功能失败数 | REQUIREMENTS-AUDIT.md、requirements-matrix.json |
+| 79项三源审计 | 历史完整声明78/79；当前严格报告门71 satisfied / 0 partial / 8 unsatisfied；orphan0。报告门不等于功能失败数 | REQUIREMENTS-AUDIT.md、requirements-matrix.json |
 | 最终源码真实复验 | 本地workspace 1528 passed/0 failed/119 ignored；152 harness中128 successful targets，明确空/ignored-only排除，不重复累计 | FINAL-REVERIFY.md |
 | 当前HEAD CI | 41994479295，5/5 job success；Ubuntu workspace1535/0/119、Windows1528/0/119；各平台和后续定向重跑不相加为唯一测试总数 | evidence/2026-11-05/ci-41994479295-final.json、reverify-ci-window-audit.json |
 | Phase7报告新鲜性 | 真实复验后重新签署原80/80合同，保留全部原治理覆盖并新增必要输入；主会话另行查询GSD verification.status得到passed | ../../phases/07-rest-mcp-shell/07-VERIFICATION.md |
@@ -34,8 +34,8 @@ archive_authorized: false
 ## 保留的未闭合事项
 
 - **ENGINE-05完整合同仍Partial**：07.2关闭的是MinIO/S3与JDBC Iceberg子范围；私有SQL Server fixture/02-10.8来源judgment未获新验证，不能把需求整体勾选。需求状态只在REQUIREMENTS.md维护。
-- **Phase01 human_needed、Phase02 gaps_found保持报告门边界**；Phase02已完成当前合同复核，MinIO/S3子范围由07.2独立闭合，私有SQL Server与来源/隔离判断仍未自动处置。
-- **追加报告门及单项明确override已落地**：Phase03 passed139/139（138 VERIFIED + 1 PASSED (override)），用户明确接受03-01.1历史证据边界，未补造历史批准；Phase04/05/06/07.1仍passed。Phase01经完整合同复核由stale恢复为human_needed，三项原judgment仍待明确处置，未新增override。详REPORT-RESIGN.md。
+- **Phase01当前为passed（101 VERIFIED + 1 PASSED (override)），Phase02 gaps_found保持报告门边界**；Phase02已完成当前合同复核，MinIO/S3子范围由07.2独立闭合，私有SQL Server与来源/隔离判断仍未自动处置。2026-11-05 的 Phase01 `human_needed` 仅作为历史快照保留。
+- **追加报告门及单项明确override已落地**：Phase03 passed139/139（138 VERIFIED + 1 PASSED (override)），用户明确接受03-01.1历史证据边界，未补造历史批准；Phase04/05/06/07.1仍passed。Phase01当前 live gate 为 `passed`，其合同口径为 `101 VERIFIED + 1 PASSED (override)`；G-1-2 的编辑器观察限制仍以 `01-UAT.md` Test 2 原文为准。
 - **生产webhook与时间敏感L2审计边界**仍分别由Phase05/06的deferred-items维护；本轮真实PG/Trino/SQLite测试不冒充生产部署与实际接收端联调。
 - **历史发布与MinIO证据不冒充本轮重跑**：本轮未重跑native release或07.2完整MinIO矩阵；其有日期的验收、nightly证据保持原边界，不新增发布授权。
 

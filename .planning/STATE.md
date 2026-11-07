@@ -14,7 +14,7 @@ progress:
   total_plans: 93
   completed_plans: 93
   percent: 89
-last_activity: 2026-11-05 -- Phase01完整复核恢复human_needed，无新增override
+last_activity: 2026-11-07 -- Phase01 live gate 对账为passed（101 VERIFIED + 1 PASSED (override)），Phase02保持verification-ready/gaps_found
 verified_source_commit: 34312dc2173884abe5f3042e3226b1c3c98ee95d
 verified_scope: phase_07.2
 last_gate_trip: null
@@ -38,7 +38,7 @@ Progress: [█████████░] 89%
 - 合并收尾：phases/07.2-minio-contract-gap-closure/07.2-MERGE-RESULT.md。
 - 前次合并：Phase03–07/07.1已在main，见milestones/v1.0-audit/MERGE-RESULT.md。
 - 最终审计：milestones/v1.0-audit/SUMMARY.md；本轮验收见同目录VERIFICATION.md，旧v1.0-MILESTONE-AUDIT.md仅为历史快照。
-- 追加报告门：milestones/v1.0-audit/REPORT-RESIGN.md；当前需求矩阵59 satisfied / 12 partial / 8 unsatisfied，非功能失败计数。
+- 追加报告门：milestones/v1.0-audit/REPORT-RESIGN.md；当前需求矩阵71 satisfied / 0 partial / 8 unsatisfied，非功能失败计数。
 
 ## Remaining Work
 

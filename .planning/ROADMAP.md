@@ -13,7 +13,7 @@ Milestone审计：2026-11-05追加复核及03-01.1显式override已落地，结�
 - Integer phases (1, 2, 3): 本 milestone 计划内工作
 - Decimal phases (2.1, 2.2): 紧急插入（标注 INSERTED）
 
-- [x] **Phase 1: Workspace, Schema & Lint** - 历史human_needed保留；详: `.planning/phases/01-workspace-schema-lint/01-VERIFICATION.md` (completed 2026-11-07)
+- [x] **Phase 1: Workspace, Schema & Lint** - 当前passed（101 VERIFIED + 1 PASSED (override)）；2026-11-05 human_needed为历史快照；详: `.planning/phases/01-workspace-schema-lint/01-VERIFICATION.md` (completed 2026-11-07)
 - [ ] **Phase 2: Source Binding & Engine** - 历史gaps_found保留，后继补证与当前范围详: `.planning/milestones/v1.0-audit/SUMMARY.md`
 - [x] **Phase 3: Edit Store & Scope Model** - 2026-11-05复签passed139/139（含1项用户明确接受的override），详: `.planning/phases/03-edit-store-scope-model/03-VERIFICATION.md`。
 - [x] **Phase 4: Scoped L0 Read** - Rust 编排叠加读：pk 读、列表、聚合分解、searchAround、keyset 分页、HMAC 版本令牌 (completed 2026-10-23)

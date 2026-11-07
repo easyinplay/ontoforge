@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
-  "audited_utc": "2026-11-05T14:30:12.980Z",
-  "head": "060019fe52005c6b85ae5c5f59da9868f464e579",
+  "audited_utc": "2026-11-07T11:46:39.831Z",
+  "head": "1ca8791c5b9550ca34e9236f820a0c923b8ba6aa",
   "baseline": "8d9d8c6",
   "implementation_diff": "",
   "status": "gaps_found",
@@ -26,8 +26,8 @@
     "verification_covered_ids": 79,
     "orphaned": 0,
     "historical_three_source_claims": 78,
-    "workflow_satisfied": 59,
-    "workflow_partial": 12,
+    "workflow_satisfied": 71,
+    "workflow_partial": 0,
     "workflow_unsatisfied": 8,
     "confirmed_current_functional_failures": 0,
     "full_contract_partial": 1,
@@ -38,8 +38,8 @@
     "owner_signed_current_phase07_scope_ids": 21,
     "owner_signed_phase07_only_responsibility_ids": 15,
     "owner_signed_crossphase_scope_ids": 6,
-    "current_execution_reports_current_ids": 58,
-    "current_execution_report_resign_pending_ids": 20
+    "current_execution_reports_current_ids": 70,
+    "current_execution_report_resign_pending_ids": 8
   },
   "dynamic_validation": {
     "head": "060019fe52005c6b85ae5c5f59da9868f464e579",
@@ -214,8 +214,8 @@
       "owner_signed_current_phase07_scope_ids": 21,
       "owner_signed_phase07_only_responsibility_ids": 15,
       "owner_signed_crossphase_scope_ids": 6,
-      "current_execution_reports_current_ids": 58,
-      "current_execution_report_resign_pending_ids": 20
+      "current_execution_reports_current_ids": 70,
+      "current_execution_report_resign_pending_ids": 8
     },
     "source_manifest": [
       {
@@ -517,7 +517,7 @@
     "source_equality_is_not_dynamic_signature": true,
     "owner_signature_is_phase07_scoped_not_all_requirements": true,
     "ignored_or_fixture_guard_is_not_service_success": true,
-    "phase01_raw_status": "human_needed",
+    "phase01_raw_status": "passed",
     "phase02_raw_status": "gaps_found",
     "platform_totals_must_not_be_added": true
   },
@@ -578,9 +578,9 @@
           "id": "SCHEMA-01",
           "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
           "phase": "1",
-          "line": 188,
-          "status": "SATISFIED_TECHNICAL",
-          "source_row": "| 01-01-PLAN.md, 01-03-PLAN.md, 01-06-PLAN.md | SCHEMA-01 | 开发者可以用 YAML（或等价 JSON）在多个文件中定义一个 ontology，`ontoforge validate` 把它们合并加载为单一 IR | SATISFIED_TECHNICAL | 仅技术覆盖，不解除原创出处、路径/用户名、ONT-V三项judgment或原editor观察限制 |",
+          "line": 139,
+          "status": "SATISFIED",
+          "source_row": "| 01-01-PLAN.md, 01-03-PLAN.md, 01-06-PLAN.md | SCHEMA-01 | 多文件 YAML/JSON ontology 合并为单一 IR | SATISFIED | Current Phase 1 report and evidence remain passed. |",
           "local_pass_claim": true
         }
       ],
@@ -600,8 +600,8 @@
         {
           "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
           "phase": "1",
-          "raw_status": "human_needed",
-          "canonical_status": "human_needed"
+          "raw_status": "passed",
+          "canonical_status": "passed"
         }
       ],
       "historical_row_coverage": true,
@@ -609,7 +609,7 @@
       "structured_verification_table_gap": false,
       "historical_local_claim_passed": true,
       "historical_three_source": "satisfied (historical claims only)",
-      "workflow_three_source_status": "partial",
+      "workflow_three_source_status": "satisfied",
       "confirmed_current_functional_failure": false,
       "targeted_static_evidence": [],
       "current_execution": {
@@ -710,7 +710,7 @@
         "scope": "仅签署映射的实际非ignored target/子合同执行，不推导需求全部路径或历史judgment通过",
         "owner_signed_current_scope": false,
         "owner_signature_scope": null,
-        "report_resign_pending": true,
+        "report_resign_pending": false,
         "preserved_boundaries": [
           "原始ignored不计通过",
           "平台/调用计数不相加为唯一测试数",
@@ -718,7 +718,7 @@
         ]
       },
       "dynamic_owner_signed": false,
-      "freshness": "current_execution_report_resign_pending",
+      "freshness": "current_execution_reports_current",
       "current_functional_status": "本轮映射target真实执行通过；非完整需求全路径保证；历史01/02及stale门保留"
     },
     {
@@ -740,9 +740,9 @@
           "id": "SCHEMA-02",
           "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
           "phase": "1",
-          "line": 190,
-          "status": "SATISFIED_TECHNICAL",
-          "source_row": "| 01-04-PLAN.md | SCHEMA-02 | 开发者可以定义 object type：`apiName`、primary key、title key、displayName、description、aliases、hidden | SATISFIED_TECHNICAL | 仅技术覆盖，不解除原创出处、路径/用户名、ONT-V三项judgment或原editor观察限制 |",
+          "line": 141,
+          "status": "SATISFIED",
+          "source_row": "| 01-04-PLAN.md | SCHEMA-02 | object type 字段定义 | SATISFIED | Current Phase 1 report and evidence remain passed. |",
           "local_pass_claim": true
         }
       ],
@@ -758,8 +758,8 @@
         {
           "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
           "phase": "1",
-          "raw_status": "human_needed",
-          "canonical_status": "human_needed"
+          "raw_status": "passed",
+          "canonical_status": "passed"
         }
       ],
       "historical_row_coverage": true,
@@ -767,7 +767,7 @@
       "structured_verification_table_gap": false,
       "historical_local_claim_passed": true,
       "historical_three_source": "satisfied (historical claims only)",
-      "workflow_three_source_status": "partial",
+      "workflow_three_source_status": "satisfied",
       "confirmed_current_functional_failure": false,
       "targeted_static_evidence": [],
       "current_execution": {
@@ -808,7 +808,7 @@
         "scope": "仅签署映射的实际非ignored target/子合同执行，不推导需求全部路径或历史judgment通过",
         "owner_signed_current_scope": false,
         "owner_signature_scope": null,
-        "report_resign_pending": true,
+        "report_resign_pending": false,
         "preserved_boundaries": [
           "原始ignored不计通过",
           "平台/调用计数不相加为唯一测试数",
@@ -816,7 +816,7 @@
         ]
       },
       "dynamic_owner_signed": false,
-      "freshness": "current_execution_report_resign_pending",
+      "freshness": "current_execution_reports_current",
       "current_functional_status": "本轮映射target真实执行通过；非完整需求全路径保证；历史01/02及stale门保留"
     },
     {
@@ -838,9 +838,9 @@
           "id": "SCHEMA-03",
           "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
           "phase": "1",
-          "line": 191,
-          "status": "SATISFIED_TECHNICAL",
-          "source_row": "| 01-04-PLAN.md | SCHEMA-03 | 开发者可以为属性选择 base type：Byte / Short / Integer / Long / Float / Double / Decimal、String、Boolean、Date、Timestamp、Array、Geopoint，并声明 required | SATISFIED_TECHNICAL | 仅技术覆盖，不解除原创出处、路径/用户名、ONT-V三项judgment或原editor观察限制 |",
+          "line": 142,
+          "status": "SATISFIED",
+          "source_row": "| 01-04-PLAN.md | SCHEMA-03 | 属性 base type 与 required 定义 | SATISFIED | Current Phase 1 report and evidence remain passed. |",
           "local_pass_claim": true
         }
       ],
@@ -856,8 +856,8 @@
         {
           "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
           "phase": "1",
-          "raw_status": "human_needed",
-          "canonical_status": "human_needed"
+          "raw_status": "passed",
+          "canonical_status": "passed"
         }
       ],
       "historical_row_coverage": true,
@@ -865,7 +865,7 @@
       "structured_verification_table_gap": false,
       "historical_local_claim_passed": true,
       "historical_three_source": "satisfied (historical claims only)",
-      "workflow_three_source_status": "partial",
+      "workflow_three_source_status": "satisfied",
       "confirmed_current_functional_failure": false,
       "targeted_static_evidence": [],
       "current_execution": {
@@ -906,7 +906,7 @@
         "scope": "仅签署映射的实际非ignored target/子合同执行，不推导需求全部路径或历史judgment通过",
         "owner_signed_current_scope": false,
         "owner_signature_scope": null,
-        "report_resign_pending": true,
+        "report_resign_pending": false,
         "preserved_boundaries": [
           "原始ignored不计通过",
           "平台/调用计数不相加为唯一测试数",
@@ -914,7 +914,7 @@
         ]
       },
       "dynamic_owner_signed": false,
-      "freshness": "current_execution_report_resign_pending",
+      "freshness": "current_execution_reports_current",
       "current_functional_status": "本轮映射target真实执行通过；非完整需求全路径保证；历史01/02及stale门保留"
     },
     {
@@ -936,9 +936,9 @@
           "id": "SCHEMA-04",
           "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
           "phase": "1",
-          "line": 192,
-          "status": "SATISFIED_TECHNICAL",
-          "source_row": "| 01-05-PLAN.md | SCHEMA-04 | 开发者可以定义 link type：1:1、1:N（外键属性）、M:N（join 定义），两个方向各有 apiName | SATISFIED_TECHNICAL | 仅技术覆盖，不解除原创出处、路径/用户名、ONT-V三项judgment或原editor观察限制 |",
+          "line": 143,
+          "status": "SATISFIED",
+          "source_row": "| 01-05-PLAN.md | SCHEMA-04 | 1:1、1:N、M:N link type 定义 | SATISFIED | Current Phase 1 report and evidence remain passed. |",
           "local_pass_claim": true
         }
       ],
@@ -954,8 +954,8 @@
         {
           "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
           "phase": "1",
-          "raw_status": "human_needed",
-          "canonical_status": "human_needed"
+          "raw_status": "passed",
+          "canonical_status": "passed"
         }
       ],
       "historical_row_coverage": true,
@@ -963,7 +963,7 @@
       "structured_verification_table_gap": false,
       "historical_local_claim_passed": true,
       "historical_three_source": "satisfied (historical claims only)",
-      "workflow_three_source_status": "partial",
+      "workflow_three_source_status": "satisfied",
       "confirmed_current_functional_failure": false,
       "targeted_static_evidence": [],
       "current_execution": {
@@ -1004,7 +1004,7 @@
         "scope": "仅签署映射的实际非ignored target/子合同执行，不推导需求全部路径或历史judgment通过",
         "owner_signed_current_scope": false,
         "owner_signature_scope": null,
-        "report_resign_pending": true,
+        "report_resign_pending": false,
         "preserved_boundaries": [
           "原始ignored不计通过",
           "平台/调用计数不相加为唯一测试数",
@@ -1012,7 +1012,7 @@
         ]
       },
       "dynamic_owner_signed": false,
-      "freshness": "current_execution_report_resign_pending",
+      "freshness": "current_execution_reports_current",
       "current_functional_status": "本轮映射target真实执行通过；非完整需求全路径保证；历史01/02及stale门保留"
     },
     {
@@ -1036,9 +1036,9 @@
           "id": "SCHEMA-05",
           "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
           "phase": "1",
-          "line": 193,
-          "status": "SATISFIED_TECHNICAL",
-          "source_row": "| 01-06-PLAN.md, 01-07-PLAN.md, 01-12-PLAN.md | SCHEMA-05 | 开发者可以定义 action type：参数（类型、required、默认值）、rules（create / modify / delete object，add / remove link）、submission criteria（CEL） | SATISFIED_TECHNICAL | 仅技术覆盖，不解除原创出处、路径/用户名、ONT-V三项judgment或原editor观察限制 |",
+          "line": 144,
+          "status": "SATISFIED",
+          "source_row": "| 01-06-PLAN.md, 01-07-PLAN.md, 01-12-PLAN.md | SCHEMA-05 | action type 与 CEL criteria 定义 | SATISFIED | Current Phase 1 report and evidence remain passed. |",
           "local_pass_claim": true
         }
       ],
@@ -1058,8 +1058,8 @@
         {
           "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
           "phase": "1",
-          "raw_status": "human_needed",
-          "canonical_status": "human_needed"
+          "raw_status": "passed",
+          "canonical_status": "passed"
         }
       ],
       "historical_row_coverage": true,
@@ -1067,7 +1067,7 @@
       "structured_verification_table_gap": false,
       "historical_local_claim_passed": true,
       "historical_three_source": "satisfied (historical claims only)",
-      "workflow_three_source_status": "partial",
+      "workflow_three_source_status": "satisfied",
       "confirmed_current_functional_failure": false,
       "targeted_static_evidence": [],
       "current_execution": {
@@ -1168,7 +1168,7 @@
         "scope": "仅签署映射的实际非ignored target/子合同执行，不推导需求全部路径或历史judgment通过",
         "owner_signed_current_scope": false,
         "owner_signature_scope": null,
-        "report_resign_pending": true,
+        "report_resign_pending": false,
         "preserved_boundaries": [
           "原始ignored不计通过",
           "平台/调用计数不相加为唯一测试数",
@@ -1176,7 +1176,7 @@
         ]
       },
       "dynamic_owner_signed": false,
-      "freshness": "current_execution_report_resign_pending",
+      "freshness": "current_execution_reports_current",
       "current_functional_status": "本轮映射target真实执行通过；非完整需求全路径保证；历史01/02及stale门保留"
     },
     {
@@ -1204,9 +1204,9 @@
           "id": "SCHEMA-06",
           "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
           "phase": "1",
-          "line": 189,
-          "status": "SATISFIED_TECHNICAL",
-          "source_row": "| 01-01-PLAN.md, 01-03-PLAN.md, 01-04-PLAN.md, 01-05-PLAN.md, 01-06-PLAN.md, 01-12-PLAN.md, 01-13-PLAN.md | SCHEMA-06 | 定义有错时，开发者看到带文件名与 line:col 的诊断信息 | SATISFIED_TECHNICAL | 路径/用户名judgment仍为UNCERTAIN/WARNING，需显式人工resolution |",
+          "line": 140,
+          "status": "SATISFIED",
+          "source_row": "| 01-01-PLAN.md, 01-03-PLAN.md, 01-04-PLAN.md, 01-05-PLAN.md, 01-06-PLAN.md, 01-12-PLAN.md, 01-13-PLAN.md | SCHEMA-06 | 错误诊断包含文件名与 line:col | SATISFIED | Current Phase 1 report and evidence remain passed. |",
           "local_pass_claim": true
         }
       ],
@@ -1234,8 +1234,8 @@
         {
           "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
           "phase": "1",
-          "raw_status": "human_needed",
-          "canonical_status": "human_needed"
+          "raw_status": "passed",
+          "canonical_status": "passed"
         }
       ],
       "historical_row_coverage": true,
@@ -1243,7 +1243,7 @@
       "structured_verification_table_gap": false,
       "historical_local_claim_passed": true,
       "historical_three_source": "satisfied (historical claims only)",
-      "workflow_three_source_status": "partial",
+      "workflow_three_source_status": "satisfied",
       "confirmed_current_functional_failure": false,
       "targeted_static_evidence": [],
       "current_execution": {
@@ -1374,7 +1374,7 @@
         "scope": "仅签署映射的实际非ignored target/子合同执行，不推导需求全部路径或历史judgment通过",
         "owner_signed_current_scope": false,
         "owner_signature_scope": null,
-        "report_resign_pending": true,
+        "report_resign_pending": false,
         "preserved_boundaries": [
           "原始ignored不计通过",
           "平台/调用计数不相加为唯一测试数",
@@ -1382,7 +1382,7 @@
         ]
       },
       "dynamic_owner_signed": false,
-      "freshness": "current_execution_report_resign_pending",
+      "freshness": "current_execution_reports_current",
       "current_functional_status": "本轮映射target真实执行通过；非完整需求全路径保证；历史01/02及stale门保留"
     },
     {
@@ -1405,9 +1405,9 @@
           "id": "SCHEMA-07",
           "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
           "phase": "1",
-          "line": 197,
-          "status": "SATISFIED_TECHNICAL",
-          "source_row": "| 01-09-PLAN.md, 01-14-PLAN.md | SCHEMA-07 | 开发者可以导出 ontology 定义的 JSON Schema，用于编辑器补全与 LLM 生成 | SATISFIED_TECHNICAL | 沿01-UAT Test2既有editor override，不代表新增实机观察；3项judgment不解除 |",
+          "line": 148,
+          "status": "SATISFIED",
+          "source_row": "| 01-09-PLAN.md, 01-14-PLAN.md | SCHEMA-07 | JSON Schema export 与编辑器关联 | SATISFIED | G-1-2 remains `PASSED (override)` from `01-UAT.md` Test 2; editor completion popup, `bogus` red marking, and `aviation-json` manifest no-error observation were not individually observed. |",
           "local_pass_claim": true
         }
       ],
@@ -1425,8 +1425,8 @@
         {
           "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
           "phase": "1",
-          "raw_status": "human_needed",
-          "canonical_status": "human_needed"
+          "raw_status": "passed",
+          "canonical_status": "passed"
         }
       ],
       "historical_row_coverage": true,
@@ -1434,7 +1434,7 @@
       "structured_verification_table_gap": false,
       "historical_local_claim_passed": true,
       "historical_three_source": "satisfied (historical claims only)",
-      "workflow_three_source_status": "partial",
+      "workflow_three_source_status": "satisfied",
       "confirmed_current_functional_failure": false,
       "targeted_static_evidence": [],
       "current_execution": {
@@ -1505,7 +1505,7 @@
         "scope": "仅签署映射的实际非ignored target/子合同执行，不推导需求全部路径或历史judgment通过",
         "owner_signed_current_scope": false,
         "owner_signature_scope": null,
-        "report_resign_pending": true,
+        "report_resign_pending": false,
         "preserved_boundaries": [
           "原始ignored不计通过",
           "平台/调用计数不相加为唯一测试数",
@@ -1514,7 +1514,7 @@
         ]
       },
       "dynamic_owner_signed": false,
-      "freshness": "current_execution_report_resign_pending",
+      "freshness": "current_execution_reports_current",
       "current_functional_status": "本轮映射target真实执行通过；非完整需求全路径保证；历史01/02及stale门保留"
     },
     {
@@ -1536,9 +1536,9 @@
           "id": "LINT-01",
           "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
           "phase": "1",
-          "line": 194,
-          "status": "SATISFIED_TECHNICAL",
-          "source_row": "| 01-08-PLAN.md | LINT-01 | `ontoforge lint` 对 ontology 运行 E 级规则（适用于 v1 schema 范围的 ONT-E 规则），有 E 级问题时退出码非 0 | SATISFIED_TECHNICAL | 仅技术覆盖，不解除原创出处、路径/用户名、ONT-V三项judgment或原editor观察限制 |",
+          "line": 145,
+          "status": "SATISFIED",
+          "source_row": "| 01-08-PLAN.md | LINT-01 | E 级 lint 规则与非零退出码 | SATISFIED | Current Phase 1 report and evidence remain passed. |",
           "local_pass_claim": true
         }
       ],
@@ -1554,8 +1554,8 @@
         {
           "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
           "phase": "1",
-          "raw_status": "human_needed",
-          "canonical_status": "human_needed"
+          "raw_status": "passed",
+          "canonical_status": "passed"
         }
       ],
       "historical_row_coverage": true,
@@ -1563,7 +1563,7 @@
       "structured_verification_table_gap": false,
       "historical_local_claim_passed": true,
       "historical_three_source": "satisfied (historical claims only)",
-      "workflow_three_source_status": "partial",
+      "workflow_three_source_status": "satisfied",
       "confirmed_current_functional_failure": false,
       "targeted_static_evidence": [],
       "current_execution": {
@@ -1664,7 +1664,7 @@
         "scope": "仅签署映射的实际非ignored target/子合同执行，不推导需求全部路径或历史judgment通过",
         "owner_signed_current_scope": false,
         "owner_signature_scope": null,
-        "report_resign_pending": true,
+        "report_resign_pending": false,
         "preserved_boundaries": [
           "原始ignored不计通过",
           "平台/调用计数不相加为唯一测试数",
@@ -1672,7 +1672,7 @@
         ]
       },
       "dynamic_owner_signed": false,
-      "freshness": "current_execution_report_resign_pending",
+      "freshness": "current_execution_reports_current",
       "current_functional_status": "本轮映射target真实执行通过；非完整需求全路径保证；历史01/02及stale门保留"
     },
     {
@@ -1695,9 +1695,9 @@
           "id": "LINT-02",
           "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
           "phase": "1",
-          "line": 198,
-          "status": "SATISFIED_TECHNICAL",
-          "source_row": "| 01-10-PLAN.md, 01-11-PLAN.md | LINT-02 | `ontoforge lint` 运行 W01–W11 命名与结构警告 | SATISFIED_TECHNICAL | 仅技术覆盖，不解除原创出处、路径/用户名、ONT-V三项judgment或原editor观察限制 |",
+          "line": 149,
+          "status": "SATISFIED",
+          "source_row": "| 01-10-PLAN.md, 01-11-PLAN.md | LINT-02 | W01-W11 naming and structure warnings | SATISFIED | Current Phase 1 report and evidence remain passed. |",
           "local_pass_claim": true
         }
       ],
@@ -1715,8 +1715,8 @@
         {
           "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
           "phase": "1",
-          "raw_status": "human_needed",
-          "canonical_status": "human_needed"
+          "raw_status": "passed",
+          "canonical_status": "passed"
         }
       ],
       "historical_row_coverage": true,
@@ -1724,7 +1724,7 @@
       "structured_verification_table_gap": false,
       "historical_local_claim_passed": true,
       "historical_three_source": "satisfied (historical claims only)",
-      "workflow_three_source_status": "partial",
+      "workflow_three_source_status": "satisfied",
       "confirmed_current_functional_failure": false,
       "targeted_static_evidence": [],
       "current_execution": {
@@ -1825,7 +1825,7 @@
         "scope": "仅签署映射的实际非ignored target/子合同执行，不推导需求全部路径或历史judgment通过",
         "owner_signed_current_scope": false,
         "owner_signature_scope": null,
-        "report_resign_pending": true,
+        "report_resign_pending": false,
         "preserved_boundaries": [
           "原始ignored不计通过",
           "平台/调用计数不相加为唯一测试数",
@@ -1833,7 +1833,7 @@
         ]
       },
       "dynamic_owner_signed": false,
-      "freshness": "current_execution_report_resign_pending",
+      "freshness": "current_execution_reports_current",
       "current_functional_status": "本轮映射target真实执行通过；非完整需求全路径保证；历史01/02及stale门保留"
     },
     {
@@ -1856,9 +1856,9 @@
           "id": "LINT-03",
           "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
           "phase": "1",
-          "line": 195,
-          "status": "SATISFIED_TECHNICAL",
-          "source_row": "| 01-08-PLAN.md, 01-13-PLAN.md | LINT-03 | lint 结果可输出为人类可读格式（带源码定位）和 JSON 格式 | SATISFIED_TECHNICAL | 仅技术覆盖，不解除原创出处、路径/用户名、ONT-V三项judgment或原editor观察限制 |",
+          "line": 146,
+          "status": "SATISFIED",
+          "source_row": "| 01-08-PLAN.md, 01-13-PLAN.md | LINT-03 | human / JSON lint 输出 | SATISFIED | Current Phase 1 report and evidence remain passed. |",
           "local_pass_claim": true
         }
       ],
@@ -1876,8 +1876,8 @@
         {
           "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
           "phase": "1",
-          "raw_status": "human_needed",
-          "canonical_status": "human_needed"
+          "raw_status": "passed",
+          "canonical_status": "passed"
         }
       ],
       "historical_row_coverage": true,
@@ -1885,7 +1885,7 @@
       "structured_verification_table_gap": false,
       "historical_local_claim_passed": true,
       "historical_three_source": "satisfied (historical claims only)",
-      "workflow_three_source_status": "partial",
+      "workflow_three_source_status": "satisfied",
       "confirmed_current_functional_failure": false,
       "targeted_static_evidence": [],
       "current_execution": {
@@ -1956,7 +1956,7 @@
         "scope": "仅签署映射的实际非ignored target/子合同执行，不推导需求全部路径或历史judgment通过",
         "owner_signed_current_scope": false,
         "owner_signature_scope": null,
-        "report_resign_pending": true,
+        "report_resign_pending": false,
         "preserved_boundaries": [
           "原始ignored不计通过",
           "平台/调用计数不相加为唯一测试数",
@@ -1964,7 +1964,7 @@
         ]
       },
       "dynamic_owner_signed": false,
-      "freshness": "current_execution_report_resign_pending",
+      "freshness": "current_execution_reports_current",
       "current_functional_status": "本轮映射target真实执行通过；非完整需求全路径保证；历史01/02及stale门保留"
     },
     {
@@ -1987,9 +1987,9 @@
           "id": "LINT-04",
           "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
           "phase": "1",
-          "line": 196,
-          "status": "SATISFIED_TECHNICAL",
-          "source_row": "| 01-08-PLAN.md, 01-13-PLAN.md | LINT-04 | 开发者可以在配置中按规则 ID 关闭或调整严重级 | SATISFIED_TECHNICAL | ONT-V不可关闭/降级judgment仍为UNCERTAIN/WARNING，需显式人工resolution |",
+          "line": 147,
+          "status": "SATISFIED",
+          "source_row": "| 01-08-PLAN.md, 01-13-PLAN.md | LINT-04 | lint 规则配置与 severity 调整 | SATISFIED | Current Phase 1 report and evidence remain passed. |",
           "local_pass_claim": true
         }
       ],
@@ -2007,8 +2007,8 @@
         {
           "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
           "phase": "1",
-          "raw_status": "human_needed",
-          "canonical_status": "human_needed"
+          "raw_status": "passed",
+          "canonical_status": "passed"
         }
       ],
       "historical_row_coverage": true,
@@ -2016,7 +2016,7 @@
       "structured_verification_table_gap": false,
       "historical_local_claim_passed": true,
       "historical_three_source": "satisfied (historical claims only)",
-      "workflow_three_source_status": "partial",
+      "workflow_three_source_status": "satisfied",
       "confirmed_current_functional_failure": false,
       "targeted_static_evidence": [],
       "current_execution": {
@@ -2087,7 +2087,7 @@
         "scope": "仅签署映射的实际非ignored target/子合同执行，不推导需求全部路径或历史judgment通过",
         "owner_signed_current_scope": false,
         "owner_signature_scope": null,
-        "report_resign_pending": true,
+        "report_resign_pending": false,
         "preserved_boundaries": [
           "原始ignored不计通过",
           "平台/调用计数不相加为唯一测试数",
@@ -2095,7 +2095,7 @@
         ]
       },
       "dynamic_owner_signed": false,
-      "freshness": "current_execution_report_resign_pending",
+      "freshness": "current_execution_reports_current",
       "current_functional_status": "本轮映射target真实执行通过；非完整需求全路径保证；历史01/02及stale门保留"
     },
     {
@@ -2119,9 +2119,9 @@
           "id": "DX-03",
           "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
           "phase": "1",
-          "line": 187,
-          "status": "SATISFIED_TECHNICAL",
-          "source_row": "| 01-01-PLAN.md, 01-02-PLAN.md, 01-11-PLAN.md | DX-03 | Windows 本机 `cargo test` 不依赖 Docker 即可全部通过 | SATISFIED_TECHNICAL | 技术执行证据不解除3项judgment；phase保持human_needed |",
+          "line": 138,
+          "status": "SATISFIED",
+          "source_row": "| 01-01-PLAN.md, 01-02-PLAN.md, 01-11-PLAN.md | DX-03 | Windows 本机 `cargo test` 不依赖 Docker 即可全部通过 | SATISFIED | Phase 1 passed; this is the current technical coverage. |",
           "local_pass_claim": true
         }
       ],
@@ -2141,8 +2141,8 @@
         {
           "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
           "phase": "1",
-          "raw_status": "human_needed",
-          "canonical_status": "human_needed"
+          "raw_status": "passed",
+          "canonical_status": "passed"
         }
       ],
       "historical_row_coverage": true,
@@ -2150,7 +2150,7 @@
       "structured_verification_table_gap": false,
       "historical_local_claim_passed": true,
       "historical_three_source": "satisfied (historical claims only)",
-      "workflow_three_source_status": "partial",
+      "workflow_three_source_status": "satisfied",
       "confirmed_current_functional_failure": false,
       "targeted_static_evidence": [],
       "current_execution": {
@@ -2221,7 +2221,7 @@
         "scope": "仅签署映射的实际非ignored target/子合同执行，不推导需求全部路径或历史judgment通过",
         "owner_signed_current_scope": false,
         "owner_signature_scope": null,
-        "report_resign_pending": true,
+        "report_resign_pending": false,
         "preserved_boundaries": [
           "原始ignored不计通过",
           "平台/调用计数不相加为唯一测试数",
@@ -2229,7 +2229,7 @@
         ]
       },
       "dynamic_owner_signed": false,
-      "freshness": "current_execution_report_resign_pending",
+      "freshness": "current_execution_reports_current",
       "current_functional_status": "本轮映射target真实执行通过；非完整需求全路径保证；历史01/02及stale门保留"
     },
     {
@@ -12164,16 +12164,16 @@
     {
       "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
       "phase": "1",
-      "raw_status": "human_needed",
-      "score": "102/102 contract truths checked (101 VERIFIED; 1 prior override)",
-      "canonical_status": "human_needed",
+      "raw_status": "passed",
+      "score": "102/102 accounted for (101 VERIFIED + 1 PASSED (override))",
+      "canonical_status": "passed",
       "gate": {
-        "status": "human_needed",
-        "next_action": "Human verification required. Complete the manual tests in the phase's *-UAT.md, then re-run the verify step until status is passed.",
-        "next_command": "$gsd-verify-work 01",
-        "route": "verify-work"
+        "status": "passed",
+        "next_action": "Verification passed — continue.",
+        "next_command": "",
+        "route": ""
       },
-      "sha256": "98c80776c3170489cf0d72007fcaf942e88dbd605207cb713a5b300257adc310"
+      "sha256": "a437ff7f6d06b5da8323498d8b8ed174d29e728fa73707c3cfbb7956c68295b4"
     },
     {
       "path": ".planning/phases/02-source-binding-engine/02-VERIFICATION.md",
@@ -13554,7 +13554,7 @@
     {
       "path": ".planning/phases/01-workspace-schema-lint/01-VERIFICATION.md",
       "kind": "VERIFICATION",
-      "sha256": "98c80776c3170489cf0d72007fcaf942e88dbd605207cb713a5b300257adc310"
+      "sha256": "a437ff7f6d06b5da8323498d8b8ed174d29e728fa73707c3cfbb7956c68295b4"
     },
     {
       "path": ".planning/phases/02-source-binding-engine/02-01-PLAN.md",
@@ -14796,7 +14796,7 @@
     {
       "path": ".planning/milestones/v1.0-audit/evidence/2026-11-05/requirements-final-recompute.cjs",
       "kind": "RECOMPUTATION_TOOL",
-      "sha256": "5e8827c6c3043ee7c25360c07a8c765c75afeb8c3b64ba3ab9e1e1a45828794c"
+      "sha256": "136a82c00e0ec9d81fe4e3fc4f2e7c7503f160f0d960e197cc0ee8a3792002ca"
     },
     {
       "path": ".planning/milestones/v1.0-audit/evidence/2026-11-05/requirements-final-dynamic.cjs",

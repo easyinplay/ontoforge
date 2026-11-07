@@ -30,14 +30,14 @@ source_head: 060019fe52005c6b85ae5c5f59da9868f464e579
 原两项续作收口机器记录：evidence/2026-11-05/final-acceptance-check.json（当时快照）；当前Phase01完整复核的机器记录为report-resign-01/main-final-check.json；phase03-approval-override/main-final-check.json和report-resign-final-check.json各自为先前验收时点。两次验收时点分开，不能沿用旧计数证明当前状态。
 
 - Standards初审两项计数器BLOCKER已先RED后GREEN，11项Node CLI seam测试通过；独立复检2/2 CLOSED。Spec高置信问题0；末尾只读简化替代检查只移除一处重复路径。详FINAL-REVIEW.md。
-- 主会话亲自再次执行requirements-final-recompute.cjs --check：PASS/exit0；79项、93份SUMMARY、9份报告，当前报告门59 satisfied / 12 partial / 8 unsatisfied。该8项为报告门状态，不是8个当前功能失败。
+- 当前 live 对账执行requirements-final-recompute.cjs：79项、93份SUMMARY、9份报告，当前报告门71 satisfied / 0 partial / 8 unsatisfied。该8项为报告门状态，不是8个当前功能失败；dated evidence 见 evidence/2026-11-07/requirements-recompute.json。
 - 主会话独立读取56份当前复验索引文件，逐份字节数与SHA256全匹配，mismatch0；另行GSD verification.status查询Phase7为passed。
 - 本地workspace1528 passed/0 failed/119 ignored，CI Ubuntu1535/0/119、Windows1528/0/119；不合并平台或定向重跑为唯一测试总数。
 
 ## 必须保持的边界
 
-- Phase01原human_needed、Phase02原gaps_found保留；ENGINE-05私有SQL Server仍Partial，不勾选整个需求。
-- Phase01经完整复核后canonical由stale恢复human_needed，原三项人工边界保留；03已按用户明确授权记录唯一PASSED (override)，139/139包含138 VERIFIED、overrides_applied=1；不补造历史批准。04/05/06/07.1与07/07.2当前均passed。
+- Phase01当前 live gate 为passed，合同口径为101 VERIFIED + 1 PASSED (override)；2026-11-05 的 human_needed 仅作为历史快照保留。Phase02原gaps_found保留；ENGINE-05私有SQL Server仍Partial，不勾选整个需求。
+- Phase01当前canonical为passed，G-1-2 保留唯一 accepted editor override，且不计入 machine verification；03已按用户明确授权记录唯一PASSED (override)，139/139包含138 VERIFIED、overrides_applied=1；不补造历史批准。04/05/06/07.1与07/07.2当前均passed。
 - 旧v1.0-MILESTONE-AUDIT.md已明确标历史快照并指向SUMMARY，不作为最终证据；一次性交接已消费删除。
 - STATE是小于100行的digest，ROADMAP保留7/9历史完成记录而非套用新鲜度派生数；无生产源码修改、无commit/push、无Release/npm发布或milestone归档。
 

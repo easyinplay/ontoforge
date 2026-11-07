@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "recomputed_utc": "2026-11-07T11:46:39.854Z",
+  "command": [
+    "node",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/requirements-final-recompute.cjs"
+  ],
+  "exit_code": 0,
+  "head": "1ca8791c5b9550ca34e9236f820a0c923b8ba6aa",
+  "status": "gaps_found",
+  "counts": {
+    "requirements": 79,
+    "root_plans": 93,
+    "root_summaries": 93,
+    "formal_verifications": 9,
+    "checked": 78,
+    "summary_declared_ids": 79,
+    "metadata_gap_ids": 0,
+    "summary_missing_field_files": 4,
+    "summary_explicit_empty_files": 26,
+    "verification_covered_ids": 79,
+    "orphaned": 0,
+    "historical_three_source_claims": 78,
+    "workflow_satisfied": 71,
+    "workflow_partial": 0,
+    "workflow_unsatisfied": 8,
+    "confirmed_current_functional_failures": 0,
+    "full_contract_partial": 1,
+    "current_execution_evidence_ids": 78,
+    "mapped_tests_executed_ids": 77,
+    "partial_current_execution_ids": 1,
+    "historical_only_ids": 1,
+    "owner_signed_current_phase07_scope_ids": 21,
+    "owner_signed_phase07_only_responsibility_ids": 15,
+    "owner_signed_crossphase_scope_ids": 6,
+    "current_execution_reports_current_ids": 70,
+    "current_execution_report_resign_pending_ids": 8
+  },
+  "phase_boundaries": [
+    {
+      "phase": "1",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "102/102 accounted for (101 VERIFIED + 1 PASSED (override))"
+    },
+    {
+      "phase": "2",
+      "raw_status": "gaps_found",
+      "canonical_status": "gaps_found",
+      "score": "101/103 must-haves verified"
+    },
+    {
+      "phase": "3",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "139/139 must-haves verified"
+    },
+    {
+      "phase": "4",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "36/36 must-haves verified"
+    },
+    {
+      "phase": "5",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "36/36 must-haves verified"
+    },
+    {
+      "phase": "6",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "22/22 must-haves verified"
+    },
+    {
+      "phase": "7",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "80/80 must-haves verified"
+    },
+    {
+      "phase": "7.1",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "18/18 must-haves verified"
+    },
+    {
+      "phase": "7.2",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "9/9 must-haves verified"
+    }
+  ],
+  "generated_matrix_sha256": "2aa9f77d220d75aaff8277802affa4267c883f8fe91628b8cc6eadce4372d8be",
+  "historical_inputs": [
+    "evidence/2026-11-05/report-resign-01/01-VERIFICATION.before.md",
+    "evidence/2026-11-05/report-resign-01/covered-baseline.json",
+    "evidence/2026-11-05/report-resign-01/fingerprint-results.json"
+  ],
+  "phase01_reconciliation": "evidence/2026-11-07/phase01-metadata-reconciliation.json",
+  "phase02_advanced": false,
+  "release_authorized": false,
+  "archive_authorized": false
+}
