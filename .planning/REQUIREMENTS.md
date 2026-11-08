@@ -33,7 +33,7 @@
 - [x] **ENGINE-02**: Trino 不可用时，需要 Trino 的读写 fail-closed（`EngineUnavailable`），`/health` 与 describe 暴露引擎状态
 - [x] **ENGINE-03**: 发往 Trino / SQLite 的 SQL 由自有 printer 生成，值只经转义函数输出，注入防护由 proptest 与真实执行验证
 - [x] **ENGINE-04**: SQLite 替身引擎支撑 Windows 本机 `cargo test` 与 `serve --dev`（不承诺生产）
-- [ ] **ENGINE-05**: Linux CI 跑 Trino + PG 集成测试，nightly 加跑 Iceberg；私有环境下的 Trino 数据源由仓库外私有 fixture 验证
+- [x] **ENGINE-05**: Linux CI 跑 Trino + PG 集成测试，nightly 加跑 Iceberg；私有环境下的 Trino 数据源由仓库外私有 fixture 验证
 
 ### Edit store 与 edit log
 
@@ -197,7 +197,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ENGINE-02 | Phase 2（错误分类与 status()）+ Phase 7（/health 与 describe 暴露，API-01） | Complete |
 | ENGINE-03 | Phase 2 | Complete |
 | ENGINE-04 | Phase 2（SQLite 替身支撑 Windows cargo test）+ Phase 7（serve --dev，DX-01） | Complete |
-| ENGINE-05 | Phase 2 / 07.2 | Partial: PG/Trino与MinIO nightly已验证；MinIO缺口由07.2关闭；私有 Trino 数据源保留02-10.8历史judgment，详07.2-VERIFICATION |
+| ENGINE-05 | Phase 2 / 07.2 | Complete |
 | STORE-01 | Phase 3 | Complete |
 | STORE-02 | Phase 3 | Complete |
 | STORE-03 | Phase 3 | Complete |

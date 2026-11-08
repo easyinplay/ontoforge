@@ -5,7 +5,8 @@ type: acceptance-checklist
 produced_by: "02-11-PLAN.md Task 3"
 generated: 2026-11-08
 git_head_at_generation: "f2e73edce3e8d97934e1a7704db8a519b85a5f1d"
-status: pending-human-review
+status: accepted
+accepted: 2026-11-08
 ---
 
 # G-02-B / G-02-C / G-02-D 人工验收问题清单

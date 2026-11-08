@@ -17,15 +17,15 @@ findings:
     title: "`02-VERIFICATION.md` 的分数与 gap 状态自相矛盾（101/103 vs 100/103；partial vs FAILED (BLOCKER)）"
   - id: WR-03
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "`02-10-SUMMARY.md` 的 ignored / 本机测试计数与源码不符且内部加总不上"
   - id: WR-04
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "两份产出记录的 `git_head_at_generation` 不是生成时的 HEAD"
   - id: WR-05
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "三处「（命令）」引用指向门控标题行而非 `COMMAND` 行"
   - id: WR-06
     severity: warning
@@ -55,7 +55,8 @@ findings:
     severity: info
     disposition: open
     title: "`commits: 3` 的「实测」方法在文中给出的时点复现不出 3"
-open: 13
+fixed: 3
+open: 10
 total: 13
 recorded: 2026-11-08T09:09:17.687Z
 ---
@@ -64,9 +65,9 @@ recorded: 2026-11-08T09:09:17.687Z
 
 | Finding | Severity | Disposition | Source |
 |---------|----------|-------------|--------|
-| CR-01 | critical | open | - |
-| WR-01 | warning | open | - |
-| WR-02 | warning | open | - |
+| CR-01 | critical | fixed | - |
+| WR-01 | warning | fixed | - |
+| WR-02 | warning | fixed | - |
 | WR-03 | warning | open | - |
 | WR-04 | warning | open | - |
 | WR-05 | warning | open | - |

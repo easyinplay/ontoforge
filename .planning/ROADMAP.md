@@ -6,7 +6,7 @@ Phase 1 定死 IR 契约。2026-10-16 起 Phase 2–7 按 `docs/designs/trino-en
 
 ## Phases
 
-Milestone审计：2026-11-05追加复核及03-01.1显式override已落地，结论仍gaps_found；详: `.planning/milestones/v1.0-audit/SUMMARY.md`。
+Milestone审计：2026-11-05追加复核及03-01.1显式override已落地，结论仍gaps_found；Phase 02 于 2026-11-08 单独验收闭环（`passed` 109/109）；详: `.planning/milestones/v1.0-audit/SUMMARY.md`。
 
 **Phase Numbering:**
 
@@ -14,7 +14,7 @@ Milestone审计：2026-11-05追加复核及03-01.1显式override已落地，结�
 - Decimal phases (2.1, 2.2): 紧急插入（标注 INSERTED）
 
 - [x] **Phase 1: Workspace, Schema & Lint** - 当前passed（101 VERIFIED + 1 PASSED (override)）；2026-11-05 human_needed为历史快照；详: `.planning/phases/01-workspace-schema-lint/01-VERIFICATION.md` (completed 2026-11-07)
-- [ ] **Phase 2: Source Binding & Engine** - 历史gaps_found保留，后继补证与当前范围详: `.planning/milestones/v1.0-audit/SUMMARY.md`
+- [x] **Phase 2: Source Binding & Engine** - 2026-11-08 验收闭环（`passed` 109/109、UAT 9/9；G-02-B/C/D 人工签字关闭，私有数据源按 ADR-0032 通用化）；milestone 审计的历史 gaps 记录保留，详: `.planning/phases/02-source-binding-engine/02-VERIFICATION.md` 与 `.planning/milestones/v1.0-audit/SUMMARY.md` (completed 2026-11-08)
 - [x] **Phase 3: Edit Store & Scope Model** - 2026-11-05复签passed139/139（含1项用户明确接受的override），详: `.planning/phases/03-edit-store-scope-model/03-VERIFICATION.md`。
 - [x] **Phase 4: Scoped L0 Read** - Rust 编排叠加读：pk 读、列表、聚合分解、searchAround、keyset 分页、HMAC 版本令牌 (completed 2026-10-23)
 - [x] **Phase 5: Online Action** - Action 鉴权管线 ①-⑨、并发令牌、`command_id`、webhook outbox (completed 2026-10-26)
@@ -96,7 +96,7 @@ Plans:
   4. 自有 printer 生成的 SQL 经 proptest（任意字符串值往返不改变结构）与真实 Trino / SQLite 执行验证；SQLite 替身在 Windows `cargo test` 全绿
   5. Linux CI 以 Trino + PG service container 跑集成测试，nightly 加跑 Iceberg
 
-**Plans**: 10/10 plans executed（5 waves）
+**Plans**: 11/11 plans complete（5 waves + gap closure）
 
 Plans:
 
@@ -124,6 +124,10 @@ Plans:
 **Wave 5** *(blocked on Wave 4 completion)*
 
 - [x] 02-10-PLAN.md — Linux CI：Trino + PG 集成作业、nightly Iceberg、私有 fixture 入口
+
+**Gap closure**（02-11 残余 gap 闭合）
+
+- [x] 02-11-PLAN.md — 残余 gap 闭合（证据 + 人工验收清单）：G-02-A 源码级调和证据、G-02-B/C/D 机器可判定部分与人工验收问题清单，零产品代码变更
 
 **Details**: `.planning/phases/02-source-binding-engine/`
 
@@ -297,7 +301,7 @@ Phases 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7 → 7.1；�
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Workspace, Schema & Lint | 14/14 | Complete    | 2026-11-07 |
-| 2. Source Binding & Engine | 10/10 | gaps_found | - |
+| 2. Source Binding & Engine | 11/11 | Complete    | 2026-11-08 |
 | 3. Edit Store & Scope Model | 23/23 | Complete (1 accepted override) | 2026-10-22 |
 | 4. Scoped L0 Read | 7/7 | Complete    | 2026-10-23 |
 | 5. Online Action | 7/7 | Complete    | 2026-10-26 |

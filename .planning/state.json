@@ -11,7 +11,7 @@
     {
       "number": "2",
       "name": "Source Binding & Engine",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "number": "3",
@@ -50,9 +50,9 @@
     }
   ],
   "next": {
-    "command": "/gsd-progress --next",
-    "label": "Advance to the next step",
-    "reason": "Phase 2 of 10 · executing"
+    "command": "/gsd-new-milestone",
+    "label": "Start a new milestone",
+    "reason": "All phases complete — start a new milestone"
   },
-  "updated_at": "2026-11-08T05:19:10.346Z"
+  "updated_at": "2026-11-08T09:54:00.583Z"
 }
