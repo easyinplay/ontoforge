@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 14
+open_count: 15
 waived_count: 0
 fixed_count: 5
-total_count: 19
-last_updated: 2026-11-08T19:33:14.558Z
+total_count: 20
+last_updated: 2026-11-08T20:17:44.865Z
 ---
 
 # Broken Windows Ledger
@@ -34,6 +34,7 @@ last_updated: 2026-11-08T19:33:14.558Z
 | 17 | 02 | unrun-verify | .planning/phases/02-source-binding-engine/02-11-HUMAN-ACCEPTANCE.md |  | G-02-B / G-02-C / G-02-D 三项 judgment 的人工验收尚未进行；02-11 只交付机器可判定部分与问题清单，三条 VERDICT 仍为 PENDING，待下一轮 /gsd-verify-work 02 收集 | open |  | 2026-11-08T05:31:00.586Z |  |
 | 18 | 02 | unmet-truth | crates/ontoforge/tests/cli_check_cardinality.rs | 437 | 全工作区并行负载下 cardinality_budget_starts_after_precheck_and_pk 与 cardinality_total_deadline_is_shared 两个 300 ms deadline 用例偶发超时失败；隔离重跑 13 passed / 0 failed，全量 --no-fail-fast 重跑 1528 passed / 0 failed，判定为时序 flake 而非回归 | open | 门禁用例预算固定 300 ms，并行负载下偶发超时；彻底修复需放宽预算或改用可控时钟 | 2026-11-08T08:47:21.377Z |  |
 | 19 | 08 | unrun-verify | crates/ontoforge-action/src/outbox.rs | 157 | Phase 08 端到端用例只覆盖第 1 次重试（约 1 s）；第 17 次失败起固定 300 s 的退避上限由 outbox.rs 的 1_i64 << (attempts-1).min(16) 与 .min(300) 公式保证，本 phase 未实际执行（FA-02 backstop） | open |  | 2026-11-08T19:33:14.558Z |  |
+| 20 | 08 | unrun-verify | .planning/phases/08-production-webhook-end-to-end-delivery/08-evidence/ci-evidence-index.json |  | Phase 08 CI 证据归档的来源需人工交叉复核：本地已机器判定 run 42515808955 含结论为 success 的 phase8-webhook-e2e job 且 head_sha 30a05a8 是当前 HEAD 的祖先、晚于首次引入该 job 的 commit f95767a，但归档内容是否真出自该 run 只能由 CI run 的 URL 与 run id 人工确认（FA-03 backstop） | open |  | 2026-11-08T20:17:44.865Z |  |
 
 ````json
 [
@@ -275,6 +276,19 @@ last_updated: 2026-11-08T19:33:14.558Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-11-08T19:33:14.558Z",
+    "resolved_at": null,
+    "milestone": "v1.1"
+  },
+  {
+    "id": 20,
+    "kind": "unrun-verify",
+    "phase": "08",
+    "file": ".planning/phases/08-production-webhook-end-to-end-delivery/08-evidence/ci-evidence-index.json",
+    "line": null,
+    "description": "Phase 08 CI 证据归档的来源需人工交叉复核：本地已机器判定 run 42515808955 含结论为 success 的 phase8-webhook-e2e job 且 head_sha 30a05a8 是当前 HEAD 的祖先、晚于首次引入该 job 的 commit f95767a，但归档内容是否真出自该 run 只能由 CI run 的 URL 与 run id 人工确认（FA-03 backstop）",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-11-08T20:17:44.865Z",
     "resolved_at": null,
     "milestone": "v1.1"
   }

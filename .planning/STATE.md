@@ -4,17 +4,17 @@ milestone: v1.1
 milestone_name: Gap Closure
 current_phase: 08
 current_phase_name: Production Webhook End-to-End Delivery
-status: executing
-stopped_at: Completed 08-01-PLAN.md
-last_updated: "2026-11-08T19:34:55.313Z"
+status: verifying
+stopped_at: Completed 08-02-PLAN.md
+last_updated: "2026-11-08T20:18:58.421Z"
 last_activity: 2026-11-09
 last_activity_desc: Phase 08 execution started
-state_head: ae8956dd280f6a3c1c51a06a84d1d7a82f9ffa23
+state_head: 26531c89bfd8502f3006d88e75b36dcf0461279d
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
 ---
 
 # Project State
@@ -22,7 +22,7 @@ progress:
 ## Current Position
 Phase: 08 (Production Webhook End-to-End Delivery) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-11-09 — Phase 08 execution started
 
 ### Quick Tasks Completed
@@ -61,6 +61,10 @@ See: .planning/PROJECT.md (updated 2026-11-08 after v1.1 milestone start)
 - [Phase 08]: 判定完全在 CI 侧：接收端只写原始 ledger（逐请求 JSONL），不做断言、不暴露聚合端点、不以退出码表达成败（D-02）
 - [Phase 08]: 生产形态 webhook 联调在 Linux CI 上执行，真实二进制 + 真实 PostgreSQL + 独立进程接收端；本机 Windows 只做编译级验证
 - [Phase 08]: 跨 phase 缺陷登记表 .planning/WINDOWS.md 的第 18 条 kind 与表格/JSON 不一致已修复，登记表恢复可写，FA-02 未执行的退避上限已登记为第 19 条
+- [Phase 08]: Phase 08 归档成员集合按 plan 的证据枚举取六个：artifact 实际含七个成员，多出的 receiver.ready 显式排除并记入索引 source_boundary.excluded，不静默丢弃
+- [Phase 08]: Phase 08 归档用显式文件清单打包，成员路径保持仓库根相对路径；归档只含普通文件条目，成员数与索引 file_count 一一对应
+- [Phase 08]: Phase 08 归档完整性由 ci/verify-evidence-archive.sh 机器判定（解包复算 + 成员数核对 + 四个篡改场景自检）；该脚本不被任何 workflow 引用、不进发行包
+- [Phase 08]: Phase 08 校验器的 symlink 自检用逐字节构造 tar 头生成 symlink 成员，不依赖宿主文件系统支持符号链接；jq 输出统一做 CR 归一化（Windows jq 以 CRLF 结束行）
 
 ### Blockers/Concerns
 
@@ -91,8 +95,8 @@ v1.1 承接映射：05 → Phase 08 / 09（REL-01..03）、06 → Phase 10（REL
 
 ## Session Continuity
 
-Last session: 2026-11-08T19:34:55.284Z
-Stopped at: Completed 08-01-PLAN.md
+Last session: 2026-11-08T20:18:58.393Z
+Stopped at: Completed 08-02-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
@@ -105,3 +109,4 @@ Resume file: None
 | Plan | Duration | Tasks | Files |
 |------|----------|-------|-------|
 | Phase 08 P01 | 3h 12m | 2 tasks | 6 files |
+| Phase 08 P02 | 10 min | 2 tasks | 5 files |
