@@ -8,10 +8,12 @@ updated: 2026-11-08T09:20:00Z
 
 ## Current Test
 
-number: 7
-name: "G-02-B：公开仓库数据来源的人工判定"
+number: 8
+name: "G-02-C：公开 CI 与公司源的隔离"
 expected: |
-  对三个问题之一作答「是 / 否 / 不适用 + 理由」：示例、绑定、fixture、测试与 CI 种子全部为可公开虚构数据
+  人工核对后对断言作答「是 / 否 / 不适用 + 理由」：公开 workflow 在实际运行中不会连接公司 Trino 集群、不会读取公司 catalog / 表名 / 数据。
+  机器已证部分（不必重复核对）：门控 C-1（`.github/` 内无 `private_fixtures` / `ONTOFORGE_PRIVATE_FIXTURES` 引用）PASS；7 条 `jdbc:` / `s3://` 端点串全指向 loopback / 容器内 `minio` / 仓库内桶前缀；见 `02-11-HUMAN-ACCEPTANCE.md` G-02-C 节。
+  人工要看的范围：`.github/workflows/*.yml`（`ci.yml` / `nightly.yml`）里有无公司环境地址、secret 注入或私有 fixture 挂载；`ci/iceberg-services.sh`、`ci/query-services.sh`、`ci/trino/catalog/*.properties` 的端点指向；runner 的网络出口与部署环境。
 awaiting: user response
 
 ## Tests
@@ -49,8 +51,9 @@ note: "选定方案 (a)：ADR-0022 修订 ADR-0021 第 7 条；落地 commit 4d6
 ### 7. G-02-B：公开仓库数据来源
 expected: |
   核对公开仓库的示例 ontology、绑定文件、CI 种子与测试夹具，确认其数据（不只是标识符）确为可公开的虚构数据，不含任何公司业务数据
-result: pending
+result: pass
 why_human: "标识符中性是必要条件而非充分条件；机器无法判定数据行的来源与授权"
+note: "人工接受（2026-11-08）：公开仓库的示例 ontology、绑定文件、CI 种子与测试夹具数据均为可公开虚构数据，不含公司业务数据"
 evidence: "机器可判定部分已落盘：`02-11-source-scan.txt` 的 45 个物理标识符全为中性词、`## SUSPECTED NON-NEUTRAL` 为空；问题与证据见 `02-11-HUMAN-ACCEPTANCE.md` G-02-B 节（结论位仍为 `VERDICT: PENDING`）"
 
 ### 8. G-02-C：公开 CI 与公司源的隔离
@@ -70,9 +73,9 @@ evidence: "机器可判定部分已落盘：门控 D-1（`private_fixtures.rs:14
 ## Summary
 
 total: 9
-passed: 6
+passed: 7
 issues: 0
-pending: 3
+pending: 2
 skipped: 0
 blocked: 0
 
