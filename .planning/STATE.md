@@ -35,19 +35,22 @@ Last activity: 2026-11-08 — Milestone v1.0 completed and archived
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-11-08)
+See: .planning/PROJECT.md (updated 2026-11-08 after v1.0 milestone)
 
 **Core value:** 定义一次 ontology，应用和 agent 就能通过 REST 与 MCP 两个同等地位的出口，对同一份对象图做受控的读写：写入一律经 Action 校验与授权，每次写入都可审计。
-**Current focus:** 无下一个 phase；milestone v1.0 的 phase 已全部完成，待决定归档或开新 milestone。
+**Current focus:** milestone v1.0 已关闭并归档（9/9 phase、94/94 plan、79/79 v1 需求 Complete）；下一 milestone 待用 `/gsd-new-milestone` 启动，v1.0 残余缺口作为技术债承接。
 
 ## Evidence Pointers
 
-- Phase 02 验收：`.planning/phases/02-source-binding-engine/02-VERIFICATION.md`（`passed`，109/109）。
-- Phase 02 人工签字：`.planning/phases/02-source-binding-engine/02-11-HUMAN-ACCEPTANCE.md`（`accepted` 2026-11-08）。
-- 合并收尾：phases/07.2-minio-contract-gap-closure/07.2-MERGE-RESULT.md。
-- 前次合并：Phase03–07/07.1已在main，见milestones/v1.0-audit/MERGE-RESULT.md。
-- 最终审计：milestones/v1.0-audit/SUMMARY.md；本轮验收见同目录VERIFICATION.md，旧v1.0-MILESTONE-AUDIT.md仅为历史快照。
-- 追加报告门：milestones/v1.0-audit/REPORT-RESIGN.md。
+- 里程碑总结与已知缺口：`.planning/MILESTONES.md`。
+- 归档总入口：`.planning/milestones/`（`v1.0-ROADMAP.md`、`v1.0-REQUIREMENTS.md`、`v1.0-phases/`、`v1.0-audit/`、`v1.0-MILESTONE-AUDIT.md`）。
+- Phase 02 验收：`.planning/milestones/v1.0-phases/02-source-binding-engine/02-VERIFICATION.md`（`passed`，109/109）。
+- Phase 02 人工签字：`.planning/milestones/v1.0-phases/02-source-binding-engine/02-11-HUMAN-ACCEPTANCE.md`（`accepted` 2026-11-08）。
+- 合并收尾：`.planning/milestones/v1.0-phases/07.2-minio-contract-gap-closure/07.2-MERGE-RESULT.md`。
+- 前次合并：Phase03–07/07.1已在main，见`.planning/milestones/v1.0-audit/MERGE-RESULT.md`。
+- 最终审计：`.planning/milestones/v1.0-audit/SUMMARY.md`；本轮验收见同目录VERIFICATION.md，`.planning/milestones/v1.0-MILESTONE-AUDIT.md`仅为历史快照。
+- 追加报告门：`.planning/milestones/v1.0-audit/REPORT-RESIGN.md`。
+- 回顾：`.planning/RETROSPECTIVE.md`。
 
 ## Accumulated Context
 
@@ -62,12 +65,15 @@ See: .planning/PROJECT.md (updated 2026-11-08)
 
 - ⚠️ [Phase 07.2] ADR-0032 的通用化只落到 planning 层；产品层 `private_fixtures.rs` / `CONTRIBUTING.md` / `docs/designs/trino-engine-sql-tiers.md` 仍点名 SQL Server（代码无按类型分叉，不构成功能缺陷）。
 - ⚠️ [Phase 02] `02-10-SUMMARY.md` 的陈旧断言（本地 warehouse 描述、测试计数）未追改；历史 SUMMARY 为快照。
-- ⚠️ [Phase 05 / 06] 生产 webhook 联调与 L2 治理观察见各 deferred-items，milestone 审计后再对账。
+- ⚠️ [Phase 05 / 06] 生产 webhook 联调与 L2 治理观察见各 deferred-items；milestone 关闭时以 acknowledge 承接为延后事项，见下方 Deferred Items。
+- ⚠️ [v1.0 milestone] milestone 审计结论仍是 `gaps_found`（2026-11-05 dated 快照），本次以 `override_closeout` 关闭，审计文件未被改写。
 - ✅ [Phase 02] 原「私有 SQL Server judgment 保留」阻塞项已关闭：ADR-0032 通用化后由 2026-11-08 人工签字闭合。
 
 ## Remaining Work
 
-- milestone v1.0 全部 phase 完成，但 milestone 审计结论仍为 gaps_found；未发布 Release/npm，未自动归档 milestone。
+- milestone v1.0 已关闭并归档；下一 milestone 尚未启动，待 `/gsd-new-milestone` 讨论范围。候选方向见 `.planning/PROJECT.md` 的 Next Milestone Goals。
+- v1.0 残余缺口（Phase 05 生产 webhook 联调、Phase 06 审计时序拆分、ADR-0032 产品层措辞、02-10 陈旧断言）建议先作为 v1.x 技术债进入 backlog。
+- Release / npm 未发布；`v1.0` 为本地 annotated tag，未推送。
 - 未跟踪的 `docs/README.md`、`docs/foundry/`、`docs/images/`（公开文档镜像）不入库。
 
 ## Deferred Items
@@ -83,7 +89,7 @@ Items acknowledged and deferred at milestone close, most recent first:
 ## Session Continuity
 
 Last session: 2026-11-08
-Stopped at: Phase 02 complete, ready to plan next phase
+Stopped at: Milestone v1.0 complete and archived, ready to start the next milestone
 Resume file: None
 
 ## Operator Next Steps
