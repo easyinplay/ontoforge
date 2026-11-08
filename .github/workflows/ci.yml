@@ -375,3 +375,59 @@ jobs:
       - name: Clean up Phase 7 services
         if: ${{ always() }}
         run: bash ci/server-services.sh cleanup
+
+  # Production-shaped webhook delivery (REL-01, REL-02): the real `ontoforge webhook-worker`
+  # binary delivers outbox events from a real PostgreSQL store to an independent receiver
+  # process that listens on a loopback TCP port. The verdict is taken from the receiver's
+  # raw ledger and from the terminal state of `of_webhook_outbox`, never from the receiver.
+  phase8-webhook-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      ONTOFORGE_WEBHOOK_EVIDENCE_DIR: ${{ github.workspace }}/target/phase8-webhook
+    steps:
+      - id: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # v1
+        with:
+          toolchain: "1.98.0"
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - name: Start PostgreSQL 17.11 with job-scoped credentials
+        run: bash ci/query-services.sh postgres
+      # The service script only starts the container; the database itself is created here.
+      - name: Create the editstore database
+        run: psql -v ON_ERROR_STOP=1 -d postgres -c 'CREATE DATABASE editstore'
+      - name: Build the independent webhook receiver
+        run: cargo build -p ontoforge --example webhook_receiver --locked
+      - name: Webhook end-to-end delivery (PostgreSQL and an independent receiver process)
+        env:
+          ONTOFORGE_WEBHOOK_RECEIVER_BIN: ${{ github.workspace }}/target/debug/examples/webhook_receiver
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${ONTOFORGE_PG_URL:?PostgreSQL service must set ONTOFORGE_PG_URL}"
+          output=$(cargo test -p ontoforge --test webhook_e2e_pg --locked -- --ignored --list)
+          count=$(printf '%s\n' "$output" | awk '/: test$/ { n++ } END { print n+0 }')
+          echo "webhook_e2e_pg: $count ignored tests discovered"
+          if [ "$count" -eq 0 ]; then echo "::error::webhook_e2e_pg discovered zero tests"; exit 1; fi
+          cargo test -p ontoforge --test webhook_e2e_pg --locked -- --ignored --nocapture
+      - id: credential_scan
+        name: Check webhook evidence for job credentials
+        if: ${{ !cancelled() }}
+        run: bash ci/query-services.sh check-artifacts target/phase8-webhook
+      # The upload warns instead of failing: a failed test must stay the only failure signal.
+      - name: Upload webhook ledger and process logs
+        if: ${{ !cancelled() && steps.credential_scan.outcome == 'success' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: phase8-webhook-ledger
+          path: target/phase8-webhook/*
+          if-no-files-found: warn
+      - name: PostgreSQL logs
+        if: failure()
+        run: docker logs postgres 2>&1 || true
+      - name: Clean up the PostgreSQL container
+        if: ${{ always() && steps.checkout.outcome == 'success' }}
+        run: bash ci/query-services.sh cleanup

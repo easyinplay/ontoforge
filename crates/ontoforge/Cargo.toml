@@ -40,6 +40,9 @@ getrandom.workspace = true
 
 [dev-dependencies]
 ontoforge-query = { path = "../ontoforge-query" }
+# The end-to-end webhook receiver is an example target, so it stays out of the release
+# dependency set (D-01). `axum` is already pinned by the workspace.
+axum.workspace = true
 insta.workspace = true
 tempfile.workspace = true
 serde_json.workspace = true
