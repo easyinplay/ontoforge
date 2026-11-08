@@ -914,7 +914,7 @@ async fn webhook_worker_delivers_to_an_independent_receiver_over_postgres() {
 | A7 | 断言「退避间隔 ≥ 0.9s」足以区分退避与忙重试 | Pitfall 5 | 若时钟分辨率或调度抖动导致观测值偏小，断言可能偶发失败；建议下界取 0.9s 并在失败信息里打印实测间隔 |
 | A8 | 归档 CI 证据进 `08-evidence/` 沿用 v1.0 的 `ci-evidence.tar.gz` + `ci-evidence-index.json` + `README.md` 三件套格式 | 证据归档 | 该归档由执行者在 CI run 结束后用 `gh` CLI 事后抓取，不是 CI job 自己写进仓库；若本 phase 不做归档，需在 SUMMARY 里显式声明 |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **证据归档是否纳入本 phase 的 Definition of Done？**
    - What we know: v1.0 的 07.2 phase 有 `evidence/ci-evidence.tar.gz` + `ci-evidence-index.json` + `README.md` 三件套，内容是 CI run JSON + 成功 job 日志 + 核验脚本，共 15 个文件，逐项记 SHA256；`gh` CLI 本机可用（2.103.3）。
@@ -940,6 +940,16 @@ async fn webhook_worker_delivers_to_an_independent_receiver_over_postgres() {
    - What we know: 项目硬约束是 Windows 11 上 `cargo build` / `cargo test` 通过且不依赖 Docker；D-03 要求 PG；本机无 Docker。
    - What's unclear: 是否值得为本地复现引入 `postgresql_embedded`。
    - Recommendation: **不引入**。`postgresql_embedded` 会拉 native-tls 除非关默认 feature（`ci/check-tls-deps.sh` 与 CI 注释已记录这个坑），且新增 feature 会扩大本 phase 的改动面。本 phase 的 case 就是 CI-only 的，Windows 侧只保证编译通过。
+
+### Resolutions（2026-11-08 裁决，五条全部关闭）
+
+| # | 问题 | RESOLVED | 依据 |
+|---|------|----------|------|
+| 1 | 证据归档是否纳入 Definition of Done | **纳入**，但 CI artifact 上传为硬要求、`08-evidence/` 三件套归档为 phase 收尾时的 best-effort；CI run 未产生时在 SUMMARY 显式写明「归档待 CI run 完成后补」 | `08-VALIDATION.md` § 已定的 Claude's Discretion |
+| 2 | 接收端用 axum 还是纯 std | **axum**（workspace 已 pin `=0.8.9`，加进 `[dev-dependencies]` 不改依赖图、不触发 TLS 守卫） | `08-VALIDATION.md` § 已定的 Claude's Discretion；RESEARCH § Don't Hand-Roll |
+| 3 | `batch_limit` 与事件条数取值 | **事件 3 条、`batch_limit = 10`**（3 条满足 D-04 的 ≥3；10 留余量且远小于上限 100） | `08-01-PLAN.md` task 08-01-02 的实际取值 |
+| 4 | 是否给接收端去重逻辑补单元测试 | **不补** —— 端到端测试已直接检验同一 event_id 的计数与 503→204 序列，example target 的 `#[cfg(test)]` 会编译但不构成独立护栏 | `08-VALIDATION.md` § 已定的 Claude's Discretion |
+| 5 | 本地 Windows 要不要也跑端到端 case | **不引入 `postgresql_embedded`**，端到端 case 保持 CI-only，Windows 侧只保证编译通过 | D-03（PG store）+ 项目硬约束（Windows 本机不依赖 Docker）；`08-VALIDATION.md` 的反馈延迟预算已相应改为 CI job 级别 |
 
 ## Sources
 
