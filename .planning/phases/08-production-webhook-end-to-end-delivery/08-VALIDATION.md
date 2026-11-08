@@ -3,9 +3,9 @@ phase: "08"
 slug: "production-webhook-end-to-end-delivery"
 # status lifecycle: draft (seeded by plan-phase) → validated (set by validate-phase §6)
 # audit-milestone §5.5 distinguishes NOT-VALIDATED (draft) from PARTIAL (validated + nyquist_compliant: false) (#2117)
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: validated
+nyquist_compliant: true
+wave_0_complete: true
 created: "2026-11-08"
 ---
 
@@ -43,12 +43,12 @@ created: "2026-11-08"
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 08-01-01 | 01 | 1 | REL-01, REL-02a | T-08-01 / — | 接收端只写 ledger、不做断言、不信任何入参；worker 走 PG store，target 只来自可信配置 | integration (cross-process) | `cargo test -p ontoforge --test webhook_e2e_pg --locked -- --ignored --nocapture`（只在 Linux CI 的 `phase8-webhook-e2e` job 内可跑） | ❌ W0 新建 `crates/ontoforge/examples/webhook_receiver.rs` + `crates/ontoforge/tests/webhook_e2e_pg.rs` + 改 `.github/workflows/ci.yml` | ⬜ pending |
-| 08-01-02 | 01 | 1 | REL-02b, REL-02c | T-08-02 / — | 判定只从接收端侧原始记录与 PG `of_webhook_outbox` 终态两处独立取证 | integration | 同上（同一测试内断言唯一集合相等、无丢弃、退避间隔、PG 终态交叉取证） | ❌ 同上 | ⬜ pending |
-| 08-02-01 | 02 | 2 | REL-01 | T-08-03 / — | 归档不含 PG 凭据；索引逐成员 SHA256 可独立复算 | CI (artifact) + 本机脚本 | `bash ci/query-services.sh check-artifacts target/phase8-webhook` + 归档索引校验命令（见 plan 08-02-01 的 `<automated>` 集合） | ❌ W0 新建 `08-evidence/` 三件套 | ⬜ pending |
-| 08-02-02 | 02 | 2 | REL-01 | — | 运维文档指向 CI job 名、环境变量与 harness 位置 | static (source) | `grep -c 'phase8-webhook-e2e' crates/ontoforge/WEBHOOK-WORKER.md` | ❌ W0 改 `crates/ontoforge/WEBHOOK-WORKER.md` | ⬜ pending |
-| 回归 | — | — | 既有 3 条 CLI worker 基线不被破坏 | — | N/A | integration | `cargo test -p ontoforge --test cli_webhook_worker --locked` | ✅ 已存在 | ⬜ pending |
-| 回归 | — | — | 接收端自身编译且不破坏 clippy/fmt | — | N/A | static | `cargo fmt --all --check` + `cargo clippy --workspace --all-targets --locked -- -D warnings` + `cargo build -p ontoforge --example webhook_receiver --locked` | ✅ 既有 CI 步骤 | ⬜ pending |
+| 08-01-01 | 01 | 1 | REL-01, REL-02a | T-08-01 / — | 接收端只写 ledger、不做断言、不信任何入参；worker 走 PG store，target 只来自可信配置 | integration (cross-process) | `cargo test -p ontoforge --test webhook_e2e_pg --locked -- --ignored --nocapture`（只在 Linux CI 的 `phase8-webhook-e2e` job 内可跑） | ✅ `crates/ontoforge/examples/webhook_receiver.rs` + `crates/ontoforge/tests/webhook_e2e_pg.rs`（`#[ignore]`，`--ignored --list` 列出 1 条）+ `.github/workflows/ci.yml` 的 `phase8-webhook-e2e` job | ✅ green — CI run `42515808955` 的 `phase8-webhook-e2e` job 结论 success，测试行 `webhook_worker_delivers_to_an_independent_receiver_over_postgres ... ok`；RED 态由 run `42505885675` 承担（行为断言失败，非编译错误） |
+| 08-01-02 | 01 | 1 | REL-02b, REL-02c | T-08-02 / — | 判定只从接收端侧原始记录与 PG `of_webhook_outbox` 终态两处独立取证 | integration | 同上（同一测试内断言唯一集合相等、无丢弃、退避间隔、PG 终态交叉取证） | ✅ 同上（断言关键字 `of_webhook_outbox` / `delivered_at` / `attempt_count` / `last_error` / `remote_addr` / `try_wait` 均在测试文件内） | ✅ green — CI run `42510584474` 与 `42515808955` 均 success；ledger 侧 3 个唯一 `event_id` == 提交集合、每条首 503 末 204、退避间隔 1.0366 / 1.0276 / 1.0205 s，PG 侧 `of_webhook_outbox` 恰好三行且 `delivered_at` 非空、`attempt_count = 1`、`last_error = 'http_status_503'` |
+| 08-02-01 | 02 | 2 | REL-01 | T-08-03 / — | 归档不含 PG 凭据；索引逐成员 SHA256 可独立复算 | CI (artifact) + 本机脚本 | `bash ci/query-services.sh check-artifacts target/phase8-webhook` + 归档索引校验命令（见 plan 08-02-01 的 `<automated>` 集合） | ✅ `08-evidence/` 三件套（README / `ci-evidence-index.json` / `ci-evidence.tar.gz`）+ `ci/verify-evidence-archive.sh` | ✅ green — `bash ci/verify-evidence-archive.sh <tar.gz> <index.json>` → `OK: 6 members verified against …`（退出码 0）；`--selftest` → `SELFTEST OK: 4 tamper scenarios rejected`（退出码 0）；归档 6 个成员无绝对路径、无 `..`、grep 不到 PostgreSQL 连接串 |
+| 08-02-02 | 02 | 2 | REL-01 | — | 运维文档指向 CI job 名、环境变量与 harness 位置 | static (source) | `grep -c 'phase8-webhook-e2e' crates/ontoforge/WEBHOOK-WORKER.md` | ✅ `crates/ontoforge/WEBHOOK-WORKER.md` 文末新增 `## 端到端联调（CI）` | ✅ green — `phase8-webhook-e2e` / `phase8-webhook-ledger` / `ONTOFORGE_WEBHOOK_RECEIVER_BIN` / `ONTOFORGE_WEBHOOK_EVIDENCE_DIR` 四个字面量均在文内；该文件 diff 为 25 行新增、零删除行（既有段落逐字未改） |
+| 回归 | — | — | 既有 3 条 CLI worker 基线不被破坏 | — | N/A | integration | `cargo test -p ontoforge --test cli_webhook_worker --locked` | ✅ 已存在 | ✅ green — 本机实跑 `3 passed; 0 failed` |
+| 回归 | — | — | 接收端自身编译且不破坏 clippy/fmt | — | N/A | static | `cargo fmt --all --check` + `cargo clippy --workspace --all-targets --locked -- -D warnings` + `cargo build -p ontoforge --example webhook_receiver --locked` | ✅ 既有 CI 步骤 | ✅ green — CI run `42515808955` 的 `test (ubuntu-latest)` 与 `test (windows-latest)` job 均 success（含 fmt / clippy 门）；本机 post-merge build gate 亦为 `BUILD_EXIT=0` |
 
 > **Task ID 对齐说明（2026-11-08 修订）：** 本表已与 `08-01-PLAN.md` / `08-02-PLAN.md` 的实际 task 一一对应（4 个 task：`08-01-01` tracer、`08-01-02`、`08-02-01`、`08-02-02`）。先前版本按 REL-01/REL-02 的子语义拆成 7 行（`08-01-01`..`08-01-05`），与计划的 task 粒度不一致，会让 Nyquist 审计定位不到 `08-01-03/04/05` —— 已按 checker 的 `nyquist_compliance` warning 修正。
 
@@ -58,11 +58,11 @@ created: "2026-11-08"
 
 ## Wave 0 Requirements
 
-- [ ] `crates/ontoforge/examples/webhook_receiver.rs` — 独立进程接收端（**只写 ledger，不做断言、不暴露 `/counts`、不以退出码表达成败**）
-- [ ] `crates/ontoforge/tests/webhook_e2e_pg.rs` — `#[ignore]` 端到端编排 + 全部断言
-- [ ] `crates/ontoforge/Cargo.toml` — `[dev-dependencies]` 增加 `axum.workspace = true`
-- [ ] `.github/workflows/ci.yml` — 新增 `phase8-webhook-e2e` job
-- [ ] `08-evidence/` 归档产物 — ledger + CI 日志 + index（沿用 v1.0 `07.1-evidence/` 的 README + index JSON + tar.gz 三件套）
+- [x] `crates/ontoforge/examples/webhook_receiver.rs` — 独立进程接收端（**只写 ledger，不做断言、不暴露 `/counts`、不以退出码表达成败**）
+- [x] `crates/ontoforge/tests/webhook_e2e_pg.rs` — `#[ignore]` 端到端编排 + 全部断言
+- [x] `crates/ontoforge/Cargo.toml` — `[dev-dependencies]` 增加 `axum.workspace = true`
+- [x] `.github/workflows/ci.yml` — 新增 `phase8-webhook-e2e` job
+- [x] `08-evidence/` 归档产物 — ledger + CI 日志 + index（沿用 v1.0 `07.1-evidence/` 的 README + index JSON + tar.gz 三件套）
 - Framework install: 无（沿用 workspace 已有 tokio / sqlx / tempfile / ulid / clap / serde_json）
 
 ---
@@ -87,11 +87,19 @@ created: "2026-11-08"
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency 符合本 phase 的口径：**CI job 级别（分钟级）**，本机只有编译级验证（例外来源见 § Sampling Rate）
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency 符合本 phase 的口径：**CI job 级别（分钟级）**，本机只有编译级验证（例外来源见 § Sampling Rate）
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** validated — Nyquist 审计未发现 gap（REL-01 / REL-02 各有对应自动化验证，且已在 Linux CI 上跑绿）；未派发 `gsd-nyquist-auditor`，未新增测试文件。人工可判定项（REL-01 / REL-02 的结论位签字、REL-02b 的去重口径映射）仍按上表留在 Manual-Only。
+
+## Validation Audit 2026-11-08
+
+| Metric | Count |
+|---|---|
+| Gaps found | 0 |
+| Resolved | 0 |
+| Escalated | 0 |
