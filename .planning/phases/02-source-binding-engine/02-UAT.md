@@ -8,12 +8,12 @@ updated: 2026-11-08T09:20:00Z
 
 ## Current Test
 
-number: 8
-name: "G-02-C：公开 CI 与公司源的隔离"
+number: 9
+name: "G-02-D：私有 SQL Server 边界与仓库外目录"
 expected: |
-  人工核对后对断言作答「是 / 否 / 不适用 + 理由」：公开 workflow 在实际运行中不会连接公司 Trino 集群、不会读取公司 catalog / 表名 / 数据。
-  机器已证部分（不必重复核对）：门控 C-1（`.github/` 内无 `private_fixtures` / `ONTOFORGE_PRIVATE_FIXTURES` 引用）PASS；7 条 `jdbc:` / `s3://` 端点串全指向 loopback / 容器内 `minio` / 仓库内桶前缀；见 `02-11-HUMAN-ACCEPTANCE.md` G-02-C 节。
-  人工要看的范围：`.github/workflows/*.yml`（`ci.yml` / `nightly.yml`）里有无公司环境地址、secret 注入或私有 fixture 挂载；`ci/iceberg-services.sh`、`ci/query-services.sh`、`ci/trino/catalog/*.properties` 的端点指向；runner 的网络出口与部署环境。
+  人工核对后对断言作答「是 / 否 / 不适用 + 理由」：SQL Server 只经仓库外私有 fixture 验证、公开 CI 不运行该目标、仓库内无任何私有绑定或数据。
+  机器已证部分（不必重复核对）：门控 D-1（`crates/ontoforge/tests/private_fixtures.rs:14/44/69` 的环境变量 + `#[ignore]` 双门控）与门控 D-2（`CONTRIBUTING.md:89/91` 约定）均 PASS；见 `02-11-HUMAN-ACCEPTANCE.md` G-02-D 节。
+  人工要看的范围：`ONTOFORGE_PRIVATE_FIXTURES` 指向的仓库外目录当前实际内容（是否含公司绑定数据）、该入口的实际部署形态是否与 `CONTRIBUTING.md` 约定一致、git 历史中是否曾提交后删除私有绑定。
 awaiting: user response
 
 ## Tests
@@ -59,8 +59,9 @@ evidence: "机器可判定部分已落盘：`02-11-source-scan.txt` 的 45 个�
 ### 8. G-02-C：公开 CI 与公司源的隔离
 expected: |
   核对公开 CI 与公司源的隔离，确认部署环境、runner 配置与私有 fixture 目录均未被公开 workflow 触达
-result: pending
+result: pass
 why_human: "workflow 文本可证明「未引用」，不能证明 runner 上的环境变量注入、secret 与网络出口"
+note: "人工接受（2026-11-08）：公开 workflow 不连接公司 Trino 集群、不读取公司 catalog / 表名 / 数据"
 evidence: "机器可判定部分已落盘：门控 C-1（`.github/` 内无 `private_fixtures` / `ONTOFORGE_PRIVATE_FIXTURES` 引用）PASS，7 条 `jdbc:` / `s3://` 端点串全指向 loopback / 容器内 `minio` / 仓库内桶前缀；见 `02-11-HUMAN-ACCEPTANCE.md` G-02-C 节"
 
 ### 9. G-02-D：私有 SQL Server 边界与仓库外目录
@@ -73,9 +74,9 @@ evidence: "机器可判定部分已落盘：门控 D-1（`private_fixtures.rs:14
 ## Summary
 
 total: 9
-passed: 7
+passed: 8
 issues: 0
-pending: 2
+pending: 1
 skipped: 0
 blocked: 0
 
