@@ -297,6 +297,34 @@ fn ledger_records_for<'a>(records: &'a [LedgerRecord], event_id: &str) -> Vec<&'
         .collect()
 }
 
+/// The unique event identifiers the receiver recorded.
+fn unique_event_ids(records: &[LedgerRecord]) -> BTreeSet<String> {
+    records
+        .iter()
+        .filter_map(|record| record.event_id.clone())
+        .collect()
+}
+
+/// The raw lines of the ledger, as the receiver wrote them.
+fn ledger_lines(path: &Path) -> Vec<String> {
+    let Ok(text) = std::fs::read_to_string(path) else {
+        return Vec::new();
+    };
+    text.lines()
+        .filter(|line| !line.trim().is_empty())
+        .map(str::to_owned)
+        .collect()
+}
+
+/// The password of a PostgreSQL connection string of the form
+/// `postgres://<user>:<password>@<host>:<port>/<database>`.
+fn password_of(url: &str) -> Option<&str> {
+    let after_scheme = url.split_once("://").map(|(_, rest)| rest)?;
+    let (userinfo, _authority) = after_scheme.rsplit_once('@')?;
+    let (_user, password) = userinfo.split_once(':')?;
+    Some(password)
+}
+
 /// Reads the terminal state of the outbox from PostgreSQL.
 async fn outbox_rows(pool: &sqlx::PgPool, schema_sys: &str) -> Vec<OutboxRow> {
     let sql = format!(
@@ -385,14 +413,38 @@ fn gaps_between(records: &[&LedgerRecord]) -> Vec<i64> {
         .collect()
 }
 
-/// Asserts what the receiver recorded for one event.
-fn assert_ledger_evidence(records: &[LedgerRecord], event_id: &str) {
+/// Asserts what the receiver recorded for every submitted event.
+fn assert_ledger_evidence(records: &[LedgerRecord], submitted: &[String]) {
     for pair in records.windows(2) {
         assert!(
             pair[1].seq > pair[0].seq,
             "the receiver numbers its records in order: {pair:?}"
         );
     }
+    for record in records {
+        assert!(
+            record
+                .remote_addr
+                .as_deref()
+                .is_some_and(|address| address.starts_with("127.0.0.1:")),
+            "the receiver must see a loopback peer: {record:?}"
+        );
+    }
+    // The receiver counts an event once: the unique set of event identifiers equals the
+    // submitted set, no more and no less.
+    let recorded: BTreeSet<String> = unique_event_ids(records);
+    let expected: BTreeSet<String> = submitted.iter().cloned().collect();
+    assert_eq!(
+        recorded, expected,
+        "the receiver must see every submitted event exactly once"
+    );
+    for event_id in submitted {
+        assert_event_evidence(records, event_id);
+    }
+}
+
+/// Asserts what the receiver recorded for one event.
+fn assert_event_evidence(records: &[LedgerRecord], event_id: &str) {
     let delivered = ledger_records_for(records, event_id);
     assert!(
         delivered.len() >= 2,
@@ -443,13 +495,23 @@ fn assert_ledger_evidence(records: &[LedgerRecord], event_id: &str) {
             Some(event_id),
             "the recorded event id must be the submitted one: {record:?}"
         );
+    }
+}
+
+/// Asserts that the ledger holds no credential of the job.
+fn assert_ledger_has_no_credential(lines: &[String], url: &str) {
+    let password = password_of(url);
+    for line in lines {
         assert!(
-            record
-                .remote_addr
-                .as_deref()
-                .is_some_and(|address| address.starts_with("127.0.0.1:")),
-            "the receiver must see a loopback peer: {record:?}"
+            !line.contains(url),
+            "the ledger must not hold the connection string: {line}"
         );
+        if let Some(password) = password {
+            assert!(
+                !line.contains(password),
+                "the ledger must not hold the database password: {line}"
+            );
+        }
     }
 }
 
@@ -488,8 +550,15 @@ async fn webhook_worker_delivers_to_an_independent_receiver_over_postgres() {
     let store = EditStore::open(settings)
         .await
         .expect("open the PostgreSQL store");
-    let submitted = committed_event_ids(&store, &[("phase8-webhook-command-1", "G1")]).await;
-    let event_id = submitted[0].clone();
+    let submitted = committed_event_ids(
+        &store,
+        &[
+            ("phase8-webhook-command-1", "G1"),
+            ("phase8-webhook-command-2", "G2"),
+            ("phase8-webhook-command-3", "G3"),
+        ],
+    )
+    .await;
 
     let receiver = spawn_receiver(&receiver_bin, &dir);
     let target = wait_for_ready_file(&dir.join("receiver.ready"), &dir).await;
@@ -500,15 +569,17 @@ async fn webhook_worker_delivers_to_an_independent_receiver_over_postgres() {
     let config = write_server_config(&dir, &target, &schema_edit, &schema_sys);
     let mut worker = spawn_worker(&config, &url, &dir);
 
+    let ledger_path = dir.join("ledger.jsonl");
     let records = wait_for_delivery(
         &mut worker,
-        &dir.join("ledger.jsonl"),
+        &ledger_path,
         &dir,
         &submitted,
         Duration::from_secs(60),
     )
     .await;
-    assert_ledger_evidence(&records, &event_id);
+    assert_ledger_evidence(&records, &submitted);
+    assert_ledger_has_no_credential(&ledger_lines(&ledger_path), &url);
     assert_ne!(
         receiver.id(),
         std::process::id(),
@@ -530,8 +601,10 @@ async fn webhook_worker_delivers_to_an_independent_receiver_over_postgres() {
     let rows = wait_for_outbox(&pool, &schema_sys, &submitted, Duration::from_secs(30)).await;
     assert_eq!(
         rows.len(),
-        1,
-        "the outbox must hold exactly one row: {rows:?}"
+        submitted.len(),
+        "the outbox must hold exactly one row per submitted event: {rows:?}"
     );
-    assert_outbox_evidence(&rows, &event_id);
+    for event_id in &submitted {
+        assert_outbox_evidence(&rows, event_id);
+    }
 }
