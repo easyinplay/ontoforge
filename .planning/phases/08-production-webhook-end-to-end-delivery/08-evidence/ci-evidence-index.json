@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-11-08T20:15:14+00:00",
+  "archive": {
+    "path": "ci-evidence.tar.gz",
+    "size": 751,
+    "sha256": "3bad98b398b3d800e4e1e38a1e517b97509f0d98a0ce7b694ad9d56894dd7ac9"
+  },
+  "file_count": 6,
+  "uncompressed_size": 2168,
+  "source_boundary": {
+    "root": "target/phase8-webhook/ci",
+    "runs": {
+      "42515808955": {
+        "head_sha": "30a05a8a43f7a8235ca8db7cc715d39e277bc8b5",
+        "conclusion": "success",
+        "successful_job_ids": [
+          128838450761
+        ]
+      }
+    },
+    "included": "ledger.jsonl, ontoforge-server.toml, receiver.log, receiver.err.log, worker.log, worker.err.log from the phase8-webhook-ledger artifact of run 42515808955",
+    "excluded": [
+      "receiver.ready (the receiver ready-file; it holds only the bound loopback target URL and is not part of the expected evidence set)",
+      "private runtime/env/state/secrets",
+      "auth status",
+      "all other files"
+    ],
+    "acceptance": "只证明归档完整性与可恢复性，不代替独立 phase 验收（archive integrity and recovery only; not independent phase acceptance）"
+  },
+  "files": [
+    {
+      "path": "target/phase8-webhook/ci/ledger.jsonl",
+      "size": 1866,
+      "sha256": "65acd8a17c5fece0a06f1b522960331cd3ee1918712ef2c9426b243b3c9dfaaa"
+    },
+    {
+      "path": "target/phase8-webhook/ci/ontoforge-server.toml",
+      "size": 302,
+      "sha256": "787a20532e7eca8623dd759eab94ee4262d7b14585517659e1a821ceea4eae28"
+    },
+    {
+      "path": "target/phase8-webhook/ci/receiver.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "target/phase8-webhook/ci/receiver.err.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "target/phase8-webhook/ci/worker.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "target/phase8-webhook/ci/worker.err.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}
