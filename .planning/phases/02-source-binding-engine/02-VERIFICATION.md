@@ -26,7 +26,7 @@ re_verification:
   gaps_remaining:
     - "G-02-B 公开数据来源（02-03 judgment 禁止项）：机器可判定部分已完成（45 个物理标识符全为中性词，SUSPECTED NON-NEUTRAL 为空），结论位显式保持 VERDICT: PENDING，待人工签字"
     - "G-02-C 公开 CI 不接公司源（02-10 judgment 禁止项）：机器可判定部分已完成（端点枚举 + 门控 C-1 PASS），结论位 VERDICT: PENDING"
-    - "G-02-D 私有 SQL Server 边界 / ONTOFORGE_PRIVATE_FIXTURES（02-10.8 / ENGINE-05 judgment 子句）：机器可判定部分已完成（门控 D-1 双门控 + D-2 文档），结论位 VERDICT: PENDING"
+    - "G-02-D 私有 Trino 数据源边界 / ONTOFORGE_PRIVATE_FIXTURES（02-10.8 / ENGINE-05 judgment 子句）：机器可判定部分已完成（门控 D-1 双门控 + D-2 文档），结论位 VERDICT: PENDING"
   regressions: []
 unverified_prohibitions:
   - plan: "02-03"
@@ -46,7 +46,7 @@ human_verification:
   - test: "G-02-C：核对公开 CI 与公司源的隔离，确认部署环境、runner 配置与私有 fixture 目录均未被公开 workflow 触达"
     expected: "作答「是 / 否 / 不适用 + 理由」：公开 workflow 在实际运行中不会连接公司 Trino 集群、不会读取公司 catalog/表名/数据"
     why_human: "workflow 文本可证明「未引用」，不能证明 runner 上的环境变量注入、secret 与网络出口"
-  - test: "G-02-D：核对私有 SQL Server 边界与仓库外目录的真实内容，确认仓库外目录当前不含公司绑定数据、且 `ONTOFORGE_PRIVATE_FIXTURES` 入口的约定与实际部署一致"
+  - test: "G-02-D：核对私有 Trino 数据源边界与仓库外目录的真实内容，确认仓库外目录当前不含公司绑定数据、且 `ONTOFORGE_PRIVATE_FIXTURES` 入口的约定与实际部署一致"
     expected: "作答「是 / 否 / 不适用 + 理由」：SQL Server 只经仓库外私有 fixture 验证、CI 不运行该目标、仓库内无任何私有绑定或数据"
     why_human: "仓库外目录内容、git 历史中是否曾提交后删除私有绑定、以及文档与实际部署形态的一致性都不能由仓库内源码证明"
 ---
@@ -97,7 +97,7 @@ human_verification:
 | 02-07 | 9 | 全部 VERIFIED（其中 2 条计入 override） |
 | 02-08 | 7 | 全部 VERIFIED |
 | 02-09 | 8 | 全部 VERIFIED |
-| 02-10 | 9 | 8 VERIFIED + 1 UNCERTAIN（`02-10.8` 私有 SQL Server 边界 judgment） |
+| 02-10 | 9 | 8 VERIFIED + 1 UNCERTAIN（`02-10.8` 私有 Trino 数据源边界 judgment） |
 | 02-11 | 6 | 全部 VERIFIED（本轮逐条独立复核，见下表） |
 | **合计** | **104** | **102 VERIFIED + 2 UNCERTAIN** |
 
@@ -108,7 +108,7 @@ human_verification:
 | # | Truth | Status | 独立复核证据 |
 |---|---|---|---|
 | 02-11.1 | 02-10.6 的 nightly Iceberg 合同在**当前源码**上逐条可核，每条断言带 `file:line` 记录在 `02-11-RECONCILIATION.md` | ✓ VERIFIED | 独立重跑 5 条断言（见「Behavioral Spot-Checks」表 A1..A5），与 `02-11-RECONCILIATION.md:35-39` 的判定逐条一致 |
-| 02-11.2 | `02-11-RECONCILIATION.md` 写明 07.2 的 `passed` 只覆盖 MinIO/S3 + PG JDBC Iceberg 子范围，**不**闭合 ENGINE-05 私有 SQL Server 边界；并交叉引用 07.2 的具体证据文件与行号 | ✓ VERIFIED | `02-11-RECONCILIATION.md:59-89`（`## Phase 07.2 Cross-Reference` + 「边界声明（原文，不得改写）」）；所引 `07.2-VERIFICATION.md:43/44/49` 逐行核对为 truth 2 / truth 3 / truth 8，内容与引用描述一致 |
+| 02-11.2 | `02-11-RECONCILIATION.md` 写明 07.2 的 `passed` 只覆盖 MinIO/S3 + PG JDBC Iceberg 子范围，**不**闭合 ENGINE-05 私有 Trino 数据源边界；并交叉引用 07.2 的具体证据文件与行号 | ✓ VERIFIED | `02-11-RECONCILIATION.md:59-89`（`## Phase 07.2 Cross-Reference` + 「边界声明（原文，不得改写）」）；所引 `07.2-VERIFICATION.md:43/44/49` 逐行核对为 truth 2 / truth 3 / truth 8，内容与引用描述一致 |
 | 02-11.3 | 记录**所有**可观测的实现路径偏差，并注明是与 02-10 计划文本的偏差还是与 02-10.6 truth 本身的偏差 | ✓ VERIFIED | `02-11-RECONCILIATION.md:43-56` 登记 D-01（services.postgres 迁移）、D-02（`fs.native-s3.enabled` → `fs.s3.enabled`、endpoint 主机名）、D-03（`report-failure` 触发条件收窄）、D-04（编排迁入 `ci/iceberg-services.sh`），每条均标注「不影响 truth 成立 / REFINED」 |
 | 02-11.4 | 机器可判定的那一半由一次只读扫描落到 `02-11-source-scan.txt`，每个观测到的物理标识符与 `02-11-RECONCILIATION.md` 声明的中性词表**逐行相等** | ✓ VERIFIED | 本轮用脚本比对：scan 段 45 个标识符与 `## NEUTRAL VOCABULARY` 段 45 个词**集合完全相等**、无单侧多余；`## SUSPECTED NON-NEUTRAL` 为「空。」 |
 | 02-11.5 | G-02-B / G-02-C / G-02-D 各自被转写成一个可判定的人工验收问题，每个条目有「问题原文 / 支撑证据 file:line / 机器不可判定的部分 / VERDICT 占位」四个字段，三条占位一律 `VERDICT: PENDING`，无人代签 | ✓ VERIFIED | `02-11-HUMAN-ACCEPTANCE.md` 三个子节（G-02-B / G-02-C / G-02-D），`VERDICT: PENDING` 恰好 3 处（文件内 :44 / :60 / :78），`## Explicitly Unverifiable by Machine` 与 `## Recording` 节明示「登记不由本 plan 或执行者预填」 |
@@ -120,7 +120,7 @@ human_verification:
 |---|---|---|---|
 | `02-10.6` nightly Iceberg 合同 | ✗ FAILED (BLOCKER) | ✓ **VERIFIED** | 见下方 A1..A5 五条断言的独立 file:line 复核；MinIO/S3 合同在当前源码中成立，实跑证据由 07.2 提供 |
 | `02-05.13` / 02-03 公开数据来源 | ? UNCERTAIN (judgment) | ? **UNCERTAIN（需人工）** | 机器可判定部分已完成（45 标识符中性、`SUSPECTED NON-NEUTRAL` 空）；数据行来源与授权机器无法判定，结论位仍为 `VERDICT: PENDING` |
-| `02-10.8` 私有 SQL Server 边界 | ? UNCERTAIN (judgment) | ? **UNCERTAIN（需人工）** | 机器可判定部分已完成（门控 D-1 环境变量 + `#[ignore]` 双门控、D-2 贡献文档）；仓库外目录真实内容、git 历史与实际部署形态无法由仓库内源码证明，结论位仍为 `VERDICT: PENDING` |
+| `02-10.8` 私有 Trino 数据源边界 | ? UNCERTAIN (judgment) | ? **UNCERTAIN（需人工）** | 机器可判定部分已完成（门控 D-1 环境变量 + `#[ignore]` 双门控、D-2 贡献文档）；仓库外目录真实内容、git 历史与实际部署形态无法由仓库内源码证明，结论位仍为 `VERDICT: PENDING` |
 
 ---
 
@@ -197,7 +197,7 @@ human_verification:
 | ENGINE-02 | 02-04 / 02-06 / 02-09 | Trino 不可用时 fail-closed（`EngineUnavailable`），`/health` 与 describe 暴露引擎状态 | ✓ SATISFIED（Phase 02 范围） | 错误分类与 `status()` 在位；**`/health` 与 describe 暴露属 Phase 7**（`REQUIREMENTS.md:197` 已如此登记） |
 | ENGINE-03 | 02-02 / 02-10 | 自有 printer 生成 SQL，值只经转义函数输出，注入防护由 proptest 与真实执行验证 | ✓ SATISFIED | printer prop 独立 AST + SQLite roundtrip；真实 Trino corpus |
 | ENGINE-04 | 02-02 / 02-05 | SQLite 替身支撑 Windows 本机 `cargo test` | ✓ SATISFIED（Phase 02 范围） | 本机 1528 passed / 0 failed；**`serve --dev` 属 Phase 7**（`REQUIREMENTS.md:198` 已如此登记） |
-| ENGINE-05 | 02-10 / 02-11 | Linux CI 跑 Trino + PG 集成测试，nightly 加跑 Iceberg；SQL Server 由私有 fixture 验证 | ◐ PARTIAL → 需人工 | **已闭合部分**：CI Trino + PG 集成测试（`ci.yml`）、nightly Iceberg + MinIO/S3 合同（当前源码 + 07.2 实跑证据）；**未闭合部分**：私有 SQL Server 子句为 judgment，结论位 `VERDICT: PENDING`（`REQUIREMENTS.md:36` 仍为未勾选、`:200` 记为 Partial，与本判定一致） |
+| ENGINE-05 | 02-10 / 02-11 | Linux CI 跑 Trino + PG 集成测试，nightly 加跑 Iceberg；SQL Server 由私有 fixture 验证 | ◐ PARTIAL → 需人工 | **已闭合部分**：CI Trino + PG 集成测试（`ci.yml`）、nightly Iceberg + MinIO/S3 合同（当前源码 + 07.2 实跑证据）；**未闭合部分**：私有 Trino 数据源子句为 judgment，结论位 `VERDICT: PENDING`（`REQUIREMENTS.md:36` 仍为未勾选、`:200` 记为 Partial，与本判定一致） |
 
 8 个 requirement ID 全部在 02-01..02-11 的 PLAN frontmatter 中被声明（BIND-01 ×3、BIND-02 ×4、BIND-03 ×4、ENGINE-01 ×4、ENGINE-02 ×4、ENGINE-03 ×2、ENGINE-04 ×2、ENGINE-05 ×2），且与 `REQUIREMENTS.md:193-200` 的 traceability 表逐行对应，**无 orphan**。
 
@@ -255,7 +255,7 @@ ADR-0017 要求的「JDBC catalog + MinIO」与当前源码一致，上一轮标
 **Expected:** 作答「是 / 否 / 不适用 + 理由」——公开 workflow 在实际运行中不会连接公司 Trino 集群，不会读取公司 catalog / 表名 / 数据。
 **Why human:** workflow 文本可证明「未引用」（门控 C-1 退出码 1），不能证明 runner 上被注入的环境变量、secret 与网络出口（门禁 C-1 自陈不能证明的三项）。
 
-### 3. G-02-D — 私有 SQL Server 边界与 `ONTOFORGE_PRIVATE_FIXTURES`（02-10.8 / ENGINE-05）
+### 3. G-02-D — 私有 Trino 数据源边界与 `ONTOFORGE_PRIVATE_FIXTURES`（02-10.8 / ENGINE-05）
 
 **Test:** 核对仓库外 `ONTOFORGE_PRIVATE_FIXTURES` 目录的真实内容与 `CONTRIBUTING.md:85-91` 的约定，确认仓库外目录当前不含公司绑定数据、且该入口的运行约定与实际部署形态一致。
 **Expected:** 作答「是 / 否 / 不适用 + 理由」——SQL Server 只经仓库外私有 fixture 验证、CI 不运行该测试目标、仓库内不出现任何私有绑定或数据。
@@ -267,7 +267,7 @@ ADR-0017 要求的「JDBC catalog + MinIO」与当前源码一致，上一轮标
 
 **无 BLOCKER、无 gaps。** 上一轮的 1 个 BLOCKER（`02-10.6` nightly Iceberg 合同）经本轮逐条 `file:line` 独立复核后判定为 VERIFIED：其「失败」描述对应的是 Phase 07.2 之前的旧源码状态，当前 `ci/trino/iceberg/iceberg.properties` 已是 JDBC catalog + MinIO/S3 warehouse 且无本地回退。
 
-上一轮的 2 个 judgment 旗标（02-03 公开数据来源、02-10 公开 CI 边界）与 02-10.8 私有 SQL Server 边界（ENGINE-05 子句）**既未被机器闭合、也未被判为失败**：机器可判定部分已由 02-11 的只读扫描完成并落盘，结论位显式保持 `VERDICT: PENDING`，等待人工签字。据此本 phase 的准确 verdict 是 **`human_needed`**，而非 `passed`（存在 human verification 项），也非 `gaps_found`（无失败 truth、无缺件 artifact、无断链）。
+上一轮的 2 个 judgment 旗标（02-03 公开数据来源、02-10 公开 CI 边界）与 02-10.8 私有 Trino 数据源边界（ENGINE-05 子句）**既未被机器闭合、也未被判为失败**：机器可判定部分已由 02-11 的只读扫描完成并落盘，结论位显式保持 `VERDICT: PENDING`，等待人工签字。据此本 phase 的准确 verdict 是 **`human_needed`**，而非 `passed`（存在 human verification 项），也非 `gaps_found`（无失败 truth、无缺件 artifact、无断链）。
 
 **Deferred：** 无。后续 milestone 阶段（07 / 07.1 / 07.2）均未在 ROADMAP 中承诺闭合本 phase 的三条 judgment 结论；`07.2-VERIFICATION.md` 的 `### Deferred Items` 节明确写明「Phase 01/02 历史 judgment 和私有 SQL Server 来源边界从未纳入 07.2 新增目标，不能用此处 passed 清除」，因此不构成可 defer 的匹配项。
 

@@ -20,7 +20,7 @@ status: pending-human-review
 
 **不在本文件内**：G-02-A（02-10.6 nightly Iceberg 合同）。该项已由 `02-11-RECONCILIATION.md` 完成源码级调和，见该文件的 `## Scope and Method` 与 `## Truth 02-10.6 — Per-Assertion Verdict`；其最终判定仍由下一轮 verifier 在 `02-VERIFICATION.md:194` 作出。
 
-**07.2 已覆盖什么**：Phase 07.2 的 `passed` 只覆盖 MinIO/S3 + PostgreSQL JDBC Iceberg 子范围（`07.2-VERIFICATION.md` 的 9 条 must-haves，nightly run `41833307824`，483 job `126585725657`、484 job `126585726171` 均 success，`report-failure` job `126592749564` skipped）。**07.2 的 `passed` 不覆盖本文件的任何一项**，也不闭合 ENGINE-05 的私有 SQL Server 边界——依据 `07.2-VERIFICATION.md:136`（ENGINE-05历史私有fixture子句行）与 `07.2-VERIFICATION.md:174`（`### Deferred Items` 节）。
+**07.2 已覆盖什么**：Phase 07.2 的 `passed` 只覆盖 MinIO/S3 + PostgreSQL JDBC Iceberg 子范围（`07.2-VERIFICATION.md` 的 9 条 must-haves，nightly run `41833307824`，483 job `126585725657`、484 job `126585726171` 均 success，`report-failure` job `126592749564` skipped）。**07.2 的 `passed` 不覆盖本文件的任何一项**，也不闭合 ENGINE-05 的私有 Trino 数据源边界——依据 `07.2-VERIFICATION.md:136`（ENGINE-05历史私有fixture子句行）与 `07.2-VERIFICATION.md:174`（`### Deferred Items` 节）。
 
 **本 plan 未引入任何产品代码变更**，也没有连接任何公司环境或私有环境。
 
@@ -61,7 +61,7 @@ NOT VERIFIABLE BY MACHINE: 仓库内的端点字面量检查只能证明**代码
 VERDICT: ACCEPTED（2026-11-08 人工签字）
 理由：见 `02-UAT.md` 对应项，人工于 2026-11-08 逐项接受；G-02-D 的通用表述见 ADR-0032。
 
-### G-02-D — 私有 SQL Server 边界与 `ONTOFORGE_PRIVATE_FIXTURES`（02-10.8 / ENGINE-05）
+### G-02-D — 私有 Trino 数据源边界与 `ONTOFORGE_PRIVATE_FIXTURES`（02-10.8 / ENGINE-05）
 
 QUESTION: `ONTOFORGE_PRIVATE_FIXTURES` 指向的仓库外目录中保存的私有绑定与数据，是否确实没有被提交进仓库（当前工作树与 git 历史中均无痕迹）？是否接受「本轮不执行私有 SQL Server 验证、该边界保持 PENDING」这一状态？（请用「是 / 否 / 不适用 + 理由」回答。）
 
@@ -73,7 +73,7 @@ EVIDENCE:
 - `.planning/phases/02-source-binding-engine/02-11-source-scan.txt:185` — 门控 D-2（命令）与 `:191`（`RESULT: PASS`）：`CONTRIBUTING.md:85` 起的「私有 fixture（SQL Server 等公司环境）」一节写明私有目录在仓库之外、CI 不运行该目标、不得把公司绑定或数据提交进仓库。
 - `.planning/phases/02-source-binding-engine/02-11-RECONCILIATION.md:143` — `## Machine-Checkable Portions of G-02-B / G-02-C / G-02-D` 节：门控 D-1 / D-2 的命令、退出码、结论，以及「机器不可判定仓库外目录内容与 git 历史」的边界说明。
 - `.planning/phases/07.2-minio-contract-gap-closure/07.2-VERIFICATION.md:136` — 「ENGINE-05历史私有fixture子句」行：07.2「没有SQL Server真实执行或数据来源人工验收证据。旧02-VERIFICATION的02-10.8 judgment不被本报告覆盖。」
-- `.planning/phases/02-source-binding-engine/02-VERIFICATION.md:196` — `02-10.8` 行，当前记为 `UNCERTAIN (WARNING; judgment)`，状态说明为「private_fixtures入口受ignore/env门控且公开workflow不调用；公司数据来源为judgment，non-authoritative，未声称私有SQL Server已实跑」。
+- `.planning/phases/02-source-binding-engine/02-VERIFICATION.md:196` — `02-10.8` 行，当前记为 `UNCERTAIN (WARNING; judgment)`，状态说明为「private_fixtures入口受ignore/env门控且公开workflow不调用；公司数据来源为judgment，non-authoritative，未声称私有 Trino 数据源已实跑」。
 
 NOT VERIFIABLE BY MACHINE: 机器无法检查仓库外目录的内容，也无法证明 git 历史中不存在「曾被提交、后来又被删除」的私有绑定——被删除的 blob 仍留在对象库里，只读源码扫描看不到历史对象。本 plan 也**没有**连接任何 SQL Server 或公司 Trino 集群，**没有**执行私有 SQL Server 验证，因此该边界在本轮只能是 PENDING。
 

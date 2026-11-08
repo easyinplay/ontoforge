@@ -60,7 +60,7 @@ evidence: "机器可判定部分已落盘：门控 C-1（`.github/` 内无 `priv
 
 ### 9. G-02-D：私有 Trino 数据源边界与仓库外目录
 expected: |
-  核对私有 SQL Server 边界与仓库外目录的真实内容，确认仓库外目录当前不含公司绑定数据、且 `ONTOFORGE_PRIVATE_FIXTURES` 入口的约定与实际部署一致
+  核对私有 Trino 数据源边界与仓库外目录的真实内容，确认仓库外目录当前不含公司绑定数据、且 `ONTOFORGE_PRIVATE_FIXTURES` 入口的约定与实际部署一致
 result: pass
 why_human: "仓库外目录内容、git 历史中是否曾提交后删除私有绑定、以及文档与实际部署形态的一致性都不能由仓库内源码证明"
 note: "人工接受（2026-11-08，通用表述见 ADR-0032）：私有环境下的 Trino 数据源只经仓库外私有 fixture 验证，公开 CI 不运行该 target，仓库内无任何私有绑定或数据"

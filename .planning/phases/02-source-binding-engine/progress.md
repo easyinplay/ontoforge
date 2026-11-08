@@ -1,7 +1,8 @@
 # Phase 2 progress
 
-当前节点：11/11 plan 执行完成，gap closure（02-11）已交付；verifier 重跑 verdict = `human_needed`（107/109 must-haves verified，无 gap、无 blocker）。等待 `/gsd-verify-work 02` 收集 G-02-B/C/D 三项 judgment 的人工结论，phase 未标记完成。
+当前节点：11/11 plan 执行完成；UAT 9/9 人工验收通过（`02-UAT.md` status: complete）；G-02-B/C/D 三项 judgment 已于 2026-11-08 签字并回填 `02-11-HUMAN-ACCEPTANCE.md`（VERDICT: ACCEPTED）；ENGINE-05 私有数据源表述按 ADR-0032 通用化。phase 未标记完成，待重跑 verifier 把 `02-VERIFICATION.md` 从 `human_needed` 推到 `passed`，再执行 `phase.complete` / `update_roadmap`。
 
+- 2026-11-08 UAT 9/9 通过并回填 judgment 结论；ADR-0032 落地（私有数据源不按数据库类型单列），三份 phase 文件措辞同步
 - 2026-11-08 verifier 重跑（`02-VERIFICATION.md` 重写）：verdict `human_needed`，8/8 requirement ID 已对应（BIND-01..03 / ENGINE-01..04 SATISFIED，ENGINE-05 PARTIAL）；上一轮 02-10.6 BLOCKER 经 `file:line` 复核判 VERIFIED；三条 judgment 落 `02-UAT.md` 第 7/8/9 项待人工签字
 - 2026-11-08 02-11 gap closure 执行完成（3 commit / 4 产出，零产品代码变更）：G-02-A 用当前源码逐条重核并落 `file:line` 调和证据（13 条门禁全过）；G-02-B/C/D 只完成机器可判定部分，`VERDICT` 保持 `PENDING`，人工验收问题清单见 `02-11-HUMAN-ACCEPTANCE.md`
 - 2026-11-08 回归门禁：`cargo test --workspace --locked --offline --no-fail-fast` → 1528 passed / 0 failed / 119 ignored（152 target）；首跑 2 个 300 ms deadline 用例在全负载下偶发超时，隔离重跑绿，按时序 flake 登记为 `WINDOWS.md` 条目 18
