@@ -1,35 +1,31 @@
 ---
 gsd_state_version: "1.0"
 milestone: v1.0
-current_phase: 02
-current_plan: Not started
-status: completed
+status: Awaiting next milestone
 stopped_at: Phase 02 complete — all phases complete
-last_updated: "2026-11-08T09:54:00.533Z"
-state_head: 54e13c8d303438514fd76c9c194fbbb07538f934
+last_updated: "2026-11-08T10:11:20.882Z"
+last_activity: 2026-11-08
+last_activity_desc: Milestone v1.0 completed and archived
+state_head: b9a37000e2db878a30e32581bdeb44abdae00d78
 progress:
   total_phases: 9
   completed_phases: 9
   total_plans: 94
   completed_plans: 94
-  percent: 100
-last_activity: 2026-11-08 -- Phase02 验收闭环：verifier passed 109/109、UAT 9/9 人工签字、G-02-B/C/D 关闭、ADR-0032 通用化、ENGINE-05 勾选，phase.complete 已执行
 verified_source_commit: 54e13c8d303438514fd76c9c194fbbb07538f934
 verified_scope: phase_02
 last_gate_trip: null
+current_phase: 02
 ---
 
 # Project State
 
 ## Current Position
 
-Work unit: v1.0 milestone 全部 9 个 phase 已完成；Phase 02 本轮完成验收闭环（verifier `passed` 109/109、UAT 9/9 人工签字、ADR-0032 通用化、ENGINE-05 勾选）。
-
-Phase: 02
-Current Plan: Not started
-Total Plans in Phase: 11
-Status: All phases complete
-Progress: [██████████] 100%（9/9 phase，94/94 plan）
+Phase: Milestone v1.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-11-08 — Milestone v1.0 completed and archived
 
 ### Quick Tasks Completed
 
@@ -74,8 +70,22 @@ See: .planning/PROJECT.md (updated 2026-11-08)
 - milestone v1.0 全部 phase 完成，但 milestone 审计结论仍为 gaps_found；未发布 Release/npm，未自动归档 milestone。
 - 未跟踪的 `docs/README.md`、`docs/foundry/`、`docs/images/`（公开文档镜像）不入库。
 
+## Deferred Items
+
+Items acknowledged and deferred at milestone close, most recent first:
+
+| Category | Item | Status | Deferred At | Milestone |
+|----------|------|--------|-------------|-----------|
+| uat_gaps | 07.2/07.2-UAT.md（frontmatter `status: completed`，模板期望 `complete`，属状态串误报） | acknowledged | 2026-11-08 | v1.0 |
+| deferred_items | 05/deferred-items.md（Phase 5 延后事项：生产环境 `webhook-worker` 联调等，另有 5 条已解决历史项） | acknowledged | 2026-11-08 | v1.0 |
+| deferred_items | 06/deferred-items.md（审计时间敏感项与 16 MiB 行上限共用墙钟，需拆开纯计算断言与集成验证） | acknowledged | 2026-11-08 | v1.0 |
+
 ## Session Continuity
 
 Last session: 2026-11-08
 Stopped at: Phase 02 complete, ready to plan next phase
 Resume file: None
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone
