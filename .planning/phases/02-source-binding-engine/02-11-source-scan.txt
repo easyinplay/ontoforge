@@ -1,0 +1,223 @@
+# 02-11 source scan — G-02-B / G-02-C / G-02-D 的机器可判定部分
+# Plan: 02-source-binding-engine / 02-11 (Task 2)
+# 采集时间: 2026-11-08
+# git HEAD: f2e73edce3e8d97934e1a7704db8a519b85a5f1d
+# 扫描方式: 一次只读扫描（rg / fd / 文件读取）。没有启动容器、没有连接任何后端、没有访问网络。
+#
+# 扫描范围（固定）:
+#   examples/
+#   ci/
+#   crates/ontoforge-schema/tests/
+#   crates/ontoforge-engine/tests/
+#   crates/ontoforge/tests/
+#   .github/workflows/
+#   CONTRIBUTING.md
+#
+# 标识符的登记口径（凡命中以下任一条即登记为物理标识符）:
+#   1. 扫描范围内 `catalog` / `schema` / `table` 键（YAML flow-map、YAML 块键、JSON 键、Rust 结构体字面量字段）
+#      的**字符串字面量**取值；变量名、类型名、函数调用、None/Some 包装不登记。
+#   2. 扫描范围内 `.properties` 文件的 `iceberg.jdbc-catalog.catalog-name` 取值。
+#   3. 扫描范围内 `jdbc:postgresql://.../<db>` 的库名部分。
+#   4. `ci/pg/seed.sql` 与 `ci/trino/l2/seed.sql` 中 `CREATE SCHEMA` / `CREATE TABLE` / `CREATE VIEW` 的名字部分。
+#   5. `ci/trino/catalog/<name>.properties` 的 catalog 名。
+#   6. `ci/trino/l2/rules.json` 中 `catalog` / `schema` / `table` 键的取值；`|` 分隔的正则变体逐项登记。
+
+==== IDENTIFIERS ====
+OBSERVED IDENTIFIERS — 45 个，去重后每行一个、升序。定义与登记口径见本文件头部。
+覆盖 02-11-PLAN.md 的中性词表基线（catalog 4 个、schema 2 个、table 12 个、哑元 5 个）并在其上新增
+`a__b`、`b__c`、`cardinality_alias_fk_n`、`cardinality_alias_fk_upper`、`cardinality_alias_pk_n`、`hive`、
+`items`、`nation`、`Orders`、`orders`、`ordеrs`、`outside`、`production_records`、`queries`、
+`runtime`、`sales`、`second`、`shipments`、`system`、`tiny`、`tpch`、`victim` 共 22 个，
+全部为公开通用领域词或哑元，无公司专有物理名。
+<!-- BEGIN IDENTIFIERS -->
+Orders
+a
+a__b
+aircraft
+airports
+aviation
+b__c
+c
+cardinality_alias_fk_n
+cardinality_alias_fk_upper
+cardinality_alias_pk_n
+cardinality_records
+demo
+editstore
+flight_crew
+flights
+flights_dup
+gate_legs
+gates
+hive
+iceberg_catalog
+items
+lab
+maintenance_records
+nation
+ontoforge_ci
+orders
+ordеrs
+other
+outside
+pilots
+production_records
+queries
+readings
+records
+runtime
+s
+sales
+second
+shipments
+system
+t
+tiny
+tpch
+victim
+<!-- END IDENTIFIERS -->
+
+标识符逐条来源（file:line）：
+
+| 标识符 | 位置 | 该处内容 |
+|---|---|---|
+| `Orders` | `ci/trino/l2/rules.json:19` | `"table": "orders\|Orders\|shipments\|items\|ordеrs"` — 正则变体成员（仅出现在规则字面量中，未被 seed.sql 创建） |
+| `a` | `crates/ontoforge-engine/tests/sqlite_engine.rs:779` | `second.table.catalog = "a".to_owned();` |
+| `a__b` | `crates/ontoforge-engine/tests/sqlite_engine.rs:776` | `first.table.catalog = "a__b".to_owned();` |
+| `aircraft` | `examples/ontologies/aviation/bindings/dev/aircraft.yaml:5` | `source: { catalog: demo, schema: aviation, table: aircraft }` |
+| `airports` | `crates/ontoforge/tests/cli_check_pk.rs:311` | `source: { catalog: demo, schema: aviation, table: airports }` |
+| `aviation` | `examples/ontologies/aviation/bindings/dev/aircraft.yaml:5`；`ci/pg/seed.sql:21` | `schema: aviation`；`CREATE SCHEMA aviation` |
+| `b__c` | `crates/ontoforge-engine/tests/sqlite_engine.rs:780` | `second.table.schema = "b__c".to_owned();` |
+| `c` | `crates/ontoforge-schema/tests/scope_documents.rs:150`；`crates/ontoforge-engine/tests/sqlite_engine.rs:777` | `source: { catalog: c, schema: s, table: t }`；`first.table.schema = "c".to_owned();` |
+| `cardinality_alias_fk_n` | `ci/pg/seed.sql:193` | `CREATE VIEW aviation.cardinality_alias_fk_n` |
+| `cardinality_alias_fk_upper` | `ci/pg/seed.sql:198` | `CREATE VIEW aviation.cardinality_alias_fk_upper` |
+| `cardinality_alias_pk_n` | `ci/pg/seed.sql:201` | `CREATE VIEW aviation.cardinality_alias_pk_n` |
+| `cardinality_records` | `ci/pg/seed.sql:32`；`crates/ontoforge-engine/tests/cardinality_check.rs:52` | `CREATE TABLE aviation.cardinality_records`；`source: { catalog: demo, schema: aviation, table: records }` 同族断言 |
+| `demo` | `ci/trino/catalog/demo.properties:4`；`examples/ontologies/aviation/bindings/dev/aircraft.yaml:5`；`ci/trino/l2/rules.json:4` | `connection-url=jdbc:postgresql://localhost:5432/demo`；`catalog: demo` |
+| `editstore` | `ci/trino/catalog/editstore.properties:4` | `connection-url=jdbc:postgresql://localhost:5432/editstore` |
+| `flight_crew` | `examples/ontologies/aviation/bindings/dev/flight-crew.yaml:5` | `source: { catalog: demo, schema: aviation, table: flight_crew }` |
+| `flights` | `examples/ontologies/aviation/bindings/dev/flight.yaml:6` | `source: { catalog: demo, schema: aviation, table: flights }` |
+| `flights_dup` | `crates/ontoforge/tests/cli_trino_it.rs:218` | `source: { catalog: demo, schema: aviation, table: flights_dup }` |
+| `gate_legs` | `crates/ontoforge-schema/tests/bindings.rs:441` | `source: { catalog: demo, schema: aviation, table: gate_legs }` |
+| `gates` | `crates/ontoforge-schema/tests/bindings.rs:421` | `source: { catalog: demo, schema: aviation, table: gates }` |
+| `hive` | `ci/trino/l2/rules.json:5`；`ci/trino/l2/seed.sql:1` | `{ "user": "l2", "catalog": "hive", "allow": "read-only" }`；`CREATE SCHEMA hive.sales;` |
+| `iceberg_catalog` | `ci/trino/iceberg/iceberg.properties:6` | `iceberg.jdbc-catalog.connection-url=jdbc:postgresql://localhost:5432/iceberg_catalog` |
+| `items` | `ci/trino/l2/seed.sql:4` | `CREATE TABLE hive.sales.items AS SELECT 1 id;` |
+| `lab` | `crates/ontoforge/tests/cli_online.rs:293` | `source: { catalog: demo, schema: lab, table: readings }` |
+| `maintenance_records` | `examples/ontologies/aviation/bindings/dev/maintenance-record.yaml:5` | `source: { catalog: demo, schema: aviation, table: maintenance_records }` |
+| `nation` | `ci/trino/l2/rules.json:17`；`ci/query-services.sh:81` | `{ "user": "l2", "catalog": "demo", "schema": "tiny", "table": "nation", ... }`；`r.tables.unshift({... table:"nation" ...})` |
+| `ontoforge_ci` | `ci/trino/iceberg/iceberg.properties:4` | `iceberg.jdbc-catalog.catalog-name=ontoforge_ci` |
+| `orders` | `ci/trino/l2/seed.sql:2`；`ci/trino/l2/rules.json:19` | `CREATE TABLE hive.sales.orders ...`；规则正则成员 |
+| `ordеrs` | `ci/trino/l2/seed.sql:5` | `CREATE TABLE hive.sales."ordеrs" AS SELECT 2 id;`（第 4 字符为西里尔字母 U+0435 `е`，L2 规则的同形异码测试用） |
+| `other` | `crates/ontoforge-engine/tests/bind_check_isolation.rs:51`；`crates/ontoforge/tests/cli_online_trino.rs:53` | `source: { catalog: other, schema: aviation, table: airports }` |
+| `outside` | `ci/query-services.sh:81` | `r.catalogs.unshift({user:"l2",catalog:"outside",allow:"read-only"})` |
+| `pilots` | `examples/ontologies/aviation/bindings/dev/pilot.yaml:6` | `source: { catalog: demo, schema: aviation, table: pilots }` |
+| `production_records` | `crates/ontoforge-engine/tests/cardinality_check.rs:254` | `BINDING.replace("table: records", "table: production_records")` |
+| `queries` | `ci/trino/l2/rules.json:20` | `{ "user": "l2", "catalog": "system", "schema": "runtime", "table": "queries", ... }` |
+| `readings` | `crates/ontoforge/tests/cli_online.rs:293` | `source: { catalog: demo, schema: lab, table: readings }` |
+| `records` | `crates/ontoforge-engine/tests/cardinality_check.rs:52`；`:370` | `source: { catalog: demo, schema: aviation, table: records }`；`target.table.table = "records\"; DROP TABLE victim; --"`（注入测试串，物理名为 `records`） |
+| `runtime` | `ci/trino/l2/rules.json:19` | `{ "user": "l2", "catalog": "system", "schema": "runtime", "table": "queries", ... }` |
+| `s` | `crates/ontoforge-schema/tests/scope_documents.rs:150`；`crates/ontoforge-engine/tests/doc_type_table.rs:98` | `source: { catalog: c, schema: s, table: t }` |
+| `sales` | `ci/trino/l2/rules.json:12`；`ci/trino/l2/seed.sql:1` | `{ "user": "l2", "catalog": "hive", "schema": "sales", ... }`；`CREATE SCHEMA hive.sales;` |
+| `second` | `crates/ontoforge-engine/tests/drift_budget.rs:60` | `.catalog = "second".to_owned();` |
+| `shipments` | `ci/trino/l2/seed.sql:3` | `CREATE TABLE hive.sales.shipments AS SELECT 1 id;` |
+| `system` | `ci/trino/l2/rules.json:6`；`:20` | `{ "user": "l2", "catalog": "system", "allow": "all" }` |
+| `t` | `crates/ontoforge-schema/tests/scope_documents.rs:150`；`crates/ontoforge-engine/tests/doc_type_table.rs:98` | `source: { catalog: c, schema: s, table: t }` |
+| `tiny` | `ci/trino/l2/rules.json:11`；`crates/ontoforge-engine/tests/l2_explain.rs:44`；`ci/query-services.sh:81` | `{ "user": "l2", "catalog": "demo", "schema": "tiny", ... }` |
+| `tpch` | `ci/trino/catalog/tpch.properties:2` | `connector.name=tpch`（该 properties 文件即定义名为 `tpch` 的 Trino catalog） |
+| `victim` | `crates/ontoforge-engine/tests/cardinality_check.rs:382` | `victim.table.table = "victim".to_owned();`（注入测试的目标表哑元） |
+
+==== ENDPOINTS ====
+扫描范围内全部 `jdbc:` 与 `s3://` 端点串，每行一个、升序。
+
+jdbc:postgresql://localhost:5432/demo
+jdbc:postgresql://localhost:5432/editstore
+jdbc:postgresql://localhost:5432/iceberg_catalog
+jdbc:postgresql://localhost:@jdbc:postgresql://host.docker.internal:@
+s3://warehouse/
+s3://warehouse/aviation/flights-id/metadata/00001.json
+s3://warehouse/aviation/flights-id/metadata/a.json
+
+逐条来源（file:line）：
+
+| 端点串 | 位置 | 该处内容 |
+|---|---|---|
+| `jdbc:postgresql://localhost:5432/demo` | `ci/trino/catalog/demo.properties:4` | `connection-url=jdbc:postgresql://localhost:5432/demo` |
+| `jdbc:postgresql://localhost:5432/editstore` | `ci/trino/catalog/editstore.properties:4` | `connection-url=jdbc:postgresql://localhost:5432/editstore` |
+| `jdbc:postgresql://localhost:5432/iceberg_catalog` | `ci/trino/iceberg/iceberg.properties:6` | `iceberg.jdbc-catalog.connection-url=jdbc:postgresql://localhost:5432/iceberg_catalog` |
+| `jdbc:postgresql://localhost:@jdbc:postgresql://host.docker.internal:@` | `ci/query-services.sh:64` | `sed -i 's@jdbc:postgresql://localhost:@jdbc:postgresql://host.docker.internal:@' "$TRINO_CATALOG_DIR"/*.properties` — 这是 sed 改写模板本身（改写前 / 改写后两段），不是一条独立端点 |
+| `s3://warehouse/` | `ci/trino/iceberg/iceberg.properties:9` | `iceberg.jdbc-catalog.default-warehouse-dir=s3://warehouse/` |
+| `s3://warehouse/aviation/flights-id/metadata/00001.json` | `ci/test_iceberg_services.py:353` | `location.write_text("s3://warehouse/aviation/flights-id/metadata/00001.json\n")` — 测试夹具里的样例对象键 |
+| `s3://warehouse/aviation/flights-id/metadata/a.json` | `ci/test_iceberg_services.py:854` | `output = "s3://warehouse/aviation/flights-id/metadata/a.json"` — 同上 |
+
+补充（非 `jdbc:` / `s3:` 前缀，同属 G-02-C 的机器可判定面，一并记录）：
+- `http://minio:9000` — `ci/trino/iceberg/iceberg.properties:11`、`ci/iceberg-services.sh:431`（`S3_ENDPOINT=http://minio:9000`）；指向同一 CI 网络内的自建 MinIO 容器。
+- `host.docker.internal` — 仅 `ci/query-services.sh:64` 一处，是把容器内 `localhost` 改写为宿主机回环地址的 Docker 标准名。
+- `127.0.0.1` — 出现在 `.github/workflows/ci.yml`、`ci/iceberg-services.sh`、`ci/query-services.sh`、`ci/server-services.sh`、`ci/release-smoke.ps1`、`ci/test_iceberg_services.py`、`ci/test_windows_server.py`、`crates/ontoforge/tests/cli_check_pk.rs`、`crates/ontoforge/tests/cli_l2_identity.rs`、`crates/ontoforge/tests/cli_online_trino.rs`，全部为回环地址。
+
+==== PRIVATE PATH GATE ====
+三条门控的实际命令、输出、退出码与结论。全部为只读 `rg`。
+
+GATE C-1 — 公开工作流不得引用私有 fixture 目标或私有环境变量
+COMMAND: rg -n "private_fixtures|ONTOFORGE_PRIVATE_FIXTURES" .github/
+OUTPUT: (empty)
+EXIT CODE: 1
+RESULT: PASS
+能证明：`.github/` 目录下的工作流文件中不存在 `private_fixtures` 或 `ONTOFORGE_PRIVATE_FIXTURES` 的任何字面量，公开 CI 不会去调用私有测试目标或读取私有环境变量。
+不能证明：GitHub runner 上实际被注入的环境变量、runner 级 secret、org 级变量或 runner 组配置；也不能证明 runner 的实际网络出口。
+
+GATE D-1 — 私有入口必须同时具备环境变量门控与 `#[ignore]` 门控
+COMMAND: rg -n "ONTOFORGE_PRIVATE_FIXTURES" crates/ontoforge/tests/private_fixtures.rs
+OUTPUT:
+4://! `ONTOFORGE_PRIVATE_FIXTURES` names a directory outside the repository. Each subdirectory
+14:const FIXTURES_VAR: &str = "ONTOFORGE_PRIVATE_FIXTURES";
+44:    let payload = outcome.expect_err("a missing ONTOFORGE_PRIVATE_FIXTURES must panic");
+69:#[ignore = "needs ONTOFORGE_PRIVATE_FIXTURES"]
+EXIT CODE: 0
+COMMAND: rg -n '#\[ignore = "needs ONTOFORGE_PRIVATE_FIXTURES"\]' crates/ontoforge/tests/private_fixtures.rs
+OUTPUT:
+69:#[ignore = "needs ONTOFORGE_PRIVATE_FIXTURES"]
+EXIT CODE: 0
+RESULT: PASS
+能证明：私有测试目标 `crates/ontoforge/tests/private_fixtures.rs` 在没有 `ONTOFORGE_PRIVATE_FIXTURES` 时会 panic（`:14` 常量、`:21` 缺变量即 panic、`:44` 该 panic 的断言），并且唯一的在线用例带 `#[ignore]`（`:69`），因此普通 `cargo test` 不会执行它。
+不能证明：`ONTOFORGE_PRIVATE_FIXTURES` 指向的仓库外目录里的真实内容；也不能证明 git 历史中从未提交过后又删除的私有绑定。
+
+GATE D-2 — 贡献文档必须写明私有目录在仓库之外且 CI 不运行该目标
+COMMAND: rg -n "ONTOFORGE_PRIVATE_FIXTURES" CONTRIBUTING.md
+OUTPUT:
+89:- 环境变量 `ONTOFORGE_PRIVATE_FIXTURES` 指向**仓库之外**的目录。
+91:- 运行：`ONTOFORGE_PRIVATE_FIXTURES=/path/outside/repo cargo test -p ontoforge --test private_fixtures -- --ignored`。每组执行 `ontoforge validate --online --server-config <name>/ontoforge-server.toml <name>/ontology`，退出码必须为 0。
+EXIT CODE: 0
+RESULT: PASS
+能证明：`CONTRIBUTING.md` 的「私有 fixture（SQL Server 等公司环境）」一节（节标题 `:85`）写明了环境变量指向仓库之外的目录、运行方式与「CI 不运行这个测试目标」，并在 `:92` 禁止把公司绑定、catalog / 表名、配置或数据提交进仓库或出现在 issue / PR / CI 日志中。
+不能证明：文档描述与实际部署形态是否一致；也不能证明仓库外目录当前确实不含私有数据。
+
+==== PROVENANCE BOUNDARY ====
+本扫描证明的是：
+- 公开面（`examples/`、`ci/`、`crates/**/tests/`、`.github/workflows/`、`CONTRIBUTING.md`）中出现在 catalog / schema / table 位置的物理标识符**全部为中性词**（航空、通用记录、TPC-H / L2 规则的公开通用名、以及 `a`/`c`/`s`/`t`/`other` 之类哑元），不含任何公司专有的集群名、内部库名或业务表名；
+- 公开工作流不引用私有测试目标或私有环境变量（门控 C-1），私有入口同时具备环境变量门控与 `#[ignore]` 门控（门控 D-1），贡献文档写明了私有入口的位置约定与禁止提交规则（门控 D-2）；
+- 公开面出现的端点串全部是回环地址、容器网络内的服务名（`minio`）、Docker 标准宿主机名（`host.docker.internal`）或仓库内的 S3 桶前缀（`s3://warehouse/`）。
+
+本扫描**不能**证明：
+- **数据来源原创性**。机器无法区分「虚构但看起来真实」与「真实但已脱敏」；标识符中性不等于数据原创，也无法证明种子数据、CSV 夹具、示例绑定的每一行取值都来自虚构来源。
+- **部署隔离**。仓库内的端点字面量检查不能证明 runner 在实际运行时的网络出口、凭据环境与 secret 注入情况；仓库未声明的 secret、org 级变量、runner 级环境变量在本扫描中不可见。
+- 仓库外私有目录（`ONTOFORGE_PRIVATE_FIXTURES` 指向处）的任何内容。
+
+因此本扫描的结果**只**构成 G-02-B / G-02-C / G-02-D 三个 judgment 项的机器可判定部分，其**结论**仍为 `VERDICT: PENDING`，见 `.planning/phases/02-source-binding-engine/02-11-HUMAN-ACCEPTANCE.md`。
+
+==== NOT SCANNED ====
+以下面**不在**本次扫描范围内，本文件**不**对其作任何结论：
+- `docs/`（含执行本 plan 之前即存在的未跟踪文件 `docs/README.md`、`docs/foundry/`、`docs/images/`）。`docs/foundry/` 是 Palantir **公开文档站**的本地镜像（`docs/README.md` 记载来源为 `https://www.palantir.com/docs/foundry/`），与 02-03 禁止项所指的「示例 / 绑定 / fixture / 测试 / CI 种子」面不是同一件事；是否纳入公开仓库是一个独立决策，本 plan 只记录该事实，不做处置。`docs/` 下的**已跟踪**文件未被本 plan 修改。
+- `.planning/` 下的历史文档（`02-VERIFICATION.md`、`02-UAT.md`、`02-CONTEXT.md`、`02-RESEARCH.md`、`02-PATTERNS.md`、07.2 产物等）。
+- `crates/*/src/` 下的实现代码。扫描面固定为 `crates/ontoforge-schema/tests/`、`crates/ontoforge-engine/tests/`、`crates/ontoforge/tests/` 三个测试目录；`crates/ontoforge-schema/src/loader/mod.rs`、`crates/ontoforge-schema/src/lint/binding/*.rs`、`crates/ontoforge-engine/src/bind_check/compat_tests.rs` 等源内测试夹具**未纳入**本扫描。
+- `examples/ontologies/invalid/` 之外的、以及 `examples/` 下非 `catalog:`/`schema:`/`table:` 位置的散文与注释文字（例如 `examples/scopes/aviation/roles.yaml:25` 的英文描述句）。
+- 任何公司环境的实际内容、任何仓库外目录的实际内容、任何 GitHub runner / secret / 网络的实际状态。
+- 本 plan 未连接、也未尝试连接任何 Trino / MinIO / PostgreSQL / SQL Server 实例。
+
+## SUSPECTED NON-NEUTRAL
+
+空。
+
+本 plan 的基线预期该节为空，实测同样为空：45 个已登记标识符全部落在公开通用领域（航空演示的 `aviation` / `aircraft` / `flights` / `pilots` / `gates` / `gate_legs` 等、TPC-H 与 L2 规则的公开通用名 `hive` / `sales` / `orders` / `shipments` / `items` / `nation` / `queries` / `tiny` / `runtime` / `system`、SQLite 附加库测试用的 `a` / `b__c` / `a__b` / `c`、以及通用记录名 `records` / `cardinality_records` / `production_records` / `readings`）或纯哑元（`a` / `c` / `s` / `t` / `other` / `second` / `victim`）之内，没有任何看起来像公司专有的集群名、内部库名或业务表名。
+
+（`ordеrs` 的第 4 个字符是西里尔字母 U+0435 `е`，不是 ASCII `e`；它是 `ci/trino/l2/seed.sql:5` 中有意构造的同形异码测试表，`ci/trino/l2/rules.json:19` 的规则正则同时列出 ASCII 变体与该同形异码变体，用于验证 L2 规则的字符级匹配。两者都是中性词。）

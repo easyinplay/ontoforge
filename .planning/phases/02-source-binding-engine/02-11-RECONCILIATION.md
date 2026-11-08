@@ -93,18 +93,68 @@ nightly run `41833307824`（483 job `126585725657`、484 job `126585726171`，�
 公开面物理标识符的中性词表，由 Task 2 的一次只读扫描填充。词表与 `02-11-source-scan.txt` 的 `==== IDENTIFIERS ====` 段**逐行相等**（双向 diff 为空）。
 
 <!-- BEGIN IDENTIFIERS -->
-<!-- filled by Task 2 -->
+Orders
+a
+a__b
+aircraft
+airports
+aviation
+b__c
+c
+cardinality_alias_fk_n
+cardinality_alias_fk_upper
+cardinality_alias_pk_n
+cardinality_records
+demo
+editstore
+flight_crew
+flights
+flights_dup
+gate_legs
+gates
+hive
+iceberg_catalog
+items
+lab
+maintenance_records
+nation
+ontoforge_ci
+orders
+ordеrs
+other
+outside
+pilots
+production_records
+queries
+readings
+records
+runtime
+s
+sales
+second
+shipments
+system
+t
+tiny
+tpch
+victim
 <!-- END IDENTIFIERS -->
 
 ## Machine-Checkable Portions of G-02-B / G-02-C / G-02-D
 
-本节**只覆盖**三个 judgment 项中**机器可判定的那一部分**，是证据而不是结论。三个项的**结论**仍为 PENDING，见 `02-11-HUMAN-ACCEPTANCE.md`。详细原始输出见 `02-11-source-scan.txt` 的 `==== PRIVATE PATH GATE ====` 段。
+本节由 Task 2 填充，只覆盖三个 judgment 项中**机器可判定的那一部分**，是证据而不是结论。三个项的**结论**仍为 PENDING，见 `02-11-HUMAN-ACCEPTANCE.md`。命令、原始输出、退出码与逐条来源见 `02-11-source-scan.txt` 的 `==== PRIVATE PATH GATE ====` 段与 `==== IDENTIFIERS ====` 段。
 
-| 门控 | 范围 | 命令 | 结果 | 能证明 | 不能证明 |
-|---|---|---|---|---|---|
-| C-1 | `.github/` 全目录 | `rg -n "private_fixtures\|ONTOFORGE_PRIVATE_FIXTURES" .github/` | RESULT: PASS（退出码 1，输出为空） | 公开工作流文件中不存在私有 fixture 目标名或私有环境变量字面量 | runner 上实际被注入的环境变量、仓库外目录的可达性 |
-| D-1 | `crates/ontoforge/tests/private_fixtures.rs` | `rg -n "ONTOFORGE_PRIVATE_FIXTURES" crates/ontoforge/tests/private_fixtures.rs` 与 `rg -n '#\[ignore = "needs ONTOFORGE_PRIVATE_FIXTURES"\]' crates/ontoforge/tests/private_fixtures.rs` | RESULT: PASS（两处均有匹配，退出码 0） | 私有入口同时具备环境变量门控（`:14`、`:21`）与 `#[ignore]` 门控（`:69`） | 仓库外目录的真实内容；git 历史中是否曾提交后删除过私有绑定 |
-| D-2 | `CONTRIBUTING.md` | `rg -n "ONTOFORGE_PRIVATE_FIXTURES" CONTRIBUTING.md` | RESULT: PASS（退出码 0，匹配行 `:89`） | 贡献文档写明了私有入口的位置约定 | 文档描述与实际部署形态是否一致 |
+| 门控 | 范围 | 命令 | 退出码 | 结果 | 能证明 | 不能证明 |
+|---|---|---|---|---|---|---|
+| C-1 | `.github/` 全目录 | `rg -n "private_fixtures\|ONTOFORGE_PRIVATE_FIXTURES" .github/` | 1（输出为空） | RESULT: PASS | 公开工作流文件中不存在私有 fixture 目标名或私有环境变量字面量 | runner 上实际被注入的环境变量、secret、runner 级配置；runner 的实际网络出口 |
+| D-1 | `crates/ontoforge/tests/private_fixtures.rs` | `rg -n "ONTOFORGE_PRIVATE_FIXTURES" crates/ontoforge/tests/private_fixtures.rs`（命中 `:4`、`:14`、`:44`、`:69`）与 `rg -n '#\[ignore = "needs ONTOFORGE_PRIVATE_FIXTURES"\]' crates/ontoforge/tests/private_fixtures.rs`（命中 `:69`） | 0 / 0 | RESULT: PASS | 私有入口同时具备环境变量门控（`private_fixtures.rs:14` 常量、`:21` 缺变量即 panic、`:44` 该 panic 的断言）与 `#[ignore]` 门控（`:69`） | 仓库外目录的真实内容；git 历史中是否曾提交后删除过私有绑定 |
+| D-2 | `CONTRIBUTING.md` | `rg -n "ONTOFORGE_PRIVATE_FIXTURES" CONTRIBUTING.md` | 0（命中 `:89`、`:91`） | RESULT: PASS | 贡献文档「私有 fixture（SQL Server 等公司环境）」一节（`:85`）写明了私有目录在仓库之外、运行方式、「CI 不运行这个测试目标」与禁止提交公司绑定的规则 | 文档描述与实际部署形态是否一致；仓库外目录当前是否确实不含私有数据 |
+
+标识符侧（G-02-B 的机器可判定部分）：`02-11-source-scan.txt` 的 `==== IDENTIFIERS ====` 段共登记 45 个物理标识符，全部为公开通用领域词或哑元；`## SUSPECTED NON-NEUTRAL` 节为空。词表与本文件 `## NEUTRAL VOCABULARY` 节逐行相等（双向 diff 为空）。
+
+端点侧（G-02-C 的机器可判定部分）：`02-11-source-scan.txt` 的 `==== ENDPOINTS ====` 段共登记 7 条 `jdbc:` / `s3://` 端点串，全部指向 `localhost` / `127.0.0.1` / 容器网络内的 `minio` / 仓库内桶前缀 `s3://warehouse/`。
+
+**偏差记录（与本 plan 的基线预期不同，如实登记）**：`02-11-PLAN.md` 的中性词表基线列出 23 个词（catalog 4 个、schema 2 个、table 12 个、哑元 5 个）。本次扫描的实测结果是该基线的**严格超集**，额外登记 22 个：`a__b`、`b__c`、`cardinality_alias_fk_n`、`cardinality_alias_fk_upper`、`cardinality_alias_pk_n`、`hive`、`items`、`nation`、`Orders`、`orders`、`ordеrs`、`outside`、`production_records`、`queries`、`runtime`、`sales`、`second`、`shipments`、`system`、`tiny`、`tpch`、`victim`。额外项全部来自 `ci/trino/l2/rules.json`、`ci/trino/l2/seed.sql`、`ci/query-services.sh:81`、`ci/trino/catalog/tpch.properties`、`ci/pg/seed.sql` 的视图与 Rust 测试夹具，均为公开通用名或哑元，无一为公司专有物理名，因此 `## SUSPECTED NON-NEUTRAL` 仍为空。基线的 23 个词在本词表中全部在位，无遗漏。
 
 ## This Round Did Not Execute
 
