@@ -44,7 +44,11 @@
   4. Given outbox 中有 N 条事件, When worker 排空队列, Then 接收端对每条事件至少观察到一次, 无事件被静默丢弃
   5. Given 本次联调的接收端实现, When 审阅 CI 配置与日志, Then 接收端是独立进程监听真实端口, 不使用内存内 mock 替代
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 08-01-PLAN.md — 接收端 harness、被 ignore 的端到端用例与 `phase8-webhook-e2e` CI job：单事件纵切片加多事件去重/至少一次送达矩阵
+- [ ] 08-02-PLAN.md — CI 证据归档三件套（README / index JSON / tar.gz）与 worker 运维文档里的端到端联调入口
 
 ### Phase 9: Webhook Worker Supervision & Crash Recovery
 
