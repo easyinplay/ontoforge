@@ -9,11 +9,11 @@ findings:
     title: "标识符来源表 5 条 `file:line` 引用指向完全无关的行"
   - id: WR-01
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "`02-VERIFICATION.md` 仍以现在时断言 Iceberg warehouse 是本地文件系统、MinIO 缺失"
   - id: WR-02
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "`02-VERIFICATION.md` 的分数与 gap 状态自相矛盾（101/103 vs 100/103；partial vs FAILED (BLOCKER)）"
   - id: WR-03
     severity: warning
@@ -86,4 +86,6 @@ Re-running the gate keeps every row it can. A row the current review no longer r
 
 | ID | Source | 说明 |
 |---|---|---|
+| WR-01 | `45fbb3c`（02-VERIFICATION.md 重写） | 报告已改用当前源码事实描述 Iceberg warehouse：JDBC catalog + `s3://warehouse/` + `fs.s3.enabled=true` + `s3.endpoint=http://minio:9000`，无本地文件系统回退键；旧断言已消解。
+| WR-02 | `45fbb3c`（02-VERIFICATION.md 重写） | 分数与 gap 状态自洽：107/109 must-haves verified、无 gaps、无 blocker，verdict `human_needed` 与 3 条 human verification item 一致。
 | CR-01 | 本次修正提交 | `02-11-source-scan.txt` 标识符来源表 5 条 `file:line` 引用修正：`ci/trino/l2/rules.json:19` → `:18`（`Orders` / `orders` 规则行）、`:20` → `:19`（`queries` / `system` 第二处）、`ci/pg/seed.sql:32` → `:172`（`cardinality_records`）；同文件说明段第 223 行同引用一并修正。词表成员、中性判定与 `## SUSPECTED NON-NEUTRAL` 为空的结论不受影响。
