@@ -47,7 +47,10 @@
 **Plans**: 2 plans
 
 Plans:
+**Wave 1**
 - [ ] 08-01-PLAN.md — 接收端 harness、被 ignore 的端到端用例与 `phase8-webhook-e2e` CI job：单事件纵切片加多事件去重/至少一次送达矩阵
+
+**Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 08-02-PLAN.md — CI 证据归档三件套（README / index JSON / tar.gz）与 worker 运维文档里的端到端联调入口
 
 ### Phase 9: Webhook Worker Supervision & Crash Recovery
