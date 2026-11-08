@@ -1,58 +1,38 @@
 {
   "contract": "1.0.0",
   "flavor": "core",
-  "milestone": "v1.0",
+  "milestone": "v1.1",
   "phases": [
     {
-      "number": "1",
-      "name": "Workspace, Schema & Lint",
-      "status": "complete"
+      "number": "8",
+      "name": "Production Webhook End-to-End Delivery",
+      "status": "not_started"
     },
     {
-      "number": "2",
-      "name": "Source Binding & Engine",
-      "status": "complete"
+      "number": "9",
+      "name": "Webhook Worker Supervision & Crash Recovery",
+      "status": "not_started"
     },
     {
-      "number": "3",
-      "name": "Edit Store & Scope Model",
-      "status": "complete"
+      "number": "10",
+      "name": "Audit Timing Test Split",
+      "status": "not_started"
     },
     {
-      "number": "4",
-      "name": "Scoped L0 Read",
-      "status": "complete"
+      "number": "11",
+      "name": "Product-Layer Wording & Historical Annotation",
+      "status": "not_started"
     },
     {
-      "number": "5",
-      "name": "Online Action",
-      "status": "complete"
-    },
-    {
-      "number": "6",
-      "name": "L2 Raw DQL, Toolsets & Audit",
-      "status": "complete"
-    },
-    {
-      "number": "7",
-      "name": "REST & MCP Shell",
-      "status": "complete"
-    },
-    {
-      "number": "7.1",
-      "name": "Source Cardinality Gap Closure",
-      "status": "complete"
-    },
-    {
-      "number": "7.2",
-      "name": "MinIO Contract Gap Closure",
-      "status": "complete"
+      "number": "12",
+      "name": "First Public Release",
+      "status": "not_started"
     }
   ],
   "next": {
-    "command": "/gsd-progress",
-    "label": "Show progress",
-    "reason": "Unsure of state — showing progress"
+    "command": "/gsd-discuss-phase",
+    "label": "Discuss Phase 8",
+    "reason": "Milestone v1.1 roadmap created — plan Phase 8 first"
   },
-  "updated_at": "2026-11-08T10:11:20.938Z"
+  "updated_at": "2026-11-08T12:10:00.000Z"
 }

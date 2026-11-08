@@ -55,19 +55,19 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| REL-01 | — | Pending |
-| REL-02 | — | Pending |
-| REL-03 | — | Pending |
-| REL-04 | — | Pending |
-| REL-05 | — | Pending |
-| REL-06 | — | Pending |
-| REL-07 | — | Pending |
+| REL-01 | Phase 8 | Pending |
+| REL-02 | Phase 8 | Pending |
+| REL-03 | Phase 9 | Pending |
+| REL-04 | Phase 10 | Pending |
+| REL-05 | Phase 11 | Pending |
+| REL-06 | Phase 11 | Pending |
+| REL-07 | Phase 12 | Pending |
 
 **Coverage:**
 - v1 requirements: 7 total
-- Mapped to phases: 0
-- Unmapped: 7 ⚠️
+- Mapped to phases: 7
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-11-08*
-*Last updated: 2026-11-08 after initial definition for milestone v1.1*
+*Last updated: 2026-11-08 after roadmap creation (v1.1, Phase 8-12 mapped 7/7)*
