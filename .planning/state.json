@@ -11,7 +11,7 @@
     {
       "number": "2",
       "name": "Source Binding & Engine",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "number": "3",
@@ -50,9 +50,9 @@
     }
   ],
   "next": {
-    "command": "/gsd-progress --next",
-    "label": "Advance to the next step (verify)",
-    "reason": "Phase 2 of 10 · 89% · ready to verify"
+    "command": "/gsd-progress",
+    "label": "Show progress",
+    "reason": "Unsure of state — showing progress"
   },
-  "updated_at": "2026-11-07T07:51:28.507Z"
+  "updated_at": "2026-11-08T10:11:20.938Z"
 }
