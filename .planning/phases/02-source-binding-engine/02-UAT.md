@@ -9,9 +9,9 @@ updated: 2026-11-08T09:20:00Z
 ## Current Test
 
 number: 9
-name: "G-02-D：私有 SQL Server 边界与仓库外目录"
+name: "G-02-D：私有 Trino 数据源边界与仓库外目录"
 expected: |
-  人工核对后对断言作答「是 / 否 / 不适用 + 理由」：SQL Server 只经仓库外私有 fixture 验证、公开 CI 不运行该目标、仓库内无任何私有绑定或数据。
+  人工核对后对断言作答「是 / 否 / 不适用 + 理由」：私有环境下的 Trino 数据源（sqlserver / mysql / iceberg 等任一 catalog 类型）只经仓库外私有 fixture 验证、公开 CI 不运行该目标、仓库内无任何私有绑定或数据。
   机器已证部分（不必重复核对）：门控 D-1（`crates/ontoforge/tests/private_fixtures.rs:14/44/69` 的环境变量 + `#[ignore]` 双门控）与门控 D-2（`CONTRIBUTING.md:89/91` 约定）均 PASS；见 `02-11-HUMAN-ACCEPTANCE.md` G-02-D 节。
   人工要看的范围：`ONTOFORGE_PRIVATE_FIXTURES` 指向的仓库外目录当前实际内容（是否含公司绑定数据）、该入口的实际部署形态是否与 `CONTRIBUTING.md` 约定一致、git 历史中是否曾提交后删除私有绑定。
 awaiting: user response
@@ -64,7 +64,7 @@ why_human: "workflow 文本可证明「未引用」，不能证明 runner 上的
 note: "人工接受（2026-11-08）：公开 workflow 不连接公司 Trino 集群、不读取公司 catalog / 表名 / 数据"
 evidence: "机器可判定部分已落盘：门控 C-1（`.github/` 内无 `private_fixtures` / `ONTOFORGE_PRIVATE_FIXTURES` 引用）PASS，7 条 `jdbc:` / `s3://` 端点串全指向 loopback / 容器内 `minio` / 仓库内桶前缀；见 `02-11-HUMAN-ACCEPTANCE.md` G-02-C 节"
 
-### 9. G-02-D：私有 SQL Server 边界与仓库外目录
+### 9. G-02-D：私有 Trino 数据源边界与仓库外目录
 expected: |
   核对私有 SQL Server 边界与仓库外目录的真实内容，确认仓库外目录当前不含公司绑定数据、且 `ONTOFORGE_PRIVATE_FIXTURES` 入口的约定与实际部署一致
 result: pending
