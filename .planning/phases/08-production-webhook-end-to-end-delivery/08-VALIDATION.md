@@ -91,7 +91,7 @@ created: "2026-11-08"
 - [ ] Sampling continuity: no 3 consecutive tasks without automated verify
 - [ ] Wave 0 covers all MISSING references
 - [ ] No watch-mode flags
-- [ ] Feedback latency < 120s
+- [ ] Feedback latency 符合本 phase 的口径：**CI job 级别（分钟级）**，本机只有编译级验证（例外来源见 § Sampling Rate）
 - [ ] `nyquist_compliant: true` set in frontmatter
 
 **Approval:** pending
