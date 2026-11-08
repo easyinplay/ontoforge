@@ -1,38 +1,38 @@
 {
   "contract": "1.0.0",
   "flavor": "core",
-  "milestone": "v1.1",
+  "milestone": "v1.1 — Gap Closure",
   "phases": [
     {
       "number": "8",
       "name": "Production Webhook End-to-End Delivery",
-      "status": "not_started"
+      "status": "in_progress"
     },
     {
       "number": "9",
       "name": "Webhook Worker Supervision & Crash Recovery",
-      "status": "not_started"
+      "status": "pending"
     },
     {
       "number": "10",
       "name": "Audit Timing Test Split",
-      "status": "not_started"
+      "status": "pending"
     },
     {
       "number": "11",
       "name": "Product-Layer Wording & Historical Annotation",
-      "status": "not_started"
+      "status": "pending"
     },
     {
       "number": "12",
       "name": "First Public Release",
-      "status": "not_started"
+      "status": "pending"
     }
   ],
   "next": {
-    "command": "/gsd-discuss-phase",
-    "label": "Discuss Phase 8",
-    "reason": "Milestone v1.1 roadmap created — plan Phase 8 first"
+    "command": "/gsd-progress --next",
+    "label": "Advance to the next step (plan phase 8)",
+    "reason": "Phase 1 of 5 — needs a plan"
   },
-  "updated_at": "2026-11-08T12:10:00.000Z"
+  "updated_at": "2026-11-08T15:51:44.749Z"
 }
