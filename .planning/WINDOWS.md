@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 11
+open_count: 12
 waived_count: 0
 fixed_count: 5
-total_count: 16
-last_updated: 2026-10-29T04:49:36.824Z
+total_count: 17
+last_updated: 2026-11-08T05:31:00.586Z
 ---
 
 # Broken Windows Ledger
@@ -31,6 +31,7 @@ last_updated: 2026-10-29T04:49:36.824Z
 | 14 | 06 | skipped-test | crates/ontoforge-storage/tests/scope_store.rs |  | pg_scope_apply: requires ONTOFORGE_PG_URL or embedded-pg feature | open |  | 2026-10-27T19:13:52.718Z |  |
 | 15 | 07 | skipped-test | .planning/phases/07-rest-mcp-shell/07-03-SUMMARY.md |  | 07-03 workspace: 107 ignored (PG/Trino/private/p95/doctest); external-service evidence pending 07-13/14. Full names and reasons: 07-03-evidence/workspace-tests-jobs2.log. | open |  | 2026-10-29T04:32:00.805Z |  |
 | 16 | 07 | deviation | crates/ontoforge-action/tests/idempotency_pg.rs |  | 07-03 all-features Clippy: large_futures at lines 242/257/398 (16464 bytes); approved minimal Box::pin allocation fix in 07-02 PLAN if still present after replay repair. | fixed |  | 2026-10-29T04:32:02.063Z | 2026-10-29T04:49:36.824Z |
+| 17 | 02 | unrun-verify | .planning/phases/02-source-binding-engine/02-11-HUMAN-ACCEPTANCE.md |  | G-02-B / G-02-C / G-02-D 三项 judgment 的人工验收尚未进行；02-11 只交付机器可判定部分与问题清单，三条 VERDICT 仍为 PENDING，待下一轮 /gsd-verify-work 02 收集 | open |  | 2026-11-08T05:31:00.586Z |  |
 
 ````json
 [
@@ -235,6 +236,19 @@ last_updated: 2026-10-29T04:49:36.824Z
     "recorded_at": "2026-10-29T04:32:02.063Z",
     "resolved_at": "2026-10-29T04:49:36.824Z",
     "milestone": null
+  },
+  {
+    "id": 17,
+    "kind": "unrun-verify",
+    "phase": "02",
+    "file": ".planning/phases/02-source-binding-engine/02-11-HUMAN-ACCEPTANCE.md",
+    "line": null,
+    "description": "G-02-B / G-02-C / G-02-D 三项 judgment 的人工验收尚未进行；02-11 只交付机器可判定部分与问题清单，三条 VERDICT 仍为 PENDING，待下一轮 /gsd-verify-work 02 收集",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-11-08T05:31:00.586Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
   }
 ]
 ````
