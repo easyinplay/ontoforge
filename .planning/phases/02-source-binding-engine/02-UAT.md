@@ -1,20 +1,14 @@
 ---
-status: testing
+status: complete
 phase: 02-source-binding-engine
 source: [02-VERIFICATION.md]
 started: 2026-10-17T00:00:00Z
-updated: 2026-11-08T09:20:00Z
+updated: 2026-11-08T09:40:00Z
 ---
 
 ## Current Test
 
-number: 9
-name: "G-02-D：私有 Trino 数据源边界与仓库外目录"
-expected: |
-  人工核对后对断言作答「是 / 否 / 不适用 + 理由」：私有环境下的 Trino 数据源（sqlserver / mysql / iceberg 等任一 catalog 类型）只经仓库外私有 fixture 验证、公开 CI 不运行该目标、仓库内无任何私有绑定或数据。
-  机器已证部分（不必重复核对）：门控 D-1（`crates/ontoforge/tests/private_fixtures.rs:14/44/69` 的环境变量 + `#[ignore]` 双门控）与门控 D-2（`CONTRIBUTING.md:89/91` 约定）均 PASS；见 `02-11-HUMAN-ACCEPTANCE.md` G-02-D 节。
-  人工要看的范围：`ONTOFORGE_PRIVATE_FIXTURES` 指向的仓库外目录当前实际内容（是否含公司绑定数据）、该入口的实际部署形态是否与 `CONTRIBUTING.md` 约定一致、git 历史中是否曾提交后删除私有绑定。
-awaiting: user response
+[testing complete]
 
 ## Tests
 
@@ -67,19 +61,20 @@ evidence: "机器可判定部分已落盘：门控 C-1（`.github/` 内无 `priv
 ### 9. G-02-D：私有 Trino 数据源边界与仓库外目录
 expected: |
   核对私有 SQL Server 边界与仓库外目录的真实内容，确认仓库外目录当前不含公司绑定数据、且 `ONTOFORGE_PRIVATE_FIXTURES` 入口的约定与实际部署一致
-result: pending
+result: pass
 why_human: "仓库外目录内容、git 历史中是否曾提交后删除私有绑定、以及文档与实际部署形态的一致性都不能由仓库内源码证明"
+note: "人工接受（2026-11-08，通用表述见 ADR-0032）：私有环境下的 Trino 数据源只经仓库外私有 fixture 验证，公开 CI 不运行该 target，仓库内无任何私有绑定或数据"
 evidence: "机器可判定部分已落盘：门控 D-1（`private_fixtures.rs:14/44/69` 的环境变量 + `#[ignore]` 双门控）与门控 D-2（`CONTRIBUTING.md:89/91` 约定）均 PASS；见 `02-11-HUMAN-ACCEPTANCE.md` G-02-D 节"
 
 ## Summary
 
 total: 9
-passed: 8
+passed: 9
 issues: 0
-pending: 1
+pending: 0
 skipped: 0
 blocked: 0
 
 ## Gaps
 
-无 BLOCKER、无 gaps。上一轮 `02-VERIFICATION.md` 的 1 个 BLOCKER（`02-10.6` nightly Iceberg 合同）经逐条 `file:line` 复核已判定 VERIFIED；剩余 3 条为原理上无法机器判定的 judgment 项（对应 02-03 / 02-10 禁止项与 ENGINE-05 私有 SQL Server 子句），需人工签字后由 `/gsd-verify-work 02` 回填 `02-11-HUMAN-ACCEPTANCE.md` 的 `VERDICT` 并同步 `02-VERIFICATION.md`。
+无 BLOCKER、无 gaps。上一轮 `02-VERIFICATION.md` 的 1 个 BLOCKER（`02-10.6` nightly Iceberg 合同）经逐条 `file:line` 复核已判定 VERIFIED；剩余 3 条为原理上无法机器判定的 judgment 项（对应 02-03 / 02-10 禁止项与 ENGINE-05 私有 Trino 数据源子句），需人工签字后由 `/gsd-verify-work 02` 回填 `02-11-HUMAN-ACCEPTANCE.md` 的 `VERDICT` 并同步 `02-VERIFICATION.md`。
