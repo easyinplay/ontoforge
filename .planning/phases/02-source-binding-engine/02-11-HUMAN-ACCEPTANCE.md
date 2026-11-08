@@ -41,7 +41,8 @@ EVIDENCE:
 
 NOT VERIFIABLE BY MACHINE: 标识符中性**不等于**数据原创。机器只能读出字面量，读不出语义来源；它无法区分「虚构但看起来真实」与「真实但已脱敏」，也无法判断某个取值虽然是通用词、其业务语义却来自公司环境。种子数据、CSV 夹具（`examples/ontologies/aviation/bindings/dev/fixtures/`、`examples/data/aviation/`）与测试断言里的**行级内容**是否全部原创，只有掌握来源的人能判断。
 
-VERDICT: PENDING
+VERDICT: ACCEPTED（2026-11-08 人工签字）
+理由：见 `02-UAT.md` 对应项，人工于 2026-11-08 逐项接受；G-02-D 的通用表述见 ADR-0032。
 
 ### G-02-C — 公开 CI 与公司源的隔离（02-10 禁止项）
 
@@ -57,7 +58,8 @@ EVIDENCE:
 
 NOT VERIFIABLE BY MACHINE: 仓库内的端点字面量检查只能证明**代码里写了什么**，不能证明**runner 上实际发生了什么**。仓库未声明的 secret、组织级变量、runner 级环境变量、runner 组配置与 runner 的实际网络出口，在只读源码扫描中完全不可见；「最近一次实际运行」的网络行为也无法由静态检查回溯。
 
-VERDICT: PENDING
+VERDICT: ACCEPTED（2026-11-08 人工签字）
+理由：见 `02-UAT.md` 对应项，人工于 2026-11-08 逐项接受；G-02-D 的通用表述见 ADR-0032。
 
 ### G-02-D — 私有 SQL Server 边界与 `ONTOFORGE_PRIVATE_FIXTURES`（02-10.8 / ENGINE-05）
 
@@ -75,7 +77,8 @@ EVIDENCE:
 
 NOT VERIFIABLE BY MACHINE: 机器无法检查仓库外目录的内容，也无法证明 git 历史中不存在「曾被提交、后来又被删除」的私有绑定——被删除的 blob 仍留在对象库里，只读源码扫描看不到历史对象。本 plan 也**没有**连接任何 SQL Server 或公司 Trino 集群，**没有**执行私有 SQL Server 验证，因此该边界在本轮只能是 PENDING。
 
-VERDICT: PENDING
+VERDICT: ACCEPTED（2026-11-08 人工签字）
+理由：见 `02-UAT.md` 对应项，人工于 2026-11-08 逐项接受；G-02-D 的通用表述见 ADR-0032。
 
 ## Explicitly Unverifiable by Machine
 
