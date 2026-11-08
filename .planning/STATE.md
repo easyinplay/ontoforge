@@ -2,28 +2,28 @@
 gsd_state_version: "1.0"
 milestone: v1.1
 milestone_name: Gap Closure
-current_phase: 8
+current_phase: 08
 current_phase_name: Production Webhook End-to-End Delivery
-status: planning
-stopped_at: Phase 8 context gathered
-last_updated: "2026-11-08T15:51:44.671Z"
-last_activity: 2026-11-08
-last_activity_desc: v1.1 roadmap created (Phase 8-12, REL-01..07 mapped 7/7)
-state_head: fd55ba6435741f642fd704eaa5f6b55a3d222d88
+status: executing
+stopped_at: Completed 08-01-PLAN.md
+last_updated: "2026-11-08T19:34:55.313Z"
+last_activity: 2026-11-09
+last_activity_desc: Phase 08 execution started
+state_head: ae8956dd280f6a3c1c51a06a84d1d7a82f9ffa23
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 2
-  completed_plans: 0
+  completed_plans: 1
 ---
 
 # Project State
 
 ## Current Position
-Phase: 8 (Production Webhook End-to-End Delivery) — READY TO EXECUTE
-Plan: —
-Status: Roadmap created, awaiting phase planning
-Last activity: 2026-11-08 — v1.1 roadmap created (Phase 8-12, REL-01..07 mapped 7/7)
+Phase: 08 (Production Webhook End-to-End Delivery) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
+Last activity: 2026-11-09 — Phase 08 execution started
 
 ### Quick Tasks Completed
 
@@ -36,7 +36,7 @@ Last activity: 2026-11-08 — v1.1 roadmap created (Phase 8-12, REL-01..07 mappe
 See: .planning/PROJECT.md (updated 2026-11-08 after v1.1 milestone start)
 
 **Core value:** 定义一次 ontology，应用和 agent 就能通过 REST 与 MCP 两个同等地位的出口，对同一份对象图做受控的读写：写入一律经 Action 校验与授权，每次写入都可审计。
-**Current focus:** milestone v1.1 Gap Closure（Phase 8-12）—— 收口 v1.0 关闭时记录的 4 项残余缺口并完成首次对外发布；7 项 REL 需求已 100% 映射到 phase。
+**Current focus:** Phase 08 — Production Webhook End-to-End Delivery
 
 ## Evidence Pointers
 
@@ -57,6 +57,10 @@ See: .planning/PROJECT.md (updated 2026-11-08 after v1.1 milestone start)
 - 机器可判定部分与人工验收部分显式切分，结论位固定 `VERDICT: PENDING`，执行者不代签。
 - 生产 webhook 联调在 GitHub Actions Linux runner 上执行（2026-11-08 拍板）；systemd 自动拉起为人工签字项。
 - 完整决策日志见 PROJECT.md Key Decisions 表与 `.planning/adr/`。
+- [Phase 08]: 接收端以 example target 形态存在（D-01）：不是 ontoforge 子命令、不新增 workspace member、不进发行包依赖集
+- [Phase 08]: 判定完全在 CI 侧：接收端只写原始 ledger（逐请求 JSONL），不做断言、不暴露聚合端点、不以退出码表达成败（D-02）
+- [Phase 08]: 生产形态 webhook 联调在 Linux CI 上执行，真实二进制 + 真实 PostgreSQL + 独立进程接收端；本机 Windows 只做编译级验证
+- [Phase 08]: 跨 phase 缺陷登记表 .planning/WINDOWS.md 的第 18 条 kind 与表格/JSON 不一致已修复，登记表恢复可写，FA-02 未执行的退避上限已登记为第 19 条
 
 ### Blockers/Concerns
 
@@ -87,11 +91,17 @@ v1.1 承接映射：05 → Phase 08 / 09（REL-01..03）、06 → Phase 10（REL
 
 ## Session Continuity
 
-Last session: 2026-11-08T12:09:22.890Z
-Stopped at: Phase 8 context gathered
-Resume file: .planning/phases/08-production-webhook-end-to-end-delivery/08-CONTEXT.md
+Last session: 2026-11-08T19:34:55.284Z
+Stopped at: Completed 08-01-PLAN.md
+Resume file: None
 
 ## Operator Next Steps
 
 - 从 `/gsd-plan-phase 8` 起手；Phase 10 / 11 与 Phase 8 / 9 无依赖，可并行规划
 - Phase 12 须在 Phase 8-11 验收通过后才可执行
+
+## Performance Metrics
+
+| Plan | Duration | Tasks | Files |
+|------|----------|-------|-------|
+| Phase 08 P01 | 3h 12m | 2 tasks | 6 files |
