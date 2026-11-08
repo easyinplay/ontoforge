@@ -6,6 +6,17 @@ ontoforge 是一个用 Rust 实现、可自托管的开源 Ontology 操作层，
 
 v1.0 已交付的完整链路：本体定义与 lint 引擎、数据源绑定与 Trino 引擎接线、edit store 与 scope 授权模型、scoped L0 读、online Action、L2 只读 DQL 与读审计、REST + MCP 外壳与三平台发行包。
 
+## Current Milestone: v1.1 Gap Closure（缺口收口）
+
+**Goal:** 收口 v1.0 关闭时逐条记录的 4 项残余缺口，使 ontoforge 从「里程碑审计结论仍为 `gaps_found`」转为「无已知开放缺口」，并完成首次对外发布。
+
+**Target features:**
+- REL-01 / REL-02 / REL-03 生产 webhook 联调：`ontoforge webhook-worker` 在 Linux CI 上对真实 HTTP 下游接收端完成端到端送达，含 503 重试、`event_id` 去重、至少一次送达，以及崩溃后由 systemd unit 自动拉起
+- REL-04 审计时间敏感项拆分：`security::cap_counts_final_masked_row_and_version` 的纯计算断言与时间敏感集成验证分离，CI 不再依赖 `--test-threads=1`
+- REL-05 ADR-0032 通用化落到产品层措辞（`private_fixtures.rs` / `CONTRIBUTING.md` / `docs/designs/trino-engine-sql-tiers.md` 不再点名 SQL Server）
+- REL-06 Phase 02 `02-10-SUMMARY.md` 陈旧断言加 superseded 注解，历史 SUMMARY 保留为快照
+- REL-07 首次对外发布：推送 v1.0 / v1.1 tag、发 GitHub Release、发布 npm 包
+
 ## Core Value
 
 定义一次 ontology，应用和 agent 就能通过 REST 与 MCP 两个同等地位的出口，对同一份对象图做受控的读写：写入一律经 Action 校验与授权，每次写入都可审计。
@@ -27,14 +38,22 @@ v1.0 已交付的完整链路：本体定义与 lint 引擎、数据源绑定与
 
 ### Active
 
-v1.0 关闭后进入下一 milestone 的候选需求，尚未排期（编号见 `.planning/milestones/v1.0-REQUIREMENTS.md` 的 v2 Requirements 节）：
+v1.1 Gap Closure —— 逐条收口 v1.0 关闭时的 4 项已知缺口（编号见 `.planning/REQUIREMENTS.md`）：
 
-- L1 Ontology SQL（`sql:ontology`，类 SQL 按 object 名书写，服务端改写并注入 scope）
-- 湖仓与引擎：Nessie 分支直写 Iceberg 后 merge、edit store materialize 与 edit log 归档、Spark / Doris / Kyuubi 作为可选引擎
-- Schema 扩展：interfaces、shared properties、struct 属性、value types、runtime 派生属性
+- REL-01 生产形态 webhook 端到端送达（真实 HTTP 下游接收端，非内存 mock）
+- REL-02 503 重试 + `event_id` 去重 + 至少一次送达
+- REL-03 webhook-worker 崩溃后 systemd unit 自动拉起
+- REL-04 审计时间敏感项拆分，CI 不再依赖 `--test-threads=1`
+- REL-05 ADR-0032 通用化落到产品层措辞
+- REL-06 `02-10-SUMMARY.md` 陈旧断言加 superseded 注解
+- REL-07 首次对外发布（tag 推送、GitHub Release、npm 包）
+
+v2.0 候选方向（尚未排期，编号见 `.planning/milestones/v1.0-REQUIREMENTS.md` 的 v2 Requirements 节）：
+
+- 湖仓写入与联邦计算：L1 Ontology SQL（`sql:ontology`，类 SQL 按 object 名书写，服务端改写并注入 scope）、`batch` 写入模式、Nessie 分支直写 Iceberg 后 merge、edit store materialize 与快照一致分页、Spark / Doris / Kyuubi 作为可选引擎
+- ontology 表达力：interfaces、shared properties、struct 属性、value types、runtime 派生属性
 - 治理：AI 提议 ontology 变更 → 人审批 → 生效的流程与管理界面
-- 检索：vector 属性与 KNN、`tantivy` 全文索引
-- 运行时：query / edit functions 运行时、WebSocket 订阅、scenarios、schema branching + proposals、ontology 级强类型 SDK codegen、GraphQL
+- 检索与运行时：vector 属性与 KNN、`tantivy` 全文索引、query / edit functions 运行时、WebSocket 订阅、scenarios、schema branching + proposals、ontology 级强类型 SDK codegen、GraphQL
 - 安全：评估 `cedar-policy`、行谓词跨对象引用（SEC-02、SEC-03）
 
 ### Out of Scope
@@ -53,7 +72,7 @@ v2 候选（不在当前 milestone）：interfaces 与 shared properties、struc
 
 ## Current State
 
-- **milestone**：v1.0 已于 2026-11-08 关闭并归档（`.planning/milestones/`）；9 个 phase、94 个 plan、115 个 task 全部完成。
+- **milestone**：v1.0 已于 2026-11-08 关闭并归档（`.planning/milestones/`）；9 个 phase、94 个 plan、115 个 task 全部完成。v1.1 Gap Closure 于 2026-11-08 启动，phase 编号从 Phase 8 起。
 - **需求**：79 项 v1 需求全部 Complete（`.planning/milestones/v1.0-REQUIREMENTS.md`）；验收报告与 UAT 证据在 `.planning/milestones/v1.0-phases/`。
 - **代码规模**：cargo workspace 11 个 crate，`crates/**.rs` 126,982 行（tracked，2026-11-08）。
 - **技术栈**：Rust 1.98 / edition 2024，axum + utoipa（REST）、rmcp（MCP）、sqlx + sea-query（存储）、cel（表达式）、serde-saphyr（YAML span）。
@@ -69,14 +88,16 @@ v2 候选（不在当前 milestone）：interfaces 与 shared properties、struc
 
 ## Next Milestone Goals
 
-下一 milestone（候选 v2.0）尚未排期，方向优先级待定：
+v2.0 方向已于 2026-11-08 拍板（本次 `/gsd-new-milestone` 讨论结论），两个方向打满：
 
-1. **湖仓写入与联邦计算**（LAKE-01..03、SQL-01）：`batch` 写入模式、Nessie 分支直写 Iceberg 后 merge、edit store materialize 与快照一致分页，验证「Trino 只读企业数据 + ontoforge 写 edit store」在真实湖仓上的边界。
-2. **ontology 表达力**（SCHEMAX-01..05）：interfaces、shared properties、struct、value types、runtime 派生属性。
-3. **治理闭环**（GOV-01）：AI 提议 ontology 变更 → 人审批 → 生效，落在已有的 scope 审计与 fail-closed 门禁上。
-4. **检索与运行时**（SEARCH-01..02、FUNC-01..02、SUB-01、SCEN-01、BRANCH-01、SDK-01、GQL-01）：按 v1.0 遗留的 overlay 基础与 edit log 格式推进。
+1. **湖仓写入与联邦计算**（LAKE-01..03、SQL-01）：`batch` 写入模式、Nessie 分支直写 Iceberg 后 merge、edit store materialize 与快照一致分页、L1 Ontology SQL（`sql:ontology`，类 SQL 按 object 名书写，服务端改写并注入 scope）。验证「Trino 只读企业数据 + ontoforge 写 edit store」在真实湖仓上的边界。
+2. **ontology 表达力扩展**（SCHEMAX-01..05）：interfaces、shared properties、struct 属性、value types、runtime 派生属性。
 
-下一 milestone 的范围需经 `/gsd-new-milestone` 重新讨论与排期；v1.0 的残余缺口（Phase 05 生产 webhook 联调、Phase 06 审计时序拆分）应先作为 v1.x 的技术债进入 backlog。
+打满之外的候选（延后到 v2.1 及以后）：治理闭环（GOV-01）、检索与运行时（SEARCH-01..02、FUNC-01..02、SUB-01、SCEN-01、BRANCH-01、SDK-01、GQL-01）、安全（SEC-02、SEC-03）。
+
+SCHEMAX 是地基：interfaces 与 value types 决定跨对象谓词、interface object set 查询、派生属性、KNN 向量属性的表达上限，先做减少返工；LAKE 是最大产品跃迁，对齐「Iceberg + Nessie + S3，Trino 主引擎 + 联邦 catalog」的既定构想。
+
+v2.0 启动时需补 gstack 战略层关卡（`/office-hours` + `/plan-ceo-review`）；范围仍需经 `/gsd-new-milestone` 正式排期。
 
 ## Context
 
@@ -112,6 +133,8 @@ v2 候选（不在当前 milestone）：interfaces 与 shared properties、struc
 | 私有数据源不按数据库类型单列（ADR-0032） | `sqlserver` 只是 Trino 暴露的一类 catalog，与 `mysql` / `hive` / `iceberg` 并列，代码里没有按数据库类型分叉的路径；ENGINE-05 与 Phase 02 措辞统一为「私有 Trino 数据源」 | ✓ Good — Phase 2 交付，用户 2026-11-08 拍板；产品层措辞仍待追改（见 Current State 残余缺口） |
 | 机器可判定部分与人工验收部分显式切分，结论位固定 `VERDICT: PENDING`（02-11 gap closure） | 机器结果只作证据，judgment 结论只能由人签字，执行者不得代签，也不得因门禁通过而吸收为 closed | ✓ Good — Phase 2 验收，G-02-B/C/D 于 2026-11-08 签字关闭 |
 | milestone v1.0 以 override 方式关闭，残余缺口作为技术债承接 | 9 个 phase 全部 `phase_complete && verification_status=passed`，79/79 需求 Complete；审计的 dated `gaps_found` 结论不因关闭而改写 | ✓ Good — `closeout_type=override_closeout`，3 项审计开放项经 acknowledge 记录为延后事项，见 `.planning/MILESTONES.md` 与 STATE.md Deferred Items |
+| v1.1 技术债先行，v2.0 只打满「湖仓写入 + ontology 表达力」两个方向 | v1.0 审计结论仍为 `gaps_found`，4 项缺口已逐条记录且范围无歧义；4 个候选方向横跨 4 个独立子系统，压进一个 milestone 会每条都半成品 | ✓ Good — 2026-11-08 拍板；v1.1 收口 4 项缺口并完成首次对外发布，v2.0 排湖仓写入与表达力 |
+| 生产 webhook 联调在 GitHub Actions Linux runner 上执行 | CI 已有 PG / Trino / MinIO / Iceberg service container；本机 Windows 无法覆盖 systemd 语义 | ✓ Good — 2026-11-08 拍板；CI 覆盖机器可判定部分，systemd 自动拉起为人工签字项（`VERDICT: PENDING`） |
 
 决策全文见 `.planning/adr/`。
 
@@ -133,4 +156,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-11-08 after v1.0 milestone*
+*Last updated: 2026-11-08 after v1.1 milestone start*
