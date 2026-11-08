@@ -5,19 +5,30 @@ status: validated
 nyquist_compliant: false
 wave_0_complete: true
 created: "2026-10-16"
-updated: "2026-11-04"
-source_head: f8851ca073fed34e80e605f0ac91880259df7e12
+updated: "2026-11-08"
+source_head: b61fe0926f36efcef5a75150dfcf1f8500b32cac
 ---
 
 # Phase 2 Validation
 
-本轮已完成28个task的当前源码覆盖审计，因此从draft改为validated。26个COVERED、1个PARTIAL、1个纯文档SKIP；仍为`nyquist_compliant: false`，不能把真实local Iceberg通过当成ADR0017/02-10 PLAN要求的MinIO通过。
+本轮（2026-11-08，`source_head b61fe09`）在 2026-11-04 的 28 个 task 审计之上补入 02-11 的 3 个 task，共 31 个 task：30 个 COVERED、1 个纯文档 SKIP。仍为 `nyquist_compliant: false`，原因不是覆盖缺失，而是 ENGINE-05 的私有 SQL Server 子句与 G-02-B/C/D 三条 judgment 禁止项在原理上无法由自动化判定（见 `## Manual-Only`）。
 
 ## Evidence and Execution Boundary
 
 本 verifier 未执行Cargo/Docker。动态日志由同一milestone唯一runner与GitHub CI生成，本轮独立核对命名结果和源码身份。U=`target/milestone-ci-41759804733-ubuntu.log`；I=`target/milestone-ci-41759804733-integration.log`；W=`target/milestone-ci-41759804733-windows.log`。U/I:n是本轮亲查原始日志行号，全部引用实际`... ok`，不以存在、discovery或ignored当通过。最终CI head f8851ca，Windows/Ubuntu/integration/realservices四必需job均success。
 
 当前命名映射承接 `.planning/milestones/v1.0-audit/NYQUIST-02-03-05-VALIDATION.md` 的逐task/源码审计，重新对照最终日志；原文件保留历史snapshot，不修改其他owner产物。
+
+## 本轮（2026-11-08）新增证据边界
+
+本轮只做**只读**核验：没有启动容器、没有连接任何 Trino / MinIO / PostgreSQL / SQL Server、没有触发任何 GitHub workflow、没有修改 git 历史、没有修改 `crates/` / `ci/` / `.github/` / `examples/` / 已跟踪的 `docs/` 下任何文件、没有修改 `02-VERIFICATION.md` / `02-UAT.md` / `02-CONTEXT.md` / `02-RESEARCH.md` / `02-PATTERNS.md` / `REQUIREMENTS.md` / `ROADMAP.md` / `STATE.md` / `state.json`。
+
+本轮实测的两类证据：
+
+1. **02-11 的 25 条可失败只读门禁全部 PASS**（`02-11-PLAN.md` Task 1/2/3 的 `<automated>` 段，去重后 25 条：G-A1..G-A5 九条结构门禁 + T1-evi + G-PROD + G-DOCS + G-OWNED + T2-scan + G-C1 + G-D1 + G-DIFF + cargo + T3-struct + T3-count + T3-noclose + T3-evi + T3-evi2 + T3-evi3 + T3-sum）。
+2. **唯一一条非 bash 门禁重跑通过**：`cargo test -p ontoforge --test private_fixtures --locked --offline` → `test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out`，被忽略的是 `private_fixtures_validate_online`（需 `ONTOFORGE_PRIVATE_FIXTURES`）。`--locked` 保证 `Cargo.lock` 未改，`--offline` 保证不触网。
+
+其余 28 个 task 的覆盖证据仍来自 2026-11-04 那轮审计所引用的 CI 原始日志（U/I/W 三个 log），本轮不冒充重跑。
 
 ## Test Infrastructure
 
@@ -58,7 +69,10 @@ source_head: f8851ca073fed34e80e605f0ac91880259df7e12
 | 02-09-T2 | BIND-03, ENGINE-01, ENGINE-02 | `--check-pk`（重复值查询排除 NULL、NULL 单独计数）与退出码表 | `pk_queries_are_printed` (U:2137); `duplicates_and_nulls_found` (U:2135); `nulls_are_not_duplicates` (U:2136); `check_pk_clean_on_aviation` (U:1336); `check_pk_reports_duplicates` (U:1339); `check_pk_reports_null_keys` (U:1340); `check_pk_on_trino` (U:1338); `exit_code_table` (U:1343) | `cargo test -p ontoforge-engine --test pk_check && cargo test -p ontoforge --test cli_check_pk` | COVERED |
 | 02-10-T1 | ENGINE-05, ENGINE-01, ENGINE-03 | 端到端 tracer：PR 的 integration 作业起 PostgreSQL + Trino 483、种入 aviation 数据，一条 `--ignored` 测试在真实 Trino 上查询并描述表 | `select_one` (I:1047); `describe_demo_flights` (I:1044); `missing_env_panics` (U:1555) | `cargo test -p ontoforge-engine --test trino_it --locked -- --ignored` | COVERED |
 | 02-10-T2 | ENGINE-05, ENGINE-01, ENGINE-03 | 真实 Trino 上的 golden、printer 固定语料、超时取消、catalog 可见性与 CLI 端到端；执行数量门禁 | `describe_types_golden` (I:1046); `decode_golden` (I:1049); `printer_corpus_round_trips` (I:1051); `timeout_cancels_server_query` (I:1050); `catalogs_visible` (I:1043); `drift_is_healthy_on_ci_trino` (I:1048); `validate_online_against_ci_trino` (I:1086) | `cargo test -p ontoforge-engine --test trino_it --locked -- --ignored ; cargo test -p ontoforge --test cli_trino_it --locked -- --ignored` | COVERED |
-| 02-10-T3 | ENGINE-05, ENGINE-01, ENGINE-03 | nightly Iceberg 工作流（483 / 484，失败开 issue）、私有 fixture 入口与 CONTRIBUTING 说明 | `a_set_needs_ontology_and_server_config` (U:1597)；local Iceberg实跑已补齐，MinIO/S3仍缺实现与执行证据 | `cargo test -p ontoforge --test private_fixtures --locked ; cargo test -p ontoforge-engine --test trino_it --locked iceberg_table_is_readable -- --ignored --exact --nocapture (G1 环境)` | PARTIAL (MinIO规范偏差未决) |
+| 02-10-T3 | ENGINE-05, ENGINE-01, ENGINE-03 | nightly Iceberg 工作流（483 / 484，失败开 issue）、私有 fixture 入口与 CONTRIBUTING 说明 | `a_set_needs_ontology_and_server_config` (U:1597)；MinIO 合同已在 `da5b151`（Phase 07.2-01）落到 `ci/trino/iceberg/iceberg.properties:9-13`（`default-warehouse-dir=s3://warehouse/`、`fs.s3.enabled=true`、`s3.endpoint=http://minio:9000`、`s3.path-style-access=true`、`s3.region=us-east-1`），文件内已无 `fs.local.enabled` / `local:///warehouse` 回退键（G-A2b 本轮实测退出码 1）；本轮 13 条 G-A1..G-A5 结构门禁全过；真实双版实跑证据沿用 07.2 的既有 run（`41833307824`，483 job `126585725657` / 484 job `126585726171` 均 success） | `cargo test -p ontoforge --test private_fixtures --locked ; cargo test -p ontoforge-engine --test trino_it --locked iceberg_table_is_readable -- --ignored --exact --nocapture (G1 环境)` | COVERED（MinIO/nightly 侧）；私有 SQL Server 子句转 Manual-Only M-03 |
+| 02-11-T1 | ENGINE-05 | G-02-A：用当前源码逐条重新核验 02-10.6 的 nightly Iceberg 合同，产出带 `file:line` 的调和证据 | 本轮 13 条门禁全 PASS：G-A1（`iceberg-services.sh nightly --trino` 接线 + 483/484 矩阵与两条镜像 digest）、G-A2（JDBC 六键）、G-A3（MinIO 自建镜像 `ci/minio/Dockerfile` + `ci/minio/bucket.go` + `S3_ENDPOINT=http://minio:9000`）、G-A4（`report-failure` 三步 gh 字面量）、G-A5（`issues: write` 全文件仅一处且不在 `iceberg` job 块内）、T1-evi（`02-11-RECONCILIATION.md` 六个规定节 + `file:line` 引用 + `41833307824`）、G-PROD / G-DOCS / G-OWNED（零产品、零已跟踪 docs、零他方文件改动） | `bash -c '...'`（见 `02-11-PLAN.md` Task 1 的 13 条 `<automated>`） | COVERED |
+| 02-11-T2 | ENGINE-05, BIND-01 | G-02-B/C/D 的机器可判定部分：一次只读扫描落盘原始输出与中性词表 | T2-scan（`==== IDENTIFIERS/ENDPOINTS/PRIVATE PATH GATE/PROVENANCE BOUNDARY/NOT SCANNED ====` 五个分段 + 两个定界标记）、G-C1（`.github/` 全目录无 `private_fixtures` / `ONTOFORGE_PRIVATE_FIXTURES` 字面量，退出码 1）、G-D1（env 门控 `private_fixtures.rs:14/:21/:44` + `#[ignore]` 门控 `:69` + `CONTRIBUTING.md` 记录）、G-DIFF（扫描词表与调和文档词表逐行相等，双向 diff 为空）、`cargo test -p ontoforge --test private_fixtures --locked --offline`（本轮实测 2 passed / 0 failed / 1 ignored）、G-PROD | `bash -c '...'` + `cargo test -p ontoforge --test private_fixtures --locked --offline` | COVERED |
+| 02-11-T3 | ENGINE-05, BIND-01 | G-02-B/C/D 转写为下一轮可判定的人工验收清单 | T3-struct（三个子节 + `## Explicitly Unverifiable by Machine` + `## Recording`）、T3-count（`QUESTION:` / `EVIDENCE:` / `NOT VERIFIABLE BY MACHINE:` / `VERDICT: PENDING` 各恰 3）、T3-noclose（全文无 `VERDICT: PASS|ACCEPTED|REJECTED|CLOSED`）、T3-evi / T3-evi2 / T3-evi3（证据引用均带 `file:line`）、T3-sum（SUMMARY 四 gap 声明 + 零产品代码变更）、G-PROD / G-DOCS | `bash -c '...'`（见 `02-11-PLAN.md` Task 3 的 9 条 `<automated>`） | COVERED |
 
 ## Wave 0 Requirements
 
@@ -70,20 +84,33 @@ source_head: f8851ca073fed34e80e605f0ac91880259df7e12
 
 ## Gap and Manual Boundary
 
-**G1运行证据缺口已关闭（local路径）**：`target/milestone-audit-evidence-20261104/trino-{483,484}-ctas.log`每版为`CREATE TABLE: 29 rows`，fixture日志记录`ONTOFORGE_TRINO_ICEBERG=1`，对应`trino-*-iceberg.log`各`1 passed; 0 failed; 0 ignored`。亲读测试：非空columns、source非0、copied/source完全相等。普通integration的同名ok提前return，不计入本证明。
+**G1运行证据缺口已关闭（local路径，历史记录）**：`target/milestone-audit-evidence-20261104/trino-{483,484}-ctas.log`每版为`CREATE TABLE: 29 rows`，fixture日志记录`ONTOFORGE_TRINO_ICEBERG=1`，对应`trino-*-iceberg.log`各`1 passed; 0 failed; 0 ignored`。亲读测试：非空columns、source非0、copied/source完全相等。普通integration的同名ok提前return，不计入本证明。该段记录的是 2026-11-04 时的 local warehouse 形态；`da5b151` 之后 catalog 已换成 MinIO/S3，local 路径不再是当前形态（此段仅作历史留痕）。
 
-**仍开放的02-10-T3**：accepted ADR0017与PLAN要求MinIO，当前`ci/trino/iceberg/iceberg.properties`是JDBC+local warehouse。未有accepted修订批准替代，未运行MinIO/S3。独立盲评 `target/iceberg-fixture-independent-opinion.json`结论也是规范偏差与覆盖缺口，非已证产品bug。最小收口是执行受信MinIO路径的483/484实际验收，或需求所有者明确接受后以正式决策修订此历史合同；本报告不代做决定。
+**02-10-T3 的 MinIO 合同缺口已关闭（源码侧）**：`da5b151`（Phase 07.2-01）把 `ci/trino/iceberg/iceberg.properties` 从 `local:///warehouse` + `fs.local.enabled=true` 换成 `s3://warehouse/` + `fs.s3.enabled=true` + `s3.endpoint=http://minio:9000`（`:9-13`），文件内已无本地回退键（G-A2b 本轮实测退出码 1）。2026-11-04 本报告记录的「当前是 JDBC+local warehouse」是 `source_head f8851ca` 时的快照，已随 `da5b151` 失效，本轮按 `source_head b61fe09` 重记；`REQUIREMENTS.md:200` 的 ENGINE-05 traceability（MinIO 缺口由 07.2 关闭）与此一致。真实双版实跑证据沿用 Phase 07.2 的既有 run（`41833307824`，483 job `126585725657`、484 job `126585726171` 均 success），本轮未连接任何容器或外部服务，不冒充实跑。`02-VERIFICATION.md:194` 的 `02-10.6 | FAILED (BLOCKER)` 一行仍由下一轮 `/gsd-verify-work 02` 依 `02-11-RECONCILIATION.md` 重新判定，本报告不代做该结论。
 
 公开fixture不含公司数据属judgment-tier：当前源码与隔离fixture支持non-authoritative判断，用户授权自动比较意见不等于人工核验过数据来源。保留`unverified-prohibition — human review recommended`；未访问真实公司SQL Server，不新增运行声明。
 
+## Manual-Only（机器不可判定项）
+
+以下四项在原理上无法由自动化判定。机器门禁只能证明「合同在当前源码中结构成立」，不能替代人工结论。这是 `nyquist_compliant` 保持 `false` 的唯一原因。
+
+| ID | 禁止项 / 要求 | 机器可判定的部分（已过） | 机器不可判定的部分 | 当前状态 |
+|---|---|---|---|---|
+| M-01 | 02-03 公开仓库不得出现公司物理名或真实业务数据（G-02-B） | 45 个物理标识符全部登记在 `02-11-source-scan.txt` 的 `==== IDENTIFIERS ====` 段，`## SUSPECTED NON-NEUTRAL` 为空，词表与调和文档双向 diff 为空 | 「虚构但看起来真实」与「真实但已脱敏」机器无法区分 | `VERDICT: PENDING`（`02-11-HUMAN-ACCEPTANCE.md`） |
+| M-02 | 02-10 公开 CI 不得连接公司 Trino 集群（G-02-C） | 门控 C-1：`.github/` 全目录无 `private_fixtures` / `ONTOFORGE_PRIVATE_FIXTURES` 字面量；7 条 `jdbc:` / `s3://` 端点串全指向 loopback / 容器内 `minio` / 仓库内桶前缀 | runner 的实际网络出口与凭据环境；仓库未声明的 secret / runner 级环境变量不可见 | `VERDICT: PENDING` |
+| M-03 | ENGINE-05 私有 SQL Server 边界（G-02-D / 02-10.8） | 门控 D-1：`crates/ontoforge/tests/private_fixtures.rs:14`（常量）、`:21` / `:44`（缺变量即 panic）、`:69`（`#[ignore]` 门控）；门控 D-2：`CONTRIBUTING.md:85-91` 记录私有入口与「CI 不运行」 | 仓库外目录的真实内容；git 历史中是否曾提交后删除过私有绑定 | `VERDICT: PENDING` |
+| M-04 | 02-10-T3 的真实 nightly 绿灯结论 | 13 条 G-A1..G-A5 结构门禁证明合同在当前源码中成立 | 「某次 nightly 运行真的跑绿」需要 Docker / GitHub runner / 网络，超出零容器零网络约束 | 沿用 07.2 既有 run `41833307824`；`02-VERIFICATION.md:194` 的 verdict 待 `/gsd-verify-work 02` 重判 |
+
 ## Validation Sign-Off
 
-- [x] 28个task都有执行证据或明确非运行理由。
-- [x] 27个运行/CI task均有命名测试与接线，唯MinIO覆盖仍PARTIAL。
+- [x] 31 个 task 都有执行证据或明确非运行理由（2026-11-04 的 28 个 + 02-11 的 3 个）。
+- [x] 30 个运行/CI task 均有命名测试或可失败门禁与接线；MinIO 合同缺口已由 `da5b151` 关闭。
 - [x] Wave 0原“missing”引用已核对，现有代码可运行。
 - [x] Windows/Ubuntu与真实Trino/PG最终CI通过。
-- [ ] ADR0017/02-10-T3的MinIO合同闭环。
-- [ ] `nyquist_compliant: true`，需上述缺口关闭后重验。
+- [x] 02-11 的 25 条只读门禁本轮全部实测通过；`private_fixtures` 测试本轮重跑 2 passed / 0 failed / 1 ignored。
+- [ ] M-01 / M-02 / M-03 三条 judgment 的人工结论（`02-11-HUMAN-ACCEPTANCE.md` 三处 `VERDICT: PENDING`）。
+- [ ] `02-VERIFICATION.md:194` 的 `02-10.6 | FAILED (BLOCKER)` 由 `/gsd-verify-work 02` 重判。
+- [ ] `nyquist_compliant: true`，需上述 judgment 项取得人工结论后重验。
 
 ## Validation Audit 2026-11-04
 
@@ -95,3 +122,15 @@ source_head: f8851ca073fed34e80e605f0ac91880259df7e12
 | Non-runtime skip | 1 |
 | Current local Iceberg versions passed | 2 |
 | Unresolved MinIO contract | 1 |
+
+## Validation Audit 2026-11-08
+
+| Metric | Count |
+|---|---|
+| Tasks audited | 31 |
+| Covered | 30 |
+| Partial | 0 |
+| Non-runtime skip | 1 |
+| Manual-only items | 4 |
+| Read-only gates re-run and passed | 25 |
+| Unresolved judgment items | 3 |
