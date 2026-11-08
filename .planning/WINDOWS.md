@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 12
+open_count: 13
 waived_count: 0
 fixed_count: 5
-total_count: 17
-last_updated: 2026-11-08T05:31:00.586Z
+total_count: 18
+last_updated: 2026-11-08T08:47:21.377Z
 ---
 
 # Broken Windows Ledger
@@ -32,6 +32,7 @@ last_updated: 2026-11-08T05:31:00.586Z
 | 15 | 07 | skipped-test | .planning/phases/07-rest-mcp-shell/07-03-SUMMARY.md |  | 07-03 workspace: 107 ignored (PG/Trino/private/p95/doctest); external-service evidence pending 07-13/14. Full names and reasons: 07-03-evidence/workspace-tests-jobs2.log. | open |  | 2026-10-29T04:32:00.805Z |  |
 | 16 | 07 | deviation | crates/ontoforge-action/tests/idempotency_pg.rs |  | 07-03 all-features Clippy: large_futures at lines 242/257/398 (16464 bytes); approved minimal Box::pin allocation fix in 07-02 PLAN if still present after replay repair. | fixed |  | 2026-10-29T04:32:02.063Z | 2026-10-29T04:49:36.824Z |
 | 17 | 02 | unrun-verify | .planning/phases/02-source-binding-engine/02-11-HUMAN-ACCEPTANCE.md |  | G-02-B / G-02-C / G-02-D 三项 judgment 的人工验收尚未进行；02-11 只交付机器可判定部分与问题清单，三条 VERDICT 仍为 PENDING，待下一轮 /gsd-verify-work 02 收集 | open |  | 2026-11-08T05:31:00.586Z |  |
+| 18 | 02 | flaky-test | crates/ontoforge/tests/cli_check_cardinality.rs | 437, 659 | 全工作区并行负载下 cardinality_budget_starts_after_precheck_and_pk 与 cardinality_total_deadline_is_shared 两个 300 ms deadline 用例偶发超时失败；隔离重跑 13 passed / 0 failed，全量 --no-fail-fast 重跑 1528 passed / 0 failed，判定为时序 flake 而非回归 | open |  | 2026-11-08T08:47:21.377Z |  |
 
 ````json
 [
@@ -247,6 +248,19 @@ last_updated: 2026-11-08T05:31:00.586Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-11-08T05:31:00.586Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 18,
+    "kind": "flaky-test",
+    "phase": "02",
+    "file": "crates/ontoforge/tests/cli_check_cardinality.rs",
+    "line": null,
+    "description": "全工作区并行负载下 cardinality_budget_starts_after_precheck_and_pk 与 cardinality_total_deadline_is_shared 两个 300 ms deadline 用例偶发超时失败；隔离重跑 13 passed / 0 failed，全量 --no-fail-fast 重跑 1528 passed / 0 failed，判定为时序 flake 而非回归",
+    "status": "open",
+    "reason": "门禁用例预算固定 300 ms，并行负载下偶发超时；彻底修复需放宽预算或改用可控时钟",
+    "recorded_at": "2026-11-08T08:47:21.377Z",
     "resolved_at": null,
     "milestone": "v1.0"
   }
