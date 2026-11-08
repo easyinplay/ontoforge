@@ -15,6 +15,7 @@
 | 4 | 02-08 | 类型兼容表、drift 模型、`docs/source-binding.md` | BIND-02, BIND-03 | 02-05 |
 | 4 | 02-09 | Trino 在线校验、退出码 3、`--check-pk` | BIND-03, ENGINE-01, ENGINE-02 | 02-05, 02-06 |
 | 5 | 02-10 | Linux CI（Trino + PG）、nightly Iceberg | ENGINE-05, ENGINE-01, ENGINE-03 | 02-08, 02-09 |
+| 6 | 02-11 | gap closure：G-02-A 源码调和证据 + G-02-B/C/D 机器可判定部分与人工验收清单 | ENGINE-05, BIND-01 | 02-10 |
 
 ## 验收
 
