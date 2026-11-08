@@ -81,7 +81,7 @@ victim
 
 | 标识符 | 位置 | 该处内容 |
 |---|---|---|
-| `Orders` | `ci/trino/l2/rules.json:19` | `"table": "orders\|Orders\|shipments\|items\|ordеrs"` — 正则变体成员（仅出现在规则字面量中，未被 seed.sql 创建） |
+| `Orders` | `ci/trino/l2/rules.json:18` | `"table": "orders\|Orders\|shipments\|items\|ordеrs"` — 正则变体成员（仅出现在规则字面量中，未被 seed.sql 创建） |
 | `a` | `crates/ontoforge-engine/tests/sqlite_engine.rs:779` | `second.table.catalog = "a".to_owned();` |
 | `a__b` | `crates/ontoforge-engine/tests/sqlite_engine.rs:776` | `first.table.catalog = "a__b".to_owned();` |
 | `aircraft` | `examples/ontologies/aviation/bindings/dev/aircraft.yaml:5` | `source: { catalog: demo, schema: aviation, table: aircraft }` |
@@ -92,7 +92,7 @@ victim
 | `cardinality_alias_fk_n` | `ci/pg/seed.sql:193` | `CREATE VIEW aviation.cardinality_alias_fk_n` |
 | `cardinality_alias_fk_upper` | `ci/pg/seed.sql:198` | `CREATE VIEW aviation.cardinality_alias_fk_upper` |
 | `cardinality_alias_pk_n` | `ci/pg/seed.sql:201` | `CREATE VIEW aviation.cardinality_alias_pk_n` |
-| `cardinality_records` | `ci/pg/seed.sql:32`；`crates/ontoforge-engine/tests/cardinality_check.rs:52` | `CREATE TABLE aviation.cardinality_records`；`source: { catalog: demo, schema: aviation, table: records }` 同族断言 |
+| `cardinality_records` | `ci/pg/seed.sql:172`；`crates/ontoforge-engine/tests/cardinality_check.rs:52` | `CREATE TABLE aviation.cardinality_records`；`source: { catalog: demo, schema: aviation, table: records }` 同族断言 |
 | `demo` | `ci/trino/catalog/demo.properties:4`；`examples/ontologies/aviation/bindings/dev/aircraft.yaml:5`；`ci/trino/l2/rules.json:4` | `connection-url=jdbc:postgresql://localhost:5432/demo`；`catalog: demo` |
 | `editstore` | `ci/trino/catalog/editstore.properties:4` | `connection-url=jdbc:postgresql://localhost:5432/editstore` |
 | `flight_crew` | `examples/ontologies/aviation/bindings/dev/flight-crew.yaml:5` | `source: { catalog: demo, schema: aviation, table: flight_crew }` |
@@ -107,13 +107,13 @@ victim
 | `maintenance_records` | `examples/ontologies/aviation/bindings/dev/maintenance-record.yaml:5` | `source: { catalog: demo, schema: aviation, table: maintenance_records }` |
 | `nation` | `ci/trino/l2/rules.json:17`；`ci/query-services.sh:81` | `{ "user": "l2", "catalog": "demo", "schema": "tiny", "table": "nation", ... }`；`r.tables.unshift({... table:"nation" ...})` |
 | `ontoforge_ci` | `ci/trino/iceberg/iceberg.properties:4` | `iceberg.jdbc-catalog.catalog-name=ontoforge_ci` |
-| `orders` | `ci/trino/l2/seed.sql:2`；`ci/trino/l2/rules.json:19` | `CREATE TABLE hive.sales.orders ...`；规则正则成员 |
+| `orders` | `ci/trino/l2/seed.sql:2`；`ci/trino/l2/rules.json:18` | `CREATE TABLE hive.sales.orders ...`；规则正则成员 |
 | `ordеrs` | `ci/trino/l2/seed.sql:5` | `CREATE TABLE hive.sales."ordеrs" AS SELECT 2 id;`（第 4 字符为西里尔字母 U+0435 `е`，L2 规则的同形异码测试用） |
 | `other` | `crates/ontoforge-engine/tests/bind_check_isolation.rs:51`；`crates/ontoforge/tests/cli_online_trino.rs:53` | `source: { catalog: other, schema: aviation, table: airports }` |
 | `outside` | `ci/query-services.sh:81` | `r.catalogs.unshift({user:"l2",catalog:"outside",allow:"read-only"})` |
 | `pilots` | `examples/ontologies/aviation/bindings/dev/pilot.yaml:6` | `source: { catalog: demo, schema: aviation, table: pilots }` |
 | `production_records` | `crates/ontoforge-engine/tests/cardinality_check.rs:254` | `BINDING.replace("table: records", "table: production_records")` |
-| `queries` | `ci/trino/l2/rules.json:20` | `{ "user": "l2", "catalog": "system", "schema": "runtime", "table": "queries", ... }` |
+| `queries` | `ci/trino/l2/rules.json:19` | `{ "user": "l2", "catalog": "system", "schema": "runtime", "table": "queries", ... }` |
 | `readings` | `crates/ontoforge/tests/cli_online.rs:293` | `source: { catalog: demo, schema: lab, table: readings }` |
 | `records` | `crates/ontoforge-engine/tests/cardinality_check.rs:52`；`:370` | `source: { catalog: demo, schema: aviation, table: records }`；`target.table.table = "records\"; DROP TABLE victim; --"`（注入测试串，物理名为 `records`） |
 | `runtime` | `ci/trino/l2/rules.json:19` | `{ "user": "l2", "catalog": "system", "schema": "runtime", "table": "queries", ... }` |
@@ -121,7 +121,7 @@ victim
 | `sales` | `ci/trino/l2/rules.json:12`；`ci/trino/l2/seed.sql:1` | `{ "user": "l2", "catalog": "hive", "schema": "sales", ... }`；`CREATE SCHEMA hive.sales;` |
 | `second` | `crates/ontoforge-engine/tests/drift_budget.rs:60` | `.catalog = "second".to_owned();` |
 | `shipments` | `ci/trino/l2/seed.sql:3` | `CREATE TABLE hive.sales.shipments AS SELECT 1 id;` |
-| `system` | `ci/trino/l2/rules.json:6`；`:20` | `{ "user": "l2", "catalog": "system", "allow": "all" }` |
+| `system` | `ci/trino/l2/rules.json:6`；`:19` | `{ "user": "l2", "catalog": "system", "allow": "all" }` |
 | `t` | `crates/ontoforge-schema/tests/scope_documents.rs:150`；`crates/ontoforge-engine/tests/doc_type_table.rs:98` | `source: { catalog: c, schema: s, table: t }` |
 | `tiny` | `ci/trino/l2/rules.json:11`；`crates/ontoforge-engine/tests/l2_explain.rs:44`；`ci/query-services.sh:81` | `{ "user": "l2", "catalog": "demo", "schema": "tiny", ... }` |
 | `tpch` | `ci/trino/catalog/tpch.properties:2` | `connector.name=tpch`（该 properties 文件即定义名为 `tpch` 的 Trino catalog） |
@@ -220,4 +220,4 @@ RESULT: PASS
 
 本 plan 的基线预期该节为空，实测同样为空：45 个已登记标识符全部落在公开通用领域（航空演示的 `aviation` / `aircraft` / `flights` / `pilots` / `gates` / `gate_legs` 等、TPC-H 与 L2 规则的公开通用名 `hive` / `sales` / `orders` / `shipments` / `items` / `nation` / `queries` / `tiny` / `runtime` / `system`、SQLite 附加库测试用的 `a` / `b__c` / `a__b` / `c`、以及通用记录名 `records` / `cardinality_records` / `production_records` / `readings`）或纯哑元（`a` / `c` / `s` / `t` / `other` / `second` / `victim`）之内，没有任何看起来像公司专有的集群名、内部库名或业务表名。
 
-（`ordеrs` 的第 4 个字符是西里尔字母 U+0435 `е`，不是 ASCII `e`；它是 `ci/trino/l2/seed.sql:5` 中有意构造的同形异码测试表，`ci/trino/l2/rules.json:19` 的规则正则同时列出 ASCII 变体与该同形异码变体，用于验证 L2 规则的字符级匹配。两者都是中性词。）
+（`ordеrs` 的第 4 个字符是西里尔字母 U+0435 `е`，不是 ASCII `e`；它是 `ci/trino/l2/seed.sql:5` 中有意构造的同形异码测试表，`ci/trino/l2/rules.json:18` 的规则正则同时列出 ASCII 变体与该同形异码变体，用于验证 L2 规则的字符级匹配。两者都是中性词。）

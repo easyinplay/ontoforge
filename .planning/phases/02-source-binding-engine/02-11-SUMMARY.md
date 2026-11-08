@@ -104,6 +104,14 @@ actuals:
 - **Files modified:** `02-11-source-scan.txt`、`02-11-RECONCILIATION.md`
 - **Commit:** `e915a34`
 
+2. **修正标识符来源表的 5 条 `file:line` 引用**
+- **Found during:** Phase 02 末轮 `gsd-code-review` 的 CR-01（`02-REVIEW.md` / `02-REVIEW-DISPOSITION.md`）
+- **Issue:** `02-11-source-scan.txt` 标识符来源表把 `ci/trino/l2/rules.json` 的两条规则行号整体偏移一行（`Orders` / `orders` 标 `:19` 实为 `:18`；`queries` 标 `:20`、`system` 第二处标 `:20` 实为 `:19`），并把 `ci/pg/seed.sql` 的 `cardinality_records` 标 `:32`（该行是 `aviation.aircraft`）实为 `:172`。
+- **Fix:** 逐条改为实测行号；同文件说明段第 223 行的同引用一并修正。
+- **影响:** 仅证据入口的行号，词表成员、中性判定与 `## SUSPECTED NON-NEUTRAL` 为空三项结论不变。
+- **Files modified:** `02-11-source-scan.txt`、`02-REVIEW-DISPOSITION.md`
+- **Commit:** 与本条同一提交
+
 ### 计划与实测的差异（如实登记，非本 plan 的改动）
 
 **1. 中性词表实测结果是 plan 基线的严格超集**

@@ -5,7 +5,7 @@ titles: json
 findings:
   - id: CR-01
     severity: critical
-    disposition: open
+    disposition: fixed
     title: "标识符来源表 5 条 `file:line` 引用指向完全无关的行"
   - id: WR-01
     severity: warning
@@ -81,3 +81,9 @@ recorded: 2026-11-08T09:09:17.687Z
 Dispositions: `open` (recorded, not yet triaged), `fixed`, `skipped`, `deferred`.
 Set `deferred` by hand and put the reason in the Source cell; both are preserved. A `|` in the reason is kept as prose and escaped on the next run.
 Re-running the gate keeps every row it can. A row the current review no longer reports is kept and its Source cell flagged, so a finding does not leave this record silently. ONE exception: when a finding id is REUSED by a different finding, the earlier decision cannot keep a row — the id is taken — and it is dropped. A RECORDED decision (anything but `open`) is named on the console when that happens; a row still at `open` is replaced silently, because `open` records no decision to lose.
+
+## Fixed Issues
+
+| ID | Source | 说明 |
+|---|---|---|
+| CR-01 | 本次修正提交 | `02-11-source-scan.txt` 标识符来源表 5 条 `file:line` 引用修正：`ci/trino/l2/rules.json:19` → `:18`（`Orders` / `orders` 规则行）、`:20` → `:19`（`queries` / `system` 第二处）、`ci/pg/seed.sql:32` → `:172`（`cardinality_records`）；同文件说明段第 223 行同引用一并修正。词表成员、中性判定与 `## SUSPECTED NON-NEUTRAL` 为空的结论不受影响。
