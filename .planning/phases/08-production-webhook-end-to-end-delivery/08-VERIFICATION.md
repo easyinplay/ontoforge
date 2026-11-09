@@ -2,7 +2,7 @@
 phase: 08-production-webhook-end-to-end-delivery
 verified: 2026-11-08T20:43:44Z
 status: human_needed
-score: 15/16 must-haves verified
+score: 16/16 must-haves verified
 covered_files:
   - .github/workflows/ci.yml
   - .planning/phases/08-production-webhook-end-to-end-delivery/08-01-PLAN.md
@@ -14,18 +14,19 @@ covered_files:
   - .planning/phases/08-production-webhook-end-to-end-delivery/08-evidence/ci-evidence.tar.gz
   - Cargo.lock
   - ci/verify-evidence-archive.sh
+  - crates/ontoforge-action/src/outbox.rs
+  - crates/ontoforge-action/tests/outbox.rs
+  - crates/ontoforge-storage/migrations/postgres/0004_action.sql
+  - crates/ontoforge-storage/migrations/sqlite/0004_action.sql
+  - crates/ontoforge-storage/src/commit.rs
   - crates/ontoforge/Cargo.toml
   - crates/ontoforge/WEBHOOK-WORKER.md
   - crates/ontoforge/examples/webhook_receiver.rs
   - crates/ontoforge/tests/webhook_e2e_pg.rs
-covered_digest: "v4:sha256:6a1ccf5883dcf512e32be071c11a9e17488ee3e02d3cc1dac4bbd7f6510c7a50"
-behavior_unverified: 1
+covered_digest: "v4:sha256:bb93e20da0edc7ff710131f88cad03fb5b22108c8618296e8fa64927b16128ef"
+behavior_unverified: 0
 overrides_applied: 0
-behavior_unverified_items:
-  - truth: "FA-02（backstop）：第 17 次失败起固定 300 秒退避由 `crates/ontoforge-action/src/outbox.rs` 的 `1_i64 << (attempts - 1).min(16)` 与 `.min(300)` 公式保证"
-    test: "让接收端对同一 event_id 连续失败 ≥17 次（`--fail-first-per-event` 的持续失败模式，或在 CI 里对该 event_id 反复注入 503），观察第 17 次失败之后的 `next_attempt_at` 间隔是否恒为 300 秒"
-    expected: "of_webhook_outbox 第 17 次失败后写入的 next_attempt_at 与 last_attempt_at 之差恒为 300 秒（不再指数增长、不超过 300 秒上限）"
-    why_human: "本 phase 的端到端用例只执行第 1 次重试（约 1 秒，实测 1.026–1.183 秒）；第 17 次失败起的行为只由源码公式静态保证，从未在运行时被执行过。源码审阅不能证明该公式在真实失败序列上的时序效果"
+behavior_unverified_items: []
 human_verification:
   - test: "对照 CI run 42515808955 的日志与 `phase8-webhook-ledger` artifact 的 `ledger.jsonl`，人工复核 6 条原始记录：3 条事件各 2 次尝试（首条 503、末条 204），相邻间隔 1.157s / 1.183s / 1.026s 落在 [0.9s, 30s]，唯一 event_id 集合与 PostgreSQL of_webhook_outbox 的 3 行完全相等；然后签署 Phase 8 的结论位"
     expected: "ledger 原始记录、去重集合、PostgreSQL 终态三者互相印证，结论位由 PENDING 改为人工签署（本项目约定：机器可判定结果只作证据，执行者与 verifier 均不代签）"
@@ -54,7 +55,7 @@ human_verification:
 | 6 | `[webhook] target` 只来自受信的 `ontoforge-server.toml`，Action 请求无法修改；`[store] kind = "postgres"` + `url_env` 走 server 同一条 store 解析路径（D-03 / CF-02） | ✓ VERIFIED | `crates/ontoforge/src/webhook_worker.rs:13` `load_server(&args.server_config)` → `:38` `EditStore::open(server.settings)`（与 server 同一解析路径）；`crates/ontoforge-engine/src/config.rs:56-63` `WebhookWorkerConfig` 五键 + `deny_unknown_fields`；`outbox.rs:79` 请求头取自 `config.target` |
 | 7 | ledger 与上传的 artifact 不含 PostgreSQL 密码或连接串 | ✓ VERIFIED | `tar -xzOf …tar.gz \| grep -cE 'postgres://[^[:space:]]*:[^[:space:]]*@'` = 0；CI job 的 `credential_scan`（`check-artifacts target/phase8-webhook`）先于上传执行，且上传 step 的 `if` 依赖 `steps.credential_scan.outcome == 'success'` |
 | 8 | FA-01（backstop）：接收端对非 JSON 请求体不 panic，`payload_event_id` 记为 null 且请求仍入 ledger | ✓ VERIFIED | 源码路径无 panic 分支：`serde_json::from_slice::<Value>(&body).ok().and_then(...)` → `None`；`event_id` 回退取 header；`event_id` 为 `None` 时 `attempt_seq = 0` 且状态码走 204 分支；ledger 写入是无条件路径。执行者另在本机实际观测过一次非 JSON POST（`header_event_id`/`payload_event_id`/`event_id` 三者 null、进程不 panic、ledger 照常多一行）——该观测在执行者记录里，**未**固化为仓库内测试 |
-| 9 | FA-02（backstop）：第 17 次失败起固定 300 秒退避由 `outbox.rs` 的 `1_i64 << (attempts - 1).min(16)` 与 `.min(300)` 公式保证 | ⚠️ PRESENT_BEHAVIOR_UNVERIFIED | 公式在位但**从未执行**：本 phase 的端到端用例只跑第 1 次重试（约 1 秒）；D-04 明确把第 k 次时序排除在本 phase 之外。已登记 `.planning/WINDOWS.md` 第 19 条（`unrun-verify`，open）→ 转人工验证项 |
+| 9 | FA-02：计算退避从第 10 次已持久化失败起达到 300 秒上限；高次计数补充验证覆盖 attempts 1..20 | ✓ VERIFIED | `crates/ontoforge-action/tests/outbox.rs::retry_backoff_caps_at_five_minutes_without_leaking_response` 循环上限扩至 20（已固化进本分支）后实跑 `cargo test -p ontoforge-action --locked --test outbox -- --nocapture` 通过（11 passed; 0 failed; 0.97s），逐次断言 `next_attempt_at - poll_input ∈ [min(2^(k-1),300), +1s)`，k=10..20 全部观测到 300 秒上限。注：原描述「第 17 次起」有误，上限自第 10 次已记录失败起生效；`.min(16)` 仅防 i64 移位溢出，在 `.min(300)` 之后不可观测。既有 CI job（`ci.yml:73`）自 Phase 05 起已每次运行该用例至 attempt 10，本提交后覆盖至 attempt 20。证据边界：SQLite + 可控时钟 + 单 worker，公式路径与后端无关 |
 | 10 | CI 的 `phase8-webhook-e2e` job 在 PR 与 main push 上都跑（workflow 级触发条件覆盖、无额外 `if:`），是本 phase 唯一的端到端裁决点（D-05） | ✓ VERIFIED | `.github/workflows/ci.yml:3-8` 触发条件 `push: branches: [main]` / `pull_request:` / `workflow_dispatch:`；`ci.yml:383` 的 job 块内无任何 `if:` |
 | 11 | job 的退出码是唯一的失败信号；artifact 以 `if-no-files-found: warn` 上传，不掩盖真实失败原因 | ✓ VERIFIED | `ci.yml:427` `if-no-files-found: warn`（该 job 内；其余 4 处 `error` 属于别的 job）；上传 step 的 `if` 为 `${{ !cancelled() && steps.credential_scan.outcome == 'success' }}` |
 | 12 | 上传前用 `bash ci/query-services.sh check-artifacts target/phase8-webhook` 扫描证据目录 | ✓ VERIFIED | `ci.yml:419`（`credential_scan` step）位于上传 step 之前 |
@@ -63,7 +64,7 @@ human_verification:
 | 15 | 运维者能在 `crates/ontoforge/WEBHOOK-WORKER.md` 找到这条端到端联调怎么跑：job 名、环境变量、harness 位置与边界 | ✓ VERIFIED | `WEBHOOK-WORKER.md:24` 新增 `## 端到端联调（CI）`；`phase8-webhook-e2e` / `phase8-webhook-ledger` / `ONTOFORGE_WEBHOOK_RECEIVER_BIN` / `ONTOFORGE_WEBHOOK_EVIDENCE_DIR` 四个字面量齐备；既有 `X-Ontoforge-Event-Id`（:22）与 `至少一次`（:22/:47）措辞保留；`git diff $(git merge-base main HEAD) --shortstat` = 25 insertions、0 deletions（纯追加） |
 | 16 | FA-03（backstop）：归档内容确实来自一次成功 run | ✓ VERIFIED | 索引 `source_boundary.runs["42515808955"].successful_job_ids = [128838450761]`，`gh run view 42515808955 --json jobs` 独立确认该 job 结论 success；归档 ledger 的 `received_at` 落在 `2026-11-08T19:36:57.741Z – 19:36:59.107Z`，正好在 run 42515808955 的 phase8 job 日志窗口内（该 run 日志：`19:36:53.9` 起跑、`19:36:59.237` `test result: ok. 1 passed`）；较早的多事件矩阵 run 42510584474 的 ledger 时间戳是 `18:34`，两者可区分。**该时间戳关联是本次验证新增的确定性证据**，超出 08-02 执行时只能靠人工对照的判定力 |
 
-**Score:** 15/16 truths verified（1 条 present-but-behavior-unverified：FA-02）
+**Score:** 16/16 truths verified
 
 ### ROADMAP Success Criteria 对照（goal-backward 口径）
 
@@ -169,17 +170,11 @@ human_verification:
 - **W-D（WR-03）**：接收端在锁内分配 `seq`、在锁外写文件，并发下文件顺序可能与 `seq` 顺序解耦。当前负载下（6 条记录、顺序一致）不影响结论；属于接收端 harness 的精度问题。
 - **W-E（WR-04）**：`assert_ne!(receiver.id(), std::process::id())` 恒真（`Command::spawn` 的子进程 PID 必不同于父进程），该断言本身不构成独立性证据；真正的独立性证据是 spawn 调用点 + ledger 的 `remote_addr`。本报告采信后者（`remote_addr` 全部 `127.0.0.1:56908`，且端口由 OS 分配）。
 - **W-F（SUMMARY 叙述不精确）**：`08-02-SUMMARY.md:159` 写「归档成员的 ledger 是 08-01 那次多事件矩阵 run 的原始记录」。实际来源是 run **42515808955**（ledger 时间戳 `19:36`，而多事件矩阵 run 42510584474 是 `18:34`）。同一份 SUMMARY 的 D3 行与索引 `source_boundary.runs` 记录的 run id 是正确的，仅该行叙述有误。
-- **W-G（WINDOWS.md 残留）**：第 20 条（FA-03）仍为 open，但本次验证已给出时间戳级别的确定性关联（见 truth 16），建议人工复核后关闭。第 19 条（FA-02）应保持 open 直到 §Human Verification 的第 1 项被执行。
+- **W-G（WINDOWS.md 残留）**：第 20 条（FA-03）仍为 open，但本次验证已给出时间戳级别的确定性关联（见 truth 16），建议人工复核后关闭。第 19 条（FA-02）已于 2026-11-09 随运行时证据补齐判 fixed（原「应保持 open 直到人工执行」的口径已被可控时钟验证取代——见 truth 9）。
 
 ### Human Verification Required
 
-#### 1. FA-02：第 17 次失败起固定 300 秒退避（未执行）
-
-**Test:** 让接收端对同一 `event_id` 连续失败 ≥17 次（持续 503），观察 `of_webhook_outbox` 的 `next_attempt_at` 与 `last_attempt_at` 之差
-**Expected:** 第 17 次失败之后间隔恒为 300 秒（`1_i64 << (attempts - 1).min(16)` 与 `.min(300)` 的运行时效果），不再指数增长
-**Why human:** 本 phase 只执行了第 1 次重试（实测 1.026–1.183 秒）；退避上限从未在运行时被执行，源码公式不能替代行为证据。已登记 `.planning/WINDOWS.md` 第 19 条
-
-#### 2. Phase 8 结论位的人工签署（本项目固定流程）
+#### 1. Phase 8 结论位的人工签署（本项目固定流程）
 
 **Test:** 对照 CI run 42515808955 的日志与 `phase8-webhook-ledger` artifact 的 `ledger.jsonl` 人工复核：6 条原始记录、3 条事件各 2 次尝试（503→204）、间隔 1.157s / 1.183s / 1.026s、唯一 event_id 集合与 PostgreSQL `of_webhook_outbox` 的 3 行完全相等；据此签署结论位
 **Expected:** ledger 原始记录、去重集合、PostgreSQL 终态三者互相印证，结论位由 `VERDICT: PENDING` 改为人工签署
@@ -187,7 +182,7 @@ human_verification:
 
 ### Gaps Summary
 
-无 blocker gap。15/16 条 must-have 由仓库源码 + Linux CI run + 冻结归档三重证据判定通过；剩余 1 条（FA-02）是**声明式 backstop**——它在源码里有公式、在本 phase 里被 D-04 明确排除执行，因此不能按「presence = behavior」判为 VERIFIED，按规则转人工验证项（`.planning/WINDOWS.md` 第 19 条已登记）。
+无 blocker gap。16/16 条 must-have 由仓库源码 + Linux CI run + 冻结归档 + 可控时钟运行时验证判定通过。FA-02 原判 PRESENT_BEHAVIOR_UNVERIFIED（本 phase 端到端用例按 D-04 只执行第 1 次重试，「presence != behavior」）；2026-11-09 两轮独立复核查明 300 秒封顶自 attempt 10 起生效且该用例自 Phase 05 起每次 CI 都在跑（`ci.yml:73`），随后把 `retry_backoff_caps_at_five_minutes_without_leaking_response` 循环上限扩至 20 并固化进本分支，本机实测 11 passed / 0 failed / 0.97s——改判 VERIFIED。证据边界：SQLite + 可控时钟 + 单 worker，非 PostgreSQL 生产端到端的高次重试；公式与 claim/retry 代码路径与后端无关。
 
 REL-01 / REL-02 的机器可判定部分已达成：Linux CI 上的真实 `ontoforge webhook-worker` 二进制 → 真实 PostgreSQL outbox → 独立进程、真实回环 TCP 端口上的 HTTP 接收端，重试、去重与至少一次送达三件事都可从接收端原始 ledger 与 PostgreSQL 终态两处独立复算。
 
