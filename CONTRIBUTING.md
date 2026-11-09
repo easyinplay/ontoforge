@@ -82,7 +82,7 @@ bash ci/iceberg-services.sh cleanup --state /path/to/private/state.json
 
 临时凭据只进入私有 env/catalog，Trino使用环境凭据 provider；原始日志按本次真实凭据扫描通过后才可公开。CI为主fixture和helper分别保存私有state，并用两个独立 `always()` 步骤补偿清理，第一项失败也会尝试第二项。helper在创建容器前持久化owner和lock token；清理失败保留state供重试。state不存在时无操作，资源或锁身份无法核验时拒绝删除。只有 **schedule 触发且失败** 才运行拥有 `issues: write` 的 `report-failure`；手动触发不创建 issue/comment，测试job始终只有 `contents: read`。
 
-### 私有 fixture（SQL Server 等公司环境）
+### 私有 fixture（私有 Trino 数据源等公司环境）
 
 公司环境与不能公开的数据只通过 `crates/ontoforge/tests/private_fixtures.rs` 在本地验证，CI 不运行这个测试目标。
 

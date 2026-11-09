@@ -336,7 +336,7 @@ L2 边界（显式例外）：
 | D6 | renderer | **已被 D14 取代** |
 | D7 | 重复 pk | **已被 D18 取代** |
 | D8 | 类型契约 | Decimal 可选 precision/scale（缺省 38,10），Rust 用 bigdecimal、传输用规范化字符串；无时区 timestamp 列须在绑定声明 `timezone`（否则 E）；Geopoint 不支持 source 绑定（E）；Array ↔ Trino array / PG array；edit store text 列 `COLLATE "C"` |
-| D9 | CI 矩阵 | PR：Trino + PG（source 与 edit store 两个 catalog）；nightly：+ Iceberg（JDBC catalog + MinIO），失败自动开 issue；SQL Server 走 `ONTOFORGE_PRIVATE_FIXTURES` |
+| D9 | CI 矩阵 | PR：Trino + PG（source 与 edit store 两个 catalog）；nightly：+ Iceberg（JDBC catalog + MinIO），失败自动开 issue；私有 Trino 数据源走 `ONTOFORGE_PRIVATE_FIXTURES` |
 | D10 | 延迟预算（**已被 D25 取代**） | pk 读 p95 < 500ms、Action p95 < 1s、过滤 p95 < 2s，前提是专用 Trino resource group 或空闲集群；已编辑对象 PG 直读 p95 < 50ms；共享繁忙集群只监测不承诺 |
 | D11 | 读审计 | 有界队列异步批量写；积压或持续写失败 → 读请求 `AuditUnavailable`（承诺措辞见 D15） |
 | D12 | PG 路径 scope | Rust 内用 CEL 单行求值行谓词与列遮蔽；行谓词只能引用同行属性与 `principal.attrs`（validate 强制）；差分测试覆盖「Rust 求值 ≡ SQL 编译」 |
@@ -371,7 +371,7 @@ L2 边界（显式例外）：
 ### NOT in scope（本 eng review 补充；CEO 版见上文）
 - 行谓词引用 link / 其他对象（D12 限制同行属性）：下一 milestone。
 - Geopoint 的 source 绑定（D8）：待有真实需求再定物理形态。
-- SQL Server 自动化 CI（D9）：只走私有 fixture。
+- 私有 Trino 数据源自动化 CI（D9）：只走私有 fixture。
 - 快照一致分页（D22 明示非快照一致）：随 Iceberg 接入。
 - 读缓存（D10 不引入）。
 - 推迟项按项目纪律进 GSD backlog，不建 TODOS.md（CEO review 已定）。
