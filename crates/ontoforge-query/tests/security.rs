@@ -1764,11 +1764,7 @@ async fn cursor_multikey_null_pages_have_no_duplicates_or_omissions() {
 }
 
 #[tokio::test]
-#[allow(
-    clippy::too_many_lines,
-    reason = "the test keeps the final-row cap and audit timing assertions together"
-)]
-async fn cap_counts_final_masked_row_and_version() {
+async fn cap_counts_final_visible_row_and_version() {
     let f = fixture().await;
     let active = f.store.active_definition().await.unwrap();
     let ty = &active.ontology.object_types[&name("Flight")];
@@ -1788,20 +1784,18 @@ async fn cap_counts_final_masked_row_and_version() {
     let large = "x".repeat(16 * 1024 * 1024);
     let engine = RowsEngine(&large);
     let tokens = TokenCodec::new(b"list-key".to_vec()).unwrap();
-    let request = QueryRequest {
-        set: ObjectSet::Type {
-            object_type: name("Flight"),
-        },
-        select: vec![prop("status")],
-    };
-    let order = vec![OrderBy {
-        property: prop("flightId"),
-        direction: Direction::Asc,
-        nulls: Nulls::Last,
-    }];
     let query = ValidatedQuery::new(
-        request,
-        order.clone(),
+        QueryRequest {
+            set: ObjectSet::Type {
+                object_type: name("Flight"),
+            },
+            select: vec![prop("status")],
+        },
+        vec![OrderBy {
+            property: prop("flightId"),
+            direction: Direction::Asc,
+            nulls: Nulls::Last,
+        }],
         PageSpec {
             first: 1,
             after: None,
@@ -1827,30 +1821,48 @@ async fn cap_counts_final_masked_row_and_version() {
     assert!(visible.truncated);
     assert!(visible.has_more);
     assert!(visible.cursor.is_none());
+}
 
-    tokio::time::timeout(Duration::from_secs(3), async {
-        while f.store.read_audit().health().pending != 0 {
-            tokio::time::sleep(Duration::from_millis(5)).await;
-        }
-    })
-    .await
-    .expect("the first audit row reaches the sink before the second large read");
-
-    scope
-        .types
-        .get_mut(&name("Flight"))
-        .unwrap()
-        .columns
-        .insert(prop("status"), Pred::Const(false));
-    let request = QueryRequest {
-        set: ObjectSet::Type {
-            object_type: name("Flight"),
+#[tokio::test]
+async fn cap_ignores_masked_large_source_value() {
+    let f = fixture().await;
+    let active = f.store.active_definition().await.unwrap();
+    let ty = &active.ontology.object_types[&name("Flight")];
+    let mut scope = f.scope.clone();
+    scope.types.insert(
+        name("Flight"),
+        TypeScope {
+            row: Pred::Const(true),
+            columns: ty
+                .properties
+                .keys()
+                .cloned()
+                .map(|property| {
+                    let pred = if property == prop("status") {
+                        Pred::Const(false)
+                    } else {
+                        Pred::Const(true)
+                    };
+                    (property, pred)
+                })
+                .collect(),
         },
-        select: vec![prop("flightNumber")],
-    };
+    );
+    let large = "x".repeat(16 * 1024 * 1024);
+    let engine = RowsEngine(&large);
+    let tokens = TokenCodec::new(b"list-key".to_vec()).unwrap();
     let query = ValidatedQuery::new(
-        request,
-        order,
+        QueryRequest {
+            set: ObjectSet::Type {
+                object_type: name("Flight"),
+            },
+            select: vec![prop("flightNumber")],
+        },
+        vec![OrderBy {
+            property: prop("flightId"),
+            direction: Direction::Asc,
+            nulls: Nulls::Last,
+        }],
         PageSpec {
             first: 1,
             after: None,
@@ -1876,6 +1888,69 @@ async fn cap_counts_final_masked_row_and_version() {
     assert!(!masked.truncated);
     assert!(!masked.has_more);
     assert!(!masked.rows[0].version.is_empty());
+}
+
+/// The 1-second pending-age limit is wall-clock by design: this test holds an
+/// exclusive lock on the audit database file so every sink write fails, then
+/// waits (bounded, with a named reason) for the worker to trip the deadline.
+#[tokio::test]
+async fn audit_pending_age_limit_fails_closed() {
+    use ontoforge_storage::read_audit::{ReadAuditMetadata, ReadAuditStatus};
+    let f = fixture().await;
+    let db_url = format!("sqlite://{}", f._dir.path().join("edit.db").display());
+    let lock_pool = sqlx::SqlitePool::connect(&db_url)
+        .await
+        .expect("lock pool");
+    let mut lock_conn = lock_pool.acquire().await.expect("lock conn");
+    sqlx::query("BEGIN EXCLUSIVE")
+        .execute(&mut *lock_conn)
+        .await
+        .expect("begin exclusive");
+
+    let metadata = ReadAuditMetadata {
+        principal: "audit-test".to_owned(),
+        tool: "list".to_owned(),
+        object_type: Some("Flight".to_owned()),
+        condition_api_names: Vec::new(),
+        effective_roles: Vec::new(),
+        def_version: 0,
+    };
+    let guard = f
+        .store
+        .read_audit()
+        .reserve(metadata)
+        .expect("first reserve must succeed before the sink trips");
+    guard.finish(ReadAuditStatus::Success, 1).expect("enqueue");
+
+    tokio::time::timeout(Duration::from_secs(15), async {
+        while f.store.read_audit().health().available {
+            tokio::time::sleep(Duration::from_millis(50)).await;
+        }
+    })
+    .await
+    .expect("read audit sink did not trip the 1s pending-age deadline within 15s");
+
+    let metadata = ReadAuditMetadata {
+        principal: "audit-test".to_owned(),
+        tool: "list".to_owned(),
+        object_type: Some("Flight".to_owned()),
+        condition_api_names: Vec::new(),
+        effective_roles: Vec::new(),
+        def_version: 0,
+    };
+    assert!(
+        matches!(
+            f.store.read_audit().reserve(metadata),
+            Err(ontoforge_storage::read_audit::AuditUnavailable)
+        ),
+        "a tripped sink must fail closed"
+    );
+    let written: i64 =
+        sqlx::query_scalar("SELECT COUNT(*) FROM of_read_audit")
+            .fetch_one(&mut *lock_conn)
+            .await
+            .expect("durable count");
+    assert_eq!(written, 0, "no audit row may reach the durable sink");
 }
 
 #[tokio::test]
