@@ -66,7 +66,7 @@ fn normal_order(order: OrderBy) -> NormalizedOrder {
 }
 
 struct Fixture {
-    _dir: tempfile::TempDir,
+    dir: tempfile::TempDir,
     store: EditStore,
     principal: Principal,
     scope: ontoforge_auth::scope::PrincipalScope,
@@ -109,7 +109,7 @@ async fn fixture() -> Fixture {
     };
     let scope = compiled.for_principal(&principal);
     Fixture {
-        _dir: dir,
+        dir,
         store,
         principal,
         scope,
@@ -1897,7 +1897,7 @@ async fn cap_ignores_masked_large_source_value() {
 async fn audit_pending_age_limit_fails_closed() {
     use ontoforge_storage::read_audit::{ReadAuditMetadata, ReadAuditStatus};
     let f = fixture().await;
-    let db_url = format!("sqlite://{}", f._dir.path().join("edit.db").display());
+    let db_url = format!("sqlite://{}", f.dir.path().join("edit.db").display());
     let lock_pool = sqlx::SqlitePool::connect(&db_url).await.expect("lock pool");
     let mut lock_conn = lock_pool.acquire().await.expect("lock conn");
     sqlx::query("BEGIN EXCLUSIVE")
