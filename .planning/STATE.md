@@ -4,11 +4,11 @@ milestone: v1.1
 milestone_name: Gap Closure
 current_phase: 09
 current_phase_name: Systemd Worker Auto-Start
-status: phase-12-ready
-stopped_at: Phase 08-11 all ACCEPTED+merged; Phase 12 (release) is next and unblocked
-last_updated: "2026-11-10T09:50:00Z"
+status: released
+stopped_at: v1.1 RELEASED — tags v1.0/v1.1, GitHub Release, npm ontoforge@1.1.0, MILESTONES.md
+last_updated: "2026-11-10T14:30:00Z"
 last_activity: 2026-11-09
-last_activity_desc: Phase 09 VERDICT ACCEPTED (WSL2 real-machine signoff); all v1.1 phases verified
+last_activity_desc: v1.1 released — tags+Release+npm+MILESTONES; REL-01..07 all Complete
 state_head: d6764e2
 progress:
   total_phases: 5
@@ -20,8 +20,10 @@ progress:
 # Project State
 
 ## Current Position
-Phase 8-11: ALL ACCEPTED + MERGED（#12/#13/#14/#15；09 VERDICT ACCEPTED 2026-11-10 WSL2 真机签字）
-Next: Phase 12 release — tags + GitHub Release + npm + MILESTONES.md
+v1.1 RELEASED 2026-11-10: Phases 8-12 all Complete
+Tags v1.0(1bfa237)/v1.1 pushed; Release https://github.com/easyinplay/ontoforge/releases/tag/v1.1
+npm ontoforge@1.1.0 published+verified; MILESTONES.md written
+Next: milestone audit or next version
 
 ## Project Reference
 
@@ -75,11 +77,11 @@ v1.1 承接映射：05 → Phase 08 / 09（REL-01..03）、06 → Phase 10（REL
 
 ## Session Continuity
 
-Last session: 2026-11-10T09:50:00Z
-Stopped at: Phase 09 ACCEPTED; Phase 12 ready to start
+Last session: 2026-11-10T14:30:00Z
+Stopped at: v1.1 released
 Resume file: .planning/handoff/ontoforge-devin-2026-11-09.md
 
 ## Operator Next Steps
 
 - 全部 PR 已合并入 main（HEAD 74fa55e）
-- Phase 12：tags + GitHub Release + npm publish + MILESTONES.md（验收全齐，可执行）
+- v1.1 已发布；后续可跑 milestone audit 或开启下一 milestone

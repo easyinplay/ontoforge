@@ -27,7 +27,7 @@ v1.1 是收口 milestone：范围来自 v1.0 关闭时逐条记录的 4 项残�
 
 ### 首次对外发布
 
-- [ ] **REL-07**: v1.1 验收通过后，v1.0 与 v1.1 tag 推送到远端、GitHub Release 产出、npm 包发布成功，发布记录写回 `.planning/MILESTONES.md`
+- [x] **REL-07**: v1.1 验收通过后，v1.0 与 v1.1 tag 推送到远端、GitHub Release 产出、npm 包发布成功，发布记录写回 `.planning/MILESTONES.md`
 
 ## Deferred Requirements
 
