@@ -9,10 +9,10 @@
 | 项 | 值 |
 |---|---|
 | v1.0 tag | `1bfa237`（annotated `df9281a`，历史 milestone 补推） |
-| v1.1 tag | annotated `5936117` → 发布 commit（含 workspace `version = "1.1.0"` + LICENSE + npm 元数据） |
-| GitHub Release | https://github.com/easyinplay/ontoforge/releases/tag/v1.1 |
+| v1.1 tag | annotated `5936117` → 发布 commit；另有 `v1.1.0` 同指此 commit（release.yml 门禁要求 tag==v{semver}，v1.1 为 milestone 名、v1.1.0 为发布 machinery tag） |
+| GitHub Release | https://github.com/easyinplay/ontoforge/releases/tag/v1.1.0 |
 | npm 包 | `ontoforge@1.1.0`（unscoped，registry.npmjs.org；已验证 `npm install ontoforge@1.1.0` + import 正常） |
-| Native 资产 | release.yml `release: published` 三平台构建（x86_64-linux / aarch64-macos / x86_64-windows）→ assets |
+| Native 资产 | release.yml run 42833422911：3 构建 + verify + upload 全绿，9 资产（3 平台 × archive+sha256+manifest）已在 Release 可见 |
 
 ### 验收闭合
 
