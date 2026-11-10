@@ -71,7 +71,35 @@ expected: |
   5) 对照本 phase 的 CI artifact 复核测试 1-3 的证据链。
   结论位：VERDICT: PENDING——执行者与 verifier 均不代签；签字时须写明 commit、
   主机 / systemd 版本与证据指针。
-result: pending
+evidence: |
+  真机执行（2026-11-10，宿主 IdeaCentreGeekPro-17IRR / WSL2 Ubuntu-26.04 /
+  kernel 6.18.33.2-microsoft-standard-WSL2 / systemd 259 (259.5-0ubuntu3.4)，
+  受验收 commit = main `05785bd`；SQLite store 变体——生产语义同 PG 路径，
+  差异已在下注明）：
+  1) 安装按 INSTALL.md 逐条执行：ontoforge 系统账户（nologin）、
+     /usr/local/bin/ontoforge (root:root 0755)、/etc/ontoforge/ontoforge-server.toml
+     (root:ontoforge 0640，[store] sqlite path=/var/lib/ontoforge/edit.db)、
+     仓库原始 unit → `systemd-analyze verify` 通过 → `enable --now` active。
+  2) 首事件（种入 of_webhook_outbox）经 worker 投递：receiver ledger
+     `WSLUAT-49CB41FBE045458A` 204，`delivered_at` 落库 —— 投递链路真机端到端通。
+  3) `wsl --shutdown` 冷启动：boot_id `ec44145e…` → `86d2384e-abcf-4db3-8f03-ad5746733a3e`
+     （真重启）；新 boot 中 worker `ActiveState=active` + 新 InvocationID
+     `b1538f4c271447acb58e3a2d9c810f19`（MainPID=130，零人工干预）；
+     journal `systemd[1]: Started ontoforge-webhook-worker.service` ——
+     随系统启动拉起已证。
+  4) `kill -9 MainPID=126`（InvocationID `b46a4e79…`）→ 观察期捕获
+     `SubState=auto-restart`（监督可观测信号）→ 8s 内 `NRestarts=1`、
+     新 InvocationID `2734a7d6b3e84970ab350e7379581499`、`MainPID=539`；
+     重启后种入的 `WSLUAT-95804E8CDD214E42` 投递成功（ledger 204 + delivered_at）
+     —— 异常退出自动恢复 + outbox 事件无丢失已证。
+  5) 验收运行中还观察到一次自发崩溃-自愈（seed 期 SQLite 锁竞争 → worker 崩 →
+     systemd 自动重启恢复），佐证 Restart=on-failure 行为真实生效。
+  证据文件：target/phase9-wsl-uat/（kill-restart.json、journal.txt、ledger.jsonl、
+  systemctl-show-*、systemd-analyze-verify.txt、host-info.txt）。
+  注：本验收使用 SQLite store 而非持久化 PostgreSQL——unit/重启/投递语义相同；
+  PG 变体已由 CI phase9-webhook-supervision 两次实跑覆盖（artifact 13733185293）。
+  测试后 unit 已 disable（不留自启），安装文件保留可复核。
+result: pending — 等待人工签字（执行证据已备，签字人复核后落 VERDICT）
 
 ## Summary
 
