@@ -38,6 +38,9 @@ struct Args {
     /// Answer the first attempt of every event with 503 and later attempts with 204.
     #[arg(long)]
     fail_first_per_event: bool,
+    /// Hold the response of the very first request until DIR/release exists.
+    #[arg(long, value_name = "DIR")]
+    hold_first_request: Option<PathBuf>,
 }
 
 /// One received request, as the receiver saw it.
@@ -68,6 +71,7 @@ struct ReceiverState {
 struct Shared {
     ledger: PathBuf,
     fail_first_per_event: bool,
+    hold_first_request: Option<PathBuf>,
     state: Arc<Mutex<ReceiverState>>,
 }
 
@@ -140,6 +144,18 @@ async fn receive(
     file.write_all(&line).expect("ledger write");
     file.flush().expect("ledger flush");
 
+    // The barrier holds the very first request after its ledger record is durable, so a
+    // supervisor can kill the worker while a delivery is in flight. The response is never
+    // sent before DIR/release exists; without the flag the behavior is unchanged.
+    if seq == 1
+        && let Some(dir) = &shared.hold_first_request
+    {
+        let release = dir.join("release");
+        while !release.exists() {
+            tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+        }
+    }
+
     StatusCode::from_u16(status_code).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)
 }
 
@@ -158,6 +174,7 @@ async fn main() {
     let shared = Shared {
         ledger: args.ledger,
         fail_first_per_event: args.fail_first_per_event,
+        hold_first_request: args.hold_first_request,
         state: Arc::new(Mutex::new(ReceiverState::default())),
     };
     let app = Router::new()
