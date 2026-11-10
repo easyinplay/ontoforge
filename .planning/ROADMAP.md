@@ -7,7 +7,7 @@
 
 ## Phases
 
-- [ ] **Phase 8: Production Webhook End-to-End Delivery** - CI 上把 outbox 事件端到端投递给真实 HTTP 接收端，覆盖 503 重试、`event_id` 去重与至少一次送达
+- [x] **Phase 8: Production Webhook End-to-End Delivery** - CI 上把 outbox 事件端到端投递给真实 HTTP 接收端，覆盖 503 重试、`event_id` 去重与至少一次送达
 - [ ] **Phase 9: Webhook Worker Supervision & Crash Recovery** - webhook-worker 异常退出的可观测信号与恢复投递，systemd unit 自动拉起为人工签字项
 - [ ] **Phase 10: Audit Timing Test Split** - 纯计算断言与墙钟敏感集成验证分离，CI 不再依赖 `--test-threads=1`
 - [ ] **Phase 11: Product-Layer Wording & Historical Annotation** - ADR-0032 通用化落到产品层措辞，Phase 02 陈旧 SUMMARY 加 superseded 注解

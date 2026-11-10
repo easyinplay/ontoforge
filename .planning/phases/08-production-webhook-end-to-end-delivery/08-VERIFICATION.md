@@ -1,7 +1,7 @@
 ---
 phase: 08-production-webhook-end-to-end-delivery
 verified: 2026-11-08T20:43:44Z
-status: human_needed
+status: passed
 score: 16/16 must-haves verified
 covered_files:
   - .github/workflows/ci.yml
@@ -31,15 +31,16 @@ human_verification:
   - test: "对照 CI run 42515808955 的日志与 `phase8-webhook-ledger` artifact 的 `ledger.jsonl`，人工复核 6 条原始记录：3 条事件各 2 次尝试（首条 503、末条 204），相邻间隔 1.157s / 1.183s / 1.026s 落在 [0.9s, 30s]，唯一 event_id 集合与 PostgreSQL of_webhook_outbox 的 3 行完全相等；然后签署 Phase 8 的结论位"
     expected: "ledger 原始记录、去重集合、PostgreSQL 终态三者互相印证，结论位由 PENDING 改为人工签署（本项目约定：机器可判定结果只作证据，执行者与 verifier 均不代签）"
     why_human: "项目约定把 Phase 8 的结论位固定为 `VERDICT: PENDING`，由人工复核 ledger 与 CI 日志后签字"
+    result: "ACCEPTED 2026-11-10（人工签字）"
 ---
 
 # Phase 08: Production Webhook End-to-End Delivery 验证报告
 
 **Phase Goal:** 运维者能在 Linux CI 上把 outbox 中的事件投递给真实 HTTP 接收端，并观察到重试、去重与至少一次送达语义
 **Verified:** 2026-11-08T20:43:44Z
-**Status:** human_needed
+**Status:** passed（2026-11-10 人工签署 Phase 8 结论位）
 **Re-verification:** No — initial verification（目录内此前无 `*-VERIFICATION.md`）
-**结论位:** `VERDICT: PENDING`（本报告不代签）
+**结论位:** `VERDICT: ACCEPTED`（2026-11-10 人工签字）
 
 ## Goal Achievement
 
@@ -170,7 +171,7 @@ human_verification:
 - **W-D（WR-03）**：接收端在锁内分配 `seq`、在锁外写文件，并发下文件顺序可能与 `seq` 顺序解耦。当前负载下（6 条记录、顺序一致）不影响结论；属于接收端 harness 的精度问题。
 - **W-E（WR-04）**：`assert_ne!(receiver.id(), std::process::id())` 恒真（`Command::spawn` 的子进程 PID 必不同于父进程），该断言本身不构成独立性证据；真正的独立性证据是 spawn 调用点 + ledger 的 `remote_addr`。本报告采信后者（`remote_addr` 全部 `127.0.0.1:56908`，且端口由 OS 分配）。
 - **W-F（SUMMARY 叙述不精确）**：`08-02-SUMMARY.md:159` 写「归档成员的 ledger 是 08-01 那次多事件矩阵 run 的原始记录」。实际来源是 run **42515808955**（ledger 时间戳 `19:36`，而多事件矩阵 run 42510584474 是 `18:34`）。同一份 SUMMARY 的 D3 行与索引 `source_boundary.runs` 记录的 run id 是正确的，仅该行叙述有误。
-- **W-G（WINDOWS.md 残留）**：第 20 条（FA-03）仍为 open，但本次验证已给出时间戳级别的确定性关联（见 truth 16），建议人工复核后关闭。第 19 条（FA-02）已于 2026-11-09 随运行时证据补齐判 fixed（原「应保持 open 直到人工执行」的口径已被可控时钟验证取代——见 truth 9）。
+- **W-G（WINDOWS.md 残留）**：第 20 条（FA-03）已由 2026-11-10 人工签署确认归档来源并关闭。第 19 条（FA-02）已于 2026-11-09 随运行时证据补齐判 fixed（原「应保持 open 直到人工执行」的口径已被可控时钟验证取代——见 truth 9）。
 
 ### Human Verification Required
 
@@ -179,6 +180,8 @@ human_verification:
 **Test:** 对照 CI run 42515808955 的日志与 `phase8-webhook-ledger` artifact 的 `ledger.jsonl` 人工复核：6 条原始记录、3 条事件各 2 次尝试（503→204）、间隔 1.157s / 1.183s / 1.026s、唯一 event_id 集合与 PostgreSQL `of_webhook_outbox` 的 3 行完全相等；据此签署结论位
 **Expected:** ledger 原始记录、去重集合、PostgreSQL 终态三者互相印证，结论位由 `VERDICT: PENDING` 改为人工签署
 **Why human:** 项目约定把结论位固定为 `VERDICT: PENDING`——机器可判定结果只作证据，执行者与 verifier 均不代签
+
+**Result:** ACCEPTED 2026-11-10——验收人人工对照 CI run 42515808955 日志与 ledger.jsonl，确认三类证据互相印证后签署。
 
 ### Gaps Summary
 

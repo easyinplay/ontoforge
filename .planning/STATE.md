@@ -2,14 +2,14 @@
 gsd_state_version: "1.0"
 milestone: v1.1
 milestone_name: Gap Closure
-current_phase: 08
-current_phase_name: Production Webhook End-to-End Delivery
-status: verifying
-stopped_at: PR #12/#13/#14 open; Phase 08 awaits human signoff on VERDICT + WINDOWS#20
-last_updated: "2026-11-09T14:35:00Z"
+current_phase: 09
+current_phase_name: Systemd Worker Auto-Start
+status: planning
+stopped_at: Phase 08 ACCEPTED 2026-11-10; merge #12/#13/#14 then Phase 09
+last_updated: "2026-11-10T02:17:18Z"
 last_activity: 2026-11-09
-last_activity_desc: Phase 10/11 implemented as PRs; Phase 08 16/16 verified awaiting human
-state_head: a791b59
+last_activity_desc: Phase 08 human signoff accepted; WINDOWS#20 fixed
+state_head: d6764e2
 progress:
   total_phases: 5
   completed_phases: 0
@@ -20,10 +20,10 @@ progress:
 # Project State
 
 ## Current Position
-Phase: 08 (Production Webhook End-to-End Delivery) — VERIFYING
-Status: 16/16 truths verified; only human signoff on VERDICT + WINDOWS#20 remains
-Open PRs: #12 (phase-08), #13 (phase-11 wording), #14 (phase-10 audit-timing-split)
-Last activity: 2026-11-09 — Phase 10/11 implemented+green; WINDOWS#18 fixed
+Phase: 08 (Production Webhook End-to-End Delivery) — ACCEPTED 2026-11-10
+Status: VERDICT ACCEPTED（人工签字）；16/16 truths + UAT 2/2
+Open PRs: #12 (phase-08), #13 (phase-11), #14 (phase-10)
+Next: merge PRs → Phase 09 (systemd) → Phase 12 (release)
 
 ## Project Reference
 
@@ -52,7 +52,7 @@ See: .planning/PROJECT.md (updated 2026-11-08 after v1.1 milestone start)
 
 ### Blockers/Concerns
 
-- ⚠️ [Phase 08/09] systemd 实际自动拉起本机 Windows 无法覆盖，只能人工签字。
+- ⚠️ [Phase 09] systemd 实际自动拉起本机 Windows 无法覆盖，只能人工签字（Phase 08 已签署解除前置）。
 - ⚠️ [v1.0 milestone] v1.0 审计结论仍是 `gaps_found`（dated 快照）；v1.1 只追加复核记录，不改写审计文件正文。
 - ✅ [Phase 10] 混用墙钟测试已拆分，`--test-threads=1` 已移除，workspace 默认并行度全绿（PR #14）。
 - ✅ [Phase 11] 产品层 SQL Server 点名已清零，02-10-SUMMARY 加 superseded 注解（PR #13）。
@@ -61,7 +61,7 @@ See: .planning/PROJECT.md (updated 2026-11-08 after v1.1 milestone start)
 
 - Phase 09（systemd）：机器可判定证据 + 人工签字两部分；待 Phase 08 签署后启动。
 - Phase 12（release）：须 Phase 8-11 全部验收 + 人工门齐后执行。
-- WINDOWS.md 双表示已同步：15 open / 7 fixed / 22 total；#20 为 FA-03 人工交叉复核项。
+- WINDOWS.md 双表示已同步：14 open / 8 fixed / 22 total。
 - 未跟踪的 `docs/README.md`、`docs/foundry/`、`docs/images/`（公开文档镜像）不入库。
 
 ### Deferred Items
@@ -77,12 +77,11 @@ v1.1 承接映射：05 → Phase 08 / 09（REL-01..03）、06 → Phase 10（REL
 
 ## Session Continuity
 
-Last session: 2026-11-09T14:35:00Z
-Stopped at: PR #12/#13/#14 open; awaiting human signoff on Phase 08
+Last session: 2026-11-10T02:17:18Z
+Stopped at: Phase 08 ACCEPTED; awaiting PR merges then Phase 09
 Resume file: .planning/handoff/ontoforge-devin-2026-11-09.md
 
 ## Operator Next Steps
 
-- Phase 08 仅剩人工签署：08-UAT.md 测试 2（VERDICT）与 WINDOWS#20，机器不代签
 - 合并顺序：#12（phase-08）先合 → #13 基于其顶端（diff 自动缩减）；#14 独立可并行
-- Phase 09 待 Phase 08 人工签署后启动；Phase 12 最后
+- Phase 09（systemd）已解除前置，可启动；Phase 12 最后
