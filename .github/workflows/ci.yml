@@ -56,7 +56,7 @@ jobs:
       # so that it cannot rot unnoticed (plan 03-20).
       - name: Clippy with the embedded-pg feature
         run: cargo clippy -p ontoforge-storage --features embedded-pg --all-targets --locked -- -D warnings
-      - run: cargo test --workspace --locked -- --test-threads=1
+      - run: cargo test --workspace --locked
       - name: Windows private-console shutdown contracts
         if: runner.os == 'Windows'
         run: python -B -m unittest discover -s ci -p test_windows_server.py -v

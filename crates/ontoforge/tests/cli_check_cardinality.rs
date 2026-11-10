@@ -397,7 +397,7 @@ async fn mount_slow_scan(server: &MockServer, table: &str, next: &str) {
         .respond_with(
             ResponseTemplate::new(200)
                 .set_body_json(result_page(json!([])))
-                .set_delay(std::time::Duration::from_secs(2)),
+                .set_delay(std::time::Duration::from_secs(60)),
         )
         .mount(server)
         .await;
@@ -431,7 +431,7 @@ async fn cardinality_total_deadline_is_shared() {
         .mount(&server)
         .await;
     let dir = three_targets();
-    let config = server_config(dir.path(), &server.uri(), "query_timeout_ms = 500");
+    let config = server_config(dir.path(), &server.uri(), "query_timeout_ms = 5000");
     let out = run_remote(dir.path(), &config, &["--check-cardinality"]).await;
     assert_eq!(out.status.code(), Some(3), "{:?}", diagnostics(&out));
     assert!(has_code(&out, "ONT-W18"), "earlier warning must survive");
@@ -546,7 +546,7 @@ async fn incomplete_scan_is_not_clean() {
     mount_info(&server, info_rows()).await;
     mount_slow_scan(&server, "records", "/v1/statement/executing/slow/1").await;
     let dir = ontology("record_id,aircraft_id\nM1,A1\nM2,A1\n");
-    let config = server_config(dir.path(), &server.uri(), "query_timeout_ms = 200");
+    let config = server_config(dir.path(), &server.uri(), "query_timeout_ms = 1000");
     let out = run_remote(dir.path(), &config, &["--check-cardinality"]).await;
     assert_eq!(out.status.code(), Some(3));
     assert!(has_code(&out, "ONT-V19"));
@@ -622,7 +622,7 @@ async fn cardinality_budget_starts_after_precheck_and_pk() {
         .respond_with(
             ResponseTemplate::new(200)
                 .set_body_json(page(columns, info_rows()))
-                .set_delay(std::time::Duration::from_millis(180)),
+                .set_delay(std::time::Duration::from_millis(1500)),
         )
         .mount(&server)
         .await;
@@ -631,7 +631,7 @@ async fn cardinality_budget_starts_after_precheck_and_pk() {
         .respond_with(
             ResponseTemplate::new(200)
                 .set_body_json(result_page(json!([])))
-                .set_delay(std::time::Duration::from_millis(180)),
+                .set_delay(std::time::Duration::from_millis(1500)),
         )
         .mount(&server)
         .await;
@@ -640,7 +640,7 @@ async fn cardinality_budget_starts_after_precheck_and_pk() {
         .respond_with(
             ResponseTemplate::new(200)
                 .set_body_json(page(json!([{"name":"n","type":"bigint"}]), json!([[0]])))
-                .set_delay(std::time::Duration::from_millis(180)),
+                .set_delay(std::time::Duration::from_millis(1500)),
         )
         .mount(&server)
         .await;
@@ -649,12 +649,12 @@ async fn cardinality_budget_starts_after_precheck_and_pk() {
         .respond_with(
             ResponseTemplate::new(200)
                 .set_body_json(result_page(json!([["A", 2]])))
-                .set_delay(std::time::Duration::from_millis(180)),
+                .set_delay(std::time::Duration::from_millis(1500)),
         )
         .mount(&server)
         .await;
     let dir = ontology("record_id,aircraft_id\nM1,A1\nM2,A1\n");
-    let config = server_config(dir.path(), &server.uri(), "query_timeout_ms = 300");
+    let config = server_config(dir.path(), &server.uri(), "query_timeout_ms = 3000");
     let out = run_remote(dir.path(), &config, &["--check-cardinality", "--check-pk"]).await;
     assert_eq!(out.status.code(), Some(0), "{:?}", diagnostics(&out));
     assert!(has_code(&out, "ONT-W18"));
