@@ -4,11 +4,11 @@ milestone: v1.1
 milestone_name: Gap Closure
 current_phase: 09
 current_phase_name: Systemd Worker Auto-Start
-status: planning
-stopped_at: Phase 08 ACCEPTED 2026-11-10; merge #12/#13/#14 then Phase 09
-last_updated: "2026-11-10T02:17:18Z"
+status: implemented-pending-push
+stopped_at: Phase 09 implemented locally (4 commits); push blocked by GitHub connectivity
+last_updated: "2026-11-10T03:05:00Z"
 last_activity: 2026-11-09
-last_activity_desc: Phase 08 human signoff accepted; WINDOWS#20 fixed
+last_activity_desc: Phase 09 implemented (unit+supervision tests+CI job); push pending
 state_head: d6764e2
 progress:
   total_phases: 5
@@ -20,10 +20,10 @@ progress:
 # Project State
 
 ## Current Position
-Phase: 08 (Production Webhook End-to-End Delivery) — ACCEPTED 2026-11-10
-Status: VERDICT ACCEPTED（人工签字）；16/16 truths + UAT 2/2
-Open PRs: #12 (phase-08), #13 (phase-11), #14 (phase-10)
-Next: merge PRs → Phase 09 (systemd) → Phase 12 (release)
+Phase: 09 (Webhook Worker Supervision) — IMPLEMENTED, PUSH PENDING
+Phase 08: ACCEPTED 2026-11-10; Phase 10/11 PRs open
+Local branch gsd/phase-09-webhook-worker-supervision: 4 commits (receiver barrier + harness/systemd crash-recovery tests + unit + INSTALL.md + phase9 CI job + PLAN/UAT)
+Next: push branch → PR → CI 实跑回填 09-UAT → 人工签字（真实重启拉起）
 
 ## Project Reference
 
@@ -77,11 +77,12 @@ v1.1 承接映射：05 → Phase 08 / 09（REL-01..03）、06 → Phase 10（REL
 
 ## Session Continuity
 
-Last session: 2026-11-10T02:17:18Z
-Stopped at: Phase 08 ACCEPTED; awaiting PR merges then Phase 09
+Last session: 2026-11-10T03:05:00Z
+Stopped at: Phase 09 committed locally; GitHub push intermittently unreachable
 Resume file: .planning/handoff/ontoforge-devin-2026-11-09.md
 
 ## Operator Next Steps
 
-- 合并顺序：#12（phase-08）先合 → #13 基于其顶端（diff 自动缩减）；#14 独立可并行
-- Phase 09（systemd）已解除前置，可启动；Phase 12 最后
+- 合并顺序：#12（phase-08）先合 → #13 基于其顶端；#14 独立；#09 分支待推送后开 PR（基于 phase-08 tip）
+- Phase 09 机器证据待 CI phase9-webhook-supervision 实跑回填 09-UAT；真实重启拉起仍属人工签字
+- Phase 12 最后
