@@ -2037,7 +2037,7 @@ checksum = "384b8ab6d37215f3c5301a95a4accb5d64aa607f1fcb26a11b5303878451b4fe"
 
 [[package]]
 name = "ontoforge"
-version = "0.1.0"
+version = "1.1.0"
 dependencies = [
  "anstream",
  "axum",
@@ -2068,7 +2068,7 @@ dependencies = [
 
 [[package]]
 name = "ontoforge-action"
-version = "0.1.0"
+version = "1.1.0"
 dependencies = [
  "camino",
  "cel",
@@ -2097,7 +2097,7 @@ dependencies = [
 
 [[package]]
 name = "ontoforge-api"
-version = "0.1.0"
+version = "1.1.0"
 dependencies = [
  "serde",
  "serde_json",
@@ -2106,7 +2106,7 @@ dependencies = [
 
 [[package]]
 name = "ontoforge-auth"
-version = "0.1.0"
+version = "1.1.0"
 dependencies = [
  "camino",
  "chrono",
@@ -2131,7 +2131,7 @@ dependencies = [
 
 [[package]]
 name = "ontoforge-client"
-version = "0.1.0"
+version = "1.1.0"
 dependencies = [
  "camino",
  "jsonwebtoken",
@@ -2153,7 +2153,7 @@ dependencies = [
 
 [[package]]
 name = "ontoforge-engine"
-version = "0.1.0"
+version = "1.1.0"
 dependencies = [
  "camino",
  "chrono",
@@ -2181,7 +2181,7 @@ dependencies = [
 
 [[package]]
 name = "ontoforge-expr"
-version = "0.1.0"
+version = "1.1.0"
 dependencies = [
  "cel",
  "insta",
@@ -2191,7 +2191,7 @@ dependencies = [
 
 [[package]]
 name = "ontoforge-query"
-version = "0.1.0"
+version = "1.1.0"
 dependencies = [
  "base64 0.22.1",
  "camino",
@@ -2215,7 +2215,7 @@ dependencies = [
 
 [[package]]
 name = "ontoforge-schema"
-version = "0.1.0"
+version = "1.1.0"
 dependencies = [
  "camino",
  "chrono",
@@ -2241,7 +2241,7 @@ dependencies = [
 
 [[package]]
 name = "ontoforge-server"
-version = "0.1.0"
+version = "1.1.0"
 dependencies = [
  "axum",
  "camino",
@@ -2271,7 +2271,7 @@ dependencies = [
 
 [[package]]
 name = "ontoforge-storage"
-version = "0.1.0"
+version = "1.1.0"
 dependencies = [
  "camino",
  "chrono",
