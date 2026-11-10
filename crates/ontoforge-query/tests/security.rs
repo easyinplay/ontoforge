@@ -1898,9 +1898,7 @@ async fn audit_pending_age_limit_fails_closed() {
     use ontoforge_storage::read_audit::{ReadAuditMetadata, ReadAuditStatus};
     let f = fixture().await;
     let db_url = format!("sqlite://{}", f._dir.path().join("edit.db").display());
-    let lock_pool = sqlx::SqlitePool::connect(&db_url)
-        .await
-        .expect("lock pool");
+    let lock_pool = sqlx::SqlitePool::connect(&db_url).await.expect("lock pool");
     let mut lock_conn = lock_pool.acquire().await.expect("lock conn");
     sqlx::query("BEGIN EXCLUSIVE")
         .execute(&mut *lock_conn)
@@ -1945,11 +1943,10 @@ async fn audit_pending_age_limit_fails_closed() {
         ),
         "a tripped sink must fail closed"
     );
-    let written: i64 =
-        sqlx::query_scalar("SELECT COUNT(*) FROM of_read_audit")
-            .fetch_one(&mut *lock_conn)
-            .await
-            .expect("durable count");
+    let written: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM of_read_audit")
+        .fetch_one(&mut *lock_conn)
+        .await
+        .expect("durable count");
     assert_eq!(written, 0, "no audit row may reach the durable sink");
 }
 
