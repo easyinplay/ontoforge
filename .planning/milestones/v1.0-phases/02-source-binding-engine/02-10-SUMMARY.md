@@ -128,6 +128,11 @@ status: complete
 
 # Phase 2 Plan 10: Linux CI 集成测试与 nightly Iceberg Summary
 
+> **⚠️ Superseded 注解（2026-11-09，Phase 11 / REL-06）**：本文件是 dated 快照，正文未改写。以下两处描述已与当前状态不同：
+>
+> - **本地 warehouse 描述已过期**：本文称 nightly 的 Iceberg warehouse 用 Trino 本地文件系统（`fs.local.enabled`）不用 MinIO。Phase 07.2 已改回 MinIO——当前真相以 `.github/workflows/nightly.yml` 与 `ci/trino/iceberg/iceberg.properties`（`s3://warehouse/`、`s3.endpoint=http://minio:9000`）为准。
+> - **测试计数已过期**：`573 passed / 11 ignored` 等计数对应 plan 执行时的代码量，当前 workspace 测试规模远大于此，以当期 `cargo test --workspace --locked` 实跑输出为准。
+
 **PR 新增 `integration` 作业（postgres:17 发布 5432 + docker run 的 Trino 483，种入 aviation fixture 后以 `--ignored` 运行 10 个引擎测试与 1 个 CLI 测试并门禁执行数），nightly 在 Trino 483 / 484 上加跑 Iceberg（JDBC catalog + 本地 warehouse），失败由唯一拥有 `issues: write` 的独立 job 开 issue；公司环境只经 `ONTOFORGE_PRIVATE_FIXTURES` 本地验证。所有真实引擎结果待首次 CI 运行确认。**
 
 ## Performance

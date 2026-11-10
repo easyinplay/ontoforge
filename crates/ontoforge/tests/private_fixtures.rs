@@ -1,5 +1,5 @@
-//! Validation against private environments (ENGINE-05): SQL Server behind Trino, company
-//! clusters and other data that must not enter the public repository.
+//! Validation against private environments (ENGINE-05): private Trino data sources —
+//! company clusters and other data that must not enter the public repository.
 //!
 //! `ONTOFORGE_PRIVATE_FIXTURES` names a directory outside the repository. Each subdirectory
 //! `<name>/` holding both `ontology/` and `ontoforge-server.toml` is one fixture set, checked
