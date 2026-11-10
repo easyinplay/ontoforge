@@ -3,17 +3,13 @@ status: testing
 phase: 09-webhook-worker-supervision
 source: [09-01-PLAN.md]
 started: 2026-11-10T02:49:42Z
-updated: 2026-11-10T02:49:42Z
+updated: 2026-11-10T03:45:00Z
 ---
 
 ## Current Test
 
-[testing]
-expected: |
-  CI job `phase9-webhook-supervision` 在 PR 上跑出首个实跑结果后回填：harness 用例与
-  systemd 用例的机器可判定证据（supervisor.jsonl、outbox 快照、journal、systemctl show）
-  按 commit 绑定回填进测试 1-3；机器结果仅作证据，不代签。
-awaiting: CI run on commit df55c32 (or later on this branch)
+number: 4
+name: 真实重启拉起与结论位的人工签署（VERDICT: PENDING）
 
 ## Tests
 
@@ -22,35 +18,43 @@ expected: |
   `killed_worker_recovers_undelivered_event_after_respawn`：`ExitStatusExt::signal() == Some(9)`
   为主断言，`supervisor.jsonl` 出现含 case/old_pid/observed_signal/new_pid 的一行。
   `systemd_restarts_killed_worker_and_redelivers`：`kill -9 $MainPID` 后 `systemctl show`
-  证据（systemctl-show-after-restart.txt）显示 `NRestarts` 递增且 `InvocationID` 变化，
-  `journal.txt` 留存该 unit 的崩溃/重启记录。
+  证据显示 `NRestarts` 递增且 `InvocationID` 变化，`journal.txt` 留存该 unit 的崩溃/重启记录。
 evidence: |
-  待回填：CI run URL + phase9-webhook-supervision artifact 中 harness/supervisor.jsonl、
-  systemd/systemctl-show-*.txt、systemd/journal.txt。
-result: pending
+  CI run 42749316959（commit 8c5205d），job phase9-webhook-supervision（id 129608910327）
+  → 2 passed / 0 failed / 15.01s；artifact `phase9-webhook-supervision`（ID 13733185293）。
+  harness/supervisor.jsonl：
+  `{"case":"sigkill_mid_dispatch","supervisor":"test-process","event_id":"01M71R20TZ0WQRF2DBP5W1Y6WM","old_pid":10887,"observed_signal":9,"new_pid":10892}`
+  systemd/supervisor.jsonl：
+  `{"case":"sigkill_mid_dispatch","supervisor":"systemd","unit":"ontoforge-webhook-worker.service","event_id":"01M71R268YGRR26W7N6R4173QQ","old_pid":11135,"observed_signal":9,"initial_invocation_id":"bd7adde6abb14ab69cc9c0bfa9d3a56f","restarted_invocation_id":"eaa1396e87e943f9a5c29e9423855d48","nrestarts":"1","new_pid":11183}`
+result: pass
 
 ### 2. SC2：崩溃时 outbox 有未送达事件 → 重新拉起后从持久化 outbox 恢复并送达，无丢失
 expected: |
-  两个用例均断言：kill 后 `outbox-after-kill.json`（harness）显示 `delivered_at IS NULL`
-  且 `lease_owner` 非空、`lease_until > now`（fixture 未构成目标场景即 fail 并说明）；
-  重新拉起后 ledger 出现 `attempt_seq >= 2` 的 2xx 记录，`outbox-final.json` 显示
-  `delivered_at` 非空。不断言恰好一次（屏障后重投的重复记录合法）。
+  两个用例均断言：kill 后 outbox 行 `delivered_at IS NULL` 且租约在持
+  （fixture 未构成目标场景即 fail 并说明）；重新拉起后 ledger 出现
+  `attempt_seq >= 2` 的 2xx 记录，outbox 终态 `delivered_at` 非空。
+  不断言恰好一次（重复投递合法）。
 evidence: |
-  待回填：CI artifact 中 harness/outbox-after-kill.json、outbox-final.json、ledger.jsonl；
-  systemd/outbox-final.json、ledger.jsonl。
-result: pending
+  同一 run/artifact。systemd/ledger.jsonl：同一 `event_id`
+  `01M71R268YGRR26W7N6R4173QQ` 两条记录——`attempt_seq:1 status 204`
+  （03:29:42.862，屏障持有的在途请求）与 `attempt_seq:2 status 204`
+  （03:29:48.186，systemd 重启后重投）；systemd/outbox-final.json：
+  `delivered_at: 2026-11-10T03:29:48.187Z`、`attempt_count: 0`、`lease_owner: null`
+  （终态已完成、租约释放）。harness 侧同构证据在 harness/ 目录。
+result: pass
 
 ### 3. SC3 机器可判定部分：安装仓库 unit → 异常退出由 systemd 自动重启
 expected: |
-  `systemd_restarts_killed_worker_and_redelivers` 在 ubuntu-latest（systemd as PID 1）上：
-  真实 install unit/binary/配置 → `systemd-analyze verify` 通过 → `enable --now` →
-  屏障持有的首投出现后 `kill -9 MainPID` → 不再发任何 start/restart → 60s 内
-  `NRestarts` 递增且 `InvocationID` 变化（systemctl-show-after-restart.txt）→
+  在 ubuntu-latest（systemd as PID 1）上：真实 install unit/binary/配置 →
+  `systemd-analyze verify` → `enable --now` → 屏障持有的首投出现后 `kill -9 MainPID`
+  → 不再发任何 start/restart → 60s 内 `NRestarts` 递增且 `InvocationID` 变化 →
   事件重送达。测试自身清理：stop/disable、删 unit/config/binary、userdel。
 evidence: |
-  待回填：CI artifact 中 systemd/systemctl-cat.txt、systemd-analyze-verify.txt、
-  systemctl-show-initial/after-restart/final.txt、journal.txt、supervisor.jsonl。
-result: pending
+  同一 run/artifact：`NRestarts: "1"`、`initial_invocation_id bd7adde…` →
+  `restarted_invocation_id eaa1396e…`、new_pid 11183；systemd/journal.txt、
+  systemctl cat/show 输出同包。`enable`/`is-enabled` 仅证明启动关系已安装，
+  真实重启主机拉起属测试 4 人工验收，不在本测试范围。
+result: pass
 
 ### 4. SC4 + SC3 人工部分：真实重启拉起与结论位的人工签署（VERDICT: PENDING）
 expected: |
@@ -72,17 +76,16 @@ result: pending
 ## Summary
 
 total: 4
-passed: 0
+passed: 3
 issues: 0
-pending: 4
+pending: 1
 skipped: 0
 blocked: 0
 
 ## Gaps
 
-- 测试 1-3 的机器可判定结论依赖 CI job `phase9-webhook-supervision` 的首个实跑结果；
-  本地 Windows 仅完成编译级验证（`cargo build --workspace --locked`、`cargo test --test
-  webhook_supervision_pg --locked` 编译通过（unix cfg 下 0 用例）、`cargo clippy
-  --workspace --all-targets --locked -- -D warnings`、`cargo fmt --all --check` 全绿）。
+- 测试 1-3 的机器证据绑定 CI run 42749316959（commit 8c5205d）；后续 commit
+  81ffbdf 仅修 clippy lint（assert!/too_many_lines allow），不改变被测语义，
+  相同 job 将在该 commit 的 run 中复跑。
 - 测试 4 为人工验收：真实重启拉起（SC3 的 boot 拉起面）与最终结论位均保持
   `VERDICT: PENDING` 直至人工签字。
