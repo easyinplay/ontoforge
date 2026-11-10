@@ -4,11 +4,11 @@ milestone: v1.1
 milestone_name: Gap Closure
 current_phase: 09
 current_phase_name: Systemd Worker Auto-Start
-status: phase-12-gated
-stopped_at: PR #12/#13/#14/#15 all merged to main; Phase 09 human reboot signoff pending before Phase 12
-last_updated: "2026-11-10T07:10:00Z"
+status: phase-12-ready
+stopped_at: Phase 08-11 all ACCEPTED+merged; Phase 12 (release) is next and unblocked
+last_updated: "2026-11-10T09:50:00Z"
 last_activity: 2026-11-09
-last_activity_desc: all phase PRs merged (#12/#13/#14/#15); Phase 12 gated on phase-09 signoff
+last_activity_desc: Phase 09 VERDICT ACCEPTED (WSL2 real-machine signoff); all v1.1 phases verified
 state_head: d6764e2
 progress:
   total_phases: 5
@@ -20,9 +20,8 @@ progress:
 # Project State
 
 ## Current Position
-Phase 8-11: ALL MERGED to main（#12 phase-08 ACCEPTED / #13 phase-11 / #14 phase-10 / #15 phase-09）
-Remaining gates: Phase 09 测试 4 人工签字（真实重启拉起）+ Phase 12 release
-Next: 09-UAT 测试 4 签字 → Phase 12（tags + release + npm + MILESTONES）
+Phase 8-11: ALL ACCEPTED + MERGED（#12/#13/#14/#15；09 VERDICT ACCEPTED 2026-11-10 WSL2 真机签字）
+Next: Phase 12 release — tags + GitHub Release + npm + MILESTONES.md
 
 ## Project Reference
 
@@ -76,12 +75,11 @@ v1.1 承接映射：05 → Phase 08 / 09（REL-01..03）、06 → Phase 10（REL
 
 ## Session Continuity
 
-Last session: 2026-11-10T07:10:00Z
-Stopped at: all PRs merged; Phase 12 gated on phase-09 signoff
+Last session: 2026-11-10T09:50:00Z
+Stopped at: Phase 09 ACCEPTED; Phase 12 ready to start
 Resume file: .planning/handoff/ontoforge-devin-2026-11-09.md
 
 ## Operator Next Steps
 
 - 全部 PR 已合并入 main（HEAD 74fa55e）
-- Phase 09 测试 4：INSTALL.md 真机装 unit → 真实重启 → kill -9 恢复 → 签 09-UAT 结论位
-- Phase 12 在签字后启动（tags + release + npm + MILESTONES）
+- Phase 12：tags + GitHub Release + npm publish + MILESTONES.md（验收全齐，可执行）

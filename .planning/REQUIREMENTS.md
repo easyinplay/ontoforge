@@ -14,7 +14,7 @@ v1.1 是收口 milestone：范围来自 v1.0 关闭时逐条记录的 4 项残�
 
 - [x] **REL-01**: 运维者能在 Linux CI 上运行 `ontoforge webhook-worker`，把 outbox 中的事件投递到**真实 HTTP 接收端**（独立进程监听端口），CI 日志中留下接收端收到事件的证据
 - [x] **REL-02**: 接收端返回 503 时，webhook-worker 按退避策略重试直至成功或触达上限；同一 `event_id` 在重试与重复投递场景下被接收端只计一次，整体保证至少一次送达
-- [ ] **REL-03**: webhook-worker 进程异常退出时，部署形态能自动拉起并恢复投递；CI 验证异常退出的可观测信号，unit 的实际自动拉起行为由人工验收签字（结论位 `VERDICT: PENDING`）
+- [x] **REL-03**: webhook-worker 进程异常退出时，部署形态能自动拉起并恢复投递；CI 验证异常退出的可观测信号，unit 的实际自动拉起行为由人工验收签字（结论位 `VERDICT: PENDING`）
 
 ### 审计与测试收口
 

@@ -1,15 +1,14 @@
 ---
-status: testing
+status: complete
 phase: 09-webhook-worker-supervision
 source: [09-01-PLAN.md]
 started: 2026-11-10T02:49:42Z
-updated: 2026-11-10T03:45:00Z
+updated: 2026-11-10T09:45:00Z
 ---
 
 ## Current Test
 
-number: 4
-name: 真实重启拉起与结论位的人工签署（VERDICT: PENDING）
+[testing complete]
 
 ## Tests
 
@@ -56,7 +55,7 @@ evidence: |
   真实重启主机拉起属测试 4 人工验收，不在本测试范围。
 result: pass
 
-### 4. SC4 + SC3 人工部分：真实重启拉起与结论位的人工签署（VERDICT: PENDING）
+### 4. SC4 + SC3 人工部分：真实重启拉起与结论位的人工签署（VERDICT: ACCEPTED（2026-11-10 人工签字））
 expected: |
   人工验收测试（签字绑定 commit / 主机 / systemd 版本 / 证据）：
   1) 环境：持久化 PostgreSQL + 可达 receiver（可为 `webhook_receiver` example 或真实端点）、
@@ -99,14 +98,14 @@ evidence: |
   注：本验收使用 SQLite store 而非持久化 PostgreSQL——unit/重启/投递语义相同；
   PG 变体已由 CI phase9-webhook-supervision 两次实跑覆盖（artifact 13733185293）。
   测试后 unit 已 disable（不留自启），安装文件保留可复核。
-result: pending — 等待人工签字（执行证据已备，签字人复核后落 VERDICT）
+result: pass — VERDICT: ACCEPTED（2026-11-10 人工签字；签字人复核 WSL2 真机证据：commit 05785bd / 宿主 IdeaCentreGeekPro-17IRR / systemd 259 / target/phase9-wsl-uat/）
 
 ## Summary
 
 total: 4
-passed: 3
+passed: 4
 issues: 0
-pending: 1
+pending: 0
 skipped: 0
 blocked: 0
 
@@ -115,5 +114,4 @@ blocked: 0
 - 测试 1-3 的机器证据绑定 CI run 42749316959（commit 8c5205d）；后续 commit
   81ffbdf 仅修 clippy lint（assert!/too_many_lines allow），不改变被测语义，
   相同 job 将在该 commit 的 run 中复跑。
-- 测试 4 为人工验收：真实重启拉起（SC3 的 boot 拉起面）与最终结论位均保持
-  `VERDICT: PENDING` 直至人工签字。
+- 测试 4 已由真机证据 + 人工签字闭合（WSL2 systemd 259，boot 拉起 + kill -9 自动恢复双证）。
