@@ -1,0 +1,27 @@
+started_utc=2026-11-05T09:36:26.688Z
+PASS old237_subset_current248; new_implementation_fixture=11; restored_governance=16; no_duplicates=true
+RESTORED .planning/phases/07-rest-mcp-shell/07-SECURITY.md
+RESTORED .planning/phases/07-rest-mcp-shell/07-UAT.md
+RESTORED .planning/phases/07-rest-mcp-shell/07-VALIDATION.md
+RESTORED .planning/phases/07-rest-mcp-shell/COVERAGE.md
+RESTORED .planning/phases/07-rest-mcp-shell/reviews/07-14-IMPLEMENTATION.md
+RESTORED .planning/phases/07-rest-mcp-shell/reviews/07-BRIDGE-SECURITY-EVIDENCE.md
+RESTORED .planning/phases/07-rest-mcp-shell/reviews/07-E6-SECURITY-RECHECK.md
+RESTORED .planning/phases/07-rest-mcp-shell/reviews/07-EXPLAIN-EVIDENCE.md
+RESTORED .planning/phases/07-rest-mcp-shell/reviews/07-FINAL-SIMPLIFICATION.md
+RESTORED .planning/phases/07-rest-mcp-shell/reviews/07-FINAL-SPEC-REVIEW.md
+RESTORED .planning/phases/07-rest-mcp-shell/reviews/07-FINAL-STAFF-REVIEW.md
+RESTORED .planning/phases/07-rest-mcp-shell/reviews/07-FINAL-STANDARDS-REVIEW.md
+RESTORED .planning/phases/07-rest-mcp-shell/reviews/07-SDK-SECURITY-EVIDENCE.md
+RESTORED .planning/phases/07-rest-mcp-shell/reviews/07-SECURITY-EVIDENCE-GAPS.md
+RESTORED .planning/phases/07-rest-mcp-shell/reviews/07-T08-SECURITY-RECHECK.md
+RESTORED .planning/phases/07-rest-mcp-shell/reviews/07-T24-SECURITY-RECHECK.md
+PASS byte_unchanged_production_inputs=200
+PASS byte_unchanged_original_logs=25
+PASS original_logs_match_previous_final_index; original_final_validation_log_preserved=true
+PASS HEAD_unchanged; uncommitted_production_diff=0
+PASS actual_GSD_248_input_output_and_canonical_equal; digest=v4:sha256:18dcf94e6e282b85930df7c8c10a183abcd0f66009c82f985a3388ab8aa67396
+PASS GSD_owner_status=passed; query_exit=0
+product_tests_rerun=false; CI_redispatch=false; scope_only_correction=true
+ended_utc=2026-11-05T09:36:27.530Z
+exit_code=0

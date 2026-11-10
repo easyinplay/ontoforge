@@ -1,0 +1,167 @@
+{
+  "checked_at": "2026-11-05T11:22:05.544Z",
+  "head": "060019fe52005c6b85ae5c5f59da9868f464e579",
+  "follow_up_audit_delivered": true,
+  "contract_gate_decision_pending": "03-01.1 historical pre-install human approval has only SUMMARY narrative; independent record or explicit acceptance required",
+  "milestone_status": "gaps_found",
+  "phase_gates": [
+    {
+      "phase": "1",
+      "raw_status": "human_needed",
+      "canonical_status": "stale",
+      "score": "11/11 must-haves verified"
+    },
+    {
+      "phase": "2",
+      "raw_status": "gaps_found",
+      "canonical_status": "gaps_found",
+      "score": "100/103 must-haves verified"
+    },
+    {
+      "phase": "3",
+      "raw_status": "human_needed",
+      "canonical_status": "human_needed",
+      "score": "138/139 must-haves verified"
+    },
+    {
+      "phase": "4",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "36/36 must-haves verified"
+    },
+    {
+      "phase": "5",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "36/36 must-haves verified"
+    },
+    {
+      "phase": "6",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "22/22 must-haves verified"
+    },
+    {
+      "phase": "7",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "80/80 must-haves verified"
+    },
+    {
+      "phase": "7.1",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "18/18 must-haves verified"
+    },
+    {
+      "phase": "7.2",
+      "raw_status": "passed",
+      "canonical_status": "passed",
+      "score": "9/9 must-haves verified"
+    }
+  ],
+  "covered_sets": [
+    {
+      "path": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+      "before": 318,
+      "after": 345,
+      "removed": []
+    },
+    {
+      "path": ".planning/phases/04-scoped-l0-read/04-VERIFICATION.md",
+      "before": 181,
+      "after": 209,
+      "removed": []
+    },
+    {
+      "path": ".planning/phases/05-online-action/05-VERIFICATION.md",
+      "before": 85,
+      "after": 118,
+      "removed": []
+    },
+    {
+      "path": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md",
+      "before": 111,
+      "after": 143,
+      "removed": []
+    },
+    {
+      "path": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-VERIFICATION.md",
+      "before": 256,
+      "after": 269,
+      "removed": []
+    }
+  ],
+  "matrix": {
+    "command": "node .planning/milestones/v1.0-audit/evidence/2026-11-05/requirements-final-recompute.cjs --check",
+    "exit_code": 0,
+    "result": "PASS",
+    "counts": {
+      "requirements": 79,
+      "root_plans": 93,
+      "root_summaries": 93,
+      "formal_verifications": 9,
+      "checked": 78,
+      "summary_declared_ids": 79,
+      "metadata_gap_ids": 0,
+      "summary_missing_field_files": 4,
+      "summary_explicit_empty_files": 26,
+      "verification_covered_ids": 79,
+      "orphaned": 0,
+      "historical_three_source_claims": 78,
+      "workflow_satisfied": 43,
+      "workflow_partial": 28,
+      "workflow_unsatisfied": 8,
+      "confirmed_current_functional_failures": 0,
+      "full_contract_partial": 1,
+      "current_execution_evidence_ids": 78,
+      "mapped_tests_executed_ids": 77,
+      "partial_current_execution_ids": 1,
+      "historical_only_ids": 1,
+      "owner_signed_current_phase07_scope_ids": 21,
+      "owner_signed_phase07_only_responsibility_ids": 15,
+      "owner_signed_crossphase_scope_ids": 6,
+      "current_execution_reports_current_ids": 42,
+      "current_execution_report_resign_pending_ids": 36
+    },
+    "input_manifest_entries": 267,
+    "input_mismatches": []
+  },
+  "runtime_evidence": {
+    "original_index_entries": 56,
+    "mismatches": [],
+    "new_product_test_execution": false,
+    "new_ci_dispatch": false
+  },
+  "freshness_regression": {
+    "command": "node --test .planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-matrix/freshness.test.cjs",
+    "exit_code": 0,
+    "passed": 22,
+    "failed": 0,
+    "log": "report-resign-matrix/main-regression.log"
+  },
+  "independent_reviews": {
+    "standards_findings": 0,
+    "spec_findings": 0,
+    "module_sha256": "f6ef7667da266abc7fa3b538fa4f4f3d4ee5d2fc0a73ef105e956e86eace94e7"
+  },
+  "current_index": {
+    "path": "report-resign-evidence-index.json",
+    "entries": 92,
+    "sha256": "6a1b8cda514aab3848dc877ec20e70683c49e231d96cee7191f109af3871c9fb",
+    "mismatches": []
+  },
+  "diff_check": {
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": "warning: in the working copy of '.planning/milestones/v1.0-audit/progress.md', CRLF will be replaced by LF the next time Git touches it\n"
+  },
+  "production_changes": [],
+  "state_lines": 53,
+  "remaining_audit_checkboxes": 0,
+  "protected_resource_operations": 0,
+  "commit_performed": false,
+  "push_performed": false,
+  "release_or_archive_performed": false,
+  "tooling_errors_preserved_in": "findings.md"
+}

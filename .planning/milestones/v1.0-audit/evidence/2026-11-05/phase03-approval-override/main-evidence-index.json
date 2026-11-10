@@ -1,0 +1,537 @@
+{
+  "recorded_at": "2026-11-05T11:42:05.210Z",
+  "head": "060019fe52005c6b85ae5c5f59da9868f464e579",
+  "scope": "03-01.1 explicit override and current derived documents; prior index retained as historical",
+  "entries": [
+    {
+      "file": ".planning/ROADMAP.md",
+      "bytes": 22343,
+      "sha256": "f0e4ac17f7ba248f542023adf02d3c359f222bbf21ca37e4c2f165fdcfdd24f3"
+    },
+    {
+      "file": ".planning/STATE.md",
+      "bytes": 2425,
+      "sha256": "216760bd66cb4ed571d38c48b19169ccfa0eabd8efaed22ea15005c4bd44ed64"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/REPORT-RESIGN.md",
+      "bytes": 5516,
+      "sha256": "423dfccff15f0dc9f3729daa8895ab0312740e04061121a3f5ce9ed35988fd9c"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/REQUIREMENTS-AUDIT.md",
+      "bytes": 6723,
+      "sha256": "d31062edcfa6c0caf5f7814a958693ca7c07b08cb1a76a44f2b95839973fd3c7"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/SUMMARY.md",
+      "bytes": 4463,
+      "sha256": "f1e5263b0fa74d1c9290c56b07be1f316942cd668d5bcf13be6368702c58287d"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/VERIFICATION.md",
+      "bytes": 4823,
+      "sha256": "042398bafb579c1f0a22868c30a38ac02c555f518fc5554b581be9f85326e003"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/phase03-approval-override/03-VERIFICATION.human-needed.before.md",
+      "bytes": 99329,
+      "sha256": "c4278d97a7171547a82b0caf174b258899b6580f378e5d560b3a8473c10c15df"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/phase03-approval-override/RESULT.md",
+      "bytes": 3245,
+      "sha256": "86d479dcd73d957cdb84b2bf64b26dd74c4a373568e38518261c79760024d314"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/phase03-approval-override/authorization.md",
+      "bytes": 1274,
+      "sha256": "d847c1ced649772622208c4f79e1e87d38d443acc9cb3d56929241aa7dca4baf"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/phase03-approval-override/baseline.json",
+      "bytes": 158075,
+      "sha256": "3be2adbe1a686940a49cd95d490c32b0791a72ea1da2c8f2e3a04d85c216078d"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/phase03-approval-override/closure-check.json",
+      "bytes": 1735,
+      "sha256": "824e5042311784d675e557a99cad73376ae5bb57d3fcbfe2e4c943a06f20d5d9"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/phase03-approval-override/covered-diff.json",
+      "bytes": 922,
+      "sha256": "7f48eef7d234f00056dc5b0aa34cc558267ef9c6dfc9f644943ec800d9bc976f"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/phase03-approval-override/decision.json",
+      "bytes": 2564,
+      "sha256": "4a1d77c89abfd096233fda00a77b5aa07e83172a1456b432816d46f855fc6658"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/phase03-approval-override/fingerprint.json",
+      "bytes": 45226,
+      "sha256": "c06179584ecacff1f6949b150aa01bec0b407c09f79ddcfbb8b278f96c6db148"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/phase03-approval-override/input-drift-check.json",
+      "bytes": 5088,
+      "sha256": "a945800e236629f394a795bee8b3b1824e9f5f5d3d9d915cf759ff9952d6e406"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/phase03-approval-override/main-regression.log",
+      "bytes": 2468,
+      "sha256": "9efe6b3a94c53429bad911fa759957e560238563158edb1460ac8d8ef082e360"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/phase03-approval-override/main-requirements-check.before.json",
+      "bytes": 1703,
+      "sha256": "cd6e260cbbb3f22948ebb3c352e5281dbd1c79bfc5e9fb31f5874d2e90c64769"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/phase03-approval-override/native-gate.json",
+      "bytes": 1753,
+      "sha256": "91530751c76d0da118a47cb3e48448a579a37cb8b0f28a90a6ddefd64ae3d9f2"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/03-VERIFICATION.before.md",
+      "bytes": 33984,
+      "sha256": "005fa619b864593df9f26ce1e5c745ed92cc783093b459c334c2013e773c565d"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/03-contracts.json",
+      "bytes": 182439,
+      "sha256": "ec058c604b6dcf92f9cba5848b80caa20b7dea668ce16d40b33b42b20e797b5e"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/04-VERIFICATION.before.md",
+      "bytes": 31373,
+      "sha256": "1aceaac17a38450bcd808db55b648596df8b33100d2f97000a91dbe6b7be1976"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/04-contracts.json",
+      "bytes": 57138,
+      "sha256": "4e2a69b6d8d4558b8df95c48116a88d19db7b24df36e9c98f7571ea0d1a0e9c7"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/CONTRACT-RESULTS.md",
+      "bytes": 87552,
+      "sha256": "f96ee0f2883e3d257303c0908b307495265260e4370d1a9bbaff95927c692f1b"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/GOVERNANCE-AND-BOUNDARIES.md",
+      "bytes": 7232,
+      "sha256": "59c8293a93551685ebcd1a37fd24ca2a8db8872f08f5e1523d569ad4e56f4f74"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/RESULT.md",
+      "bytes": 1837,
+      "sha256": "badf6606f77b871b08a53dbe8a6ca5fc6e0fff0bffaa19420031faee16aa68b8"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/acceptance-check.json",
+      "bytes": 5670,
+      "sha256": "b21c217d60ffd286f4bf6bff2dbdb5fa7e6cff0827d0504a8c72a4b657c33a1c"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/changed-source-inspection.json",
+      "bytes": 20089,
+      "sha256": "ee6e862a32cf4d77e3185a1a588acd2a810304d7067fb54465c37e0476f28c1f"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/collect.cjs",
+      "bytes": 2562,
+      "sha256": "01f9d3482b02f8680f7d2e9257d2baeb4909e89ac1282db865f3d107b0f40608"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/collection-summary.json",
+      "bytes": 2352,
+      "sha256": "6ecdd328f3fdc636b999c013b42325639f3264e723baed2477c1912dbc151c30"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/covered-file-inspection.json",
+      "bytes": 1999278,
+      "sha256": "b6ca8cbbc951771a0f1c64be9ac0fcce8448b95a3200bed00b197c241c8ad6aa"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/covered-set-diff.json",
+      "bytes": 6323,
+      "sha256": "c111331a174522b3d5ed11733f6d252bbe49d8c61dfb0bbf85e28f72b68f0703"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/evidence-groups.json",
+      "bytes": 49483,
+      "sha256": "11e6a049bb83c45dbdfec91682ad289cd7df78dba982a33ec91b56e6c1efde6d"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/evidence-inputs.json",
+      "bytes": 1668,
+      "sha256": "ce8a79b0aef1587aed65eb10f92dad903ffeb93eec1bce00836d2e6d896a96e9"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/executed-tests.json",
+      "bytes": 1163717,
+      "sha256": "c5fca66084f339aacc485c62d6f23e57e7fd9b4a7716f28aefe5301b48c6632a"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/fingerprint-results.json",
+      "bytes": 70843,
+      "sha256": "0f71de5035f1791fd2ca03508e426608d880fc88307bcbe943ef84c1df94b827"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/governance-inputs.json",
+      "bytes": 82627,
+      "sha256": "8716ba230696f22e585e04c48f599ff7679afabc7086253bd71858d782419c97"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/inspect.cjs",
+      "bytes": 4753,
+      "sha256": "b1c650485f255f16e5c10b20012d241898a7c61afabd841c30a994376213d79d"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/native-gate-results.json",
+      "bytes": 879,
+      "sha256": "bf5d025c8742124b02ba3b6c6c51f3b5b5d9ef80a3af474d38a4ab47841bb578"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/selected-test-source.json",
+      "bytes": 437942,
+      "sha256": "2ca49b8bd020e2b8003941a3809ab87f1fb8408dbe31a15a8b8819ce65607754"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/service-environment-evidence.json",
+      "bytes": 14140,
+      "sha256": "1dd3cf7db5ba2afa0b9a23fe80b0acb338c7141e313581aff10477b068a02320"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-03-04/truth-results.json",
+      "bytes": 225708,
+      "sha256": "f32411f6aae16ded1b3139257af3f048c65a81aae764437e862a355a353883d5"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-05-06/05-VERIFICATION.before.md",
+      "bytes": 24663,
+      "sha256": "e320a6ad24ae42d80ecb3980bcbfe3e0f0a63be20ce2d334516d7d12ed81b177"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-05-06/05-covered-diff.json",
+      "bytes": 2868,
+      "sha256": "313cb3a25c65f7b0ef6dba195355084402c6fcbc23281bdddcf928eda5121652"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-05-06/05-covered-source.diff",
+      "bytes": 30709,
+      "sha256": "df665f638f217b0a31a7d53aad2628fd57d5698a7c2962bcfcae97f625ff7b8d"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-05-06/05-fingerprint.json",
+      "bytes": 14015,
+      "sha256": "e1a9d9ed2c284ed2a1ed0b28c83d19a24e857849836c77ef79dd87dd27d40dd1"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-05-06/06-VERIFICATION.before.md",
+      "bytes": 53870,
+      "sha256": "a1f42e9e860cba9896ad8739f6ed26de16c94ee06453f7a70e263ec6651f6361"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-05-06/06-covered-diff.json",
+      "bytes": 2800,
+      "sha256": "0b0fdd44839e08974e4414f8b86314a89c5822a29022ecbde960acd5c0361fba"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-05-06/06-covered-source.diff",
+      "bytes": 6358,
+      "sha256": "b1b8e56978a06c58b5f03c749d887ad13c3fb34de57587a18f7c34baa245bad8"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-05-06/06-fingerprint.json",
+      "bytes": 18621,
+      "sha256": "a96fce3f8d492870e833f3c7ce7dd9d5efc78b23eec4d667a64f654fc1c29c7d"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-05-06/boundaries.json",
+      "bytes": 1031,
+      "sha256": "5382f7b4cf8681465ad8a19d84b53558d59151fec9cfc5382df890ef53897b45"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-05-06/collect.cjs",
+      "bytes": 4409,
+      "sha256": "de51e968f4c42807c89d2d04ce716255038c806bf569492a04890ad121f6c03f"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-05-06/collection.json",
+      "bytes": 174207,
+      "sha256": "73c8a841bc2eb1a895f7b38c63ab9d643533a660a686fd3cd63e760da9bfc788"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-05-06/contracts.json",
+      "bytes": 156299,
+      "sha256": "99a159044853e7d9cd1586ba0aa13b577deed811ef6fb689ebb2e160c601b6a1"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-05-06/final-gate.json",
+      "bytes": 57938,
+      "sha256": "4a9c06c3191b23a157c07267a62a942efaf887a555a890089f78d962c664d228"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-05-06/fingerprint.cjs",
+      "bytes": 2545,
+      "sha256": "93033ab58e2361b3fcc92d40194df730212d2f19a56eae50baf7a10204f87bf4"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-05-06/governance-inputs.json",
+      "bytes": 2405,
+      "sha256": "9b106b75943a626b44385656699fb3ec54d361f0c8ef556152c52b13fb762879"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-05-06/log-manifest.json",
+      "bytes": 1386,
+      "sha256": "3657055e2324f4bbe8fb7e91c63d9494b50e38112aaef631f9ea94eac526b805"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-05-06/named-test-results.json",
+      "bytes": 1258156,
+      "sha256": "470dacda4b708d8d51221e1b07c13c8ede117d010a3b25e8ace63d90f1e9a471"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-05-06/review.md",
+      "bytes": 5523,
+      "sha256": "518a86851ac8b10aca6b430972b535fa246a931958720a8295e161c1cf0869cf"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-05-06/source-review.json",
+      "bytes": 69552,
+      "sha256": "9648a1288f8dbc0653199fb636632319371fa84b9661599a54dae9f0f92ea047"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-05-06/test-source-review.json",
+      "bytes": 240842,
+      "sha256": "41f1a7aef66d376063ca7fdcedbb6345133248361b163a0a2dae2d31545415ce"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-05-06/verify-gate.cjs",
+      "bytes": 6115,
+      "sha256": "f6c8ab795309c200d84ba77fc9befcafba01b6ea4ac6be2376b1d5b318f6e361"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-07.1/after-gate.json",
+      "bytes": 2339,
+      "sha256": "ce2fb5e9cfd98fa793b1ad82389d054bd3a0d994d8dd6a2bf078606048b51cc3"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-07.1/audit.cjs",
+      "bytes": 13376,
+      "sha256": "202bba632f555b77ace3e9708468c12806d3de5f2a2323ea851215e7da187613"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-07.1/before.json",
+      "bytes": 76691,
+      "sha256": "669d5cfdfd76378cad604f38fff9584e73341945d701690940e89b259021f264"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-07.1/contract-map.md",
+      "bytes": 21794,
+      "sha256": "8f2ac04eb9193d777a85ad447bc94c9f3958ad8145cf3d0097ed50eaeca584fc"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-07.1/covered-diff.json",
+      "bytes": 49119,
+      "sha256": "11af05637a3df9b12511a908833d2eba92081c4d9f17489b5313654efecefe92"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-07.1/fingerprint.json",
+      "bytes": 24912,
+      "sha256": "1be1ad1bba9b8668c690a65af7a53c3b13dff372ea0bbb927e85f73fddfd8c16"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-07.1/native-gates.json",
+      "bytes": 15604,
+      "sha256": "7ebbbd1537476c6085c607d71a8fd500dbc593ea9f9d12bd81989bb18a81048d"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-07.1/path-correction-gate.json",
+      "bytes": 560,
+      "sha256": "862d6a2fde3facf642933ca57b64f15ebf46daa2b8b953cfa99b4f3e04317b4a"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-07.1/previous-VERIFICATION.md",
+      "bytes": 52350,
+      "sha256": "824303b284cf21feddfc38b7e31bd06f1153ceb2ef8dbc22b2eba1d2d557fa23"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-07.1/source-log-audit.json",
+      "bytes": 92447,
+      "sha256": "8602717cd05621e0cc802489e54121ed48561df76929f85bf524cdc37b83e48f"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-07.1/source-since-previous.diff",
+      "bytes": 6175,
+      "sha256": "6a15769872f8b1d69537c597f5d30f48da5c035308a6b3fef29c6128a0ddbab9"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-baseline-03.json",
+      "bytes": 19608,
+      "sha256": "3ed8dda842041d347f216f9281e2d946ed5c5afe81f88da84dac9e1466ea6d14"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-baseline-04.json",
+      "bytes": 9405,
+      "sha256": "e52beefe5ca51c3154f8364f6909e88047613627e6adf2f58148a6fb4fea98e8"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-baseline-05.json",
+      "bytes": 4546,
+      "sha256": "765c36cb4c11114eddd126d707a84df332717d6bc3b0d5638fed14b461d3e8d2"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-baseline-06.json",
+      "bytes": 6936,
+      "sha256": "9b0c1e80d9c21786e6ab076e57f5d44970ffc970eab22e91eb70224e8e8ebfa9"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-baseline-07.1.json",
+      "bytes": 23899,
+      "sha256": "2241d8fae6750ddff1c38e581d37b78559dbe4326630d24c58cc6bc42127e916"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-evidence-index.json",
+      "bytes": 20584,
+      "sha256": "6a1b8cda514aab3848dc877ec20e70683c49e231d96cee7191f109af3871c9fb"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-final-check.json",
+      "bytes": 4968,
+      "sha256": "b0377d50c3a607e6d9ea7ef9f61088ab44a2c9eb27b8af4449a1010c8deef501"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-matrix/SPEC-REVIEW.md",
+      "bytes": 8834,
+      "sha256": "974db17b16172f4cd26abc494ab3a60fda390de08f6ccd82603b6e16b597724d"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-matrix/STANDARDS-REVIEW.md",
+      "bytes": 7564,
+      "sha256": "2bf1a907da06e14c5cb8eb0302dce26311c046ed2a752af69a5d03eaa24374fe"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-matrix/assigned-gate-red.log",
+      "bytes": 1392,
+      "sha256": "413f006dc70dba69e31d4e563c355601233fdb86e8490eab93f8508e4538967a"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-matrix/freshness-final-green.log",
+      "bytes": 3034,
+      "sha256": "6d7d9358e55b8be6a319f3809f2d4ff5646e1774139d2b5cda1c271ae054cd2d"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-matrix/freshness-green.log",
+      "bytes": 465,
+      "sha256": "c566dda65664f8d4cd10dae1e093382b77fa3a4ef1b703a093ab2684c94c7960"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-matrix/freshness-red.log",
+      "bytes": 1551,
+      "sha256": "5e0e86c8e2f8b0bd170dad05dc2a136d186e1977cb85dab6d2814842e02601ec"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-matrix/freshness-regression-green.log",
+      "bytes": 2813,
+      "sha256": "63df30f617b97c6d0fae81bbdf31f07481fdd8b692b7f4a37feec6c5f8d2a4d2"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-matrix/freshness-regression-initial-failed.log",
+      "bytes": 3686,
+      "sha256": "482615b2cf16715facdec45a1d25d0bf50341d4e672c0e5ac2354a486617d156"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-matrix/freshness.test.cjs",
+      "bytes": 11004,
+      "sha256": "1f8885fbee8fb6a29f8526fe2ede84b338f9205a2038e6c78dc7a3907fe09aad"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-matrix/main-regression.log",
+      "bytes": 2466,
+      "sha256": "a610298dd6c43b927916f861b4cbe32a3b058bfe7df69b8cd9e0d7269cd2d23f"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-matrix/requirements-final-check.before.json",
+      "bytes": 1776,
+      "sha256": "10326075d0648e87dab9743a9dae90902916632e16811f3789046ea98106e7d0"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-matrix/scope-and-invariants.log",
+      "bytes": 1245,
+      "sha256": "6abc9382bdd835f76d5d9385e4b5e9e6e98dc915bbcd43014937c1e67747de48"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-start.json",
+      "bytes": 871,
+      "sha256": "a810ae922bdc1e0575b2a17b5a3201da6884de393c48f99fc8a929bbf9120594"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/requirements-final-check.json",
+      "bytes": 1715,
+      "sha256": "234473fa8ec92ed99361eb6f41eb7b04db25edcb1903488536dc81cd4ee75e7f"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/requirements-final-dynamic.cjs",
+      "bytes": 19895,
+      "sha256": "f6ef7667da266abc7fa3b538fa4f4f3d4ee5d2fc0a73ef105e956e86eace94e7"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/requirements-final-recompute.cjs",
+      "bytes": 17530,
+      "sha256": "5e8827c6c3043ee7c25360c07a8c765c75afeb8c3b64ba3ab9e1e1a45828794c"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/requirements-final-snapshot.json",
+      "bytes": 137314,
+      "sha256": "1f66d21f019425234846950e5dfa70082febd0c7e8afafd61e265147316482a5"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/findings.md",
+      "bytes": 9659,
+      "sha256": "40d83a8cecad0cb62eed94c3ff87139431f9c355bc58861d262de055f35a67f2"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/progress.md",
+      "bytes": 10838,
+      "sha256": "33d447f33d608b3ef5681683e7da0c158491206722499b24dde45ab95f2d386a"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/requirements-matrix.json",
+      "bytes": 595689,
+      "sha256": "938c413cb96bb50b4ae369f4e4c42bfa4593066aaec2be2d89779062521b60a4"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/task_plan.md",
+      "bytes": 4973,
+      "sha256": "c369a0472ca27859c36fd5189ff91f5e4c3078dbd8c576b4896a692ec6b39220"
+    },
+    {
+      "file": ".planning/phases/03-edit-store-scope-model/03-VERIFICATION.md",
+      "bytes": 102800,
+      "sha256": "f6a8657f760a1656657e53ecc04789d0a76ef9098cb28a3ff7e8efc289abc4cf"
+    },
+    {
+      "file": ".planning/phases/04-scoped-l0-read/04-VERIFICATION.md",
+      "bytes": 37232,
+      "sha256": "b10127dfe9c705f9b6d0110d45d1a442961d3edcfac8e5ea140bdcd594efe369"
+    },
+    {
+      "file": ".planning/phases/05-online-action/05-VERIFICATION.md",
+      "bytes": 49282,
+      "sha256": "eb120872d560fdb9af1039328fb7c1b8da17f40b0b22916d2c2551c9ef4a5ca9"
+    },
+    {
+      "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md",
+      "bytes": 39660,
+      "sha256": "b029b2f768539e695cc0a0476840a361d0d10643ece50446f1ea19f5b2b3b5da"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-VERIFICATION.md",
+      "bytes": 75712,
+      "sha256": "08c44ecfb3053ac485192a0fe6df0692daeb0a92b74429514b87755acd205b24"
+    }
+  ]
+}

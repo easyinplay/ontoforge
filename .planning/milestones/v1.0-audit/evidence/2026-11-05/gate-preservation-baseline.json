@@ -1,0 +1,246 @@
+{
+  "purpose": "追加covered_files保留核对之前的47项证据字节快照；原始产品与CI日志须保持，派生fingerprint/report可在保留历史后修正",
+  "captured_at": "2026-11-05T09:34:49.952Z",
+  "index": {
+    "created_at": "2026-11-05T09:05:13.442Z",
+    "head": "060019fe52005c6b85ae5c5f59da9868f464e579",
+    "note": "Byte hashes only; preserves original RED, controlled cancellation, raw CI BOM/ANSI, and final reports. Does not turn exclusions or historical tests into new execution.",
+    "entries": [
+      {
+        "file": ".planning/milestones/v1.0-audit/FINAL-REVERIFY.md",
+        "bytes": 19811,
+        "sha256": "358c6dccf53619de1dbc25e822b771be80694414e490aacd7bf439bdfc73c00e"
+      },
+      {
+        "file": ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+        "bytes": 75544,
+        "sha256": "cf0b7b8bfebe0a49ea4d7723dd3b7fa87e930e85d7a997d98cae29bb33c9d727"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-final.json",
+        "bytes": 19631,
+        "sha256": "3947bcf089a3641d0c0afa8bdf525ebd1974778e615c39150e977cad6ae4fc47"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-initial.json",
+        "bytes": 256,
+        "sha256": "586f42431fe318f0a5b9bea9a4e3a20a1d9e53cb735e469f3267c28fbd374d28"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-integration.log",
+        "bytes": 116188,
+        "sha256": "bdc51412697da080151c6b7f68e42f88c0e74bb21ecbfe67acc2fdaba23b449e"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-isolated-query-bench.log",
+        "bytes": 100182,
+        "sha256": "dbfefa449e95c858c9e9c11f3ef7690ae47b80dfbfa4a73c9a88d56a4828aa99"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-phase7-real-services.log",
+        "bytes": 71087,
+        "sha256": "5cad89dc1e75935cc5bdaa3ca82e5e1f4df06c81c56e7dc64425b0996820c727"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-progress.json",
+        "bytes": 19375,
+        "sha256": "97fe46cd57b7b24998274d2a8ce118eefe5bc46a51daf19c67a6c638aacb7151"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-ubuntu.log",
+        "bytes": 337902,
+        "sha256": "ae3d8ed246f84a5ba0ea323ee3a84311f76a8119e8deffeb7679da6161e723c8"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-windows.log",
+        "bytes": 341785,
+        "sha256": "243cf6436c9e9c7ca1b081cd0ce1df3ca486a25d7b678d10303e5ad9adda1753"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-ci-counts.cjs",
+        "bytes": 3548,
+        "sha256": "99d6001e1380037a07deb97d0ce735bd56f4b4f43268ae900b39f9e254e31423"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-ci-counts.json",
+        "bytes": 146220,
+        "sha256": "7aade5e8e612d4370eabe1d96af9448f40d54fb026743b360ebf6dc12a09b6ea"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-ci-recalculated.log",
+        "bytes": 6704,
+        "sha256": "24c4347fb8b17b557b2d359685a7e0b349bffbe7630d0744f1e8ab54ac0fd949"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-ci-window-audit.json",
+        "bytes": 5415,
+        "sha256": "3956f3dd4e676cc3b7b3662a97dd887e9db5e5182442cba9e6a799bc1c846dc2"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-counts-empty-policy-green.log",
+        "bytes": 455,
+        "sha256": "579f4ae0511e3bbaf8e0058df4d6bb568d3c20b6a725be85c02ac6378244d770"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-counts-empty-policy-red.log",
+        "bytes": 1193,
+        "sha256": "5e70a58f5c851067c1d24d280f6b0e115925fcdbf88549056ffbd6550b3203fd"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-counts-identity-green.log",
+        "bytes": 389,
+        "sha256": "90078a73eba5162da1472bdebef98b20fcd9e61376874c9c84f7d0d4d9eee7aa"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-counts-identity-red.log",
+        "bytes": 1183,
+        "sha256": "9e829b69569f33854da714734b3c9f8a03bacea4adbaf0a256632157640e726a"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-counts-ignored-policy-green.log",
+        "bytes": 507,
+        "sha256": "79cec8474907b21406f4cc05083af3694d0d756af20559b0af618d997ab09c87"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-counts-ignored-policy-red.log",
+        "bytes": 1209,
+        "sha256": "f6c5954a9bc9e353668f4257a6720a1f8ebe44c25f03e396c575bd99bc00cca1"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-counts-recalculated.log",
+        "bytes": 16229,
+        "sha256": "8de5fc9a161c475f386f07a8228a4c4e89a3323e2b31566a7e68f38936f55be7"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-counts-regression-green.log",
+        "bytes": 1082,
+        "sha256": "48c71fad7d71c47177b05e5bf1aa59a3f7b1e63a2bceb421c7200580a634670a"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-counts-zero-green.log",
+        "bytes": 331,
+        "sha256": "45bf0bbc2391b1c1ff5fe7b1a03737c4d72fb8598c81ca428995ae78578d8108"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-counts-zero-red.log",
+        "bytes": 1202,
+        "sha256": "564737aeddc8dfaa0370b3cf6182dc0b35ffdcda60f94ad8a4b2a13ab761a778"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-counts.cjs",
+        "bytes": 7120,
+        "sha256": "661a85d935c19295f02f57f0a4e38baaa8422ed98782d8bfd46dab48fc23f1d5"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-counts.test.cjs",
+        "bytes": 5454,
+        "sha256": "1da87c679f305e49940dc2ff5480d1298ace9ad1933fab20d628504750bc56b9"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-final-validation.log",
+        "bytes": 1588,
+        "sha256": "75af2df0b19adb953e9c8eb3aead3914e8ab2178b854a1f24fb04e98e9a53944"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-fingerprint.json",
+        "bytes": 12060,
+        "sha256": "f88c7e8bf9a8d8d9300d2c6124643a9e7fc68961e52cd475d2e958c6cf69f649"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-impact.cjs",
+        "bytes": 2264,
+        "sha256": "1a8230c838855131ec29cc0b9532f91430d94bd2b6ee38b7da781d23fb66f7c4"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-impact.json",
+        "bytes": 109512,
+        "sha256": "cb10c2375077305915781086880160628dbd38be0cfcc6a900fc1c125301cf75"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-local-results.json",
+        "bytes": 2374,
+        "sha256": "70ba440f0e1d7223b2633e7e14ac3b3300efbf7f9462f4c467b6cf12d67148ed"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-phase-statuses-after.json",
+        "bytes": 5224,
+        "sha256": "fada26e1d74f7945e3a6850b5880456f09cb3fd06d4b34659efd44ab408372fd"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-phase-statuses-before.json",
+        "bytes": 6421,
+        "sha256": "4c9a43dac6d16efcedb7649e1b7f6c90a1da198a29c4912e3158427cc91dbdb9"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-phase7-before.md",
+        "bytes": 70064,
+        "sha256": "f677232eb8bf5f1c8018087d400d5293ea6dbb73c0db74c2a918e37a9442abc5"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-run.ps1",
+        "bytes": 2550,
+        "sha256": "cedc8337fe6b6921b8cd0a11efceb3c11870b08c7166c89b178e3321fcac44d0"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-source-checks.log",
+        "bytes": 1136,
+        "sha256": "afa0b6dab1a39278d8784f629bf86ba46affded583de7a46008c3881e70448f0"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-source.diff",
+        "bytes": 214859,
+        "sha256": "9fc68f93ae7c3244d2c510cd596710a5ee82a7b600568b2886d1f1a08f69e825"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-sqlite-atomic-discovery.log",
+        "bytes": 4039,
+        "sha256": "dae4eff0fb9fb332e992adc12f2640bd85d6af79323db871ffeb4c4dc4aeb760"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-sqlite-atomic.log",
+        "bytes": 987,
+        "sha256": "2cf5ddd1b9d915979e457b78854977ecc0fd6f4ef661430d5b60e0934bc85be6"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-status-after.json",
+        "bytes": 116,
+        "sha256": "eef6c35f8ee54d0d7f23c588803900e772d480002ae2ff557cf570bdf8102b16"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-status-before.json",
+        "bytes": 781,
+        "sha256": "05b74cb9522ff2410cbf6ee9335957530ba62a28804f897505022abd0b6a8dc3"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-tls-hermetic.log",
+        "bytes": 1069,
+        "sha256": "799e4729cfd2169ccb872b8144d72aadacdac1137f22532886ab0ee8d85a5e54"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-tls-real.log",
+        "bytes": 309,
+        "sha256": "0cee1ef3ca7d9fdb157840976ce112a17edb909fcc63db8a963688b773752ea9"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-workspace-counts.json",
+        "bytes": 89731,
+        "sha256": "65c9666c98fb050fdeafaf6f05e003db87af7edbf3ef1ab652080352f6ad77d5"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-workspace-discovery-c.log",
+        "bytes": 122063,
+        "sha256": "18664e99b5268adfb615cd80ad02fb090e7edb91557490c88e066ad05064a04b"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-workspace-discovery.log",
+        "bytes": 3098,
+        "sha256": "cf1ef77810ce9d556266fe10606eb77950a7f955a460ac11d87b1a7e3964c115"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-workspace.log",
+        "bytes": 139931,
+        "sha256": "f1e8594764dfc0572154d18ff520c88321db4cc05cc264d1b3befaa7d0fa5ab1"
+      }
+    ]
+  }
+}

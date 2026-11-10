@@ -1,0 +1,51 @@
+{
+  "checked_at": "2026-11-05T09:42:14.094Z",
+  "head": "060019fe52005c6b85ae5c5f59da9868f464e579",
+  "original_covered": 237,
+  "current_covered": 248,
+  "original_all_preserved": true,
+  "governance_restored": [
+    ".planning/phases/07-rest-mcp-shell/07-SECURITY.md",
+    ".planning/phases/07-rest-mcp-shell/07-UAT.md",
+    ".planning/phases/07-rest-mcp-shell/07-VALIDATION.md",
+    ".planning/phases/07-rest-mcp-shell/COVERAGE.md",
+    ".planning/phases/07-rest-mcp-shell/reviews/07-14-IMPLEMENTATION.md",
+    ".planning/phases/07-rest-mcp-shell/reviews/07-BRIDGE-SECURITY-EVIDENCE.md",
+    ".planning/phases/07-rest-mcp-shell/reviews/07-E6-SECURITY-RECHECK.md",
+    ".planning/phases/07-rest-mcp-shell/reviews/07-EXPLAIN-EVIDENCE.md",
+    ".planning/phases/07-rest-mcp-shell/reviews/07-FINAL-SIMPLIFICATION.md",
+    ".planning/phases/07-rest-mcp-shell/reviews/07-FINAL-SPEC-REVIEW.md",
+    ".planning/phases/07-rest-mcp-shell/reviews/07-FINAL-STAFF-REVIEW.md",
+    ".planning/phases/07-rest-mcp-shell/reviews/07-FINAL-STANDARDS-REVIEW.md",
+    ".planning/phases/07-rest-mcp-shell/reviews/07-SDK-SECURITY-EVIDENCE.md",
+    ".planning/phases/07-rest-mcp-shell/reviews/07-SECURITY-EVIDENCE-GAPS.md",
+    ".planning/phases/07-rest-mcp-shell/reviews/07-T08-SECURITY-RECHECK.md",
+    ".planning/phases/07-rest-mcp-shell/reviews/07-T24-SECURITY-RECHECK.md"
+  ],
+  "new_inputs": [
+    "ci/pg/seed.sql",
+    "crates/ontoforge-action/tests/trino_action_it.rs",
+    "crates/ontoforge-engine/src/cardinality_check.rs",
+    "crates/ontoforge-engine/src/printer/ast.rs",
+    "crates/ontoforge-engine/src/printer/dialect.rs",
+    "crates/ontoforge-engine/src/printer/tests.rs",
+    "crates/ontoforge-engine/tests/cardinality_check.rs",
+    "crates/ontoforge-schema/src/diag.rs",
+    "crates/ontoforge/src/online.rs",
+    "crates/ontoforge/tests/cli_check_cardinality.rs",
+    "crates/ontoforge/tests/cli_trino_it.rs"
+  ],
+  "current_index_entries": 56,
+  "current_index_mismatches": [],
+  "baseline_index_entries": 47,
+  "baseline_raw_logs": 25,
+  "baseline_raw_logs_unchanged": true,
+  "changed_derived_files": [
+    ".planning/milestones/v1.0-audit/FINAL-REVERIFY.md",
+    ".planning/phases/07-rest-mcp-shell/07-VERIFICATION.md",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-fingerprint.json",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-status-after.json"
+  ],
+  "scope_only_correction": true,
+  "product_tests_or_ci_rerun": false
+}

@@ -1,0 +1,19 @@
+{
+  "recorded_at": "2026-11-05T11:35:34.190Z",
+  "before_count": 345,
+  "after_count": 350,
+  "removed": [],
+  "added": [
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/phase03-approval-override/03-VERIFICATION.human-needed.before.md",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/phase03-approval-override/authorization.md",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/phase03-approval-override/baseline.json",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/phase03-approval-override/decision.json",
+    ".planning/milestones/v1.0-audit/evidence/2026-11-05/phase03-approval-override/input-drift-check.json"
+  ],
+  "old_subset_of_new": true,
+  "old_planning_count": 83,
+  "planning_removed": [],
+  "current_digest": "v4:sha256:4eed4c7e8f8d2e39225dc2ee5e253cade83dae50de448093f84a64a9f0d58a4a",
+  "report_itself_covered": false,
+  "other_verification_dependency_added": false
+}

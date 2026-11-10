@@ -1,0 +1,36 @@
+{
+  "recorded_at": "2026-11-05T13:57:58.756Z",
+  "scope": "Phase01 current-contract review without human override",
+  "prior_index": "phase03-approval-override/main-evidence-index.json",
+  "prior_index_check": {
+    "checked": 106,
+    "differences": [
+      {
+        "file": ".planning/milestones/v1.0-audit/findings.md",
+        "expected": "40d83a8cecad0cb62eed94c3ff87139431f9c355bc58861d262de055f35a67f2",
+        "actual": "bf19f6ae96eda73a2db4572317f539e8cd232695da0d3dc883d4b4836011e6aa"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/progress.md",
+        "expected": "33d447f33d608b3ef5681683e7da0c158491206722499b24dde45ab95f2d386a",
+        "actual": "d320e27056ea74060e8d35c6099b2d2c365f42ae571b45e5d209dfbb94538a71"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/task_plan.md",
+        "expected": "c369a0472ca27859c36fd5189ff91f5e4c3078dbd8c576b4896a692ec6b39220",
+        "actual": "fd849dbcc55894741060bd5ff71d354d4c571589ebf224628b174a6e7f0325a9"
+      }
+    ]
+  },
+  "expected_changes_at_start": [
+    ".planning/milestones/v1.0-audit/task_plan.md",
+    ".planning/milestones/v1.0-audit/progress.md",
+    ".planning/milestones/v1.0-audit/findings.md"
+  ],
+  "before_gate": {
+    "exit": 0,
+    "stdout": "{\n  \"status\": \"stale\",\n  \"next_action\": \"Verification is stale — covered source files changed after the verifier last ran: \\\"CONTRIBUTING.md\\\", \\\"Cargo.toml\\\", \\\"crates/ontoforge-schema/src/diag.rs\\\", \\\"crates/ontoforge/src/cli.rs\\\", \\\"crates/ontoforge/src/lib.rs\\\". Re-run execute-phase for this phase: it resumes at the verification gates and re-runs the verifier, regenerating VERIFICATION.md and its digest. verify-work alone cannot refresh a stale report.\",\n  \"next_command\": \"$gsd-execute-phase 01\",\n  \"route\": \"execute-phase\",\n  \"moved_files\": [\n    \"CONTRIBUTING.md\",\n    \"Cargo.toml\",\n    \"crates/ontoforge-schema/src/diag.rs\",\n    \"crates/ontoforge/src/cli.rs\",\n    \"crates/ontoforge/src/lib.rs\"\n  ]\n}"
+  },
+  "before_covered_count": 315,
+  "prior_index_immutable": true
+}

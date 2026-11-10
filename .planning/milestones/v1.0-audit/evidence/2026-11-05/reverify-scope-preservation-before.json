@@ -1,0 +1,1137 @@
+{
+  "created_at": "2026-11-05T09:34:42.119Z",
+  "head": "060019fe52005c6b85ae5c5f59da9868f464e579",
+  "historical_count": 237,
+  "superseded_count": 232,
+  "expected_union_count": 248,
+  "superseded_snapshots": "232-superseded files are immutable previous derivations, not current verdicts.",
+  "production_inputs": [
+    {
+      "file": ".github/workflows/ci.yml",
+      "bytes": 18887,
+      "sha256": "b4a802a680e268303a5cdfa66f51f876f0b8128822ff364616c3fe7c3b7f77e8"
+    },
+    {
+      "file": ".github/workflows/release.yml",
+      "bytes": 5593,
+      "sha256": "11568fe30c90d33524eb88b93a2e26a5735cfb01ce30068414270579bc73fbef"
+    },
+    {
+      "file": "Cargo.lock",
+      "bytes": 113308,
+      "sha256": "7ccd6827bf948238d62ceb492bea930e30ae7d289a1dd3fc04f94d08afafb2ee"
+    },
+    {
+      "file": "Cargo.toml",
+      "bytes": 2869,
+      "sha256": "6ff37b0773c9cbf86f8738a11f008d32b41ac8e6153c5da37dafea0da33d4dd5"
+    },
+    {
+      "file": "ci/check-tls-deps.sh",
+      "bytes": 345,
+      "sha256": "73bd03d6c2361108bd041f2ccac3a29155d98f7ec8867e5750df6d5891a25fa7"
+    },
+    {
+      "file": "ci/pg/seed.sql",
+      "bytes": 6445,
+      "sha256": "3968ced5df5fff86621e113b60c55328c08a65be682aef35cddb73b6e49b69d7"
+    },
+    {
+      "file": "ci/query-services.sh",
+      "bytes": 8539,
+      "sha256": "787584901268126405fa46ae5e77f34bc59a618d2297d9196ee0505b35682881"
+    },
+    {
+      "file": "ci/release-package.ps1",
+      "bytes": 7865,
+      "sha256": "215a9bbbf2dc07f28195c188e14c3a020d822a34324556716813d5074c8e05ad"
+    },
+    {
+      "file": "ci/release-smoke.ps1",
+      "bytes": 13093,
+      "sha256": "d7bcdf9dd4eb3b2c1874b1983d118704f92ed776aa7876d71c62fb258fd24c34"
+    },
+    {
+      "file": "ci/server-services.sh",
+      "bytes": 12537,
+      "sha256": "9456d17e03f07381f8c2370e60f3f4c539fb91db0a12bd81296503899c39edc6"
+    },
+    {
+      "file": "ci/test_tls_deps.py",
+      "bytes": 4211,
+      "sha256": "0f1d1fb4baba849319e8467d087c08b672ed9d94f14c67cd22d8b0042b06845a"
+    },
+    {
+      "file": "ci/test_windows_server.py",
+      "bytes": 14044,
+      "sha256": "04c7be1c1f89766cc0eed86abfa5fa0fc39ffb5a8871815c39fd9fb5f06ba31c"
+    },
+    {
+      "file": "ci/windows-server.py",
+      "bytes": 10949,
+      "sha256": "dae65d393d3a8903bafa76bcc14b069e001f8db9ec9855deffb71e6ac520150b"
+    },
+    {
+      "file": "clients/typescript/package-lock.json",
+      "bytes": 13266,
+      "sha256": "5df992e2221e9f6a037a5cd3cedf52bfc8f76db13791848364b6dbba17204162"
+    },
+    {
+      "file": "clients/typescript/package.json",
+      "bytes": 794,
+      "sha256": "758a5c7b193b9641018d83a970aabe703962c5873f8eff72f327cc764e31adab"
+    },
+    {
+      "file": "clients/typescript/src/codec.ts",
+      "bytes": 2401,
+      "sha256": "40b5b2b6d6979fff48e221f06a0b9d8b8e6f287df1f92929551e6a0559ca74b3"
+    },
+    {
+      "file": "clients/typescript/src/generated.ts",
+      "bytes": 27895,
+      "sha256": "d4e138ccd7b0f33356fd26861bc67374a2499599945934c4fc96e30ea0148a9d"
+    },
+    {
+      "file": "clients/typescript/src/index.ts",
+      "bytes": 9827,
+      "sha256": "0abadb23eed4ce6a5e6728b90047dee8d885a1cd01711ee8a4f4d4c558897947"
+    },
+    {
+      "file": "clients/typescript/tests/contract.test.mjs",
+      "bytes": 25709,
+      "sha256": "f2f7dc4afcd97da9c8adc02a99f07c5786f8c1b520a09511a97141375ac4a555"
+    },
+    {
+      "file": "clients/typescript/tests/error-types.ts",
+      "bytes": 260,
+      "sha256": "f3e6aa2caf189297eb384fcd68b17a43260311dab8eeb2c0ad5c0be710679872"
+    },
+    {
+      "file": "clients/typescript/tests/health-types.ts",
+      "bytes": 273,
+      "sha256": "afbc044572f8f6fcbfeaf605e1f1fa435366d772d7cf42dae35d0a118ec068f1"
+    },
+    {
+      "file": "clients/typescript/tests/numeric-security.test.mjs",
+      "bytes": 2013,
+      "sha256": "2775e1b118a170423a233a8aede8f62979b85823de0306eac86c8b659fee4f82"
+    },
+    {
+      "file": "clients/typescript/tests/support-security.mjs",
+      "bytes": 3840,
+      "sha256": "0854c3b771ba39d365f0da49f1da70c488d70f9697e367bfa50c4118b06bad43"
+    },
+    {
+      "file": "crates/ontoforge-action/src/lib.rs",
+      "bytes": 30350,
+      "sha256": "ae25e0c9035e5fa99c7576f091fde6635d85dd0801b451107b6d156df307ab6c"
+    },
+    {
+      "file": "crates/ontoforge-action/src/source.rs",
+      "bytes": 6835,
+      "sha256": "7faad38cdf23b87a140a83544d2e4b36d3bf3b503654ea2fe729bd639a0a6733"
+    },
+    {
+      "file": "crates/ontoforge-action/tests/frozen_definition.rs",
+      "bytes": 14468,
+      "sha256": "48fb10ebdf58738385eb28dcaceb2e8d35fdc8275a060d88c0400dc7430d9788"
+    },
+    {
+      "file": "crates/ontoforge-action/tests/idempotency_pg.rs",
+      "bytes": 13253,
+      "sha256": "d2a40de475a18ff24066b88ce4bcee671fe45c1edfa2586870c15595d3941221"
+    },
+    {
+      "file": "crates/ontoforge-action/tests/trino_action_it.rs",
+      "bytes": 16622,
+      "sha256": "ce0b534c9d45ad5b1fc19631a8d5149c6c732824772690045d5514758e03e391"
+    },
+    {
+      "file": "crates/ontoforge-api/Cargo.toml",
+      "bytes": 309,
+      "sha256": "011b62a47e8d970f6c4b6278f64b9150bea2c57bfe92409f9a7ca823d9615c39"
+    },
+    {
+      "file": "crates/ontoforge-api/src/dto.rs",
+      "bytes": 9785,
+      "sha256": "5853c25c3f311ac16536be2503f9a116d429ca8987f6c25166587a6cca859d88"
+    },
+    {
+      "file": "crates/ontoforge-api/src/lib.rs",
+      "bytes": 373,
+      "sha256": "d020f3f58e27a50563dd487396171be58cfe600fc5aa0009c1010bb08a5dd9e8"
+    },
+    {
+      "file": "crates/ontoforge-api/src/openapi.rs",
+      "bytes": 7489,
+      "sha256": "14261d45f9137971067451ad06fa90f95210b7ab7db96585d55a73a5ef046c9e"
+    },
+    {
+      "file": "crates/ontoforge-api/tests/openapi_snapshot.rs",
+      "bytes": 6502,
+      "sha256": "77d4879bc451c09919b18a117342818c155175809f02c80a7680d405869fc95f"
+    },
+    {
+      "file": "crates/ontoforge-client/Cargo.toml",
+      "bytes": 913,
+      "sha256": "2e1ef245791d43457b696359b455059bdc1d669b83244c1c344cbbde12483f3a"
+    },
+    {
+      "file": "crates/ontoforge-client/src/lib.rs",
+      "bytes": 23315,
+      "sha256": "2741d467cfe88e1e91642210fcead30c35a131fed01dde52538975164f2cd309"
+    },
+    {
+      "file": "crates/ontoforge-client/tests/contract.rs",
+      "bytes": 17807,
+      "sha256": "ffb339905295655ee398663bc56fdacfa25292542023e122568bebb8aad232dc"
+    },
+    {
+      "file": "crates/ontoforge-client/tests/error_diagnostics.rs",
+      "bytes": 5664,
+      "sha256": "6a1295583c949f76e929dc4ad1571879f71209b41440ae52b03c4f30916559af"
+    },
+    {
+      "file": "crates/ontoforge-client/tests/support/mod.rs",
+      "bytes": 10223,
+      "sha256": "fe36a903575a25d3bef9d773112222ed3784a6b16f75fa5637cec4cd659a789f"
+    },
+    {
+      "file": "crates/ontoforge-client/tests/support/security.rs",
+      "bytes": 10312,
+      "sha256": "5ff816bfb4abaf0d51474ae46a79581ab4830aa1b96f9757be10320b6d79c8c1"
+    },
+    {
+      "file": "crates/ontoforge-engine/Cargo.toml",
+      "bytes": 980,
+      "sha256": "b5fbf0daa61f254d24cfabdd1faf56cfbc4f30523ec22b71129c479282f9048b"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/bind_check.rs",
+      "bytes": 29719,
+      "sha256": "f1b466793d1a7e2e0d51a52d752592846565fd194bd677a06e0082095f343fe4"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/cardinality_check.rs",
+      "bytes": 5533,
+      "sha256": "7e0890bee8c7e5389fd1dcb9b25faa114e22d7ef08c4250be4ecfedff38f3cfc"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/config.rs",
+      "bytes": 44941,
+      "sha256": "d0b7f00d1b33f0fb8300fe1c971af72b3094688914dbb6f66f2e47be9b455543"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/lib.rs",
+      "bytes": 6181,
+      "sha256": "6a084e250a33b629bcbc77c170e84fb21fdf3d040ee8ac1e239ff368eb654e69"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/printer/ast.rs",
+      "bytes": 2781,
+      "sha256": "3ded752ff5e80dfbba0d9f70b9c3857c1ef2fc007d3d144169f6d78eda4f9790"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/printer/dialect.rs",
+      "bytes": 10895,
+      "sha256": "255b8bebda8d3f25aa8b2d3d6acff0b2d8f755891b35bef2812cb91d973b6004"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/printer/l2.rs",
+      "bytes": 21334,
+      "sha256": "b71cadcd7e068f464304173746de8ec3c4c202400a831adff12d26f08ad91378"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/printer/tests.rs",
+      "bytes": 11488,
+      "sha256": "88e5ddb09010b79afec6d9b8de27635c614f7e07f355bb1daffc3dd0f1fd6503"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/trino/cancel.rs",
+      "bytes": 6541,
+      "sha256": "2cf5bdf35abcfe7cdfddb34964fd719da396a2963b62768fa4d2a26775d19502"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/trino/l2_monitor.rs",
+      "bytes": 16922,
+      "sha256": "f5283824db2e2aaae027382d211f24c2d4110394be4c4a2d2aad132aae3ca1c4"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/trino/mod.rs",
+      "bytes": 22389,
+      "sha256": "f18c5148607b8d75c375c48c2b9ee3d23fbaeac9b34e5863d7c4992a4682d26c"
+    },
+    {
+      "file": "crates/ontoforge-engine/tests/cardinality_check.rs",
+      "bytes": 20282,
+      "sha256": "fd46a54cfc79edec835288eb063151a37b239f496b12ccedbbd6cae1070d7dbe"
+    },
+    {
+      "file": "crates/ontoforge-engine/tests/drift_budget.rs",
+      "bytes": 3244,
+      "sha256": "37d675a934f7f8f25fcb4a48d3cfbc1861cbd763f55c71a2dd20de4eaf54d84b"
+    },
+    {
+      "file": "crates/ontoforge-engine/tests/l2_explain.rs",
+      "bytes": 2693,
+      "sha256": "405ea0ad09e74a6631475c0178aa6b0b44dbb3f939d1ed4e353a5217bd981196"
+    },
+    {
+      "file": "crates/ontoforge-engine/tests/l2_monitor.rs",
+      "bytes": 31077,
+      "sha256": "ede882dd1bc2e6d74c71ed278042aa6b082480c7381dcc34f4cc0334dccb6492"
+    },
+    {
+      "file": "crates/ontoforge-engine/tests/server_config.rs",
+      "bytes": 29269,
+      "sha256": "2e109e2ec593f0347214149d9a5ebff679dcf39ae1ffdfc0ffeff68cd0bf5fbb"
+    },
+    {
+      "file": "crates/ontoforge-engine/tests/trino_resilience.rs",
+      "bytes": 31034,
+      "sha256": "d032138214b1896692cc98a700fe988811de23d663d34ae8abe7205599f98ce0"
+    },
+    {
+      "file": "crates/ontoforge-query/src/aggregate.rs",
+      "bytes": 48440,
+      "sha256": "ea36ba52eb362272ad7caad6a7e863c9e97333be602f3929caed5d37f5d2bf48"
+    },
+    {
+      "file": "crates/ontoforge-query/src/execute.rs",
+      "bytes": 39643,
+      "sha256": "b7df21346dbfaa46c46efcf0d92b5c6204e61e026a1fd6fde9c9314f54f7ac59"
+    },
+    {
+      "file": "crates/ontoforge-query/src/l2.rs",
+      "bytes": 16982,
+      "sha256": "3c20dac53daf3f33b51794f638fbf7b9178c095b57783287e715daced60b848d"
+    },
+    {
+      "file": "crates/ontoforge-query/src/lib.rs",
+      "bytes": 19376,
+      "sha256": "be742bc046424fcee8c138de4395a9a61291bf39eecf4495c8ef930c2731e9d1"
+    },
+    {
+      "file": "crates/ontoforge-query/src/link.rs",
+      "bytes": 18414,
+      "sha256": "96f4699f2950c42d6445b17068b8dd49d8065ad78e3cd6f1289176971b3adb64"
+    },
+    {
+      "file": "crates/ontoforge-query/tests/audit_pk.rs",
+      "bytes": 34155,
+      "sha256": "cfd182807f23589e0b088ba740a89a84ca5d4bb5a7558ae5c16c15da8e6ab00d"
+    },
+    {
+      "file": "crates/ontoforge-query/tests/l2_execute.rs",
+      "bytes": 31913,
+      "sha256": "34d8804a9e4c5129e5c9625a9435745b3122c7d2f35567add14998b6e5b4c75a"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/diag.rs",
+      "bytes": 11203,
+      "sha256": "fad8d8b85fd305c25218b088281f92377a77a6031e1d9ce352b1f137a638f535"
+    },
+    {
+      "file": "crates/ontoforge-server/Cargo.toml",
+      "bytes": 1190,
+      "sha256": "d8d8e38146cad4d1589c219288c207e3cd479a27b01c13520d8a2e5e5d17f0ab"
+    },
+    {
+      "file": "crates/ontoforge-server/src/context.rs",
+      "bytes": 16926,
+      "sha256": "be35223e46669ab02e42bf7a143dd26cbdae1a595d0caba8b30e4695efb88c0a"
+    },
+    {
+      "file": "crates/ontoforge-server/src/drift.rs",
+      "bytes": 9154,
+      "sha256": "3ba8bdd958e1abd0ded92d7e8c14ab5820b34bf7ce9e2f19beb5a0ddac1b8af6"
+    },
+    {
+      "file": "crates/ontoforge-server/src/error.rs",
+      "bytes": 6343,
+      "sha256": "f8270c4ead743be0309226bcf90599a81bd6153a61af2cf9dfadb3626cd6df93"
+    },
+    {
+      "file": "crates/ontoforge-server/src/health.rs",
+      "bytes": 2442,
+      "sha256": "7c5abb5996fa5fac5aacd154e1b6f1bc29f1d2bdf26d7c66c67269879489c092"
+    },
+    {
+      "file": "crates/ontoforge-server/src/history_page.rs",
+      "bytes": 2954,
+      "sha256": "072cf071c7069dad7cbb89105bc0077ef42b00e1dfb33551cb75875ded877f6a"
+    },
+    {
+      "file": "crates/ontoforge-server/src/lib.rs",
+      "bytes": 10939,
+      "sha256": "5583507d8a3ae0d9e33faf70dd7d3369ac749f42c501a9154dad4f5ce5558894"
+    },
+    {
+      "file": "crates/ontoforge-server/src/lifecycle.rs",
+      "bytes": 4861,
+      "sha256": "2cd51a9ece1757e5ff7ca5735556bc4da1b3b8771a42673e7fd27d7871330f8a"
+    },
+    {
+      "file": "crates/ontoforge-server/src/mcp.rs",
+      "bytes": 31307,
+      "sha256": "0926be13a1e1acea182361bae728104c56fafa7e228c89336137606cefe94a24"
+    },
+    {
+      "file": "crates/ontoforge-server/src/mcp_actions.rs",
+      "bytes": 6939,
+      "sha256": "ff4e1806447d77141f04bb1655d8d400535ff46dcb11652bcb26dc86ec0eb213"
+    },
+    {
+      "file": "crates/ontoforge-server/src/mcp_catalog.rs",
+      "bytes": 5762,
+      "sha256": "0940c1d2347f7ab9009e4ca6d264f2584733bf66a6e56bd28c9b175be7e48175"
+    },
+    {
+      "file": "crates/ontoforge-server/src/mcp_l2.rs",
+      "bytes": 15827,
+      "sha256": "59fab52ac06c2b9093aee7a6cbfa2df3b09e7beb9dcc9e59494bd0609d35cff0"
+    },
+    {
+      "file": "crates/ontoforge-server/src/mcp_sessions.rs",
+      "bytes": 11107,
+      "sha256": "0762b46d13e369cefc9014d717dadb40c85226e084e5c4d305543474459e7e03"
+    },
+    {
+      "file": "crates/ontoforge-server/src/rest.rs",
+      "bytes": 33577,
+      "sha256": "f633adca06598ae124b1c4b3d202dadb61cc4b18683a82331659b877f9e583ff"
+    },
+    {
+      "file": "crates/ontoforge-server/src/state.rs",
+      "bytes": 7394,
+      "sha256": "37427aa959a383ab7ac745b0884cf2ddc5f4cfaa6f905d56a5efc0c35642ded5"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/action_source_budget.rs",
+      "bytes": 15091,
+      "sha256": "04dd63379763699b180b6490248d2a0d0417843df53e961d5fee628c00ae17b2"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/health_lifecycle_it.rs",
+      "bytes": 3358,
+      "sha256": "2ef0d2ee9353e4817b83bb51babf58357e3f6b6536437be625cf48d21cc74881"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/health_trino_it.rs",
+      "bytes": 12346,
+      "sha256": "3c97cea78efd55cce42a4f54a7ae0a9c9e7a8349437caf48b61af82f76b8ca1e"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/history_errors.rs",
+      "bytes": 5483,
+      "sha256": "25c4318d78b8435e12dcad0f057789f10961ffb8551d4db923bbe5bde6bddf62"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/history_pagination.rs",
+      "bytes": 9854,
+      "sha256": "0bc272727d22b77c7c6353624617a15385db26cb4037a51690687fe76b6ef1e8"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/http_action_diagnostics.rs",
+      "bytes": 5495,
+      "sha256": "233150a97bad5de5bef9c1e88badd9f603013adde5d894e74c65c54a4ff5fb09"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/http_action_safety.rs",
+      "bytes": 6350,
+      "sha256": "ef4e4d9cd7126c0301f33ed769c09def25edea93af63b735d9ca2a752b235a37"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/http_actions.rs",
+      "bytes": 5115,
+      "sha256": "d209e8a475e40c787b58bce79fba42ed7ed24e359c3eb493e3618d70d2d5eeb7"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/http_contract.rs",
+      "bytes": 54,
+      "sha256": "5256beb307b7b6615b14958b17338ee05d68f119c2563b861398cf81fcd8b082"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/mcp_actions.rs",
+      "bytes": 17411,
+      "sha256": "47f790452bc9c0f0b7e976e37fd60ebbb083d514ba36987ccfad7c91eb7d8188"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/mcp_contract.rs",
+      "bytes": 35092,
+      "sha256": "440f54da052d52b67a28c4186a2dcf7e2d3b1064213a296d3e3e5e974866c971"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/mcp_execution_admission.rs",
+      "bytes": 11228,
+      "sha256": "a4097b36edb0732e2aaa4a2532389d67d7544d178bcc2266f163fed5d82ae7d1"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/mcp_l2.rs",
+      "bytes": 2144,
+      "sha256": "3fe9bd707b760a416ad2045f75ebf1590f1ec62d6996f716162be44153bec1b5"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/mcp_l2_defaults.rs",
+      "bytes": 50414,
+      "sha256": "690e306a05caeb15260f79313046338beedc700e45bdc2149ac9f3565920c313"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/mcp_transport.rs",
+      "bytes": 16558,
+      "sha256": "9bca8917dc0126e6b87c6378ef40c7006d94c61f6065f384379503addc7ff292"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/postgres_http_it.rs",
+      "bytes": 17691,
+      "sha256": "77bdb2c7a71e9fc4117efc87f8f44685db288875e2a4aa12e5981f1297378ccf"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/source_drift.rs",
+      "bytes": 42834,
+      "sha256": "ea8457eec3523513cefd9df83a8179c18426d5a9c79632956bbbeafa461b62f4"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/source_drift_cleanup.rs",
+      "bytes": 6721,
+      "sha256": "1700f362607e46c8b157b9a37e2c63308dce8404a2ac143764fd0edb21d2462d"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/source_drift_trino_it.rs",
+      "bytes": 26112,
+      "sha256": "63eadf7b4a160e754531f85e29d10052e32c656971e9a424a8ec334f508ebac0"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/support/mod.rs",
+      "bytes": 11888,
+      "sha256": "fbf76889416f0d26841d3a4d7bb16ea35900864c6ee6a7a4c6b5784054ec7d1d"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/support/pg_real.rs",
+      "bytes": 13849,
+      "sha256": "efbe4e1d2e110b805ed670136a854e458eac758e99b77c64c57ffcc4dd4157d9"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/support/real.rs",
+      "bytes": 1738,
+      "sha256": "3c6b480fc7d54e60dd3e4685a53b3b3ed3d0e9d6b8d230daa958032f5be1af22"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/support/security_evidence.rs",
+      "bytes": 7183,
+      "sha256": "b149cf93276305b6868e02c2cfe74e3a59fe08cf655432b500a84161307e07b7"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/trino_http_it.rs",
+      "bytes": 22944,
+      "sha256": "ad94e3458effb231c5a9e1612b53debcfdfd7b95813bfca0abadfb67cdcf5cf7"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/unit/drift.test.rs",
+      "bytes": 1797,
+      "sha256": "53fc559d7f6fece807f7d29207fb8bb7a1a3a87f31f9851e0b2712f29c30e7f8"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/unit/http_contract.test.rs",
+      "bytes": 16765,
+      "sha256": "6a830b066487ad7d81e5b69841451963d01459b9e4e7843460aa446a27f9bcce"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/unit/mcp_admission.test.rs",
+      "bytes": 4357,
+      "sha256": "f399899fa3bfc8b48027a2317f7d077f4792d8e04c3286bf927a461585834b7d"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/unit/mcp_sessions.test.rs",
+      "bytes": 19833,
+      "sha256": "082395a2ddce9e649a6f75d629fa6017fdeca51c399f6a326bb2c932fd02005f"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/unit/rest.test.rs",
+      "bytes": 9374,
+      "sha256": "86ba45dd4d3bfbbdbe761c6cce68378fe33675b13085d0f0d57ffaab236f00a7"
+    },
+    {
+      "file": "crates/ontoforge-server/tests/unit/tracer.test.rs",
+      "bytes": 13802,
+      "sha256": "8dbed822793103dc4201c7b912f079a962fc2cbb5ac989f26b97b89bb7926a67"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/history.rs",
+      "bytes": 16954,
+      "sha256": "33921852605f3adcdad63cbc0079ac63f8cf162c1bf74a484b6478c3ecef85d1"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/lib.rs",
+      "bytes": 857,
+      "sha256": "334a3c6fb6ba8aeaf9b12f41782b10f2f1844e10a67b6d9457f93ad0c723e269"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/request_snapshot.rs",
+      "bytes": 1484,
+      "sha256": "37b569016f78030224f009cc56d9fe80f8efc7fbff497e2b486d0ca213ee01a0"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/frozen_history.rs",
+      "bytes": 6610,
+      "sha256": "5b017098a89aab7559184723e889e453ec6a9a94739b194069dbc100317eb564"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/history_masking.rs",
+      "bytes": 23266,
+      "sha256": "536cb31ab559eabbb633493616e88374962f44498ae81a7568f923eab488563f"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/request_snapshot.rs",
+      "bytes": 9533,
+      "sha256": "4ecb0f9594cae8f942aeb5260de00e31a1279d9473138f34e67b312c52771f7a"
+    },
+    {
+      "file": "crates/ontoforge/Cargo.toml",
+      "bytes": 1302,
+      "sha256": "ac9d76c889e8bc1a454d9c486a5de0906908a139c258e4be09314e2beeea08a8"
+    },
+    {
+      "file": "crates/ontoforge/src/cli.rs",
+      "bytes": 15068,
+      "sha256": "3d046c054134c1e7e2fdc27714e045d127ba76f283e3f462080c2f27478e3fdd"
+    },
+    {
+      "file": "crates/ontoforge/src/dev.rs",
+      "bytes": 11600,
+      "sha256": "8a0a81b87b90426adb2f700d03bbe5b954c75709e4857d01c8940c5f606dfadb"
+    },
+    {
+      "file": "crates/ontoforge/src/dev_assets.rs",
+      "bytes": 4555,
+      "sha256": "18667729c57509068f282fb55c3b2138121518db835d425b561e62be3b664925"
+    },
+    {
+      "file": "crates/ontoforge/src/lib.rs",
+      "bytes": 7265,
+      "sha256": "7740d3899fcde34ca1e638063badda1eda81dae6af436bda3859c07e6f9b120f"
+    },
+    {
+      "file": "crates/ontoforge/src/mcp.rs",
+      "bytes": 8422,
+      "sha256": "2f73bc276b6ec771cde930b203ea32b65f98bf88cb82673e3eef12b41dae73ab"
+    },
+    {
+      "file": "crates/ontoforge/src/online.rs",
+      "bytes": 40020,
+      "sha256": "a93df1dfd4f0f6fec9a65039dfb543d35325bc9718d265d9caaf3c2595700c70"
+    },
+    {
+      "file": "crates/ontoforge/src/serve.rs",
+      "bytes": 9890,
+      "sha256": "0564645beb28aec0139de105bc2af2f6d97ceaa096379ada545ec0ad29f4ef4c"
+    },
+    {
+      "file": "crates/ontoforge/tests/cli_check_cardinality.rs",
+      "bytes": 30418,
+      "sha256": "9b4d2f8c66d6002bb466b02ae92d7168e3a5228e9d13bec14bd01d64c79e474a"
+    },
+    {
+      "file": "crates/ontoforge/tests/cli_color.rs",
+      "bytes": 2530,
+      "sha256": "5b09ea2839fa7a847b0549d3d90cea93f880a14c6cfa7475eed49db0ccea7cd2"
+    },
+    {
+      "file": "crates/ontoforge/tests/cli_l2_identity.rs",
+      "bytes": 23408,
+      "sha256": "105df91d465c0ec6bbe889a85a190894c5f1e80494ac17f19e39b040b35a47d3"
+    },
+    {
+      "file": "crates/ontoforge/tests/cli_shutdown.rs",
+      "bytes": 5776,
+      "sha256": "6d9bb2d423ba7497b1113c21db75c6d3efcc9379feb310fabc3b015a47cafbd8"
+    },
+    {
+      "file": "crates/ontoforge/tests/cli_stdio.rs",
+      "bytes": 26435,
+      "sha256": "c41efc68019efaced0af835f69f362461b87236b5c761c1172e1bcfb5b4b6993"
+    },
+    {
+      "file": "crates/ontoforge/tests/cli_trino_it.rs",
+      "bytes": 16538,
+      "sha256": "cca2c9cbadb78b4634bf0cbff58ac4f87e0fa4808a4ed5089bdb9530cfdc8af0"
+    },
+    {
+      "file": "crates/ontoforge/tests/dev_lifecycle.rs",
+      "bytes": 14094,
+      "sha256": "eeabe7567cc86e795006b5bf6a80274b2ba11ea48268329562463c31fa92ba1a"
+    },
+    {
+      "file": "crates/ontoforge/tests/stdio_security_support/mod.rs",
+      "bytes": 22480,
+      "sha256": "c5cf559c0f1c100cb54e994164e9322d94d2e7395b50eba2fbee6ff38b11bdea"
+    },
+    {
+      "file": "crates/ontoforge/tests/unit/dev.test.rs",
+      "bytes": 1600,
+      "sha256": "2373199603fb8c6d3393c686a9982f0a07fbe5673b8475f210b51ee678b6272b"
+    },
+    {
+      "file": "crates/ontoforge/tests/unit/serve.test.rs",
+      "bytes": 16947,
+      "sha256": "c6f789d3e6ae0c81f820cc2f486e66ae3202755bbc1b91f891a447bfdf8b4aa5"
+    },
+    {
+      "file": "docs/api.md",
+      "bytes": 6862,
+      "sha256": "4b4f3531063020c15d1c7e2ae221564823626d734048bc558e9e1f2c4646a5dc"
+    },
+    {
+      "file": "docs/dev.md",
+      "bytes": 4434,
+      "sha256": "dbc136eae679cba7872d004799820a1b4bf3a9fea76d2a87fcee5131f0160e39"
+    },
+    {
+      "file": "docs/installation.md",
+      "bytes": 4627,
+      "sha256": "1c509ac3cd034d6e656ac2a6c3331019548ba8e15aac7838096ccef3c1e76d19"
+    },
+    {
+      "file": "docs/openapi.json",
+      "bytes": 45852,
+      "sha256": "6823994289439f8a04b3a780e7e97a1dd31aa3588d938fb2b4eb726b12fd8244"
+    },
+    {
+      "file": "examples/server/ontoforge-server.dev.toml",
+      "bytes": 1396,
+      "sha256": "bd27f81d4d499500bc556f72fbbc7ddece9ef31ca8d20e1e804680b5af93e580"
+    },
+    {
+      "file": "target/l2-catalog-clippy.log",
+      "bytes": 1106,
+      "sha256": "b4b6afe70abafb290fd066d19442df6c93f2292715a20de0872f6e5e5eff0b89"
+    },
+    {
+      "file": "target/l2-catalog-green.log",
+      "bytes": 1009,
+      "sha256": "269e46fe7ec7104e840f57bdaa84f33c51819d2c58d30d7f6d59490932399cd8"
+    },
+    {
+      "file": "target/l2-catalog-red.log",
+      "bytes": 4105,
+      "sha256": "a29db81cde48f2b705963d1e9c65cc016f77e385d28c45b5cb83b990e6df94c6"
+    },
+    {
+      "file": "target/l2-catalog-server-regression.log",
+      "bytes": 7833,
+      "sha256": "66d825f7fcc953c369ff353274b2338131f3ceeee9b6ba1c0e33200b17f48fe7"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/cleanup.log",
+      "bytes": 31,
+      "sha256": "10b63d8a55268ca2404f713f603d7804b0ade45cdf81f8329afc278a83fef237"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/commit.txt",
+      "bytes": 41,
+      "sha256": "bf7166380025be447303b854d84caeae3f67ab88029d2de83f78cd39694d04e0"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/final-check.log",
+      "bytes": 361,
+      "sha256": "4480be4a3312dddf3e5436dbd0c0db02772c88b6c564332af0d9a3c7b2237424"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/health_trino_it.discovery.log",
+      "bytes": 135,
+      "sha256": "016d562c408d600d615889cd4865a18a1d763b69ce4e68ca729af88298e2270c"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/health_trino_it.log",
+      "bytes": 406,
+      "sha256": "5eada813d7d66cc1d3a26ca918873c98a4d9107537a8be04d835ab08b2a93966"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/postgres_http_it.discovery.log",
+      "bytes": 254,
+      "sha256": "80a0906a96c58314434fe11fd931469c1fbce770ba4a13a790e466725dc13008"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/postgres_http_it.log",
+      "bytes": 538,
+      "sha256": "3c621462ea4d9271872d3d88601f07561e2d04955f5f00d2fd24886cbf097466"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/request_snapshot.discovery.log",
+      "bytes": 78,
+      "sha256": "6621920044c8a662c9651cdca37f9c0b7fce1c9ab6b8f5761af24dbba9c1260b"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/request_snapshot.log",
+      "bytes": 344,
+      "sha256": "9922e1b462bc57b33dbe865d1da5c3dc01d60feda42503f4eeb7b1e63b580f7c"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/runner.log",
+      "bytes": 20078,
+      "sha256": "700ab13b12c2ad22e81ea2b14feede204d47fcfbf433c5af91bac76820119151"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/rust-client.log",
+      "bytes": 905,
+      "sha256": "c9fdab187fa16fe88b6fc2d6115dd3ff1ed9360d5f9a41f7d0fcdc157c5fa84e"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/server-cleanup.log",
+      "bytes": 30,
+      "sha256": "86442e7d25527d5837343323762c3bcb8bb84dd57344a717f40e3120e5682c30"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/server.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/source-equivalence.diff",
+      "bytes": 648,
+      "sha256": "76a60b330a343f1aab750e0192999d4c9a0541c9f87d546a6b83c85da9ba9c0a"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/source-guard.log",
+      "bytes": 1985,
+      "sha256": "871bf528ec12d40b444acfaaddd6b36b5a78ccf4d5567a533824943c60fb7678"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/source_drift_trino_it.discovery.log",
+      "bytes": 156,
+      "sha256": "93dec1d8ea1a73750e3ebab36a191d80ad8803f5f5a577e962ee741906100158"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/source_drift_trino_it.log",
+      "bytes": 439,
+      "sha256": "b355b3590d9a8821a7b0f89ee57b73b9c922e3ebef1267f04f00b422bfd52f72"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/sqlite-action-atomic.log",
+      "bytes": 813,
+      "sha256": "0bd91dc680d7470a057637ed06619c23ec5681a9f8b870510f1108cdefbd07f8"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/start-commit.txt",
+      "bytes": 41,
+      "sha256": "2f7b3e7b360935f762b7317ffe46874172c20b7f678380dd2c87ebf500d5ae67"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/trino-483-ctas.log",
+      "bytes": 36,
+      "sha256": "a87f652b6c27483a8fc19d696c0992f16a5796b6444f57601b801cb6d37b201a"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/trino-483-fixture.log",
+      "bytes": 61,
+      "sha256": "221fdf6dee83e59fd6edc27794ebb7b76c122d83f459f4bc557e656e2b4dd961"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/trino-483-iceberg.log",
+      "bytes": 400,
+      "sha256": "d250dc030e611fcd937d2bfc811dafc43487c6d1e0a51e14646ff4c16a72bb24"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/trino-484-ctas.log",
+      "bytes": 36,
+      "sha256": "a87f652b6c27483a8fc19d696c0992f16a5796b6444f57601b801cb6d37b201a"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/trino-484-fixture.log",
+      "bytes": 61,
+      "sha256": "c1676f4ae720350aa4e09f6224d925df8483a2944002f4755d2fd7f723ec7b64"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/trino-484-iceberg.log",
+      "bytes": 305,
+      "sha256": "1c589143bf0eb5db09d9f8eb6fc4390405ad6bedd40cd02d01b53705399ef24e"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/trino_http_it.discovery.log",
+      "bytes": 123,
+      "sha256": "69d687813c716685ab3797f694523a322236aa2e6e10aeb0ca62c5e4d10e9a48"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/trino_http_it.log",
+      "bytes": 389,
+      "sha256": "2b8f877091e7af6507263d4f2c89816f31554df6f873bee4256cf1b3525a7863"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/trino_l2_acl_it.discovery.log",
+      "bytes": 368,
+      "sha256": "ac82d1082bc17edb4cdc3aea8efc9068b779e7bd5521bd40467ddc289cec8807"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/trino_l2_acl_it.log",
+      "bytes": 1430,
+      "sha256": "676cd510f5b7781cfb236ef705cbfb105fa839c15572ae6c7057c7e01266c576"
+    },
+    {
+      "file": "target/milestone-audit-evidence-20261104/typescript-contract.log",
+      "bytes": 1992,
+      "sha256": "7ae04010724155ccf162ccfe73684bd9688073ce939eca09bfc416b017a11762"
+    },
+    {
+      "file": "target/milestone-ci-41759804733-integration.log",
+      "bytes": 114556,
+      "sha256": "6ecde94b35302e75b4484d4268281d5216fb09f8f2856013075d081050ca6f25"
+    },
+    {
+      "file": "target/milestone-ci-41759804733-ubuntu.log",
+      "bytes": 330741,
+      "sha256": "dd5f4c4165adb6792daa3889c85418d50a14821adf2171352492d57775b27975"
+    },
+    {
+      "file": "target/milestone-ci-41759804733-windows.log",
+      "bytes": 338621,
+      "sha256": "b6ecb8fa1fb5c4459c9e7c8e01074d99c142456d65ab76afd66ccac613679eaa"
+    },
+    {
+      "file": "target/milestone-ci-41759804733.json",
+      "bytes": 16412,
+      "sha256": "240d3479c078b5f02767fda6ef01ea921f773e1dd1d026d026a242849c5f1085"
+    },
+    {
+      "file": "target/milestone-release-41759804768/packaged-commit.json",
+      "bytes": 2623,
+      "sha256": "0f0124b58767c2f4db41f9d0b86664282f98841a6133009effde66ac92030525"
+    },
+    {
+      "file": "target/milestone-release-41759804768/run.json",
+      "bytes": 8150,
+      "sha256": "f3611395139b0a1d82c60bbd3288688d8b4ebc98cd8238a4d9d8d95e75e1744a"
+    },
+    {
+      "file": "target/milestone-release-41759804768/run.log",
+      "bytes": 328139,
+      "sha256": "8b08cadb0f3e49dd7d5b0cb4fc9160dc4e98d734b95da5050fb320d9084fa25a"
+    },
+    {
+      "file": "target/milestone-release-41759804768/source-commit.json",
+      "bytes": 1140,
+      "sha256": "1636e1daeb9e66dd3f806422c869ec08fbc4b53a39c3dd35a7eb1e9bbc33e548"
+    },
+    {
+      "file": "target/milestone-release-41759804768/verification.json",
+      "bytes": 3736,
+      "sha256": "a769bb94748da73843e9570bb8d93b88180b294874e7cd5344f7e19ca1092d23"
+    },
+    {
+      "file": "target/milestone-tls-real-tree.log",
+      "bytes": 17,
+      "sha256": "d85b34db57686dd2e011c96e312cd595ed5add4879cf34f2c7266eda53f5af0a"
+    },
+    {
+      "file": "target/phase7-bridge-security-cli-r2.log",
+      "bytes": 1164,
+      "sha256": "b7c3f32c0268b84f8f9210b051e541b79618b9bc194b4519a17c87117070bc42"
+    },
+    {
+      "file": "target/phase7-bridge-security-mia.log",
+      "bytes": 438,
+      "sha256": "d7859fe4e8267f0aafd0993a084f6afbe174fef90280d7016fb9f5e23ee495ff"
+    },
+    {
+      "file": "target/phase7-ci-41669982375-ubuntu-counts.json",
+      "bytes": 84,
+      "sha256": "56fc82a01d5a1c69ebe34301aa3c5de1b32abbb615b0aebd0e6a267e9b22535f"
+    },
+    {
+      "file": "target/phase7-ci-41669982375-windows-counts.json",
+      "bytes": 84,
+      "sha256": "e1ffa59c685754992c5035e8dee2f89f8e755fa07afe9e6c6ab888a205b72b99"
+    },
+    {
+      "file": "target/phase7-ci-41669982375.json",
+      "bytes": 15623,
+      "sha256": "fc71f9f34d910e8c39f8cc1b59db9060d29a4615d26436106c03476a72f04f6d"
+    },
+    {
+      "file": "target/phase7-explain-query-tests.log",
+      "bytes": 1654,
+      "sha256": "d1ec1ba8dd012ba988450a57d31f1a47a75d04f00692b6b936c0fa9a67907613"
+    },
+    {
+      "file": "target/phase7-mcp-admission-green-r2.log",
+      "bytes": 5415,
+      "sha256": "9c62e63b0c972e53b6932e6a53a913ba501c2d17be5aafe1ed63402467f148c2"
+    },
+    {
+      "file": "target/phase7-native-artifacts-41669982362-verification.json",
+      "bytes": 1209,
+      "sha256": "d01f6031e1d852c930db6d6f63c33b5f3e6f81bf2d94cf4148333246340bb764"
+    },
+    {
+      "file": "target/phase7-pr7-final-status.json",
+      "bytes": 95,
+      "sha256": "93567fdc2fd5798ef1aad822e345cf06e20e1d3229a348fee23fbe9ca73f41bf"
+    },
+    {
+      "file": "target/phase7-pr8-final-status.json",
+      "bytes": 92,
+      "sha256": "50ff29516476cfbe54d4bd3bc3c69d73c268314acfd301732d40a44d1822c207"
+    },
+    {
+      "file": "target/phase7-release-ci-41669982362.json",
+      "bytes": 8080,
+      "sha256": "821b47083c55d4e53fbed7dfbf14088d802475f36addade957d9895b18971b74"
+    },
+    {
+      "file": "target/phase7-services/evidence/commit.txt",
+      "bytes": 41,
+      "sha256": "1d8d64d3b132c825e7935eaa7d22f9df3cbbb5725282c9d387b818d5225a3aa4"
+    },
+    {
+      "file": "target/phase7-services/evidence/final-adc0227-verify.log",
+      "bytes": 10843,
+      "sha256": "32c0b116425afab56240d2713f43af09630de5d7a853055bdec0faecf79ed725"
+    },
+    {
+      "file": "target/phase7-verify-pre-api-coverage.json",
+      "bytes": 242,
+      "sha256": "0c19610edd38bdc4d65a9f70f631420b501244c142b9d76bb145b4b8ef2b2366"
+    },
+    {
+      "file": "tools/openapi-gen/generate.mjs",
+      "bytes": 923,
+      "sha256": "6d6aef23555f8984d4bbc429af0a77f80f2c681966514a149ea0e457a5d2ba9f"
+    },
+    {
+      "file": "tools/openapi-gen/package-lock.json",
+      "bytes": 13518,
+      "sha256": "16f6b573f38db24eaf34f6b493ffb90c69b7c283ad17b9bc09a5ddd41b5812de"
+    },
+    {
+      "file": "tools/openapi-gen/package.json",
+      "bytes": 221,
+      "sha256": "42d823f69976a5cfff82e98554c3fc5f2e0944d88969ae9cfe2d8cd04317894c"
+    }
+  ],
+  "original_logs": [
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-integration.log",
+      "bytes": 116188,
+      "sha256": "bdc51412697da080151c6b7f68e42f88c0e74bb21ecbfe67acc2fdaba23b449e"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-isolated-query-bench.log",
+      "bytes": 100182,
+      "sha256": "dbfefa449e95c858c9e9c11f3ef7690ae47b80dfbfa4a73c9a88d56a4828aa99"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-phase7-real-services.log",
+      "bytes": 71087,
+      "sha256": "5cad89dc1e75935cc5bdaa3ca82e5e1f4df06c81c56e7dc64425b0996820c727"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-ubuntu.log",
+      "bytes": 337902,
+      "sha256": "ae3d8ed246f84a5ba0ea323ee3a84311f76a8119e8deffeb7679da6161e723c8"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/ci-41994479295-windows.log",
+      "bytes": 341785,
+      "sha256": "243cf6436c9e9c7ca1b081cd0ce1df3ca486a25d7b678d10303e5ad9adda1753"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-ci-recalculated.log",
+      "bytes": 6704,
+      "sha256": "24c4347fb8b17b557b2d359685a7e0b349bffbe7630d0744f1e8ab54ac0fd949"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-counts-empty-policy-green.log",
+      "bytes": 455,
+      "sha256": "579f4ae0511e3bbaf8e0058df4d6bb568d3c20b6a725be85c02ac6378244d770"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-counts-empty-policy-red.log",
+      "bytes": 1193,
+      "sha256": "5e70a58f5c851067c1d24d280f6b0e115925fcdbf88549056ffbd6550b3203fd"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-counts-identity-green.log",
+      "bytes": 389,
+      "sha256": "90078a73eba5162da1472bdebef98b20fcd9e61376874c9c84f7d0d4d9eee7aa"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-counts-identity-red.log",
+      "bytes": 1183,
+      "sha256": "9e829b69569f33854da714734b3c9f8a03bacea4adbaf0a256632157640e726a"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-counts-ignored-policy-green.log",
+      "bytes": 507,
+      "sha256": "79cec8474907b21406f4cc05083af3694d0d756af20559b0af618d997ab09c87"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-counts-ignored-policy-red.log",
+      "bytes": 1209,
+      "sha256": "f6c5954a9bc9e353668f4257a6720a1f8ebe44c25f03e396c575bd99bc00cca1"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-counts-recalculated.log",
+      "bytes": 16229,
+      "sha256": "8de5fc9a161c475f386f07a8228a4c4e89a3323e2b31566a7e68f38936f55be7"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-counts-regression-green.log",
+      "bytes": 1082,
+      "sha256": "48c71fad7d71c47177b05e5bf1aa59a3f7b1e63a2bceb421c7200580a634670a"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-counts-zero-green.log",
+      "bytes": 331,
+      "sha256": "45bf0bbc2391b1c1ff5fe7b1a03737c4d72fb8598c81ca428995ae78578d8108"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-counts-zero-red.log",
+      "bytes": 1202,
+      "sha256": "564737aeddc8dfaa0370b3cf6182dc0b35ffdcda60f94ad8a4b2a13ab761a778"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-final-validation.log",
+      "bytes": 1588,
+      "sha256": "75af2df0b19adb953e9c8eb3aead3914e8ab2178b854a1f24fb04e98e9a53944"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-source-checks.log",
+      "bytes": 1136,
+      "sha256": "afa0b6dab1a39278d8784f629bf86ba46affded583de7a46008c3881e70448f0"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-sqlite-atomic-discovery.log",
+      "bytes": 4039,
+      "sha256": "dae4eff0fb9fb332e992adc12f2640bd85d6af79323db871ffeb4c4dc4aeb760"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-sqlite-atomic.log",
+      "bytes": 987,
+      "sha256": "2cf5ddd1b9d915979e457b78854977ecc0fd6f4ef661430d5b60e0934bc85be6"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-tls-hermetic.log",
+      "bytes": 1069,
+      "sha256": "799e4729cfd2169ccb872b8144d72aadacdac1137f22532886ab0ee8d85a5e54"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-tls-real.log",
+      "bytes": 309,
+      "sha256": "0cee1ef3ca7d9fdb157840976ce112a17edb909fcc63db8a963688b773752ea9"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-workspace-discovery-c.log",
+      "bytes": 122063,
+      "sha256": "18664e99b5268adfb615cd80ad02fb090e7edb91557490c88e066ad05064a04b"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-workspace-discovery.log",
+      "bytes": 3098,
+      "sha256": "cf1ef77810ce9d556266fe10606eb77950a7f955a460ac11d87b1a7e3964c115"
+    },
+    {
+      "file": ".planning/milestones/v1.0-audit/evidence/2026-11-05/reverify-workspace.log",
+      "bytes": 139931,
+      "sha256": "f1e8594764dfc0572154d18ff520c88321db4cc05cc264d1b3befaa7d0fa5ab1"
+    }
+  ]
+}

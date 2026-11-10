@@ -1,0 +1,603 @@
+{
+  "head": "060019fe52005c6b85ae5c5f59da9868f464e579",
+  "files": [
+    {
+      "file": "crates/ontoforge-action/src/lib.rs",
+      "sha256": "ae25e0c9035e5fa99c7576f091fde6635d85dd0801b451107b6d156df307ab6c",
+      "anchors": [
+        {
+          "needle": "async fn execute_inner",
+          "line": 283,
+          "excerpt": "281:         reason = \"one Action submission owns preparation and the guarded transaction\"\n282:     )]\n283:     async fn execute_inner<F: Future<Output = ()>>(\n284:         &self,\n285:         principal: &Principal,\n286:         scope: &PrincipalScope,\n287:         active: &ActiveDefinition,\n288:         commit_def_version: i64,\n289:         request: ActionRequest,\n290:         gate: F,\n291:     ) -> Result<ActionOutcome, ActionError> {\n292:         validate_request(&request, self.limits)?;\n293:         let action_name: ActionTypeName = request\n294:             .action\n295:             .clone()\n296:             .try_into()"
+        },
+        {
+          "needle": "async fn prepare_edits",
+          "line": 450,
+          "excerpt": "448:     reason = \"edit preparation owns the Action read context\"\n449: )]\n450: async fn prepare_edits<E: Engine>(\n451:     store: &EditStore,\n452:     engine: Option<&E>,\n453:     active: &ActiveDefinition,\n454:     action: &ActionType,\n455:     principal: &Principal,\n456:     scope: &PrincipalScope,\n457:     items: &[ActionItem],\n458:     chosen_current_time: &str,\n459:     limits: ActionLimits,\n460: ) -> Result<PreparedEdits, ActionError> {\n461:     let expanded = items\n462:         .len()\n463:         .checked_mul(action.rules.len())"
+        },
+        {
+          "needle": "source::prepare",
+          "line": 506,
+          "excerpt": "504:         snapshots: source::SourceSnapshots::new(),\n505:     };\n506:     let sampled = source::prepare(\n507:         store, engine, active, action, scope, items, &resolved, limits,\n508:     )\n509:     .await?;\n510:     prepared.reads = sampled.reads;\n511:     prepared.snapshots = sampled.snapshots;\n512:     let mut created = BTreeSet::new();\n513:     for (item_ordinal, item) in resolved.iter().enumerate() {\n514:         for (rule_ordinal, rule) in action.rules.iter().enumerate() {\n515:             let (edit, observed_version) = rules::expand(\n516:                 store,\n517:                 active,\n518:                 action,\n519:                 rule,"
+        },
+        {
+          "needle": "commit_action_guarded",
+          "line": 386,
+          "excerpt": "384:         let result = self\n385:             .store\n386:             .commit_action_guarded(input, &guard_reads, |view| {\n387:                 version::authorize(authorization, &expected_versions, view, self.tokens)?;\n388:                 criteria::authorize(authorization, view)\n389:             })\n390:             .await\n391:             .map_err(|error| match error {\n392:                 ActionCommitError::VersionConflict\n393:                 | ActionCommitError::Guard(ActionGuardRejection::VersionConflict) => {\n394:                     ActionError::VersionConflict\n395:                 }\n396:                 ActionCommitError::Guard(ActionGuardRejection::NotFound) => ActionError::NotFound,\n397:                 ActionCommitError::Guard(ActionGuardRejection::ScopeDenied) => {\n398:                     ActionError::ScopeDenied\n399:                 }"
+        },
+        {
+          "needle": "get_command_result",
+          "line": 182,
+          "excerpt": "180: \n181:     /// Returns only the stored audit summary for the original principal with a current grant.\n182:     pub async fn get_command_result(\n183:         &self,\n184:         principal: &Principal,\n185:         scope: &PrincipalScope,\n186:         action_name: &str,\n187:         command_id: &str,\n188:     ) -> Result<Option<ActionReceipt>, ActionError> {\n189:         let active = self\n190:             .store\n191:             .current_action_definition()\n192:             .await?\n193:             .ok_or(ActionError::ScopeDenied)?;\n194:         self.get_command_result_with_snapshot(principal, scope, &active, action_name, command_id)\n195:             .await"
+        }
+      ]
+    },
+    {
+      "file": "crates/ontoforge-storage/src/commit.rs",
+      "sha256": "b05f6c053ebe1dd00a84f1c58ee69914428d5876ca9e545ce4715888a3335b25",
+      "anchors": [
+        {
+          "needle": "async fn commit_action_guarded_inner",
+          "line": 606,
+          "excerpt": "604:         reason = \"the Action claim and write stages share one transaction boundary\"\n605:     )]\n606:     async fn commit_action_guarded_inner(\n607:         &self,\n608:         input: ActionTransactionInput,\n609:         reads: &[ActionGuardRead],\n610:         guard: impl FnOnce(&ActionGuardView) -> Result<(), ActionGuardRejection>,\n611:         #[cfg(feature = \"test-support\")] fault: Option<ActionWriteStage>,\n612:     ) -> Result<ActionCommitOutcome, ActionCommitError> {\n613:         let principal_id = validate_action_input(&input)?;\n614: \n615:         let mut tx = self.begin_write().await?;\n616:         let mut trace = vec![ActionStage::Begin];\n617:         let def = match self.fence(&mut tx, input.commit.def_version).await {\n618:             Ok(def) => def,\n619:             Err(error) => {"
+        },
+        {
+          "needle": "self.fence(",
+          "line": 546,
+          "excerpt": "544:         check_shape(&commit)?;\n545:         let mut tx = self.begin_write().await?;\n546:         let result = match self.fence(&mut tx, commit.def_version).await {\n547:             Ok(def) => match validate(&def, &commit) {\n548:                 Ok(plan) => write(&mut tx, &def, &commit, plan).await,\n549:                 Err(error) => Err(error),\n550:             },\n551:             Err(error) => Err(error),\n552:         };\n553:         match result {\n554:             Ok(receipt) => {\n555:                 sql_exit::commit(tx).await?;\n556:                 Ok(receipt)\n557:             }\n558:             Err(error) => {\n559:                 sql_exit::rollback(tx).await;"
+        },
+        {
+          "needle": "claim_action(",
+          "line": 632,
+          "excerpt": "630:             let claim = tokio::time::timeout(\n631:                 self.settings.lock_timeout,\n632:                 claim_action(&mut tx, principal_id, command_id, &input),\n633:             )\n634:             .await\n635:             .unwrap_or_else(|_| {\n636:                 Err(StoreError::Conflict(\"command claim timed out\".to_owned()).into())\n637:             });\n638:             match claim {\n639:                 Ok(CommandClaimOutcome::Winner) => trace.push(ActionStage::Claim),\n640:                 Ok(CommandClaimOutcome::Existing) => {\n641:                     sql_exit::rollback(tx).await;\n642:                     let command = self\n643:                         .action_command(principal_id, command_id)\n644:                         .await?\n645:                         .ok_or_else(|| {"
+        },
+        {
+          "needle": "lock_and_advance_with_reads",
+          "line": 667,
+          "excerpt": "665:             let schema = tx.schema_edit().map(str::to_owned);\n666:             let advanced =\n667:                 lock_and_advance_with_reads(&mut tx, schema.as_deref(), &plan, &read_plan).await?;\n668:             trace.push(ActionStage::Locks);\n669:             let view = action_guard_view(&input, reads, &read_plan, &plan, &advanced)?;\n670:             trace.push(ActionStage::Cas);\n671:             guard(&view)?;\n672:             if input.validate_only {\n673:                 return Ok(ActionCommitOutcome::Validated);\n674:             }\n675: \n676:             let event_id = ulid::Ulid::generate().to_string();\n677:             let committed_at = Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);\n678:             let seq = append_header(\n679:                 &mut tx,\n680:                 &NewRecord {"
+        },
+        {
+          "needle": "store_action_receipt",
+          "line": 724,
+          "excerpt": "722:             let receipt =\n723:                 action_receipt(command_id, &event_id, seq, &committed_at, &entries, &input)?;\n724:             store_action_receipt(&mut tx, principal_id, command_id, &receipt).await?;\n725:             trace.push(ActionStage::Command);\n726:             #[cfg(feature = \"test-support\")]\n727:             fail_after(fault, ActionWriteStage::AfterCommand)?;\n728:             enqueue_action_event(&mut tx, principal_id, &input.commit.action, &receipt).await?;\n729:             trace.push(ActionStage::Outbox);\n730:             #[cfg(feature = \"test-support\")]\n731:             fail_after(fault, ActionWriteStage::AfterOutbox)?;\n732:             Ok(ActionCommitOutcome::Committed {\n733:                 receipt,\n734:                 trace: std::mem::take(&mut trace),\n735:             })\n736:         }\n737:         .await;"
+        },
+        {
+          "needle": "enqueue_action_event",
+          "line": 728,
+          "excerpt": "726:             #[cfg(feature = \"test-support\")]\n727:             fail_after(fault, ActionWriteStage::AfterCommand)?;\n728:             enqueue_action_event(&mut tx, principal_id, &input.commit.action, &receipt).await?;\n729:             trace.push(ActionStage::Outbox);\n730:             #[cfg(feature = \"test-support\")]\n731:             fail_after(fault, ActionWriteStage::AfterOutbox)?;\n732:             Ok(ActionCommitOutcome::Committed {\n733:                 receipt,\n734:                 trace: std::mem::take(&mut trace),\n735:             })\n736:         }\n737:         .await;\n738: \n739:         finish_action(tx, result).await\n740:     }\n741: "
+        },
+        {
+          "needle": "async fn finish_action",
+          "line": 914,
+          "excerpt": "912: }\n913: \n914: async fn finish_action(\n915:     tx: WriteTx<'_>,\n916:     result: Result<ActionCommitOutcome, ActionCommitError>,\n917: ) -> Result<ActionCommitOutcome, ActionCommitError> {\n918:     match result {\n919:         Ok(ActionCommitOutcome::Committed { receipt, mut trace }) => {\n920:             sql_exit::commit(tx).await?;\n921:             trace.push(ActionStage::Commit);\n922:             Ok(ActionCommitOutcome::Committed { receipt, trace })\n923:         }\n924:         Ok(outcome) => {\n925:             sql_exit::rollback(tx).await;\n926:             Ok(outcome)\n927:         }"
+        },
+        {
+          "needle": ".do_nothing()",
+          "line": 971,
+          "excerpt": "969:         .on_conflict(\n970:             OnConflict::columns([col(\"principal_id\"), col(\"command_id\")])\n971:                 .do_nothing()\n972:                 .to_owned(),\n973:         )\n974:         .to_owned();\n975:     let built = sql_exit::build(&insert, tx);\n976:     if sql_exit::execute_built(tx, built).await? == 1 {\n977:         return Ok(CommandClaimOutcome::Winner);\n978:     }\n979:     let retired = Query::delete()\n980:         .from_table(col(\"of_action_command\"))\n981:         .and_where(Expr::col(col(\"principal_id\")).eq(principal_id))\n982:         .and_where(Expr::col(col(\"command_id\")).eq(command_id))\n983:         .and_where(Expr::col(col(\"expires_at\")).lte(sql_exit::typed_text(\n984:             backend,"
+        },
+        {
+          "needle": "pub async fn claim_due_outbox",
+          "line": 168,
+          "excerpt": "166: impl EditStore {\n167:     /// Atomically claims due events. The transaction ends before callers perform network I/O.\n168:     pub async fn claim_due_outbox(\n169:         &self,\n170:         now: DateTime<Utc>,\n171:         owner: &str,\n172:         lease_until: DateTime<Utc>,\n173:         limit: u32,\n174:     ) -> Result<Vec<ClaimedOutboxEvent>, StoreError> {\n175:         if owner.is_empty() || limit == 0 || limit > 100 || lease_until <= now {\n176:             return Err(StoreError::Config(\n177:                 \"invalid outbox lease settings\".to_owned(),\n178:             ));\n179:         }\n180:         let mut tx = self.begin_write().await?;\n181:         let result = async {"
+        },
+        {
+          "needle": "pub async fn mark_delivered",
+          "line": 271,
+          "excerpt": "269: \n270:     /// The current lease token must match for a successful delivery to become final.\n271:     pub async fn mark_delivered(\n272:         &self,\n273:         event_id: &str,\n274:         lease_owner: &str,\n275:         delivered_at: DateTime<Utc>,\n276:     ) -> Result<bool, StoreError> {\n277:         let mut tx = self.begin_write().await?;\n278:         let timestamp = delivered_at.to_rfc3339_opts(SecondsFormat::Millis, true);\n279:         let update = Query::update()\n280:             .table(col(\"of_webhook_outbox\"))\n281:             .value(\n282:                 col(\"delivered_at\"),\n283:                 sql_exit::typed_text(tx.backend(), &timestamp, \"timestamptz\"),\n284:             )"
+        }
+      ]
+    },
+    {
+      "file": "crates/ontoforge-action/src/params.rs",
+      "sha256": "c4a9c6169d5feae909bdd5d68c7b2093aea64bd13f298e1d95312c6db6f143d9",
+      "anchors": [
+        {
+          "needle": "pub(crate) fn resolve",
+          "line": 15,
+          "excerpt": "13: }\n14: \n15: pub(crate) fn resolve(\n16:     active: &ActiveDefinition,\n17:     action: &ActionType,\n18:     item: &ActionItem,\n19:     item_ordinal: usize,\n20: ) -> Result<ResolvedItem, ActionError> {\n21:     let mut problems = BTreeMap::new();\n22:     let mut values = item.params.clone();\n23:     let mut references = BTreeMap::new();\n24:     for name in item.params.keys() {\n25:         if !action.parameters.keys().any(|known| known.as_str() == name) {\n26:             problems.insert(name.clone(), \"unknown parameter\".to_owned());\n27:         }\n28:     }"
+        },
+        {
+          "needle": "check_literal",
+          "line": 3,
+          "excerpt": "1: use std::collections::BTreeMap;\n2: \n3: use ontoforge_schema::ir::{ActionType, ParamType, ParameterName, basetype::check_literal};\n4: use ontoforge_storage::store::ActiveDefinition;\n5: use ontoforge_storage::value::PropertyValue;\n6: use serde_json::{Map, Value};\n7: \n8: use crate::{ActionError, ActionItem, ParameterProblem};\n9: \n10: pub(crate) struct ResolvedItem {\n11:     pub(crate) values: Map<String, Value>,\n12:     pub(crate) references: BTreeMap<ParameterName, PropertyValue>,\n13: }\n14: \n15: pub(crate) fn resolve(\n16:     active: &ActiveDefinition,"
+        }
+      ]
+    },
+    {
+      "file": "crates/ontoforge-action/src/criteria.rs",
+      "sha256": "f6aac736492bbb953b08ccbfaca9d7b22ad3d14c09f05d6facad51cc28ae8667",
+      "anchors": [
+        {
+          "needle": "pub(crate) fn evaluate",
+          "line": null,
+          "excerpt": null
+        },
+        {
+          "needle": "permission",
+          "line": 103,
+          "excerpt": "101:                 return Err(Denied::ScopeDenied);\n102:             }\n103:             let Some((permission, _)) = visible.get(&path.segments[1]) else {\n104:                 return Err(Denied::ScopeDenied);\n105:             };\n106:             if !permission\n107:                 .columns\n108:                 .iter()\n109:                 .any(|column| column.as_str() == path.segments[2])\n110:             {\n111:                 return Err(Denied::ScopeDenied);\n112:             }\n113:         }\n114:         let mut context = Context::default();\n115:         context\n116:             .add_variable(\"params\", &item.values)"
+        },
+        {
+          "needle": "fn visibility",
+          "line": 48,
+          "excerpt": "46: }\n47: \n48: fn visibility(\n49:     scope: &PrincipalScope,\n50:     principal: &Principal,\n51:     active: &ActiveDefinition,\n52:     type_name: &ObjectTypeName,\n53:     pk: &PropertyValue,\n54:     row: &EditRow,\n55:     source: Option<&BTreeMap<PropertyName, Value>>,\n56: ) -> Option<RowVisibility> {\n57:     let ty = active.ontology.object_types.get(type_name)?;\n58:     let type_scope = scope.types.get(type_name)?;\n59:     let values: BTreeMap<PropertyName, Scalar> = overlay_pk(ty, pk, source, Some(row))\n60:         .into_iter()\n61:         .map(|(name, value)| (name, scalar(value)))"
+        }
+      ]
+    },
+    {
+      "file": "crates/ontoforge-action/src/rules.rs",
+      "sha256": "b8f6d141f447acfd8a83969bf3d16104699c0337b48b69b1577243aec1198642",
+      "anchors": [
+        {
+          "needle": "pub(crate) fn expand",
+          "line": null,
+          "excerpt": null
+        },
+        {
+          "needle": "edit_ordinal",
+          "line": null,
+          "excerpt": null
+        },
+        {
+          "needle": "ReleaseObject",
+          "line": 85,
+          "excerpt": "83:             ))\n84:         }\n85:         Rule::ReleaseObject(rule) => {\n86:             let (type_name, pk, version) =\n87:                 reference(active, action, item, &rule.object, reads, sources)?;\n88:             Ok((\n89:                 Edit::Object {\n90:                     type_name,\n91:                     pk,\n92:                     op: ObjectOp::Release,\n93:                 },\n94:                 version,\n95:             ))\n96:         }\n97:         Rule::AddLink(link_rule) => {\n98:             expand_link("
+        }
+      ]
+    },
+    {
+      "file": "crates/ontoforge-action/src/source.rs",
+      "sha256": "7faad38cdf23b87a140a83544d2e4b36d3bf3b503654ea2fe729bd639a0a6733",
+      "anchors": [
+        {
+          "needle": "pub(crate) async fn prepare",
+          "line": 34,
+          "excerpt": "32:     reason = \"source preparation receives the Action read context\"\n33: )]\n34: pub(crate) async fn prepare<E: Engine>(\n35:     store: &EditStore,\n36:     engine: Option<&E>,\n37:     active: &ActiveDefinition,\n38:     action: &ActionType,\n39:     scope: &PrincipalScope,\n40:     requests: &[ActionItem],\n41:     items: &[ResolvedItem],\n42:     limits: ActionLimits,\n43: ) -> Result<PreparedSources, ActionError> {\n44:     let mut reads = Vec::new();\n45:     let mut snapshots = SourceSnapshots::new();\n46:     let mut seen = BTreeSet::new();\n47:     let mut edits: BTreeMap<RowKey, Option<ObjectEdit>> = BTreeMap::new();"
+        },
+        {
+          "needle": "let required = required_properties",
+          "line": 88,
+          "excerpt": "86:                 return Err(denied());\n87:             }\n88:             let required = required_properties(action, scope, type_name, name)?;\n89:             let token_requires_source = request.expected_versions.contains_key(name.as_str())\n90:                 && row.is_none_or(|row| {\n91:                     row.released\n92:                         || ty.properties.keys().any(|property| {\n93:                             property != &ty.primary_key && !row.set.contains_key(property)\n94:                         })\n95:                 });\n96:             let release = action\n97:                 .rules\n98:                 .iter()\n99:                 .any(|rule| matches!(rule, Rule::ReleaseObject(r) if &r.object == name));\n100:             let missing = required.iter().any(|property| {\n101:                 property != &ty.primary_key && row.is_none_or(|row| !row.set.contains_key(property))"
+        },
+        {
+          "needle": "read_pk_source",
+          "line": 6,
+          "excerpt": "4: use ontoforge_engine::Engine;\n5: use ontoforge_expr::{analyze, member_paths};\n6: use ontoforge_query::{QueryError, read_pk_source};\n7: use ontoforge_schema::ir::{ActionType, Backing, ObjectTypeName, ParamType, PropertyName, Rule};\n8: use ontoforge_storage::{\n9:     commit::ActionGuardRead,\n10:     query_read::ObjectEdit,\n11:     store::{ActiveDefinition, EditStore},\n12:     value::PropertyValue,\n13: };\n14: use serde_json::Value;\n15: \n16: use crate::{ActionError, ActionItem, ActionLimits, criteria, params::ResolvedItem};\n17: \n18: pub(crate) type RowKey = (ObjectTypeName, String);\n19: pub(crate) type SourceSnapshots = BTreeMap<RowKey, BTreeMap<PropertyName, Value>>;"
+        },
+        {
+          "needle": "fn required_properties",
+          "line": 142,
+          "excerpt": "140: }\n141: \n142: fn required_properties(\n143:     action: &ActionType,\n144:     scope: &PrincipalScope,\n145:     type_name: &ObjectTypeName,\n146:     reference: &ontoforge_schema::ir::ParameterName,\n147: ) -> Result<BTreeSet<PropertyName>, ActionError> {\n148:     let mut required = BTreeSet::new();\n149:     if let Some(grant) = scope.types.get(type_name) {\n150:         required.extend(grant.row.referenced_properties());\n151:         for pred in grant.columns.values() {\n152:             required.extend(pred.referenced_properties());\n153:         }\n154:     }\n155:     for criterion in &action.submission_criteria {"
+        }
+      ]
+    },
+    {
+      "file": "crates/ontoforge-action/src/version.rs",
+      "sha256": "ace211e5e4d9ab04b61a97051e34ebb00eac7ecd9a9e03043a969d8fb2132126",
+      "anchors": [
+        {
+          "needle": "VersionClaims",
+          "line": 5,
+          "excerpt": "3: use ontoforge_query::{\n4:     TokenCodec,\n5:     cursor::{VersionClaims, VersionTokenCodec},\n6: };\n7: use ontoforge_schema::ir::ParamType;\n8: use ontoforge_storage::commit::{ActionGuardRejection, ActionGuardView};\n9: \n10: use crate::{criteria::Authorization, source::row_key};\n11: \n12: pub(crate) fn authorize(\n13:     authorization: Authorization<'_>,\n14:     expected: &[BTreeMap<String, String>],\n15:     view: &ActionGuardView,\n16:     tokens: &TokenCodec,\n17: ) -> Result<(), ActionGuardRejection> {\n18:     let Authorization {"
+        },
+        {
+          "needle": "verify",
+          "line": 49,
+          "excerpt": "47:                 .ok_or(ActionGuardRejection::VersionConflict)?;\n48:             codec\n49:                 .verify(\n50:                     token,\n51:                     &VersionClaims {\n52:                         principal,\n53:                         scope,\n54:                         object_type: type_name,\n55:                         pk,\n56:                         def_version: active.def_version,\n57:                         source: sources.get(&row_key(type_name, pk)),\n58:                         edit: (read.row.version > 0).then_some(&read.row),\n59:                     },\n60:                 )\n61:                 .map_err(|_| ActionGuardRejection::VersionConflict)?;\n62:         }"
+        }
+      ]
+    },
+    {
+      "file": "crates/ontoforge-query/src/cursor.rs",
+      "sha256": "9f1a13a7e1f7b326ea9534ba10b26a1f84ba38e51d1b0ba366df5b00f8022ee9",
+      "anchors": [
+        {
+          "needle": "pub struct VersionTokenCodec",
+          "line": 32,
+          "excerpt": "30: \n31: /// A format-versioned object token. Legacy untagged signatures are never accepted.\n32: pub struct VersionTokenCodec<'a> {\n33:     tokens: &'a TokenCodec,\n34: }\n35: \n36: impl<'a> VersionTokenCodec<'a> {\n37:     pub fn new(tokens: &'a TokenCodec) -> Self {\n38:         Self { tokens }\n39:     }\n40: \n41:     pub fn sign(&self, claims: &VersionClaims<'_>) -> Result<String, VersionTokenError> {\n42:         let message = claims.message()?;\n43:         let signature = self\n44:             .tokens\n45:             .sign_version(&[b\"object-version-v1\", &message])"
+        },
+        {
+          "needle": "pub struct VersionClaims",
+          "line": 15,
+          "excerpt": "13: \n14: /// Inputs to the object version signed by both Query and Action.\n15: pub struct VersionClaims<'a> {\n16:     pub principal: &'a Principal,\n17:     pub scope: &'a PrincipalScope,\n18:     pub object_type: &'a ObjectTypeName,\n19:     pub pk: &'a PropertyValue,\n20:     pub def_version: i64,\n21:     pub source: Option<&'a BTreeMap<PropertyName, Value>>,\n22:     pub edit: Option<&'a EditRow>,\n23: }\n24: \n25: #[derive(Debug, Clone, Copy, PartialEq, Eq)]\n26: pub enum VersionTokenError {\n27:     UnsupportedFormat,\n28:     Invalid,"
+        },
+        {
+          "needle": "fn verify",
+          "line": 50,
+          "excerpt": "48:     }\n49: \n50:     pub fn verify(&self, token: &str, claims: &VersionClaims<'_>) -> Result<(), VersionTokenError> {\n51:         let signature = token\n52:             .strip_prefix(\"v1.\")\n53:             .ok_or(VersionTokenError::UnsupportedFormat)?;\n54:         if signature.is_empty() || signature.contains('.') {\n55:             return Err(VersionTokenError::Invalid);\n56:         }\n57:         let message = claims.message()?;\n58:         self.tokens\n59:             .verify_version(signature, &[b\"object-version-v1\", &message])\n60:             .map_err(|_| VersionTokenError::Invalid)\n61:     }\n62: }\n63: "
+        },
+        {
+          "needle": "canonical",
+          "line": 101,
+          "excerpt": "99:             \"edit\": edit,\n100:         });\n101:         serde_json::to_vec(&canonical_json(&claims)).map_err(|_| VersionTokenError::Invalid)\n102:     }\n103: }\n104: \n105: fn attr_value(value: &AttrValue) -> Result<Value, VersionTokenError> {\n106:     match value {\n107:         AttrValue::Null => Ok(Value::Null),\n108:         AttrValue::Scalar(value) => scalar(value),\n109:         AttrValue::List(items) => items\n110:             .iter()\n111:             .map(scalar)\n112:             .collect::<Result<Vec<_>, _>>()\n113:             .map(Value::Array),\n114:     }"
+        }
+      ]
+    },
+    {
+      "file": "crates/ontoforge-query/src/lib.rs",
+      "sha256": "be742bc046424fcee8c138de4395a9a61291bf39eecf4495c8ef930c2731e9d1",
+      "anchors": [
+        {
+          "needle": "pub async fn execute",
+          "line": 251,
+          "excerpt": "249: \n250: impl<E: Engine> QueryService<'_, E> {\n251:     pub async fn execute(&self, request: QueryRequest) -> Result<QueryPage, QueryError> {\n252:         self.execute_audited(request).await.result\n253:     }\n254: \n255:     pub async fn execute_audited(&self, request: QueryRequest) -> QueryExecution {\n256:         self.execute_audited_observed(request, |_| {}).await\n257:     }\n258: \n259:     pub async fn execute_audited_observed(\n260:         &self,\n261:         request: QueryRequest,\n262:         on_reserved: impl FnOnce(&str) + Send,\n263:     ) -> QueryExecution {\n264:         let object_type = request.set.object_type();"
+        },
+        {
+          "needle": "read_audit().reserve",
+          "line": 265,
+          "excerpt": "263:     ) -> QueryExecution {\n264:         let object_type = request.set.object_type();\n265:         let audit = self.store.read_audit().reserve(ReadAuditMetadata {\n266:             principal: self.principal.id.to_string(),\n267:             tool: \"query.pk\".to_owned(),\n268:             object_type: Some(object_type.as_str().to_owned()),\n269:             condition_api_names: self\n270:                 .active\n271:                 .ontology\n272:                 .object_types\n273:                 .get(object_type)\n274:                 .map(|ty| vec![ty.primary_key.as_str().to_owned()])\n275:                 .unwrap_or_default(),\n276:             effective_roles: self\n277:                 .scope\n278:                 .roles"
+        },
+        {
+          "needle": "fn version_for",
+          "line": 406,
+          "excerpt": "404:     }\n405: \n406:     fn version_for(\n407:         &self,\n408:         object_type: &ObjectTypeName,\n409:         pk: &PropertyValue,\n410:         source: Option<&BTreeMap<PropertyName, Value>>,\n411:         edit: Option<&ObjectEdit>,\n412:     ) -> Result<String, QueryError> {\n413:         cursor::VersionTokenCodec::new(self.tokens)\n414:             .sign(&cursor::VersionClaims {\n415:                 principal: self.principal,\n416:                 scope: self.scope,\n417:                 object_type,\n418:                 pk,\n419:                 def_version: self.active.def_version,"
+        },
+        {
+          "needle": "pub async fn read_pk_source",
+          "line": 446,
+          "excerpt": "444: \n445: /// The canonical bounded source lookup shared by Query and Action before its write transaction.\n446: pub async fn read_pk_source<E: Engine>(\n447:     active: &ActiveDefinition,\n448:     engine: &E,\n449:     type_name: &ObjectTypeName,\n450:     pk: &PropertyValue,\n451:     max_rows: usize,\n452:     max_decoded_bytes: usize,\n453: ) -> Result<Option<BTreeMap<PropertyName, Value>>, QueryError> {\n454:     read_pk_source_with_audit(\n455:         active,\n456:         engine,\n457:         type_name,\n458:         pk,\n459:         max_rows,"
+        },
+        {
+          "needle": "LIMIT",
+          "line": null,
+          "excerpt": null
+        }
+      ]
+    },
+    {
+      "file": "crates/ontoforge-action/src/fingerprint.rs",
+      "sha256": "1e4d6ae6c98869833ee90af7909d39be2ccc5b53bef96be44827d36dc6119f6c",
+      "anchors": [
+        {
+          "needle": "fn request_hash",
+          "line": 6,
+          "excerpt": "4: use crate::ActionRequest;\n5: \n6: pub(crate) fn request_hash(request: &ActionRequest) -> String {\n7:     digest(&json!({\n8:         \"format\": 1,\n9:         \"action\": request.action,\n10:         \"items\": request.items,\n11:         \"validate_only\": request.validate_only,\n12:     }))\n13: }\n14: \n15: fn canonical_json(value: &Value) -> Value {\n16:     match value {\n17:         Value::Object(map) => {\n18:             let mut keys: Vec<_> = map.keys().collect();\n19:             keys.sort_unstable();"
+        },
+        {
+          "needle": "fn canonical",
+          "line": 15,
+          "excerpt": "13: }\n14: \n15: fn canonical_json(value: &Value) -> Value {\n16:     match value {\n17:         Value::Object(map) => {\n18:             let mut keys: Vec<_> = map.keys().collect();\n19:             keys.sort_unstable();\n20:             let mut ordered = Map::new();\n21:             for key in keys {\n22:                 ordered.insert(key.clone(), canonical_json(&map[key]));\n23:             }\n24:             Value::Object(ordered)\n25:         }\n26:         Value::Array(items) => Value::Array(items.iter().map(canonical_json).collect()),\n27:         other => other.clone(),\n28:     }"
+        }
+      ]
+    },
+    {
+      "file": "crates/ontoforge-action/src/outbox.rs",
+      "sha256": "e212b100ca24b618d91d871d84b99d4ab28011ef46b1cc2f554d5cfa8b08b50e",
+      "anchors": [
+        {
+          "needle": "pub struct WebhookConfig",
+          "line": 22,
+          "excerpt": "20: /// Trusted host configuration. Action requests and ontology rules cannot set a target.\n21: #[derive(Debug, Clone)]\n22: pub struct WebhookConfig {\n23:     target: reqwest::Url,\n24:     lease_duration: Duration,\n25:     request_timeout: Duration,\n26:     batch_limit: u32,\n27: }\n28: \n29: impl WebhookConfig {\n30:     pub fn new(\n31:         target: &str,\n32:         lease_duration: Duration,\n33:         request_timeout: Duration,\n34:         batch_limit: u32,\n35:     ) -> Result<Self, WebhookError> {"
+        },
+        {
+          "needle": "pub async fn poll_at_with_after_send",
+          "line": 117,
+          "excerpt": "115:     /// The callback permits a host to interrupt delivery after 2xx and before the mark.\n116:     /// A failure leaves the lease in place for recovery after its expiry.\n117:     pub async fn poll_at_with_after_send(\n118:         &self,\n119:         now: DateTime<Utc>,\n120:         mut after_send: impl FnMut(&ClaimedOutboxEvent) -> Result<(), WebhookError>,\n121:     ) -> Result<usize, WebhookError> {\n122:         let started = Instant::now();\n123:         let lease_duration = chrono::Duration::from_std(self.config.lease_duration)\n124:             .map_err(|_| WebhookError::Config)?;\n125:         let mut count = 0;\n126:         while count < self.config.batch_limit as usize {\n127:             let lease_start = if count == 0 {\n128:                 now\n129:             } else {\n130:                 now + chrono::Duration::from_std(started.elapsed())"
+        },
+        {
+          "needle": "claim_due_outbox",
+          "line": 136,
+          "excerpt": "134:             let Some(event) = self\n135:                 .store\n136:                 .claim_due_outbox(now, &self.worker_id, lease_start + lease_duration, 1)\n137:                 .await?\n138:                 .pop()\n139:             else {\n140:                 break;\n141:             };\n142:             let result = self.transport.send(&self.config, &event).await;\n143:             let completed_at = now\n144:                 + chrono::Duration::from_std(started.elapsed())\n145:                     .map_err(|_| WebhookError::Config)?;\n146:             match result {\n147:                 Ok(()) => {\n148:                     after_send(&event)?;\n149:                     self.store"
+        },
+        {
+          "needle": "mark_delivered",
+          "line": 150,
+          "excerpt": "148:                     after_send(&event)?;\n149:                     self.store\n150:                         .mark_delivered(&event.event_id, &event.lease_owner, completed_at)\n151:                         .await?;\n152:                 }\n153:                 Err(category) => {\n154:                     let attempts = event.attempt_count.checked_add(1).ok_or_else(|| {\n155:                         StoreError::Corrupt(\"outbox attempt count overflow\".to_owned())\n156:                     })?;\n157:                     let backoff = 1_i64 << (attempts - 1).min(16);\n158:                     let retry_at = completed_at + chrono::Duration::seconds(backoff.min(300));\n159:                     self.store\n160:                         .record_retry(\n161:                             &event.event_id,\n162:                             &event.lease_owner,\n163:                             attempts,"
+        }
+      ]
+    },
+    {
+      "file": "crates/ontoforge/src/webhook_worker.rs",
+      "sha256": "0a6f52010b2247fbf3dc232defaa05b5a83c0b3f4d19c998aae93e7c05409915",
+      "anchors": [
+        {
+          "needle": "pub async fn run",
+          "line": null,
+          "excerpt": null
+        },
+        {
+          "needle": "WebhookWorker",
+          "line": 6,
+          "excerpt": "4: \n5: use chrono::Utc;\n6: use ontoforge_action::outbox::{WebhookConfig, WebhookWorker};\n7: use ontoforge_storage::store::EditStore;\n8: \n9: use crate::cli::WebhookWorkerArgs;\n10: use crate::reload::load_server;\n11: \n12: pub fn run(args: &WebhookWorkerArgs) -> u8 {\n13:     let Ok(server) = load_server(&args.server_config) else {\n14:         eprintln!(\"invalid server configuration for webhook worker\");\n15:         return 1;\n16:     };\n17:     let Some(config) = server.config.webhook else {\n18:         eprintln!(\"server configuration needs a [webhook] section\");\n19:         return 1;"
+        },
+        {
+          "needle": "poll_at",
+          "line": 51,
+          "excerpt": "49:         loop {\n50:             tokio::select! {\n51:                 result = worker.poll_at(Utc::now()) => {\n52:                     if result.is_err() {\n53:                         eprintln!(\"webhook worker poll failed; retrying\");\n54:                     }\n55:                 }\n56:                 _ = &mut shutdown => return 0,\n57:             }\n58:             tokio::select! {\n59:                 () = tokio::time::sleep(interval) => {},\n60:                 _ = &mut shutdown => return 0,\n61:             }\n62:         }\n63:     })\n64: }"
+        }
+      ]
+    },
+    {
+      "file": "crates/ontoforge-storage/src/read_audit.rs",
+      "sha256": "92188fe542a6971a3d1f4b1d78ec4664d5a5c303fa33147e7c3f1848d9432ec6",
+      "anchors": [
+        {
+          "needle": "enum Worker",
+          "line": 161,
+          "excerpt": "159: }\n160: \n161: enum Worker {\n162:     Running(JoinHandle<Result<(), AuditUnavailable>>),\n163:     Finished(Result<(), AuditUnavailable>),\n164: }\n165: \n166: /// One store owns one worker. Dropping the store closes the channel and drains accepted rows.\n167: pub struct ReadAudit {\n168:     state: Arc<State>,\n169:     sender: Mutex<Option<mpsc::Sender<Queued>>>,\n170:     worker: tokio::sync::Mutex<Worker>,\n171: }\n172: \n173: impl ReadAudit {\n174:     pub(crate) fn start(db: &Db, settings: ReadAuditSettings) -> Self {"
+        },
+        {
+          "needle": "pub async fn shutdown",
+          "line": 232,
+          "excerpt": "230: \n231:     /// Stop admitting reads, then wait for all accepted rows to reach the durable sink.\n232:     pub async fn shutdown(&self) -> Result<(), AuditUnavailable> {\n233:         self.state.accepting.store(false, Ordering::Release);\n234:         self.sender.lock().unwrap().take();\n235:         let mut worker = self.worker.lock().await;\n236:         let result = match &mut *worker {\n237:             // Borrowing keeps the handle available if this shutdown future is cancelled.\n238:             Worker::Running(handle) => handle.await.unwrap_or(Err(AuditUnavailable)),\n239:             Worker::Finished(result) => return *result,\n240:         };\n241:         *worker = Worker::Finished(result);\n242:         result\n243:     }\n244: }\n245: "
+        },
+        {
+          "needle": "pub fn reserve",
+          "line": 202,
+          "excerpt": "200:     }\n201: \n202:     pub fn reserve(&self, metadata: ReadAuditMetadata) -> Result<ReadAuditGuard, AuditUnavailable> {\n203:         if !self.state.health().available {\n204:             return Err(AuditUnavailable);\n205:         }\n206:         let permit = Arc::clone(&self.state.slots)\n207:             .try_acquire_owned()\n208:             .map_err(|_| AuditUnavailable)?;\n209:         let sender = self\n210:             .sender\n211:             .lock()\n212:             .unwrap()\n213:             .clone()\n214:             .ok_or(AuditUnavailable)?;\n215:         if sender.is_closed() || !self.state.health().available {"
+        },
+        {
+          "needle": "pub fn finish",
+          "line": 268,
+          "excerpt": "266:     }\n267: \n268:     pub fn finish(\n269:         mut self,\n270:         status: ReadAuditStatus,\n271:         row_count: usize,\n272:     ) -> Result<(), AuditUnavailable> {\n273:         self.enqueue(status, row_count)\n274:     }\n275: \n276:     fn enqueue(\n277:         &mut self,\n278:         status: ReadAuditStatus,\n279:         row_count: usize,\n280:     ) -> Result<(), AuditUnavailable> {\n281:         let Some(permit) = self.permit.take() else {"
+        },
+        {
+          "needle": "async fn persist",
+          "line": null,
+          "excerpt": null
+        },
+        {
+          "needle": "of_read_audit",
+          "line": null,
+          "excerpt": null
+        }
+      ]
+    },
+    {
+      "file": "crates/ontoforge-query/src/l2.rs",
+      "sha256": "3c20dac53daf3f33b51794f638fbf7b9178c095b57783287e715daced60b848d",
+      "anchors": [
+        {
+          "needle": "async fn discover",
+          "line": 107,
+          "excerpt": "105:     }\n106: \n107:     async fn discover(&self, request: Discovery<'_>) -> Result<L2Result, L2Error> {\n108:         let mut audit = self\n109:             .store\n110:             .read_audit()\n111:             .reserve(ReadAuditMetadata {\n112:                 principal: self.principal.id.to_string(),\n113:                 tool: request.tool().to_owned(),\n114:                 object_type: None,\n115:                 condition_api_names: vec![],\n116:                 effective_roles: self\n117:                     .scope\n118:                     .roles\n119:                     .iter()\n120:                     .map(|r| r.as_str().to_owned())"
+        },
+        {
+          "needle": "async fn run_checked",
+          "line": 431,
+          "excerpt": "429:     }\n430: \n431:     async fn run_checked(\n432:         &self,\n433:         sql: &str,\n434:         kind: RunKind,\n435:         audit: &mut ReadAuditGuard,\n436:     ) -> Result<L2Result, L2Error> {\n437:         if self.engine.l2_status() != Some(L2HealthStatus::Enabled) {\n438:             return Err(L2Error::Disabled);\n439:         }\n440:         let Some(acl) = &self.config.l2_acl else {\n441:             return Err(L2Error::Disabled);\n442:         };\n443:         let policy = L2Policy {\n444:             raw_allowed: self.scope.sql_levels.contains(&SqlLevel::Raw),"
+        },
+        {
+          "needle": "validate_l2",
+          "line": 9,
+          "excerpt": "7: use ontoforge_engine::config::TrinoConfig;\n8: use ontoforge_engine::printer::l2::{\n9:     self, ExplainType, L2Error as SqlError, L2Policy, validate_l2,\n10: };\n11: use ontoforge_engine::trino::TrinoEngine;\n12: use ontoforge_engine::trino::l2_health::L2HealthStatus;\n13: use ontoforge_engine::{Column, Engine, EngineError, PhysicalType, QueryOutput, TableRef, Value};\n14: use ontoforge_schema::ir::SqlLevel;\n15: use ontoforge_storage::read_audit::{ReadAuditGuard, ReadAuditMetadata, ReadAuditStatus};\n16: use ontoforge_storage::store::{ActiveDefinition, EditStore};\n17: \n18: pub struct L2Service<'a> {\n19:     pub principal: &'a Principal,\n20:     pub scope: &'a PrincipalScope,\n21:     pub active: Arc<ActiveDefinition>,\n22:     pub engine: &'a TrinoEngine,"
+        },
+        {
+          "needle": "edit_catalog",
+          "line": 447,
+          "excerpt": "445:             catalogs: self.scope.l2_catalogs.clone(),\n446:             schemas: self.scope.l2_schemas.clone(),\n447:             edit_catalog: acl.edit.catalog.clone(),\n448:             max_rows: u64::try_from(self.config.max_rows).map_err(|_| L2Error::InvalidSql)?,\n449:         };\n450:         let printed = validate_l2(sql, &policy).map_err(|err| match err {\n451:             SqlError::Denied => L2Error::Denied,\n452:             SqlError::Unsupported => L2Error::InvalidSql,\n453:         })?;\n454:         let printed = match kind {\n455:             RunKind::Execute => printed,\n456:             RunKind::Explain(explain_type) => {\n457:                 ontoforge_engine::printer::l2::explain_l2_with_type(&printed, explain_type)\n458:             }\n459:         };\n460:         audit.observe_sql(printed.as_str());"
+        },
+        {
+          "needle": "audit",
+          "line": 15,
+          "excerpt": "13: use ontoforge_engine::{Column, Engine, EngineError, PhysicalType, QueryOutput, TableRef, Value};\n14: use ontoforge_schema::ir::SqlLevel;\n15: use ontoforge_storage::read_audit::{ReadAuditGuard, ReadAuditMetadata, ReadAuditStatus};\n16: use ontoforge_storage::store::{ActiveDefinition, EditStore};\n17: \n18: pub struct L2Service<'a> {\n19:     pub principal: &'a Principal,\n20:     pub scope: &'a PrincipalScope,\n21:     pub active: Arc<ActiveDefinition>,\n22:     pub engine: &'a TrinoEngine,\n23:     pub store: &'a EditStore,\n24:     pub config: &'a TrinoConfig,\n25: }\n26: \n27: #[derive(Debug, thiserror::Error)]\n28: pub enum L2Error {"
+        },
+        {
+          "needle": "engine.execute",
+          "line": 464,
+          "excerpt": "462:             .config\n463:             .query_context(audit.request_id().to_owned(), vec![]);\n464:         let output = self.engine.execute(&printed, &ctx).await.map_err(|error| {\n465:             if self.engine.l2_status() == Some(L2HealthStatus::Enabled) {\n466:                 L2Error::Source(error)\n467:             } else {\n468:                 L2Error::Disabled\n469:             }\n470:         })?;\n471:         let narrowing_hint = output\n472:             .truncated\n473:             .then_some(\"Refine the SQL to narrow the result.\");\n474:         Ok(L2Result {\n475:             output,\n476:             narrowing_hint,\n477:         })"
+        }
+      ]
+    },
+    {
+      "file": "crates/ontoforge-engine/src/printer/l2.rs",
+      "sha256": "b71cadcd7e068f464304173746de8ec3c4c202400a831adff12d26f08ad91378",
+      "anchors": [
+        {
+          "needle": "pub fn validate_l2",
+          "line": 123,
+          "excerpt": "121: \n122: /// Validates one SQL statement, returning only its normalized, bounded Display text.\n123: pub fn validate_l2(raw: &str, policy: &L2Policy) -> Result<PrintedSql, L2Error> {\n124:     if !policy.raw_allowed {\n125:         return Err(L2Error::Denied);\n126:     }\n127:     if raw.is_empty() || raw.len() > MAX_SQL_BYTES || policy.max_rows == 0 {\n128:         return Err(L2Error::Unsupported);\n129:     }\n130:     let raw = raw.to_owned();\n131:     let policy = policy.clone();\n132:     thread::Builder::new()\n133:         .stack_size(PARSER_STACK_BYTES)\n134:         .spawn(move || validate_on_parser_stack(&raw, &policy))\n135:         .map_err(|_| L2Error::Unsupported)?\n136:         .join()"
+        },
+        {
+          "needle": "fn validate_on_parser_stack",
+          "line": 276,
+          "excerpt": "274: }\n275: \n276: fn validate_on_parser_stack(raw: &str, policy: &L2Policy) -> Result<PrintedSql, L2Error> {\n277:     let mut statements =\n278:         Parser::parse_sql(&GenericDialect {}, raw).map_err(|_| L2Error::Unsupported)?;\n279:     if statements.len() != 1 {\n280:         return Err(L2Error::Unsupported);\n281:     }\n282:     let mut statement = statements.pop().expect(\"checked single statement\");\n283:     let Statement::Query(query) = &mut statement else {\n284:         return Err(L2Error::Unsupported);\n285:     };\n286:     if !matches!(\n287:         query.body.as_ref(),\n288:         SetExpr::Select(_) | SetExpr::SetOperation { .. }\n289:     ) {"
+        },
+        {
+          "needle": "fn relation",
+          "line": null,
+          "excerpt": null
+        },
+        {
+          "needle": "edit_catalog",
+          "line": 30,
+          "excerpt": "28:     pub catalogs: BTreeSet<String>,\n29:     pub schemas: BTreeSet<String>,\n30:     pub edit_catalog: String,\n31:     pub max_rows: u64,\n32: }\n33: \n34: #[derive(Debug, Clone, PartialEq, Eq, Error)]\n35: pub enum L2Error {\n36:     #[error(\"L2 access denied\")]\n37:     Denied,\n38:     #[error(\"unsupported or invalid L2 SQL\")]\n39:     Unsupported,\n40: }\n41: \n42: #[derive(Debug, Clone, PartialEq, Eq, Error)]\n43: pub enum L2TableNameError {"
+        },
+        {
+          "needle": "fn new",
+          "line": null,
+          "excerpt": null
+        }
+      ]
+    },
+    {
+      "file": "crates/ontoforge-engine/src/trino/l2_health.rs",
+      "sha256": "a3d1ef043468bdd30fbad3f4fc3aed07a878aa77284a21cbf2fae5830a7b06a3",
+      "anchors": [
+        {
+          "needle": "pub(super) fn status",
+          "line": 95,
+          "excerpt": "93:     }\n94: \n95:     pub(super) fn status(&self) -> L2HealthStatus {\n96:         self.state.lock().map_or(\n97:             L2HealthStatus::Disabled {\n98:                 reason: L2DisableReason::NotVerified,\n99:             },\n100:             |guard| {\n101:                 if guard.status == L2HealthStatus::Enabled\n102:                     && guard.checked_at.elapsed() >= Duration::from_secs(60)\n103:                 {\n104:                     L2HealthStatus::Disabled {\n105:                         reason: L2DisableReason::Expired,\n106:                     }\n107:                 } else {\n108:                     guard.status"
+        },
+        {
+          "needle": "pub(super) fn complete",
+          "line": 114,
+          "excerpt": "112:     }\n113: \n114:     pub(super) fn complete(&self, ticket: CheckTicket, status: L2HealthStatus) -> L2HealthStatus {\n115:         match self.state.lock() {\n116:             Ok(mut current) => {\n117:                 if (current.generation, current.check_epoch) == (ticket.generation, ticket.epoch)\n118:                     && !current.stopped\n119:                     && !(status == L2HealthStatus::Enabled\n120:                         && current.monitoring\n121:                         && !ticket.monitor_owner)\n122:                 {\n123:                     current.status = status;\n124:                     current.checked_at = Instant::now();\n125:                 }\n126:                 current.status\n127:             }"
+        },
+        {
+          "needle": "pub(super) fn begin",
+          "line": 134,
+          "excerpt": "132:     }\n133: \n134:     pub(super) fn begin(&self, owner: Option<u64>) -> Option<CheckTicket> {\n135:         let mut current = self.state.lock().ok()?;\n136:         if current.stopped || owner.is_some_and(|owner| owner != current.generation) {\n137:             return None;\n138:         }\n139:         current.check_epoch = current.check_epoch.wrapping_add(1);\n140:         if owner.is_some() || current.status == L2HealthStatus::Enabled {\n141:             current.status = L2HealthStatus::Disabled {\n142:                 reason: L2DisableReason::NotVerified,\n143:             };\n144:         }\n145:         Some(CheckTicket {\n146:             generation: current.generation,\n147:             epoch: current.check_epoch,"
+        },
+        {
+          "needle": "recheck_l2_acl",
+          "line": null,
+          "excerpt": null
+        }
+      ]
+    },
+    {
+      "file": "crates/ontoforge-engine/src/trino/l2_monitor.rs",
+      "sha256": "f5283824db2e2aaae027382d211f24c2d4110394be4c4a2d2aad132aae3ca1c4",
+      "anchors": [
+        {
+          "needle": "pub async fn start_l2_acl_monitor",
+          "line": 130,
+          "excerpt": "128:     /// monitor.shutdown().await?;\n129:     /// ```\n130:     pub async fn start_l2_acl_monitor(\n131:         self: Arc<Self>,\n132:         ontology: Arc<Self>,\n133:     ) -> Result<L2AclMonitor, EngineError> {\n134:         self.start_l2_acl_monitor_with_options(ontology, L2MonitorOptions::default())\n135:             .await\n136:     }\n137: \n138:     pub async fn start_l2_acl_monitor_with_options(\n139:         self: Arc<Self>,\n140:         ontology: Arc<Self>,\n141:         options: L2MonitorOptions,\n142:     ) -> Result<L2AclMonitor, EngineError> {\n143:         if options.interval.is_zero()"
+        },
+        {
+          "needle": "async fn check_once",
+          "line": null,
+          "excerpt": null
+        },
+        {
+          "needle": "async fn monitored_recheck",
+          "line": null,
+          "excerpt": null
+        },
+        {
+          "needle": "async fn active_probe",
+          "line": null,
+          "excerpt": null
+        },
+        {
+          "needle": "async fn cancel_inner",
+          "line": 249,
+          "excerpt": "247:     }\n248: \n249:     async fn cancel_inner(&self, owner: Option<u64>) -> Result<(), L2DisableReason> {\n250:         let _serial = self.cancellation.lock().await;\n251:         let delete = self\n252:             .state\n253:             .lock()\n254:             .map_err(|_| L2DisableReason::CleanupFailed)?\n255:             .delete\n256:             .as_ref()\n257:             .filter(|delete| owner.is_none_or(|owner| owner == delete.generation))\n258:             .map(|delete| {\n259:                 delete\n260:                     .request\n261:                     .try_clone()\n262:                     .map(|request| (delete.token, request))"
+        },
+        {
+          "needle": "pending.cancel",
+          "line": 111,
+          "excerpt": "109:             let _ = self.ontology.cancellations.observe(async move {\n110:                 // Failure leaves the pending obligation intact for cleanup_handle().drain().\n111:                 let _ = pending.cancel(Some(generation)).await;\n112:             });\n113:         }\n114:     }\n115: }\n116: \n117: impl TrinoEngine {\n118:     /// Awaits the first attestation and returns the lease required to keep L2 enabled.\n119:     /// Transient attestation failures return a disabled monitor that retries each interval.\n120:     /// The host must retain this handle and call `shutdown` during graceful shutdown.\n121:     /// A dropped startup future or handle disables L2 and cancels the active probe.\n122:     ///\n123:     /// ```ignore\n124:     /// let ontology = Arc::new(engines.ontology);"
+        }
+      ]
+    },
+    {
+      "file": "crates/ontoforge-query/src/aggregate.rs",
+      "sha256": "ea36ba52eb362272ad7caad6a7e863c9e97333be602f3929caed5d37f5d2bf48",
+      "anchors": [
+        {
+          "needle": "pub async fn execute_aggregate",
+          "line": 881,
+          "excerpt": "879:         reason = \"execution keeps one request budget across all strategies\"\n880:     )]\n881:     pub async fn execute_aggregate(\n882:         &self,\n883:         request: AggregateRequest,\n884:         capabilities: AggregateCapabilities,\n885:         limits: AggregateLimits,\n886:     ) -> Result<AggregateResult, AggregateError> {\n887:         self.execute_aggregate_audited(request, capabilities, limits)\n888:             .await\n889:             .result\n890:     }\n891: \n892:     pub async fn execute_aggregate_audited(\n893:         &self,\n894:         request: AggregateRequest,"
+        },
+        {
+          "needle": "reserve",
+          "line": 907,
+          "excerpt": "905:         capabilities: AggregateCapabilities,\n906:         limits: AggregateLimits,\n907:         on_reserved: impl FnOnce(&str) + Send,\n908:     ) -> crate::QueryExecution<AggregateResult, AggregateError> {\n909:         let audit = self\n910:             .store\n911:             .read_audit()\n912:             .reserve(self.audit_metadata(\"query.aggregate\", &request.set));\n913:         let Ok(audit) = audit else {\n914:             return crate::QueryExecution {\n915:                 request_id: None,\n916:                 result: Err(AggregateError::AuditUnavailable),\n917:             };\n918:         };\n919:         let request_id = Some(audit.request_id().to_owned());\n920:         on_reserved(audit.request_id());"
+        },
+        {
+          "needle": "execute_list_internal",
+          "line": 719,
+          "excerpt": "717:             }\n718:             ObjectSet::SearchAround { .. } => self.execute_search_around(query, budget).await?,\n719:             _ => self.execute_list_internal(query, budget, None).await?,\n720:         };\n721:         Ok(page)\n722:     }\n723: \n724:     async fn execute_minmax_topn(\n725:         &self,\n726:         request: &AggregateRequest,\n727:         scope: &ontoforge_auth::scope::TypeScope,\n728:         budget: &mut WorkBudget,\n729:     ) -> Result<AggregateResult, AggregateError> {\n730:         let mut values = Vec::with_capacity(request.measures.len());\n731:         for measure in &request.measures {\n732:             let (property, direction) = match measure {"
+        },
+        {
+          "needle": "finish(status",
+          "line": null,
+          "excerpt": null
+        }
+      ]
+    },
+    {
+      "file": "crates/ontoforge-query/src/execute.rs",
+      "sha256": "b7df21346dbfaa46c46efcf0d92b5c6204e61e026a1fd6fde9c9314f54f7ac59",
+      "anchors": [
+        {
+          "needle": "pub async fn execute_list",
+          "line": 508,
+          "excerpt": "506:         reason = \"keeps the bounded source and edit state machine together\"\n507:     )]\n508:     pub async fn execute_list(&self, query: &ValidatedQuery) -> Result<ListPage, QueryError> {\n509:         self.execute_list_audited(query).await.result\n510:     }\n511: \n512:     pub async fn execute_list_audited(\n513:         &self,\n514:         query: &ValidatedQuery,\n515:     ) -> crate::QueryExecution<ListPage> {\n516:         self.execute_list_audited_observed(query, |_| {}).await\n517:     }\n518: \n519:     pub async fn execute_list_audited_observed(\n520:         &self,\n521:         query: &ValidatedQuery,"
+        },
+        {
+          "needle": "reserve",
+          "line": 522,
+          "excerpt": "520:         &self,\n521:         query: &ValidatedQuery,\n522:         on_reserved: impl FnOnce(&str) + Send,\n523:     ) -> crate::QueryExecution<ListPage> {\n524:         let audit = self\n525:             .store\n526:             .read_audit()\n527:             .reserve(self.audit_metadata(\"query.list\", &query.request.set));\n528:         let Ok(audit) = audit else {\n529:             return crate::QueryExecution {\n530:                 request_id: None,\n531:                 result: Err(QueryError::AuditUnavailable),\n532:             };\n533:         };\n534:         let request_id = Some(audit.request_id().to_owned());\n535:         on_reserved(audit.request_id());"
+        },
+        {
+          "needle": "execute_list_internal",
+          "line": 568,
+          "excerpt": "566:             return self.execute_search_around(query, budget).await;\n567:         }\n568:         self.execute_list_internal(query, budget, None).await\n569:     }\n570: \n571:     #[allow(\n572:         clippy::too_many_lines,\n573:         reason = \"keeps the bounded source and edit state machine together\"\n574:     )]\n575:     pub(crate) async fn execute_list_internal(\n576:         &self,\n577:         query: &ValidatedQuery,\n578:         budget: &mut WorkBudget,\n579:         allowed_keys: Option<&BTreeSet<String>>,\n580:     ) -> Result<ListPage, QueryError> {\n581:         let type_name = query.request.set.object_type();"
+        },
+        {
+          "needle": "finish(status",
+          "line": 374,
+          "excerpt": "372:             .take()\n373:             .expect(\"public read has an audit reservation\")\n374:             .finish(status, rows)\n375:             .map_err(|_| QueryError::AuditUnavailable)\n376:     }\n377: \n378:     pub fn charge_backend_calls(&mut self, count: usize) -> Result<(), QueryError> {\n379:         charge(\n380:             &mut self.backend_calls,\n381:             count,\n382:             self.limits.max_backend_calls,\n383:         )\n384:     }\n385:     pub fn charge_raw_candidates(&mut self, count: usize) -> Result<(), QueryError> {\n386:         charge(\n387:             &mut self.raw_candidates,"
+        }
+      ]
+    },
+    {
+      "file": "crates/ontoforge/src/reload.rs",
+      "sha256": "3bcf3be942754e7646f92ee1973b4e86913e6553b8fd381b8154b41cf6764915",
+      "anchors": [
+        {
+          "needle": "lint",
+          "line": 3,
+          "excerpt": "1: //! `ontoforge reload`: bring the edit store's tables in line with the definitions (D-15).\n2: //!\n3: //! The command is thin: load, validate and lint the definitions, open the edit store named by\n4: //! the server configuration, call `ontoforge_storage::reload::reload`, print the outcome. A\n5: //! definition with an error never reaches the store, so no DDL runs for it.\n6: //!\n7: //! Exit codes: 0 success, 1 diagnostics about the definitions or the configuration, 3 the edit\n8: //! store could not be used (ONT-V26). Neither messages nor output carry a connection string:\n9: //! the store configuration only names an environment variable or a file for it.\n10: \n11: use std::time::Duration;\n12: \n13: use camino::{Utf8Path, Utf8PathBuf};\n14: use ontoforge_auth::scope::attr_types;\n15: use ontoforge_engine::AnyEngine;\n16: use ontoforge_engine::config::{"
+        },
+        {
+          "needle": "reload",
+          "line": 1,
+          "excerpt": "1: //! `ontoforge reload`: bring the edit store's tables in line with the definitions (D-15).\n2: //!\n3: //! The command is thin: load, validate and lint the definitions, open the edit store named by\n4: //! the server configuration, call `ontoforge_storage::reload::reload`, print the outcome. A\n5: //! definition with an error never reaches the store, so no DDL runs for it.\n6: //!\n7: //! Exit codes: 0 success, 1 diagnostics about the definitions or the configuration, 3 the edit\n8: //! store could not be used (ONT-V26). Neither messages nor output carry a connection string:\n9: //! the store configuration only names an environment variable or a file for it.\n10: \n11: use std::time::Duration;\n12: \n13: use camino::{Utf8Path, Utf8PathBuf};\n14: use ontoforge_auth::scope::attr_types;"
+        }
+      ]
+    },
+    {
+      "file": "crates/ontoforge-storage/src/scope_store.rs",
+      "sha256": "4b266a9c75d328ba6d133cc3720803ac0632a06392bf18b6150e71a25f4a7a32",
+      "anchors": [
+        {
+          "needle": "plan_hash",
+          "line": null,
+          "excerpt": null
+        },
+        {
+          "needle": "of_admin_audit",
+          "line": 5,
+          "excerpt": "3: //!\n4: //! `scope apply` is the only way roles and bindings get into the store (D-03): this is the only\n5: //! module that names `of_role`, `of_role_binding` and `of_admin_audit`, and\n6: //! `tests/scope_store.rs` fails when another source file does. An apply makes the stored scope\n7: //! equal to the scope directory, so a role or binding that left the directory leaves the store\n8: //! (D-02). It runs in one transaction: re-plan, compare the hash that was reviewed, write roles\n9: //! and bindings, add the indexes the row predicates need, append the audit record.\n10: //!\n11: //! Group membership is never stored (D-02). `of_user` keeps the identity of a principal that\n12: //! authenticated and its last login, nothing else (D-04).\n13: \n14: use std::collections::{BTreeMap, BTreeSet, HashMap};\n15: use std::sync::Mutex;\n16: use std::time::{Duration, Instant};\n17: \n18: use chrono::{SecondsFormat, Utc};"
+        },
+        {
+          "needle": "rollback",
+          "line": 423,
+          "excerpt": "421:         let mut tx = self.begin_write().await?;\n422:         let scope = load_scope_in(&mut tx).await;\n423:         sql_exit::rollback(tx).await;\n424:         scope\n425:     }\n426: \n427:     /// What applying `desired` would change. `row_filter_properties` are the properties its row\n428:     /// predicates read (`CompiledScope::row_filter_properties`); the plan lists the indexes they\n429:     /// still need. Nothing is written.\n430:     pub async fn scope_plan(\n431:         &self,\n432:         desired: &ScopeSet,\n433:         row_filter_properties: &RowFilterProperties,\n434:     ) -> Result<ScopePlan, StoreError> {\n435:         let desired = ScopeContent::of(desired)?;\n436:         let active = self.active_definition().await;"
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/ci.yml",
+      "sha256": "b4a802a680e268303a5cdfa66f51f876f0b8128822ff364616c3fe7c3b7f77e8",
+      "anchors": [
+        {
+          "needle": "Action SQLite",
+          "line": 72,
+          "excerpt": "70:           if [ \"$count\" -eq 0 ]; then echo \"::error::l2_corpus discovered zero tests\"; exit 1; fi\n71:           cargo test -p ontoforge-engine --test l2_gate --locked l2_corpus_ -- --nocapture\n72:       - name: Action SQLite, outbox and write-entry corpus\n73:         run: cargo test -p ontoforge-action --locked -- --nocapture\n74:       - name: SQLite Action fault injection\n75:         shell: bash\n76:         run: |\n77:           set -euo pipefail\n78:           tests=$(cargo test -p ontoforge-storage --features test-support --test conformance_sqlite --locked action_atomic_ -- --list)\n79:           test \"$(printf '%s\\n' \"$tests\" | grep -c '^action_atomic_.*: test$')\" -ge 5\n80:           cargo test -p ontoforge-storage --features test-support --test conformance_sqlite --locked action_atomic_ -- --nocapture\n81: \n82:   # Real PostgreSQL + Trino 483 on Linux (ENGINE-05, ADR-0017). The tests are #[ignore]d so\n83:   # that Windows needs no Docker; this job runs them with --ignored.\n84:   integration:\n85:     runs-on: ubuntu-latest"
+        },
+        {
+          "needle": "SQLite Action fault",
+          "line": 74,
+          "excerpt": "72:       - name: Action SQLite, outbox and write-entry corpus\n73:         run: cargo test -p ontoforge-action --locked -- --nocapture\n74:       - name: SQLite Action fault injection\n75:         shell: bash\n76:         run: |\n77:           set -euo pipefail\n78:           tests=$(cargo test -p ontoforge-storage --features test-support --test conformance_sqlite --locked action_atomic_ -- --list)\n79:           test \"$(printf '%s\\n' \"$tests\" | grep -c '^action_atomic_.*: test$')\" -ge 5\n80:           cargo test -p ontoforge-storage --features test-support --test conformance_sqlite --locked action_atomic_ -- --nocapture\n81: \n82:   # Real PostgreSQL + Trino 483 on Linux (ENGINE-05, ADR-0017). The tests are #[ignore]d so\n83:   # that Windows needs no Docker; this job runs them with --ignored.\n84:   integration:\n85:     runs-on: ubuntu-latest\n86:     timeout-minutes: 45\n87:     env:"
+        },
+        {
+          "needle": "PostgreSQL absent-target",
+          "line": 145,
+          "excerpt": "143:           run_ignored action-idempotency -p ontoforge-action --features test-support --test idempotency_pg --locked pg_\n144:           run_ignored action-webhook-pg -p ontoforge-action --test outbox_pg --locked postgres_outbox_\n145:       - name: PostgreSQL absent-target source guard\n146:         shell: bash\n147:         run: |\n148:           set -euo pipefail\n149:           tests=$(cargo test -p ontoforge-action --features embedded-pg --test source --locked source_guard_absent_target_insert_race -- --exact --list)\n150:           printf '%s\\n' \"$tests\" | grep -Fxq 'source_guard_absent_target_insert_race: test'\n151:           cargo test -p ontoforge-action --features embedded-pg --test source --locked source_guard_absent_target_insert_race -- --exact --nocapture\n152:       # Trino uses a runtime catalog outside the checkout; nightly keeps the checked-in catalog.\n153:       - name: Start Trino 483\n154:         run: bash ci/query-services.sh trino\n155:       - name: Wait for Trino\n156:         run: |\n157:           deadline=$((SECONDS + 180))\n158:           until curl -fsS http://localhost:8080/v1/info | jq -e '.starting == false' >/dev/null 2>&1; do"
+        },
+        {
+          "needle": "trino_action_it",
+          "line": 223,
+          "excerpt": "221:           : \"${ONTOFORGE_PG_URL:?PostgreSQL service must set ONTOFORGE_PG_URL}\"\n222:           : \"${ONTOFORGE_TRINO_URL:?Trino service must set ONTOFORGE_TRINO_URL}\"\n223:           output=$(cargo test -p ontoforge-action --test trino_action_it --locked trino_action_ -- --ignored --list)\n224:           count=$(printf '%s\\n' \"$output\" | awk '/: test$/ { n++ } END { print n+0 }')\n225:           echo \"trino_action_it: $count ignored tests discovered\"\n226:           if [ \"$count\" -eq 0 ]; then echo \"::error::trino_action_it discovered zero tests\"; exit 1; fi\n227:           cargo test -p ontoforge-action --test trino_action_it --locked trino_action_ -- --ignored --nocapture\n228:       # A green run must not mean \"nothing ran\" (RESEARCH Pitfall 8).\n229:       - name: Ignored tests are actually there\n230:         run: |\n231:           set -euo pipefail\n232:           targets=(\n233:             \"ontoforge-engine trino_it\"\n234:             \"ontoforge-engine trino_l2_acl_it\"\n235:             \"ontoforge cli_trino_it\"\n236:             \"ontoforge-storage conformance_pg\""
+        },
+        {
+          "needle": "trino_l2_acl_it",
+          "line": 176,
+          "excerpt": "174:         run: |\n175:           set -euo pipefail\n176:           output=$(cargo test -p ontoforge-engine --test trino_l2_acl_it --locked -- --ignored --list)\n177:           count=$(printf '%s\\n' \"$output\" | awk '/: test$/ { n++ } END { print n+0 }')\n178:           echo \"trino_l2_acl_it: $count ignored tests discovered at ${GITHUB_SHA}\"\n179:           if [ \"$count\" -eq 0 ]; then echo \"::error::trino_l2_acl_it discovered zero tests\"; exit 1; fi\n180:           cargo test -p ontoforge-engine --test trino_l2_acl_it --locked -- --ignored --nocapture\n181:       - name: Engine integration tests\n182:         env:\n183:           ONTOFORGE_TRINO_URL: http://localhost:8080\n184:         run: cargo test -p ontoforge-engine --test trino_it --locked -- --ignored\n185:       - name: CLI integration tests\n186:         env:\n187:           ONTOFORGE_TRINO_URL: http://localhost:8080\n188:         run: cargo test -p ontoforge --test cli_trino_it --locked -- --ignored\n189:       # D-09: the fixed row predicate corpus, evaluated by Trino and by the Rust evaluator."
+        },
+        {
+          "needle": "postgres-audit",
+          "line": 124,
+          "excerpt": "122:           output=$(cargo test -p ontoforge-storage --test conformance_pg --locked audit_ -- --ignored --list)\n123:           count=$(printf '%s\\n' \"$output\" | awk '/audit_.*: test$/ { n++ } END { print n+0 }')\n124:           echo \"postgres-audit: $count ignored tests discovered at ${GITHUB_SHA}\"\n125:           if [ \"$count\" -eq 0 ]; then echo \"::error::postgres-audit discovered zero tests\"; exit 1; fi\n126:           cargo test -p ontoforge-storage --test conformance_pg --locked audit_ -- --ignored --nocapture\n127:       - name: Action atomicity, races, idempotency and webhook delivery (PostgreSQL)\n128:         shell: bash\n129:         run: |\n130:           set -euo pipefail\n131:           : \"${ONTOFORGE_PG_URL:?PostgreSQL service must set ONTOFORGE_PG_URL}\"\n132:           run_ignored() {\n133:             local name=\"$1\"; shift\n134:             local output count\n135:             output=$(cargo test \"$@\" -- --ignored --list)\n136:             count=$(printf '%s\\n' \"$output\" | awk '/: test$/ { n++ } END { print n+0 }')\n137:             echo \"$name: $count ignored tests discovered\""
+        }
+      ]
+    }
+  ],
+  "unresolved_debt_markers": []
+}

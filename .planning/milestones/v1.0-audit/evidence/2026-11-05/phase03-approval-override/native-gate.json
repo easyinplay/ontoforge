@@ -1,0 +1,48 @@
+{
+  "recorded_at": "2026-11-05T11:35:34.426Z",
+  "before": {
+    "args": [
+      "verification.status",
+      ".planning/phases/03-edit-store-scope-model"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"status\": \"human_needed\",\n  \"next_action\": \"Human verification required. Complete the manual tests in the phase's *-UAT.md, then re-run the verify step until status is passed.\",\n  \"next_command\": \"$gsd-verify-work 03\",\n  \"route\": \"verify-work\"\n}",
+    "stderr": "",
+    "data": {
+      "status": "human_needed",
+      "next_action": "Human verification required. Complete the manual tests in the phase's *-UAT.md, then re-run the verify step until status is passed.",
+      "next_command": "$gsd-verify-work 03",
+      "route": "verify-work"
+    }
+  },
+  "after": {
+    "args": [
+      "verification.status",
+      ".planning/phases/03-edit-store-scope-model"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"status\": \"passed\",\n  \"next_action\": \"Verification passed — continue.\",\n  \"next_command\": \"\",\n  \"route\": \"\"\n}",
+    "stderr": "",
+    "data": {
+      "status": "passed",
+      "next_action": "Verification passed — continue.",
+      "next_command": "",
+      "route": ""
+    }
+  },
+  "picked": {
+    "args": [
+      "verification.status",
+      ".planning/phases/03-edit-store-scope-model",
+      "--pick",
+      "status"
+    ],
+    "exit": 0,
+    "stdout": "passed",
+    "stderr": ""
+  },
+  "old_report_sha256": "c4278d97a7171547a82b0caf174b258899b6580f378e5d560b3a8473c10c15df",
+  "new_report_sha256": "f6a8657f760a1656657e53ecc04789d0a76ef9098cb28a3ff7e8efc289abc4cf",
+  "status_decision": "passed: 138 VERIFIED + 1 PASSED (override), no unresolved human items",
+  "historical_receipts_overwritten": false
+}

@@ -592,7 +592,7 @@ async fn retry_backoff_caps_at_five_minutes_without_leaking_response() {
         .await;
     let sender = worker(&store, &server);
     let mut due = poll_time(&receipt);
-    for attempt in 1..=10 {
+    for attempt in 1..=20 {
         assert_eq!(sender.poll_at(due).await.expect("failed delivery"), 1);
         let row = outbox_row(&path).await;
         assert_eq!(row.0, attempt);
@@ -608,7 +608,7 @@ async fn retry_backoff_caps_at_five_minutes_without_leaking_response() {
     }
     assert_eq!(
         server.received_requests().await.expect("requests").len(),
-        10
+        20
     );
 }
 

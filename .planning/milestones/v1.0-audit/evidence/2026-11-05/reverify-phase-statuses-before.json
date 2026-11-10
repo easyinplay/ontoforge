@@ -1,0 +1,134 @@
+{
+  "captured_at": "2026-11-05T08:46:44.136Z",
+  "phases": [
+    {
+      "phase": "01-workspace-schema-lint",
+      "canonical_status": "human_needed",
+      "exit": 0,
+      "output": {
+        "status": "stale",
+        "next_action": "Verification is stale — covered source files changed after the verifier last ran: \"CONTRIBUTING.md\", \"Cargo.toml\", \"crates/ontoforge-schema/src/diag.rs\", \"crates/ontoforge/src/cli.rs\", \"crates/ontoforge/src/lib.rs\". Re-run execute-phase for this phase: it resumes at the verification gates and re-runs the verifier, regenerating VERIFICATION.md and its digest. verify-work alone cannot refresh a stale report.",
+        "next_command": "$gsd-execute-phase 01",
+        "route": "execute-phase",
+        "moved_files": [
+          "CONTRIBUTING.md",
+          "Cargo.toml",
+          "crates/ontoforge-schema/src/diag.rs",
+          "crates/ontoforge/src/cli.rs",
+          "crates/ontoforge/src/lib.rs"
+        ]
+      },
+      "stderr": ""
+    },
+    {
+      "phase": "02-source-binding-engine",
+      "canonical_status": "gaps_found",
+      "exit": 0,
+      "output": {
+        "status": "gaps_found",
+        "next_action": "Gaps found. Plan the fixes, then re-run execute-phase before shipping.",
+        "next_command": "$gsd-plan-phase 02 --gaps",
+        "route": "plan-phase"
+      },
+      "stderr": ""
+    },
+    {
+      "phase": "03-edit-store-scope-model",
+      "canonical_status": "passed",
+      "exit": 0,
+      "output": {
+        "status": "stale",
+        "next_action": "Verification is stale — covered source files changed after the verifier last ran: \"CONTRIBUTING.md\", \"Cargo.toml\", \"ci/pg/seed.sql\", \"crates/ontoforge-engine/src/lib.rs\", \"crates/ontoforge-engine/src/printer/ast.rs\" and 5 more. Re-run execute-phase for this phase: it resumes at the verification gates and re-runs the verifier, regenerating VERIFICATION.md and its digest. verify-work alone cannot refresh a stale report.",
+        "next_command": "$gsd-execute-phase 03",
+        "route": "execute-phase",
+        "moved_files": [
+          "CONTRIBUTING.md",
+          "Cargo.toml",
+          "ci/pg/seed.sql",
+          "crates/ontoforge-engine/src/lib.rs",
+          "crates/ontoforge-engine/src/printer/ast.rs",
+          "crates/ontoforge-engine/src/printer/dialect.rs",
+          "crates/ontoforge-engine/src/printer/tests.rs",
+          "crates/ontoforge-schema/src/diag.rs",
+          "crates/ontoforge/src/cli.rs",
+          "crates/ontoforge/src/lib.rs"
+        ]
+      },
+      "stderr": ""
+    },
+    {
+      "phase": "04-scoped-l0-read",
+      "canonical_status": "passed",
+      "exit": 0,
+      "output": {
+        "status": "stale",
+        "next_action": "Verification is stale — covered source files changed after the verifier last ran: \"ci/pg/seed.sql\", \"ci/trino/iceberg/iceberg.properties\", \"crates/ontoforge-engine/src/lib.rs\", \"crates/ontoforge-engine/src/printer/ast.rs\", \"crates/ontoforge-engine/src/printer/dialect.rs\" and 3 more. Re-run execute-phase for this phase: it resumes at the verification gates and re-runs the verifier, regenerating VERIFICATION.md and its digest. verify-work alone cannot refresh a stale report.",
+        "next_command": "$gsd-execute-phase 04",
+        "route": "execute-phase",
+        "moved_files": [
+          "ci/pg/seed.sql",
+          "ci/trino/iceberg/iceberg.properties",
+          "crates/ontoforge-engine/src/lib.rs",
+          "crates/ontoforge-engine/src/printer/ast.rs",
+          "crates/ontoforge-engine/src/printer/dialect.rs",
+          "crates/ontoforge-engine/src/printer/tests.rs",
+          "crates/ontoforge-engine/tests/doc_type_table.rs",
+          "crates/ontoforge-engine/tests/l2_monitor.rs"
+        ]
+      },
+      "stderr": ""
+    },
+    {
+      "phase": "05-online-action",
+      "canonical_status": "passed",
+      "exit": 0,
+      "output": {
+        "status": "stale",
+        "next_action": "Verification is stale — covered source files changed after the verifier last ran: \".github/workflows/nightly.yml\", \"crates/ontoforge-action/tests/trino_action_it.rs\", \"crates/ontoforge/src/cli.rs\", \"crates/ontoforge/src/lib.rs\". Re-run execute-phase for this phase: it resumes at the verification gates and re-runs the verifier, regenerating VERIFICATION.md and its digest. verify-work alone cannot refresh a stale report.",
+        "next_command": "$gsd-execute-phase 05",
+        "route": "execute-phase",
+        "moved_files": [
+          ".github/workflows/nightly.yml",
+          "crates/ontoforge-action/tests/trino_action_it.rs",
+          "crates/ontoforge/src/cli.rs",
+          "crates/ontoforge/src/lib.rs"
+        ]
+      },
+      "stderr": ""
+    },
+    {
+      "phase": "06-l2-raw-dql-toolsets-audit",
+      "canonical_status": "passed",
+      "exit": 0,
+      "output": {
+        "status": "stale",
+        "next_action": "Verification is stale — covered source files changed after the verifier last ran: \"crates/ontoforge-engine/tests/l2_monitor.rs\". Re-run execute-phase for this phase: it resumes at the verification gates and re-runs the verifier, regenerating VERIFICATION.md and its digest. verify-work alone cannot refresh a stale report.",
+        "next_command": "$gsd-execute-phase 06",
+        "route": "execute-phase",
+        "moved_files": [
+          "crates/ontoforge-engine/tests/l2_monitor.rs"
+        ]
+      },
+      "stderr": ""
+    },
+    {
+      "phase": "07-rest-mcp-shell",
+      "canonical_status": "passed",
+      "exit": 0,
+      "output": {
+        "status": "stale",
+        "next_action": "Verification is stale — covered source files changed after the verifier last ran: \"Cargo.toml\", \"crates/ontoforge-engine/src/lib.rs\", \"crates/ontoforge-engine/tests/l2_monitor.rs\", \"crates/ontoforge/src/cli.rs\", \"crates/ontoforge/src/lib.rs\". Re-run execute-phase for this phase: it resumes at the verification gates and re-runs the verifier, regenerating VERIFICATION.md and its digest. verify-work alone cannot refresh a stale report.",
+        "next_command": "$gsd-execute-phase 07",
+        "route": "execute-phase",
+        "moved_files": [
+          "Cargo.toml",
+          "crates/ontoforge-engine/src/lib.rs",
+          "crates/ontoforge-engine/tests/l2_monitor.rs",
+          "crates/ontoforge/src/cli.rs",
+          "crates/ontoforge/src/lib.rs"
+        ]
+      },
+      "stderr": ""
+    }
+  ]
+}

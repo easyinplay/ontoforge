@@ -1,0 +1,428 @@
+{
+  "integration": [
+    {
+      "line": 433,
+      "text": "2026-11-05T08:27:28.4955259Z ##[group]Run bash ci/query-services.sh postgres\r"
+    },
+    {
+      "line": 511,
+      "text": "2026-11-05T08:27:44.8423216Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    },
+    {
+      "line": 567,
+      "text": "2026-11-05T08:27:45.2676710Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    },
+    {
+      "line": 680,
+      "text": "2026-11-05T08:28:17.1765919Z \u001b[36;1m: \"${ONTOFORGE_PG_URL:?PostgreSQL service must set ONTOFORGE_PG_URL}\"\u001b[0m\r"
+    },
+    {
+      "line": 683,
+      "text": "2026-11-05T08:28:17.1767554Z \u001b[36;1mecho \"postgres-audit: $count ignored tests discovered at ${GITHUB_SHA}\"\u001b[0m\r"
+    },
+    {
+      "line": 697,
+      "text": "2026-11-05T08:28:17.1814299Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    },
+    {
+      "line": 701,
+      "text": "2026-11-05T08:28:17.3522111Z postgres-audit: 9 ignored tests discovered at 060019fe52005c6b85ae5c5f59da9868f464e579\r"
+    },
+    {
+      "line": 723,
+      "text": "2026-11-05T08:28:19.1499288Z \u001b[36;1m: \"${ONTOFORGE_PG_URL:?PostgreSQL service must set ONTOFORGE_PG_URL}\"\u001b[0m\r"
+    },
+    {
+      "line": 729,
+      "text": "2026-11-05T08:28:19.1500652Z \u001b[36;1m  echo \"$name: $count ignored tests discovered\"\u001b[0m\r"
+    },
+    {
+      "line": 748,
+      "text": "2026-11-05T08:28:19.1544063Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    },
+    {
+      "line": 753,
+      "text": "2026-11-05T08:28:25.6116173Z action-atomicity: 5 ignored tests discovered\r"
+    },
+    {
+      "line": 775,
+      "text": "2026-11-05T08:28:41.0914112Z action-same-pk: 4 ignored tests discovered\r"
+    },
+    {
+      "line": 790,
+      "text": "2026-11-05T08:28:43.9062624Z action-idempotency: 6 ignored tests discovered\r"
+    },
+    {
+      "line": 809,
+      "text": "2026-11-05T08:28:52.8507446Z action-webhook-pg: 2 ignored tests discovered\r"
+    },
+    {
+      "line": 835,
+      "text": "2026-11-05T08:28:53.3949554Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    },
+    {
+      "line": 850,
+      "text": "2026-11-05T08:29:01.6586193Z ##[group]Run bash ci/query-services.sh trino\r"
+    },
+    {
+      "line": 863,
+      "text": "2026-11-05T08:29:01.6627724Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    },
+    {
+      "line": 919,
+      "text": "2026-11-05T08:29:22.3898590Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    },
+    {
+      "line": 923,
+      "text": "2026-11-05T08:29:29.1162905Z ##[group]Run bash ci/query-services.sh trino-l2\r"
+    },
+    {
+      "line": 936,
+      "text": "2026-11-05T08:29:29.1274709Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    },
+    {
+      "line": 954,
+      "text": "2026-11-05T08:29:50.9288484Z \u001b[36;1mecho \"trino_l2_acl_it: $count ignored tests discovered at ${GITHUB_SHA}\"\u001b[0m\r"
+    },
+    {
+      "line": 968,
+      "text": "2026-11-05T08:29:50.9333056Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    },
+    {
+      "line": 976,
+      "text": "2026-11-05T08:29:57.6407137Z trino_l2_acl_it: 6 ignored tests discovered at 060019fe52005c6b85ae5c5f59da9868f464e579\r"
+    },
+    {
+      "line": 1035,
+      "text": "2026-11-05T08:30:03.3105418Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    },
+    {
+      "line": 1036,
+      "text": "2026-11-05T08:30:03.3105750Z   ONTOFORGE_TRINO_URL: http://localhost:8080\r"
+    },
+    {
+      "line": 1068,
+      "text": "2026-11-05T08:30:07.5046220Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    },
+    {
+      "line": 1069,
+      "text": "2026-11-05T08:30:07.5046500Z   ONTOFORGE_TRINO_URL: http://localhost:8080\r"
+    },
+    {
+      "line": 1105,
+      "text": "2026-11-05T08:30:33.9487939Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    },
+    {
+      "line": 1106,
+      "text": "2026-11-05T08:30:33.9488147Z   ONTOFORGE_TRINO_URL: http://localhost:8080\r"
+    },
+    {
+      "line": 1117,
+      "text": "2026-11-05T08:30:48.6463935Z test trino_matches_rust_on_the_corpus_cases ... ok\r"
+    },
+    {
+      "line": 1118,
+      "text": "2026-11-05T08:30:57.5312684Z test trino_matches_rust_on_seeded_predicates ... ok\r"
+    },
+    {
+      "line": 1135,
+      "text": "2026-11-05T08:30:57.5462750Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    },
+    {
+      "line": 1136,
+      "text": "2026-11-05T08:30:57.5462989Z   ONTOFORGE_TRINO_URL: http://localhost:8080\r"
+    },
+    {
+      "line": 1144,
+      "text": "2026-11-05T08:31:03.6622617Z test cached_column_requires_flush_before_definition_switch ... ok\r"
+    },
+    {
+      "line": 1162,
+      "text": "2026-11-05T08:31:03.9653730Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    },
+    {
+      "line": 1187,
+      "text": "2026-11-05T08:31:06.1709140Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    },
+    {
+      "line": 1188,
+      "text": "2026-11-05T08:31:06.1710827Z   ONTOFORGE_TRINO_URL: http://localhost:8080\r"
+    },
+    {
+      "line": 1199,
+      "text": "2026-11-05T08:31:20.5283715Z test aggregate_corpus_and_distributed_explain ... ok\r"
+    },
+    {
+      "line": 1200,
+      "text": "2026-11-05T08:31:21.4342424Z test fixed_semantics_and_cursor_refill ... ok\r"
+    },
+    {
+      "line": 1203,
+      "text": "2026-11-05T08:31:28.6373786Z test where_search_set_and_relationship_corpus ... ok\r"
+    },
+    {
+      "line": 1220,
+      "text": "2026-11-05T08:31:28.6619899Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    },
+    {
+      "line": 1221,
+      "text": "2026-11-05T08:31:28.6620192Z   ONTOFORGE_TRINO_URL: http://localhost:8080\r"
+    },
+    {
+      "line": 1222,
+      "text": "2026-11-05T08:31:28.6620399Z   ONTOFORGE_BENCH_MODE: smoke\r"
+    },
+    {
+      "line": 1223,
+      "text": "2026-11-05T08:31:28.6620634Z   ONTOFORGE_BENCH_ARTIFACT_DIR: /home/runner/work/ontoforge/ontoforge/target/query-bench\r"
+    },
+    {
+      "line": 1230,
+      "text": "2026-11-05T08:31:34.4237012Z test phase4_real_backend_p95 ... ok\r"
+    },
+    {
+      "line": 1236,
+      "text": "2026-11-05T08:31:34.4360492Z \u001b[36;1m: \"${ONTOFORGE_PG_URL:?PostgreSQL service must set ONTOFORGE_PG_URL}\"\u001b[0m\r"
+    },
+    {
+      "line": 1237,
+      "text": "2026-11-05T08:31:34.4360924Z \u001b[36;1m: \"${ONTOFORGE_TRINO_URL:?Trino service must set ONTOFORGE_TRINO_URL}\"\u001b[0m\r"
+    },
+    {
+      "line": 1240,
+      "text": "2026-11-05T08:31:34.4361934Z \u001b[36;1mecho \"trino_action_it: $count ignored tests discovered\"\u001b[0m\r"
+    },
+    {
+      "line": 1254,
+      "text": "2026-11-05T08:31:34.4415411Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    },
+    {
+      "line": 1255,
+      "text": "2026-11-05T08:31:34.4415723Z   ONTOFORGE_TRINO_URL: http://localhost:8080\r"
+    },
+    {
+      "line": 1260,
+      "text": "2026-11-05T08:31:39.0209832Z trino_action_it: 4 ignored tests discovered\r"
+    },
+    {
+      "line": 1295,
+      "text": "2026-11-05T08:31:41.2143708Z \u001b[36;1m    echo \"::error::$2 discovery failed or lists no ignored tests\"\u001b[0m\r"
+    },
+    {
+      "line": 1298,
+      "text": "2026-11-05T08:31:41.2144187Z \u001b[36;1m  echo \"$2: $count ignored tests\"\u001b[0m\r"
+    },
+    {
+      "line": 1311,
+      "text": "2026-11-05T08:31:41.2185867Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    },
+    {
+      "line": 1315,
+      "text": "2026-11-05T08:31:41.4034163Z trino_it: 9 ignored tests\r"
+    },
+    {
+      "line": 1318,
+      "text": "2026-11-05T08:31:41.5639765Z trino_l2_acl_it: 6 ignored tests\r"
+    },
+    {
+      "line": 1321,
+      "text": "2026-11-05T08:31:41.7967425Z cli_trino_it: 4 ignored tests\r"
+    },
+    {
+      "line": 1324,
+      "text": "2026-11-05T08:31:41.9841570Z conformance_pg: 45 ignored tests\r"
+    },
+    {
+      "line": 1327,
+      "text": "2026-11-05T08:31:42.1600887Z reload_pg: 11 ignored tests\r"
+    },
+    {
+      "line": 1330,
+      "text": "2026-11-05T08:31:42.3446025Z scope_store: 3 ignored tests\r"
+    },
+    {
+      "line": 1333,
+      "text": "2026-11-05T08:31:42.5224440Z migrate_pg: 4 ignored tests\r"
+    },
+    {
+      "line": 1336,
+      "text": "2026-11-05T08:31:42.7014778Z history_masking: 1 ignored tests\r"
+    },
+    {
+      "line": 1339,
+      "text": "2026-11-05T08:31:42.8761745Z import: 2 ignored tests\r"
+    },
+    {
+      "line": 1342,
+      "text": "2026-11-05T08:31:43.0387183Z reload_trino_it: 3 ignored tests\r"
+    },
+    {
+      "line": 1345,
+      "text": "2026-11-05T08:31:43.2072340Z query_read_pg: 2 ignored tests\r"
+    },
+    {
+      "line": 1348,
+      "text": "2026-11-05T08:31:43.3952690Z rowpred_trino_it: 3 ignored tests\r"
+    },
+    {
+      "line": 1351,
+      "text": "2026-11-05T08:31:43.5641097Z trino_query_it: 5 ignored tests\r"
+    },
+    {
+      "line": 1354,
+      "text": "2026-11-05T08:31:43.7247888Z query_bench_it: 1 ignored tests\r"
+    },
+    {
+      "line": 1357,
+      "text": "2026-11-05T08:31:43.9051905Z outbox_pg: 2 ignored tests\r"
+    },
+    {
+      "line": 1360,
+      "text": "2026-11-05T08:31:44.0848805Z trino_action_it: 4 ignored tests\r"
+    },
+    {
+      "line": 1361,
+      "text": "2026-11-05T08:31:44.0939890Z ##[group]Run bash ci/query-services.sh check-artifacts target/query-plans target/query-bench\r"
+    },
+    {
+      "line": 1374,
+      "text": "2026-11-05T08:31:44.1006597Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    },
+    {
+      "line": 1394,
+      "text": "2026-11-05T08:31:44.1237681Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    },
+    {
+      "line": 1407,
+      "text": "2026-11-05T08:31:45.9774153Z Artifact phase4-query-plans.zip successfully finalized. Artifact ID 13399737209\r"
+    },
+    {
+      "line": 1428,
+      "text": "2026-11-05T08:31:45.9962003Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    },
+    {
+      "line": 1441,
+      "text": "2026-11-05T08:31:47.2688942Z Artifact phase4-query-bench-smoke.zip successfully finalized. Artifact ID 13399951669\r"
+    },
+    {
+      "line": 1444,
+      "text": "2026-11-05T08:31:47.2830537Z ##[group]Run bash ci/query-services.sh cleanup\r"
+    },
+    {
+      "line": 1457,
+      "text": "2026-11-05T08:31:47.2876625Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    }
+  ],
+  "phase7-real-services": [
+    {
+      "line": 425,
+      "text": "2026-11-05T08:27:12.2871730Z ##[group]Run bash ci/server-services.sh verify\r"
+    },
+    {
+      "line": 603,
+      "text": "2026-11-05T08:29:33.6669260Z test pg_http_mixed_snapshot_reload_revoke_and_history ... ok\r"
+    },
+    {
+      "line": 631,
+      "text": "2026-11-05T08:31:36.3049799Z test snapshot_pg_never_mixes_definition_roles_bindings ... ok\r"
+    },
+    {
+      "line": 643,
+      "text": "2026-11-05T08:31:56.6228129Z test trino_http_long_read_releases_snapshot_lock ... ok\r"
+    },
+    {
+      "line": 801,
+      "text": "2026-11-05T08:34:09.2197356Z ##[group]Run bash ci/server-services.sh check-artifacts\r"
+    },
+    {
+      "line": 837,
+      "text": "2026-11-05T08:34:10.5751594Z Artifact phase7-real-services.zip successfully finalized. Artifact ID 13400580172\r"
+    },
+    {
+      "line": 840,
+      "text": "2026-11-05T08:34:10.5909205Z ##[group]Run bash ci/server-services.sh cleanup\r"
+    }
+  ],
+  "isolated-query-bench": [
+    {
+      "line": 414,
+      "text": "2026-11-05T08:26:49.0662159Z ##[group]Run bash ci/query-services.sh postgres\r"
+    },
+    {
+      "line": 490,
+      "text": "2026-11-05T08:26:58.2791178Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    },
+    {
+      "line": 528,
+      "text": "2026-11-05T08:26:58.6078484Z ##[group]Run bash ci/query-services.sh trino\r"
+    },
+    {
+      "line": 541,
+      "text": "2026-11-05T08:26:58.6111825Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    },
+    {
+      "line": 596,
+      "text": "2026-11-05T08:27:11.8146004Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    },
+    {
+      "line": 613,
+      "text": "2026-11-05T08:27:22.5268887Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    },
+    {
+      "line": 614,
+      "text": "2026-11-05T08:27:22.5269266Z   ONTOFORGE_TRINO_URL: http://localhost:8080\r"
+    },
+    {
+      "line": 615,
+      "text": "2026-11-05T08:27:22.5269563Z   ONTOFORGE_BENCH_MODE: isolated\r"
+    },
+    {
+      "line": 616,
+      "text": "2026-11-05T08:27:22.5269959Z   ONTOFORGE_BENCH_ARTIFACT_DIR: /home/runner/work/ontoforge/ontoforge/target/query-bench\r"
+    },
+    {
+      "line": 1173,
+      "text": "2026-11-05T08:30:53.1681732Z test phase4_real_backend_p95 ... Phase 4 benchmark evidence: /home/runner/work/ontoforge/ontoforge/target/query-bench/phase4-isolated.json\r"
+    },
+    {
+      "line": 1174,
+      "text": "2026-11-05T08:30:53.1683300Z source_pk: p95=Some(107.64879099999999)ms threshold=500ms passed=true\r"
+    },
+    {
+      "line": 1175,
+      "text": "2026-11-05T08:30:53.1684047Z filtered_list_page: p95=Some(472.588841)ms threshold=1000ms passed=true\r"
+    },
+    {
+      "line": 1176,
+      "text": "2026-11-05T08:30:53.1684775Z aggregate: p95=Some(407.73213499999997)ms threshold=1500ms passed=true\r"
+    },
+    {
+      "line": 1177,
+      "text": "2026-11-05T08:30:53.1686149Z edited_pg_direct_pk: p95=Some(1.1279739999999998)ms threshold=50ms passed=true\r"
+    },
+    {
+      "line": 1182,
+      "text": "2026-11-05T08:30:53.1996840Z ##[group]Run bash ci/query-services.sh check-artifacts target/query-bench\r"
+    },
+    {
+      "line": 1195,
+      "text": "2026-11-05T08:30:53.2029749Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    },
+    {
+      "line": 1215,
+      "text": "2026-11-05T08:30:53.2180596Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    },
+    {
+      "line": 1228,
+      "text": "2026-11-05T08:30:54.4173464Z Artifact phase4-query-bench-isolated.zip successfully finalized. Artifact ID 13400156425\r"
+    },
+    {
+      "line": 1231,
+      "text": "2026-11-05T08:30:54.4344601Z ##[group]Run bash ci/query-services.sh cleanup\r"
+    },
+    {
+      "line": 1244,
+      "text": "2026-11-05T08:30:54.4379050Z   ONTOFORGE_PG_URL: ***127.0.0.1:5432/editstore\r"
+    }
+  ]
+}

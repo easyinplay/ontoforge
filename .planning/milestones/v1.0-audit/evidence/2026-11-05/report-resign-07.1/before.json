@@ -1,0 +1,1312 @@
+{
+  "recorded_at": "2026-11-05T10:53:49.579Z",
+  "head": "060019fe52005c6b85ae5c5f59da9868f464e579",
+  "report_sha256": "824303b284cf21feddfc38b7e31bd06f1153ceb2ef8dbc22b2eba1d2d557fa23",
+  "covered_files": [
+    ".github/workflows/ci.yml",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-01-PLAN.md",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-01-SUMMARY.md",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-02-PLAN.md",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-02-SUMMARY.md",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-03-PLAN.md",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-03-SUMMARY.md",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-ALIAS-DECISION.md",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-CONTEXT.md",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-EDGE-ACCEPTANCE.md",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-GATES.md",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-INDEPENDENT-OPINION.md",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-PARANOID-REVIEW.md",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-REVIEW-DISPOSITION.md",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-REVIEW.md",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-SECURITY.md",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-UAT.md",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-VALIDATION.md",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/alias-independent-opinion.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/build-budget-independent-opinion.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/build-limit-independent-opinion.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/cli-pk-green.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/cli-pk-green.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/cli-repeat-green.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/cli-repeat-green.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/coverage-name-independent-opinion.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/deadline-test-independent-opinion.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/doc-code-independent-opinion.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/edge-rename-proof.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/engine-guards-green.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/engine-guards-green.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/engine-regression-green.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/final-tdd-review.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/final-verify-pre.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/monitor-assertion-independent-opinion.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/monitor-startup-independent-opinion.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/nextest.toml",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-cleanup-green-lib.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-cleanup-green-lib.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-deadline-green-cli.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-deadline-green-cli.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-deadline-green-lib.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-deadline-green-lib.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-deadline-red-cli.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-deadline-red-cli.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-deadline-red-gate.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-deadline-red-lib.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-deadline-red-lib.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-deadline-red-nextest.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-deadline-red.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-deadline-red.junit.xml",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-fault-green-cli.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-fault-green-cli.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-fault-green-engine.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-fault-green-engine.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-fault-regression-before.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-fault-regression-before.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-fault-regression-corrected.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-fault-regression-corrected.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-long-values.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-long-values.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-printer-guards.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-printer-guards.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-printer-identifiers.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-printer-identifiers.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-regression-cli.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-regression-cli.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-regression-engine.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-regression-engine.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-regression-printer.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-regression-printer.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-run.ps1",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-sampling-engine.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-sampling-engine.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-scope-cli.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-scope-cli.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-scope-engine.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-scope-engine.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-scope-tracer-gate.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-scope-tracer-gate.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-actuals.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-final-green.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-final-green.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-green.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-green.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-mixed-probe.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-red-gate.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-red-nextest.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-red-record.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-red.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-red.junit.xml",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-red.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-seed-count.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-seed-hash.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-seed-load.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-trino-green.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-trino-green.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-trino.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-trino.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-all-containers-after.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-build-barrier-1.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-build-barrier-1.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-build-barrier-2.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-build-barrier-2.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-build-barrier-3.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-build-barrier-3.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-build-barrier-4.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-build-barrier-4.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-build-barrier-before.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-build-limit-reached.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-build-readonly-diagnosis.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-cli-help.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-cli-help.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-cli-lib-paused.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-cli-lib-paused.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-clippy-complete.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-clippy-complete.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-clippy-final.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-clippy-final.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-clippy-fix-check.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-clippy-fix-check.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-clippy-ready.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-clippy-ready.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-clippy.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-clippy.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-containers-after.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-containers-before.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-containers-running.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-coverage-classification.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-deadline-paused.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-deadline-paused.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-diagnostic-after.json.gz",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-diagnostic-artifact-analysis.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-diagnostic-before.json.gz",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-diagnostic-build.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-diagnostic-build.ps1",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-diagnostic-build.stderr.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-diagnostic-build.stdout.jsonl",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-diagnostic-processes.jsonl",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-diagnostic-snapshot-index.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-doc-code-clippy.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-doc-code-clippy.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-doc-code-fmt.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-doc-code-green.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-doc-code-green.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-doc-code-red.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-doc-code-red.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-engine-cardinality-complete.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-engine-cardinality-complete.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-final-cleanup.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-final-provenance.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-final-source-proof.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-fingerprint-readonly.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-fmt-complete.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-fmt-fixed.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-fmt.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-missing-env.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-missing-env.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-assertion-clippy.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-assertion-clippy.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-assertion-fmt.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-assertion-suite.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-assertion-suite.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-assertion-target.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-assertion-target.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-startup-clippy.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-startup-clippy.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-startup-fmt.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-startup-green.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-startup-green.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-startup-red.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-startup-red.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-real-seed-query.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-real-trino-final.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-real-trino-final.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-real-trino.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-real-trino.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-seed-count.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-seed.sha256",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-services-cleanup.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-services-start.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-services.sh",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-tracer-gate.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-tracer-gate.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-trino-alias-red-gate.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-trino-alias-red-nextest.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-trino-alias-red-record.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-trino-alias-red.junit.xml",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-trino-info.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-after-diagnostic-counts.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-after-diagnostic.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-after-diagnostic.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-continuation.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-continuation.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-continued-2.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-continued-2.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-doc-fixed-counts.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-doc-fixed.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-doc-fixed.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-final-verified-counts.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-final-verified.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-final-verified.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-final.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-final.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-monitor-fixed-counts.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-monitor-fixed.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-monitor-fixed.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/tracer-gate-green.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/tracer-green.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/tracer-red-gate.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/tracer-red-nextest.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/tracer-red.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/tracer-red.junit.xml",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/tracer-red.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/verify-pre-naming-after.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/verify-pre-naming-before.json",
+    "Cargo.lock",
+    "Cargo.toml",
+    "ci/ontoforge-server.ci.toml",
+    "ci/pg/seed.sql",
+    "ci/query-services.sh",
+    "crates/ontoforge-engine/Cargo.toml",
+    "crates/ontoforge-engine/src/cardinality_check.rs",
+    "crates/ontoforge-engine/src/config.rs",
+    "crates/ontoforge-engine/src/lib.rs",
+    "crates/ontoforge-engine/src/pk_check.rs",
+    "crates/ontoforge-engine/src/printer/ast.rs",
+    "crates/ontoforge-engine/src/printer/dialect.rs",
+    "crates/ontoforge-engine/src/printer/escape.rs",
+    "crates/ontoforge-engine/src/printer/mod.rs",
+    "crates/ontoforge-engine/src/printer/tests.rs",
+    "crates/ontoforge-engine/src/sqlite/mod.rs",
+    "crates/ontoforge-engine/src/trino/cancel.rs",
+    "crates/ontoforge-engine/src/trino/client.rs",
+    "crates/ontoforge-engine/tests/cardinality_check.rs",
+    "crates/ontoforge-engine/tests/doc_type_table.rs",
+    "crates/ontoforge-engine/tests/l2_monitor.rs",
+    "crates/ontoforge-schema/src/diag.rs",
+    "crates/ontoforge-storage/src/commit.rs",
+    "crates/ontoforge-storage/src/ddl.rs",
+    "crates/ontoforge-storage/src/physical.rs",
+    "crates/ontoforge-storage/tests/conformance/mod.rs",
+    "crates/ontoforge-storage/tests/conformance_pg.rs",
+    "crates/ontoforge-storage/tests/conformance_sqlite.rs",
+    "crates/ontoforge-storage/tests/reload.rs",
+    "crates/ontoforge/Cargo.toml",
+    "crates/ontoforge/src/cli.rs",
+    "crates/ontoforge/src/lib.rs",
+    "crates/ontoforge/src/online.rs",
+    "crates/ontoforge/src/pipeline.rs",
+    "crates/ontoforge/src/render.rs",
+    "crates/ontoforge/tests/cli_check_cardinality.rs",
+    "crates/ontoforge/tests/cli_trino_it.rs",
+    "docs/source-binding.md"
+  ],
+  "file_hashes": [
+    {
+      "file": ".github/workflows/ci.yml",
+      "sha256": "b4a802a680e268303a5cdfa66f51f876f0b8128822ff364616c3fe7c3b7f77e8"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-01-PLAN.md",
+      "sha256": "e9853ff9ed0644ffbcdd1929c5a4174ad753e4eeee79800f30e3c9e8389a6b9d"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-01-SUMMARY.md",
+      "sha256": "2abc938ed7c1e56d765e242a1bf4efcead0496b195e4b650ddc24eeb0fe7738a"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-02-PLAN.md",
+      "sha256": "abef8c635dd3361dde8d58f75fd91d2c9e93f8abff7c959b4f8861029878e64e"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-02-SUMMARY.md",
+      "sha256": "e52b67740de89e8f151ee8ab2a64e21cebbae5e807481ef141e7e0b62834287b"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-03-PLAN.md",
+      "sha256": "498b74e1972132670522c18edc083cc03eebb50c5759ab8ab90af541a5daad22"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-03-SUMMARY.md",
+      "sha256": "51a0130d9b1f3f67237c4802027faf8cacd0e21a4624eb7d0faaf65d260f4e4a"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-ALIAS-DECISION.md",
+      "sha256": "2b8df5bb08dd642a6d0bcbf1054a4d2ebe089c6288ab9f169557942be4a4ce6a"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-CONTEXT.md",
+      "sha256": "aa59b2a2c236aee543604d59b85d35ba863ad7974055e018b0b207b3aeaf0e7a"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-EDGE-ACCEPTANCE.md",
+      "sha256": "8b545151cac936a5f82d5cfc54909ee982316d314baabc383f4e95d4ce533b9c"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-GATES.md",
+      "sha256": "ec25f5ec6210225c7d056d2ed890524675e790a5dbf39b82a8598b594ae3268a"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-INDEPENDENT-OPINION.md",
+      "sha256": "8415f2e3469170830a8d140822308a7ece46bff72d7b34ab864c4ff421d7dd77"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-PARANOID-REVIEW.md",
+      "sha256": "a2020ef1b30b8e0613b98c5f504878fe9d1af1d9c6e3842917c8186c31865b15"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-REVIEW-DISPOSITION.md",
+      "sha256": "85caaf5eac22dcfcd307ba298a56c260db95ddbcbd8a689679c57747e775f0d6"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-REVIEW.md",
+      "sha256": "8594775f353bbdbff7a9d0967d48b8cc64d0dbc10790e05af467b0b56b2e93a7"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-SECURITY.md",
+      "sha256": "3074c7c0e8c7fcf13c2c85d96ad67cb7cac0de3c8ddf98f66e6f595d660ea451"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-UAT.md",
+      "sha256": "e11fe23abce6932329d11ee10cb9428bf62880334c82e501d0143f266619055d"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-VALIDATION.md",
+      "sha256": "150fcb12d03267a262b583d9dcfc7afc302ca812e482a9d5ac66151c092b6eb9"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/alias-independent-opinion.json",
+      "sha256": "a8f1adb868f7f378bcd6354aed17febaf7656e342d5fc7014f0fab6309ee40c4"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/build-budget-independent-opinion.json",
+      "sha256": "65fe919104e20de89ca0630c5f80da571f69ddd2229f27afa7c95a47f0992154"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/build-limit-independent-opinion.json",
+      "sha256": "38cbf33d970677b7acd9272b3d71e082d82c8840c6e5034566b622dc9849965e"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/cli-pk-green.json",
+      "sha256": "adb303e6b6cac705751e8f5343fd0cf9a22f1d6553c566f256df4ae32b1826de"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/cli-pk-green.log",
+      "sha256": "e86c731b87f2dc43f90a1db0eee31070b20d68eb8a205ad8a033db03e5c283f2"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/cli-repeat-green.json",
+      "sha256": "fb2ae8290cd3a84b16d0e9228d4ec265ee1c6eacecf07b4dc8797cfb138c0738"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/cli-repeat-green.log",
+      "sha256": "e9079572172ec27322dfcec464e4eec313737cf7ddfce1cd68d8fb32da7d9bd3"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/coverage-name-independent-opinion.json",
+      "sha256": "84da0556005e540cce443be7c42cb950fdc74518d997e53ed25fce50c0d58f13"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/deadline-test-independent-opinion.json",
+      "sha256": "f225bf636eb33b3bcc00af82d8b6f4fa3bbb5945d99bb0f6e41a29b3b05356b3"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/doc-code-independent-opinion.json",
+      "sha256": "37d76570f38ffec084524a49e4b0e41b7bc0e4c70fc927a0b847f70ec6b716b9"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/edge-rename-proof.json",
+      "sha256": "b4fb559a0f19c6037d66e07388cbc3b25d53a333b347a0c45ac205b98300a33e"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/engine-guards-green.json",
+      "sha256": "c73bc7ea7ac0a490f9798eea304f5a9a69e47ebb5b6e5a56293c1ee52d225d3d"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/engine-guards-green.log",
+      "sha256": "de1f5aa10220ea3a7e98b71d121c776a3289804a92d21337c4cebedd78db3426"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/engine-regression-green.log",
+      "sha256": "0881ed906ea7594e6cf5f40be05f57e1429c615c63119bdb0142576416616d91"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/final-tdd-review.json",
+      "sha256": "2af60eca63efe1863383b5113b51aac335e0b0f5319eeaa09b0b2735386c1f05"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/final-verify-pre.json",
+      "sha256": "02c0d8ca61fded22359a9f26cd66c60acbf10ad19ae5ca6884e404b6daf0e2a2"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/monitor-assertion-independent-opinion.json",
+      "sha256": "2d9518e18056fcd2b528f3016feac354e82e89f7ac0dcba341d82579845b2b67"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/monitor-startup-independent-opinion.json",
+      "sha256": "0292844e7f4ab03a9609b8079dadf1bc3ff87d3e8f4b4b8687ae4a03e91677bf"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/nextest.toml",
+      "sha256": "4bba47f9ffe5365640a810d0cc97ab7db602b4b3695b446687d93c97cdbd67a9"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-cleanup-green-lib.json",
+      "sha256": "5c873da80758e7d11534e4723acf2899dce1f27d5a853e20a159f8fe73c4f70e"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-cleanup-green-lib.log",
+      "sha256": "d5fa63551af079510b098ed8b6deeef93d7331082074ca2ef78ae58c77d9c069"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-deadline-green-cli.json",
+      "sha256": "e56efd724bf5361237580d3b63516e807b27fe786f5c0bbb470518d3179d03c8"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-deadline-green-cli.log",
+      "sha256": "5018ef977f742f46ea0fe6a044dba32f084da04a944cb1ec5e215012a6e655fa"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-deadline-green-lib.json",
+      "sha256": "82ba229341157a52b6b2b184895579d12073cb5e600b66d1615688381bbc3d1b"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-deadline-green-lib.log",
+      "sha256": "eb69dfc0fa2d2b2541670bfea295c5fad24da235be5da0b0eaa0e697bde73415"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-deadline-red-cli.json",
+      "sha256": "facd8ebf020993404200eed5bb20f8612c821e8a7bcf44f395f79cf86bd3e592"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-deadline-red-cli.log",
+      "sha256": "18a1385faea70eb62ac1a4aa88578c85ff2a93a139d2286bd0b4a262f964f4f8"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-deadline-red-gate.log",
+      "sha256": "cc48bfbbf1bcee10604535441ebe4f4691ac83589c4f22148e5ec9b3097bfda0"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-deadline-red-lib.json",
+      "sha256": "77ff9b8c5b7196e49f0c3caf93ec89aef910d223721cf0c2b24a9c6edadb8aa6"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-deadline-red-lib.log",
+      "sha256": "b25042d43440afeb0322994d0f3f4928f1e499564bd131bb9c07cbeb22f6207d"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-deadline-red-nextest.log",
+      "sha256": "8438fad71d3c548c118aaefc1ff36e8e01fdf1d504d27074ce3bbef857b8914b"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-deadline-red.json",
+      "sha256": "e7059de6288be803ff71efbfa008325ccac2fe555d6627254c7064ca053e9e0a"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-deadline-red.junit.xml",
+      "sha256": "ac4bdf2ffe3054bce5644c477bbee4ab7676a737e0fed29e3523e1317222056f"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-fault-green-cli.json",
+      "sha256": "16038a276bd2f21deabf6cdc9169ce75f4d8ccefcde2f72af3f05ddfb18e52c4"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-fault-green-cli.log",
+      "sha256": "cfa132b153777a4a0450f66563dd501a42b8fdac5c4ba4c434e45eae4eb865be"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-fault-green-engine.json",
+      "sha256": "aff1aad203b5a8dc62e69a53b88456d37c3a165cc73318462e0cd4f66e3fa645"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-fault-green-engine.log",
+      "sha256": "0a39c0d0e62fc9295da51e6c53b9c6027dcfb170bc7bbbab2ea32c3989c062a0"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-fault-regression-before.json",
+      "sha256": "41e4f317809420e8fe542e7cf8b98df09d9c85b583a3d9892fc01e0db54ad730"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-fault-regression-before.log",
+      "sha256": "058957c9ffd3fea08a31dc5e45be8416116a8646a0c06fa79ac4d3d2252d1c80"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-fault-regression-corrected.json",
+      "sha256": "d8c99c075840d1ffacce2e5b1b6ec10337073c9951c6fa69ff49e233cf464568"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-fault-regression-corrected.log",
+      "sha256": "24131c1c175de8b10ec569f384fd193cc76fd203c76a893ffa7c4f571390ee05"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-long-values.json",
+      "sha256": "51eb9269e22603da9219bf4a9099a0b6e3f44f0ce6dfde3cf7c053145af68502"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-long-values.log",
+      "sha256": "8af72b66917c70210bd01b4accb15bb2d465c483f9d54ab5ae5c4c60dd3b608b"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-printer-guards.json",
+      "sha256": "9426b537bd33d92e166d7206943d0177db4ef2d4ef522841719f1db7b803c104"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-printer-guards.log",
+      "sha256": "4c22f5479965f43aa3d8828d7120618add76459c12b262a0ed84c638c977e1d3"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-printer-identifiers.json",
+      "sha256": "ada1ec011f343d974cd5764f34d76b1dff7aaa3f959db622bb345003728718d1"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-printer-identifiers.log",
+      "sha256": "0908a2e79db8df87bcba49e05bdcef1d7d63288109373da6a0a50e10d01e3845"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-regression-cli.json",
+      "sha256": "bbff67625845962528599b626e1081806ca50728d77900999207434d051dd0c5"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-regression-cli.log",
+      "sha256": "cf67fbba26d26c4e007b3df35aa1d8b4e7c11dee8822da3af4fa74a416d193b3"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-regression-engine.json",
+      "sha256": "0d9737e6bea9a955c6d35558d1409e7baa0350e573b99e62f3280ae20d351b0b"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-regression-engine.log",
+      "sha256": "0665c5544911b9d2a5da5fea33e38ae78a33782da6e06b8b64f597cef85b4d1c"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-regression-printer.json",
+      "sha256": "3e45ba5e00a76629017cc5e62dd9236e7adc5fa41a5f14448ff9ca8383203483"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-regression-printer.log",
+      "sha256": "ee65db0eace07c9915e386df094e2deda3f5c0564d7c9578abc1ccce013cdd69"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-run.ps1",
+      "sha256": "586f026c886c65b2edb337de30b2d56610f158e4da9792a41b56b8e5c06bb0d8"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-sampling-engine.json",
+      "sha256": "93912280cacec42aa9644ae0a90ba996afa68d38e03d9ed6bbd6479baf532f82"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-sampling-engine.log",
+      "sha256": "7f1d8d0cdd22630e9e49a4892b5fc6b34c8376c4ef3d10671d6d400a9e053013"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-scope-cli.json",
+      "sha256": "788c15f9c4e2e8ae60c8095f703fad19d3b4824dc529c00fc8c1c20bd2215222"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-scope-cli.log",
+      "sha256": "8e62b0bc22c8313df5d5bfec6b3bdd6eec35052a8cebf4e25ad3af5893d8c418"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-scope-engine.json",
+      "sha256": "c1c424dcbc8e29971f5ee739cf5c6a1f957d21f451331cc23212acd671b91e7f"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-scope-engine.log",
+      "sha256": "3b6acfc5b0a62c28386ee6d18c35ccbd02c1ef574589da5a455f913c887bb7b9"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-scope-tracer-gate.json",
+      "sha256": "fa14d5ca6afb7e91c9f0200c57515adee96ebbeda338e85d03f9ef44645328e0"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan02-scope-tracer-gate.log",
+      "sha256": "897f03833aa64b231bda8e66b898abcab791d999a7de0a4d467ef47c4b59360d"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-actuals.json",
+      "sha256": "568f9b8795e3eb0719b135af703b1db835b9e483e3bca242181e7920453a002b"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-final-green.json",
+      "sha256": "9ebcb24b5eb370e69ffa6cfd609bb5ee0d25fc56a89ede73d91b399aa30251bd"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-final-green.log",
+      "sha256": "55e103d3de096e6dab48e3775b807e9226c1cdde438725f534db4becaca3e571"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-green.json",
+      "sha256": "03883b3ce4c788e03411fb7b9296996ccd219b7b65501acf53a4176e7ab37821"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-green.log",
+      "sha256": "ceb36e5c6c742c06079f9b23708b40758f9ba13fb4500c7c0bd97d77744196eb"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-mixed-probe.log",
+      "sha256": "92d94350988992179d8775fa457d3c2311a7731aca32fa527d28b79f6d4826f9"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-red-gate.log",
+      "sha256": "d19b8dc499ee16767a16b578f299a1ae628497e07157d9acec5c340f77d59039"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-red-nextest.log",
+      "sha256": "3c959fcdf9555517d737a7ed3f5dd324338c0988dec214e4abbb1439bda23648"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-red-record.json",
+      "sha256": "9e7821b0c459487c72e539b8325f90beeb9614ca4e1b0fa3f825d59217ec905b"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-red.json",
+      "sha256": "4f41bbdf3109a145031288e5e5bdac1acd6c4fddd3da1fa1b559340729618ccd"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-red.junit.xml",
+      "sha256": "f551940144f343ca56b6914b7dcadf41fe50542d687f5e76b350e54d124536f6"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-red.log",
+      "sha256": "7afa04ec5c25e0b407e128a225781796160b6f6d41657e1a71f0b837311deb3d"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-seed-count.log",
+      "sha256": "45e26aeb4a0e45265193e9293e88a93d9b3c89af4e401cb1812161c4568d0b51"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-seed-hash.json",
+      "sha256": "f500dc6ad8ce5427b0dabdc02f26ac84a466c30aac948bf4e96df0dc65ce71ea"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-seed-load.log",
+      "sha256": "3f35dddc7d5f657622dcd0f7e40423d0f593a7d4216fe288f92f82ea3c5592a9"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-trino-green.json",
+      "sha256": "17b806745dbe352a563c08b971d9a9589e2a1c90c959348ddc0086f858dff6e3"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-trino-green.log",
+      "sha256": "01b88468c1fdcf0de0e4dea810f73cbf7c62a682fb0d6a8558f07fd40dbe811b"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-trino.json",
+      "sha256": "40ffd9344248ec4f249ad70aca896cda5c21e789c52615de204a1abbde4a1029"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-alias-trino.log",
+      "sha256": "0076bd24a217b4bbb1c72fde7b6dd2f2ee51df40f87fda6443942e819cb85f1c"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-all-containers-after.log",
+      "sha256": "853d35a5101ad0b2884bf1d3563fdb55cb671beb188c27df1fc0552c21a83273"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-build-barrier-1.json",
+      "sha256": "c0ff558cfb84093ecdbc8d14bb29ec532635b85f9d7f5c8527c04097c90c4660"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-build-barrier-1.log",
+      "sha256": "36b4bf790c40d4900b3fc8fad2a87a756a2afdd973bde9575eaa8e8db7414fec"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-build-barrier-2.json",
+      "sha256": "077490f4f1aa904cd57e7a31aabf949de1184a5c9a2913d5bcfc47bf4185f359"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-build-barrier-2.log",
+      "sha256": "91595bf2ba861d7c1b4c5e696e7bbe8fb67f1760c0b73cb269751108bae3edc0"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-build-barrier-3.json",
+      "sha256": "a00371e4095d34c178a892c6bf020d546bf2a7dd42f16f5575f53f1489e5039a"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-build-barrier-3.log",
+      "sha256": "d2c88ffaf139ee196e97b1255e7639c12799e5b94d162c462e140d8440bc27ec"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-build-barrier-4.json",
+      "sha256": "1227626ffa7ab9abdb7619e637355b79ef196040e52ed6e6176cdc48413fef94"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-build-barrier-4.log",
+      "sha256": "010ee408914fed69f9bba25ba5f13d738b275f8e93fa6bceea079ea9529bc7d4"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-build-barrier-before.json",
+      "sha256": "a0908ce88c0f71e6bf14db4d86f2b50a15f9e60d8374d8f28cb140f0d86dcbe5"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-build-limit-reached.json",
+      "sha256": "9d2eced9f21d2d16a1593d3faf25c6a2679fdfaa58c28f0c38f3630a618b2d72"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-build-readonly-diagnosis.json",
+      "sha256": "22f46d575cb1e22737731cb10ef0746fb37d7ed824917c245c1e6bca4afd2951"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-cli-help.json",
+      "sha256": "5c8d674a84c1b1033631b0e58c34a5915375383fa7a7a33160f5eaa8dab28313"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-cli-help.log",
+      "sha256": "404b65a75bb21fca6bd2628375330fb9f96ea18bca48afc58ce4e39090e346f0"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-cli-lib-paused.json",
+      "sha256": "70a02e3af78fae129ec2a0e28109c4f94b2951e074edd5ae89d73c0da0dc9953"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-cli-lib-paused.log",
+      "sha256": "48503e6eec4bf66ae3a15ceb3fdbe5d5abd7c84e68e58ba621dc4ce1151781fb"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-clippy-complete.json",
+      "sha256": "aea518bbd57868087e9a0277020b8bf3d544627c95291991c295733e2a547592"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-clippy-complete.log",
+      "sha256": "2db14cc907da687f4a6be196f56937bfa53b69fbcac347c85602981987581ccb"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-clippy-final.json",
+      "sha256": "ed989b48631ff892f7f7d2b80bd2398b67b9d5806bfb24a1c7433b525128d547"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-clippy-final.log",
+      "sha256": "bf466672ffca6fb7538552761e567f3b73a4cb7611ca44a56894e7c474c02db4"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-clippy-fix-check.json",
+      "sha256": "be0f0575d522edd76c7eb0c4e64793c3c71a878b4f082590c9ac95532cdbce0b"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-clippy-fix-check.log",
+      "sha256": "cd10f1a6f9263f289fd942ae75f7705772b7da76927928c1428ac132b01f7e17"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-clippy-ready.json",
+      "sha256": "7dbf13c8d73ecef4ffaf525e2d2e34c8788e558a6d63ac4cc4fdf91b4b060b3c"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-clippy-ready.log",
+      "sha256": "d7fb580e1540ffb7956277fb25cfcbd5a387b8ff6dd09f083a4d98c6e2a4c624"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-clippy.json",
+      "sha256": "3906b34a2c19f42b575b97bdcc1aae645b8979003cef1dc80e0d231f8ab16d86"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-clippy.log",
+      "sha256": "56bdbdd42181528aad395d21404419b2d6990a2fcd81e713d09c5a22cc57aef1"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-containers-after.log",
+      "sha256": "b3a2e04d944b064529e9c6ba9829a220740580334e9907dbecfc162405bb3a18"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-containers-before.log",
+      "sha256": "9211f811a02d144552c49a8c0e00f2e3bc65420ce3ee3d602c4c8d4449de2128"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-containers-running.log",
+      "sha256": "848580ab90ab6fbc5b7b3c70a710e7352a689534c3eecead4f5a7beae4976d3a"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-coverage-classification.json",
+      "sha256": "73d9238fd805f3b5da4f38e917ee4227a189175eeebb673c0013d3ecb899cc71"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-deadline-paused.json",
+      "sha256": "252777dc36f3040c1933616bb658eeeffa730fd702f8c4d3f1a11e7dab9cf2fb"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-deadline-paused.log",
+      "sha256": "73d67bc392490205fd410b2b0b02ceecef947ee0e9f348a5e08289f84e812a35"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-diagnostic-after.json.gz",
+      "sha256": "1cbdae21107570c2f5658f14c1dd1a866eb9ca6c7b78e941b6f979771e05edba"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-diagnostic-artifact-analysis.json",
+      "sha256": "ba93755eee8f24685a491b7e112449ea526685dcc71aa2023132b20705a1e8ab"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-diagnostic-before.json.gz",
+      "sha256": "06fba29f57dc6425fca3666724684bac43a1568e13768f72b4362e6228f694eb"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-diagnostic-build.json",
+      "sha256": "dc8d03e78934f97975fabb419a5db15e00349189011ff32b6ba6f1d811e18c46"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-diagnostic-build.ps1",
+      "sha256": "73b933434c22919dc0665f8c4792109e1e719cddb2091ee442bdde804e096699"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-diagnostic-build.stderr.log",
+      "sha256": "477c751367310defa88ae95a80b10bb02acba6283ee8055c134a672153278a05"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-diagnostic-build.stdout.jsonl",
+      "sha256": "0f482fd90cb6501421f18fd3320361a5bfba6b408995f826f24160ce9e0feec1"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-diagnostic-processes.jsonl",
+      "sha256": "60861ac14374ae798169e27e4b040297d01b51f95de7edadd1967c118ba7f5af"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-diagnostic-snapshot-index.json",
+      "sha256": "c44028f2b5c67540b4d05621efe1d6951eb6b8e871db9ca225410090402c7000"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-doc-code-clippy.json",
+      "sha256": "29143fcfc26ef05cc3d564911fc1a6ba5dd4d813d23fd5d65016b99b57ec118d"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-doc-code-clippy.log",
+      "sha256": "83433a46838ecff77d4e92c0dab46f5fde400b0997cd5d469946624ba9eb2af1"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-doc-code-fmt.json",
+      "sha256": "e592670f8e168d773a5f709efa4979334e02057320bcf258b1d51452ffcd1aca"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-doc-code-green.json",
+      "sha256": "3681f35f4e96d81e212ee356208856c5377d99fb4edc2ac7d159dab86a816544"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-doc-code-green.log",
+      "sha256": "f217a664f09c0bcfd3b4cc707c5421b93e198c9b890945587f2517250cb809b4"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-doc-code-red.json",
+      "sha256": "8cc75b186cdfe9f5a22c1813f5bf8d27b24e4dee8289c84755a97713febc0d24"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-doc-code-red.log",
+      "sha256": "19568d6590a9635e6e5bea7a678dd6c420e4e1f9c24a018f90d646aaf64c6133"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-engine-cardinality-complete.json",
+      "sha256": "f593debf78370f39c5712d003bf26bdb13ee010f580139b9c47dba32295089a6"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-engine-cardinality-complete.log",
+      "sha256": "ccf18d67a152d509cad696ca5970797d14c042b051ede73009440f4068f6ed24"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-final-cleanup.json",
+      "sha256": "d77d63e377513993626eabc9be87332f776706628c33dce6e81936ce11f216e1"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-final-provenance.json",
+      "sha256": "a148441539ab6db3da506ae16e3574e227b3ec32d913ea9e70e783a3535dca60"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-final-source-proof.json",
+      "sha256": "97311788fe31088c546172c22251fe897edac787ee12cf93ccc0bb7b7e7b52ce"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-fingerprint-readonly.json",
+      "sha256": "9f9dc0ff3f5c3fe362719b038fc3da4bf6ba00a1d061e27e19b33a20b51e0b68"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-fmt-complete.json",
+      "sha256": "a608d372ad29b14965cff0aa2732c9569dd4ef00fb6d92b05b15e9f879926d38"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-fmt-fixed.json",
+      "sha256": "a2e686bbbe61b3de678ef30f049d2e2e0234570e75ad426407058aa710767447"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-fmt.json",
+      "sha256": "6057cfbefe67bea5be2e500f8469eb50e87fba6c956305af50ac79503b5ccbd4"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-missing-env.json",
+      "sha256": "9cff2a571674429a1b1b940eaa8ac11313f45190fa8fda3146ecfc3d302ae760"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-missing-env.log",
+      "sha256": "4b4b3900e8d4926e52c58c20a52e2854c73d5995937aa71508a76186adbeea59"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-assertion-clippy.json",
+      "sha256": "7854c5010cdae6cb877ea645bc9ba38b6805877f6da5f49b6ee6d8c1ae0a5af2"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-assertion-clippy.log",
+      "sha256": "adac237f5343ec7933884f1e2b3f59bca59e080f425bc999d14f3c3aef38677a"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-assertion-fmt.json",
+      "sha256": "3d638ee514f27aa9ee5e31f9bbc9369d87fe9b88ee85405a2b8d1fc6d9d5b110"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-assertion-suite.json",
+      "sha256": "361a6d5fef186170d38cb10d2c1eca90bdda8a9121caadb0e4a1267ad8c4000e"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-assertion-suite.log",
+      "sha256": "e34ed3046e5c191c3535b482bb84e856d52ca8b482557302911d9597a6aa1a1b"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-assertion-target.json",
+      "sha256": "9be7a8aa93b7c6081c00afbc2c766f24f328f23ddbcaa6f984f72965c4db46c4"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-assertion-target.log",
+      "sha256": "5a5da13c159d118ff3dc98b1b74dfd06bd3cac64849dc7a48139b08ce3d3bfa0"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-startup-clippy.json",
+      "sha256": "56344c9c3b5c99c122408da18756e7235e2a2640e4fcb1928e1cb9afd83d9223"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-startup-clippy.log",
+      "sha256": "13ff0689bf0befb6a4fa0ae07cda1167ae56fa3b9a8f5dc39a9332dd2d4bfe0b"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-startup-fmt.json",
+      "sha256": "2668888e9fbedd2a3af5ea48706c487b60a9359f3f0ab5038529e880e2f9ae1c"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-startup-green.json",
+      "sha256": "27c430324c4e46e47161f98ba7050a0cd996a5a96fdae178884848246068c5fb"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-startup-green.log",
+      "sha256": "6438e07cf5294e5084dc2defc7d02f2d3f13aa688f9d7238b666da79dac9371e"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-startup-red.json",
+      "sha256": "ca0fc20e7256b7cb283b0c37c0589c70030bb64e6906268f2fc2198ed09e416a"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-monitor-startup-red.log",
+      "sha256": "1db85efe5d3b21deb28dee0c19e9b1cbc852ff51bb06ec43163012e26cd0234d"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-real-seed-query.log",
+      "sha256": "b337507e8e8382ab30a935ecc3e8c1ddd5e24cc7692871a231601992800f2ae2"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-real-trino-final.json",
+      "sha256": "6038af5ae8874faacc06122047f1a32114388bbe07d57e2b37c5b6a495458df5"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-real-trino-final.log",
+      "sha256": "357bbc5a56ab82eb4e519f9f81d1b51d1c2edb2aadbb74694a38031586ef1b3b"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-real-trino.json",
+      "sha256": "b07739e0760a57c152062718c207bcb8678cacd567f7786ea98b0e8f64e18291"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-real-trino.log",
+      "sha256": "8a3b4cecfb00fcb8fddc9273454d268234331f9c356b927fdc3eb0dcdfc793b4"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-seed-count.log",
+      "sha256": "9a92adbc0cee38ef658c71ce1b1bf8c65668f166bfb213644c895ccb1ad07a25"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-seed.sha256",
+      "sha256": "0868dd8fd420dacea43cf9f5c52ab8d0464a4b57ae11c1d21bc7177aa289b9b0"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-services-cleanup.log",
+      "sha256": "e18450789613f0470bcd9663b5d18d4f1a9ba4a186432dc6bbcb9de01a1cda82"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-services-start.log",
+      "sha256": "a68ab9d9a412c15917bbba51b39e81fa8ad4836c1bc14b317df5668b9b1b1a2f"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-services.sh",
+      "sha256": "45ceb3678c8dbd45fcdaa7f09d9f99771f89c08ea0a1f275965347a39eeec517"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-tracer-gate.json",
+      "sha256": "cdb0e97559866568772dbb0669964d27448d51f9b9e6aa8bb50be756d4b9e757"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-tracer-gate.log",
+      "sha256": "83e8a42330d96194857725ae4b7b761813906c9d1303960e66146449b36847c2"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-trino-alias-red-gate.log",
+      "sha256": "ebe09ecb06fc0c537a1115ca5e5ba789a017145f3ae92aa56df588e261d72f3f"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-trino-alias-red-nextest.log",
+      "sha256": "090d6e1c56d0d032a0bfcf3c01dc0862391f0ca844071f13b28042266c495604"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-trino-alias-red-record.json",
+      "sha256": "2adc63fa819ac09fae7d38f5f4c5c6fce7415f9499540fb0c95207103c7f08af"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-trino-alias-red.junit.xml",
+      "sha256": "381919c9e711540643e19b2ada4fbdb71f9ea7d3dfffc92f4ce51adf4286d4d1"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-trino-info.json",
+      "sha256": "dc9aa9e6aead47da5efb56f553a2e4e3122c0290ddf21766f75362358416ae24"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-after-diagnostic-counts.json",
+      "sha256": "d127942be7067e03fded8f5f7f470ff7c9b32dbb997fb9762cbaaf0d70f7039a"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-after-diagnostic.json",
+      "sha256": "f049e4a8cd4242d6ff3f6f31811686eab352a08bc190a38ee1a4d1667bad0088"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-after-diagnostic.log",
+      "sha256": "3f54cc679654295cbb73438fa47dd1fd0d2b51b8872cb7ff409594ee315b1800"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-continuation.json",
+      "sha256": "2fa73e96144ae5a4b55ba2215ddc2c96e8a8205f84b8a3ca64c581980cbfc1cb"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-continuation.log",
+      "sha256": "4b9964cc548f5b61b5ebf404654b6187dcd825b6adf0d80d8de12d27fb78e446"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-continued-2.json",
+      "sha256": "a7ee97289b5ef774240c2ec0c24cea1efb7f2dda66252f25a49fca6043ee56f5"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-continued-2.log",
+      "sha256": "5f60017d6322266f8bb0bd69757a7c4b0f028af899d173a9836e19d0dc617584"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-doc-fixed-counts.json",
+      "sha256": "fa42c33668f0266fbadb7232f3a6de2361f2077796e1856f1888f789a1639f2b"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-doc-fixed.json",
+      "sha256": "315e28cff4e29bbd3796403c2273d276f1725b435c81ba443b778af8e36517ac"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-doc-fixed.log",
+      "sha256": "37959ac465c227e3df40edcc56e1dff040afd315f17f4921e0ad3c331b420d87"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-final-verified-counts.json",
+      "sha256": "b126d95afa00232d431b89efd43be63650983a20d32b7e9b915e73e674e0aa6b"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-final-verified.json",
+      "sha256": "d92468237e6876eddbe26b9189e5af3bcd3b9d5a427c4c15acede06db1ee3368"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-final-verified.log",
+      "sha256": "1bde30e9e2b4695ce26d48db0cf9ef8ee08ae7c1112eae2fcee45d8e76bbc20f"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-final.json",
+      "sha256": "8569cf1e745d060226c0aa6871f7309a8e57c6699abaf167d63b62ea6b5bb18c"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-final.log",
+      "sha256": "b4d1d6bc6f30172b348f72f2809804df0e0894c0adab9a8d3918a7b139e49cee"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-monitor-fixed-counts.json",
+      "sha256": "567b89c49250fabb8ffa1690819250b4cc58dae71b6c8aacb638e5d63b814e64"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-monitor-fixed.json",
+      "sha256": "db042432bcc96edd693db90876d2961f78e197cb7eb26e5e2b5321e3d424dd56"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace-monitor-fixed.log",
+      "sha256": "7a3e599c09f9de6e8b6f26fc71b1c9a9c703f1bfe60cc8507d5084fd218d2726"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace.json",
+      "sha256": "1f75603b0fd44440e19ed48104f436bccde6340aae91b41ff95b0c98f39c8d33"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-workspace.log",
+      "sha256": "87121be3b45df1932b850bad7cb129ceda5286c3ec9984517054dbb1eb0c16c0"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/tracer-gate-green.log",
+      "sha256": "98c353ea3ef3010bf8c51ad959bbedd3fcaa160355a2c6790f1907ff99c10079"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/tracer-green.log",
+      "sha256": "4abea03cb77db6f7712fbe7b1be839248d0960bca2cbaaaafbb9ed0f5b7e462a"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/tracer-red-gate.log",
+      "sha256": "64098396b4d4f8bbd9b7928412e02c400add8267ae5cd0770f7305050ef99455"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/tracer-red-nextest.log",
+      "sha256": "560bdb465546ca2dcaa4979334d862650ddf400598d7af8cf41aadd3a27ea8b1"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/tracer-red.json",
+      "sha256": "10aeb4aca5fecf122b7ed24f57d93855b9f96e596db9d4dfc1fc36545d941621"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/tracer-red.junit.xml",
+      "sha256": "254a60c9dd84dac48363d62e3688aa269f4626ecedb9790c4af86c23bdefd578"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/tracer-red.log",
+      "sha256": "b9ecaad2a202fd922b8e2431ebed5e9047d96387548cc53c800c51cd40b0acda"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/verify-pre-naming-after.json",
+      "sha256": "02c0d8ca61fded22359a9f26cd66c60acbf10ad19ae5ca6884e404b6daf0e2a2"
+    },
+    {
+      "file": ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/verify-pre-naming-before.json",
+      "sha256": "2bcf40b4623236b9c9c702a1f3d110c15c4a4ff603701a9f034d2294f4c0ebab"
+    },
+    {
+      "file": "Cargo.lock",
+      "sha256": "7ccd6827bf948238d62ceb492bea930e30ae7d289a1dd3fc04f94d08afafb2ee"
+    },
+    {
+      "file": "Cargo.toml",
+      "sha256": "6ff37b0773c9cbf86f8738a11f008d32b41ac8e6153c5da37dafea0da33d4dd5"
+    },
+    {
+      "file": "ci/ontoforge-server.ci.toml",
+      "sha256": "f1e196d8465787ea486c95acad9eaef9ee1ad2f10eb3c293c8fa7edac7901b56"
+    },
+    {
+      "file": "ci/pg/seed.sql",
+      "sha256": "3968ced5df5fff86621e113b60c55328c08a65be682aef35cddb73b6e49b69d7"
+    },
+    {
+      "file": "ci/query-services.sh",
+      "sha256": "787584901268126405fa46ae5e77f34bc59a618d2297d9196ee0505b35682881"
+    },
+    {
+      "file": "crates/ontoforge-engine/Cargo.toml",
+      "sha256": "b5fbf0daa61f254d24cfabdd1faf56cfbc4f30523ec22b71129c479282f9048b"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/cardinality_check.rs",
+      "sha256": "7e0890bee8c7e5389fd1dcb9b25faa114e22d7ef08c4250be4ecfedff38f3cfc"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/config.rs",
+      "sha256": "d0b7f00d1b33f0fb8300fe1c971af72b3094688914dbb6f66f2e47be9b455543"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/lib.rs",
+      "sha256": "6a084e250a33b629bcbc77c170e84fb21fdf3d040ee8ac1e239ff368eb654e69"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/pk_check.rs",
+      "sha256": "e588aed6b06eef356e01c62edbeae6da9b87a16b5070862f1cceb87e6a0d9e70"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/printer/ast.rs",
+      "sha256": "3ded752ff5e80dfbba0d9f70b9c3857c1ef2fc007d3d144169f6d78eda4f9790"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/printer/dialect.rs",
+      "sha256": "255b8bebda8d3f25aa8b2d3d6acff0b2d8f755891b35bef2812cb91d973b6004"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/printer/escape.rs",
+      "sha256": "fb003ca9d935de91830884be370a7561e91e20fa92569c2b61195adfa08a4951"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/printer/mod.rs",
+      "sha256": "2892c9a56ea812dd6517dea673cfe170d384a111342a22b0bdbc3ad4a7abaeae"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/printer/tests.rs",
+      "sha256": "88e5ddb09010b79afec6d9b8de27635c614f7e07f355bb1daffc3dd0f1fd6503"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/sqlite/mod.rs",
+      "sha256": "980aa31838201273e49c930b193209da4249d522bc1e51c5d9e31c9d445626b7"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/trino/cancel.rs",
+      "sha256": "2cf5bdf35abcfe7cdfddb34964fd719da396a2963b62768fa4d2a26775d19502"
+    },
+    {
+      "file": "crates/ontoforge-engine/src/trino/client.rs",
+      "sha256": "812863114a1417c315bb2ab0b06f9b29816c8dff29bd95261e4bb5ea14834a68"
+    },
+    {
+      "file": "crates/ontoforge-engine/tests/cardinality_check.rs",
+      "sha256": "fd46a54cfc79edec835288eb063151a37b239f496b12ccedbbd6cae1070d7dbe"
+    },
+    {
+      "file": "crates/ontoforge-engine/tests/doc_type_table.rs",
+      "sha256": "3631f35ed1ac11ffeccd9ebfc2eef8e27a6aa05a32809b70ab65dd2809645a74"
+    },
+    {
+      "file": "crates/ontoforge-engine/tests/l2_monitor.rs",
+      "sha256": "ede882dd1bc2e6d74c71ed278042aa6b082480c7381dcc34f4cc0334dccb6492"
+    },
+    {
+      "file": "crates/ontoforge-schema/src/diag.rs",
+      "sha256": "fad8d8b85fd305c25218b088281f92377a77a6031e1d9ce352b1f137a638f535"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/commit.rs",
+      "sha256": "b05f6c053ebe1dd00a84f1c58ee69914428d5876ca9e545ce4715888a3335b25"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/ddl.rs",
+      "sha256": "f71c6925850c5d55f34159955902040881c5ed10990c3dd6e0a01c4750dff426"
+    },
+    {
+      "file": "crates/ontoforge-storage/src/physical.rs",
+      "sha256": "7b747c09258a4b550e9a39e8ce3676d2ceccf517176f9f5e09d0e092d243dae3"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/conformance/mod.rs",
+      "sha256": "6dcdb878951be272e31b963a7cc26c1a8bbadda727d1c135292317e89658fd0a"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/conformance_pg.rs",
+      "sha256": "7fa92f91d722f8e7c48b19701e72df76baec424e20bd50e306bc91e27d70bc59"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/conformance_sqlite.rs",
+      "sha256": "9ab684a9809264e1113947ad518ee082d8aa0aa3ab516cae78f80648bed32485"
+    },
+    {
+      "file": "crates/ontoforge-storage/tests/reload.rs",
+      "sha256": "3faac193d50b231b2e4e26e04f0f1415fad8fe4d7a23a9e8e76dc1b48c0626fb"
+    },
+    {
+      "file": "crates/ontoforge/Cargo.toml",
+      "sha256": "ac9d76c889e8bc1a454d9c486a5de0906908a139c258e4be09314e2beeea08a8"
+    },
+    {
+      "file": "crates/ontoforge/src/cli.rs",
+      "sha256": "3d046c054134c1e7e2fdc27714e045d127ba76f283e3f462080c2f27478e3fdd"
+    },
+    {
+      "file": "crates/ontoforge/src/lib.rs",
+      "sha256": "7740d3899fcde34ca1e638063badda1eda81dae6af436bda3859c07e6f9b120f"
+    },
+    {
+      "file": "crates/ontoforge/src/online.rs",
+      "sha256": "a93df1dfd4f0f6fec9a65039dfb543d35325bc9718d265d9caaf3c2595700c70"
+    },
+    {
+      "file": "crates/ontoforge/src/pipeline.rs",
+      "sha256": "0c1fbd95f77c0d7dec14ffeec821688b83ffe3b1b3724982d39133ba9f6eb453"
+    },
+    {
+      "file": "crates/ontoforge/src/render.rs",
+      "sha256": "40234cca316f436b579ea568975bc350f65104ced8144c0a4be742421765ac18"
+    },
+    {
+      "file": "crates/ontoforge/tests/cli_check_cardinality.rs",
+      "sha256": "9b4d2f8c66d6002bb466b02ae92d7168e3a5228e9d13bec14bd01d64c79e474a"
+    },
+    {
+      "file": "crates/ontoforge/tests/cli_trino_it.rs",
+      "sha256": "cca2c9cbadb78b4634bf0cbff58ac4f87e0fa4808a4ed5089bdb9530cfdc8af0"
+    },
+    {
+      "file": "docs/source-binding.md",
+      "sha256": "7042e08fde40db161e12a5e14195ddea887e4da3fb3999d98837f7024afb1c41"
+    }
+  ],
+  "native_status": {
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:/Users/easyi/.codex/gsd-core/bin/gsd-tools.cjs",
+      "query",
+      "verification.status",
+      ".planning/phases/07.1-source-cardinality-gap-closure"
+    ],
+    "exit_code": 0,
+    "stdout": "{\n  \"status\": \"stale\",\n  \"next_action\": \"Verification is stale — covered source files changed after the verifier last ran: \\\"crates/ontoforge/tests/cli_trino_it.rs\\\". Re-run execute-phase for this phase: it resumes at the verification gates and re-runs the verifier, regenerating VERIFICATION.md and its digest. verify-work alone cannot refresh a stale report.\",\n  \"next_command\": \"$gsd-execute-phase 07.1\",\n  \"route\": \"execute-phase\",\n  \"moved_files\": [\n    \"crates/ontoforge/tests/cli_trino_it.rs\"\n  ]\n}",
+    "stderr": ""
+  },
+  "git_status": {
+    "command": [
+      "git",
+      "status",
+      "--short"
+    ],
+    "exit_code": 0,
+    "stdout": " D .planning/HANDOFF.json\n M .planning/PROJECT.md\n M .planning/ROADMAP.md\n M .planning/STATE.md\n D .planning/milestones/v1.0-audit/.continue-here.md\n M .planning/milestones/v1.0-audit/INTEGRATION.md\n M .planning/milestones/v1.0-audit/REQUIREMENTS-AUDIT.md\n M .planning/milestones/v1.0-audit/findings.md\n M .planning/milestones/v1.0-audit/progress.md\n M .planning/milestones/v1.0-audit/requirements-matrix.json\n M .planning/milestones/v1.0-audit/task_plan.md\n M .planning/phases/07-rest-mcp-shell/07-VERIFICATION.md\n M .planning/v1.0-MILESTONE-AUDIT.md\n?? .planning/milestones/v1.0-audit/FINAL-REVERIFY.md\n?? .planning/milestones/v1.0-audit/FINAL-REVIEW.md\n?? .planning/milestones/v1.0-audit/SUMMARY.md\n?? .planning/milestones/v1.0-audit/VERIFICATION.md\n?? .planning/milestones/v1.0-audit/evidence/2026-11-05/\n?? .planning/phases/02-source-binding-engine/.review-diagnostics/\n?? .planning/phases/07-rest-mcp-shell/07-05-workspace-regression.log\n?? docs/README.md\n?? docs/foundry/\n?? docs/images/\n",
+    "stderr": ""
+  },
+  "snapshot_sha256": "824303b284cf21feddfc38b7e31bd06f1153ceb2ef8dbc22b2eba1d2d557fa23"
+}

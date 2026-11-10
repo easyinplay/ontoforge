@@ -1,0 +1,182 @@
+[
+  {
+    "plan": ".planning/phases/01-workspace-schema-lint/01-01-PLAN.md",
+    "acceptance": [
+      "\n    - `.planning/adr/0012-definition-document-shape.md` 存在且含 `status: accepted`，Decision 节写明 Task 1 选定的选项 id\n    - `Cargo.toml` 含 `resolver = \"3\"`、`edition = \"2024\"`、`rust-version = \"1.98\"`、`unsafe_code = \"forbid\"`\n    - `.gitattributes` 含 `* text=auto eol=lf`\n    - `cargo run -q -p ontoforge -- validate examples/ontologies/invalid/v04-unknown-field --format json` 退出码为 1，`jq -e '.[0].code == \"ONT-V04\" and .[0].file == \"objects.yaml\" and .[0].line == 3 and .[0].column == 1'` 对其输出成功\n    - 同一命令的 JSON 输出用 `jq -e '.[0].help | test(\"primaryKey\")'` 成功\n    - `crates/ontoforge/tests/snapshots/invalid_examples__v04-unknown-field.snap` 与 `cli__validate_unknown_field_human.snap` 存在，内容不含 `C:\\` 或 `/Users/`\n    - `rg -n \"fn locate\" crates/ontoforge-schema/src/loader/sourcemap.rs` 有匹配；`rg -n \"stack_size\" crates/ontoforge/src/main.rs` 有匹配\n    - `rg -n \"ONT-V15\" crates/ontoforge-schema/src/diag.rs` 有匹配\n  "
+    ],
+    "verification": [
+      "<verification>\n- `cargo test -p ontoforge-schema` 与 `cargo test -p ontoforge` 全绿\n- `cargo clippy -p ontoforge-schema -p ontoforge --all-targets -- -D warnings` 无输出错误\n- `cargo fmt --all --check` 无 diff\n- 手动对照：`cargo run -q -p ontoforge -- validate examples/ontologies/invalid/v04-unknown-field --color never` 的下划线落在 `primaryKy` 上\n</verification>",
+      "<success_criteria>\n- Walking skeleton 跑通：YAML → Node 树 → IR → SourceMap → CLI 诊断，YAML 节点级 span 精确到 key（D-11）\n- 后续 plan 依赖的接口契约全部存在并有测试（interfaces 块）\n- ADR-0012 记录用户确认的定义格式契约\n</success_criteria>"
+    ],
+    "human": []
+  },
+  {
+    "plan": ".planning/phases/01-workspace-schema-lint/01-02-PLAN.md",
+    "acceptance": [
+      "\n    - `cargo metadata --no-deps --format-version 1 | jq -r '.packages[].name'` 列出 ontoforge、ontoforge-schema、ontoforge-expr、ontoforge-query、ontoforge-storage、ontoforge-action、ontoforge-auth、ontoforge-api、ontoforge-server、ontoforge-client\n    - `cargo tree -p ontoforge-client --edges normal --depth 1` 的直接依赖只有 ontoforge-api\n    - `rg -n \"ontoforge-expr\" crates/ontoforge/Cargo.toml` 有匹配\n    - `rg -n \"^cel\" crates/ontoforge-expr/Cargo.toml` 有匹配\n    - 本 plan 的提交不修改根 `Cargo.toml`：对本 plan 每个提交执行 `git show --name-only --format= <sha>`，输出中没有恰好等于 `Cargo.toml` 的行\n  ",
+      "\n    - `.github/workflows/ci.yml` 含 `cargo fmt --all --check`、`cargo test --workspace`、`toolchain: \"1.98.0\"`、`fail-fast: false`\n    - `rg -n \"secrets\\.\" .github/workflows/ci.yml` 无匹配\n    - `rg -n \"Open \\(spike\\)\" .planning/adr/0003-ontology-definition-format.md` 无匹配\n    - `.planning/adr/0003-ontology-definition-format.md` 含 `serde_path_to_error` 与 `saphyr`（Plan B）\n    - `CONTRIBUTING.md` 含 `examples/ontologies/invalid/` 与 `Command::env`\n  "
+    ],
+    "verification": [
+      "<verification>\n- `cargo test --workspace`、`cargo clippy --workspace --all-targets -- -D warnings`、`cargo fmt --all --check` 在 Windows 本机通过\n- `cargo metadata` 显示 10 个 ontoforge crate\n- CI 文件包含两个平台与三条命令\n</verification>",
+      "<success_criteria>\n- DX-03：10-crate workspace 在 Windows 本机无 Docker 全绿，并由 CI 在 Windows 与 Ubuntu 守住\n- ADR-0003 不再有未决 spike\n</success_criteria>"
+    ],
+    "human": []
+  },
+  {
+    "plan": ".planning/phases/01-workspace-schema-lint/01-03-PLAN.md",
+    "acceptance": [
+      "\n    - `rg -n \"follow_links\\(false\\)\" crates/ontoforge-schema/src/loader/discover.rs` 有匹配\n    - `rg -n \"MAX_FILE_BYTES\" crates/ontoforge-schema/src/loader/mod.rs` 有匹配\n    - `rg -n \"canonicalize\" crates/ontoforge-schema/src` 无匹配\n    - `crates/ontoforge/tests/snapshots/invalid_examples__v14-include-escapes-root.snap` 含 `ONT-V14` 与 `ontology.yaml`\n    - `cargo test -p ontoforge-schema --test loader -- diagnostic_paths_use_forward_slash` 输出含 `1 passed`\n  ",
+      "\n    - `rg -n \"IgnoredAny\" crates/ontoforge-schema/src/loader/parse.rs` 有匹配\n    - `rg -n \"max_depth\" crates/ontoforge-schema/src/loader/parse.rs` 有匹配\n    - `rg -n \"spawn_scoped\" crates/ontoforge-schema/src/loader/mod.rs` 有匹配\n    - `rg -n \"RUST_MIN_STACK\" crates Cargo.toml` 无匹配\n    - 4 个新快照文件存在，分别含 `ONT-V01`（两个）、`ONT-V02`、`ONT-V03`\n    - `cargo test -p ontoforge-schema --test loader -- deeply_nested` 输出含 `2 passed`\n  "
+    ],
+    "verification": [
+      "<verification>\n- `cargo test -p ontoforge-schema --test loader` 全绿，包含 RESEARCH 必测项 `deeply_nested_yaml_is_rejected_not_crashing`、`json_trailing_comma_is_rejected`、`yaml_yes_no_stay_strings`、`diagnostic_paths_use_forward_slash`、`properties_keep_declared_order`\n- `cargo test -p ontoforge --test invalid_examples` 全绿\n- `cargo clippy -p ontoforge-schema --all-targets -- -D warnings` 通过\n</verification>",
+      "<success_criteria>\n- 多文件、多目录、YAML 多文档、JSON 数组都合并为单一、确定性的 IR（SCHEMA-01）\n- 加载层所有错误都带文件名与 line:col 或明确标注为无位置诊断（SCHEMA-06）\n- 不可信输入无法让加载器崩溃或读到 ontology 根目录之外的文件\n</success_criteria>"
+    ],
+    "human": []
+  },
+  {
+    "plan": ".planning/phases/01-workspace-schema-lint/01-04-PLAN.md",
+    "acceptance": [
+      "\n    - `rg -n \"fn effective_title_key\" crates/ontoforge-schema/src/ir/object.rs` 有匹配\n    - `rg -n \"fn pk_suitability\" crates/ontoforge-schema/src/ir/basetype.rs` 有匹配\n    - `rg -n \"Discouraged\" crates/ontoforge-schema/src/ir/basetype.rs` 有匹配\n    - `cargo test -p ontoforge-schema --test object_types -- all_v1_base_types_parse` 输出含 `1 passed`\n  ",
+      "\n    - 6 个新快照文件存在；`invalid_examples__v07-bad-object-type-name.snap` 含 `Flight`；`invalid_examples__v08-duplicate-object-type.snap` 含 `a.yaml:`\n    - `rg -n \"pk_suitability\" crates/ontoforge-schema/src/validate/objects.rs` 有匹配\n    - `cargo test -p ontoforge-schema --test object_types -- discouraged_primary_key_is_not_a_validate_error` 输出含 `1 passed`\n  ",
+      "\n    - `rg -c \"^kind: ObjectType\" examples/ontologies/aviation/objects.yaml` 输出 `5`\n    - `jq -e 'length == 5' examples/ontologies/aviation-json/objects.json` 成功\n    - `cargo run -q -p ontoforge -- validate examples/ontologies/aviation --format json` 输出 `[]`\n    - `rg -n \"geopoint\" examples/ontologies/aviation/objects.yaml` 与 `rg -n \"\\\"items\\\"\" examples/ontologies/aviation-json/objects.json` 都有匹配\n  "
+    ],
+    "verification": [
+      "<verification>\n- `cargo test -p ontoforge-schema` 与 `cargo test -p ontoforge` 全绿\n- `cargo clippy -p ontoforge-schema --all-targets -- -D warnings` 通过\n- `ontoforge validate` 对 aviation 与 aviation-json 均退出码 0\n</verification>",
+      "<success_criteria>\n- SCHEMA-02、SCHEMA-03：object type 与 13 个 base type 完整可定义、可校验\n- SCHEMA-06：object type 相关的每个 hard error 都有 invalid 样例与快照\n- D-16：aviation 双格式示例得到同一 IR\n</success_criteria>"
+    ],
+    "human": []
+  },
+  {
+    "plan": ".planning/phases/01-workspace-schema-lint/01-05-PLAN.md",
+    "acceptance": [
+      "\n    - `rg -n \"pub enum Cardinality\" crates/ontoforge-schema/src/ir/link.rs` 有匹配\n    - `rg -n \"LinkType\\(LinkType\\)\" crates/ontoforge-schema/src/ir/mod.rs` 有匹配\n    - `rg -n \"link_types\" crates/ontoforge-schema/src/ir/mod.rs` 有匹配\n    - `cargo test -p ontoforge-schema --test link_types -- parses_all_three_cardinalities` 输出含 `1 passed`\n  ",
+      "\n    - `rg -n \"links::check\" crates/ontoforge-schema/src/validate/mod.rs` 有匹配\n    - 4 个新快照存在，分别含 `ONT-V09`、`ONT-V11`、`ONT-V11`、`ONT-V08`\n    - `invalid_examples__v11-foreign-key-type-mismatch.snap` 同时含 `integer` 与 `string`\n  ",
+      "\n    - `rg -c \"^kind: LinkType\" examples/ontologies/aviation/links.yaml` 输出 `5`\n    - `jq -e 'length == 5 and (map(.cardinality) | sort | unique == [\"manyToMany\",\"oneToMany\",\"oneToOne\"])' examples/ontologies/aviation-json/links.json` 成功\n    - `cargo run -q -p ontoforge -- validate examples/ontologies/aviation-json --format json` 输出 `[]`\n  "
+    ],
+    "verification": [
+      "<verification>\n- `cargo test -p ontoforge-schema` 与 `cargo test -p ontoforge` 全绿\n- `cargo clippy -p ontoforge-schema --all-targets -- -D warnings` 通过\n- aviation 与 aviation-json validate 退出码均为 0\n</verification>",
+      "<success_criteria>\n- SCHEMA-04：1:1、1:N（外键）、M:N 可定义，两个方向各有 apiName\n- SCHEMA-06：link 相关错误均有 invalid 样例与 line:col 快照\n</success_criteria>"
+    ],
+    "human": []
+  },
+  {
+    "plan": ".planning/phases/01-workspace-schema-lint/01-06-PLAN.md",
+    "acceptance": [
+      "\n    - `rg -n \"pub enum ValueSource\" crates/ontoforge-schema/src/ir/action.rs` 有匹配\n    - `rg -n \"schemars\\(tag = \\\"kind\\\"\\)\" crates/ontoforge-schema/src/ir/action.rs` 有匹配\n    - `rg -n \"ActionType\\(ActionType\\)\" crates/ontoforge-schema/src/ir/mod.rs` 有匹配\n    - `cargo test -p ontoforge-schema --test action_types -- unknown_field_inside_rule_is_v04` 输出含 `1 passed`\n  ",
+      "\n    - `rg -n \"fn check_literal\" crates/ontoforge-schema/src/ir/basetype.rs` 与 `rg -n \"fn value_class\" crates/ontoforge-schema/src/ir/basetype.rs` 有匹配\n    - `rg -n \"parse_from_rfc3339\" crates/ontoforge-schema/src/ir/basetype.rs` 有匹配\n    - 6 个新快照存在：v03 含 `ONT-V03`、v09 含 `ONT-V09` 与 `status`、其余 4 个含 `ONT-V12`\n    - `cargo test -p ontoforge-schema --test action_types -- literal_validation` 输出含 `1 passed`\n  ",
+      "\n    - `rg -c \"^kind: ActionType\" examples/ontologies/aviation/actions.yaml` 输出 `3`\n    - `rg -n \"currentUser\" examples/ontologies/aviation/actions.yaml` 与 `rg -n \"currentTime\" examples/ontologies/aviation/actions.yaml` 都有匹配\n    - `jq -e 'length == 3' examples/ontologies/aviation-json/actions.json` 成功\n    - `cargo run -q -p ontoforge -- validate examples/ontologies/aviation --format json` 输出 `[]`\n  "
+    ],
+    "verification": [
+      "<verification>\n- `cargo test -p ontoforge-schema` 与 `cargo test -p ontoforge` 全绿\n- `cargo clippy -p ontoforge-schema --all-targets -- -D warnings` 通过\n- aviation 与 aviation-json validate 退出码均为 0\n</verification>",
+      "<success_criteria>\n- SCHEMA-05（结构部分）：参数、五种 rule、四种值来源、submission criteria 可定义并被静态校验\n- SCHEMA-01：完整 aviation 的 YAML 与 JSON 得到同一 IR\n- SCHEMA-06：action 相关错误都有 invalid 样例与 line:col 快照\n</success_criteria>"
+    ],
+    "human": []
+  },
+  {
+    "plan": ".planning/phases/01-workspace-schema-lint/01-07-PLAN.md",
+    "acceptance": [
+      "\n    - `rg -n \"4096\" crates/ontoforge-expr/src/limits.rs` 与 `rg -n \"spawn_scoped\" crates/ontoforge-expr/src/analyze.rs` 都有匹配\n    - `cargo test -p ontoforge-expr --test analyze -- deeply_nested_expression_is_rejected_not_crashing` 输出含 `1 passed`\n    - `cargo test -p ontoforge-expr --test analyze -- triple_quoted_and_raw_strings_follow_cel_lexing` 输出含 `1 passed`\n  ",
+      "\n    - `rg -n \"references\\(\\)\" crates/ontoforge-expr/src` 无匹配\n    - `rg -n \"Comprehension\" crates/ontoforge-expr/src/walk.rs` 有匹配\n    - `cargo test -p ontoforge-expr --test analyze` 输出的 `running N tests` 中 N ≥ 15\n  "
+    ],
+    "verification": [
+      "<verification>\n- `cargo test -p ontoforge-expr` 全绿，`analyze` 测试目标至少 15 个测试\n- `cargo clippy -p ontoforge-expr --all-targets -- -D warnings` 通过\n- 1 MiB 栈线程中的深层嵌套测试正常 join，输出无 `has overflowed its stack`\n</verification>",
+      "<success_criteria>\n- SCHEMA-05（CEL 部分的底座）：condition 可在定义期只编译不求值，成员路径可供引用检查使用\n- 深层嵌套与各种字符串写法的输入都不会让进程崩溃（Pitfall 1）\n- comprehension 变量不被当作自由变量（Pitfall 11）\n</success_criteria>"
+    ],
+    "human": []
+  },
+  {
+    "plan": ".planning/phases/01-workspace-schema-lint/01-08-PLAN.md",
+    "acceptance": [
+      "\n    - `rg -n \"pub trait LintRule\" crates/ontoforge-schema/src/lint/mod.rs` 与 `rg -n \"KNOWN_RULE_IDS\" crates/ontoforge-schema/src/lint/mod.rs` 有匹配\n    - `rg -n \"fn rules\" crates/ontoforge-schema/src/lint/naming/mod.rs crates/ontoforge-schema/src/lint/structure/mod.rs` 两个文件都有匹配\n    - `cargo test -p ontoforge-schema unknown_lint_rule_id_is_error` 输出含 `1 passed`\n    - `rg -n \"pub mod lint\" crates/ontoforge-schema/src/lib.rs` 有匹配\n  ",
+      "\n    - `rg -n \"\\\"ONT-E08\\\"\" crates/ontoforge-schema/src/lint/e08.rs` 与 `rg -n \"\\\"ONT-E09\\\"\" crates/ontoforge-schema/src/lint/e09.rs` 有匹配\n    - `crates/ontoforge-schema/src/lint/snapshots/` 下 e08 与 e09 各至少两个 `.snap` 文件（triggers、clean）\n    - `rg -n \"pk_suitability\" crates/ontoforge-schema/src/lint/e09.rs` 有匹配\n  ",
+      "\n    - `rg -n \"Lint\\(LintArgs\" crates/ontoforge/src/cli.rs` 有匹配\n    - `rg -n \"pipeline::check\" crates/ontoforge/src/lint_cmd.rs` 有匹配\n    - `crates/ontoforge/tests/snapshots/cli_lint__e08_human.snap` 存在且含 `ONT-E08`\n    - `cargo run -q -p ontoforge -- lint examples/ontologies/invalid/v04-unknown-field --format json` 退出码为 1，`jq -e 'all(.[]; .code | startswith(\"ONT-V\"))'` 对其输出成功\n  "
+    ],
+    "verification": [
+      "<verification>\n- `cargo test --workspace` 全绿（含 `unknown_lint_rule_id_is_error`）\n- `cargo clippy -p ontoforge-schema -p ontoforge --all-targets -- -D warnings` 通过\n- `ontoforge lint examples/ontologies/aviation --deny-warnings` 退出码 0\n</verification>",
+      "<success_criteria>\n- LINT-01：E08、E09 运行，有 E 级问题退出码非 0\n- LINT-03：人类可读（带源码定位）与 JSON 两种输出\n- LINT-04：ontoforge.toml 与 --config 可按规则 ID 关闭或调整级别，ONT-V 不可配置\n</success_criteria>"
+    ],
+    "human": [
+      "<human-check>\n      <test>在 Windows Terminal 中依次运行 `cargo run -q -p ontoforge -- validate examples/ontologies/invalid/v04-unknown-field` 与对一个触发 ONT-E08 的临时 ontology 运行 `cargo run -q -p ontoforge -- lint <dir>`（不加 --color）</test>\n      <expected>彩色输出可读：错误码、文件名:行:列、源码片段与下划线落在写错的 key 或 rule 字段上，help 行可见；设置 NO_COLOR=1 后输出无颜色</expected>\n      <why_human>自动化测试只比较无色输出，终端颜色与 Unicode 边框的实际渲染需要人眼确认（VALIDATION.md 的 Manual-Only 项）</why_human>\n    </human-check>"
+    ]
+  },
+  {
+    "plan": ".planning/phases/01-workspace-schema-lint/01-09-PLAN.md",
+    "acceptance": [
+      "\n    - `jq -e '.\"$schema\" == \"https://json-schema.org/draft/2020-12/schema\"' schemas/ontoforge-definition.schema.json` 成功\n    - `jq -e '[.. | objects | select(has(\"const\")) | .const] | (index(\"ObjectType\") != null and index(\"LinkType\") != null and index(\"ActionType\") != null and index(\"createObject\") != null)' schemas/ontoforge-definition.schema.json` 成功\n    - `jq -e '.properties.apiName != null' schemas/ontoforge-manifest.schema.json` 成功\n    - `rg -n \"pub mod schema_export\" crates/ontoforge-schema/src/lib.rs` 有匹配\n  ",
+      "\n    - `rg -n \"Schema\\(SchemaArgs\" crates/ontoforge/src/cli.rs` 有匹配\n    - `rg -n \"yaml-language-server\" examples/ontologies/aviation/objects.yaml examples/ontologies/aviation/links.yaml examples/ontologies/aviation/actions.yaml examples/ontologies/aviation/ontology.yaml` 四个文件都有匹配\n    - `cargo run -q -p ontoforge -- schema export --out-dir target/schema-check` 退出码 0，且 `target/schema-check/ontoforge-definition.schema.json` 与 `schemas/ontoforge-definition.schema.json` 内容相同（`cmp` 退出码 0）\n  "
+    ],
+    "verification": [
+      "<verification>\n- `cargo test -p ontoforge-schema --test schema_export` 与 `cargo test -p ontoforge --test cli_schema` 全绿\n- `cargo clippy -p ontoforge-schema -p ontoforge --all-targets -- -D warnings`、`cargo fmt --all --check` 通过\n- `ontoforge schema export --out-dir <tmp>` 输出与入库文件一致\n</verification>",
+      "<success_criteria>\n- SCHEMA-07：开发者可导出 JSON Schema，仓库内示例 ontology 通过该 schema 校验（ROADMAP Phase 1 Success Criterion 5）\n</success_criteria>"
+    ],
+    "human": [
+      "<human-check>\n      <test>在 VS Code（安装 Red Hat YAML 扩展）中打开 examples/ontologies/aviation/objects.yaml，在一个 object type 文档中新起一行触发补全，再把某个 kind 值改成 ObjectTyp</test>\n      <expected>补全列出 ObjectType 的字段（apiName、primaryKey、properties 等）；kind 写错时出现 schema 校验提示</expected>\n      <why_human>编辑器对 oneOf + const 的补全收窄效果因扩展版本而异（RESEARCH A9），只能在真实编辑器中观察；若收窄不理想，记录到 SUMMARY 作为后续把导出后处理为 if/then 的依据，不阻塞本 phase</why_human>\n    </human-check>"
+    ]
+  },
+  {
+    "plan": ".planning/phases/01-workspace-schema-lint/01-10-PLAN.md",
+    "acceptance": [
+      "\n    - `rg -n \"\\\"ONT-W01\\\"|\\\"ONT-W02\\\"|\\\"ONT-W03\\\"\" crates/ontoforge-schema/src/lint/naming` 三个 ID 都有匹配\n    - `rg -n \"\\^field\\[A-Z0-9\\]\" crates/ontoforge-schema/src/lint/naming/w03.rs` 有匹配\n    - `crates/ontoforge-schema/src/lint/naming/snapshots/` 下 w01、w02、w03 各至少两个 `.snap` 文件\n  ",
+      "\n    - `rg -n \"w04::RULE|w05::RULE\" crates/ontoforge-schema/src/lint/naming/mod.rs` 有匹配\n    - `crates/ontoforge-schema/src/lint/naming/snapshots/` 下 w04、w05 各至少两个 `.snap` 文件\n    - `cargo run -q -p ontoforge -- lint examples/ontologies/aviation --deny-warnings --format json` 退出码 0 且输出 `[]`\n  "
+    ],
+    "verification": [
+      "<verification>\n- `cargo test -p ontoforge-schema lint::naming` 与 `cargo test --workspace` 全绿\n- `cargo clippy -p ontoforge-schema --all-targets -- -D warnings` 通过\n- aviation 示例 `ontoforge lint --deny-warnings` 退出码 0\n</verification>",
+      "<success_criteria>\n- LINT-02（命名部分）：W01-W05 运行并输出带定位的 warning，每条规则有触发与不触发快照\n</success_criteria>"
+    ],
+    "human": []
+  },
+  {
+    "plan": ".planning/phases/01-workspace-schema-lint/01-11-PLAN.md",
+    "acceptance": [
+      "\n    - `rg -n \"\\\"ONT-W06\\\"|\\\"ONT-W07\\\"|\\\"ONT-W08\\\"\" crates/ontoforge-schema/src/lint/structure` 三个 ID 都有匹配\n    - `rg -n \"max_properties\" crates/ontoforge-schema/src/lint/structure/w06.rs` 与 `rg -n \"silo_prefixes\" crates/ontoforge-schema/src/lint/structure/w07.rs` 有匹配\n    - `crates/ontoforge-schema/src/lint/structure/snapshots/` 下 w06、w07、w08 各至少两个 `.snap` 文件\n  ",
+      "\n    - `rg -n \"\\\"ONT-W09\\\"|\\\"ONT-W10\\\"|\\\"ONT-W11\\\"\" crates/ontoforge-schema/src/lint/structure` 三个 ID 都有匹配\n    - `rg -n \"max_actions_per_type\" crates/ontoforge-schema/src/lint/structure/w09.rs` 有匹配\n    - `crates/ontoforge-schema/src/lint/structure/snapshots/` 下 w09、w10、w11 各至少两个 `.snap` 文件\n    - 参考仓库标识符检查（ADR-0002）：`rg -n -i \"kn_id|\\bbkn\\b|domain pack\" crates examples schemas` 无匹配，且 `rg -n \"\\bfo-[a-z]\" crates examples` 无匹配\n    - 绝对路径检查：`rg -n -i \"[a-z]:\\\\\\\\|/users/|/home/\" crates/ontoforge/tests/snapshots crates/ontoforge-schema/src/lint` 无匹配\n  "
+    ],
+    "verification": [
+      "<verification>\n- `cargo test --workspace`、`cargo clippy --workspace --all-targets -- -D warnings`、`cargo fmt --all --check` 在 Windows 本机通过（DX-03）\n- `ontoforge lint examples/ontologies/aviation --deny-warnings` 退出码 0\n- ADR-0002 标识符检查与绝对路径检查无匹配\n</verification>",
+      "<success_criteria>\n- LINT-02：与 01-10 合计 W01-W11 全部运行，每条有触发与不触发快照\n- D-14：三条规则的阈值可经 ontoforge.toml 配置\n- DX-03：phase 门禁全绿\n</success_criteria>"
+    ],
+    "human": []
+  },
+  {
+    "plan": ".planning/phases/01-workspace-schema-lint/01-12-PLAN.md",
+    "acceptance": [
+      "\n    - `rg -n \"check_ontology\" crates/ontoforge/src/pipeline.rs` 有匹配\n    - `rg -n \"did_you_mean\" crates/ontoforge-expr/src/check.rs` 有匹配\n    - `rg -n \"strsim\" crates/ontoforge-expr/Cargo.toml` 无匹配\n    - `cargo test -p ontoforge-expr --test criteria -- diagnostic_points_at_condition_value` 输出含 `1 passed`\n  ",
+      "\n    - `rg -n \"type_issues\" crates/ontoforge-expr/src/check.rs` 有匹配\n    - `cargo test -p ontoforge-expr --test criteria -- comparison_type_mismatch` 输出含 `1 passed`\n    - `cargo test -p ontoforge-expr --test criteria -- unknown_types_are_any` 输出含 `1 passed`\n  ",
+      "\n    - 5 个新快照存在且都含 `ONT-V13`；`invalid_examples__v13-unknown-parameter.snap` 含 `delayMinutes`\n    - `rg -n \"Open \\(spike\\)\" .planning/adr/0006-expression-language.md` 无匹配；`rg -n \"Spike 结论\" .planning/adr/0006-expression-language.md` 有匹配\n    - `cargo run -q -p ontoforge -- validate examples/ontologies/invalid/v13-unknown-parameter --format json` 退出码为 1，`jq -e 'any(.[]; .code == \"ONT-V13\")'` 对其输出成功\n  "
+    ],
+    "verification": [
+      "<verification>\n- `cargo test -p ontoforge-expr` 与 `cargo test -p ontoforge --test invalid_examples --test cli` 全绿\n- `cargo clippy -p ontoforge-expr -p ontoforge --all-targets -- -D warnings` 通过\n- aviation validate 退出码 0 且输出空数组；v13 样例 validate 退出码 1\n</verification>",
+      "<success_criteria>\n- SCHEMA-05：submission criteria 的 CEL 在定义期被编译与静态检查（引用与可推断类型）\n- SCHEMA-06：V13 诊断定位到 condition 值并带表达式内位置\n- D-06：V13 是 validate 阶段不可关闭的 hard error\n</success_criteria>"
+    ],
+    "human": []
+  },
+  {
+    "plan": ".planning/phases/01-workspace-schema-lint/01-13-PLAN.md",
+    "acceptance": [
+      "\n    - `rg -n \"toml_private|DATETIME_KEY|RawVisitor\" crates/` 无匹配\n    - `rg -n \"DeTable\" crates/ontoforge-schema/src/lint/config.rs` 至少 1 处\n    - `cargo test -p ontoforge-schema lint::config` 与 `cargo test -p ontoforge --test cli_lint` 全部通过，断言未修改\n  ",
+      "\n    - 新增的两个 names 测试先失败（RED 提交）后通过\n    - `tests/link_types.rs` 与 `invalid_examples__v07-bad-object-type-name.snap` 不需修改即通过\n    - `git diff --stat Cargo.lock` 只出现依赖图连线变化，无新 crate 条目（heck 0.5.0、anstream 1.0.0 早已在锁文件中）\n  ",
+      "\n    - `rg -n \"fn offset_to_line_col|fn line_col\" crates/` 只剩 1 个定义\n    - 全部现有快照不变（`git status` 中无 `.snap` 变化，无 `.snap.new` 文件）\n  "
+    ],
+    "verification": [
+      "<verification>\n`cargo test --workspace`、`cargo clippy --workspace --all-targets -- -D warnings`、`cargo fmt --all --check` 全绿；快照无变化。\n</verification>",
+      "<success_criteria>\n三项 REPLACE 与去重完成，行为不变（颜色判定按规范修正除外），无新增依赖下载。\n</success_criteria>"
+    ],
+    "human": []
+  },
+  {
+    "plan": ".planning/phases/01-workspace-schema-lint/01-14-PLAN.md",
+    "acceptance": [
+      "\n    - `jq -e '.lsp.\"yaml-language-server\".settings.yaml.schemas.\"./schemas/ontoforge-definition.schema.json\" == [\"examples/ontologies/**/*.yaml\",\"!examples/ontologies/**/ontology.yaml\"]' .zed/settings.json` 退出码 0\n    - `jq -e '.\"yaml.schemas\".\"./schemas/ontoforge-definition.schema.json\" == [\"examples/ontologies/**/*.yaml\",\"!examples/ontologies/**/ontology.yaml\"]' .vscode/settings.json` 退出码 0\n    - `jq -e 'keys == [\"lsp\"]' .zed/settings.json` 与 `jq -e 'keys == [\"yaml.schemas\"]' .vscode/settings.json` 退出码 0\n    - `git check-ignore -q .zed/settings.json .vscode/settings.json` 退出码 1（两个文件不被忽略，会进入提交）\n    - `rg -n \"fn editor_configs_associate_definition_schema_with_examples\" crates/ontoforge-schema/tests/schema_export.rs` 有 1 处匹配\n  ",
+      "\n    - `rg -c '^# yaml-language-server: \\$schema=\\.\\./\\.\\./\\.\\./schemas/ontoforge-definition\\.schema\\.json$' examples/ontologies/aviation/objects.yaml` 输出 5；对 links.yaml 输出 5；对 actions.yaml 输出 3\n    - `rg -c '^---$'` 对 objects.yaml、links.yaml、actions.yaml 分别输出 4、4、2（document 数未变）\n    - 提交前 `git diff --numstat HEAD -- examples/ontologies` 只有三行：objects.yaml `4 0`、links.yaml `4 0`、actions.yaml `2 0`（只有新增行，无删除，无其他文件）\n    - `git status --porcelain -- crates/ontoforge/tests/snapshots crates/ontoforge-schema/tests/snapshots` 输出为空\n    - `rg -n \"fn aviation_definition_documents_start_with_modeline\" crates/ontoforge-schema/tests/schema_export.rs` 有 1 处匹配\n  ",
+      "\n    - `rg -c '^## ' CONTRIBUTING.md` 输出 7（原 6 节加新节）\n    - `rg -n 'editor_configs_associate_definition_schema_with_examples' CONTRIBUTING.md crates/ontoforge-schema/tests/schema_export.rs` 两个文件都有匹配（文档引用的测试真实存在）\n    - `rg -n 'aviation_definition_documents_start_with_modeline' CONTRIBUTING.md crates/ontoforge-schema/tests/schema_export.rs` 两个文件都有匹配\n    - `rg -n 'examples/ontologies/\\*\\*/\\*\\.yaml' CONTRIBUTING.md .zed/settings.json .vscode/settings.json` 三个文件都有匹配（文档与配置的 glob 一致）\n  "
+    ],
+    "verification": [
+      "<verification>\n- `cargo test -p ontoforge-schema --test schema_export`：原 7 个测试加新增 2 个全部通过\n- `cargo test -p ontoforge-schema --test load_examples --test lint_examples` 与 `cargo test -p ontoforge --test cli --test cli_lint --test cli_schema` 通过（IR 等价、aviation 无诊断、lint clean）\n- `ontoforge validate examples/ontologies/aviation` 退出码 0；`ontoforge lint examples/ontologies/aviation --deny-warnings --format json` 输出 `[]`\n- `cargo fmt --all --check`、`cargo clippy --workspace --all-targets --locked -- -D warnings`、`cargo test --workspace --locked` 通过\n- phase 末人工复测 UAT Test 2（Task 1 的 human-check）\n</verification>",
+      "<success_criteria>\n- G-1-2 的 truth 成立：在 Zed（及 VS Code）中，示例 YAML 的每个 document 按导出的 JSON Schema 提供 kind 补全、按 kind 收窄字段、标红未知字段\n- G-1-2 的 4 条 missing 全部落地，且由自动测试守住\n- SCHEMA-07（ROADMAP Phase 1 Success Criterion 5）的编辑器补全用途在多文档文件上成立，原有 schema 导出与示例校验不回退\n</success_criteria>"
+    ],
+    "human": [
+      "<human-check>\n      <test>在 Zed 中打开仓库根目录（如已打开，执行 editor: restart language server 让 .zed/settings.json 生效），打开 examples/ontologies/aviation/objects.yaml，在文件末尾追加一行 --- 和一行 kind: 后按 Ctrl+Space；再在该 document 中加一行 bogus: 1；最后打开 examples/ontologies/aviation-json/ontology.yaml</test>\n      <expected>补全列出 ObjectType、LinkType、ActionType；bogus 字段被标红；aviation-json/ontology.yaml 没有任何 schema 错误提示</expected>\n      <why_human>补全弹窗与编辑器内诊断只能在真实编辑器中观察；这是 UAT Test 2 的复测，按 human_verify_mode=end-of-phase 在 phase 末统一做，不阻塞本 plan</why_human>\n    </human-check>"
+    ]
+  }
+]

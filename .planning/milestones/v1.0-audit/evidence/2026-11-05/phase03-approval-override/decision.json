@@ -1,0 +1,41 @@
+{
+  "recorded_at": "2026-11-05T11:32:07.248Z",
+  "scope": "03-01.1 only",
+  "must_have_id": "03-01.1",
+  "must_have": "sea-query-sqlx 与 getrandom（名称来源 [ASSUMED]）只在人工核验 crates.io / docs.rs 页面通过后才写入根 `Cargo.toml`；未核验前本 plan 不执行任何 install",
+  "reason": "当前会话用户明确接受03-01.1安装前人工批准缺独立留档的历史证据边界并授权单项override；未提供或找到新历史批准记录，本轮授权不是过去安装前批准，不豁免其他合同、行为或安全测试。",
+  "accepted_by": "当前会话用户（项目/需求负责人）",
+  "accepted_at": "2026-11-05T11:26:39.587Z",
+  "authorization_path": ".planning/milestones/v1.0-audit/evidence/2026-11-05/phase03-approval-override/authorization.md",
+  "authorization_sha256": "d847c1ced649772622208c4f79e1e87d38d443acc9cb3d56929241aa7dca4baf",
+  "prior_judgment": "UNCERTAIN (WARNING)",
+  "current_judgment": "PASSED (override)",
+  "independent_historical_install_approval_found": false,
+  "authorization_is_historical_install_approval": false,
+  "resolution": "原唯一人工项明确允许提供原记录或当前开发者接受历史证据边界；当前用户已作后一决议，仅关闭该等待决议项。不是运行行为豁免，不压制任何其他人工测试。",
+  "native_rule_sources": [
+    "C:/Users/easyi/.codex/gsd-core/references/verification-overrides.md",
+    "C:/Users/easyi/.codex/agents/gsd-verifier.md#Step-3b",
+    "C:/Users/easyi/.codex/agents/gsd-verifier.md#Step-9"
+  ],
+  "score": {
+    "verified": 138,
+    "passed_override": 1,
+    "total": 139
+  },
+  "status_decision": "passed only because no other human verification, behavior-unverified, FAILED, missing artifact, unwired link or blocker remains",
+  "new_tests_run": [],
+  "new_ci_triggered": false,
+  "container_operations": [],
+  "production_source_modified": false,
+  "prior_truth_evidence_retained": true,
+  "tdd": "not applicable: pure authorization/evidence disposition, no product behavior change",
+  "planning": "主会话已调用planning-with-files并新增授权处置/派生对账任务；本worker只读共享计划",
+  "forbidden_inferences": [
+    "不能声称已找到过去批准记录或证明安装前人工核验发生顺序",
+    "不能处置其他phase judgement或SQL Server Partial",
+    "不能将passed外推为矩阵或milestone passed、发布/归档授权"
+  ],
+  "snapshot_sha256": "c4278d97a7171547a82b0caf174b258899b6580f378e5d560b3a8473c10c15df",
+  "original_covered_count": 345
+}

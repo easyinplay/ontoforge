@@ -1,0 +1,50 @@
+[
+  {
+    "file": "ci-41994479295-final.json",
+    "bytes": 19631,
+    "lines": 2,
+    "sha256": "3947bcf089a3641d0c0afa8bdf525ebd1974778e615c39150e977cad6ae4fc47"
+  },
+  {
+    "file": "ci-41994479295-ubuntu.log",
+    "bytes": 337902,
+    "lines": 4244,
+    "sha256": "ae3d8ed246f84a5ba0ea323ee3a84311f76a8119e8deffeb7679da6161e723c8"
+  },
+  {
+    "file": "ci-41994479295-windows.log",
+    "bytes": 341785,
+    "lines": 4267,
+    "sha256": "243cf6436c9e9c7ca1b081cd0ce1df3ca486a25d7b678d10303e5ad9adda1753"
+  },
+  {
+    "file": "ci-41994479295-integration.log",
+    "bytes": 116188,
+    "lines": 1495,
+    "sha256": "bdc51412697da080151c6b7f68e42f88c0e74bb21ecbfe67acc2fdaba23b449e"
+  },
+  {
+    "file": "ci-41994479295-phase7-real-services.log",
+    "bytes": 71087,
+    "lines": 889,
+    "sha256": "5cad89dc1e75935cc5bdaa3ca82e5e1f4df06c81c56e7dc64425b0996820c727"
+  },
+  {
+    "file": "reverify-workspace.log",
+    "bytes": 139931,
+    "lines": 2569,
+    "sha256": "f1e8594764dfc0572154d18ff520c88321db4cc05cc264d1b3befaa7d0fa5ab1"
+  },
+  {
+    "file": "reverify-sqlite-atomic.log",
+    "bytes": 987,
+    "lines": 20,
+    "sha256": "2cf5ddd1b9d915979e457b78854977ecc0fd6f4ef661430d5b60e0934bc85be6"
+  },
+  {
+    "file": "reverify-sqlite-atomic-discovery.log",
+    "bytes": 4039,
+    "lines": 106,
+    "sha256": "dae4eff0fb9fb332e992adc12f2640bd85d6af79323db871ffeb4c4dc4aeb760"
+  }
+]

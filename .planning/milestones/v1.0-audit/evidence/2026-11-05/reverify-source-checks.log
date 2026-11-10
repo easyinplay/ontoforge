@@ -1,0 +1,17 @@
+head=060019fe52005c6b85ae5c5f59da9868f464e579
+tree=c5423a76803201bd49e5584833ece58bde32ebf5
+source_boundary=git diff f8851ca HEAD -- crates ci clients .github Cargo.toml Cargo.lock (full diff in reverify-source.diff)
+8d9d8c6_equivalence_command=git diff --exit-code 8d9d8c6 HEAD -- crates clients ci .github Cargo.toml Cargo.lock schemas examples tools
+8d9d8c6_equivalence_exit=0
+debt_scan_command=rg -n TBD|FIXME|XXX <git-changed implementation/test files>
+debt_scan_exit=1
+disabled_scan_command=rg -n #\[ignore\]|skip|todo <phase071 new tests and changed monitor>
+disabled_scan_exit=1
+sdk_backend_evidence
+15:use ontoforge_engine::sqlite::{SqliteEngine, fixture::plan_fixture_tables};
+61:        backend: BackendSettings::Sqlite { path: path.clone() },
+100:    let inner = SqliteEngine::from_fixtures(Utf8Path::new(AVIATION), &table_plan.tables)
+223:        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+277:    inner: SqliteEngine,
+62:  dataDir = await mkdtemp(join(tmpdir(), 'ontoforge-ts-'));
+64:  child = spawn(binary, ['serve', '--dev', '--data-dir', dataDir, '--bind', `127.0.0.1:${port}`], {

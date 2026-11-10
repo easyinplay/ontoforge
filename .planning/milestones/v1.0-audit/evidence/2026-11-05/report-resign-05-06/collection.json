@@ -1,0 +1,2764 @@
+{
+  "captured_at": "2026-11-05T10:51:12.865Z",
+  "head": "060019fe52005c6b85ae5c5f59da9868f464e579",
+  "runtime_identity": {
+    "args": [
+      "runtime-identity",
+      "--raw"
+    ],
+    "exit": 0,
+    "stdout": "{\"packageName\":\"@opengsd/gsd-core\",\"version\":\"1.19.0\"}\n",
+    "stderr": "",
+    "json": {
+      "packageName": "@opengsd/gsd-core",
+      "version": "1.19.0"
+    }
+  },
+  "agent_skills": {
+    "args": [
+      "query",
+      "agent-skills",
+      "gsd-verifier",
+      "--skills-only"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "gsd-tools: warning: C:\\Users\\easyi\\.gsd\\defaults.json sets resolve_model_ids, runtime but a project config takes precedence here — those global keys are ignored for model resolution. (#3532)\n"
+  },
+  "phases": [
+    {
+      "phase": "05-online-action",
+      "dir": ".planning/phases/05-online-action",
+      "original_sha256": "e320a6ad24ae42d80ecb3980bcbfe3e0f0a63be20ce2d334516d7d12ed81b177",
+      "covered_before": [
+        ".github/workflows/ci.yml",
+        ".github/workflows/nightly.yml",
+        ".planning/phases/05-online-action/05-01-PLAN.md",
+        ".planning/phases/05-online-action/05-01-SUMMARY.md",
+        ".planning/phases/05-online-action/05-02-PLAN.md",
+        ".planning/phases/05-online-action/05-02-SUMMARY.md",
+        ".planning/phases/05-online-action/05-03-PLAN.md",
+        ".planning/phases/05-online-action/05-03-SUMMARY.md",
+        ".planning/phases/05-online-action/05-04-PLAN.md",
+        ".planning/phases/05-online-action/05-04-SUMMARY.md",
+        ".planning/phases/05-online-action/05-05-PLAN.md",
+        ".planning/phases/05-online-action/05-05-SUMMARY.md",
+        ".planning/phases/05-online-action/05-06-PLAN.md",
+        ".planning/phases/05-online-action/05-06-SUMMARY.md",
+        ".planning/phases/05-online-action/05-07-PLAN.md",
+        ".planning/phases/05-online-action/05-07-SUMMARY.md",
+        ".planning/phases/05-online-action/05-VALIDATION.md",
+        "Cargo.lock",
+        "Cargo.toml",
+        "ci/check-tls-deps.sh",
+        "ci/test_tls_deps.py",
+        "ci/trino/catalog/demo.properties",
+        "crates/ontoforge-action/Cargo.toml",
+        "crates/ontoforge-action/src/criteria.rs",
+        "crates/ontoforge-action/src/fingerprint.rs",
+        "crates/ontoforge-action/src/lib.rs",
+        "crates/ontoforge-action/src/outbox.rs",
+        "crates/ontoforge-action/src/params.rs",
+        "crates/ontoforge-action/src/rules.rs",
+        "crates/ontoforge-action/src/source.rs",
+        "crates/ontoforge-action/src/version.rs",
+        "crates/ontoforge-action/tests/action.rs",
+        "crates/ontoforge-action/tests/action_pg.rs",
+        "crates/ontoforge-action/tests/entrypoints.rs",
+        "crates/ontoforge-action/tests/idempotency.rs",
+        "crates/ontoforge-action/tests/idempotency_pg.rs",
+        "crates/ontoforge-action/tests/outbox.rs",
+        "crates/ontoforge-action/tests/outbox_pg.rs",
+        "crates/ontoforge-action/tests/security.rs",
+        "crates/ontoforge-action/tests/source.rs",
+        "crates/ontoforge-action/tests/trino_action_it.rs",
+        "crates/ontoforge-action/tests/version.rs",
+        "crates/ontoforge-auth/src/scope/merge.rs",
+        "crates/ontoforge-engine/src/config.rs",
+        "crates/ontoforge-query/Cargo.toml",
+        "crates/ontoforge-query/src/cursor.rs",
+        "crates/ontoforge-query/src/lib.rs",
+        "crates/ontoforge-query/tests/pk_read.rs",
+        "crates/ontoforge-query/tests/security.rs",
+        "crates/ontoforge-schema/src/ir/action.rs",
+        "crates/ontoforge-schema/src/ir/basetype.rs",
+        "crates/ontoforge-schema/src/ir/mod.rs",
+        "crates/ontoforge-schema/src/lint/e08.rs",
+        "crates/ontoforge-schema/src/lint/structure/w09.rs",
+        "crates/ontoforge-schema/src/loader/dispatch.rs",
+        "crates/ontoforge-schema/src/validate/actions.rs",
+        "crates/ontoforge-schema/tests/action_types.rs",
+        "crates/ontoforge-storage/Cargo.toml",
+        "crates/ontoforge-storage/migrations/postgres/0004_action.sql",
+        "crates/ontoforge-storage/migrations/sqlite/0004_action.sql",
+        "crates/ontoforge-storage/src/commit.rs",
+        "crates/ontoforge-storage/src/import.rs",
+        "crates/ontoforge-storage/src/lib.rs",
+        "crates/ontoforge-storage/src/sql_exit.rs",
+        "crates/ontoforge-storage/tests/conformance/mod.rs",
+        "crates/ontoforge-storage/tests/conformance_pg.rs",
+        "crates/ontoforge-storage/tests/conformance_sqlite.rs",
+        "crates/ontoforge-storage/tests/reload_pg.rs",
+        "crates/ontoforge-storage/tests/support/mod.rs",
+        "crates/ontoforge/WEBHOOK-WORKER.md",
+        "crates/ontoforge/src/cli.rs",
+        "crates/ontoforge/src/lib.rs",
+        "crates/ontoforge/src/webhook_worker.rs",
+        "crates/ontoforge/tests/cli_webhook_worker.rs",
+        "crates/ontoforge/tests/snapshots/invalid_examples__v03-function-rule.snap",
+        "schemas/ontoforge-definition.schema.json",
+        "target/milestone-audit-evidence-20261104/final-check.log",
+        "target/milestone-audit-evidence-20261104/postgres_http_it.log",
+        "target/milestone-audit-evidence-20261104/source-equivalence.diff",
+        "target/milestone-audit-evidence-20261104/source-guard.log",
+        "target/milestone-audit-evidence-20261104/sqlite-action-atomic.log",
+        "target/milestone-audit-evidence-20261104/trino_l2_acl_it.log",
+        "target/milestone-ci-41759804733-integration.log",
+        "target/milestone-ci-41759804733-ubuntu.log",
+        "target/milestone-ci-41759804733-windows.log"
+      ],
+      "native_status_before": {
+        "args": [
+          "query",
+          "verification.status",
+          ".planning/phases/05-online-action"
+        ],
+        "exit": 0,
+        "stdout": "{\n  \"status\": \"stale\",\n  \"next_action\": \"Verification is stale — covered source files changed after the verifier last ran: \\\".github/workflows/nightly.yml\\\", \\\"crates/ontoforge-action/tests/trino_action_it.rs\\\", \\\"crates/ontoforge/src/cli.rs\\\", \\\"crates/ontoforge/src/lib.rs\\\". Re-run execute-phase for this phase: it resumes at the verification gates and re-runs the verifier, regenerating VERIFICATION.md and its digest. verify-work alone cannot refresh a stale report.\",\n  \"next_command\": \"$gsd-execute-phase 05\",\n  \"route\": \"execute-phase\",\n  \"moved_files\": [\n    \".github/workflows/nightly.yml\",\n    \"crates/ontoforge-action/tests/trino_action_it.rs\",\n    \"crates/ontoforge/src/cli.rs\",\n    \"crates/ontoforge/src/lib.rs\"\n  ]\n}",
+        "stderr": "",
+        "json": {
+          "status": "stale",
+          "next_action": "Verification is stale — covered source files changed after the verifier last ran: \".github/workflows/nightly.yml\", \"crates/ontoforge-action/tests/trino_action_it.rs\", \"crates/ontoforge/src/cli.rs\", \"crates/ontoforge/src/lib.rs\". Re-run execute-phase for this phase: it resumes at the verification gates and re-runs the verifier, regenerating VERIFICATION.md and its digest. verify-work alone cannot refresh a stale report.",
+          "next_command": "$gsd-execute-phase 05",
+          "route": "execute-phase",
+          "moved_files": [
+            ".github/workflows/nightly.yml",
+            "crates/ontoforge-action/tests/trino_action_it.rs",
+            "crates/ontoforge/src/cli.rs",
+            "crates/ontoforge/src/lib.rs"
+          ]
+        }
+      },
+      "roadmap": {
+        "args": [
+          "query",
+          "roadmap.get-phase",
+          "05",
+          "--raw"
+        ],
+        "exit": 0,
+        "stdout": "### Phase 5: Online Action\n\n**Goal**: As a caller with Action permission, I want to modify the object graph through scoped online Actions, so that each change is atomic, auditable, safe to retry, and notifies downstream systems.\n**Mode:** mvp\n**Depends on**: Phase 4\n**Requirements**: ACTION-01, ACTION-02, ACTION-03, ACTION-04, ACTION-05, ACTION-06, ACTION-07, ACTION-08, ACTION-09, ACTION-10, ACTION-11, ACTION-12\n**Spike**: 无；决策见 ADR-0016、ADR-0018\n**Success Criteria** (what must be TRUE):\n\n  1. 参数错误返回逐参数错误且不写入；合法 Action 在单个 PG 事务内写 edit、edit log、`action_commands` 与 webhook outbox，任一失败整体回滚；validate-only 与批量提交可用\n  2. 写字段超出调用者可见列、criteria 引用当前行被遮蔽的列、写后对象对调用者不可见（含 link 两端与 release）时一律 `ScopeDenied`，错误不泄露对象状态\n  3. 同 pk 并发提交恰好一个成功、其余 `VersionConflict`；过期 `_version` 令牌被拒绝；`command_id` 重放返回缓存结果、同键异参 `CommandIdReused`、回放前失权则拒绝\n  4. 目标或读集需要 Trino 时 Trino 不可用返回 `EngineUnavailable`；只涉及已编辑对象的 Action 照常执行\n  5. 提交后下一次读取可见；下游 webhook 至少收到一次带 `event_id` 的事件\n\n**Plans**: 7/7 executed（verified 2026-10-26；详: `.planning/phases/05-online-action/`）\n**Details**: `.planning/phases/05-online-action/`",
+        "stderr": ""
+      },
+      "decisions": {
+        "args": [
+          "query",
+          "check.decision-coverage-verify",
+          ".planning/phases/05-online-action",
+          ".planning/phases/05-online-action/05-CONTEXT.md"
+        ],
+        "exit": 0,
+        "stdout": "{\n  \"skipped\": false,\n  \"blocking\": false,\n  \"total\": 7,\n  \"honored\": 7,\n  \"not_honored\": [],\n  \"message\": \"All trackable CONTEXT.md decisions are honored by shipped artifacts.\"\n}",
+        "stderr": "",
+        "json": {
+          "skipped": false,
+          "blocking": false,
+          "total": 7,
+          "honored": 7,
+          "not_honored": [],
+          "message": "All trackable CONTEXT.md decisions are honored by shipped artifacts."
+        }
+      },
+      "plans": [
+        {
+          "plan": ".planning/phases/05-online-action/05-01-PLAN.md",
+          "frontmatter": "\nphase: 05-online-action\nplan: 01\ntype: tdd\nwave: 1\ndepends_on: []\nfiles_modified:\n  - Cargo.lock\n  - crates/ontoforge-action/Cargo.toml\n  - crates/ontoforge-action/src/lib.rs\n  - crates/ontoforge-action/tests/action.rs\n  - crates/ontoforge-storage/src/commit.rs\n  - crates/ontoforge-storage/migrations/sqlite/0004_action.sql\n  - crates/ontoforge-storage/migrations/postgres/0004_action.sql\n  - crates/ontoforge-storage/tests/conformance/mod.rs\nautonomous: false\nrequirements: [ACTION-02, ACTION-05, ACTION-06, ACTION-10, ACTION-11]\n\nestimate:\n  tokens: 78000\n  raw_tokens: 78000\n  tasks: 2\n  confidence: low\n\nmust_haves:\n  truths:\n    - \"一次正常 Action 批次只有一个主体作用域 command_id、一条 edit log、一份批级回执和一个共享 event_id 的 outbox 事件（D-01，ACTION-02/05/06/10/11）\"\n    - \"storage 持有事务边界，事务第一条语句读取 definition fence，随后才 claim command；Action 不在外层事务调用现有 commit（E1）\"\n    - \"SQLite 与 PostgreSQL 使用同一 Action 事务合同；任一持久化阶段失败时 edit、log、command 和 outbox 同生同灭\"\n    - \"正式 gstack plan-eng-review 当前仍是 BLOCKED；本 Phase 以 05-ENG-REVIEW E1-E7 全覆盖和 GSD plan-checker PASSED 作为透明记录的一次性替代治理，关键 PR 前仍须回补 `/plan-eng-review` 与 `/review`，且不得声称正式 gate PASS\"\n  artifacts:\n    - path: \"crates/ontoforge-storage/migrations/sqlite/0004_action.sql\"\n      provides: \"SQLite 主体作用域 command claim 与 durable webhook outbox\"\n      contains: \"of_action_command\"\n    - path: \"crates/ontoforge-storage/migrations/postgres/0004_action.sql\"\n      provides: \"PostgreSQL 等价 schema 与唯一约束\"\n      contains: \"of_webhook_outbox\"\n    - path: \"crates/ontoforge-storage/src/commit.rs\"\n      provides: \"storage-owned Action write transaction\"\n      exports: [\"ActionTransactionInput\", \"ActionCommitOutcome\", \"EditStore::commit_action\"]\n    - path: \"crates/ontoforge-action/src/lib.rs\"\n      provides: \"Action request/receipt/error 公共合同和 edit-only tracer\"\n      exports: [\"ActionRequest\", \"ActionItem\", \"ActionReceipt\", \"ActionError\", \"ActionService\"]\n  key_links:\n    - from: \"crates/ontoforge-action/src/lib.rs\"\n      to: \"crates/ontoforge-storage/src/commit.rs\"\n      via: \"ActionService 将一个批次展平为一次 commit_action 调用\"\n      pattern: \"commit_action\"\n    - from: \"crates/ontoforge-storage/src/commit.rs\"\n      to: \"crates/ontoforge-storage/migrations/sqlite/0004_action.sql\"\n      via: \"事务内写 of_action_command 和 of_webhook_outbox\"\n      pattern: \"of_action_(command|webhook_outbox)\"\n    - from: \"crates/ontoforge-storage/src/commit.rs\"\n      to: \"crates/ontoforge-storage/src/commit.rs\"\n      via: \"fence 是 Action write transaction 的第一条数据库语句，claim 紧随其后\"\n      pattern: \"fence\"\n",
+          "artifacts": {
+            "args": [
+              "query",
+              "verify.artifacts",
+              ".planning/phases/05-online-action/05-01-PLAN.md"
+            ],
+            "exit": 1,
+            "stdout": "{\n  \"all_passed\": false,\n  \"passed\": 3,\n  \"total\": 4,\n  \"artifacts\": [\n    {\n      \"path\": \"crates/ontoforge-storage/migrations/sqlite/0004_action.sql\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-storage/migrations/postgres/0004_action.sql\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-storage/src/commit.rs\",\n      \"exists\": true,\n      \"issues\": [\n        \"Missing export: EditStore::commit_action\"\n      ],\n      \"passed\": false\n    },\n    {\n      \"path\": \"crates/ontoforge-action/src/lib.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_passed": false,
+              "passed": 3,
+              "total": 4,
+              "artifacts": [
+                {
+                  "path": "crates/ontoforge-storage/migrations/sqlite/0004_action.sql",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "crates/ontoforge-storage/migrations/postgres/0004_action.sql",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "crates/ontoforge-storage/src/commit.rs",
+                  "exists": true,
+                  "issues": [
+                    "Missing export: EditStore::commit_action"
+                  ],
+                  "passed": false
+                },
+                {
+                  "path": "crates/ontoforge-action/src/lib.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                }
+              ]
+            }
+          },
+          "links": {
+            "args": [
+              "query",
+              "verify.key-links",
+              ".planning/phases/05-online-action/05-01-PLAN.md"
+            ],
+            "exit": 0,
+            "stdout": "{\n  \"all_verified\": true,\n  \"verified\": 3,\n  \"pending\": 0,\n  \"total\": 3,\n  \"links\": [\n    {\n      \"from\": \"crates/ontoforge-action/src/lib.rs\",\n      \"to\": \"crates/ontoforge-storage/src/commit.rs\",\n      \"via\": \"ActionService 将一个批次展平为一次 commit_action 调用\",\n      \"verified\": true,\n      \"detail\": \"Pattern found in source\"\n    },\n    {\n      \"from\": \"crates/ontoforge-storage/src/commit.rs\",\n      \"to\": \"crates/ontoforge-storage/migrations/sqlite/0004_action.sql\",\n      \"via\": \"事务内写 of_action_command 和 of_webhook_outbox\",\n      \"verified\": true,\n      \"detail\": \"Pattern found in source\"\n    },\n    {\n      \"from\": \"crates/ontoforge-storage/src/commit.rs\",\n      \"to\": \"crates/ontoforge-storage/src/commit.rs\",\n      \"via\": \"fence 是 Action write transaction 的第一条数据库语句，claim 紧随其后\",\n      \"verified\": true,\n      \"detail\": \"Pattern found in source\"\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_verified": true,
+              "verified": 3,
+              "pending": 0,
+              "total": 3,
+              "links": [
+                {
+                  "from": "crates/ontoforge-action/src/lib.rs",
+                  "to": "crates/ontoforge-storage/src/commit.rs",
+                  "via": "ActionService 将一个批次展平为一次 commit_action 调用",
+                  "verified": true,
+                  "detail": "Pattern found in source"
+                },
+                {
+                  "from": "crates/ontoforge-storage/src/commit.rs",
+                  "to": "crates/ontoforge-storage/migrations/sqlite/0004_action.sql",
+                  "via": "事务内写 of_action_command 和 of_webhook_outbox",
+                  "verified": true,
+                  "detail": "Pattern found in source"
+                },
+                {
+                  "from": "crates/ontoforge-storage/src/commit.rs",
+                  "to": "crates/ontoforge-storage/src/commit.rs",
+                  "via": "fence 是 Action write transaction 的第一条数据库语句，claim 紧随其后",
+                  "verified": true,
+                  "detail": "Pattern found in source"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "plan": ".planning/phases/05-online-action/05-02-PLAN.md",
+          "frontmatter": "\nphase: 05-online-action\nplan: 02\ntype: tdd\nwave: 2\ndepends_on: [\"05-01\"]\nfiles_modified:\n  - crates/ontoforge-storage/src/commit.rs\n  - crates/ontoforge-action/src/lib.rs\n  - crates/ontoforge-action/src/params.rs\n  - crates/ontoforge-action/src/rules.rs\n  - crates/ontoforge-action/src/criteria.rs\n  - crates/ontoforge-action/tests/action.rs\n  - crates/ontoforge-action/tests/security.rs\nautonomous: true\nrequirements: [ACTION-01, ACTION-02, ACTION-03, ACTION-04, ACTION-05, ACTION-06, ACTION-08]\n\nestimate:\n  tokens: 78000\n  raw_tokens: 78000\n  tasks: 2\n  confidence: low\n\nmust_haves:\n  truths:\n    - \"客户端一次得到全部逐参数错误；校验精确覆盖当前 IR 的 base type、objectReference、items、required 与 default，不引入 D-05 排除的类型\"\n    - \"batch 按 item -> rule -> edit ordinal 执行，同 pk 多次 edit 顺序可重现；任一后项失败使整个 batch 回滚并只产生一条 log/event（D-01，E6）\"\n    - \"criteria 仅在调用者的遮蔽视图求值；隐藏目标与不存在同形，masked criteria、越界写字段、写后不可见、隐藏 link endpoint 均不泄露状态（D-03）；release source 专项由 05-06 验收\"\n    - \"validate-only 对当前可达规则运行同一参数/scope/criteria/post-state 管线，且不留下 skeleton、command、log、edit 或 outbox；source demand 由 05-06 验收\"\n  artifacts:\n    - path: \"crates/ontoforge-action/src/params.rs\"\n      provides: \"runtime parameter/default/objectReference validation and canonical client request\"\n    - path: \"crates/ontoforge-action/src/rules.rs\"\n      provides: \"ordered rule expansion and item/rule/edit ordinal map\"\n    - path: \"crates/ontoforge-action/src/criteria.rs\"\n      provides: \"masked-view criteria and pre/post scope checks\"\n    - path: \"crates/ontoforge-action/src/lib.rs\"\n      provides: \"ADR-0018 ①-⑨ Action pipeline\"\n  key_links:\n    - from: \"crates/ontoforge-action/src/params.rs\"\n      to: \"crates/ontoforge-schema/src/ir/basetype.rs\"\n      via: \"ParamType::base_type + BaseType::check_literal and PropertyValue conversion\"\n      pattern: \"check_literal\"\n    - from: \"crates/ontoforge-action/src/criteria.rs\"\n      to: \"crates/ontoforge-auth/src/scope/merge.rs\"\n      via: \"每行 TypeScope::evaluate 的 visible/columns 驱动 criteria 与 write/post guards\"\n      pattern: \"evaluate\"\n    - from: \"crates/ontoforge-action/src/rules.rs\"\n      to: \"crates/ontoforge-storage/src/commit.rs\"\n      via: \"ordinal map 产生一个 Commit，storage 锁序不改变 outward/log ordinal\"\n      pattern: \"edit_ordinal\"\n",
+          "artifacts": {
+            "args": [
+              "query",
+              "verify.artifacts",
+              ".planning/phases/05-online-action/05-02-PLAN.md"
+            ],
+            "exit": 0,
+            "stdout": "{\n  \"all_passed\": true,\n  \"passed\": 4,\n  \"total\": 4,\n  \"artifacts\": [\n    {\n      \"path\": \"crates/ontoforge-action/src/params.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-action/src/rules.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-action/src/criteria.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-action/src/lib.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_passed": true,
+              "passed": 4,
+              "total": 4,
+              "artifacts": [
+                {
+                  "path": "crates/ontoforge-action/src/params.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "crates/ontoforge-action/src/rules.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "crates/ontoforge-action/src/criteria.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "crates/ontoforge-action/src/lib.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                }
+              ]
+            }
+          },
+          "links": {
+            "args": [
+              "query",
+              "verify.key-links",
+              ".planning/phases/05-online-action/05-02-PLAN.md"
+            ],
+            "exit": 0,
+            "stdout": "{\n  \"all_verified\": true,\n  \"verified\": 3,\n  \"pending\": 0,\n  \"total\": 3,\n  \"links\": [\n    {\n      \"from\": \"crates/ontoforge-action/src/params.rs\",\n      \"to\": \"crates/ontoforge-schema/src/ir/basetype.rs\",\n      \"via\": \"ParamType::base_type + BaseType::check_literal and PropertyValue conversion\",\n      \"verified\": true,\n      \"detail\": \"Pattern found in source\"\n    },\n    {\n      \"from\": \"crates/ontoforge-action/src/criteria.rs\",\n      \"to\": \"crates/ontoforge-auth/src/scope/merge.rs\",\n      \"via\": \"每行 TypeScope::evaluate 的 visible/columns 驱动 criteria 与 write/post guards\",\n      \"verified\": true,\n      \"detail\": \"Pattern found in source\"\n    },\n    {\n      \"from\": \"crates/ontoforge-action/src/rules.rs\",\n      \"to\": \"crates/ontoforge-storage/src/commit.rs\",\n      \"via\": \"ordinal map 产生一个 Commit，storage 锁序不改变 outward/log ordinal\",\n      \"verified\": true,\n      \"detail\": \"Pattern found in target\"\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_verified": true,
+              "verified": 3,
+              "pending": 0,
+              "total": 3,
+              "links": [
+                {
+                  "from": "crates/ontoforge-action/src/params.rs",
+                  "to": "crates/ontoforge-schema/src/ir/basetype.rs",
+                  "via": "ParamType::base_type + BaseType::check_literal and PropertyValue conversion",
+                  "verified": true,
+                  "detail": "Pattern found in source"
+                },
+                {
+                  "from": "crates/ontoforge-action/src/criteria.rs",
+                  "to": "crates/ontoforge-auth/src/scope/merge.rs",
+                  "via": "每行 TypeScope::evaluate 的 visible/columns 驱动 criteria 与 write/post guards",
+                  "verified": true,
+                  "detail": "Pattern found in source"
+                },
+                {
+                  "from": "crates/ontoforge-action/src/rules.rs",
+                  "to": "crates/ontoforge-storage/src/commit.rs",
+                  "via": "ordinal map 产生一个 Commit，storage 锁序不改变 outward/log ordinal",
+                  "verified": true,
+                  "detail": "Pattern found in target"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "plan": ".planning/phases/05-online-action/05-03-PLAN.md",
+          "frontmatter": "\nphase: 05-online-action\nplan: 03\ntype: tdd\nwave: 3\ndepends_on: [\"05-02\"]\nfiles_modified:\n  - crates/ontoforge-query/src/cursor.rs\n  - crates/ontoforge-query/src/lib.rs\n  - crates/ontoforge-query/tests/security.rs\n  - crates/ontoforge-action/Cargo.toml\n  - crates/ontoforge-action/src/version.rs\n  - crates/ontoforge-action/src/lib.rs\n  - crates/ontoforge-action/tests/version.rs\n  - crates/ontoforge-storage/src/commit.rs\nautonomous: true\nrequirements: [ACTION-09]\n\nestimate:\n  tokens: 68000\n  raw_tokens: 68000\n  tasks: 2\n  confidence: low\n\nmust_haves:\n  truths:\n    - \"query 签发与 Action 验证使用同一显式版本、规范化输入的 `_version` codec；05-03 实证 editOnly 的 scope、主体、definition 与 edit 变化，source-backed 端到端留给 05-06（D-07）\"\n    - \"Phase 5 部署前签发的无格式版本 token 不走 legacy `Debug` 验证分支，而是稳定返回 `VersionConflict` 并要求客户端重新读取（D-07）\"\n    - \"客户端不提供 `_version` 时，Action 仍把事务外观察到的每个 edit version 带入事务，在稳定加锁后比较；同 pk 并发提交最多一个成功（D-04）\"\n    - \"source 只采用事务前样本；CAS 不在事务中二次读取 source，也不把 source 漂移扩大为 Phase 5 的并发承诺（D-04）\"\n  artifacts:\n    - path: \"crates/ontoforge-query/src/cursor.rs\"\n      provides: \"query 与 Action 共用的 versioned VersionTokenCodec 和 canonical claims encoder\"\n      exports: [\"VersionTokenCodec\", \"VersionClaims\", \"VersionTokenError\"]\n    - path: \"crates/ontoforge-action/src/version.rs\"\n      provides: \"Action read-set 到共享 VersionClaims 的唯一转换\"\n    - path: \"crates/ontoforge-storage/src/commit.rs\"\n      provides: \"稳定行锁之后的 observed edit version CAS\"\n    - path: \"crates/ontoforge-action/tests/version.rs\"\n      provides: \"query-issued token、旧格式、key/scope/definition/edit 变化及无 token CAS 的跨 crate contract tests\"\n  key_links:\n    - from: \"crates/ontoforge-query/src/lib.rs\"\n      to: \"crates/ontoforge-query/src/cursor.rs\"\n      via: \"QueryService::version_for 只构造 VersionClaims 并调用 VersionTokenCodec::sign\"\n      pattern: \"VersionTokenCodec\"\n    - from: \"crates/ontoforge-action/src/version.rs\"\n      to: \"crates/ontoforge-query/src/cursor.rs\"\n      via: \"Action 对锁定 read set 构造相同 VersionClaims 并调用 verify\"\n      pattern: \"VersionClaims\"\n    - from: \"crates/ontoforge-action/src/lib.rs\"\n      to: \"crates/ontoforge-storage/src/commit.rs\"\n      via: \"事务前 observed versions 进入 commit_action，稳定锁定后先 CAS 再鉴权和写入\"\n      pattern: \"observed_versions\"\n",
+          "artifacts": {
+            "args": [
+              "query",
+              "verify.artifacts",
+              ".planning/phases/05-online-action/05-03-PLAN.md"
+            ],
+            "exit": 0,
+            "stdout": "{\n  \"all_passed\": true,\n  \"passed\": 4,\n  \"total\": 4,\n  \"artifacts\": [\n    {\n      \"path\": \"crates/ontoforge-query/src/cursor.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-action/src/version.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-storage/src/commit.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-action/tests/version.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_passed": true,
+              "passed": 4,
+              "total": 4,
+              "artifacts": [
+                {
+                  "path": "crates/ontoforge-query/src/cursor.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "crates/ontoforge-action/src/version.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "crates/ontoforge-storage/src/commit.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "crates/ontoforge-action/tests/version.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                }
+              ]
+            }
+          },
+          "links": {
+            "args": [
+              "query",
+              "verify.key-links",
+              ".planning/phases/05-online-action/05-03-PLAN.md"
+            ],
+            "exit": 0,
+            "stdout": "{\n  \"all_verified\": true,\n  \"verified\": 3,\n  \"pending\": 0,\n  \"total\": 3,\n  \"links\": [\n    {\n      \"from\": \"crates/ontoforge-query/src/lib.rs\",\n      \"to\": \"crates/ontoforge-query/src/cursor.rs\",\n      \"via\": \"QueryService::version_for 只构造 VersionClaims 并调用 VersionTokenCodec::sign\",\n      \"verified\": true,\n      \"detail\": \"Pattern found in source\"\n    },\n    {\n      \"from\": \"crates/ontoforge-action/src/version.rs\",\n      \"to\": \"crates/ontoforge-query/src/cursor.rs\",\n      \"via\": \"Action 对锁定 read set 构造相同 VersionClaims 并调用 verify\",\n      \"verified\": true,\n      \"detail\": \"Pattern found in source\"\n    },\n    {\n      \"from\": \"crates/ontoforge-action/src/lib.rs\",\n      \"to\": \"crates/ontoforge-storage/src/commit.rs\",\n      \"via\": \"事务前 observed versions 进入 commit_action，稳定锁定后先 CAS 再鉴权和写入\",\n      \"verified\": true,\n      \"detail\": \"Pattern found in source\"\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_verified": true,
+              "verified": 3,
+              "pending": 0,
+              "total": 3,
+              "links": [
+                {
+                  "from": "crates/ontoforge-query/src/lib.rs",
+                  "to": "crates/ontoforge-query/src/cursor.rs",
+                  "via": "QueryService::version_for 只构造 VersionClaims 并调用 VersionTokenCodec::sign",
+                  "verified": true,
+                  "detail": "Pattern found in source"
+                },
+                {
+                  "from": "crates/ontoforge-action/src/version.rs",
+                  "to": "crates/ontoforge-query/src/cursor.rs",
+                  "via": "Action 对锁定 read set 构造相同 VersionClaims 并调用 verify",
+                  "verified": true,
+                  "detail": "Pattern found in source"
+                },
+                {
+                  "from": "crates/ontoforge-action/src/lib.rs",
+                  "to": "crates/ontoforge-storage/src/commit.rs",
+                  "via": "事务前 observed versions 进入 commit_action，稳定锁定后先 CAS 再鉴权和写入",
+                  "verified": true,
+                  "detail": "Pattern found in source"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "plan": ".planning/phases/05-online-action/05-04-PLAN.md",
+          "frontmatter": "\nphase: 05-online-action\nplan: 04\ntype: tdd\nwave: 4\ndepends_on: [\"05-03\"]\nfiles_modified:\n  - crates/ontoforge-storage/Cargo.toml\n  - crates/ontoforge-storage/src/commit.rs\n  - crates/ontoforge-storage/tests/conformance/mod.rs\n  - crates/ontoforge-storage/tests/conformance_sqlite.rs\n  - crates/ontoforge-storage/tests/conformance_pg.rs\n  - crates/ontoforge-action/Cargo.toml\n  - crates/ontoforge-action/src/lib.rs\n  - crates/ontoforge-action/tests/action_pg.rs\nautonomous: true\nrequirements: [ACTION-04, ACTION-08, ACTION-09]\n\nestimate:\n  tokens: 70000\n  raw_tokens: 70000\n  tasks: 2\n  confidence: low\n\nmust_haves:\n  truths:\n    - \"SQLite 与真实 PostgreSQL 在 log、edit、command、outbox 任一持久化阶段失败时都回滚完整 Action transaction，不留下 row、version-0 skeleton、log、command 或 outbox\"\n    - \"真实 PostgreSQL 上两个独立连接同时修改同一 pk 时，无论是否携带 `_version`，都恰好一个成功且 loser 返回 `VersionConflict`（D-04）\"\n    - \"稳定 RowKey 锁序、definition fence、command claim、CAS/auth 与写入顺序在实际 PostgreSQL 锁行为下无死锁或 lost update（E1）\"\n    - \"所有 PostgreSQL 证据实际执行 ignored tests；`--list`、skipped 或仅编译不能作为通过证据\"\n  artifacts:\n    - path: \"crates/ontoforge-storage/src/commit.rs\"\n      provides: \"test-support feature 下的确定性 ActionWriteStage fault injection 和生产 no-op 路径\"\n    - path: \"crates/ontoforge-storage/tests/conformance/mod.rs\"\n      provides: \"SQLite/PostgreSQL 共用 atomicity snapshot 与逐阶段 failure matrix\"\n    - path: \"crates/ontoforge-action/tests/action_pg.rs\"\n      provides: \"真实 PostgreSQL 双连接 same-pk token/no-token races\"\n  key_links:\n    - from: \"crates/ontoforge-storage/tests/conformance/mod.rs\"\n      to: \"crates/ontoforge-storage/src/commit.rs\"\n      via: \"test-support fault injector 在指定 ActionWriteStage 完成后返回错误\"\n      pattern: \"ActionWriteStage\"\n    - from: \"crates/ontoforge-storage/tests/conformance_pg.rs\"\n      to: \"crates/ontoforge-storage/tests/support/mod.rs\"\n      via: \"现有 pg_store 使用 ONTOFORGE_PG_URL 或 postgresql_embedded 启动真实 PostgreSQL\"\n      pattern: \"pg_store\"\n    - from: \"crates/ontoforge-action/tests/action_pg.rs\"\n      to: \"crates/ontoforge-storage/src/commit.rs\"\n      via: \"两个独立 ActionService/connection 经 barrier 同时进入 stable-lock + CAS\"\n      pattern: \"Barrier\"\n",
+          "artifacts": {
+            "args": [
+              "query",
+              "verify.artifacts",
+              ".planning/phases/05-online-action/05-04-PLAN.md"
+            ],
+            "exit": 0,
+            "stdout": "{\n  \"all_passed\": true,\n  \"passed\": 3,\n  \"total\": 3,\n  \"artifacts\": [\n    {\n      \"path\": \"crates/ontoforge-storage/src/commit.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-storage/tests/conformance/mod.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-action/tests/action_pg.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_passed": true,
+              "passed": 3,
+              "total": 3,
+              "artifacts": [
+                {
+                  "path": "crates/ontoforge-storage/src/commit.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "crates/ontoforge-storage/tests/conformance/mod.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "crates/ontoforge-action/tests/action_pg.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                }
+              ]
+            }
+          },
+          "links": {
+            "args": [
+              "query",
+              "verify.key-links",
+              ".planning/phases/05-online-action/05-04-PLAN.md"
+            ],
+            "exit": 0,
+            "stdout": "{\n  \"all_verified\": true,\n  \"verified\": 3,\n  \"pending\": 0,\n  \"total\": 3,\n  \"links\": [\n    {\n      \"from\": \"crates/ontoforge-storage/tests/conformance/mod.rs\",\n      \"to\": \"crates/ontoforge-storage/src/commit.rs\",\n      \"via\": \"test-support fault injector 在指定 ActionWriteStage 完成后返回错误\",\n      \"verified\": true,\n      \"detail\": \"Pattern found in source\"\n    },\n    {\n      \"from\": \"crates/ontoforge-storage/tests/conformance_pg.rs\",\n      \"to\": \"crates/ontoforge-storage/tests/support/mod.rs\",\n      \"via\": \"现有 pg_store 使用 ONTOFORGE_PG_URL 或 postgresql_embedded 启动真实 PostgreSQL\",\n      \"verified\": true,\n      \"detail\": \"Pattern found in source\"\n    },\n    {\n      \"from\": \"crates/ontoforge-action/tests/action_pg.rs\",\n      \"to\": \"crates/ontoforge-storage/src/commit.rs\",\n      \"via\": \"两个独立 ActionService/connection 经 barrier 同时进入 stable-lock + CAS\",\n      \"verified\": true,\n      \"detail\": \"Pattern found in source\"\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_verified": true,
+              "verified": 3,
+              "pending": 0,
+              "total": 3,
+              "links": [
+                {
+                  "from": "crates/ontoforge-storage/tests/conformance/mod.rs",
+                  "to": "crates/ontoforge-storage/src/commit.rs",
+                  "via": "test-support fault injector 在指定 ActionWriteStage 完成后返回错误",
+                  "verified": true,
+                  "detail": "Pattern found in source"
+                },
+                {
+                  "from": "crates/ontoforge-storage/tests/conformance_pg.rs",
+                  "to": "crates/ontoforge-storage/tests/support/mod.rs",
+                  "via": "现有 pg_store 使用 ONTOFORGE_PG_URL 或 postgresql_embedded 启动真实 PostgreSQL",
+                  "verified": true,
+                  "detail": "Pattern found in source"
+                },
+                {
+                  "from": "crates/ontoforge-action/tests/action_pg.rs",
+                  "to": "crates/ontoforge-storage/src/commit.rs",
+                  "via": "两个独立 ActionService/connection 经 barrier 同时进入 stable-lock + CAS",
+                  "verified": true,
+                  "detail": "Pattern found in source"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "plan": ".planning/phases/05-online-action/05-05-PLAN.md",
+          "frontmatter": "\nphase: 05-online-action\nplan: 05\ntype: tdd\nwave: 5\ndepends_on: [\"05-04\"]\nfiles_modified:\n  - crates/ontoforge-storage/src/commit.rs\n  - crates/ontoforge-storage/src/sql_exit.rs\n  - crates/ontoforge-action/Cargo.toml\n  - crates/ontoforge-action/src/lib.rs\n  - crates/ontoforge-action/src/lib.rs\n  - crates/ontoforge-action/src/fingerprint.rs\n  - crates/ontoforge-action/tests/idempotency.rs\n  - crates/ontoforge-action/tests/idempotency_pg.rs\nautonomous: true\nrequirements: [ACTION-10]\n\nestimate:\n  tokens: 76000\n  raw_tokens: 76000\n  tasks: 2\n  confidence: low\n\nmust_haves:\n  truths:\n    - \"`command_id` 只在 `(principal_id, command_id)` 内唯一；相同主体同键同参返回已存批级回执且不追加 edit/log/outbox，同键异参返回 `CommandIdReused`（D-01、D-02）\"\n    - \"真实 PostgreSQL 同键并发由 `INSERT ... ON CONFLICT DO NOTHING` 的数据库唯一争用决定 winner；loser 在 winner commit 后重读，winner rollback 后可取得 claim（E4）\"\n    - \"重放与 `get_command_result` 先限定原主体，再以当前 action definition/grant 重新授权；grant 撤销或 action 消失拒绝披露（D-02、E3）\"\n    - \"receipt 只含原批次 item ordinal、对象/link identity、operation、versions、log/event identity 和 chosen server time；delete、release 或 row predicate 变化仍可向当前有 action grant 的原主体返回该最小历史摘要（D-02）\"\n    - \"fingerprint 对 JSON key order 稳定，保留 default 是否由客户端显式提供的差异，且不含 command_id 或 server chosen currentTime（E7）\"\n  artifacts:\n    - path: \"crates/ontoforge-storage/src/commit.rs\"\n      provides: \"主体作用域 command claim 的 winner/loser/abort/expiry transaction state machine\"\n    - path: \"crates/ontoforge-storage/src/sql_exit.rs\"\n      provides: \"SQLite/PostgreSQL 参数化 command claim、read、complete 与 expiry SQL\"\n    - path: \"crates/ontoforge-action/src/fingerprint.rs\"\n      provides: \"canonical client request fingerprint，明确区分 omitted default 与 explicit value\"\n    - path: \"crates/ontoforge-action/tests/idempotency_pg.rs\"\n      provides: \"真实 PG same-key 同参/异参、winner abort、response-lost races\"\n    - path: \"crates/ontoforge-action/tests/idempotency.rs\"\n      provides: \"SQLite replay authorization、receipt redaction、fingerprint/time/definition/expiry contract\"\n  key_links:\n    - from: \"crates/ontoforge-action/src/fingerprint.rs\"\n      to: \"crates/ontoforge-storage/src/commit.rs\"\n      via: \"canonical hash 随 command claim 写入并由 loser 与存量记录比较\"\n      pattern: \"params_hash\"\n    - from: \"crates/ontoforge-storage/src/commit.rs\"\n      to: \"crates/ontoforge-storage/src/sql_exit.rs\"\n      via: \"PostgreSQL ON CONFLICT DO NOTHING 后在新 statement/transaction snapshot 重读 winner outcome\"\n      pattern: \"ON CONFLICT DO NOTHING\"\n    - from: \"crates/ontoforge-action/src/lib.rs\"\n      to: \"crates/ontoforge-auth/src/scope/merge.rs\"\n      via: \"回放前按当前 frozen PrincipalScope.actions 检查 action grant，不重放旧 row predicate\"\n      pattern: \"actions\"\n",
+          "artifacts": {
+            "args": [
+              "query",
+              "verify.artifacts",
+              ".planning/phases/05-online-action/05-05-PLAN.md"
+            ],
+            "exit": 0,
+            "stdout": "{\n  \"all_passed\": true,\n  \"passed\": 5,\n  \"total\": 5,\n  \"artifacts\": [\n    {\n      \"path\": \"crates/ontoforge-storage/src/commit.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-storage/src/sql_exit.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-action/src/fingerprint.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-action/tests/idempotency_pg.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-action/tests/idempotency.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_passed": true,
+              "passed": 5,
+              "total": 5,
+              "artifacts": [
+                {
+                  "path": "crates/ontoforge-storage/src/commit.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "crates/ontoforge-storage/src/sql_exit.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "crates/ontoforge-action/src/fingerprint.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "crates/ontoforge-action/tests/idempotency_pg.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "crates/ontoforge-action/tests/idempotency.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                }
+              ]
+            }
+          },
+          "links": {
+            "args": [
+              "query",
+              "verify.key-links",
+              ".planning/phases/05-online-action/05-05-PLAN.md"
+            ],
+            "exit": 1,
+            "stdout": "{\n  \"all_verified\": false,\n  \"verified\": 1,\n  \"pending\": 0,\n  \"total\": 3,\n  \"links\": [\n    {\n      \"from\": \"crates/ontoforge-action/src/fingerprint.rs\",\n      \"to\": \"crates/ontoforge-storage/src/commit.rs\",\n      \"via\": \"canonical hash 随 command claim 写入并由 loser 与存量记录比较\",\n      \"verified\": false,\n      \"detail\": \"Pattern \\\"params_hash\\\" not found in source or target\"\n    },\n    {\n      \"from\": \"crates/ontoforge-storage/src/commit.rs\",\n      \"to\": \"crates/ontoforge-storage/src/sql_exit.rs\",\n      \"via\": \"PostgreSQL ON CONFLICT DO NOTHING 后在新 statement/transaction snapshot 重读 winner outcome\",\n      \"verified\": false,\n      \"detail\": \"Pattern \\\"ON CONFLICT DO NOTHING\\\" not found in source or target\"\n    },\n    {\n      \"from\": \"crates/ontoforge-action/src/lib.rs\",\n      \"to\": \"crates/ontoforge-auth/src/scope/merge.rs\",\n      \"via\": \"回放前按当前 frozen PrincipalScope.actions 检查 action grant，不重放旧 row predicate\",\n      \"verified\": true,\n      \"detail\": \"Pattern found in source\"\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_verified": false,
+              "verified": 1,
+              "pending": 0,
+              "total": 3,
+              "links": [
+                {
+                  "from": "crates/ontoforge-action/src/fingerprint.rs",
+                  "to": "crates/ontoforge-storage/src/commit.rs",
+                  "via": "canonical hash 随 command claim 写入并由 loser 与存量记录比较",
+                  "verified": false,
+                  "detail": "Pattern \"params_hash\" not found in source or target"
+                },
+                {
+                  "from": "crates/ontoforge-storage/src/commit.rs",
+                  "to": "crates/ontoforge-storage/src/sql_exit.rs",
+                  "via": "PostgreSQL ON CONFLICT DO NOTHING 后在新 statement/transaction snapshot 重读 winner outcome",
+                  "verified": false,
+                  "detail": "Pattern \"ON CONFLICT DO NOTHING\" not found in source or target"
+                },
+                {
+                  "from": "crates/ontoforge-action/src/lib.rs",
+                  "to": "crates/ontoforge-auth/src/scope/merge.rs",
+                  "via": "回放前按当前 frozen PrincipalScope.actions 检查 action grant，不重放旧 row predicate",
+                  "verified": true,
+                  "detail": "Pattern found in source"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "plan": ".planning/phases/05-online-action/05-06-PLAN.md",
+          "frontmatter": "\nphase: 05-online-action\nplan: 06\ntype: tdd\nwave: 6\ndepends_on: [\"05-05\"]\nfiles_modified:\n  - crates/ontoforge-schema/src/ir/action.rs\n  - crates/ontoforge-schema/src/validate/actions.rs\n  - crates/ontoforge-query/src/lib.rs\n  - crates/ontoforge-action/Cargo.toml\n  - crates/ontoforge-action/src/lib.rs\n  - crates/ontoforge-action/src/rules.rs\n  - crates/ontoforge-action/src/source.rs\n  - crates/ontoforge-action/tests/source.rs\n  - crates/ontoforge-action/tests/trino_action_it.rs\nautonomous: true\nrequirements: [ACTION-08, ACTION-09, ACTION-12]\n\nestimate:\n  tokens: 56000\n  raw_tokens: 56000\n  tasks: 2\n  confidence: low\n\nmust_haves:\n  truths:\n    - \"Action 仅在 target/objectReference/criteria/rule/post-state 确实缺少 source-backed 值时调用 Engine；已编辑对象的所需字段全部由 edit overlay 满足时，即使 Trino 不可用也可提交且 Engine 调用数为 0（D-06）\"\n    - \"需要 source 且 Engine 不可用时返回稳定 `EngineUnavailable`，在开启 write transaction 前终止且无 command/log/edit/outbox\"\n    - \"本次 source pk read 以 `LIMIT 2` 实际观察到重复 logical pk 时返回 `AmbiguousObject` 并拒绝写入；未读取 source 的离线路径不承诺发现重复（D-06）\"\n    - \"fake Engine 覆盖分支与调用计数，真实 Trino integration test 覆盖 source-required、duplicate 和 all-patched offline；真实 target 必须通过 `--ignored` 实际执行\"\n    - \"Action IR 的 release 规则确实发出 storage release；release 后 source row 的 scope 必须在锁内 guard 验证，拒绝时没有 durable artifact（ACTION-08）\"\n    - \"source-backed 的 Query 签发 `_version` 经同一 host TokenCodec、真实 source sample 与 Action 锁后 edit state 验证；提交阶段不二次读 Engine（ACTION-09）\"\n  artifacts:\n    - path: \"crates/ontoforge-action/src/source.rs\"\n      provides: \"read-set/source-field demand planner 与 bounded pk sampler\"\n    - path: \"crates/ontoforge-query/src/lib.rs\"\n      provides: \"Action 可复用的 canonical pk source/edit overlay primitive，不复制 query merge 语义\"\n    - path: \"crates/ontoforge-action/tests/source.rs\"\n      provides: \"fake Engine 三分支、call counts、batch limits 和 pre-transaction failure tests\"\n    - path: \"crates/ontoforge-action/tests/trino_action_it.rs\"\n      provides: \"真实 Trino/PostgreSQL Action source corpus\"\n  key_links:\n    - from: \"crates/ontoforge-action/src/source.rs\"\n      to: \"crates/ontoforge-query/src/lib.rs\"\n      via: \"复用 query 的 pk read/overlay、canonical PropertyValue 与 LIMIT 2 ambiguous behavior\"\n      pattern: \"AmbiguousObject\"\n    - from: \"crates/ontoforge-action/src/lib.rs\"\n      to: \"crates/ontoforge-action/src/source.rs\"\n      via: \"参数/rule/criteria/scope 计算 required logical properties 后才执行 bounded source sampling\"\n      pattern: \"required_source\"\n    - from: \"crates/ontoforge-action/tests/trino_action_it.rs\"\n      to: \"ci/trino/catalog/demo.properties\"\n      via: \"现有 CI Trino catalog 与 PostgreSQL demo source tables\"\n      pattern: \"ONTOFORGE_TRINO_URL\"\n",
+          "artifacts": {
+            "args": [
+              "query",
+              "verify.artifacts",
+              ".planning/phases/05-online-action/05-06-PLAN.md"
+            ],
+            "exit": 0,
+            "stdout": "{\n  \"all_passed\": true,\n  \"passed\": 4,\n  \"total\": 4,\n  \"artifacts\": [\n    {\n      \"path\": \"crates/ontoforge-action/src/source.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-query/src/lib.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-action/tests/source.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-action/tests/trino_action_it.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_passed": true,
+              "passed": 4,
+              "total": 4,
+              "artifacts": [
+                {
+                  "path": "crates/ontoforge-action/src/source.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "crates/ontoforge-query/src/lib.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "crates/ontoforge-action/tests/source.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "crates/ontoforge-action/tests/trino_action_it.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                }
+              ]
+            }
+          },
+          "links": {
+            "args": [
+              "query",
+              "verify.key-links",
+              ".planning/phases/05-online-action/05-06-PLAN.md"
+            ],
+            "exit": 1,
+            "stdout": "{\n  \"all_verified\": false,\n  \"verified\": 2,\n  \"pending\": 0,\n  \"total\": 3,\n  \"links\": [\n    {\n      \"from\": \"crates/ontoforge-action/src/source.rs\",\n      \"to\": \"crates/ontoforge-query/src/lib.rs\",\n      \"via\": \"复用 query 的 pk read/overlay、canonical PropertyValue 与 LIMIT 2 ambiguous behavior\",\n      \"verified\": true,\n      \"detail\": \"Pattern found in source\"\n    },\n    {\n      \"from\": \"crates/ontoforge-action/src/lib.rs\",\n      \"to\": \"crates/ontoforge-action/src/source.rs\",\n      \"via\": \"参数/rule/criteria/scope 计算 required logical properties 后才执行 bounded source sampling\",\n      \"verified\": false,\n      \"detail\": \"Pattern \\\"required_source\\\" not found in source or target\"\n    },\n    {\n      \"from\": \"crates/ontoforge-action/tests/trino_action_it.rs\",\n      \"to\": \"ci/trino/catalog/demo.properties\",\n      \"via\": \"现有 CI Trino catalog 与 PostgreSQL demo source tables\",\n      \"verified\": true,\n      \"detail\": \"Pattern found in source\"\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_verified": false,
+              "verified": 2,
+              "pending": 0,
+              "total": 3,
+              "links": [
+                {
+                  "from": "crates/ontoforge-action/src/source.rs",
+                  "to": "crates/ontoforge-query/src/lib.rs",
+                  "via": "复用 query 的 pk read/overlay、canonical PropertyValue 与 LIMIT 2 ambiguous behavior",
+                  "verified": true,
+                  "detail": "Pattern found in source"
+                },
+                {
+                  "from": "crates/ontoforge-action/src/lib.rs",
+                  "to": "crates/ontoforge-action/src/source.rs",
+                  "via": "参数/rule/criteria/scope 计算 required logical properties 后才执行 bounded source sampling",
+                  "verified": false,
+                  "detail": "Pattern \"required_source\" not found in source or target"
+                },
+                {
+                  "from": "crates/ontoforge-action/tests/trino_action_it.rs",
+                  "to": "ci/trino/catalog/demo.properties",
+                  "via": "现有 CI Trino catalog 与 PostgreSQL demo source tables",
+                  "verified": true,
+                  "detail": "Pattern found in source"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "plan": ".planning/phases/05-online-action/05-07-PLAN.md",
+          "frontmatter": "\nphase: 05-online-action\nplan: 07\ntype: tdd\nwave: 7\ndepends_on: [\"05-06\"]\nfiles_modified:\n  - crates/ontoforge-action/Cargo.toml\n  - crates/ontoforge-action/src/lib.rs\n  - crates/ontoforge-action/src/outbox.rs\n  - crates/ontoforge-action/tests/outbox.rs\n  - crates/ontoforge-action/tests/entrypoints.rs\n  - crates/ontoforge-action/tests/action_pg.rs\n  - crates/ontoforge-query/Cargo.toml\n  - crates/ontoforge-storage/src/commit.rs\n  - crates/ontoforge-storage/src/import.rs\n  - .github/workflows/ci.yml\n  - .github/workflows/nightly.yml\nautonomous: true\nrequirements: [ACTION-07, ACTION-11]\n\nestimate:\n  tokens: 70000\n  raw_tokens: 70000\n  tasks: 2\n  confidence: low\n\nmust_haves:\n  truths:\n    - \"Action commit 与 outbox row 同事务；commit 后 crash、HTTP failure、send 成功但 mark 前 crash 均由 worker 恢复并以同一 `event_id` 至少投递一次（ACTION-11）\"\n    - \"outbox claim 使用到期 lease；并行 worker 对同一 attempt 只有一个 owner，worker 死亡后 lease expiry 允许恢复，网络 I/O 不占用数据库 write transaction\"\n    - \"webhook target 只来自 trusted server configuration，不能由 Action request/parameters/rules 覆盖；payload 只含 action/log/event identity 与最小 receipt，不含旧值或当前对象值\"\n    - \"production source 中对象 mutation 入口只出现于 Action transaction 与 audited import；测试 fixture 不算 production route（ACTION-07）\"\n    - \"CI 实际执行 SQLite、真实 PostgreSQL Action atomicity/races/idempotency、真实 Trino source 和 webhook tests，并先断言 ignored integration tests 的发现数非零\"\n  artifacts:\n    - path: \"crates/ontoforge-action/src/outbox.rs\"\n      provides: \"lease/retry/backoff/recovery webhook worker 与 trusted WebhookConfig\"\n      exports: [\"WebhookWorker\", \"WebhookConfig\", \"WebhookTransport\"]\n    - path: \"crates/ontoforge-action/tests/outbox.rs\"\n      provides: \"wiremock delivery、crash window、lease expiry 与 parallel worker corpus\"\n    - path: \"crates/ontoforge-action/tests/entrypoints.rs\"\n      provides: \"production write caller allowlist 与 request/config boundary regression guard\"\n    - path: \".github/workflows/ci.yml\"\n      provides: \"SQLite/webhook unit gate 与 PostgreSQL/Trino Action integration targets\"\n  key_links:\n    - from: \"crates/ontoforge-action/src/outbox.rs\"\n      to: \"crates/ontoforge-storage/src/commit.rs\"\n      via: \"claim_due_outbox/mark_delivered/retry_with_backoff 使用 lease_owner 条件更新\"\n      pattern: \"lease_owner\"\n    - from: \"crates/ontoforge-action/src/outbox.rs\"\n      to: \"trusted WebhookConfig\"\n      via: \"worker 构造时绑定 server-configured URL，payload/request 无 URL 字段\"\n      pattern: \"WebhookConfig\"\n    - from: \".github/workflows/ci.yml\"\n      to: \"crates/ontoforge-action/tests/trino_action_it.rs\"\n      via: \"service job 先验证 test discovery 非零，再用 `--ignored` 实际执行\"\n      pattern: \"trino_action_it\"\n",
+          "artifacts": {
+            "args": [
+              "query",
+              "verify.artifacts",
+              ".planning/phases/05-online-action/05-07-PLAN.md"
+            ],
+            "exit": 0,
+            "stdout": "{\n  \"all_passed\": true,\n  \"passed\": 4,\n  \"total\": 4,\n  \"artifacts\": [\n    {\n      \"path\": \"crates/ontoforge-action/src/outbox.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-action/tests/outbox.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-action/tests/entrypoints.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \".github/workflows/ci.yml\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_passed": true,
+              "passed": 4,
+              "total": 4,
+              "artifacts": [
+                {
+                  "path": "crates/ontoforge-action/src/outbox.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "crates/ontoforge-action/tests/outbox.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "crates/ontoforge-action/tests/entrypoints.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": ".github/workflows/ci.yml",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                }
+              ]
+            }
+          },
+          "links": {
+            "args": [
+              "query",
+              "verify.key-links",
+              ".planning/phases/05-online-action/05-07-PLAN.md"
+            ],
+            "exit": 0,
+            "stdout": "{\n  \"all_verified\": true,\n  \"verified\": 3,\n  \"pending\": 0,\n  \"total\": 3,\n  \"links\": [\n    {\n      \"from\": \"crates/ontoforge-action/src/outbox.rs\",\n      \"to\": \"crates/ontoforge-storage/src/commit.rs\",\n      \"via\": \"claim_due_outbox/mark_delivered/retry_with_backoff 使用 lease_owner 条件更新\",\n      \"verified\": true,\n      \"detail\": \"Pattern found in source\"\n    },\n    {\n      \"from\": \"crates/ontoforge-action/src/outbox.rs\",\n      \"to\": \"trusted WebhookConfig\",\n      \"via\": \"worker 构造时绑定 server-configured URL，payload/request 无 URL 字段\",\n      \"verified\": true,\n      \"detail\": \"Pattern found in source\"\n    },\n    {\n      \"from\": \".github/workflows/ci.yml\",\n      \"to\": \"crates/ontoforge-action/tests/trino_action_it.rs\",\n      \"via\": \"service job 先验证 test discovery 非零，再用 `--ignored` 实际执行\",\n      \"verified\": true,\n      \"detail\": \"Pattern found in source\"\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_verified": true,
+              "verified": 3,
+              "pending": 0,
+              "total": 3,
+              "links": [
+                {
+                  "from": "crates/ontoforge-action/src/outbox.rs",
+                  "to": "crates/ontoforge-storage/src/commit.rs",
+                  "via": "claim_due_outbox/mark_delivered/retry_with_backoff 使用 lease_owner 条件更新",
+                  "verified": true,
+                  "detail": "Pattern found in source"
+                },
+                {
+                  "from": "crates/ontoforge-action/src/outbox.rs",
+                  "to": "trusted WebhookConfig",
+                  "via": "worker 构造时绑定 server-configured URL，payload/request 无 URL 字段",
+                  "verified": true,
+                  "detail": "Pattern found in source"
+                },
+                {
+                  "from": ".github/workflows/ci.yml",
+                  "to": "crates/ontoforge-action/tests/trino_action_it.rs",
+                  "via": "service job 先验证 test discovery 非零，再用 `--ignored` 实际执行",
+                  "verified": true,
+                  "detail": "Pattern found in source"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "covered_inputs": [
+        {
+          "file": ".github/workflows/ci.yml",
+          "bytes": 18887,
+          "sha256": "b4a802a680e268303a5cdfa66f51f876f0b8128822ff364616c3fe7c3b7f77e8"
+        },
+        {
+          "file": ".github/workflows/nightly.yml",
+          "bytes": 4973,
+          "sha256": "28002c0425b61151f8f002634a95322ea70dd64a4f0fbfbb8670e9625f63c6ac"
+        },
+        {
+          "file": ".planning/phases/05-online-action/05-01-PLAN.md",
+          "bytes": 23774,
+          "sha256": "2c38b0ff8ef3e9d2676bad386712c13fe27adb3583031ef2d86807d23ee6fa8e"
+        },
+        {
+          "file": ".planning/phases/05-online-action/05-01-SUMMARY.md",
+          "bytes": 7862,
+          "sha256": "253a89954ad54819efdd73e76a9dbaec67121a5388172e8e70b375e8c398ddd7"
+        },
+        {
+          "file": ".planning/phases/05-online-action/05-02-PLAN.md",
+          "bytes": 18762,
+          "sha256": "cc7e46a7b7583636ced8618ea1f6684aef089e6a2d5971fa54da94ed2535c89f"
+        },
+        {
+          "file": ".planning/phases/05-online-action/05-02-SUMMARY.md",
+          "bytes": 5867,
+          "sha256": "045136f525d865b40142b635d720f1f72331414a469995f35d1dba8a94757f11"
+        },
+        {
+          "file": ".planning/phases/05-online-action/05-03-PLAN.md",
+          "bytes": 17548,
+          "sha256": "79b3561111bef82b289e5c2783da58826762a77306acf83666ed48c5d659dc31"
+        },
+        {
+          "file": ".planning/phases/05-online-action/05-03-SUMMARY.md",
+          "bytes": 5851,
+          "sha256": "cdc397911109816b5ef3cd412d6019ce078e79918d41e01d8513ab819368cfbc"
+        },
+        {
+          "file": ".planning/phases/05-online-action/05-04-PLAN.md",
+          "bytes": 16795,
+          "sha256": "283ccc5c8617407c235fc6a6a5c616b9e4a35fef08f4e48d88e2a5ff316de196"
+        },
+        {
+          "file": ".planning/phases/05-online-action/05-04-SUMMARY.md",
+          "bytes": 6453,
+          "sha256": "f1f156fb2f83b9b074e46bb22b9ae445b7192a137254d1c352ed411dfc577ce6"
+        },
+        {
+          "file": ".planning/phases/05-online-action/05-05-PLAN.md",
+          "bytes": 18859,
+          "sha256": "4227666d99ac929c49b7b60f53e11852db0cc748a14f22f58001d83ca452ed06"
+        },
+        {
+          "file": ".planning/phases/05-online-action/05-05-SUMMARY.md",
+          "bytes": 6440,
+          "sha256": "e6d40e8fa60a079abc3b010698a03d56e920611f4fed120b7f9487d40f19575b"
+        },
+        {
+          "file": ".planning/phases/05-online-action/05-06-PLAN.md",
+          "bytes": 18394,
+          "sha256": "2f46e5eddeb269fb06fc13e852c5b0bacd94e274123ecb312f9856f9c4bc9369"
+        },
+        {
+          "file": ".planning/phases/05-online-action/05-06-SUMMARY.md",
+          "bytes": 6760,
+          "sha256": "09b61c5fb7cb141da42c0290dad036a140300a60edf697ad1b95bc5172b182b8"
+        },
+        {
+          "file": ".planning/phases/05-online-action/05-07-PLAN.md",
+          "bytes": 19784,
+          "sha256": "3650df7c23df34fbd579efee880d4c56cba25d3f601a35a2d6967f1a87cddb0a"
+        },
+        {
+          "file": ".planning/phases/05-online-action/05-07-SUMMARY.md",
+          "bytes": 6627,
+          "sha256": "6b3c9a0fb63f4e3a8fa0c5566c066747a4324111e2d1eccd9ca4db1fe2cff983"
+        },
+        {
+          "file": ".planning/phases/05-online-action/05-VALIDATION.md",
+          "bytes": 12469,
+          "sha256": "597dcf58cddba4fafa55ba8963a7df970dcf84448721a37615637c1707d8c742"
+        },
+        {
+          "file": "Cargo.lock",
+          "bytes": 113308,
+          "sha256": "7ccd6827bf948238d62ceb492bea930e30ae7d289a1dd3fc04f94d08afafb2ee"
+        },
+        {
+          "file": "Cargo.toml",
+          "bytes": 2869,
+          "sha256": "6ff37b0773c9cbf86f8738a11f008d32b41ac8e6153c5da37dafea0da33d4dd5"
+        },
+        {
+          "file": "ci/check-tls-deps.sh",
+          "bytes": 345,
+          "sha256": "73bd03d6c2361108bd041f2ccac3a29155d98f7ec8867e5750df6d5891a25fa7"
+        },
+        {
+          "file": "ci/test_tls_deps.py",
+          "bytes": 4211,
+          "sha256": "0f1d1fb4baba849319e8467d087c08b672ed9d94f14c67cd22d8b0042b06845a"
+        },
+        {
+          "file": "ci/trino/catalog/demo.properties",
+          "bytes": 346,
+          "sha256": "efba7d04462e530aebf590b33b9f954b2e2753659b02356ba8b2125c836375f9"
+        },
+        {
+          "file": "crates/ontoforge-action/Cargo.toml",
+          "bytes": 1161,
+          "sha256": "dfa041df1c46d03bdd32986c6079e9957b60246f665a515352e33defa2735cea"
+        },
+        {
+          "file": "crates/ontoforge-action/src/criteria.rs",
+          "bytes": 11890,
+          "sha256": "f6aac736492bbb953b08ccbfaca9d7b22ad3d14c09f05d6facad51cc28ae8667"
+        },
+        {
+          "file": "crates/ontoforge-action/src/fingerprint.rs",
+          "bytes": 1833,
+          "sha256": "1e4d6ae6c98869833ee90af7909d39be2ccc5b53bef96be44827d36dc6119f6c"
+        },
+        {
+          "file": "crates/ontoforge-action/src/lib.rs",
+          "bytes": 30350,
+          "sha256": "ae25e0c9035e5fa99c7576f091fde6635d85dd0801b451107b6d156df307ab6c"
+        },
+        {
+          "file": "crates/ontoforge-action/src/outbox.rs",
+          "bytes": 6057,
+          "sha256": "e212b100ca24b618d91d871d84b99d4ab28011ef46b1cc2f554d5cfa8b08b50e"
+        },
+        {
+          "file": "crates/ontoforge-action/src/params.rs",
+          "bytes": 2674,
+          "sha256": "c4a9c6169d5feae909bdd5d68c7b2093aea64bd13f298e1d95312c6db6f143d9"
+        },
+        {
+          "file": "crates/ontoforge-action/src/rules.rs",
+          "bytes": 8303,
+          "sha256": "b8f6d141f447acfd8a83969bf3d16104699c0337b48b69b1577243aec1198642"
+        },
+        {
+          "file": "crates/ontoforge-action/src/source.rs",
+          "bytes": 6835,
+          "sha256": "7faad38cdf23b87a140a83544d2e4b36d3bf3b503654ea2fe729bd639a0a6733"
+        },
+        {
+          "file": "crates/ontoforge-action/src/version.rs",
+          "bytes": 2142,
+          "sha256": "ace211e5e4d9ab04b61a97051e34ebb00eac7ecd9a9e03043a969d8fb2132126"
+        },
+        {
+          "file": "crates/ontoforge-action/tests/action.rs",
+          "bytes": 25878,
+          "sha256": "a253e04f9175bbe4babe97e44dc47197e1a80f846d65b85a90114b89772dc38f"
+        },
+        {
+          "file": "crates/ontoforge-action/tests/action_pg.rs",
+          "bytes": 11033,
+          "sha256": "608b91b984cc8d41cd4b87bca8f6f4fb7a5ac5b86e968b5c622093ba56846d96"
+        },
+        {
+          "file": "crates/ontoforge-action/tests/entrypoints.rs",
+          "bytes": 6704,
+          "sha256": "3a74950d432ed1ba006722c2dec751d8feafebab035298d5b5f8406270fa0351"
+        },
+        {
+          "file": "crates/ontoforge-action/tests/idempotency.rs",
+          "bytes": 18462,
+          "sha256": "c02ed43fada38f7c9afc0f9c50f2b87598185212e16ce0d9f96c78d1932340da"
+        },
+        {
+          "file": "crates/ontoforge-action/tests/idempotency_pg.rs",
+          "bytes": 13253,
+          "sha256": "d2a40de475a18ff24066b88ce4bcee671fe45c1edfa2586870c15595d3941221"
+        },
+        {
+          "file": "crates/ontoforge-action/tests/outbox.rs",
+          "bytes": 22703,
+          "sha256": "444324b77dfcf9bf98b56de34cd285fa43e72c3132d1439e1f0f3a239a321eff"
+        },
+        {
+          "file": "crates/ontoforge-action/tests/outbox_pg.rs",
+          "bytes": 6182,
+          "sha256": "7a889543486cbbf41b889e602c366c11df917776799dc21c16636c1723085034"
+        },
+        {
+          "file": "crates/ontoforge-action/tests/security.rs",
+          "bytes": 15468,
+          "sha256": "7c40516416834dacc74b23145175ce81ba595dc0e224ec532d328e88fe35b82c"
+        },
+        {
+          "file": "crates/ontoforge-action/tests/source.rs",
+          "bytes": 24506,
+          "sha256": "abccf653593dacc8a31f2c387e2a65e1ff19854f10725070426dd13404e33cb3"
+        },
+        {
+          "file": "crates/ontoforge-action/tests/trino_action_it.rs",
+          "bytes": 16622,
+          "sha256": "ce0b534c9d45ad5b1fc19631a8d5149c6c732824772690045d5514758e03e391"
+        },
+        {
+          "file": "crates/ontoforge-action/tests/version.rs",
+          "bytes": 12709,
+          "sha256": "8df7614b443d022086e90b02be8693cb6a5540fcb9ccdf1fac14425026b194df"
+        },
+        {
+          "file": "crates/ontoforge-auth/src/scope/merge.rs",
+          "bytes": 4493,
+          "sha256": "123bc10065f7b64de2f5976e36eb9fd64e28836b13b4c35524dda71bd0d544bf"
+        },
+        {
+          "file": "crates/ontoforge-engine/src/config.rs",
+          "bytes": 44941,
+          "sha256": "d0b7f00d1b33f0fb8300fe1c971af72b3094688914dbb6f66f2e47be9b455543"
+        },
+        {
+          "file": "crates/ontoforge-query/Cargo.toml",
+          "bytes": 957,
+          "sha256": "b594224d53a4d72faad442a5e2c2b2b457518a134be5c976e3b4ddc1ce2c1ba1"
+        },
+        {
+          "file": "crates/ontoforge-query/src/cursor.rs",
+          "bytes": 8812,
+          "sha256": "9f1a13a7e1f7b326ea9534ba10b26a1f84ba38e51d1b0ba366df5b00f8022ee9"
+        },
+        {
+          "file": "crates/ontoforge-query/src/lib.rs",
+          "bytes": 19376,
+          "sha256": "be742bc046424fcee8c138de4395a9a61291bf39eecf4495c8ef930c2731e9d1"
+        },
+        {
+          "file": "crates/ontoforge-query/tests/pk_read.rs",
+          "bytes": 17568,
+          "sha256": "9b369229ff766d8387a9f8f1195d1b99824caff62f5ce4d107b4e88a588d9d3d"
+        },
+        {
+          "file": "crates/ontoforge-query/tests/security.rs",
+          "bytes": 74349,
+          "sha256": "42c28732f4572c7dca3bd8fd6ba262d350096a509b30c2e0a2a3784894c7dcfa"
+        },
+        {
+          "file": "crates/ontoforge-schema/src/ir/action.rs",
+          "bytes": 7616,
+          "sha256": "e7304754dc24f6d757daa3611a8980e6efd439ceba4264a553efa8f9b5b1ec69"
+        },
+        {
+          "file": "crates/ontoforge-schema/src/ir/basetype.rs",
+          "bytes": 7541,
+          "sha256": "e2a3a66aa781b461bd46bedeecba3f472f390069d2b8176572702d88fb8ddf6c"
+        },
+        {
+          "file": "crates/ontoforge-schema/src/ir/mod.rs",
+          "bytes": 3043,
+          "sha256": "f50b9f254271c1099898bf8e862ca908737fc6031d460396de2f0d898711423a"
+        },
+        {
+          "file": "crates/ontoforge-schema/src/lint/e08.rs",
+          "bytes": 11153,
+          "sha256": "e3cca0376bde105b84e07dfbc9dd7de99aa2c2940b41479526e20064c9e9b8a6"
+        },
+        {
+          "file": "crates/ontoforge-schema/src/lint/structure/w09.rs",
+          "bytes": 8173,
+          "sha256": "75c1a88efaae505712e7dd9b08f6e14950a98cb65cda1bde0c586154ed11f53b"
+        },
+        {
+          "file": "crates/ontoforge-schema/src/loader/dispatch.rs",
+          "bytes": 12237,
+          "sha256": "d53d6edf5faa386fe50c31b83bb664a67dafaf3727f6cc0932379a7ab0c8b2e5"
+        },
+        {
+          "file": "crates/ontoforge-schema/src/validate/actions.rs",
+          "bytes": 16675,
+          "sha256": "5be86e83fed3d2030b7a939958234fb7df728345515288bc9956b52dbfeaa04a"
+        },
+        {
+          "file": "crates/ontoforge-schema/tests/action_types.rs",
+          "bytes": 21338,
+          "sha256": "804d23aaa3a2a2de1d0f865aa9ceb9c5a8c8703c9448ffb464513e8a47d303a0"
+        },
+        {
+          "file": "crates/ontoforge-storage/Cargo.toml",
+          "bytes": 1306,
+          "sha256": "436805d6959abf18622b060519baaef6a75d8b67d94cf672412f33e05ec0129e"
+        },
+        {
+          "file": "crates/ontoforge-storage/migrations/postgres/0004_action.sql",
+          "bytes": 1222,
+          "sha256": "eefc6b8592f1fed31581eb32be465d0dd8443e43c655192191587575d725466a"
+        },
+        {
+          "file": "crates/ontoforge-storage/migrations/sqlite/0004_action.sql",
+          "bytes": 1155,
+          "sha256": "f84962815971186e21af66a86e4192af170feb19c8bfbbb99aad0a79f25a0b3a"
+        },
+        {
+          "file": "crates/ontoforge-storage/src/commit.rs",
+          "bytes": 72899,
+          "sha256": "b05f6c053ebe1dd00a84f1c58ee69914428d5876ca9e545ce4715888a3335b25"
+        },
+        {
+          "file": "crates/ontoforge-storage/src/import.rs",
+          "bytes": 45906,
+          "sha256": "ca1a7da7b7b2e4929b3406d8aa05f72505d3b76a979468eeba743edb1a20fc41"
+        },
+        {
+          "file": "crates/ontoforge-storage/src/lib.rs",
+          "bytes": 857,
+          "sha256": "334a3c6fb6ba8aeaf9b12f41782b10f2f1844e10a67b6d9457f93ad0c723e269"
+        },
+        {
+          "file": "crates/ontoforge-storage/src/sql_exit.rs",
+          "bytes": 31823,
+          "sha256": "2ca8b80bf7803f4a184c36b1cd04089a026cc6f2ba609938cb6bd7192841ce72"
+        },
+        {
+          "file": "crates/ontoforge-storage/tests/conformance/mod.rs",
+          "bytes": 100960,
+          "sha256": "6dcdb878951be272e31b963a7cc26c1a8bbadda727d1c135292317e89658fd0a"
+        },
+        {
+          "file": "crates/ontoforge-storage/tests/conformance_pg.rs",
+          "bytes": 6199,
+          "sha256": "7fa92f91d722f8e7c48b19701e72df76baec424e20bd50e306bc91e27d70bc59"
+        },
+        {
+          "file": "crates/ontoforge-storage/tests/conformance_sqlite.rs",
+          "bytes": 216,
+          "sha256": "9ab684a9809264e1113947ad518ee082d8aa0aa3ab516cae78f80648bed32485"
+        },
+        {
+          "file": "crates/ontoforge-storage/tests/reload_pg.rs",
+          "bytes": 26220,
+          "sha256": "0b39d36238048f62218edbf6240f80f29813d1bafa9ef1729f604cc1f3258c0a"
+        },
+        {
+          "file": "crates/ontoforge-storage/tests/support/mod.rs",
+          "bytes": 16163,
+          "sha256": "131e0f5acf6cd5369bc524e9494ff61d7e2d7f2fb51fcb2249a8c79525d9f537"
+        },
+        {
+          "file": "crates/ontoforge/WEBHOOK-WORKER.md",
+          "bytes": 1106,
+          "sha256": "5c02687f2e8b8f52a01c4a7ab47faf811946ac8b2437fb4dca2e454d17122b8d"
+        },
+        {
+          "file": "crates/ontoforge/src/cli.rs",
+          "bytes": 15068,
+          "sha256": "3d046c054134c1e7e2fdc27714e045d127ba76f283e3f462080c2f27478e3fdd"
+        },
+        {
+          "file": "crates/ontoforge/src/lib.rs",
+          "bytes": 7265,
+          "sha256": "7740d3899fcde34ca1e638063badda1eda81dae6af436bda3859c07e6f9b120f"
+        },
+        {
+          "file": "crates/ontoforge/src/webhook_worker.rs",
+          "bytes": 2123,
+          "sha256": "0a6f52010b2247fbf3dc232defaa05b5a83c0b3f4d19c998aae93e7c05409915"
+        },
+        {
+          "file": "crates/ontoforge/tests/cli_webhook_worker.rs",
+          "bytes": 8202,
+          "sha256": "936d8e3589e24a19f85292e9c0663d41c1b0cedae8c4e470b5d75cbb7b0345de"
+        },
+        {
+          "file": "crates/ontoforge/tests/snapshots/invalid_examples__v03-function-rule.snap",
+          "bytes": 445,
+          "sha256": "33347043c3f1a48496da1b20fa77ea8e8a0aabafd79276f509fb7199d0f11046"
+        },
+        {
+          "file": "schemas/ontoforge-definition.schema.json",
+          "bytes": 27789,
+          "sha256": "a0a6cb63ec07f793ff9a47b61cf5f2d04ebbc232e4aebdae3017cdc203079546"
+        },
+        {
+          "file": "target/milestone-audit-evidence-20261104/final-check.log",
+          "bytes": 361,
+          "sha256": "4480be4a3312dddf3e5436dbd0c0db02772c88b6c564332af0d9a3c7b2237424"
+        },
+        {
+          "file": "target/milestone-audit-evidence-20261104/postgres_http_it.log",
+          "bytes": 538,
+          "sha256": "3c621462ea4d9271872d3d88601f07561e2d04955f5f00d2fd24886cbf097466"
+        },
+        {
+          "file": "target/milestone-audit-evidence-20261104/source-equivalence.diff",
+          "bytes": 648,
+          "sha256": "76a60b330a343f1aab750e0192999d4c9a0541c9f87d546a6b83c85da9ba9c0a"
+        },
+        {
+          "file": "target/milestone-audit-evidence-20261104/source-guard.log",
+          "bytes": 1985,
+          "sha256": "871bf528ec12d40b444acfaaddd6b36b5a78ccf4d5567a533824943c60fb7678"
+        },
+        {
+          "file": "target/milestone-audit-evidence-20261104/sqlite-action-atomic.log",
+          "bytes": 813,
+          "sha256": "0bd91dc680d7470a057637ed06619c23ec5681a9f8b870510f1108cdefbd07f8"
+        },
+        {
+          "file": "target/milestone-audit-evidence-20261104/trino_l2_acl_it.log",
+          "bytes": 1430,
+          "sha256": "676cd510f5b7781cfb236ef705cbfb105fa839c15572ae6c7057c7e01266c576"
+        },
+        {
+          "file": "target/milestone-ci-41759804733-integration.log",
+          "bytes": 114556,
+          "sha256": "6ecde94b35302e75b4484d4268281d5216fb09f8f2856013075d081050ca6f25"
+        },
+        {
+          "file": "target/milestone-ci-41759804733-ubuntu.log",
+          "bytes": 330741,
+          "sha256": "dd5f4c4165adb6792daa3889c85418d50a14821adf2171352492d57775b27975"
+        },
+        {
+          "file": "target/milestone-ci-41759804733-windows.log",
+          "bytes": 338621,
+          "sha256": "b6ecb8fa1fb5c4459c9e7c8e01074d99c142456d65ab76afd66ccac613679eaa"
+        }
+      ]
+    },
+    {
+      "phase": "06-l2-raw-dql-toolsets-audit",
+      "dir": ".planning/phases/06-l2-raw-dql-toolsets-audit",
+      "original_sha256": "a1f42e9e860cba9896ad8739f6ed26de16c94ee06453f7a70e263ec6651f6361",
+      "covered_before": [
+        ".github/workflows/ci.yml",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/.evidence/.gitattributes",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/.evidence/clippy-workspace-20261028.log",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/.evidence/external-cleanup-20261028.log",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/.evidence/external-pg-audit-20261028.log",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/.evidence/external-trino-acl-20261028.log",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/.evidence/trino-fixture-start-20261028.log",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-01-PLAN.md",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-01-SUMMARY.md",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-02-PLAN.md",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-02-SUMMARY.md",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-03-PLAN.md",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-03-SUMMARY.md",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-04-PLAN.md",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-04-SUMMARY.md",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-05-PLAN.md",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-05-SUMMARY.md",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-06-PLAN.md",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-06-SUMMARY.md",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-07-PLAN.md",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-07-SUMMARY.md",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-08-PLAN.md",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-08-SUMMARY.md",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-09-PLAN.md",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-09-SUMMARY.md",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-10-PLAN.md",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-10-SUMMARY.md",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-CLIPPY.log",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-DIFF-CHECK.log",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-FIXTURE-CLEANUP.log",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-FMT.log",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-GREEN-join-error.log",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-GREEN-pg.log",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-GREEN-sqlite.log",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-PLAN.md",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-cancelled-junit.json",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-concurrent-junit.json",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-failure-junit.json",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-join-error-junit.json",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-join-error.log",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-join-error.xml",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-pg.log",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-sqlite.log",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-sqlite.xml",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-SUMMARY.md",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-EXTERNAL-EVIDENCE.md",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-PR-REVIEW.md",
+        ".planning/phases/06-l2-raw-dql-toolsets-audit/06-VALIDATION.md",
+        "Cargo.lock",
+        "Cargo.toml",
+        "ci/check-tls-deps.sh",
+        "ci/query-services.sh",
+        "ci/test_tls_deps.py",
+        "ci/trino/l2/access-control.properties",
+        "ci/trino/l2/config.properties",
+        "ci/trino/l2/rules.json",
+        "ci/trino/l2/seed.sql",
+        "crates/ontoforge-action/tests/entrypoints.rs",
+        "crates/ontoforge-engine/Cargo.toml",
+        "crates/ontoforge-engine/src/config.rs",
+        "crates/ontoforge-engine/src/printer/l2.rs",
+        "crates/ontoforge-engine/src/printer/mod.rs",
+        "crates/ontoforge-engine/src/trino/decode.rs",
+        "crates/ontoforge-engine/src/trino/headers.rs",
+        "crates/ontoforge-engine/src/trino/l2_health.rs",
+        "crates/ontoforge-engine/src/trino/l2_monitor.rs",
+        "crates/ontoforge-engine/src/trino/mod.rs",
+        "crates/ontoforge-engine/tests/data/l2_corpus.json",
+        "crates/ontoforge-engine/tests/l2_gate.rs",
+        "crates/ontoforge-engine/tests/l2_health.rs",
+        "crates/ontoforge-engine/tests/l2_monitor.rs",
+        "crates/ontoforge-engine/tests/trino_l2_acl_it.rs",
+        "crates/ontoforge-query/src/aggregate.rs",
+        "crates/ontoforge-query/src/execute.rs",
+        "crates/ontoforge-query/src/l2.rs",
+        "crates/ontoforge-query/src/lib.rs",
+        "crates/ontoforge-query/tests/audit_l0.rs",
+        "crates/ontoforge-query/tests/audit_pk.rs",
+        "crates/ontoforge-query/tests/definition_snapshot.rs",
+        "crates/ontoforge-query/tests/l2_discovery.rs",
+        "crates/ontoforge-query/tests/l2_execute.rs",
+        "crates/ontoforge-query/tests/security.rs",
+        "crates/ontoforge-storage/migrations/postgres/0005_read_audit.sql",
+        "crates/ontoforge-storage/migrations/postgres/0006_audit_truncated.sql",
+        "crates/ontoforge-storage/migrations/sqlite/0005_read_audit.sql",
+        "crates/ontoforge-storage/migrations/sqlite/0006_audit_truncated.sql",
+        "crates/ontoforge-storage/src/lib.rs",
+        "crates/ontoforge-storage/src/read_audit.rs",
+        "crates/ontoforge-storage/src/reload.rs",
+        "crates/ontoforge-storage/src/scope_store.rs",
+        "crates/ontoforge-storage/src/sql_exit.rs",
+        "crates/ontoforge-storage/src/store.rs",
+        "crates/ontoforge-storage/tests/conformance/mod.rs",
+        "crates/ontoforge-storage/tests/conformance_pg.rs",
+        "crates/ontoforge-storage/tests/conformance_sqlite.rs",
+        "crates/ontoforge-storage/tests/reload_pg.rs",
+        "crates/ontoforge-storage/tests/scope_store.rs",
+        "crates/ontoforge/src/lint_cmd.rs",
+        "crates/ontoforge/src/reload.rs",
+        "crates/ontoforge/src/scope.rs",
+        "crates/ontoforge/tests/cli_reload.rs",
+        "crates/ontoforge/tests/cli_scope.rs",
+        "target/milestone-audit-evidence-20261104/final-check.log",
+        "target/milestone-audit-evidence-20261104/postgres_http_it.log",
+        "target/milestone-audit-evidence-20261104/source-equivalence.diff",
+        "target/milestone-audit-evidence-20261104/source-guard.log",
+        "target/milestone-audit-evidence-20261104/sqlite-action-atomic.log",
+        "target/milestone-audit-evidence-20261104/trino_l2_acl_it.log",
+        "target/milestone-ci-41759804733-integration.log",
+        "target/milestone-ci-41759804733-ubuntu.log",
+        "target/milestone-ci-41759804733-windows.log"
+      ],
+      "native_status_before": {
+        "args": [
+          "query",
+          "verification.status",
+          ".planning/phases/06-l2-raw-dql-toolsets-audit"
+        ],
+        "exit": 0,
+        "stdout": "{\n  \"status\": \"stale\",\n  \"next_action\": \"Verification is stale — covered source files changed after the verifier last ran: \\\"crates/ontoforge-engine/tests/l2_monitor.rs\\\". Re-run execute-phase for this phase: it resumes at the verification gates and re-runs the verifier, regenerating VERIFICATION.md and its digest. verify-work alone cannot refresh a stale report.\",\n  \"next_command\": \"$gsd-execute-phase 06\",\n  \"route\": \"execute-phase\",\n  \"moved_files\": [\n    \"crates/ontoforge-engine/tests/l2_monitor.rs\"\n  ]\n}",
+        "stderr": "",
+        "json": {
+          "status": "stale",
+          "next_action": "Verification is stale — covered source files changed after the verifier last ran: \"crates/ontoforge-engine/tests/l2_monitor.rs\". Re-run execute-phase for this phase: it resumes at the verification gates and re-runs the verifier, regenerating VERIFICATION.md and its digest. verify-work alone cannot refresh a stale report.",
+          "next_command": "$gsd-execute-phase 06",
+          "route": "execute-phase",
+          "moved_files": [
+            "crates/ontoforge-engine/tests/l2_monitor.rs"
+          ]
+        }
+      },
+      "roadmap": {
+        "args": [
+          "query",
+          "roadmap.get-phase",
+          "06",
+          "--raw"
+        ],
+        "exit": 0,
+        "stdout": "### Phase 6: L2 Raw DQL, Toolsets & Audit\n\n**Goal**: As a 受信主体, I want to 在 allow-list 内执行仅在 Trino 侧权限可证明安全时才开放的只读 Trino SQL, so that 所有级别的读取都留下元数据审计且定义与授权的变更只经部署方与管理通道.\n**Mode:** mvp\n**Depends on**: Phase 5\n**Requirements**: L2-01, L2-02, L2-03, L2-04, AUDIT-01, SCOPE-07\n**Spike**: 进入前在 Trino 483 上复验 spike 2 语料；决策见 ADR-0018、ADR-0019\n**Success Criteria** (what must be TRUE):\n\n  1. L2 执行器只接受 SELECT / WITH，拒绝 `TABLE()` 表函数、`CALL`、`EXECUTE`、多语句与会话 / 事务语句，执行时发送重序列化后的 SQL；spike 2 语料全部按预期放行或拒绝\n  2. allow-list 外 catalog、edit store catalog 与 `system` 元数据表全部被拒绝\n  3. 库级启动及周期自检无法证明 L2 身份受限（含只能看到自己的 `system.runtime.queries`）时 L2 被禁用，暴露可供服务读取的禁用原因；HTTP `/health` 告警由 Phase 7 验收（ADR-0028）\n  4. 所有级别的读取写入元数据审计（主体、工具、对象类型、apiName 级条件、生效 role、SQL 哈希、行数、耗时、request_id），不含结果数据；审计积压时读请求返回 `AuditUnavailable`\n  5. role / scope 只能经管理通道或 L3 修改并审计；定义 reload 先 validate / lint，失败不切换；每个请求固定使用开始时的定义版本\n\n**Plans**: 11/11 complete，2026-10-28；详: `.planning/phases/06-l2-raw-dql-toolsets-audit/06-VERIFICATION.md`\n\n**Details**: `.planning/phases/06-l2-raw-dql-toolsets-audit/`",
+        "stderr": ""
+      },
+      "decisions": {
+        "args": [
+          "query",
+          "check.decision-coverage-verify",
+          ".planning/phases/06-l2-raw-dql-toolsets-audit",
+          ".planning/phases/06-l2-raw-dql-toolsets-audit/06-CONTEXT.md"
+        ],
+        "exit": 0,
+        "stdout": "{\n  \"skipped\": false,\n  \"blocking\": false,\n  \"total\": 6,\n  \"honored\": 6,\n  \"not_honored\": [],\n  \"message\": \"All trackable CONTEXT.md decisions are honored by shipped artifacts.\"\n}",
+        "stderr": "",
+        "json": {
+          "skipped": false,
+          "blocking": false,
+          "total": 6,
+          "honored": 6,
+          "not_honored": [],
+          "message": "All trackable CONTEXT.md decisions are honored by shipped artifacts."
+        }
+      },
+      "plans": [
+        {
+          "plan": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-01-PLAN.md",
+          "frontmatter": "\nphase: 06-l2-raw-dql-toolsets-audit\nplan: 01\ntype: tdd\nwave: 1\ndepends_on: []\nfiles_modified:\n  - crates/ontoforge-storage/migrations/sqlite/0005_read_audit.sql\n  - crates/ontoforge-storage/src/read_audit.rs\n  - crates/ontoforge-storage/src/lib.rs\n  - crates/ontoforge-storage/src/store.rs\n  - crates/ontoforge-query/src/lib.rs\n  - crates/ontoforge-query/tests/audit_pk.rs\nautonomous: true\nrequirements: [AUDIT-01]\nestimate: {tokens: 52000, raw_tokens: 52000, tasks: 2, confidence: low}\nmust_haves:\n  truths:\n    - \"D-04: 公开 pk 读的成功、授权拒绝、源错误及运行中取消均有明确审计状态；返回前占用有界审计容量并提交无结果数据的元数据记录，无容量或 sink 失败返回 AuditUnavailable。\"\n    - \"记录使用请求开始的 definition/scope 快照；内部 read_pk_source 不产生第二条读审计。\"\n  artifacts:\n    - path: crates/ontoforge-storage/src/read_audit.rs\n      provides: 有界审计门禁、异步批量 sink 与读审计模型\n    - path: crates/ontoforge-storage/migrations/sqlite/0005_read_audit.sql\n      provides: SQLite 系统读审计表和时间索引\n  key_links:\n    - from: crates/ontoforge-query/src/lib.rs\n      to: crates/ontoforge-storage/src/read_audit.rs\n      via: QueryService::execute 在返回 QueryPage 前完成审计提交\n",
+          "artifacts": {
+            "args": [
+              "query",
+              "verify.artifacts",
+              ".planning/phases/06-l2-raw-dql-toolsets-audit/06-01-PLAN.md"
+            ],
+            "exit": 0,
+            "stdout": "{\n  \"all_passed\": true,\n  \"passed\": 2,\n  \"total\": 2,\n  \"artifacts\": [\n    {\n      \"path\": \"crates/ontoforge-storage/src/read_audit.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-storage/migrations/sqlite/0005_read_audit.sql\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_passed": true,
+              "passed": 2,
+              "total": 2,
+              "artifacts": [
+                {
+                  "path": "crates/ontoforge-storage/src/read_audit.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "crates/ontoforge-storage/migrations/sqlite/0005_read_audit.sql",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                }
+              ]
+            }
+          },
+          "links": {
+            "args": [
+              "query",
+              "verify.key-links",
+              ".planning/phases/06-l2-raw-dql-toolsets-audit/06-01-PLAN.md"
+            ],
+            "exit": 1,
+            "stdout": "{\n  \"all_verified\": false,\n  \"verified\": 0,\n  \"pending\": 0,\n  \"total\": 1,\n  \"links\": [\n    {\n      \"from\": \"crates/ontoforge-query/src/lib.rs\",\n      \"to\": \"crates/ontoforge-storage/src/read_audit.rs\",\n      \"via\": \"QueryService::execute 在返回 QueryPage 前完成审计提交\",\n      \"verified\": false,\n      \"detail\": \"Target not referenced in source\"\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_verified": false,
+              "verified": 0,
+              "pending": 0,
+              "total": 1,
+              "links": [
+                {
+                  "from": "crates/ontoforge-query/src/lib.rs",
+                  "to": "crates/ontoforge-storage/src/read_audit.rs",
+                  "via": "QueryService::execute 在返回 QueryPage 前完成审计提交",
+                  "verified": false,
+                  "detail": "Target not referenced in source"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "plan": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-02-PLAN.md",
+          "frontmatter": "\nphase: 06-l2-raw-dql-toolsets-audit\nplan: 02\ntype: tdd\nwave: 2\ndepends_on: [\"06-01\"]\nfiles_modified:\n  - crates/ontoforge-storage/migrations/postgres/0005_read_audit.sql\n  - crates/ontoforge-storage/src/read_audit.rs\n  - crates/ontoforge-storage/tests/conformance/mod.rs\n  - crates/ontoforge-storage/tests/conformance_sqlite.rs\n  - crates/ontoforge-storage/tests/conformance_pg.rs\nautonomous: true\nrequirements: [AUDIT-01]\nestimate: {tokens: 42000, raw_tokens: 42000, tasks: 2, confidence: low}\nmust_haves:\n  truths:\n    - \"D-04: PostgreSQL system schema 与 SQLite 的审计字段、batch、保留期清理行为相同。\"\n    - \"两个后端的 sink 失败都关闭新读且没有原始 SQL 或结果数据入表。\"\n  artifacts:\n    - path: crates/ontoforge-storage/migrations/postgres/0005_read_audit.sql\n      provides: PostgreSQL system schema 审计表\n    - path: crates/ontoforge-storage/tests/conformance/mod.rs\n      provides: 两后端相同的持久化、清理和故障用例\n  key_links:\n    - from: crates/ontoforge-storage/src/read_audit.rs\n      to: crates/ontoforge-storage/migrations/postgres/0005_read_audit.sql\n      via: sqlx 批量落库并按 retention cutoff 清理\n",
+          "artifacts": {
+            "args": [
+              "query",
+              "verify.artifacts",
+              ".planning/phases/06-l2-raw-dql-toolsets-audit/06-02-PLAN.md"
+            ],
+            "exit": 0,
+            "stdout": "{\n  \"all_passed\": true,\n  \"passed\": 2,\n  \"total\": 2,\n  \"artifacts\": [\n    {\n      \"path\": \"crates/ontoforge-storage/migrations/postgres/0005_read_audit.sql\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-storage/tests/conformance/mod.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_passed": true,
+              "passed": 2,
+              "total": 2,
+              "artifacts": [
+                {
+                  "path": "crates/ontoforge-storage/migrations/postgres/0005_read_audit.sql",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "crates/ontoforge-storage/tests/conformance/mod.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                }
+              ]
+            }
+          },
+          "links": {
+            "args": [
+              "query",
+              "verify.key-links",
+              ".planning/phases/06-l2-raw-dql-toolsets-audit/06-02-PLAN.md"
+            ],
+            "exit": 1,
+            "stdout": "{\n  \"all_verified\": false,\n  \"verified\": 0,\n  \"pending\": 0,\n  \"total\": 1,\n  \"links\": [\n    {\n      \"from\": \"crates/ontoforge-storage/src/read_audit.rs\",\n      \"to\": \"crates/ontoforge-storage/migrations/postgres/0005_read_audit.sql\",\n      \"via\": \"sqlx 批量落库并按 retention cutoff 清理\",\n      \"verified\": false,\n      \"detail\": \"Target not referenced in source\"\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_verified": false,
+              "verified": 0,
+              "pending": 0,
+              "total": 1,
+              "links": [
+                {
+                  "from": "crates/ontoforge-storage/src/read_audit.rs",
+                  "to": "crates/ontoforge-storage/migrations/postgres/0005_read_audit.sql",
+                  "via": "sqlx 批量落库并按 retention cutoff 清理",
+                  "verified": false,
+                  "detail": "Target not referenced in source"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "plan": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-03-PLAN.md",
+          "frontmatter": "\nphase: 06-l2-raw-dql-toolsets-audit\nplan: 03\ntype: tdd\nwave: 1\ndepends_on: []\nfiles_modified:\n  - Cargo.lock\n  - crates/ontoforge-engine/Cargo.toml\n  - crates/ontoforge-engine/src/printer/l2.rs\n  - crates/ontoforge-engine/src/printer/mod.rs\n  - crates/ontoforge-engine/tests/l2_gate.rs\n  - crates/ontoforge-engine/tests/data/l2_corpus.json\nautonomous: true\nrequirements: [L2-02, L2-03]\nestimate: {tokens: 65000, raw_tokens: 65000, tasks: 2, confidence: low}\nmust_haves:\n  truths:\n    - \"D-01/D-03: 唯一受控入口只将校验后的 sqlparser Display 转成 PrintedSql，原字符串与未知 AST 零发送。\"\n    - \"D-06: 104 个历史 ID 都有机器可执行 constructed-equivalent 样例，G11 拒绝，G16 仅实测受控改写后可放行。\"\n  artifacts:\n    - path: crates/ontoforge-engine/src/printer/l2.rs\n      provides: SQL 白名单、授权关系遍历、外层 limit 与 Display 的窄入口\n    - path: crates/ontoforge-engine/tests/data/l2_corpus.json\n      provides: 104-ID provenance/expected/支持性语料\n  key_links:\n    - from: crates/ontoforge-engine/src/printer/l2.rs\n      to: crates/ontoforge-engine/src/printer/mod.rs\n      via: private PrintedSql::new 仅在全部安全检查通过后调用\n",
+          "artifacts": {
+            "args": [
+              "query",
+              "verify.artifacts",
+              ".planning/phases/06-l2-raw-dql-toolsets-audit/06-03-PLAN.md"
+            ],
+            "exit": 0,
+            "stdout": "{\n  \"all_passed\": true,\n  \"passed\": 2,\n  \"total\": 2,\n  \"artifacts\": [\n    {\n      \"path\": \"crates/ontoforge-engine/src/printer/l2.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-engine/tests/data/l2_corpus.json\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_passed": true,
+              "passed": 2,
+              "total": 2,
+              "artifacts": [
+                {
+                  "path": "crates/ontoforge-engine/src/printer/l2.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "crates/ontoforge-engine/tests/data/l2_corpus.json",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                }
+              ]
+            }
+          },
+          "links": {
+            "args": [
+              "query",
+              "verify.key-links",
+              ".planning/phases/06-l2-raw-dql-toolsets-audit/06-03-PLAN.md"
+            ],
+            "exit": 1,
+            "stdout": "{\n  \"all_verified\": false,\n  \"verified\": 0,\n  \"pending\": 0,\n  \"total\": 1,\n  \"links\": [\n    {\n      \"from\": \"crates/ontoforge-engine/src/printer/l2.rs\",\n      \"to\": \"crates/ontoforge-engine/src/printer/mod.rs\",\n      \"via\": \"private PrintedSql::new 仅在全部安全检查通过后调用\",\n      \"verified\": false,\n      \"detail\": \"Target not referenced in source\"\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_verified": false,
+              "verified": 0,
+              "pending": 0,
+              "total": 1,
+              "links": [
+                {
+                  "from": "crates/ontoforge-engine/src/printer/l2.rs",
+                  "to": "crates/ontoforge-engine/src/printer/mod.rs",
+                  "via": "private PrintedSql::new 仅在全部安全检查通过后调用",
+                  "verified": false,
+                  "detail": "Target not referenced in source"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "plan": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-04-PLAN.md",
+          "frontmatter": "\nphase: 06-l2-raw-dql-toolsets-audit\nplan: 04\ntype: tdd\nwave: 2\ndepends_on: [\"06-03\"]\nfiles_modified:\n  - crates/ontoforge-engine/src/config.rs\n  - crates/ontoforge-engine/src/printer/l2.rs\n  - crates/ontoforge-engine/src/trino/l2_health.rs\n  - crates/ontoforge-engine/src/trino/mod.rs\n  - crates/ontoforge-engine/tests/l2_health.rs\n  - crates/ontoforge-engine/tests/trino_l2_acl_it.rs\n  - ci/query-services.sh\n  - ci/trino/l2/config.properties\n  - ci/trino/l2/access-control.properties\n  - ci/trino/l2/rules.json\nautonomous: true\nrequirements: [L2-03, L2-04]\nestimate: {tokens: 59000, raw_tokens: 59000, tasks: 2, confidence: low}\nmust_haves:\n  truths:\n    - \"D-02: L2 默认 disabled，ACL 声明及真实正反探针全通过才 enabled；未知/超时/复检失败 disabled 且健康原因脱敏。\"\n    - \"另一主体已知活跃查询对 L2 不可见，越界/edit 对象均实际存在且错误是权限拒绝。\"\n  artifacts:\n    - path: crates/ontoforge-engine/src/trino/l2_health.rs\n      provides: 库级自检和状态\n    - path: ci/trino/l2/rules.json\n      provides: 隔离的 Trino 483 file-based ACL\n    - path: ci/query-services.sh\n      provides: 独立受限 Trino 483 的本机/CI 启停、就绪门禁\n    - path: crates/ontoforge-engine/tests/trino_l2_acl_it.rs\n      provides: 真 Trino 正反与撤权测试\n  key_links:\n    - from: crates/ontoforge-engine/src/trino/l2_health.rs\n      to: crates/ontoforge-engine/src/trino/mod.rs\n      via: 独立 L2 身份执行探针和结果门禁\n",
+          "artifacts": {
+            "args": [
+              "query",
+              "verify.artifacts",
+              ".planning/phases/06-l2-raw-dql-toolsets-audit/06-04-PLAN.md"
+            ],
+            "exit": 0,
+            "stdout": "{\n  \"all_passed\": true,\n  \"passed\": 4,\n  \"total\": 4,\n  \"artifacts\": [\n    {\n      \"path\": \"crates/ontoforge-engine/src/trino/l2_health.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"ci/trino/l2/rules.json\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"ci/query-services.sh\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-engine/tests/trino_l2_acl_it.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_passed": true,
+              "passed": 4,
+              "total": 4,
+              "artifacts": [
+                {
+                  "path": "crates/ontoforge-engine/src/trino/l2_health.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "ci/trino/l2/rules.json",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "ci/query-services.sh",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "crates/ontoforge-engine/tests/trino_l2_acl_it.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                }
+              ]
+            }
+          },
+          "links": {
+            "args": [
+              "query",
+              "verify.key-links",
+              ".planning/phases/06-l2-raw-dql-toolsets-audit/06-04-PLAN.md"
+            ],
+            "exit": 1,
+            "stdout": "{\n  \"all_verified\": false,\n  \"verified\": 0,\n  \"pending\": 0,\n  \"total\": 1,\n  \"links\": [\n    {\n      \"from\": \"crates/ontoforge-engine/src/trino/l2_health.rs\",\n      \"to\": \"crates/ontoforge-engine/src/trino/mod.rs\",\n      \"via\": \"独立 L2 身份执行探针和结果门禁\",\n      \"verified\": false,\n      \"detail\": \"Target not referenced in source\"\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_verified": false,
+              "verified": 0,
+              "pending": 0,
+              "total": 1,
+              "links": [
+                {
+                  "from": "crates/ontoforge-engine/src/trino/l2_health.rs",
+                  "to": "crates/ontoforge-engine/src/trino/mod.rs",
+                  "via": "独立 L2 身份执行探针和结果门禁",
+                  "verified": false,
+                  "detail": "Target not referenced in source"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "plan": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-05-PLAN.md",
+          "frontmatter": "\nphase: 06-l2-raw-dql-toolsets-audit\nplan: 05\ntype: tdd\nwave: 2\ndepends_on: [\"06-01\"]\nfiles_modified:\n  - crates/ontoforge-query/src/execute.rs\n  - crates/ontoforge-query/src/aggregate.rs\n  - crates/ontoforge-query/tests/audit_l0.rs\nautonomous: true\nrequirements: [AUDIT-01]\nestimate: {tokens: 41000, raw_tokens: 41000, tasks: 2, confidence: low}\nmust_haves:\n  truths:\n    - \"D-04: execute_list 的 filter/list/set/searchAround 和 execute_aggregate 都走同一审计门禁，内部调用不重复记录。\"\n    - \"AuditUnavailable 在 AggregateError 转换后保持相同错误码；已计算但未受理审计的结果不释放。\"\n  artifacts:\n    - path: crates/ontoforge-query/tests/audit_l0.rs\n      provides: 公开 L0 入口与拒绝/错误/取消矩阵\n  key_links:\n    - from: crates/ontoforge-query/src/aggregate.rs\n      to: crates/ontoforge-query/src/execute.rs\n      via: 内部 list 调用不创建第二条公开读审计\n",
+          "artifacts": {
+            "args": [
+              "query",
+              "verify.artifacts",
+              ".planning/phases/06-l2-raw-dql-toolsets-audit/06-05-PLAN.md"
+            ],
+            "exit": 0,
+            "stdout": "{\n  \"all_passed\": true,\n  \"passed\": 1,\n  \"total\": 1,\n  \"artifacts\": [\n    {\n      \"path\": \"crates/ontoforge-query/tests/audit_l0.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_passed": true,
+              "passed": 1,
+              "total": 1,
+              "artifacts": [
+                {
+                  "path": "crates/ontoforge-query/tests/audit_l0.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                }
+              ]
+            }
+          },
+          "links": {
+            "args": [
+              "query",
+              "verify.key-links",
+              ".planning/phases/06-l2-raw-dql-toolsets-audit/06-05-PLAN.md"
+            ],
+            "exit": 1,
+            "stdout": "{\n  \"all_verified\": false,\n  \"verified\": 0,\n  \"pending\": 0,\n  \"total\": 1,\n  \"links\": [\n    {\n      \"from\": \"crates/ontoforge-query/src/aggregate.rs\",\n      \"to\": \"crates/ontoforge-query/src/execute.rs\",\n      \"via\": \"内部 list 调用不创建第二条公开读审计\",\n      \"verified\": false,\n      \"detail\": \"Target not referenced in source\"\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_verified": false,
+              "verified": 0,
+              "pending": 0,
+              "total": 1,
+              "links": [
+                {
+                  "from": "crates/ontoforge-query/src/aggregate.rs",
+                  "to": "crates/ontoforge-query/src/execute.rs",
+                  "via": "内部 list 调用不创建第二条公开读审计",
+                  "verified": false,
+                  "detail": "Target not referenced in source"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "plan": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-06-PLAN.md",
+          "frontmatter": "\nphase: 06-l2-raw-dql-toolsets-audit\nplan: 06\ntype: tdd\nwave: 3\ndepends_on: [\"06-01\", \"06-03\", \"06-04\"]\nfiles_modified:\n  - crates/ontoforge-query/src/lib.rs\n  - crates/ontoforge-query/src/l2.rs\n  - crates/ontoforge-query/tests/l2_execute.rs\nautonomous: true\nrequirements: [L2-01, L2-02, L2-03, L2-04, AUDIT-01]\nestimate: {tokens: 48000, raw_tokens: 48000, tasks: 2, confidence: low}\nmust_haves:\n  truths:\n    - \"D-01/D-02/D-03: execute_query 仅在 sql:raw、grants、ACL 自检均有效时调用受控 Display 入口；越界零 Trino POST。\"\n    - \"D-04: execute_query/explain_query 的成功、授权拒绝、源错误、截断与运行中取消均有明确审计状态；返回行数/字节限制而不伪造任意 SQL 的 keyset cursor。\"\n  artifacts:\n    - path: crates/ontoforge-query/src/l2.rs\n      provides: L2 库级执行与 explain API\n    - path: crates/ontoforge-query/tests/l2_execute.rs\n      provides: 授权、wire body、审计与错误矩阵\n  key_links:\n    - from: crates/ontoforge-query/src/l2.rs\n      to: crates/ontoforge-engine/src/printer/l2.rs\n      via: 唯一经授权 raw SQL 到 PrintedSql 的调用\n    - from: crates/ontoforge-query/src/l2.rs\n      to: crates/ontoforge-storage/src/read_audit.rs\n      via: 预留审计容量和最终元数据提交\n",
+          "artifacts": {
+            "args": [
+              "query",
+              "verify.artifacts",
+              ".planning/phases/06-l2-raw-dql-toolsets-audit/06-06-PLAN.md"
+            ],
+            "exit": 0,
+            "stdout": "{\n  \"all_passed\": true,\n  \"passed\": 2,\n  \"total\": 2,\n  \"artifacts\": [\n    {\n      \"path\": \"crates/ontoforge-query/src/l2.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-query/tests/l2_execute.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_passed": true,
+              "passed": 2,
+              "total": 2,
+              "artifacts": [
+                {
+                  "path": "crates/ontoforge-query/src/l2.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "crates/ontoforge-query/tests/l2_execute.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                }
+              ]
+            }
+          },
+          "links": {
+            "args": [
+              "query",
+              "verify.key-links",
+              ".planning/phases/06-l2-raw-dql-toolsets-audit/06-06-PLAN.md"
+            ],
+            "exit": 1,
+            "stdout": "{\n  \"all_verified\": false,\n  \"verified\": 0,\n  \"pending\": 0,\n  \"total\": 2,\n  \"links\": [\n    {\n      \"from\": \"crates/ontoforge-query/src/l2.rs\",\n      \"to\": \"crates/ontoforge-engine/src/printer/l2.rs\",\n      \"via\": \"唯一经授权 raw SQL 到 PrintedSql 的调用\",\n      \"verified\": false,\n      \"detail\": \"Target not referenced in source\"\n    },\n    {\n      \"from\": \"crates/ontoforge-query/src/l2.rs\",\n      \"to\": \"crates/ontoforge-storage/src/read_audit.rs\",\n      \"via\": \"预留审计容量和最终元数据提交\",\n      \"verified\": false,\n      \"detail\": \"Target not referenced in source\"\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_verified": false,
+              "verified": 0,
+              "pending": 0,
+              "total": 2,
+              "links": [
+                {
+                  "from": "crates/ontoforge-query/src/l2.rs",
+                  "to": "crates/ontoforge-engine/src/printer/l2.rs",
+                  "via": "唯一经授权 raw SQL 到 PrintedSql 的调用",
+                  "verified": false,
+                  "detail": "Target not referenced in source"
+                },
+                {
+                  "from": "crates/ontoforge-query/src/l2.rs",
+                  "to": "crates/ontoforge-storage/src/read_audit.rs",
+                  "via": "预留审计容量和最终元数据提交",
+                  "verified": false,
+                  "detail": "Target not referenced in source"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "plan": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-07-PLAN.md",
+          "frontmatter": "\nphase: 06-l2-raw-dql-toolsets-audit\nplan: 07\ntype: tdd\nwave: 4\ndepends_on: [\"06-06\"]\nfiles_modified:\n  - crates/ontoforge-engine/src/trino/mod.rs\n  - crates/ontoforge-engine/src/printer/l2.rs\n  - crates/ontoforge-query/src/l2.rs\n  - crates/ontoforge-query/tests/l2_discovery.rs\nautonomous: true\nrequirements: [L2-01, L2-03, L2-04, AUDIT-01]\nestimate: {tokens: 41000, raw_tokens: 41000, tasks: 2, confidence: low}\nmust_haves:\n  truths:\n    - \"D-01/D-02: list_catalogs/list_schemas/list_tables/get_table_schema 只返回授权允许且非 system/edit 的名称与类型。\"\n    - \"D-04: 四项操作逐项执行前预留审计容量，成功、拒绝、Trino 错误、截断、取消均留下相应元数据；故障无结果释放。\"\n  artifacts:\n    - path: crates/ontoforge-query/src/l2.rs\n      provides: 四个剩余 L2 库级工具\n    - path: crates/ontoforge-query/tests/l2_discovery.rs\n      provides: grants、元数据过滤与审计矩阵\n  key_links:\n    - from: crates/ontoforge-query/src/l2.rs\n      to: crates/ontoforge-engine/src/trino/mod.rs\n      via: 每次元数据访问先检查 ACL enabled，再调用 TrinoEngine 受控元数据查询\n",
+          "artifacts": {
+            "args": [
+              "query",
+              "verify.artifacts",
+              ".planning/phases/06-l2-raw-dql-toolsets-audit/06-07-PLAN.md"
+            ],
+            "exit": 0,
+            "stdout": "{\n  \"all_passed\": true,\n  \"passed\": 2,\n  \"total\": 2,\n  \"artifacts\": [\n    {\n      \"path\": \"crates/ontoforge-query/src/l2.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-query/tests/l2_discovery.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_passed": true,
+              "passed": 2,
+              "total": 2,
+              "artifacts": [
+                {
+                  "path": "crates/ontoforge-query/src/l2.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "crates/ontoforge-query/tests/l2_discovery.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                }
+              ]
+            }
+          },
+          "links": {
+            "args": [
+              "query",
+              "verify.key-links",
+              ".planning/phases/06-l2-raw-dql-toolsets-audit/06-07-PLAN.md"
+            ],
+            "exit": 1,
+            "stdout": "{\n  \"all_verified\": false,\n  \"verified\": 0,\n  \"pending\": 0,\n  \"total\": 1,\n  \"links\": [\n    {\n      \"from\": \"crates/ontoforge-query/src/l2.rs\",\n      \"to\": \"crates/ontoforge-engine/src/trino/mod.rs\",\n      \"via\": \"每次元数据访问先检查 ACL enabled，再调用 TrinoEngine 受控元数据查询\",\n      \"verified\": false,\n      \"detail\": \"Target not referenced in source\"\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_verified": false,
+              "verified": 0,
+              "pending": 0,
+              "total": 1,
+              "links": [
+                {
+                  "from": "crates/ontoforge-query/src/l2.rs",
+                  "to": "crates/ontoforge-engine/src/trino/mod.rs",
+                  "via": "每次元数据访问先检查 ACL enabled，再调用 TrinoEngine 受控元数据查询",
+                  "verified": false,
+                  "detail": "Target not referenced in source"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "plan": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-08-PLAN.md",
+          "frontmatter": "\nphase: 06-l2-raw-dql-toolsets-audit\nplan: 08\ntype: execute\nwave: 5\ndepends_on: [\"06-02\", \"06-03\", \"06-04\", \"06-07\", \"06-09\"]\nfiles_modified:\n  - .github/workflows/ci.yml\n  - crates/ontoforge-engine/tests/trino_l2_acl_it.rs\n  - crates/ontoforge-engine/tests/l2_gate.rs\nautonomous: true\nrequirements: [L2-01, L2-02, L2-03, L2-04, AUDIT-01]\nestimate: {tokens: 34000, raw_tokens: 34000, tasks: 2, confidence: low}\nmust_haves:\n  truths:\n    - \"D-02/D-06: CI 实际启动独立受限 Trino 483，并以测试发现数大于零的门禁跑 ACL、104-ID corpus 的 Trino 行为。\"\n    - \"D-04: CI 实际运行 PostgreSQL 审计 conformance，发现数大于零；Windows workspace 回归通过。\"\n  artifacts:\n    - path: ci/query-services.sh\n      provides: 06-04 已创建的独立 ACL Trino fixture 启停和环境地址\n    - path: .github/workflows/ci.yml\n      provides: 真实 PG/受限 Trino 门禁\n  key_links:\n    - from: .github/workflows/ci.yml\n      to: crates/ontoforge-engine/tests/trino_l2_acl_it.rs\n      via: 独立 ACL target 的非零发现和 --ignored 执行\n",
+          "artifacts": {
+            "args": [
+              "query",
+              "verify.artifacts",
+              ".planning/phases/06-l2-raw-dql-toolsets-audit/06-08-PLAN.md"
+            ],
+            "exit": 0,
+            "stdout": "{\n  \"all_passed\": true,\n  \"passed\": 2,\n  \"total\": 2,\n  \"artifacts\": [\n    {\n      \"path\": \"ci/query-services.sh\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \".github/workflows/ci.yml\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_passed": true,
+              "passed": 2,
+              "total": 2,
+              "artifacts": [
+                {
+                  "path": "ci/query-services.sh",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": ".github/workflows/ci.yml",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                }
+              ]
+            }
+          },
+          "links": {
+            "args": [
+              "query",
+              "verify.key-links",
+              ".planning/phases/06-l2-raw-dql-toolsets-audit/06-08-PLAN.md"
+            ],
+            "exit": 1,
+            "stdout": "{\n  \"all_verified\": false,\n  \"verified\": 0,\n  \"pending\": 0,\n  \"total\": 1,\n  \"links\": [\n    {\n      \"from\": \".github/workflows/ci.yml\",\n      \"to\": \"crates/ontoforge-engine/tests/trino_l2_acl_it.rs\",\n      \"via\": \"独立 ACL target 的非零发现和 --ignored 执行\",\n      \"verified\": false,\n      \"detail\": \"Target not referenced in source\"\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_verified": false,
+              "verified": 0,
+              "pending": 0,
+              "total": 1,
+              "links": [
+                {
+                  "from": ".github/workflows/ci.yml",
+                  "to": "crates/ontoforge-engine/tests/trino_l2_acl_it.rs",
+                  "via": "独立 ACL target 的非零发现和 --ignored 执行",
+                  "verified": false,
+                  "detail": "Target not referenced in source"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "plan": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-09-PLAN.md",
+          "frontmatter": "\nphase: 06-l2-raw-dql-toolsets-audit\nplan: 09\ntype: execute\nwave: 4\ndepends_on: [\"06-01\", \"06-05\", \"06-06\"]\nfiles_modified:\n  - crates/ontoforge/tests/cli_reload.rs\n  - crates/ontoforge/tests/cli_scope.rs\n  - crates/ontoforge-storage/tests/scope_store.rs\n  - crates/ontoforge-query/tests/definition_snapshot.rs\nautonomous: true\nrequirements: [AUDIT-01, L2-01, SCOPE-07]\nestimate: {tokens: 30000, raw_tokens: 30000, tasks: 2, confidence: low}\nmust_haves:\n  truths:\n    - \"D-05: reload lint/validate 失败不切换，scope hash 错误不写，成功管理变更事务性写 of_admin_audit；远程 L2 工具无管理入口。\"\n    - \"D-04/D-05: 请求中途 reload/scope apply 后，本次 L0/L2 读取及审计仍使用同一个请求开始时 definition/scope 快照。\"\n  artifacts:\n    - path: crates/ontoforge-query/tests/definition_snapshot.rs\n      provides: 并发 reload 与读审计一致性测试\n  key_links:\n    - from: crates/ontoforge-query/tests/definition_snapshot.rs\n      to: crates/ontoforge-query/src/lib.rs\n      via: Arc ActiveDefinition 在一次调用与审计元数据中保持稳定\n",
+          "artifacts": {
+            "args": [
+              "query",
+              "verify.artifacts",
+              ".planning/phases/06-l2-raw-dql-toolsets-audit/06-09-PLAN.md"
+            ],
+            "exit": 0,
+            "stdout": "{\n  \"all_passed\": true,\n  \"passed\": 1,\n  \"total\": 1,\n  \"artifacts\": [\n    {\n      \"path\": \"crates/ontoforge-query/tests/definition_snapshot.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_passed": true,
+              "passed": 1,
+              "total": 1,
+              "artifacts": [
+                {
+                  "path": "crates/ontoforge-query/tests/definition_snapshot.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                }
+              ]
+            }
+          },
+          "links": {
+            "args": [
+              "query",
+              "verify.key-links",
+              ".planning/phases/06-l2-raw-dql-toolsets-audit/06-09-PLAN.md"
+            ],
+            "exit": 1,
+            "stdout": "{\n  \"all_verified\": false,\n  \"verified\": 0,\n  \"pending\": 0,\n  \"total\": 1,\n  \"links\": [\n    {\n      \"from\": \"crates/ontoforge-query/tests/definition_snapshot.rs\",\n      \"to\": \"crates/ontoforge-query/src/lib.rs\",\n      \"via\": \"Arc ActiveDefinition 在一次调用与审计元数据中保持稳定\",\n      \"verified\": false,\n      \"detail\": \"Target not referenced in source\"\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_verified": false,
+              "verified": 0,
+              "pending": 0,
+              "total": 1,
+              "links": [
+                {
+                  "from": "crates/ontoforge-query/tests/definition_snapshot.rs",
+                  "to": "crates/ontoforge-query/src/lib.rs",
+                  "via": "Arc ActiveDefinition 在一次调用与审计元数据中保持稳定",
+                  "verified": false,
+                  "detail": "Target not referenced in source"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "plan": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-10-PLAN.md",
+          "frontmatter": "\nphase: 06-l2-raw-dql-toolsets-audit\nplan: 10\ntype: tdd\nwave: 6\ndepends_on: [\"06-04\", \"06-08\"]\ngap_closure: true\nautonomous: true\nrequirements: [L2-03, L2-04]\nfiles_modified:\n  - crates/ontoforge-engine/src/trino/l2_health.rs\n  - crates/ontoforge-engine/src/trino/l2_monitor.rs\n  - crates/ontoforge-engine/src/trino/mod.rs\n  - crates/ontoforge-engine/src/trino/decode.rs\n  - crates/ontoforge-engine/src/trino/headers.rs\n  - crates/ontoforge-engine/src/config.rs\n  - crates/ontoforge-engine/src/printer/l2.rs\n  - crates/ontoforge-engine/tests/l2_health.rs\n  - crates/ontoforge-engine/tests/l2_monitor.rs\n  - crates/ontoforge-engine/tests/trino_l2_acl_it.rs\nmust_haves:\n  truths:\n    - \"Startup awaits actual attestation; absent probe configuration remains disabled.\"\n    - \"Every cycle owns a fresh bounded ontology query, proves RUNNING across visibility observations, and cleans up before enabling.\"\n    - \"Periodic failure, expiry, shutdown and cancellation fail closed; recovery requires a fresh complete attestation.\"\n  artifacts:\n    - path: crates/ontoforge-engine/tests/l2_monitor.rs\n      provides: Lifecycle and active-query regression evidence\n    - path: crates/ontoforge-engine/src/trino/l2_health.rs\n      provides: Fail-closed health and admission\n  key_links:\n    - from: crates/ontoforge-engine/src/trino/l2_monitor.rs\n      to: crates/ontoforge-engine/src/trino/l2_health.rs\n      via: Explicit startup, bounded periodic recheck and shutdown\n",
+          "artifacts": {
+            "args": [
+              "query",
+              "verify.artifacts",
+              ".planning/phases/06-l2-raw-dql-toolsets-audit/06-10-PLAN.md"
+            ],
+            "exit": 0,
+            "stdout": "{\n  \"all_passed\": true,\n  \"passed\": 2,\n  \"total\": 2,\n  \"artifacts\": [\n    {\n      \"path\": \"crates/ontoforge-engine/tests/l2_monitor.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-engine/src/trino/l2_health.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_passed": true,
+              "passed": 2,
+              "total": 2,
+              "artifacts": [
+                {
+                  "path": "crates/ontoforge-engine/tests/l2_monitor.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "crates/ontoforge-engine/src/trino/l2_health.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                }
+              ]
+            }
+          },
+          "links": {
+            "args": [
+              "query",
+              "verify.key-links",
+              ".planning/phases/06-l2-raw-dql-toolsets-audit/06-10-PLAN.md"
+            ],
+            "exit": 1,
+            "stdout": "{\n  \"all_verified\": false,\n  \"verified\": 0,\n  \"pending\": 0,\n  \"total\": 1,\n  \"links\": [\n    {\n      \"from\": \"crates/ontoforge-engine/src/trino/l2_monitor.rs\",\n      \"to\": \"crates/ontoforge-engine/src/trino/l2_health.rs\",\n      \"via\": \"Explicit startup, bounded periodic recheck and shutdown\",\n      \"verified\": false,\n      \"detail\": \"Target not referenced in source\"\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_verified": false,
+              "verified": 0,
+              "pending": 0,
+              "total": 1,
+              "links": [
+                {
+                  "from": "crates/ontoforge-engine/src/trino/l2_monitor.rs",
+                  "to": "crates/ontoforge-engine/src/trino/l2_health.rs",
+                  "via": "Explicit startup, bounded periodic recheck and shutdown",
+                  "verified": false,
+                  "detail": "Target not referenced in source"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "plan": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-PLAN.md",
+          "frontmatter": "\nphase: 06-l2-raw-dql-toolsets-audit\nplan: 11\ntype: tdd\nwave: 7\ndepends_on: [\"06-01\", \"06-02\"]\ngap_closure: true\nautonomous: true\nrequirements: [AUDIT-01]\nfiles_modified:\n  - crates/ontoforge-storage/src/read_audit.rs\n  - crates/ontoforge-storage/tests/conformance/mod.rs\nmust_haves:\n  truths:\n    - \"Every concurrent or retried audit shutdown waits for durable completion.\"\n    - \"Cancelling a shutdown caller preserves worker ownership for a subsequent caller.\"\n    - \"Repeated shutdown returns the same terminal success or failure, including worker join failure.\"\n  artifacts:\n    - path: crates/ontoforge-storage/src/read_audit.rs\n      provides: Cancellation-safe shared worker completion\n    - path: crates/ontoforge-storage/tests/conformance/mod.rs\n      provides: SQLite and PostgreSQL lifecycle regression contracts\n  key_links:\n    - from: crates/ontoforge-storage/src/read_audit.rs\n      to: crates/ontoforge-storage/tests/conformance/mod.rs\n      via: Public shutdown and real durable audit rows\n",
+          "artifacts": {
+            "args": [
+              "query",
+              "verify.artifacts",
+              ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-PLAN.md"
+            ],
+            "exit": 0,
+            "stdout": "{\n  \"all_passed\": true,\n  \"passed\": 2,\n  \"total\": 2,\n  \"artifacts\": [\n    {\n      \"path\": \"crates/ontoforge-storage/src/read_audit.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    },\n    {\n      \"path\": \"crates/ontoforge-storage/tests/conformance/mod.rs\",\n      \"exists\": true,\n      \"issues\": [],\n      \"passed\": true\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_passed": true,
+              "passed": 2,
+              "total": 2,
+              "artifacts": [
+                {
+                  "path": "crates/ontoforge-storage/src/read_audit.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                },
+                {
+                  "path": "crates/ontoforge-storage/tests/conformance/mod.rs",
+                  "exists": true,
+                  "issues": [],
+                  "passed": true
+                }
+              ]
+            }
+          },
+          "links": {
+            "args": [
+              "query",
+              "verify.key-links",
+              ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-PLAN.md"
+            ],
+            "exit": 1,
+            "stdout": "{\n  \"all_verified\": false,\n  \"verified\": 0,\n  \"pending\": 0,\n  \"total\": 1,\n  \"links\": [\n    {\n      \"from\": \"crates/ontoforge-storage/src/read_audit.rs\",\n      \"to\": \"crates/ontoforge-storage/tests/conformance/mod.rs\",\n      \"via\": \"Public shutdown and real durable audit rows\",\n      \"verified\": false,\n      \"detail\": \"Target not referenced in source\"\n    }\n  ]\n}",
+            "stderr": "",
+            "json": {
+              "all_verified": false,
+              "verified": 0,
+              "pending": 0,
+              "total": 1,
+              "links": [
+                {
+                  "from": "crates/ontoforge-storage/src/read_audit.rs",
+                  "to": "crates/ontoforge-storage/tests/conformance/mod.rs",
+                  "via": "Public shutdown and real durable audit rows",
+                  "verified": false,
+                  "detail": "Target not referenced in source"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "covered_inputs": [
+        {
+          "file": ".github/workflows/ci.yml",
+          "bytes": 18887,
+          "sha256": "b4a802a680e268303a5cdfa66f51f876f0b8128822ff364616c3fe7c3b7f77e8"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/.evidence/.gitattributes",
+          "bytes": 33,
+          "sha256": "3916887d1f39726e40dde11ffb7f9017b1fe5389c24cf472814cb6d0b7df009f"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/.evidence/clippy-workspace-20261028.log",
+          "bytes": 270,
+          "sha256": "89c635c6c657d6e38e9c81c45f348b4cb1c5b9e56dcf1a9ff7ed048fb012e0c5"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/.evidence/external-cleanup-20261028.log",
+          "bytes": 463,
+          "sha256": "8181213775ae4b4ab4c62a773747b279b50d22fb9418a1fbc1e06ac081883636"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/.evidence/external-pg-audit-20261028.log",
+          "bytes": 1670,
+          "sha256": "7b5988a761068e98f60a35a66152df85bf6a51ba7de0ed59b2f649bfe4189279"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/.evidence/external-trino-acl-20261028.log",
+          "bytes": 2762,
+          "sha256": "36a81a389a1262d2933def476e068369d9679c5fe535371314f3f99deb2d9259"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/.evidence/trino-fixture-start-20261028.log",
+          "bytes": 351,
+          "sha256": "9cad2f3d229b944d22225b22aca86e87a1a6b9bae7278b2014caacdaef608aaa"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-01-PLAN.md",
+          "bytes": 8091,
+          "sha256": "f8dade1118fa1369c3c683fc87229081ec74025e31fe2dc65e52cfc69fa41f22"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-01-SUMMARY.md",
+          "bytes": 6554,
+          "sha256": "4432dfdff2b003881ee4e1591b568cdd4c10cab87af38dc1919ffca6ece159b3"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-02-PLAN.md",
+          "bytes": 6496,
+          "sha256": "2ebd9c26025ed55bc142b7241ed1163818b0684cbb8eddc8a142090e48351145"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-02-SUMMARY.md",
+          "bytes": 6037,
+          "sha256": "b96c332f72f44a5541c7790fc5b23a41128cdee2ed796ff0062e73bad416e792"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-03-PLAN.md",
+          "bytes": 7394,
+          "sha256": "3f6924df856466f3a18bf10c2e2cb52f274b42a4636aec966f8dbd9123911b7b"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-03-SUMMARY.md",
+          "bytes": 5480,
+          "sha256": "ded0ba87807b6cb3013e0bbdbf5e1e06c6e953c801c45df30e49616448be31ad"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-04-PLAN.md",
+          "bytes": 7943,
+          "sha256": "529cc458f13322b80c11bcb7543afa86055344662a55ba1ee0a084e0cc14b120"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-04-SUMMARY.md",
+          "bytes": 5222,
+          "sha256": "d768e76d93f92775da8f4930b4b7fe5fb0f26962285472b51ba72095f8fbc176"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-05-PLAN.md",
+          "bytes": 5534,
+          "sha256": "0da0866506fddbe5b6a1b0e39551cc39f183ce8f31a267dd41ba0ec8bd91cb3f"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-05-SUMMARY.md",
+          "bytes": 5350,
+          "sha256": "41979017297fa0e5a52165a84785f1aae7c85556139d422e0917f28cdbf4a760"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-06-PLAN.md",
+          "bytes": 6897,
+          "sha256": "2b03de8360ba241b2692f77de13cf13eb6e75a237e4ab5397d6be9d2ebced1bd"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-06-SUMMARY.md",
+          "bytes": 8065,
+          "sha256": "96a092275407a082a1c2c13b5f5f1fd7ea1e8456fe5d9db29496befd9fb65e7a"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-07-PLAN.md",
+          "bytes": 5966,
+          "sha256": "654f41f05fbb7b5b32cf59923cb363c94d38de2fbbc23f11997202b57725efa9"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-07-SUMMARY.md",
+          "bytes": 5415,
+          "sha256": "e9336641b068b2f82d5016802f274601a65515fea8a12b4c9af4d184bea9c600"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-08-PLAN.md",
+          "bytes": 5736,
+          "sha256": "0cc1e128873e8808a5b4371f3b41833d56e1e6bca08b8ed487a4657542ff8298"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-08-SUMMARY.md",
+          "bytes": 7372,
+          "sha256": "76c72e7aef7822a26129227c64ab6f91df1f945f7a9441d7b962f96cd35b9fa0"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-09-PLAN.md",
+          "bytes": 6876,
+          "sha256": "d971b4f921c86b3cdd25101a68a72ad142f86b6be366619087f4c370d1c28507"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-09-SUMMARY.md",
+          "bytes": 5978,
+          "sha256": "c102530e3ae19d141fce58f3813652fee6472c0d537d9949aab158851b8a081c"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-10-PLAN.md",
+          "bytes": 6519,
+          "sha256": "c0af90dbbd476fea3735374fb4c53f287c1c8c23f019acffdb5b8c92d7d609b6"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-10-SUMMARY.md",
+          "bytes": 11934,
+          "sha256": "300d2c4d43cd1f2215911f44ade9567de10cdc296bd0ce1217c1c6ef2e6930b2"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-CLIPPY.log",
+          "bytes": 543,
+          "sha256": "d622770b02886b73b2a5c788fa7ee1f72eac8d2e97f7cc5743c4d0f52fab8041"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-DIFF-CHECK.log",
+          "bytes": 29,
+          "sha256": "33a6b35e3f80d3095883b17cea0a5350d750e84e2f622be7bc46ae3ce3e0bba6"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-FIXTURE-CLEANUP.log",
+          "bytes": 20,
+          "sha256": "f7eafe37e71d96e2370541a45a579f3d8a98088395e404fdacb4556d3c376a50"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-FMT.log",
+          "bytes": 39,
+          "sha256": "37f14bda046846aba4bc71887cc7e988eddb6558b2a0ac3cc849fa2c7b41e5d6"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-GREEN-join-error.log",
+          "bytes": 452,
+          "sha256": "fb95d56d2bf87af06224640e24912646e860b3411e52712be06818af5ffadc9d"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-GREEN-pg.log",
+          "bytes": 1044,
+          "sha256": "50accf1a5a929f989f6e70e65c7bcd0199b06435bd9d5a02aae11fe079c596f2"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-GREEN-sqlite.log",
+          "bytes": 997,
+          "sha256": "f234f07c5cd4f2b0cbbb20e2a74e85e12d6ba79606ab3aed3f0851dccb9a4782"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-PLAN.md",
+          "bytes": 4109,
+          "sha256": "8fc9853b5a810dc500871e74a259b237537c404f9d887be6cd755a734e3c6ab5"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-cancelled-junit.json",
+          "bytes": 2947,
+          "sha256": "a5c9b62fc8549217613a6cde58c630ac607b9feaffea5ea073483fda6b415497"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-concurrent-junit.json",
+          "bytes": 2951,
+          "sha256": "e25896da26711e45571b39406aa13af8d00e6fe2fd7fd20130d7f2398510f7e0"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-failure-junit.json",
+          "bytes": 2910,
+          "sha256": "5c253f71c1617b945d21bcf984d511deb1f8e92f4d7c0cef5eb413c26d6433bb"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-join-error-junit.json",
+          "bytes": 1658,
+          "sha256": "6e32202b7782f83fba4fcad7f14a508f15f0497f585f7f7864f5d5ec8f177e50"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-join-error.log",
+          "bytes": 962,
+          "sha256": "b25a5fd4d8511cc1911854fa25f1bdcf4ed43859649d3f8544e2ccdb85a9a87c"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-join-error.xml",
+          "bytes": 800,
+          "sha256": "05db78ffc84e6d03ccb8f391373ed7c2970bd47bcc9275e2957ca6ae09a5c3d5"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-pg.log",
+          "bytes": 2031,
+          "sha256": "ddc88675192e4aaaedbc9e9d18cd6173da22d19dd3e0280b1535beb7058863ad"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-sqlite.log",
+          "bytes": 1988,
+          "sha256": "b09bf38badd670d0589c0452af125a1c9b05a2610c80f31d773ac15c9554a8ca"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-RED-sqlite.xml",
+          "bytes": 2092,
+          "sha256": "30d24819faae0e6900d80cef7a280a2ce1a4efbbc497f13cababb991b8f2fff4"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-11-SUMMARY.md",
+          "bytes": 7553,
+          "sha256": "24e776ba20c5da6f59fabf23d45219eb30f33673ca92794c37e0027944ae71ce"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-EXTERNAL-EVIDENCE.md",
+          "bytes": 6231,
+          "sha256": "869c9e7a2848cfcb214b07fd65cc561bb92a0a78632e86772ed80eb7615c5eef"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-PR-REVIEW.md",
+          "bytes": 13909,
+          "sha256": "01043c537ac5c348818518e239882389f390f2865d6f5c0cae1652e5a4c197ce"
+        },
+        {
+          "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-VALIDATION.md",
+          "bytes": 11612,
+          "sha256": "1ab7ef4cf8ed5e21afbfc5ce29a55edd447e8b201c717392575812d26d6ed7ee"
+        },
+        {
+          "file": "Cargo.lock",
+          "bytes": 113308,
+          "sha256": "7ccd6827bf948238d62ceb492bea930e30ae7d289a1dd3fc04f94d08afafb2ee"
+        },
+        {
+          "file": "Cargo.toml",
+          "bytes": 2869,
+          "sha256": "6ff37b0773c9cbf86f8738a11f008d32b41ac8e6153c5da37dafea0da33d4dd5"
+        },
+        {
+          "file": "ci/check-tls-deps.sh",
+          "bytes": 345,
+          "sha256": "73bd03d6c2361108bd041f2ccac3a29155d98f7ec8867e5750df6d5891a25fa7"
+        },
+        {
+          "file": "ci/query-services.sh",
+          "bytes": 8539,
+          "sha256": "787584901268126405fa46ae5e77f34bc59a618d2297d9196ee0505b35682881"
+        },
+        {
+          "file": "ci/test_tls_deps.py",
+          "bytes": 4211,
+          "sha256": "0f1d1fb4baba849319e8467d087c08b672ed9d94f14c67cd22d8b0042b06845a"
+        },
+        {
+          "file": "ci/trino/l2/access-control.properties",
+          "bytes": 98,
+          "sha256": "f596dad4ba950f72863ac9d1c7260411dc9ae4d309cb63193199b9202382bb5f"
+        },
+        {
+          "file": "ci/trino/l2/config.properties",
+          "bytes": 119,
+          "sha256": "1607df20df594f2c9883a7ec975c1668cab3109303a988f9e12d0338e811544c"
+        },
+        {
+          "file": "ci/trino/l2/rules.json",
+          "bytes": 1363,
+          "sha256": "4d6d3b9b0da8ca5a63634c2d8712c36f3ded03b0c5b68f7e2dd88200a8cdcc90"
+        },
+        {
+          "file": "ci/trino/l2/seed.sql",
+          "bytes": 291,
+          "sha256": "a4fa69352f9140d13570b22b8f45a84635397b1489da81ab197d2c4514b862f4"
+        },
+        {
+          "file": "crates/ontoforge-action/tests/entrypoints.rs",
+          "bytes": 6704,
+          "sha256": "3a74950d432ed1ba006722c2dec751d8feafebab035298d5b5f8406270fa0351"
+        },
+        {
+          "file": "crates/ontoforge-engine/Cargo.toml",
+          "bytes": 980,
+          "sha256": "b5fbf0daa61f254d24cfabdd1faf56cfbc4f30523ec22b71129c479282f9048b"
+        },
+        {
+          "file": "crates/ontoforge-engine/src/config.rs",
+          "bytes": 44941,
+          "sha256": "d0b7f00d1b33f0fb8300fe1c971af72b3094688914dbb6f66f2e47be9b455543"
+        },
+        {
+          "file": "crates/ontoforge-engine/src/printer/l2.rs",
+          "bytes": 21334,
+          "sha256": "b71cadcd7e068f464304173746de8ec3c4c202400a831adff12d26f08ad91378"
+        },
+        {
+          "file": "crates/ontoforge-engine/src/printer/mod.rs",
+          "bytes": 2284,
+          "sha256": "2892c9a56ea812dd6517dea673cfe170d384a111342a22b0bdbc3ad4a7abaeae"
+        },
+        {
+          "file": "crates/ontoforge-engine/src/trino/decode.rs",
+          "bytes": 4259,
+          "sha256": "a0dac613e31aecc09225a81e58f31694984ac944d01b48da5263730c55b8e6dc"
+        },
+        {
+          "file": "crates/ontoforge-engine/src/trino/headers.rs",
+          "bytes": 4937,
+          "sha256": "db1c7fe3eedc2e447418afab8d8549f8847c6c8b4277037aec9a1e7b8cacf5fa"
+        },
+        {
+          "file": "crates/ontoforge-engine/src/trino/l2_health.rs",
+          "bytes": 11483,
+          "sha256": "a3d1ef043468bdd30fbad3f4fc3aed07a878aa77284a21cbf2fae5830a7b06a3"
+        },
+        {
+          "file": "crates/ontoforge-engine/src/trino/l2_monitor.rs",
+          "bytes": 16922,
+          "sha256": "f5283824db2e2aaae027382d211f24c2d4110394be4c4a2d2aad132aae3ca1c4"
+        },
+        {
+          "file": "crates/ontoforge-engine/src/trino/mod.rs",
+          "bytes": 22389,
+          "sha256": "f18c5148607b8d75c375c48c2b9ee3d23fbaeac9b34e5863d7c4992a4682d26c"
+        },
+        {
+          "file": "crates/ontoforge-engine/tests/data/l2_corpus.json",
+          "bytes": 20925,
+          "sha256": "ea46c767be3bd3960d21410883245dc0b390600431c8f9d16f21c8c3a44cea13"
+        },
+        {
+          "file": "crates/ontoforge-engine/tests/l2_gate.rs",
+          "bytes": 9651,
+          "sha256": "470f4140550bb83c584fcecfd2704f2a9f047af5886f08e350c975f1911aae71"
+        },
+        {
+          "file": "crates/ontoforge-engine/tests/l2_health.rs",
+          "bytes": 12186,
+          "sha256": "ca2c17a681b117acb8c2a83032383cde1ef08de14e074c932ab5af82ee876c3b"
+        },
+        {
+          "file": "crates/ontoforge-engine/tests/l2_monitor.rs",
+          "bytes": 31077,
+          "sha256": "ede882dd1bc2e6d74c71ed278042aa6b082480c7381dcc34f4cc0334dccb6492"
+        },
+        {
+          "file": "crates/ontoforge-engine/tests/trino_l2_acl_it.rs",
+          "bytes": 13596,
+          "sha256": "0ce4dab88aa3b61af8be2b2ddc4957cc579167d36e8554e0e4973a54cc0baf0a"
+        },
+        {
+          "file": "crates/ontoforge-query/src/aggregate.rs",
+          "bytes": 48440,
+          "sha256": "ea36ba52eb362272ad7caad6a7e863c9e97333be602f3929caed5d37f5d2bf48"
+        },
+        {
+          "file": "crates/ontoforge-query/src/execute.rs",
+          "bytes": 39643,
+          "sha256": "b7df21346dbfaa46c46efcf0d92b5c6204e61e026a1fd6fde9c9314f54f7ac59"
+        },
+        {
+          "file": "crates/ontoforge-query/src/l2.rs",
+          "bytes": 16982,
+          "sha256": "3c20dac53daf3f33b51794f638fbf7b9178c095b57783287e715daced60b848d"
+        },
+        {
+          "file": "crates/ontoforge-query/src/lib.rs",
+          "bytes": 19376,
+          "sha256": "be742bc046424fcee8c138de4395a9a61291bf39eecf4495c8ef930c2731e9d1"
+        },
+        {
+          "file": "crates/ontoforge-query/tests/audit_l0.rs",
+          "bytes": 25947,
+          "sha256": "769b66f4c21f6a40bf4b2cf579c4faa898a627bdba79ec2346e91a32249e938e"
+        },
+        {
+          "file": "crates/ontoforge-query/tests/audit_pk.rs",
+          "bytes": 34155,
+          "sha256": "cfd182807f23589e0b088ba740a89a84ca5d4bb5a7558ae5c16c15da8e6ab00d"
+        },
+        {
+          "file": "crates/ontoforge-query/tests/definition_snapshot.rs",
+          "bytes": 17335,
+          "sha256": "a1cd4177b5e0d48c410450d096bef24c4a0fdedaa31dec5dcc5ea51d1460fbae"
+        },
+        {
+          "file": "crates/ontoforge-query/tests/l2_discovery.rs",
+          "bytes": 19582,
+          "sha256": "abd834b839a123aaa2b4ced12ac804a4ca98080eaf6e615f9d0ad7ac88db60c0"
+        },
+        {
+          "file": "crates/ontoforge-query/tests/l2_execute.rs",
+          "bytes": 31913,
+          "sha256": "34d8804a9e4c5129e5c9625a9435745b3122c7d2f35567add14998b6e5b4c75a"
+        },
+        {
+          "file": "crates/ontoforge-query/tests/security.rs",
+          "bytes": 74349,
+          "sha256": "42c28732f4572c7dca3bd8fd6ba262d350096a509b30c2e0a2a3784894c7dcfa"
+        },
+        {
+          "file": "crates/ontoforge-storage/migrations/postgres/0005_read_audit.sql",
+          "bytes": 727,
+          "sha256": "da917062bd6aba4206d975cf0b30adc0ce1b1d620bbe492732bb62c1309967e3"
+        },
+        {
+          "file": "crates/ontoforge-storage/migrations/postgres/0006_audit_truncated.sql",
+          "bytes": 225,
+          "sha256": "9181c8cca99c9e517975719f0a13a4c3d686edbddd2fd28dd4b0b4e653e99d40"
+        },
+        {
+          "file": "crates/ontoforge-storage/migrations/sqlite/0005_read_audit.sql",
+          "bytes": 687,
+          "sha256": "07c1d98b5752b31917bc49978324571739a5bd6f781c7e4a8d268864ae850c29"
+        },
+        {
+          "file": "crates/ontoforge-storage/migrations/sqlite/0006_audit_truncated.sql",
+          "bytes": 1148,
+          "sha256": "481ecba7cac969ceeb8a0453bbba0f27e3e317603a9e2a6fb8fe6d9fcf753b1f"
+        },
+        {
+          "file": "crates/ontoforge-storage/src/lib.rs",
+          "bytes": 857,
+          "sha256": "334a3c6fb6ba8aeaf9b12f41782b10f2f1844e10a67b6d9457f93ad0c723e269"
+        },
+        {
+          "file": "crates/ontoforge-storage/src/read_audit.rs",
+          "bytes": 14971,
+          "sha256": "92188fe542a6971a3d1f4b1d78ec4664d5a5c303fa33147e7c3f1848d9432ec6"
+        },
+        {
+          "file": "crates/ontoforge-storage/src/reload.rs",
+          "bytes": 33432,
+          "sha256": "0b18b58f12d41207d7a79c7ba59878999788a11fe1a5c5391f3a777d78fe6421"
+        },
+        {
+          "file": "crates/ontoforge-storage/src/scope_store.rs",
+          "bytes": 25295,
+          "sha256": "4b266a9c75d328ba6d133cc3720803ac0632a06392bf18b6150e71a25f4a7a32"
+        },
+        {
+          "file": "crates/ontoforge-storage/src/sql_exit.rs",
+          "bytes": 31823,
+          "sha256": "2ca8b80bf7803f4a184c36b1cd04089a026cc6f2ba609938cb6bd7192841ce72"
+        },
+        {
+          "file": "crates/ontoforge-storage/src/store.rs",
+          "bytes": 13253,
+          "sha256": "dc15d707e1c6404098121489b79ee79404b232608740b664d93d46e2b23bc1ba"
+        },
+        {
+          "file": "crates/ontoforge-storage/tests/conformance/mod.rs",
+          "bytes": 100960,
+          "sha256": "6dcdb878951be272e31b963a7cc26c1a8bbadda727d1c135292317e89658fd0a"
+        },
+        {
+          "file": "crates/ontoforge-storage/tests/conformance_pg.rs",
+          "bytes": 6199,
+          "sha256": "7fa92f91d722f8e7c48b19701e72df76baec424e20bd50e306bc91e27d70bc59"
+        },
+        {
+          "file": "crates/ontoforge-storage/tests/conformance_sqlite.rs",
+          "bytes": 216,
+          "sha256": "9ab684a9809264e1113947ad518ee082d8aa0aa3ab516cae78f80648bed32485"
+        },
+        {
+          "file": "crates/ontoforge-storage/tests/reload_pg.rs",
+          "bytes": 26220,
+          "sha256": "0b39d36238048f62218edbf6240f80f29813d1bafa9ef1729f604cc1f3258c0a"
+        },
+        {
+          "file": "crates/ontoforge-storage/tests/scope_store.rs",
+          "bytes": 26580,
+          "sha256": "7a556f375dec4fab9e566ffdf65dd77d7110f55bc776718e611d28be48b58fae"
+        },
+        {
+          "file": "crates/ontoforge/src/lint_cmd.rs",
+          "bytes": 1370,
+          "sha256": "26a8b3f981d54e8f1afef41060e3059de8b356d45c4d1fc59ee07b5e3b2d90a1"
+        },
+        {
+          "file": "crates/ontoforge/src/reload.rs",
+          "bytes": 17170,
+          "sha256": "3bcf3be942754e7646f92ee1973b4e86913e6553b8fd381b8154b41cf6764915"
+        },
+        {
+          "file": "crates/ontoforge/src/scope.rs",
+          "bytes": 14548,
+          "sha256": "81e35f1f4e4a4b81fc190fd7f2c069670822060e7b3e9aa938447649a134b26f"
+        },
+        {
+          "file": "crates/ontoforge/tests/cli_reload.rs",
+          "bytes": 12149,
+          "sha256": "3aff2a3460b7c0d8d052e9e659810b9b3b3481d00a80fca829c884cec331162e"
+        },
+        {
+          "file": "crates/ontoforge/tests/cli_scope.rs",
+          "bytes": 12891,
+          "sha256": "12f97c2c092268fc28255fe43a5dc07dae39105e02e25fdab83cfbe92971e863"
+        },
+        {
+          "file": "target/milestone-audit-evidence-20261104/final-check.log",
+          "bytes": 361,
+          "sha256": "4480be4a3312dddf3e5436dbd0c0db02772c88b6c564332af0d9a3c7b2237424"
+        },
+        {
+          "file": "target/milestone-audit-evidence-20261104/postgres_http_it.log",
+          "bytes": 538,
+          "sha256": "3c621462ea4d9271872d3d88601f07561e2d04955f5f00d2fd24886cbf097466"
+        },
+        {
+          "file": "target/milestone-audit-evidence-20261104/source-equivalence.diff",
+          "bytes": 648,
+          "sha256": "76a60b330a343f1aab750e0192999d4c9a0541c9f87d546a6b83c85da9ba9c0a"
+        },
+        {
+          "file": "target/milestone-audit-evidence-20261104/source-guard.log",
+          "bytes": 1985,
+          "sha256": "871bf528ec12d40b444acfaaddd6b36b5a78ccf4d5567a533824943c60fb7678"
+        },
+        {
+          "file": "target/milestone-audit-evidence-20261104/sqlite-action-atomic.log",
+          "bytes": 813,
+          "sha256": "0bd91dc680d7470a057637ed06619c23ec5681a9f8b870510f1108cdefbd07f8"
+        },
+        {
+          "file": "target/milestone-audit-evidence-20261104/trino_l2_acl_it.log",
+          "bytes": 1430,
+          "sha256": "676cd510f5b7781cfb236ef705cbfb105fa839c15572ae6c7057c7e01266c576"
+        },
+        {
+          "file": "target/milestone-ci-41759804733-integration.log",
+          "bytes": 114556,
+          "sha256": "6ecde94b35302e75b4484d4268281d5216fb09f8f2856013075d081050ca6f25"
+        },
+        {
+          "file": "target/milestone-ci-41759804733-ubuntu.log",
+          "bytes": 330741,
+          "sha256": "dd5f4c4165adb6792daa3889c85418d50a14821adf2171352492d57775b27975"
+        },
+        {
+          "file": "target/milestone-ci-41759804733-windows.log",
+          "bytes": 338621,
+          "sha256": "b6ecb8fa1fb5c4459c9e7c8e01074d99c142456d65ab76afd66ccac613679eaa"
+        }
+      ]
+    }
+  ],
+  "roadmap_analysis": {
+    "args": [
+      "query",
+      "roadmap.analyze",
+      "--raw"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"milestones\": [],\n  \"phases\": [\n    {\n      \"number\": \"1\",\n      \"name\": \"Workspace, Schema & Lint\",\n      \"goal\": \"As a ontology 开发者, I want to 用 YAML/JSON 编写 ontology，并通过 `ontoforge validate` / `ontoforge lint` 得到带源码定位的诊断，且仓库在 Windows 本机 `cargo test` 全绿, so that 我能在本机可靠地编写和验证定义.\",\n      \"mode\": \"mvp\",\n      \"depends_on\": \"Nothing (first phase)\",\n      \"plan_count\": 14,\n      \"summary_count\": 14,\n      \"has_context\": true,\n      \"has_research\": true,\n      \"disk_status\": \"executed\",\n      \"roadmap_complete\": false,\n      \"context_read_error\": null,\n      \"context_scope\": \"complete\"\n    },\n    {\n      \"number\": \"2\",\n      \"name\": \"Source Binding & Engine\",\n      \"goal\": \"As a ontology 开发者, I want to 把 object type / M:N link 绑定到 Trino 物理表，由 ontoforge 经自写 client 连接已有 Trino 并校验绑定，并在 Windows 本机用 SQLite 替身零外部依赖跑通, so that 定义能够使用真实数据源且支持本机验证.\",\n      \"mode\": \"mvp\",\n      \"depends_on\": \"Phase 1\",\n      \"plan_count\": 10,\n      \"summary_count\": 10,\n      \"has_context\": true,\n      \"has_research\": true,\n      \"disk_status\": \"executed\",\n      \"roadmap_complete\": false,\n      \"context_read_error\": null,\n      \"context_scope\": \"complete\"\n    },\n    {\n      \"number\": \"3\",\n      \"name\": \"Edit Store & Scope Model\",\n      \"goal\": \"As a 平台管理员, I want to 让 edit store 按 object type 生成强类型表并安全演进、所有写入有不可变 edit log，配置用户 / 组 / 角色与 scope 规则，并使同一份 CEL 行谓词的 SQL 编译与 Rust 单行求值结果一致, so that 存储和权限行为可以安全演进并接受审计.\",\n      \"mode\": \"mvp\",\n      \"depends_on\": \"Phase 2\",\n      \"plan_count\": 23,\n      \"summary_count\": 23,\n      \"has_context\": true,\n      \"has_research\": true,\n      \"disk_status\": \"executed\",\n      \"roadmap_complete\": true,\n      \"context_read_error\": null,\n      \"context_scope\": \"complete\"\n    },\n    {\n      \"number\": \"4\",\n      \"name\": \"Scoped L0 Read\",\n      \"goal\": \"As a 调用者, I want to 仅在自己的 scope 内通过 pk、过滤、排序分页、searchAround、集合运算与聚合读取对象，由 Rust 编排叠加且 Trino 只承担单表查询, so that 各种读取方式都遵守一致的授权边界.\",\n      \"mode\": \"mvp\",\n      \"depends_on\": \"Phase 3\",\n      \"plan_count\": 7,\n      \"summary_count\": 7,\n      \"has_context\": true,\n      \"has_research\": true,\n      \"disk_status\": \"executed\",\n      \"roadmap_complete\": true,\n      \"context_read_error\": null,\n      \"context_scope\": \"complete\"\n    },\n    {\n      \"number\": \"5\",\n      \"name\": \"Online Action\",\n      \"goal\": \"As a caller with Action permission, I want to modify the object graph through scoped online Actions, so that each change is atomic, auditable, safe to retry, and notifies downstream systems.\",\n      \"mode\": \"mvp\",\n      \"depends_on\": \"Phase 4\",\n      \"plan_count\": 7,\n      \"summary_count\": 7,\n      \"has_context\": true,\n      \"has_research\": true,\n      \"disk_status\": \"executed\",\n      \"roadmap_complete\": true,\n      \"context_read_error\": null,\n      \"context_scope\": \"complete\"\n    },\n    {\n      \"number\": \"6\",\n      \"name\": \"L2 Raw DQL, Toolsets & Audit\",\n      \"goal\": \"As a 受信主体, I want to 在 allow-list 内执行仅在 Trino 侧权限可证明安全时才开放的只读 Trino SQL, so that 所有级别的读取都留下元数据审计且定义与授权的变更只经部署方与管理通道.\",\n      \"mode\": \"mvp\",\n      \"depends_on\": \"Phase 5\",\n      \"plan_count\": 11,\n      \"summary_count\": 11,\n      \"has_context\": true,\n      \"has_research\": true,\n      \"disk_status\": \"executed\",\n      \"roadmap_complete\": true,\n      \"context_read_error\": null,\n      \"context_scope\": \"complete\"\n    },\n    {\n      \"number\": \"7\",\n      \"name\": \"REST & MCP Shell\",\n      \"goal\": \"As a 应用开发者与 agent 使用者, I want to 经 REST（OpenAPI 3.1、Rust / TS client）和 MCP（按主体过滤的 toolset）使用全部能力，以 `ontoforge serve --dev` 单二进制在本机跑通端到端演示，并通过 release workflow 发布 Linux / macOS / Windows 二进制, so that 应用与 agent 能按相同授权使用并验证完整平台能力.\",\n      \"mode\": \"mvp\",\n      \"depends_on\": \"Phase 6\",\n      \"plan_count\": 16,\n      \"summary_count\": 16,\n      \"has_context\": true,\n      \"has_research\": true,\n      \"disk_status\": \"complete\",\n      \"roadmap_complete\": true,\n      \"context_read_error\": null,\n      \"context_scope\": \"complete\"\n    },\n    {\n      \"number\": \"7.1\",\n      \"name\": \"Source Cardinality Gap Closure\",\n      \"goal\": \"As a ontology维护者, I want to 显式运行source OneToOne基数检查并获得有界诊断, so that 我能发现违反声明的FK唯一性而不改变默认在线验证和业务读取行为.\",\n      \"mode\": null,\n      \"depends_on\": \"Phase 7\",\n      \"plan_count\": 3,\n      \"summary_count\": 3,\n      \"has_context\": true,\n      \"has_research\": true,\n      \"disk_status\": \"executed\",\n      \"roadmap_complete\": true,\n      \"context_read_error\": null,\n      \"context_scope\": \"complete\"\n    },\n    {\n      \"number\": \"07.2\",\n      \"name\": \"MinIO Contract Gap Closure\",\n      \"goal\": \"恢复ENGINE-05的MinIO/S3与JDBC Iceberg原合同，完成483/484真实环境及nightly补证。\",\n      \"mode\": null,\n      \"depends_on\": \"Phase 7\",\n      \"plan_count\": 2,\n      \"summary_count\": 2,\n      \"has_context\": true,\n      \"has_research\": true,\n      \"disk_status\": \"complete\",\n      \"roadmap_complete\": true,\n      \"context_read_error\": null,\n      \"context_scope\": \"complete\"\n    }\n  ],\n  \"phase_count\": 9,\n  \"completed_phases\": 2,\n  \"total_plans\": 93,\n  \"total_summaries\": 93,\n  \"progress_percent\": null,\n  \"progress_scope\": \"unscoped\",\n  \"current_phase\": \"1\",\n  \"next_phase\": null,\n  \"checkbox_conflict\": [\n    {\n      \"number\": \"3\",\n      \"roadmap_complete\": true,\n      \"disk_status\": \"executed\",\n      \"plan_count\": 23,\n      \"summary_count\": 23\n    },\n    {\n      \"number\": \"4\",\n      \"roadmap_complete\": true,\n      \"disk_status\": \"executed\",\n      \"plan_count\": 7,\n      \"summary_count\": 7\n    },\n    {\n      \"number\": \"5\",\n      \"roadmap_complete\": true,\n      \"disk_status\": \"executed\",\n      \"plan_count\": 7,\n      \"summary_count\": 7\n    },\n    {\n      \"number\": \"6\",\n      \"roadmap_complete\": true,\n      \"disk_status\": \"executed\",\n      \"plan_count\": 11,\n      \"summary_count\": 11\n    },\n    {\n      \"number\": \"7.1\",\n      \"roadmap_complete\": true,\n      \"disk_status\": \"executed\",\n      \"plan_count\": 3,\n      \"summary_count\": 3\n    }\n  ],\n  \"missing_phase_details\": [\n    \"7.2\"\n  ],\n  \"scope\": \"unscoped\"\n}",
+    "stderr": "",
+    "json": {
+      "milestones": [],
+      "phases": [
+        {
+          "number": "1",
+          "name": "Workspace, Schema & Lint",
+          "goal": "As a ontology 开发者, I want to 用 YAML/JSON 编写 ontology，并通过 `ontoforge validate` / `ontoforge lint` 得到带源码定位的诊断，且仓库在 Windows 本机 `cargo test` 全绿, so that 我能在本机可靠地编写和验证定义.",
+          "mode": "mvp",
+          "depends_on": "Nothing (first phase)",
+          "plan_count": 14,
+          "summary_count": 14,
+          "has_context": true,
+          "has_research": true,
+          "disk_status": "executed",
+          "roadmap_complete": false,
+          "context_read_error": null,
+          "context_scope": "complete"
+        },
+        {
+          "number": "2",
+          "name": "Source Binding & Engine",
+          "goal": "As a ontology 开发者, I want to 把 object type / M:N link 绑定到 Trino 物理表，由 ontoforge 经自写 client 连接已有 Trino 并校验绑定，并在 Windows 本机用 SQLite 替身零外部依赖跑通, so that 定义能够使用真实数据源且支持本机验证.",
+          "mode": "mvp",
+          "depends_on": "Phase 1",
+          "plan_count": 10,
+          "summary_count": 10,
+          "has_context": true,
+          "has_research": true,
+          "disk_status": "executed",
+          "roadmap_complete": false,
+          "context_read_error": null,
+          "context_scope": "complete"
+        },
+        {
+          "number": "3",
+          "name": "Edit Store & Scope Model",
+          "goal": "As a 平台管理员, I want to 让 edit store 按 object type 生成强类型表并安全演进、所有写入有不可变 edit log，配置用户 / 组 / 角色与 scope 规则，并使同一份 CEL 行谓词的 SQL 编译与 Rust 单行求值结果一致, so that 存储和权限行为可以安全演进并接受审计.",
+          "mode": "mvp",
+          "depends_on": "Phase 2",
+          "plan_count": 23,
+          "summary_count": 23,
+          "has_context": true,
+          "has_research": true,
+          "disk_status": "executed",
+          "roadmap_complete": true,
+          "context_read_error": null,
+          "context_scope": "complete"
+        },
+        {
+          "number": "4",
+          "name": "Scoped L0 Read",
+          "goal": "As a 调用者, I want to 仅在自己的 scope 内通过 pk、过滤、排序分页、searchAround、集合运算与聚合读取对象，由 Rust 编排叠加且 Trino 只承担单表查询, so that 各种读取方式都遵守一致的授权边界.",
+          "mode": "mvp",
+          "depends_on": "Phase 3",
+          "plan_count": 7,
+          "summary_count": 7,
+          "has_context": true,
+          "has_research": true,
+          "disk_status": "executed",
+          "roadmap_complete": true,
+          "context_read_error": null,
+          "context_scope": "complete"
+        },
+        {
+          "number": "5",
+          "name": "Online Action",
+          "goal": "As a caller with Action permission, I want to modify the object graph through scoped online Actions, so that each change is atomic, auditable, safe to retry, and notifies downstream systems.",
+          "mode": "mvp",
+          "depends_on": "Phase 4",
+          "plan_count": 7,
+          "summary_count": 7,
+          "has_context": true,
+          "has_research": true,
+          "disk_status": "executed",
+          "roadmap_complete": true,
+          "context_read_error": null,
+          "context_scope": "complete"
+        },
+        {
+          "number": "6",
+          "name": "L2 Raw DQL, Toolsets & Audit",
+          "goal": "As a 受信主体, I want to 在 allow-list 内执行仅在 Trino 侧权限可证明安全时才开放的只读 Trino SQL, so that 所有级别的读取都留下元数据审计且定义与授权的变更只经部署方与管理通道.",
+          "mode": "mvp",
+          "depends_on": "Phase 5",
+          "plan_count": 11,
+          "summary_count": 11,
+          "has_context": true,
+          "has_research": true,
+          "disk_status": "executed",
+          "roadmap_complete": true,
+          "context_read_error": null,
+          "context_scope": "complete"
+        },
+        {
+          "number": "7",
+          "name": "REST & MCP Shell",
+          "goal": "As a 应用开发者与 agent 使用者, I want to 经 REST（OpenAPI 3.1、Rust / TS client）和 MCP（按主体过滤的 toolset）使用全部能力，以 `ontoforge serve --dev` 单二进制在本机跑通端到端演示，并通过 release workflow 发布 Linux / macOS / Windows 二进制, so that 应用与 agent 能按相同授权使用并验证完整平台能力.",
+          "mode": "mvp",
+          "depends_on": "Phase 6",
+          "plan_count": 16,
+          "summary_count": 16,
+          "has_context": true,
+          "has_research": true,
+          "disk_status": "complete",
+          "roadmap_complete": true,
+          "context_read_error": null,
+          "context_scope": "complete"
+        },
+        {
+          "number": "7.1",
+          "name": "Source Cardinality Gap Closure",
+          "goal": "As a ontology维护者, I want to 显式运行source OneToOne基数检查并获得有界诊断, so that 我能发现违反声明的FK唯一性而不改变默认在线验证和业务读取行为.",
+          "mode": null,
+          "depends_on": "Phase 7",
+          "plan_count": 3,
+          "summary_count": 3,
+          "has_context": true,
+          "has_research": true,
+          "disk_status": "executed",
+          "roadmap_complete": true,
+          "context_read_error": null,
+          "context_scope": "complete"
+        },
+        {
+          "number": "07.2",
+          "name": "MinIO Contract Gap Closure",
+          "goal": "恢复ENGINE-05的MinIO/S3与JDBC Iceberg原合同，完成483/484真实环境及nightly补证。",
+          "mode": null,
+          "depends_on": "Phase 7",
+          "plan_count": 2,
+          "summary_count": 2,
+          "has_context": true,
+          "has_research": true,
+          "disk_status": "complete",
+          "roadmap_complete": true,
+          "context_read_error": null,
+          "context_scope": "complete"
+        }
+      ],
+      "phase_count": 9,
+      "completed_phases": 2,
+      "total_plans": 93,
+      "total_summaries": 93,
+      "progress_percent": null,
+      "progress_scope": "unscoped",
+      "current_phase": "1",
+      "next_phase": null,
+      "checkbox_conflict": [
+        {
+          "number": "3",
+          "roadmap_complete": true,
+          "disk_status": "executed",
+          "plan_count": 23,
+          "summary_count": 23
+        },
+        {
+          "number": "4",
+          "roadmap_complete": true,
+          "disk_status": "executed",
+          "plan_count": 7,
+          "summary_count": 7
+        },
+        {
+          "number": "5",
+          "roadmap_complete": true,
+          "disk_status": "executed",
+          "plan_count": 7,
+          "summary_count": 7
+        },
+        {
+          "number": "6",
+          "roadmap_complete": true,
+          "disk_status": "executed",
+          "plan_count": 11,
+          "summary_count": 11
+        },
+        {
+          "number": "7.1",
+          "roadmap_complete": true,
+          "disk_status": "executed",
+          "plan_count": 3,
+          "summary_count": 3
+        }
+      ],
+      "missing_phase_details": [
+        "7.2"
+      ],
+      "scope": "unscoped"
+    }
+  },
+  "original_worktree_status": " D .planning/HANDOFF.json\n M .planning/PROJECT.md\n M .planning/ROADMAP.md\n M .planning/STATE.md\n D .planning/milestones/v1.0-audit/.continue-here.md\n M .planning/milestones/v1.0-audit/INTEGRATION.md\n M .planning/milestones/v1.0-audit/REQUIREMENTS-AUDIT.md\n M .planning/milestones/v1.0-audit/findings.md\n M .planning/milestones/v1.0-audit/progress.md\n M .planning/milestones/v1.0-audit/requirements-matrix.json\n M .planning/milestones/v1.0-audit/task_plan.md\n M .planning/phases/07-rest-mcp-shell/07-VERIFICATION.md\n M .planning/v1.0-MILESTONE-AUDIT.md\n?? .planning/milestones/v1.0-audit/FINAL-REVERIFY.md\n?? .planning/milestones/v1.0-audit/FINAL-REVIEW.md\n?? .planning/milestones/v1.0-audit/SUMMARY.md\n?? .planning/milestones/v1.0-audit/VERIFICATION.md\n?? .planning/milestones/v1.0-audit/evidence/2026-11-05/\n?? .planning/phases/02-source-binding-engine/.review-diagnostics/\n?? .planning/phases/07-rest-mcp-shell/07-05-workspace-regression.log\n?? docs/README.md\n?? docs/foundry/\n?? docs/images/\n"
+}

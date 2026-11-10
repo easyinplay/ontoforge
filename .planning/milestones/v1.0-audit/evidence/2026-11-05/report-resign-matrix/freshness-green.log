@@ -1,0 +1,15 @@
+recorded_utc=2026-11-05T11:04:18.673Z
+command=node --test .planning/milestones/v1.0-audit/evidence/2026-11-05/report-resign-matrix/freshness.test.cjs
+source_sha256=189df459a36167b562bf65f0db3b68e541d68e090433bff03366238e72d348eb
+✔ passed assigned reports make non-Phase07 execution current without extending owner signature (47.0029ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 137.8788
+
+
+exit_code=0

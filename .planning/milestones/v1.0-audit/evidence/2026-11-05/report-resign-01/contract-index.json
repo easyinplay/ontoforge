@@ -1,0 +1,200 @@
+{
+  "head": "060019fe52005c6b85ae5c5f59da9868f464e579",
+  "raw_plan_truths": 97,
+  "roadmap_sc": [
+    {
+      "id": "SC1",
+      "truth": "cargo workspace 按 ADR-0011 建好 10 个 `ontoforge-*` crate（edition 2024、resolver 3、rust-version 1.98），Windows 11 本机不依赖 Docker 执行 `cargo test --workspace` 全部通过；此条作为后续每个 phase 的回归门槛",
+      "status": "VERIFIED",
+      "ids": [
+        "01-01.9",
+        "01-02.1",
+        "01-02.2",
+        "01-02.3",
+        "01-02.4",
+        "01-11.8"
+      ],
+      "detail": "原10crate均存在；第11个engine由ADR0021修订，依赖方向由ADR0023修订；最终HEAD本地workspace1528/0/119，CI两平台fmt/clippy/workspace真实成功。"
+    },
+    {
+      "id": "SC2",
+      "truth": "`ontoforge validate examples/ontologies/<示例>/` 把分散在多个文件中的 object type、属性 base type 与 required、link type（1:1 / 1:N / M:N）、action type（参数、rules、submission criteria）合并加载为单一 IR；同一 ontology 的 YAML 与 JSON 写法得到相同 IR",
+      "status": "VERIFIED",
+      "ids": [
+        "01-03.1",
+        "01-03.9",
+        "01-04.8",
+        "01-05.6",
+        "01-06.6"
+      ],
+      "detail": "真实aviation与aviation-json经load_dir后完整IR相等，明确断言5object/5link/3action，不是两个None相等。"
+    },
+    {
+      "id": "SC3",
+      "truth": "定义有错（重复 apiName、未知 base type、link 指向不存在的 object type 等）时，CLI 输出带文件名与 line:col 的诊断，退出码非 0",
+      "status": "VERIFIED",
+      "ids": [
+        "01-01.3",
+        "01-01.4",
+        "01-03.8",
+        "01-04.6",
+        "01-05.3",
+        "01-12.5"
+      ],
+      "detail": "unknown-field CLI断言exit1、objects.yaml:3:1、primaryKey；invalid_examples逐目录要求预期code存在并比较独立入库快照。"
+    },
+    {
+      "id": "SC4",
+      "truth": "`ontoforge lint` 运行适用于 v1 schema 范围的 ONT-E 规则与 ONT-W01–W11，输出人类可读（带源码定位）与 JSON 两种格式；有 E 级问题时退出码非 0；配置文件可按规则 ID 关闭规则或调整严重级",
+      "status": "VERIFIED",
+      "ids": [
+        "01-08.1",
+        "01-08.2",
+        "01-08.3",
+        "01-08.4",
+        "01-08.5",
+        "01-10.6",
+        "01-11.7"
+      ],
+      "detail": "lint先结构/CEL后配置，registry实际扩展E08/E09和W01-W11，触发/clean快照及off/info/error、deny-warnings、human/JSON子进程断言均有最终HEAD执行。"
+    },
+    {
+      "id": "SC5",
+      "truth": "开发者可以导出 ontology 定义的 JSON Schema，仓库内示例 ontology 通过该 Schema 校验",
+      "status": "VERIFIED",
+      "ids": [
+        "01-09.1",
+        "01-09.2",
+        "01-09.3",
+        "01-09.4",
+        "01-09.5"
+      ],
+      "detail": "Schema由typedIR实际生成、CLI写出；schema_export独立入库字节相等、真实双格式文档通过及invalid反例拒绝均执行；不把editor override当machineUX证明。"
+    }
+  ],
+  "legacy": [
+    {
+      "id": "L1",
+      "truth": "SC1：原10crate/工具链及Windows无Docker回归",
+      "status": "VERIFIED",
+      "mapped": [
+        "SC1"
+      ]
+    },
+    {
+      "id": "L2",
+      "truth": "SC2：多文件IR与YAML/JSON等价",
+      "status": "VERIFIED",
+      "mapped": [
+        "SC2"
+      ]
+    },
+    {
+      "id": "L3",
+      "truth": "SC3：错误定位与非零退出",
+      "status": "VERIFIED",
+      "mapped": [
+        "SC3"
+      ]
+    },
+    {
+      "id": "L4",
+      "truth": "SC4：E/W01-W11、双输出与规则配置",
+      "status": "VERIFIED",
+      "mapped": [
+        "SC4"
+      ]
+    },
+    {
+      "id": "L5",
+      "truth": "SC5：导出schema和真实例子校验",
+      "status": "VERIFIED",
+      "mapped": [
+        "SC5"
+      ]
+    },
+    {
+      "id": "L6",
+      "truth": "G-1-2：新document编辑器补全、收窄与标红",
+      "status": "PASSED (override)",
+      "mapped": [
+        "01-14.1"
+      ]
+    },
+    {
+      "id": "L7",
+      "truth": "两份严格JSON编辑器映射相同",
+      "status": "VERIFIED",
+      "mapped": [
+        "01-14.2"
+      ]
+    },
+    {
+      "id": "L8",
+      "truth": "manifest不误用definition schema",
+      "status": "VERIFIED",
+      "mapped": [
+        "01-14.3"
+      ]
+    },
+    {
+      "id": "L9",
+      "truth": "逐document modeline与clean/等价",
+      "status": "VERIFIED",
+      "mapped": [
+        "01-14.4"
+      ]
+    },
+    {
+      "id": "L10",
+      "truth": "CONTRIBUTING编辑器章节准确",
+      "status": "VERIFIED",
+      "mapped": [
+        "01-14.5"
+      ]
+    },
+    {
+      "id": "L11",
+      "truth": "错误配置/schema/modeline由实质测试守住",
+      "status": "VERIFIED",
+      "mapped": [
+        "01-14.6"
+      ]
+    }
+  ],
+  "prohibitions": [
+    {
+      "id": "J1",
+      "plan": "01-01",
+      "truth": "代码、示例、快照与文档不得出现 ADR-0002 列出的参考仓库标识符，也不得复制参考仓库代码",
+      "status": "UNCERTAIN",
+      "severity": "WARNING",
+      "evidence": "ADR0002指定标识符在产品范围扫描0命中；无法证明完整原创出处或未复制。需逐项人工resolution，本任务无新授权。"
+    },
+    {
+      "id": "J2",
+      "plan": "01-01",
+      "truth": "诊断输出、入库快照与生成产物不得包含本机绝对路径或用户名",
+      "status": "UNCERTAIN",
+      "severity": "WARNING",
+      "evidence": "relative路径链、diagnostic_paths_use_forward_slash、JSON字段与快照扫描支持；原verification judgment仍需人工resolution，不把构建日志绝对路径混同产品泄露。"
+    },
+    {
+      "id": "J3",
+      "plan": "01-08",
+      "truth": "ontoforge.toml 与任何 CLI 参数都不得关闭或降级 ONT-V 结构性错误",
+      "status": "UNCERTAIN",
+      "severity": "WARNING",
+      "evidence": "lint_cmd先has_errors再load_config；KNOWN_RULE_IDS排除ONT-V；validate_codes_cannot_be_turned_off_by_config及validate_codes_cannot_be_configured已真实通过，但不代替judgment人工确认。"
+    },
+    {
+      "id": "B1",
+      "plan": "01-13",
+      "truth": "不改变任何 ONT-V / ONT-E 诊断的 code、位置或 JSON 线格式；已有快照不得重新生成为不同内容",
+      "status": "VERIFIED",
+      "severity": "none",
+      "evidence": "d021687..07a0e06快照diff为空；独立入库invalid/human/E08/E09快照在最终HEAD两平台及本地执行通过，JSON exact-field和固定坐标测试通过。不是仅凭符号存在。"
+    }
+  ],
+  "score_semantics": "97 PLAN原始索引 +5 SC =102合同truth索引；101 VERIFIED+1原editor PASSED(override)。存在语义重叠，非102个去重用户行为。3个judgment UNCERTAIN不纳入机器验证分子，也不因11/11改绿。backstop单列。"
+}

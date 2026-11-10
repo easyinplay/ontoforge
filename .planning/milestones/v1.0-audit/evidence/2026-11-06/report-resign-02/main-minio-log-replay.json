@@ -1,0 +1,119 @@
+{
+  "checked_at": "2026-11-06T02:29:57.768Z",
+  "scope": "Offline reparse of previously executed MinIO 483/484 evidence; no new services/CI/tests executed",
+  "archive_integrity": "main-archive-integrity.json",
+  "original_verifier_sha256": "b9d7ef8f18cd57484900b66e916b0bd623b4e1a530f2d334b8343191f2e1de7d",
+  "replay_exit": 0,
+  "replayed_proof_matches_archived": true,
+  "replayed_proof": {
+    "run_id": "41833307824",
+    "head_sha": "b7e44fa934b56c9d68620a4ea103d68ee2fb3a92",
+    "event": "workflow_dispatch",
+    "notification": "skipped",
+    "versions": {
+      "483": {
+        "job_id": 126585725657,
+        "run_id": "iceberg-595add206690679dc943dbe7",
+        "corpus_counts": [
+          5,
+          4,
+          6,
+          2,
+          4,
+          11,
+          4,
+          9,
+          4
+        ],
+        "corpus_total": 49,
+        "exact_before_after": [
+          1,
+          1
+        ],
+        "source_copy_before_after": [
+          [
+            29,
+            29
+          ],
+          [
+            29,
+            29
+          ]
+        ],
+        "restart_preserved": true,
+        "s3_nonempty_metadata_data": true,
+        "scan_passed": true,
+        "cleanup_remaining": 0,
+        "helper_cleanup_step": "success",
+        "helper_sdk_tests": 8,
+        "behavior_tests": 37,
+        "approved_platform_skips": 1
+      },
+      "484": {
+        "job_id": 126585726171,
+        "run_id": "iceberg-6173734827c032c1c96861a3",
+        "corpus_counts": [
+          5,
+          4,
+          6,
+          2,
+          4,
+          11,
+          4,
+          9,
+          4
+        ],
+        "corpus_total": 49,
+        "exact_before_after": [
+          1,
+          1
+        ],
+        "source_copy_before_after": [
+          [
+            29,
+            29
+          ],
+          [
+            29,
+            29
+          ]
+        ],
+        "restart_preserved": true,
+        "s3_nonempty_metadata_data": true,
+        "scan_passed": true,
+        "cleanup_remaining": 0,
+        "helper_cleanup_step": "success",
+        "helper_sdk_tests": 8,
+        "behavior_tests": 37,
+        "approved_platform_skips": 1
+      }
+    }
+  },
+  "current_phase072_gate": {
+    "status": "passed",
+    "next_action": "Verification passed — continue.",
+    "next_command": "",
+    "route": ""
+  },
+  "source_equivalence": {
+    "baseline": "b7e44fa934b56c9d68620a4ea103d68ee2fb3a92",
+    "current_head": "060019fe52005c6b85ae5c5f59da9868f464e579",
+    "paths": [
+      "crates",
+      "ci",
+      "clients",
+      ".github",
+      "Cargo.toml",
+      "Cargo.lock"
+    ],
+    "diff_exit": 0,
+    "diff": "",
+    "not_new_execution_binding": true
+  },
+  "unchanged_boundaries": [
+    "ENGINE-05 private SQL Server was not executed",
+    "public data provenance and CI judgment not accepted",
+    "Phase01 original human items remain",
+    "no release/archive/API-key operations"
+  ]
+}

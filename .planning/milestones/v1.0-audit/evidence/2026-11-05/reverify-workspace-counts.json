@@ -1,0 +1,2828 @@
+{
+  "created_at": "2026-11-05T08:59:13.400Z",
+  "discovery_exit": "0",
+  "execution_exit": "0",
+  "discovered_targets": 152,
+  "executed_targets": 152,
+  "discovered_tests": 1647,
+  "identities_match": true,
+  "successful_targets": 128,
+  "totals": {
+    "passed": 1528,
+    "failed": 0,
+    "ignored": 119,
+    "measured": 0,
+    "filtered": 0
+  },
+  "complete": true,
+  "targets": [
+    {
+      "target": "Running unittests src\\lib.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\ontoforge-fbe28d3212af503b.exe)",
+      "identity": "ontoforge-fbe28d3212af503b.exe",
+      "discovered": 25,
+      "named_executed": 25,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 25,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running unittests src\\main.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\ontoforge-59cfc5af2bc1f8a6.exe)",
+      "identity": "ontoforge-59cfc5af2bc1f8a6.exe",
+      "discovered": 0,
+      "named_executed": 0,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "empty_harness",
+        "reason": "CLI main has no unit tests; CLI behavior runs in named integration targets"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_EMPTY_HARNESS"
+    },
+    {
+      "target": "Running tests\\cli.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\cli-a1f6a1f2899b9d41.exe)",
+      "identity": "cli-a1f6a1f2899b9d41.exe",
+      "discovered": 8,
+      "named_executed": 8,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 8,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\cli_check_cardinality.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\cli_check_cardinality-84e0de09c2cb2dc2.exe)",
+      "identity": "cli_check_cardinality-84e0de09c2cb2dc2.exe",
+      "discovered": 13,
+      "named_executed": 13,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 13,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\cli_check_pk.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\cli_check_pk-d943fb8d8d9b7306.exe)",
+      "identity": "cli_check_pk-d943fb8d8d9b7306.exe",
+      "discovered": 8,
+      "named_executed": 8,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 8,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\cli_color.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\cli_color-44eba0533d427a18.exe)",
+      "identity": "cli_color-44eba0533d427a18.exe",
+      "discovered": 1,
+      "named_executed": 1,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\cli_dev_token.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\cli_dev_token-9e40c738f683b9b5.exe)",
+      "identity": "cli_dev_token-9e40c738f683b9b5.exe",
+      "discovered": 12,
+      "named_executed": 12,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 12,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\cli_import.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\cli_import-e7251a58118db03a.exe)",
+      "identity": "cli_import-e7251a58118db03a.exe",
+      "discovered": 8,
+      "named_executed": 8,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 8,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\cli_l2_identity.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\cli_l2_identity-7f4f9c6d84f09087.exe)",
+      "identity": "cli_l2_identity-7f4f9c6d84f09087.exe",
+      "discovered": 11,
+      "named_executed": 11,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 11,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\cli_lint.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\cli_lint-c09e40815b50ee74.exe)",
+      "identity": "cli_lint-c09e40815b50ee74.exe",
+      "discovered": 17,
+      "named_executed": 17,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 17,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\cli_migrate.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\cli_migrate-ad3c0cebe93cab2e.exe)",
+      "identity": "cli_migrate-ad3c0cebe93cab2e.exe",
+      "discovered": 10,
+      "named_executed": 10,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 10,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\cli_online.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\cli_online-7ce24738df9dcaac.exe)",
+      "identity": "cli_online-7ce24738df9dcaac.exe",
+      "discovered": 12,
+      "named_executed": 12,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 12,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\cli_online_trino.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\cli_online_trino-c602d3f29135aea2.exe)",
+      "identity": "cli_online_trino-c602d3f29135aea2.exe",
+      "discovered": 15,
+      "named_executed": 15,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 15,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\cli_reload.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\cli_reload-7db721905c6f0af9.exe)",
+      "identity": "cli_reload-7db721905c6f0af9.exe",
+      "discovered": 8,
+      "named_executed": 8,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 8,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\cli_schema.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\cli_schema-bbfab5487b54e631.exe)",
+      "identity": "cli_schema-bbfab5487b54e631.exe",
+      "discovered": 4,
+      "named_executed": 4,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 4,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\cli_scope.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\cli_scope-afef32d3ff54ffc0.exe)",
+      "identity": "cli_scope-afef32d3ff54ffc0.exe",
+      "discovered": 8,
+      "named_executed": 8,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 8,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\cli_shutdown.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\cli_shutdown-0d618b3bf0798bb9.exe)",
+      "identity": "cli_shutdown-0d618b3bf0798bb9.exe",
+      "discovered": 9,
+      "named_executed": 9,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 9,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\cli_stdio.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\cli_stdio-228f4b3c569a9087.exe)",
+      "identity": "cli_stdio-228f4b3c569a9087.exe",
+      "discovered": 11,
+      "named_executed": 11,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 11,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\cli_trino_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\cli_trino_it-c947f7a52d733823.exe)",
+      "identity": "cli_trino_it-c947f7a52d733823.exe",
+      "discovered": 7,
+      "named_executed": 3,
+      "named_ignored": 4,
+      "result": {
+        "status": "ok",
+        "passed": 3,
+        "failed": 0,
+        "ignored": 4,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\cli_webhook_worker.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\cli_webhook_worker-83e0f393f56e4ef2.exe)",
+      "identity": "cli_webhook_worker-83e0f393f56e4ef2.exe",
+      "discovered": 3,
+      "named_executed": 3,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\dev_lifecycle.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\dev_lifecycle-f47023658560fe40.exe)",
+      "identity": "dev_lifecycle-f47023658560fe40.exe",
+      "discovered": 8,
+      "named_executed": 8,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 8,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\invalid_examples.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\invalid_examples-11b0788db472575b.exe)",
+      "identity": "invalid_examples-11b0788db472575b.exe",
+      "discovered": 1,
+      "named_executed": 1,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\private_fixtures.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\private_fixtures-d510e4f5aef31594.exe)",
+      "identity": "private_fixtures-d510e4f5aef31594.exe",
+      "discovered": 3,
+      "named_executed": 2,
+      "named_ignored": 1,
+      "result": {
+        "status": "ok",
+        "passed": 2,
+        "failed": 0,
+        "ignored": 1,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running unittests src\\lib.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\ontoforge_action-12af55fbf9985149.exe)",
+      "identity": "ontoforge_action-12af55fbf9985149.exe",
+      "discovered": 4,
+      "named_executed": 4,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 4,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\action.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\action-3b5b59e86310b018.exe)",
+      "identity": "action-3b5b59e86310b018.exe",
+      "discovered": 6,
+      "named_executed": 6,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 6,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\action_pg.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\action_pg-96d6ffad486cfa75.exe)",
+      "identity": "action_pg-96d6ffad486cfa75.exe",
+      "discovered": 0,
+      "named_executed": 0,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "empty_harness",
+        "reason": "action_pg.rs:1 requires test-support; CI integration explicitly enables it and executes 4"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_EMPTY_HARNESS"
+    },
+    {
+      "target": "Running tests\\entrypoints.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\entrypoints-5b1e02a623dea16b.exe)",
+      "identity": "entrypoints-5b1e02a623dea16b.exe",
+      "discovered": 4,
+      "named_executed": 4,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 4,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\frozen_definition.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\frozen_definition-c148bab54ffa992b.exe)",
+      "identity": "frozen_definition-c148bab54ffa992b.exe",
+      "discovered": 3,
+      "named_executed": 3,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\idempotency.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\idempotency-f68b514a9f4fded1.exe)",
+      "identity": "idempotency-f68b514a9f4fded1.exe",
+      "discovered": 9,
+      "named_executed": 9,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 9,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\idempotency_pg.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\idempotency_pg-8394f8fa2a79d11c.exe)",
+      "identity": "idempotency_pg-8394f8fa2a79d11c.exe",
+      "discovered": 0,
+      "named_executed": 0,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "empty_harness",
+        "reason": "idempotency_pg.rs:1 requires test-support; CI integration explicitly enables it and executes 6"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_EMPTY_HARNESS"
+    },
+    {
+      "target": "Running tests\\outbox.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\outbox-1883f726aa714dbe.exe)",
+      "identity": "outbox-1883f726aa714dbe.exe",
+      "discovered": 11,
+      "named_executed": 11,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 11,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\outbox_pg.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\outbox_pg-6ae8c6053b056d64.exe)",
+      "identity": "outbox_pg-6ae8c6053b056d64.exe",
+      "discovered": 2,
+      "named_executed": 0,
+      "named_ignored": 2,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 2,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "ignored_only",
+        "reason": "External PG; CI integration explicitly executes webhook 2"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_IGNORED_ONLY"
+    },
+    {
+      "target": "Running tests\\security.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\security-15c992afffffbd1a.exe)",
+      "identity": "security-15c992afffffbd1a.exe",
+      "discovered": 10,
+      "named_executed": 10,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 10,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\source.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\source-bba0b2c56e69ccbb.exe)",
+      "identity": "source-bba0b2c56e69ccbb.exe",
+      "discovered": 11,
+      "named_executed": 11,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 11,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\trino_action_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\trino_action_it-2503f8d3d1fb8d44.exe)",
+      "identity": "trino_action_it-2503f8d3d1fb8d44.exe",
+      "discovered": 5,
+      "named_executed": 1,
+      "named_ignored": 4,
+      "result": {
+        "status": "ok",
+        "passed": 1,
+        "failed": 0,
+        "ignored": 4,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\version.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\version-ea4789e482b606f6.exe)",
+      "identity": "version-ea4789e482b606f6.exe",
+      "discovered": 5,
+      "named_executed": 5,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 5,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running unittests src\\lib.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\ontoforge_api-7308d7855d0729c1.exe)",
+      "identity": "ontoforge_api-7308d7855d0729c1.exe",
+      "discovered": 1,
+      "named_executed": 1,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\openapi_snapshot.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\openapi_snapshot-5c2a64293b928a81.exe)",
+      "identity": "openapi_snapshot-5c2a64293b928a81.exe",
+      "discovered": 8,
+      "named_executed": 8,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 8,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running unittests src\\lib.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\ontoforge_auth-6904197be5f707b8.exe)",
+      "identity": "ontoforge_auth-6904197be5f707b8.exe",
+      "discovered": 3,
+      "named_executed": 3,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\criteria_coverage.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\criteria_coverage-b16dab3b5ccb6517.exe)",
+      "identity": "criteria_coverage-b16dab3b5ccb6517.exe",
+      "discovered": 6,
+      "named_executed": 6,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 6,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\crypto_backend.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\crypto_backend-252ec181722de789.exe)",
+      "identity": "crypto_backend-252ec181722de789.exe",
+      "discovered": 1,
+      "named_executed": 1,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\dev_token.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\dev_token-6a0a69bc62ee5c2a.exe)",
+      "identity": "dev_token-6a0a69bc62ee5c2a.exe",
+      "discovered": 16,
+      "named_executed": 16,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 16,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\oidc.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\oidc-c6d2dfd97f87e13f.exe)",
+      "identity": "oidc-c6d2dfd97f87e13f.exe",
+      "discovered": 31,
+      "named_executed": 31,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 31,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\rowpred_diff.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\rowpred_diff-56163be408efcee0.exe)",
+      "identity": "rowpred_diff-56163be408efcee0.exe",
+      "discovered": 6,
+      "named_executed": 6,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 6,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\rowpred_trino_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\rowpred_trino_it-8896d766c014cb37.exe)",
+      "identity": "rowpred_trino_it-8896d766c014cb37.exe",
+      "discovered": 4,
+      "named_executed": 1,
+      "named_ignored": 3,
+      "result": {
+        "status": "ok",
+        "passed": 1,
+        "failed": 0,
+        "ignored": 3,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\scope_compile.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\scope_compile-16481824647433bc.exe)",
+      "identity": "scope_compile-16481824647433bc.exe",
+      "discovered": 21,
+      "named_executed": 21,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 21,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\scope_merge.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\scope_merge-f1eb46432386ed27.exe)",
+      "identity": "scope_merge-f1eb46432386ed27.exe",
+      "discovered": 9,
+      "named_executed": 9,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 9,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running unittests src\\lib.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\ontoforge_client-a5c3328cad67aaad.exe)",
+      "identity": "ontoforge_client-a5c3328cad67aaad.exe",
+      "discovered": 6,
+      "named_executed": 6,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 6,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\contract.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\contract-ff4051b569195d1b.exe)",
+      "identity": "contract-ff4051b569195d1b.exe",
+      "discovered": 9,
+      "named_executed": 9,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 9,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\error_diagnostics.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\error_diagnostics-9b8b4306bc1043aa.exe)",
+      "identity": "error_diagnostics-9b8b4306bc1043aa.exe",
+      "discovered": 4,
+      "named_executed": 4,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 4,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running unittests src\\lib.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\ontoforge_engine-dd597ee697813be0.exe)",
+      "identity": "ontoforge_engine-dd597ee697813be0.exe",
+      "discovered": 56,
+      "named_executed": 56,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 56,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\bind_check_isolation.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\bind_check_isolation-87bc59cc004fb276.exe)",
+      "identity": "bind_check_isolation-87bc59cc004fb276.exe",
+      "discovered": 2,
+      "named_executed": 2,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 2,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\cardinality_check.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\cardinality_check-8fbfd6e99236d224.exe)",
+      "identity": "cardinality_check-8fbfd6e99236d224.exe",
+      "discovered": 11,
+      "named_executed": 11,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 11,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\doc_type_table.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\doc_type_table-ee448b8b0ecbdaa9.exe)",
+      "identity": "doc_type_table-ee448b8b0ecbdaa9.exe",
+      "discovered": 2,
+      "named_executed": 2,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 2,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\drift.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\drift-f06a3b5a4fd622ea.exe)",
+      "identity": "drift-f06a3b5a4fd622ea.exe",
+      "discovered": 8,
+      "named_executed": 8,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 8,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\drift_budget.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\drift_budget-89e4729661903791.exe)",
+      "identity": "drift_budget-89e4729661903791.exe",
+      "discovered": 2,
+      "named_executed": 2,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 2,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\l2_explain.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\l2_explain-146fa04c23897a86.exe)",
+      "identity": "l2_explain-146fa04c23897a86.exe",
+      "discovered": 2,
+      "named_executed": 2,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 2,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\l2_gate.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\l2_gate-6777d11b1c123a86.exe)",
+      "identity": "l2_gate-6777d11b1c123a86.exe",
+      "discovered": 16,
+      "named_executed": 16,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 16,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\l2_health.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\l2_health-55cf1ddff777213f.exe)",
+      "identity": "l2_health-55cf1ddff777213f.exe",
+      "discovered": 10,
+      "named_executed": 10,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 10,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\l2_monitor.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\l2_monitor-601b3635f6a44324.exe)",
+      "identity": "l2_monitor-601b3635f6a44324.exe",
+      "discovered": 19,
+      "named_executed": 19,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 19,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\pk_check.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\pk_check-e62fd4b78b0ec249.exe)",
+      "identity": "pk_check-e62fd4b78b0ec249.exe",
+      "discovered": 6,
+      "named_executed": 6,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 6,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\printer_literals.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\printer_literals-906e5afdbb355948.exe)",
+      "identity": "printer_literals-906e5afdbb355948.exe",
+      "discovered": 8,
+      "named_executed": 8,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 8,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\printer_prop.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\printer_prop-fef8fc367b6a104e.exe)",
+      "identity": "printer_prop-fef8fc367b6a104e.exe",
+      "discovered": 6,
+      "named_executed": 6,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 6,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\server_config.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\server_config-68cfb61a4116eb87.exe)",
+      "identity": "server_config-68cfb61a4116eb87.exe",
+      "discovered": 35,
+      "named_executed": 35,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 35,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\sql_text_only_from_printer.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\sql_text_only_from_printer-ee022a2576f17b1e.exe)",
+      "identity": "sql_text_only_from_printer-ee022a2576f17b1e.exe",
+      "discovered": 1,
+      "named_executed": 1,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\sqlite_engine.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\sqlite_engine-3b37899e776b98b8.exe)",
+      "identity": "sqlite_engine-3b37899e776b98b8.exe",
+      "discovered": 28,
+      "named_executed": 28,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 28,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\trino_client.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\trino_client-60f4d784c3cc0388.exe)",
+      "identity": "trino_client-60f4d784c3cc0388.exe",
+      "discovered": 23,
+      "named_executed": 23,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 23,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\trino_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\trino_it-a151cb15dcf31516.exe)",
+      "identity": "trino_it-a151cb15dcf31516.exe",
+      "discovered": 11,
+      "named_executed": 2,
+      "named_ignored": 9,
+      "result": {
+        "status": "ok",
+        "passed": 2,
+        "failed": 0,
+        "ignored": 9,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\trino_l2_acl_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\trino_l2_acl_it-837a182814b3b013.exe)",
+      "identity": "trino_l2_acl_it-837a182814b3b013.exe",
+      "discovered": 6,
+      "named_executed": 0,
+      "named_ignored": 6,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 6,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "ignored_only",
+        "reason": "External Trino; CI phase7-real-services executes ACL 6"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_IGNORED_ONLY"
+    },
+    {
+      "target": "Running tests\\trino_resilience.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\trino_resilience-bb97f8decf180092.exe)",
+      "identity": "trino_resilience-bb97f8decf180092.exe",
+      "discovered": 31,
+      "named_executed": 31,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 31,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running unittests src\\lib.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\ontoforge_expr-cf40b6968a06a326.exe)",
+      "identity": "ontoforge_expr-cf40b6968a06a326.exe",
+      "discovered": 3,
+      "named_executed": 3,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\analyze.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\analyze-35a6a7caf1a38ba5.exe)",
+      "identity": "analyze-35a6a7caf1a38ba5.exe",
+      "discovered": 21,
+      "named_executed": 21,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 21,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\criteria.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\criteria-0791925df87fe135.exe)",
+      "identity": "criteria-0791925df87fe135.exe",
+      "discovered": 20,
+      "named_executed": 20,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 20,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\rowpred_eval.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\rowpred_eval-3436ab1421f930f9.exe)",
+      "identity": "rowpred_eval-3436ab1421f930f9.exe",
+      "discovered": 14,
+      "named_executed": 14,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 14,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\rowpred_subset.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\rowpred_subset-f94fb953e819a740.exe)",
+      "identity": "rowpred_subset-f94fb953e819a740.exe",
+      "discovered": 13,
+      "named_executed": 13,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 13,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running unittests src\\lib.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\ontoforge_query-95e6abf7c19fad24.exe)",
+      "identity": "ontoforge_query-95e6abf7c19fad24.exe",
+      "discovered": 5,
+      "named_executed": 5,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 5,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\aggregate.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\aggregate-0c871d0862df2fb3.exe)",
+      "identity": "aggregate-0c871d0862df2fb3.exe",
+      "discovered": 7,
+      "named_executed": 7,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 7,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\audit_l0.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\audit_l0-48aeaa7314cd37f1.exe)",
+      "identity": "audit_l0-48aeaa7314cd37f1.exe",
+      "discovered": 10,
+      "named_executed": 9,
+      "named_ignored": 1,
+      "result": {
+        "status": "ok",
+        "passed": 9,
+        "failed": 0,
+        "ignored": 1,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\audit_pk.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\audit_pk-0d37475020d41f53.exe)",
+      "identity": "audit_pk-0d37475020d41f53.exe",
+      "discovered": 13,
+      "named_executed": 13,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 13,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\definition_snapshot.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\definition_snapshot-3cffdc84bbbc61b6.exe)",
+      "identity": "definition_snapshot-3cffdc84bbbc61b6.exe",
+      "discovered": 2,
+      "named_executed": 2,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 2,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\l2_discovery.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\l2_discovery-8d461782117b6d08.exe)",
+      "identity": "l2_discovery-8d461782117b6d08.exe",
+      "discovered": 9,
+      "named_executed": 9,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 9,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\l2_execute.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\l2_execute-8cfb1fe5fc7868fb.exe)",
+      "identity": "l2_execute-8cfb1fe5fc7868fb.exe",
+      "discovered": 15,
+      "named_executed": 15,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 15,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\overlay_prop.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\overlay_prop-bc8f4903f1cb6d9b.exe)",
+      "identity": "overlay_prop-bc8f4903f1cb6d9b.exe",
+      "discovered": 11,
+      "named_executed": 11,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 11,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\pk_read.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\pk_read-6c9a081d82f520eb.exe)",
+      "identity": "pk_read-6c9a081d82f520eb.exe",
+      "discovered": 11,
+      "named_executed": 11,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 11,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\query_bench_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\query_bench_it-447b493d1fb2ea24.exe)",
+      "identity": "query_bench_it-447b493d1fb2ea24.exe",
+      "discovered": 3,
+      "named_executed": 2,
+      "named_ignored": 1,
+      "result": {
+        "status": "ok",
+        "passed": 2,
+        "failed": 0,
+        "ignored": 1,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\search_around.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\search_around-e33b32936ef9425a.exe)",
+      "identity": "search_around-e33b32936ef9425a.exe",
+      "discovered": 6,
+      "named_executed": 6,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 6,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\security.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\security-91b8c1195ec68b8e.exe)",
+      "identity": "security-91b8c1195ec68b8e.exe",
+      "discovered": 23,
+      "named_executed": 23,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 23,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\set_ops.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\set_ops-b0d290c1e3475979.exe)",
+      "identity": "set_ops-b0d290c1e3475979.exe",
+      "discovered": 5,
+      "named_executed": 5,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 5,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\sql_shape.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\sql_shape-1f51f857f42bac36.exe)",
+      "identity": "sql_shape-1f51f857f42bac36.exe",
+      "discovered": 6,
+      "named_executed": 6,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 6,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\sqlite_query.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\sqlite_query-c75085e81f2ddd2a.exe)",
+      "identity": "sqlite_query-c75085e81f2ddd2a.exe",
+      "discovered": 10,
+      "named_executed": 10,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 10,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\trino_query_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\trino_query_it-b52b2a1ab76f7960.exe)",
+      "identity": "trino_query_it-b52b2a1ab76f7960.exe",
+      "discovered": 6,
+      "named_executed": 1,
+      "named_ignored": 5,
+      "result": {
+        "status": "ok",
+        "passed": 1,
+        "failed": 0,
+        "ignored": 5,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running unittests src\\lib.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\ontoforge_schema-7305d5c45cc88728.exe)",
+      "identity": "ontoforge_schema-7305d5c45cc88728.exe",
+      "discovered": 139,
+      "named_executed": 139,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 139,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\action_types.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\action_types-dfd1ee8f7699255e.exe)",
+      "identity": "action_types-dfd1ee8f7699255e.exe",
+      "discovered": 28,
+      "named_executed": 28,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 28,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\bindings.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\bindings-21aace36e47530a3.exe)",
+      "identity": "bindings-21aace36e47530a3.exe",
+      "discovered": 32,
+      "named_executed": 32,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 32,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\diagnostics.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\diagnostics-019cce52ca1a7d0a.exe)",
+      "identity": "diagnostics-019cce52ca1a7d0a.exe",
+      "discovered": 16,
+      "named_executed": 16,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 16,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\link_types.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\link_types-3e1dbb92d05c7c2e.exe)",
+      "identity": "link_types-3e1dbb92d05c7c2e.exe",
+      "discovered": 21,
+      "named_executed": 21,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 21,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\lint_examples.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\lint_examples-bfdf8ee33cc5c43d.exe)",
+      "identity": "lint_examples-bfdf8ee33cc5c43d.exe",
+      "discovered": 1,
+      "named_executed": 1,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\load_examples.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\load_examples-187bbf3650bf4a66.exe)",
+      "identity": "load_examples-187bbf3650bf4a66.exe",
+      "discovered": 6,
+      "named_executed": 6,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 6,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\loader.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\loader-fef368c4c135a1bf.exe)",
+      "identity": "loader-fef368c4c135a1bf.exe",
+      "discovered": 34,
+      "named_executed": 34,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 34,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\object_types.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\object_types-668900c7d12493b9.exe)",
+      "identity": "object_types-668900c7d12493b9.exe",
+      "discovered": 21,
+      "named_executed": 21,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 21,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\schema_export.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\schema_export-2aacfa39efc49f1c.exe)",
+      "identity": "schema_export-2aacfa39efc49f1c.exe",
+      "discovered": 14,
+      "named_executed": 14,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 14,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\scope_documents.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\scope_documents-30a7c8cefa8e3de0.exe)",
+      "identity": "scope_documents-30a7c8cefa8e3de0.exe",
+      "discovered": 16,
+      "named_executed": 16,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 16,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running unittests src\\lib.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\ontoforge_server-40cd0be86a05599c.exe)",
+      "identity": "ontoforge_server-40cd0be86a05599c.exe",
+      "discovered": 25,
+      "named_executed": 25,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 25,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\action_source_budget.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\action_source_budget-aa0f8ddd9f6dada0.exe)",
+      "identity": "action_source_budget-aa0f8ddd9f6dada0.exe",
+      "discovered": 5,
+      "named_executed": 5,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 5,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\health_lifecycle_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\health_lifecycle_it-45146197d62e8882.exe)",
+      "identity": "health_lifecycle_it-45146197d62e8882.exe",
+      "discovered": 4,
+      "named_executed": 4,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 4,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\health_trino_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\health_trino_it-2a22b9c18e6edd91.exe)",
+      "identity": "health_trino_it-2a22b9c18e6edd91.exe",
+      "discovered": 2,
+      "named_executed": 0,
+      "named_ignored": 2,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 2,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "ignored_only",
+        "reason": "External Trino; CI phase7-real-services executes health 2"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_IGNORED_ONLY"
+    },
+    {
+      "target": "Running tests\\history_errors.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\history_errors-994aa655f7d918ee.exe)",
+      "identity": "history_errors-994aa655f7d918ee.exe",
+      "discovered": 7,
+      "named_executed": 7,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 7,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\history_pagination.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\history_pagination-a4c6097c6565977c.exe)",
+      "identity": "history_pagination-a4c6097c6565977c.exe",
+      "discovered": 7,
+      "named_executed": 7,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 7,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\http_action_diagnostics.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\http_action_diagnostics-26c4e84f46b91aa0.exe)",
+      "identity": "http_action_diagnostics-26c4e84f46b91aa0.exe",
+      "discovered": 5,
+      "named_executed": 5,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 5,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\http_action_safety.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\http_action_safety-256b2d6078941c00.exe)",
+      "identity": "http_action_safety-256b2d6078941c00.exe",
+      "discovered": 3,
+      "named_executed": 3,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\http_actions.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\http_actions-89eaee842b864e43.exe)",
+      "identity": "http_actions-89eaee842b864e43.exe",
+      "discovered": 3,
+      "named_executed": 3,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\http_contract.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\http_contract-3d70bfb17bf18dc5.exe)",
+      "identity": "http_contract-3d70bfb17bf18dc5.exe",
+      "discovered": 3,
+      "named_executed": 3,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\mcp_actions.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\mcp_actions-44afebad75c2e60f.exe)",
+      "identity": "mcp_actions-44afebad75c2e60f.exe",
+      "discovered": 10,
+      "named_executed": 10,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 10,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\mcp_contract.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\mcp_contract-978a0a16184b93ef.exe)",
+      "identity": "mcp_contract-978a0a16184b93ef.exe",
+      "discovered": 16,
+      "named_executed": 16,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 16,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\mcp_execution_admission.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\mcp_execution_admission-57f95d5cd7d7fbbd.exe)",
+      "identity": "mcp_execution_admission-57f95d5cd7d7fbbd.exe",
+      "discovered": 4,
+      "named_executed": 4,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 4,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\mcp_l2.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\mcp_l2-665d247b7edfc9e7.exe)",
+      "identity": "mcp_l2-665d247b7edfc9e7.exe",
+      "discovered": 2,
+      "named_executed": 2,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 2,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\mcp_l2_defaults.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\mcp_l2_defaults-7cb1f2d3d72d956c.exe)",
+      "identity": "mcp_l2_defaults-7cb1f2d3d72d956c.exe",
+      "discovered": 15,
+      "named_executed": 15,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 15,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\mcp_transport.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\mcp_transport-ce3b45bd93e3f3b2.exe)",
+      "identity": "mcp_transport-ce3b45bd93e3f3b2.exe",
+      "discovered": 11,
+      "named_executed": 11,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 11,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\postgres_http_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\postgres_http_it-031a3162ed342f50.exe)",
+      "identity": "postgres_http_it-031a3162ed342f50.exe",
+      "discovered": 4,
+      "named_executed": 0,
+      "named_ignored": 4,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 4,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "ignored_only",
+        "reason": "External PG; CI phase7-real-services executes HTTP 4"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_IGNORED_ONLY"
+    },
+    {
+      "target": "Running tests\\source_drift.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\source_drift-822cc59ca058285e.exe)",
+      "identity": "source_drift-822cc59ca058285e.exe",
+      "discovered": 20,
+      "named_executed": 20,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 20,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\source_drift_cleanup.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\source_drift_cleanup-cafb1318fbf15558.exe)",
+      "identity": "source_drift_cleanup-cafb1318fbf15558.exe",
+      "discovered": 2,
+      "named_executed": 2,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 2,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\source_drift_trino_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\source_drift_trino_it-fef7a8cde2063cc4.exe)",
+      "identity": "source_drift_trino_it-fef7a8cde2063cc4.exe",
+      "discovered": 2,
+      "named_executed": 0,
+      "named_ignored": 2,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 2,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "ignored_only",
+        "reason": "External Trino; CI phase7-real-services executes source drift 2"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_IGNORED_ONLY"
+    },
+    {
+      "target": "Running tests\\trino_http_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\trino_http_it-8455493ade653e33.exe)",
+      "identity": "trino_http_it-8455493ade653e33.exe",
+      "discovered": 2,
+      "named_executed": 0,
+      "named_ignored": 2,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 2,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "ignored_only",
+        "reason": "External Trino; CI phase7-real-services executes HTTP 2"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_IGNORED_ONLY"
+    },
+    {
+      "target": "Running unittests src\\lib.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\ontoforge_storage-b861aaf24effc27d.exe)",
+      "identity": "ontoforge_storage-b861aaf24effc27d.exe",
+      "discovered": 49,
+      "named_executed": 49,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 49,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\conformance_pg.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\conformance_pg-6e1a67f4d83a0acf.exe)",
+      "identity": "conformance_pg-6e1a67f4d83a0acf.exe",
+      "discovered": 45,
+      "named_executed": 0,
+      "named_ignored": 45,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 45,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "ignored_only",
+        "reason": "External PG; CI integration explicitly executes conformance 45"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_IGNORED_ONLY"
+    },
+    {
+      "target": "Running tests\\conformance_sqlite.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\conformance_sqlite-286d97147bb96e52.exe)",
+      "identity": "conformance_sqlite-286d97147bb96e52.exe",
+      "discovered": 43,
+      "named_executed": 43,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 43,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\frozen_history.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\frozen_history-79d1d1f6f10c5512.exe)",
+      "identity": "frozen_history-79d1d1f6f10c5512.exe",
+      "discovered": 1,
+      "named_executed": 1,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\history_masking.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\history_masking-3d754214abfbd20c.exe)",
+      "identity": "history_masking-3d754214abfbd20c.exe",
+      "discovered": 13,
+      "named_executed": 12,
+      "named_ignored": 1,
+      "result": {
+        "status": "ok",
+        "passed": 12,
+        "failed": 0,
+        "ignored": 1,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\import.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\import-3442dfcabaeffa11.exe)",
+      "identity": "import-3442dfcabaeffa11.exe",
+      "discovered": 18,
+      "named_executed": 16,
+      "named_ignored": 2,
+      "result": {
+        "status": "ok",
+        "passed": 16,
+        "failed": 0,
+        "ignored": 2,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\migrate.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\migrate-559c35c1e54ca0b8.exe)",
+      "identity": "migrate-559c35c1e54ca0b8.exe",
+      "discovered": 15,
+      "named_executed": 15,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 15,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\migrate_pg.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\migrate_pg-c82bca4eabba7b09.exe)",
+      "identity": "migrate_pg-c82bca4eabba7b09.exe",
+      "discovered": 4,
+      "named_executed": 0,
+      "named_ignored": 4,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 4,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "ignored_only",
+        "reason": "External PG; CI integration explicitly executes migrations 4"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_IGNORED_ONLY"
+    },
+    {
+      "target": "Running tests\\model_prop.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\model_prop-1ded370bf4b82d98.exe)",
+      "identity": "model_prop-1ded370bf4b82d98.exe",
+      "discovered": 1,
+      "named_executed": 1,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\query_read.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\query_read-0d4fde8456f5d85a.exe)",
+      "identity": "query_read-0d4fde8456f5d85a.exe",
+      "discovered": 11,
+      "named_executed": 11,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 11,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\query_read_pg.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\query_read_pg-fba053d23de5db89.exe)",
+      "identity": "query_read_pg-fba053d23de5db89.exe",
+      "discovered": 2,
+      "named_executed": 0,
+      "named_ignored": 2,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 2,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "ignored_only",
+        "reason": "External PG; CI integration explicitly executes query reads 2"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_IGNORED_ONLY"
+    },
+    {
+      "target": "Running tests\\reload.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\reload-aeccea678a096af3.exe)",
+      "identity": "reload-aeccea678a096af3.exe",
+      "discovered": 32,
+      "named_executed": 32,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 32,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\reload_pg.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\reload_pg-181387145679bc34.exe)",
+      "identity": "reload_pg-181387145679bc34.exe",
+      "discovered": 11,
+      "named_executed": 0,
+      "named_ignored": 11,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 11,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "ignored_only",
+        "reason": "External PG; CI integration explicitly executes reload 11"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_IGNORED_ONLY"
+    },
+    {
+      "target": "Running tests\\reload_trino_it.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\reload_trino_it-a69493e382f61c94.exe)",
+      "identity": "reload_trino_it-a69493e382f61c94.exe",
+      "discovered": 3,
+      "named_executed": 0,
+      "named_ignored": 3,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 3,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "ignored_only",
+        "reason": "External Trino; CI integration explicitly executes reload 3"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_IGNORED_ONLY"
+    },
+    {
+      "target": "Running tests\\request_snapshot.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\request_snapshot-fc053e43b43ad421.exe)",
+      "identity": "request_snapshot-fc053e43b43ad421.exe",
+      "discovered": 3,
+      "named_executed": 2,
+      "named_ignored": 1,
+      "result": {
+        "status": "ok",
+        "passed": 2,
+        "failed": 0,
+        "ignored": 1,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\scope_store.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\scope_store-360e2c095d4b1b7a.exe)",
+      "identity": "scope_store-360e2c095d4b1b7a.exe",
+      "discovered": 15,
+      "named_executed": 12,
+      "named_ignored": 3,
+      "result": {
+        "status": "ok",
+        "passed": 12,
+        "failed": 0,
+        "ignored": 3,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\sql_exit_guard.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\sql_exit_guard-20ee73d3a73125d6.exe)",
+      "identity": "sql_exit_guard-20ee73d3a73125d6.exe",
+      "discovered": 1,
+      "named_executed": 1,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Running tests\\sqlite_connection.rs (C:/Users/easyi/AppData/Local/Temp/ontoforge-reverify-060019f-20261105\\debug\\deps\\sqlite_connection-8d53d24eff736232.exe)",
+      "identity": "sqlite_connection-8d53d24eff736232.exe",
+      "discovered": 4,
+      "named_executed": 4,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 4,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Doc-tests ontoforge",
+      "identity": "Doc-tests ontoforge",
+      "discovered": 0,
+      "named_executed": 0,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "empty_harness",
+        "reason": "Named empty doctest harness at HEAD 060019f; no passing tests claimed"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_EMPTY_HARNESS"
+    },
+    {
+      "target": "Doc-tests ontoforge_action",
+      "identity": "Doc-tests ontoforge_action",
+      "discovered": 0,
+      "named_executed": 0,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "empty_harness",
+        "reason": "Named empty doctest harness at HEAD 060019f; no passing tests claimed"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_EMPTY_HARNESS"
+    },
+    {
+      "target": "Doc-tests ontoforge_api",
+      "identity": "Doc-tests ontoforge_api",
+      "discovered": 0,
+      "named_executed": 0,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "empty_harness",
+        "reason": "Named empty doctest harness at HEAD 060019f; no passing tests claimed"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_EMPTY_HARNESS"
+    },
+    {
+      "target": "Doc-tests ontoforge_auth",
+      "identity": "Doc-tests ontoforge_auth",
+      "discovered": 0,
+      "named_executed": 0,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "empty_harness",
+        "reason": "Named empty doctest harness at HEAD 060019f; no passing tests claimed"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_EMPTY_HARNESS"
+    },
+    {
+      "target": "Doc-tests ontoforge_client",
+      "identity": "Doc-tests ontoforge_client",
+      "discovered": 0,
+      "named_executed": 0,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "empty_harness",
+        "reason": "Named empty doctest harness at HEAD 060019f; no passing tests claimed"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_EMPTY_HARNESS"
+    },
+    {
+      "target": "Doc-tests ontoforge_engine",
+      "identity": "Doc-tests ontoforge_engine",
+      "discovered": 1,
+      "named_executed": 0,
+      "named_ignored": 1,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 1,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "ignored_only",
+        "reason": "Explicit ignore code example in src/trino/l2_monitor.rs:123; not runtime evidence"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_IGNORED_ONLY"
+    },
+    {
+      "target": "Doc-tests ontoforge_expr",
+      "identity": "Doc-tests ontoforge_expr",
+      "discovered": 0,
+      "named_executed": 0,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "empty_harness",
+        "reason": "Named empty doctest harness at HEAD 060019f; no passing tests claimed"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_EMPTY_HARNESS"
+    },
+    {
+      "target": "Doc-tests ontoforge_query",
+      "identity": "Doc-tests ontoforge_query",
+      "discovered": 2,
+      "named_executed": 2,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 2,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": null,
+      "discovery_matches_execution": true,
+      "classification": "PASS"
+    },
+    {
+      "target": "Doc-tests ontoforge_schema",
+      "identity": "Doc-tests ontoforge_schema",
+      "discovered": 0,
+      "named_executed": 0,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "empty_harness",
+        "reason": "Named empty doctest harness at HEAD 060019f; no passing tests claimed"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_EMPTY_HARNESS"
+    },
+    {
+      "target": "Doc-tests ontoforge_server",
+      "identity": "Doc-tests ontoforge_server",
+      "discovered": 0,
+      "named_executed": 0,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "empty_harness",
+        "reason": "Named empty doctest harness at HEAD 060019f; no passing tests claimed"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_EMPTY_HARNESS"
+    },
+    {
+      "target": "Doc-tests ontoforge_storage",
+      "identity": "Doc-tests ontoforge_storage",
+      "discovered": 0,
+      "named_executed": 0,
+      "named_ignored": 0,
+      "result": {
+        "status": "ok",
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered": 0
+      },
+      "exemption": {
+        "kind": "empty_harness",
+        "reason": "Named empty doctest harness at HEAD 060019f; no passing tests claimed"
+      },
+      "discovery_matches_execution": true,
+      "classification": "EXEMPT_EMPTY_HARNESS"
+    }
+  ]
+}

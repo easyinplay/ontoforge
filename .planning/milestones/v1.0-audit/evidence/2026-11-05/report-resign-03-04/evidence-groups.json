@@ -1,0 +1,1709 @@
+[
+  {
+    "id": "03-01",
+    "plan": ".planning/phases/03-edit-store-scope-model/03-01-PLAN.md",
+    "note": "依赖、SQLite连接选项与供应链守卫；历史批准单独判 UNCERTAIN。",
+    "artifacts": [
+      {
+        "path": "Cargo.toml",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/src/store.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": ".planning/adr/0023-phase3-crate-dependency-direction.md",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge-storage/src/store.rs",
+        "to": "crates/ontoforge-engine/src/sqlite/mod.rs",
+        "via": "复用 compare_decimal / compare_timestamp 与 DECIMAL_COLLATION / TIMESTAMP_COLLATION（engine 导出）",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-storage/Cargo.toml",
+        "to": "crates/ontoforge-auth/Cargo.toml",
+        "via": "storage 依赖 auth（历史遮蔽与 reload 时的 role 复核需要 TypeScope / compile_scope）",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "03-01.1",
+      "03-01.2",
+      "03-01.3",
+      "03-01.4",
+      "03-01.5",
+      "03-01.6"
+    ]
+  },
+  {
+    "id": "03-02",
+    "plan": ".planning/phases/03-edit-store-scope-model/03-02-PLAN.md",
+    "note": "Object IR/schema 与 server config 校验；ONTV20/21..27 未被新 W18 替换。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge-schema/src/ir/object.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-schema/src/ir/attrs.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-expr/src/rowpred/value.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-engine/src/config.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-schema/src/diag.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge-engine/src/config.rs",
+        "to": "crates/ontoforge-schema/src/ir/attrs.rs",
+        "via": "PrincipalAttrConfig.ty: AttrType",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-engine/src/config.rs",
+        "to": "crates/ontoforge-schema/src/diag.rs",
+        "via": "新段的错误沿用 ConfigError → ONT-V20",
+        "verified": true,
+        "detail": "Pattern found in target"
+      }
+    ],
+    "truths": [
+      "03-02.1",
+      "03-02.2",
+      "03-02.3",
+      "03-02.4",
+      "03-02.5",
+      "03-02.6",
+      "03-02.7"
+    ]
+  },
+  {
+    "id": "03-03",
+    "plan": ".planning/phases/03-edit-store-scope-model/03-03-PLAN.md",
+    "note": "physical→diff→reload.execute_steps→sql_exit；dry-run/破坏性拒绝/幂等保持旧定义。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge-storage/src/physical.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/src/diff.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/src/reload.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/src/sql_exit.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/tests/sql_exit_guard.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": ".planning/adr/0024-edit-store-physical-format.md",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge-storage/src/reload.rs",
+        "to": "crates/ontoforge-storage/src/diff.rs",
+        "via": "diff(active.physical, PhysicalSchema::derive(new))",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-storage/src/ddl.rs",
+        "to": "crates/ontoforge-storage/src/sql_exit.rs",
+        "via": "sea-query 生成的 DDL 文本只经 sql_exit 执行",
+        "verified": false,
+        "detail": "Pattern \"sql_exit::\" not found in source or target"
+      },
+      {
+        "from": "crates/ontoforge-storage/src/store.rs",
+        "to": "crates/ontoforge-storage/migrations/sqlite/0001_definitions.sql",
+        "via": "EditStore::open 执行 sqlx::migrate!",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "03-03.1",
+      "03-03.2",
+      "03-03.3",
+      "03-03.4",
+      "03-03.5",
+      "03-03.6",
+      "03-03.7",
+      "03-03.8"
+    ]
+  },
+  {
+    "id": "03-04",
+    "plan": ".planning/phases/03-edit-store-scope-model/03-04-PLAN.md",
+    "note": "CLI加载校验后打开store并调用reload；PG双schema、DDL快照与缺env失败路径。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge/src/reload.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/migrations/postgres/0001_definitions.sql",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/tests/support/mod.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/tests/reload_pg.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge/src/reload.rs",
+        "to": "crates/ontoforge-storage/src/reload.rs",
+        "via": "CLI 调用库函数 reload（D-15）",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-storage/src/store.rs",
+        "to": "crates/ontoforge-storage/migrations/postgres/0001_definitions.sql",
+        "via": "PG 分支的 sqlx::migrate!（迁移记录落在 sys schema）",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-storage/tests/reload_pg.rs",
+        "to": "crates/ontoforge-storage/tests/support/mod.rs",
+        "via": "pg_store()",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "03-04.1",
+      "03-04.2",
+      "03-04.3",
+      "03-04.4",
+      "03-04.5",
+      "03-04.6"
+    ]
+  },
+  {
+    "id": "03-05",
+    "plan": ".planning/phases/03-edit-store-scope-model/03-05-PLAN.md",
+    "note": "CEL只作解析，自有Pred求值，SQL三值语义与受限引用；Display roundtrip property。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge-expr/src/rowpred/ir.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-expr/src/rowpred/parse.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-expr/src/rowpred/eval.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "docs/scope.md",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": ".planning/adr/0025-row-predicate-semantics.md",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge-expr/src/rowpred/parse.rs",
+        "to": "crates/ontoforge-expr/src/analyze.rs",
+        "via": "在 analyze 闭包内把 cel AST 降为拥有所有权的 Pred",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-expr/src/rowpred/eval.rs",
+        "to": "crates/ontoforge-expr/src/rowpred/value.rs",
+        "via": "Attrs::get 缺失返回 Null",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "03-05.1",
+      "03-05.2",
+      "03-05.3",
+      "03-05.4",
+      "03-05.5",
+      "03-05.6",
+      "03-05.7",
+      "03-05.8"
+    ]
+  },
+  {
+    "id": "03-06",
+    "plan": ".planning/phases/03-edit-store-scope-model/03-06-PLAN.md",
+    "note": "独立scope loader→ScopeSet/Role/RoleBinding；schema第三导出与示例授权交叉。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge-schema/src/ir/scope.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-schema/src/loader/scope.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "schemas/ontoforge-scope.schema.json",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "examples/scopes/aviation/roles.yaml",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge-schema/src/loader/scope.rs",
+        "to": "crates/ontoforge-schema/src/loader/dispatch.rs",
+        "via": "同一 kind 改写 + serde_path_to_error + map_error 的诊断路径",
+        "verified": true,
+        "detail": "Pattern found in target"
+      },
+      {
+        "from": "crates/ontoforge-schema/src/schema_export.rs",
+        "to": "schemas/ontoforge-scope.schema.json",
+        "via": "rendered_schemas 第三项",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "03-06.1",
+      "03-06.2",
+      "03-06.3",
+      "03-06.4",
+      "03-06.5",
+      "03-06.6"
+    ]
+  },
+  {
+    "id": "03-07",
+    "plan": ".planning/phases/03-edit-store-scope-model/03-07-PLAN.md",
+    "note": "OIDC header算法白名单、claim验证、JWKS限额/单飞/缓存与issuer组命名。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge-auth/src/authn/mod.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-auth/src/authn/principal.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-auth/src/authn/jwks.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-auth/tests/oidc.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge-auth/src/authn/oidc.rs",
+        "to": "crates/ontoforge-auth/src/authn/jwks.rs",
+        "via": "按 kid 取 DecodingKey",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-auth/src/authn/principal.rs",
+        "to": "crates/ontoforge-expr/src/rowpred/value.rs",
+        "via": "claims 映射为 Attrs（AttrValue / Scalar）",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "03-07.1",
+      "03-07.2",
+      "03-07.3",
+      "03-07.4",
+      "03-07.5",
+      "03-07.6"
+    ]
+  },
+  {
+    "id": "03-08",
+    "plan": ".planning/phases/03-edit-store-scope-model/03-08-PLAN.md",
+    "note": "commit校验→单事务锁行→seq→行/entry/history→commit；任一步错误rollback。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge-storage/src/commit.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/src/log.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/src/value.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/migrations/postgres/0002_edit_log.sql",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/tests/conformance/mod.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge-storage/src/commit.rs",
+        "to": "crates/ontoforge-storage/src/state.rs",
+        "via": "next_state(prev, op) 纯函数决定新行",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-storage/src/commit.rs",
+        "to": "crates/ontoforge-storage/src/sql_exit.rs",
+        "via": "sea-query 构造的 DML 只经 sql_exit 执行",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-storage/tests/conformance_pg.rs",
+        "to": "crates/ontoforge-storage/tests/support/mod.rs",
+        "via": "pg_store()（ONTOFORGE_PG_URL 或 embedded-pg，03-04 产出）",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "03-08.1",
+      "03-08.2",
+      "03-08.3",
+      "03-08.4",
+      "03-08.5",
+      "03-08.6"
+    ]
+  },
+  {
+    "id": "03-09",
+    "plan": ".planning/phases/03-edit-store-scope-model/03-09-PLAN.md",
+    "note": "0002迁移触发器→append-only；read_log→replay，version_after拒绝不一致。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge-storage/migrations/postgres/0002_edit_log.sql",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/migrations/sqlite/0002_edit_log.sql",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/src/log.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": ".planning/adr/0026-edit-log-format.md",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge-storage/src/log.rs",
+        "to": "crates/ontoforge-storage/src/state.rs",
+        "via": "重放与提交共用同一 next_state / next_link_state",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-storage/tests/conformance/mod.rs",
+        "to": "crates/ontoforge-storage/src/log.rs",
+        "via": "replay_rebuilds_edit_store 调用 replay 并逐列比较",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-storage/tests/conformance/mod.rs",
+        "to": "crates/ontoforge-storage/migrations/postgres/0002_edit_log.sql",
+        "via": "append_only 用例对三张日志表执行 UPDATE / DELETE / TRUNCATE 并断言被触发器拒绝",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "03-09.1",
+      "03-09.2",
+      "03-09.3",
+      "03-09.4"
+    ]
+  },
+  {
+    "id": "03-10",
+    "plan": ".planning/phases/03-edit-store-scope-model/03-10-PLAN.md",
+    "note": "physical/naming/diff/index→reload；部分唯一索引、只增索引和放宽基数删除unique。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge-storage/src/naming.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/src/physical.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/src/ddl.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge-storage/src/physical.rs",
+        "to": "crates/ontoforge-schema/src/ir/link.rs",
+        "via": "Cardinality::OneToOne 的 to 端 foreign_key → 唯一索引",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-storage/src/diff.rs",
+        "to": "crates/ontoforge-storage/src/ddl.rs",
+        "via": "索引对账生成 CreateIndex / DropIndex 步骤",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "03-10.1",
+      "03-10.2",
+      "03-10.3",
+      "03-10.4"
+    ]
+  },
+  {
+    "id": "03-11",
+    "plan": ".planning/phases/03-edit-store-scope-model/03-11-PLAN.md",
+    "note": "Pred→scope.lower→typed printer→SQLite/Trino，与Rust eval逐行比；per-column role OR。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge-engine/src/printer/ast.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-engine/src/printer/escape.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-auth/src/scope/lower.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-auth/src/scope/merge.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-auth/tests/rowpred_diff.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "ci/pg/rowpred_corpus.sql",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge-auth/src/scope/lower.rs",
+        "to": "crates/ontoforge-engine/src/printer/ast.rs",
+        "via": "Pred → printer Expr（Compare / IsNull / InList / StringMatch / And / Or / Not）",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-engine/src/printer/dialect.rs",
+        "to": "crates/ontoforge-engine/src/printer/escape.rs",
+        "via": "StringMatch 的模式经 like_pattern / glob_pattern 再经 quote_string",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-auth/src/scope/merge.rs",
+        "to": "crates/ontoforge-expr/src/rowpred/eval.rs",
+        "via": "TypeScope::evaluate 用同一 eval",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "03-11.1",
+      "03-11.2",
+      "03-11.3",
+      "03-11.4",
+      "03-11.5",
+      "03-11.6",
+      "03-11.7"
+    ]
+  },
+  {
+    "id": "03-12",
+    "plan": ".planning/phases/03-edit-store-scope-model/03-12-PLAN.md",
+    "note": "CLI DevKey→HS256→显式DevMode；config本身不启用；Unix权限与Windows限制区分。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge-auth/src/authn/dev.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge/src/dev_token.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge-auth/src/authn/mod.rs",
+        "to": "crates/ontoforge-auth/src/authn/dev.rs",
+        "via": "alg == HS256 且 dev 验证器已启用时进入 dev 路径",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-auth/src/authn/dev.rs",
+        "to": "crates/ontoforge-auth/src/authn/principal.rs",
+        "via": "dev 令牌复用 principal_from_claims",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "03-12.1",
+      "03-12.2",
+      "03-12.3",
+      "03-12.4",
+      "03-12.5"
+    ]
+  },
+  {
+    "id": "03-13",
+    "plan": ".planning/phases/03-edit-store-scope-model/03-13-PLAN.md",
+    "note": "state→commit overlay转换，与独立Model.apply逐步值/错误/receipt/log replay比较；双后端并发。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge-storage/src/state.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/tests/model/mod.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/tests/model_prop.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge-storage/src/commit.rs",
+        "to": "crates/ontoforge-storage/src/state.rs",
+        "via": "每条 edit 经 next_state / next_link_state",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-storage/src/commit.rs",
+        "to": "crates/ontoforge-storage/src/physical.rs",
+        "via": "唯一约束违反按 IndexKind::UniqueWhenSet 反查 link 名，映射为 CardinalityViolation",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "03-13.1",
+      "03-13.2",
+      "03-13.3",
+      "03-13.4",
+      "03-13.5",
+      "03-13.6"
+    ]
+  },
+  {
+    "id": "03-14",
+    "plan": ".planning/phases/03-edit-store-scope-model/03-14-PLAN.md",
+    "note": "compile_scope共用完整诊断；whole-object criteria覆盖、fail-closed与selected profile约束。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge-auth/src/scope/compile.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-auth/src/scope/coverage.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-auth/tests/criteria_coverage.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge-auth/src/scope/compile.rs",
+        "to": "crates/ontoforge-expr/src/rowpred/parse.rs",
+        "via": "compile_row_filter，PredIssue → ONT-V22",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-auth/src/scope/coverage.rs",
+        "to": "crates/ontoforge-expr/src/walk.rs",
+        "via": "member_paths 提取 objects.<param>.<prop>",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-auth/src/scope/compile.rs",
+        "to": "crates/ontoforge-auth/src/scope/merge.rs",
+        "via": "for_principal 对每个 type 调用 merge",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "03-14.1",
+      "03-14.2",
+      "03-14.3",
+      "03-14.4",
+      "03-14.5",
+      "03-14.6",
+      "03-14.7"
+    ]
+  },
+  {
+    "id": "03-15",
+    "plan": ".planning/phases/03-edit-store-scope-model/03-15-PLAN.md",
+    "note": "CLI plan hash→锁内重算/角色复核→归档/rename→共用reload探测发布；拒绝旧hash。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge-storage/src/migrate.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge/src/migrate.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/tests/migrate.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge-storage/src/migrate.rs",
+        "to": "crates/ontoforge-storage/src/reload.rs",
+        "via": "共用 execute_steps 与 switch_definition（写 migration_json）",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge/src/migrate.rs",
+        "to": "crates/ontoforge-storage/src/migrate.rs",
+        "via": "--plan 调 plan_migration，--apply 调 apply_migration",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "03-15.1",
+      "03-15.2",
+      "03-15.3",
+      "03-15.4",
+      "03-15.5",
+      "03-15.6"
+    ]
+  },
+  {
+    "id": "03-16",
+    "plan": ".planning/phases/03-edit-store-scope-model/03-16-PLAN.md",
+    "note": "scope plan/apply→scope_store单事务/元数据锁/索引/append audit；login去节流。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge-storage/src/scope_store.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/src/index.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/migrations/postgres/0003_scope.sql",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge/src/scope.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "examples/server/ontoforge-server.dev.toml",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge/src/scope.rs",
+        "to": "crates/ontoforge-auth/src/scope/compile.rs",
+        "via": "apply 前离线 compile_scope（D-01）",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge/src/scope.rs",
+        "to": "crates/ontoforge-storage/src/scope_store.rs",
+        "via": "scope_plan / scope_apply",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-storage/src/scope_store.rs",
+        "to": "crates/ontoforge-storage/src/index.rs",
+        "via": "apply 事务内为 row_filter_properties 建索引",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "03-16.1",
+      "03-16.2",
+      "03-16.3",
+      "03-16.4",
+      "03-16.5",
+      "03-16.6",
+      "03-16.7"
+    ]
+  },
+  {
+    "id": "03-17",
+    "plan": ".planning/phases/03-edit-store-scope-model/03-17-PLAN.md",
+    "note": "history_with_snapshot先visible_columns，再真实entry/history查询，按当前可见列mask；Admin才取params。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge-storage/src/history.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/tests/history_masking.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge-storage/src/history.rs",
+        "to": "crates/ontoforge-auth/src/scope/merge.rs",
+        "via": "TypeScope::evaluate(current_row, attrs) 决定可见性与可见列",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "03-17.1",
+      "03-17.2",
+      "03-17.3",
+      "03-17.4"
+    ]
+  },
+  {
+    "id": "03-18",
+    "plan": ".planning/phases/03-edit-store-scope-model/03-18-PLAN.md",
+    "note": "commit def fence；reload/migrate/scope同定义锁；pending/flush/describe/publish与旧版本服务。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge-storage/src/reload.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-engine/src/printer/call.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/tests/reload_trino_it.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge-storage/src/commit.rs",
+        "to": "crates/ontoforge-storage/src/reload.rs",
+        "via": "commit 读取 of_def_state（FOR SHARE），reload 的切换 UPDATE 同一行",
+        "verified": true,
+        "detail": "Pattern found in target"
+      },
+      {
+        "from": "crates/ontoforge-storage/src/reload.rs",
+        "to": "crates/ontoforge-auth/src/scope/compile.rs",
+        "via": "D-18：load_scope() 后 compile_scope(new ontology)",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-storage/src/reload.rs",
+        "to": "crates/ontoforge-engine/src/printer/call.rs",
+        "via": "探测前打印并执行 CALL ...flush_metadata_cache()",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "03-18.1",
+      "03-18.2",
+      "03-18.3",
+      "03-18.4",
+      "03-18.5",
+      "03-18.6",
+      "03-18.7"
+    ]
+  },
+  {
+    "id": "03-19",
+    "plan": ".planning/phases/03-edit-store-scope-model/03-19-PLAN.md",
+    "note": "import完整文件校验→editOnly/create-only→分批commit/system:import，跨批非原子明确报告。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge-storage/src/import.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge/src/import.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "examples/data/aviation/airports.csv",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge-storage/src/import.rs",
+        "to": "crates/ontoforge-storage/src/commit.rs",
+        "via": "每批一个 Commit { actor: Actor::System(SystemActor::Import) }",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-storage/src/value.rs",
+        "to": "crates/ontoforge-engine/src/sqlite/fixture.rs",
+        "via": "decimal / date 复用 normalize_decimal / parse_date",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "03-19.1",
+      "03-19.2",
+      "03-19.3",
+      "03-19.4",
+      "03-19.5"
+    ]
+  },
+  {
+    "id": "03-20",
+    "plan": ".planning/phases/03-edit-store-scope-model/03-20-PLAN.md",
+    "note": "ci.yml→query-services PG/Trino→实际ignored执行与discovery→deployment docs；不把全局绿作为证据。",
+    "artifacts": [
+      {
+        "path": ".github/workflows/ci.yml",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "docs/edit-store.md",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "ci/trino/catalog/editstore.properties",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": ".github/workflows/ci.yml",
+        "to": "crates/ontoforge-storage/tests/conformance_pg.rs",
+        "via": "ONTOFORGE_PG_URL 指向 CI 的 editstore 库，--ignored 运行",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": ".github/workflows/ci.yml",
+        "to": "ci/pg/rowpred_corpus.sql",
+        "via": "种子步骤在 demo 库建立 rowpred.rows",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "03-20.1",
+      "03-20.2",
+      "03-20.3",
+      "03-20.4",
+      "03-20.5",
+      "03-20.6"
+    ]
+  },
+  {
+    "id": "03-21",
+    "plan": ".planning/phases/03-edit-store-scope-model/03-21-PLAN.md",
+    "note": "decimal保真与PG可表示域/固定会话设置，否定JSON浮点舍入。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge-storage/src/value.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/src/commit.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/src/store.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/tests/conformance/mod.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/tests/conformance_pg.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge-storage/src/import.rs",
+        "to": "crates/ontoforge-storage/src/value.rs",
+        "via": "JSON 导入的每个属性经 PropertyValue::from_json（import.rs 第 763 行）",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-storage/src/commit.rs",
+        "to": "crates/ontoforge-storage/src/value.rs",
+        "via": "plan_edit / plan_object_op 对主键与每个 set 值调用 canonical",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-storage/tests/conformance_pg.rs",
+        "to": "crates/ontoforge-storage/src/store.rs",
+        "via": "守卫测试用 open_postgres 同一个 pg_connect_options 建连接并 SHOW 会话设置",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "03-21.1",
+      "03-21.2",
+      "03-21.3",
+      "03-21.4",
+      "03-21.5"
+    ]
+  },
+  {
+    "id": "03-22",
+    "plan": ".planning/phases/03-edit-store-scope-model/03-22-PLAN.md",
+    "note": "CLI传RolesCheck；migrate.apply_in锁内compile_scope后才DDL；全对象criteria读取需全列。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge-storage/src/migrate.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge/src/migrate.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-auth/src/scope/coverage.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/tests/migrate_pg.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge/src/migrate.rs",
+        "to": "crates/ontoforge-storage/src/migrate.rs",
+        "via": "apply_migration_probed(.., probe, Some(&roles))",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-storage/src/migrate.rs",
+        "to": "crates/ontoforge-storage/src/scope_store.rs",
+        "via": "lock_def_state 之后读取存储的 role（load_scope_in），再 compile_scope(new)",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-auth/src/scope/compile.rs",
+        "to": "crates/ontoforge-auth/src/scope/coverage.rs",
+        "via": "compile_scope 对每个 role 调用 criteria_coverage(role, ontology, ..)",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "03-22.1",
+      "03-22.2",
+      "03-22.3",
+      "03-22.4"
+    ]
+  },
+  {
+    "id": "03-23",
+    "plan": ".planning/phases/03-edit-store-scope-model/03-23-PLAN.md",
+    "note": "fresh-tree reload/scope plan/dev-token与父目录权限，输入拒绝无文件副作用。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge-storage/src/store.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-auth/src/authn/dev.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "examples/server/ontoforge-server.dev.toml",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "docs/edit-store.md",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge/src/dev_token.rs",
+        "to": "crates/ontoforge-auth/src/authn/dev.rs",
+        "via": "DevKey::load_or_create(&key_path)（dev_token.rs 第 91 行）",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge/src/reload.rs",
+        "to": "crates/ontoforge-storage/src/store.rs",
+        "via": "EditStore::open(settings)，reload / scope / migrate / import 共用",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "03-23.1",
+      "03-23.2",
+      "03-23.3",
+      "03-23.4"
+    ]
+  },
+  {
+    "id": "04-01",
+    "plan": ".planning/phases/04-scoped-l0-read/04-01-PLAN.md",
+    "note": "QueryService::execute→read_object_edit→按需LIMIT 2 source→overlay→TypeScope.evaluate→投影/TokenCodec；只读store API。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge-storage/src/query_read.rs",
+        "exists": true,
+        "issues": [
+          "Missing export: EditStore::read_object_edit"
+        ],
+        "passed": false
+      },
+      {
+        "path": "crates/ontoforge-query/src/lib.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-query/tests/pk_read.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge-query/src/lib.rs",
+        "to": "crates/ontoforge-storage/src/query_read.rs",
+        "via": "`QueryService::execute` 先调用 `read_object_edit`，不复用会写 version 0 row 的 commit load path",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-query/src/lib.rs",
+        "to": "crates/ontoforge-auth/src/scope/merge.rs",
+        "via": "合并 source/edit 后调用 `TypeScope::evaluate` 决定行与列可见性",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-query/src/lib.rs",
+        "to": "crates/ontoforge-engine/src/printer/mod.rs",
+        "via": "pk source lookup 仅从 typed `Select` 经 `print_select` 生成 SQL",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "04-01.1",
+      "04-01.2",
+      "04-01.3",
+      "04-01.4",
+      "04-01.5"
+    ]
+  },
+  {
+    "id": "04-02",
+    "plan": ".planning/phases/04-scoped-l0-read/04-02-PLAN.md",
+    "note": "wire ast→compile类型与grant校验→typed single TableRef；Rust merged-row复核，token any/all不做相关度。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge-query/src/ast.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-query/src/compile.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-engine/src/printer/ast.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-query/tests/sql_shape.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge-query/src/compile.rs",
+        "to": "crates/ontoforge-auth/src/scope/merge.rs",
+        "via": "`TypeScope::lower` 提供 row 与 per-column grant expressions",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-query/src/compile.rs",
+        "to": "crates/ontoforge-engine/src/printer/ast.rs",
+        "via": "只构造 typed `Select` / `Expr::CaseWhen`，不创建 SQL String",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "04-02.1",
+      "04-02.2",
+      "04-02.3",
+      "04-02.4"
+    ]
+  },
+  {
+    "id": "04-03",
+    "plan": ".planning/phases/04-scoped-l0-read/04-03-PLAN.md",
+    "note": "query_read typed SELECT，≤256 batch与stable keyset scan；FK无额外关系表，PG/SQLite逐值比。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge-storage/src/query_read.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/tests/query_read.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-storage/tests/query_read_pg.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge-storage/src/query_read.rs",
+        "to": "crates/ontoforge-storage/src/physical.rs",
+        "via": "ActiveDefinition physical object/link mappings select typed value and __set columns",
+        "verified": true,
+        "detail": "Pattern found in target"
+      },
+      {
+        "from": "crates/ontoforge-storage/src/query_read.rs",
+        "to": "crates/ontoforge-storage/src/commit.rs",
+        "via": "复用read_expr/cell_json/bind value semantics，但绝不调用load_row/load_object/load_link",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "04-03.1",
+      "04-03.2",
+      "04-03.3",
+      "04-03.4"
+    ]
+  },
+  {
+    "id": "04-04",
+    "plan": ".planning/phases/04-scoped-l0-read/04-04-PLAN.md",
+    "note": "execute并行候选→overlay去重→backfill/refill→scope/recheck→lookahead/cap；cursor HMAC和共享work budget。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge-query/src/overlay.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-query/src/execute.rs",
+        "exists": true,
+        "issues": [
+          "Missing export: QueryService::execute_list"
+        ],
+        "passed": false
+      },
+      {
+        "path": "crates/ontoforge-query/src/cursor.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-query/tests/overlay_prop.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge-query/src/execute.rs",
+        "to": "crates/ontoforge-storage/src/query_read.rs",
+        "via": "每轮 edit keyset scan 与按 pk ≤256 batch backfill",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-query/src/execute.rs",
+        "to": "crates/ontoforge-query/src/overlay.rs",
+        "via": "每批 source/edit candidates 合并后才运行 scope、final predicate/search recheck 与 order",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-query/src/cursor.rs",
+        "to": "crates/ontoforge-query/src/execute.rs",
+        "via": "verified CursorPosition 过滤完整有界 edit 集并推进未编辑 source keyset，最终 next cursor 取最后一条返回 row",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "04-04.1",
+      "04-04.2",
+      "04-04.3",
+      "04-04.4",
+      "04-04.5"
+    ]
+  },
+  {
+    "id": "04-05",
+    "plan": ".planning/phases/04-scoped-l0-read/04-05-PLAN.md",
+    "note": "link source edges+edits→authorized target keys→normal execute_list_internal hydration；set同一路径。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge-query/src/link.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-query/src/set.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-query/tests/search_around.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-query/tests/set_ops.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge-query/src/link.rs",
+        "to": "crates/ontoforge-query/src/execute.rs",
+        "via": "FK与M:N得到target pks后统一走scoped target object batch/list executor",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-query/src/link.rs",
+        "to": "crates/ontoforge-storage/src/query_read.rs",
+        "via": "仅M:N从PG读取bounded endpoint link edits；FK来自merged object property",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-query/src/set.rs",
+        "to": "crates/ontoforge-query/src/execute.rs",
+        "via": "每个operand先在同一frozen context求得authorized pks，algebra后再hydrate/project",
+        "verified": false,
+        "detail": "Pattern \"evaluate_authorized_keys|execute_pk_batch\" not found in source or target"
+      }
+    ],
+    "truths": [
+      "04-05.1",
+      "04-05.2",
+      "04-05.3",
+      "04-05.4"
+    ]
+  },
+  {
+    "id": "04-06",
+    "plan": ".planning/phases/04-scoped-l0-read/04-06-PLAN.md",
+    "note": "partial sum/count old/new correction；TopN补取；exact distinct/group与typed error；独立CSV/BTreeSet/reference模型。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge-query/src/aggregate.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-query/tests/aggregate.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-query/tests/sql_shape.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-query/tests/security.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": "crates/ontoforge-query/src/aggregate.rs",
+        "to": "crates/ontoforge-query/src/execute.rs",
+        "via": "edited old/new contributions、TopN rows与group values都经过统一overlay/scope/final predicate evaluator",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-query/src/aggregate.rs",
+        "to": "crates/ontoforge-query/src/compile.rs",
+        "via": "source partial/TopN计划只生成typed single-table Select并应用scope/grant CASE",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-query/src/aggregate.rs",
+        "to": "crates/ontoforge-storage/src/query_read.rs",
+        "via": "stable扫描全部relevant edit candidates并按≤256 keys回查source old values",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "04-06.1",
+      "04-06.2",
+      "04-06.3",
+      "04-06.4",
+      "04-06.5"
+    ]
+  },
+  {
+    "id": "04-07",
+    "plan": ".planning/phases/04-scoped-l0-read/04-07-PLAN.md",
+    "note": "当前integration环境/非零discovery/具名真实语义+EXPLAIN；独立isolated job执行四路5+40样本并上传raw artifact。",
+    "artifacts": [
+      {
+        "path": "crates/ontoforge-query/tests/trino_query_it.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": "crates/ontoforge-query/tests/query_bench_it.rs",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": ".github/workflows/ci.yml",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      },
+      {
+        "path": ".planning/phases/04-scoped-l0-read/04-PERFORMANCE.md",
+        "exists": true,
+        "issues": [],
+        "passed": true
+      }
+    ],
+    "links": [
+      {
+        "from": ".github/workflows/ci.yml",
+        "to": "crates/ontoforge-query/tests/trino_query_it.rs",
+        "via": "Linux integration job同时注入ONTOFORGE_TRINO_URL与ONTOFORGE_PG_URL并以--ignored执行",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-query/tests/trino_query_it.rs",
+        "to": "crates/ontoforge-engine/src/printer/mod.rs",
+        "via": "typed distributed EXPLAIN包裹实际PrintedSql并把Trino plan交给strict fragment parser",
+        "verified": true,
+        "detail": "Pattern found in source"
+      },
+      {
+        "from": "crates/ontoforge-query/tests/query_bench_it.rs",
+        "to": ".planning/phases/04-scoped-l0-read/04-PERFORMANCE.md",
+        "via": "isolated run输出JSON/raw timings artifact，报告记录immutable run URL与threshold verdict",
+        "verified": true,
+        "detail": "Pattern found in source"
+      }
+    ],
+    "truths": [
+      "04-07.1",
+      "04-07.2",
+      "04-07.3",
+      "04-07.4"
+    ]
+  }
+]

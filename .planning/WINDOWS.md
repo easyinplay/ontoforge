@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 11
+open_count: 14
 waived_count: 0
-fixed_count: 5
-total_count: 16
-last_updated: 2026-10-29T04:49:36.824Z
+fixed_count: 8
+total_count: 22
+last_updated: 2026-11-10T02:17:18Z
 ---
 
 # Broken Windows Ledger
@@ -31,6 +31,12 @@ last_updated: 2026-10-29T04:49:36.824Z
 | 14 | 06 | skipped-test | crates/ontoforge-storage/tests/scope_store.rs |  | pg_scope_apply: requires ONTOFORGE_PG_URL or embedded-pg feature | open |  | 2026-10-27T19:13:52.718Z |  |
 | 15 | 07 | skipped-test | .planning/phases/07-rest-mcp-shell/07-03-SUMMARY.md |  | 07-03 workspace: 107 ignored (PG/Trino/private/p95/doctest); external-service evidence pending 07-13/14. Full names and reasons: 07-03-evidence/workspace-tests-jobs2.log. | open |  | 2026-10-29T04:32:00.805Z |  |
 | 16 | 07 | deviation | crates/ontoforge-action/tests/idempotency_pg.rs |  | 07-03 all-features Clippy: large_futures at lines 242/257/398 (16464 bytes); approved minimal Box::pin allocation fix in 07-02 PLAN if still present after replay repair. | fixed |  | 2026-10-29T04:32:02.063Z | 2026-10-29T04:49:36.824Z |
+| 17 | 02 | unrun-verify | .planning/phases/02-source-binding-engine/02-11-HUMAN-ACCEPTANCE.md |  | G-02-B / G-02-C / G-02-D 三项 judgment 的人工验收尚未进行；02-11 只交付机器可判定部分与问题清单，三条 VERDICT 仍为 PENDING，待下一轮 /gsd-verify-work 02 收集 | open |  | 2026-11-08T05:31:00.586Z |  |
+| 18 | 02 | unmet-truth | crates/ontoforge/tests/cli_check_cardinality.rs | 437 | 全工作区并行负载下 cardinality_budget_starts_after_precheck_and_pk 与 cardinality_total_deadline_is_shared 两个 300 ms deadline 用例偶发超时失败；隔离重跑 13 passed / 0 failed，全量 --no-fail-fast 重跑 1528 passed / 0 failed，判定为时序 flake 而非回归 | fixed | Phase 10 已把两个 deadline E2E 用例预算放宽到秒级（timeout 5000/3000ms，慢查延迟 60s，四 mock 延迟 1500ms），语义不变；security.rs 混用测试拆分为确定性用例并新增 BEGIN EXCLUSIVE 锁触发的 pending-age 期限测试；ci.yml:59 已移除 --test-threads=1。实跑：cargo test -p ontoforge --test cli_check_cardinality → 13 passed；cargo test --workspace --locked（默认并行度）→ 全部通过（exit 0），见 gsd/phase-10-audit-timing-split | 2026-11-08T08:47:21.377Z | 2026-11-09T14:30:00Z |
+| 19 | 08 | unrun-verify | crates/ontoforge-action/src/outbox.rs | 157 | Phase 08 原端到端用例仅覆盖第一次失败后的重试。FA-02 的计算退避实际从第 10 次已持久化失败起达到 300 秒上限，不是到第 17 次才封顶；outbox schema 不存在 last_attempt_at 列。2026-11-09 已补充 attempts 1..20 的 SQLite 运行时验证，含 attempts 17..20。既有 CI job（ci.yml:73）自 Phase 05 起已每次运行该用例至 attempt 10 | fixed | 独立复核通过原测试的只读内存派生版本，将循环上限及请求数断言均扩展到 20，调用原生产 worker/store 完成同一事件连续 20 次 503。逐次计数、请求总数、退避区间及未到期不领取断言全部通过，1 passed / 0 failed / 0.32s。随后循环上限与请求数断言已固化进 tests/outbox.rs（1..=20），本机实测 cargo test -p ontoforge-action --locked --test outbox → 11 passed / 0 failed / 0.97s。证据限于 SQLite 和注入的 poll 时间，不包含 PostgreSQL 高次重试、生产墙钟调度、多 worker lease 竞争或溢出边界 | 2026-11-08T19:33:14.558Z | 2026-11-09T13:38:03.090Z |
+| 20 | 08 | unrun-verify | .planning/phases/08-production-webhook-end-to-end-delivery/08-evidence/ci-evidence-index.json |  | Phase 08 CI 证据归档的来源需人工交叉复核：本地已机器判定 run 42515808955 含结论为 success 的 phase8-webhook-e2e job 且 head_sha 30a05a8 是当前 HEAD 的祖先、晚于首次引入该 job 的 commit f95767a，但归档内容是否真出自该 run 只能由 CI run 的 URL 与 run id 人工确认（FA-03 backstop） | fixed | 2026-11-10 人工对照 CI run 42515808955 日志与 phase8-webhook-ledger artifact 的 ledger.jsonl 确认来源一致，随 Phase 8 结论位签署关闭 | 2026-11-08T20:17:44.865Z | 2026-11-10T02:17:18Z |
+| 21 | 08 | deviation | crates/ontoforge-action/src/outbox.rs | 159 | WebhookWorker 调用 store.record_retry(...)（commit.rs:306-313 返回 Result<bool, StoreError>）只用 ? 传播 Err，丢弃 Ok(false)（fencing 拒绝：旧 lease token 已被抢占）。fenced worker 会把事件当已处理；at-least-once 语义下允许重复投递故语义无害，但计数与接收端请求序号可能不对应 | open |  | 2026-11-09T13:38:03.090Z |  |
+| 22 | 08 | deviation | crates/ontoforge-storage/migrations/postgres/0004_action.sql | 23 | PostgreSQL 的 attempt_count 为 integer(i32)，比 Rust 的 u32 更早触顶：计数达 i32::MAX 后下一次失败的 checked_add(u32) 仍成功，但 record_retry 写入 2^31 超出列范围致事务失败，该行成为 poisoned row（每次 claim→send→record_retry 写失败→poll_at 返回 Err）；claim 侧 commit.rs:249-251 的 i32→u32 try_into 失败亦返回 StoreError::Corrupt。实际不可达（需约 21 亿次失败），属 schema 与 Rust 类型宽度不一致；SQLite 侧 INTEGER(i64) 可走到 u32::MAX | open |  | 2026-11-09T13:38:03.090Z |  |
 
 ````json
 [
@@ -235,6 +241,84 @@ last_updated: 2026-10-29T04:49:36.824Z
     "recorded_at": "2026-10-29T04:32:02.063Z",
     "resolved_at": "2026-10-29T04:49:36.824Z",
     "milestone": null
+  },
+  {
+    "id": 17,
+    "kind": "unrun-verify",
+    "phase": "02",
+    "file": ".planning/phases/02-source-binding-engine/02-11-HUMAN-ACCEPTANCE.md",
+    "line": null,
+    "description": "G-02-B / G-02-C / G-02-D 三项 judgment 的人工验收尚未进行；02-11 只交付机器可判定部分与问题清单，三条 VERDICT 仍为 PENDING，待下一轮 /gsd-verify-work 02 收集",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-11-08T05:31:00.586Z",
+    "resolved_at": null,
+    "milestone": "v1.0"
+  },
+  {
+    "id": 18,
+    "kind": "unmet-truth",
+    "phase": "02",
+    "file": "crates/ontoforge/tests/cli_check_cardinality.rs",
+    "line": 437,
+    "description": "全工作区并行负载下 cardinality_budget_starts_after_precheck_and_pk 与 cardinality_total_deadline_is_shared 两个 300 ms deadline 用例偶发超时失败；隔离重跑 13 passed / 0 failed，全量 --no-fail-fast 重跑 1528 passed / 0 failed，判定为时序 flake 而非回归",
+    "status": "fixed",
+    "reason": "Phase 10 已把两个 deadline E2E 用例预算放宽到秒级（timeout 5000/3000ms，慢查延迟 60s，四 mock 延迟 1500ms），语义不变；security.rs 混用测试拆分为确定性用例并新增 BEGIN EXCLUSIVE 锁触发的 pending-age 期限测试；ci.yml:59 已移除 --test-threads=1。实跑：cargo test -p ontoforge --test cli_check_cardinality → 13 passed；cargo test --workspace --locked（默认并行度）→ 全部通过（exit 0），见 gsd/phase-10-audit-timing-split",
+    "recorded_at": "2026-11-08T08:47:21.377Z",
+    "resolved_at": "2026-11-09T14:30:00Z",
+    "milestone": "v1.0"
+  },
+  {
+    "id": 19,
+    "kind": "unrun-verify",
+    "phase": "08",
+    "file": "crates/ontoforge-action/src/outbox.rs",
+    "line": 157,
+    "description": "Phase 08 原端到端用例仅覆盖第一次失败后的重试。FA-02 的计算退避实际从第 10 次已持久化失败起达到 300 秒上限，不是到第 17 次才封顶；outbox schema 不存在 last_attempt_at 列。2026-11-09 已补充 attempts 1..20 的 SQLite 运行时验证，含 attempts 17..20。既有 CI job（ci.yml:73）自 Phase 05 起已每次运行该用例至 attempt 10",
+    "status": "fixed",
+    "reason": "独立复核通过原测试的只读内存派生版本，将循环上限及请求数断言均扩展到 20，调用原生产 worker/store 完成同一事件连续 20 次 503。逐次计数、请求总数、退避区间及未到期不领取断言全部通过，1 passed / 0 failed / 0.32s。随后循环上限与请求数断言已固化进 tests/outbox.rs（1..=20），本机实测 cargo test -p ontoforge-action --locked --test outbox → 11 passed / 0 failed / 0.97s。证据限于 SQLite 和注入的 poll 时间，不包含 PostgreSQL 高次重试、生产墙钟调度、多 worker lease 竞争或溢出边界",
+    "recorded_at": "2026-11-08T19:33:14.558Z",
+    "resolved_at": "2026-11-09T13:38:03.090Z",
+    "milestone": "v1.1"
+  },
+  {
+    "id": 20,
+    "kind": "unrun-verify",
+    "phase": "08",
+    "file": ".planning/phases/08-production-webhook-end-to-end-delivery/08-evidence/ci-evidence-index.json",
+    "line": null,
+    "description": "Phase 08 CI 证据归档的来源需人工交叉复核：本地已机器判定 run 42515808955 含结论为 success 的 phase8-webhook-e2e job 且 head_sha 30a05a8 是当前 HEAD 的祖先、晚于首次引入该 job 的 commit f95767a，但归档内容是否真出自该 run 只能由 CI run 的 URL 与 run id 人工确认（FA-03 backstop）",
+    "status": "fixed",
+    "reason": "2026-11-10 人工对照 CI run 42515808955 日志与 phase8-webhook-ledger artifact 的 ledger.jsonl 确认来源一致，随 Phase 8 结论位签署关闭",
+    "recorded_at": "2026-11-08T20:17:44.865Z",
+    "resolved_at": "2026-11-10T02:17:18Z",
+    "milestone": "v1.1"
+  },
+  {
+    "id": 21,
+    "kind": "deviation",
+    "phase": "08",
+    "file": "crates/ontoforge-action/src/outbox.rs",
+    "line": 159,
+    "description": "WebhookWorker 调用 store.record_retry(...)（commit.rs:306-313 返回 Result<bool, StoreError>）只用 ? 传播 Err，丢弃 Ok(false)（fencing 拒绝：旧 lease token 已被抢占）。fenced worker 会把事件当已处理；at-least-once 语义下允许重复投递故语义无害，但计数与接收端请求序号可能不对应",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-11-09T13:38:03.090Z",
+    "resolved_at": null,
+    "milestone": "v1.1"
+  },
+  {
+    "id": 22,
+    "kind": "deviation",
+    "phase": "08",
+    "file": "crates/ontoforge-storage/migrations/postgres/0004_action.sql",
+    "line": 23,
+    "description": "PostgreSQL 的 attempt_count 为 integer(i32)，比 Rust 的 u32 更早触顶：计数达 i32::MAX 后下一次失败的 checked_add(u32) 仍成功，但 record_retry 写入 2^31 超出列范围致事务失败，该行成为 poisoned row（每次 claim→send→record_retry 写失败→poll_at 返回 Err）；claim 侧 commit.rs:249-251 的 i32→u32 try_into 失败亦返回 StoreError::Corrupt。实际不可达（需约 21 亿次失败），属 schema 与 Rust 类型宽度不一致；SQLite 侧 INTEGER(i64) 可走到 u32::MAX",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-11-09T13:38:03.090Z",
+    "resolved_at": null,
+    "milestone": "v1.1"
   }
 ]
 ````

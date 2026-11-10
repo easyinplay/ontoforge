@@ -1,0 +1,72 @@
+ Downloading crates ...
+  Downloaded crc32fast v1.5.3
+   Compiling smallvec v1.16.4
+   Compiling tokio v1.54.1
+   Compiling parking_lot_core v0.9.12
+   Compiling parking_lot v0.12.5
+   Compiling serde-saphyr v2.0.0
+   Compiling globset v0.4.21
+   Compiling icu_normalizer v2.4.0
+   Compiling idna_adapter v1.2.2
+   Compiling ontoforge-schema v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-schema)
+   Compiling idna v1.1.0
+   Compiling url v2.5.8
+   Compiling tokio-util v0.7.20
+   Compiling h2 v0.4.20
+   Compiling hyper v1.12.0
+   Compiling hyper-util v0.1.21
+   Compiling tower v0.5.3
+   Compiling tokio-rustls v0.26.6
+   Compiling tokio-stream v0.1.19
+   Compiling futures-intrusive v0.5.0
+   Compiling sqlx-core v0.9.0
+   Compiling hyper-rustls v0.27.10
+   Compiling tower-http v0.6.11
+   Compiling reqwest v0.13.5
+   Compiling sqlx-postgres v0.9.0
+   Compiling sqlx-sqlite v0.9.0
+   Compiling sqlx-macros-core v0.9.0
+   Compiling sqlx-macros v0.9.0
+   Compiling sqlx v0.9.0
+   Compiling ontoforge-engine v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-engine)
+   Compiling antlr4rust v0.6.0
+   Compiling cel v0.15.0
+   Compiling ontoforge-expr v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-expr)
+   Compiling jsonwebtoken v11.1.0
+   Compiling sea-query-sqlx v0.9.1
+   Compiling ontoforge-auth v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-auth)
+   Compiling deadpool v0.12.3
+   Compiling wiremock v0.6.5
+   Compiling ontoforge-storage v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-storage)
+   Compiling ontoforge-api v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-api)
+   Compiling ontoforge-query v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-query)
+   Compiling ontoforge-action v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-action)
+   Compiling axum v0.8.9
+   Compiling rmcp v3.8.0
+   Compiling utoipa-axum v0.3.0
+   Compiling ontoforge-server v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-server)
+   Compiling rustls-platform-verifier v0.7.1
+   Compiling crc32fast v1.5.3
+   Compiling reqwest-middleware v0.5.2
+   Compiling flate2 v1.1.10
+   Compiling reqwest-retry v0.9.1
+   Compiling reqwest-tracing v0.7.1
+   Compiling ontoforge v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge)
+   Compiling postgresql_archive v0.21.0
+   Compiling postgresql_embedded v0.21.0
+   Compiling postgresql_commands v0.21.0
+   Compiling referencing v0.58.6
+   Compiling jsonschema v0.58.6
+   Compiling ontoforge-client v0.1.0 (D:\DataSpellProjects\ontoforge\crates\ontoforge-client)
+error[E0308]: mismatched types
+   --> crates\ontoforge-storage\tests\history_masking.rs:192:30
+    |
+192 |                 current_row: current,
+    |                              ^^^^^^^ expected trait `RowValues + Sync`, found trait `RowValues`
+    |
+    = note: expected enum `Option<&dyn RowValues + Sync>`
+               found enum `Option<&dyn RowValues>`
+
+For more information about this error, try `rustc --explain E0308`.
+error: could not compile `ontoforge-storage` (test "history_masking") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

@@ -1,0 +1,1220 @@
+{
+  "phase": "04-scoped-l0-read",
+  "report": ".planning/phases/04-scoped-l0-read/04-VERIFICATION.md",
+  "old": {
+    "args": [
+      "frontmatter.get",
+      "D:\\DataSpellProjects\\ontoforge\\.planning\\milestones\\v1.0-audit\\evidence\\2026-11-05\\report-resign-03-04\\04-VERIFICATION.before.md"
+    ],
+    "exit": 0,
+    "data": {
+      "phase": "04-scoped-l0-read",
+      "verified": "2026-11-04T02:57:39Z",
+      "source_head": "f8851ca073fed34e80e605f0ac91880259df7e12",
+      "status": "passed",
+      "score": "36/36 must-haves verified",
+      "covered_files": [
+        ".github/workflows/ci.yml",
+        ".planning/phases/04-scoped-l0-read/04-01-PLAN.md",
+        ".planning/phases/04-scoped-l0-read/04-01-SUMMARY.md",
+        ".planning/phases/04-scoped-l0-read/04-02-PLAN.md",
+        ".planning/phases/04-scoped-l0-read/04-02-SUMMARY.md",
+        ".planning/phases/04-scoped-l0-read/04-03-PLAN.md",
+        ".planning/phases/04-scoped-l0-read/04-03-SUMMARY.md",
+        ".planning/phases/04-scoped-l0-read/04-04-PLAN.md",
+        ".planning/phases/04-scoped-l0-read/04-04-SUMMARY.md",
+        ".planning/phases/04-scoped-l0-read/04-05-PLAN.md",
+        ".planning/phases/04-scoped-l0-read/04-05-SUMMARY.md",
+        ".planning/phases/04-scoped-l0-read/04-06-PLAN.md",
+        ".planning/phases/04-scoped-l0-read/04-06-SUMMARY.md",
+        ".planning/phases/04-scoped-l0-read/04-07-PLAN.md",
+        ".planning/phases/04-scoped-l0-read/04-07-SUMMARY.md",
+        "Cargo.lock",
+        "Cargo.toml",
+        "ci/check-tls-deps.sh",
+        "ci/ontoforge-server.ci.toml",
+        "ci/pg/iceberg_catalog.sql",
+        "ci/pg/query_corpus.sql",
+        "ci/pg/rowpred_corpus.sql",
+        "ci/pg/seed.sql",
+        "ci/query-services.sh",
+        "ci/release-package.ps1",
+        "ci/release-smoke.ps1",
+        "ci/server-services.sh",
+        "ci/test_tls_deps.py",
+        "ci/test_windows_server.py",
+        "ci/trino/catalog/demo.properties",
+        "ci/trino/catalog/editstore.properties",
+        "ci/trino/catalog/tpch.properties",
+        "ci/trino/iceberg/iceberg.properties",
+        "ci/trino/l2/access-control.properties",
+        "ci/trino/l2/config.properties",
+        "ci/trino/l2/rules.json",
+        "ci/trino/l2/seed.sql",
+        "ci/windows-server.py",
+        "crates/ontoforge-auth/src/authn/dev.rs",
+        "crates/ontoforge-auth/src/authn/jwks.rs",
+        "crates/ontoforge-auth/src/authn/mod.rs",
+        "crates/ontoforge-auth/src/authn/oidc.rs",
+        "crates/ontoforge-auth/src/authn/principal.rs",
+        "crates/ontoforge-auth/src/lib.rs",
+        "crates/ontoforge-auth/src/scope/compile.rs",
+        "crates/ontoforge-auth/src/scope/coverage.rs",
+        "crates/ontoforge-auth/src/scope/lower.rs",
+        "crates/ontoforge-auth/src/scope/merge.rs",
+        "crates/ontoforge-auth/src/scope/mod.rs",
+        "crates/ontoforge-engine/Cargo.toml",
+        "crates/ontoforge-engine/src/bind_check.rs",
+        "crates/ontoforge-engine/src/bind_check/compat_tests.rs",
+        "crates/ontoforge-engine/src/bind_check/tests.rs",
+        "crates/ontoforge-engine/src/config.rs",
+        "crates/ontoforge-engine/src/error.rs",
+        "crates/ontoforge-engine/src/lib.rs",
+        "crates/ontoforge-engine/src/pk_check.rs",
+        "crates/ontoforge-engine/src/printer/ast.rs",
+        "crates/ontoforge-engine/src/printer/call.rs",
+        "crates/ontoforge-engine/src/printer/dialect.rs",
+        "crates/ontoforge-engine/src/printer/escape.rs",
+        "crates/ontoforge-engine/src/printer/l2.rs",
+        "crates/ontoforge-engine/src/printer/mod.rs",
+        "crates/ontoforge-engine/src/printer/snapshots/ontoforge_engine__printer__tests__print_sqlite.snap",
+        "crates/ontoforge-engine/src/printer/snapshots/ontoforge_engine__printer__tests__print_trino.snap",
+        "crates/ontoforge-engine/src/printer/sqlite_ddl.rs",
+        "crates/ontoforge-engine/src/printer/tests.rs",
+        "crates/ontoforge-engine/src/sqlite/fixture.rs",
+        "crates/ontoforge-engine/src/sqlite/mod.rs",
+        "crates/ontoforge-engine/src/sqlite/tests.rs",
+        "crates/ontoforge-engine/src/trino/cancel.rs",
+        "crates/ontoforge-engine/src/trino/classify.rs",
+        "crates/ontoforge-engine/src/trino/client.rs",
+        "crates/ontoforge-engine/src/trino/decode.rs",
+        "crates/ontoforge-engine/src/trino/headers.rs",
+        "crates/ontoforge-engine/src/trino/l2_health.rs",
+        "crates/ontoforge-engine/src/trino/l2_monitor.rs",
+        "crates/ontoforge-engine/src/trino/mod.rs",
+        "crates/ontoforge-engine/src/value.rs",
+        "crates/ontoforge-engine/tests/bind_check_isolation.rs",
+        "crates/ontoforge-engine/tests/data/l2_corpus.json",
+        "crates/ontoforge-engine/tests/data/test-ca.pem",
+        "crates/ontoforge-engine/tests/doc_type_table.rs",
+        "crates/ontoforge-engine/tests/drift.rs",
+        "crates/ontoforge-engine/tests/drift_budget.rs",
+        "crates/ontoforge-engine/tests/l2_explain.rs",
+        "crates/ontoforge-engine/tests/l2_gate.rs",
+        "crates/ontoforge-engine/tests/l2_health.rs",
+        "crates/ontoforge-engine/tests/l2_monitor.rs",
+        "crates/ontoforge-engine/tests/pk_check.rs",
+        "crates/ontoforge-engine/tests/printer_literals.rs",
+        "crates/ontoforge-engine/tests/printer_prop.proptest-regressions",
+        "crates/ontoforge-engine/tests/printer_prop.rs",
+        "crates/ontoforge-engine/tests/server_config.rs",
+        "crates/ontoforge-engine/tests/snapshots/pk_check__pk_duplicates_sqlite.snap",
+        "crates/ontoforge-engine/tests/snapshots/pk_check__pk_duplicates_trino.snap",
+        "crates/ontoforge-engine/tests/snapshots/pk_check__pk_nulls_sqlite.snap",
+        "crates/ontoforge-engine/tests/snapshots/pk_check__pk_nulls_trino.snap",
+        "crates/ontoforge-engine/tests/sql_text_only_from_printer.rs",
+        "crates/ontoforge-engine/tests/sqlite_engine.rs",
+        "crates/ontoforge-engine/tests/trino_client.rs",
+        "crates/ontoforge-engine/tests/trino_it.rs",
+        "crates/ontoforge-engine/tests/trino_l2_acl_it.rs",
+        "crates/ontoforge-engine/tests/trino_resilience.rs",
+        "crates/ontoforge-expr/src/analyze.rs",
+        "crates/ontoforge-expr/src/check.rs",
+        "crates/ontoforge-expr/src/infer.rs",
+        "crates/ontoforge-expr/src/lib.rs",
+        "crates/ontoforge-expr/src/limits.rs",
+        "crates/ontoforge-expr/src/rowpred/eval.rs",
+        "crates/ontoforge-expr/src/rowpred/ir.rs",
+        "crates/ontoforge-expr/src/rowpred/mod.rs",
+        "crates/ontoforge-expr/src/rowpred/parse.rs",
+        "crates/ontoforge-expr/src/rowpred/value.rs",
+        "crates/ontoforge-expr/src/walk.rs",
+        "crates/ontoforge-query/Cargo.toml",
+        "crates/ontoforge-query/src/aggregate.rs",
+        "crates/ontoforge-query/src/ast.rs",
+        "crates/ontoforge-query/src/compile.rs",
+        "crates/ontoforge-query/src/cursor.rs",
+        "crates/ontoforge-query/src/execute.rs",
+        "crates/ontoforge-query/src/l2.rs",
+        "crates/ontoforge-query/src/lib.rs",
+        "crates/ontoforge-query/src/link.rs",
+        "crates/ontoforge-query/src/overlay.rs",
+        "crates/ontoforge-query/src/set.rs",
+        "crates/ontoforge-query/tests/aggregate.rs",
+        "crates/ontoforge-query/tests/audit_l0.rs",
+        "crates/ontoforge-query/tests/audit_pk.rs",
+        "crates/ontoforge-query/tests/definition_snapshot.rs",
+        "crates/ontoforge-query/tests/l2_discovery.rs",
+        "crates/ontoforge-query/tests/l2_execute.rs",
+        "crates/ontoforge-query/tests/overlay_prop.proptest-regressions",
+        "crates/ontoforge-query/tests/overlay_prop.rs",
+        "crates/ontoforge-query/tests/pk_read.rs",
+        "crates/ontoforge-query/tests/query_bench_it.rs",
+        "crates/ontoforge-query/tests/search_around.rs",
+        "crates/ontoforge-query/tests/security.rs",
+        "crates/ontoforge-query/tests/set_ops.rs",
+        "crates/ontoforge-query/tests/sql_shape.rs",
+        "crates/ontoforge-query/tests/sqlite_query.rs",
+        "crates/ontoforge-query/tests/trino_query_it.rs",
+        "crates/ontoforge-storage/src/commit.rs",
+        "crates/ontoforge-storage/src/ddl.rs",
+        "crates/ontoforge-storage/src/diff.rs",
+        "crates/ontoforge-storage/src/error.rs",
+        "crates/ontoforge-storage/src/history.rs",
+        "crates/ontoforge-storage/src/import.rs",
+        "crates/ontoforge-storage/src/index.rs",
+        "crates/ontoforge-storage/src/lib.rs",
+        "crates/ontoforge-storage/src/log.rs",
+        "crates/ontoforge-storage/src/migrate.rs",
+        "crates/ontoforge-storage/src/naming.rs",
+        "crates/ontoforge-storage/src/physical.rs",
+        "crates/ontoforge-storage/src/query_read.rs",
+        "crates/ontoforge-storage/src/read_audit.rs",
+        "crates/ontoforge-storage/src/reload.rs",
+        "crates/ontoforge-storage/src/request_snapshot.rs",
+        "crates/ontoforge-storage/src/scope_store.rs",
+        "crates/ontoforge-storage/src/snapshots/ontoforge_storage__ddl__tests__ddl_postgres.snap",
+        "crates/ontoforge-storage/src/snapshots/ontoforge_storage__ddl__tests__ddl_sqlite.snap",
+        "crates/ontoforge-storage/src/sql_exit.rs",
+        "crates/ontoforge-storage/src/state.rs",
+        "crates/ontoforge-storage/src/store.rs",
+        "crates/ontoforge-storage/src/value.rs",
+        "crates/ontoforge-storage/tests/query_read.rs",
+        "crates/ontoforge-storage/tests/query_read_pg.rs",
+        "examples/ontologies/aviation/actions.yaml",
+        "examples/ontologies/aviation/bindings/dev/aircraft.yaml",
+        "examples/ontologies/aviation/bindings/dev/fixtures/aircraft.csv",
+        "examples/ontologies/aviation/bindings/dev/fixtures/flight_crew.csv",
+        "examples/ontologies/aviation/bindings/dev/fixtures/flights.csv",
+        "examples/ontologies/aviation/bindings/dev/fixtures/maintenance_records.csv",
+        "examples/ontologies/aviation/bindings/dev/fixtures/pilots.csv",
+        "examples/ontologies/aviation/bindings/dev/flight-crew.yaml",
+        "examples/ontologies/aviation/bindings/dev/flight.yaml",
+        "examples/ontologies/aviation/bindings/dev/maintenance-record.yaml",
+        "examples/ontologies/aviation/bindings/dev/pilot.yaml",
+        "examples/ontologies/aviation/links.yaml",
+        "examples/ontologies/aviation/objects.yaml",
+        "examples/ontologies/aviation/ontology.yaml"
+      ],
+      "covered_digest": "v4:sha256:72554a02f7f3981ee40a92fcb8283255549b347138919a7ef7f6ad4d559d9179",
+      "behavior_unverified": "0",
+      "overrides_applied": "0",
+      "decision_coverage": {
+        "honored": "7",
+        "total": "7",
+        "not_honored": []
+      },
+      "human_verification": [],
+      "re_verification": {
+        "previous_status": "passed",
+        "previous_score": "36/36",
+        "gaps_closed": [
+          "当前源码的隔离 Linux p95、真实 Trino/PG 语义与分片数补证",
+          "MVP User Story 格式已等义规范并由 owner query 验证"
+        ],
+        "gaps_remaining": [],
+        "regressions": []
+      }
+    },
+    "stderr": ""
+  },
+  "plans": [
+    {
+      "file": ".planning/phases/04-scoped-l0-read/04-01-PLAN.md",
+      "frontmatter": {
+        "args": [
+          "frontmatter.get",
+          ".planning/phases/04-scoped-l0-read/04-01-PLAN.md"
+        ],
+        "exit": 0,
+        "data": {
+          "phase": "04-scoped-l0-read",
+          "plan": "01",
+          "type": "execute",
+          "wave": "1",
+          "depends_on": [],
+          "files_modified": [
+            "crates/ontoforge-query/Cargo.toml",
+            "crates/ontoforge-query/src/lib.rs",
+            "crates/ontoforge-query/tests/pk_read.rs",
+            "crates/ontoforge-query/tests/security.rs",
+            "crates/ontoforge-storage/src/lib.rs",
+            "crates/ontoforge-storage/src/query_read.rs"
+          ],
+          "autonomous": "true",
+          "requirements": [
+            "QUERY-01",
+            "QUERY-08",
+            "QUERY-09"
+          ],
+          "estimate": {
+            "tokens": "90000",
+            "raw_tokens": "90000",
+            "tasks": "2",
+            "confidence": "low"
+          },
+          "must_haves": {
+            "truths": [
+              "客户端按 pk 读取时先走 edit store 的无副作用只读 API；只有 source-backed 对象仍需 source 列时才发一条 typed `LIMIT 2` source 查询（D-02，QUERY-01）",
+              "tombstone 与越权对象都表现为 `NotFound`，release 回到 source，重复 source pk 表现为 `AmbiguousObject`；错误只含 apiName（D-03，QUERY-01/09）",
+              "pk 结果只投影调用者在该合并行上可见且请求的属性，并携带绑定 principal/type/pk/definition/source/edit 状态的 HMAC `_version`（D-03/D-06，QUERY-09）",
+              "storage 读取不存在的 key 不插入 version 0 行、不加写锁、不改变 edit log 或定义状态（QUERY-08）",
+              "`ExecutionLimits` 由可信 host 构造并在请求开始冻结；Phase 4 初始默认是32 backend calls、10,000 raw candidates、2,048累计backfill keys、64 MiB decoded bytes，wire不能提供或调高，零值/溢出拒绝构造（QUERY-09）"
+            ],
+            "artifacts": [
+              "path: crates/ontoforge-storage/src/query_read.rs, provides: 无副作用的 `EditStore::read_object_edit`, exports: [ObjectEdit, EditStore::read_object_edit]",
+              "path: crates/ontoforge-query/src/lib.rs, provides: pk ObjectSet contract、QueryService tracer、QueryError、QueryPage、TokenCodec, exports: [ObjectSet, QueryRequest, QueryService, QueryError, QueryPage, TokenCodec]",
+              "path: crates/ontoforge-query/tests/pk_read.rs, provides: SQLite source + SQLite edit store 的 scoped pk 端到端 tracer"
+            ],
+            "key_links": [
+              "from: crates/ontoforge-query/src/lib.rs, to: crates/ontoforge-storage/src/query_read.rs, via: `QueryService::execute` 先调用 `read_object_edit`，不复用会写 version 0 row 的 commit load path, pattern: read_object_edit",
+              "from: crates/ontoforge-query/src/lib.rs, to: crates/ontoforge-auth/src/scope/merge.rs, via: 合并 source/edit 后调用 `TypeScope::evaluate` 决定行与列可见性, pattern: evaluate",
+              "from: crates/ontoforge-query/src/lib.rs, to: crates/ontoforge-engine/src/printer/mod.rs, via: pk source lookup 仅从 typed `Select` 经 `print_select` 生成 SQL, pattern: print_select"
+            ]
+          }
+        },
+        "stderr": ""
+      },
+      "artifacts": {
+        "args": [
+          "verify.artifacts",
+          ".planning/phases/04-scoped-l0-read/04-01-PLAN.md"
+        ],
+        "exit": 1,
+        "data": {
+          "all_passed": false,
+          "passed": 2,
+          "total": 3,
+          "artifacts": [
+            {
+              "path": "crates/ontoforge-storage/src/query_read.rs",
+              "exists": true,
+              "issues": [
+                "Missing export: EditStore::read_object_edit"
+              ],
+              "passed": false
+            },
+            {
+              "path": "crates/ontoforge-query/src/lib.rs",
+              "exists": true,
+              "issues": [],
+              "passed": true
+            },
+            {
+              "path": "crates/ontoforge-query/tests/pk_read.rs",
+              "exists": true,
+              "issues": [],
+              "passed": true
+            }
+          ]
+        },
+        "stderr": ""
+      },
+      "links": {
+        "args": [
+          "verify.key-links",
+          ".planning/phases/04-scoped-l0-read/04-01-PLAN.md"
+        ],
+        "exit": 0,
+        "data": {
+          "all_verified": true,
+          "verified": 3,
+          "pending": 0,
+          "total": 3,
+          "links": [
+            {
+              "from": "crates/ontoforge-query/src/lib.rs",
+              "to": "crates/ontoforge-storage/src/query_read.rs",
+              "via": "`QueryService::execute` 先调用 `read_object_edit`，不复用会写 version 0 row 的 commit load path",
+              "verified": true,
+              "detail": "Pattern found in source"
+            },
+            {
+              "from": "crates/ontoforge-query/src/lib.rs",
+              "to": "crates/ontoforge-auth/src/scope/merge.rs",
+              "via": "合并 source/edit 后调用 `TypeScope::evaluate` 决定行与列可见性",
+              "verified": true,
+              "detail": "Pattern found in source"
+            },
+            {
+              "from": "crates/ontoforge-query/src/lib.rs",
+              "to": "crates/ontoforge-engine/src/printer/mod.rs",
+              "via": "pk source lookup 仅从 typed `Select` 经 `print_select` 生成 SQL",
+              "verified": true,
+              "detail": "Pattern found in source"
+            }
+          ]
+        },
+        "stderr": ""
+      }
+    },
+    {
+      "file": ".planning/phases/04-scoped-l0-read/04-02-PLAN.md",
+      "frontmatter": {
+        "args": [
+          "frontmatter.get",
+          ".planning/phases/04-scoped-l0-read/04-02-PLAN.md"
+        ],
+        "exit": 0,
+        "data": {
+          "phase": "04-scoped-l0-read",
+          "plan": "02",
+          "type": "tdd",
+          "wave": "2",
+          "depends_on": [
+            "04-01"
+          ],
+          "files_modified": [
+            "crates/ontoforge-query/src/lib.rs",
+            "crates/ontoforge-query/src/ast.rs",
+            "crates/ontoforge-query/src/compile.rs",
+            "crates/ontoforge-query/tests/sqlite_query.rs",
+            "crates/ontoforge-query/tests/sql_shape.rs",
+            "crates/ontoforge-engine/src/printer/ast.rs",
+            "crates/ontoforge-engine/src/printer/dialect.rs",
+            "crates/ontoforge-engine/src/printer/tests.rs",
+            "crates/ontoforge-engine/src/printer/snapshots/ontoforge_engine__printer__tests__print_sqlite.snap",
+            "crates/ontoforge-engine/src/printer/snapshots/ontoforge_engine__printer__tests__print_trino.snap"
+          ],
+          "autonomous": "true",
+          "requirements": [
+            "QUERY-02",
+            "QUERY-03",
+            "QUERY-08",
+            "QUERY-09",
+            "QUERY-10"
+          ],
+          "estimate": {
+            "tokens": "95000",
+            "raw_tokens": "95000",
+            "tasks": "3",
+            "confidence": "low"
+          },
+          "must_haves": {
+            "truths": [
+              "ObjectSet/WhereClause 是 serde wire contract，完整覆盖 eq/gt/gte/lt/lte/isNull/in/startsWith/containsAnyTerm/containsAllTerms/and/or/not，并在编译前按 ontology 类型检查（D-01，QUERY-02）",
+              "用户谓词只能读取该行上被某个适用 role 授予的逻辑列；source 下推把 column grant 与 predicate 绑定，合并后仍用同一 Rust 语义复核，filter/sort 不产生 role 行×列交叉（D-03，QUERY-09）",
+              "String token search 采用空白 term 的 any/all 匹配、无 relevance order；ASCII corpus 在 Rust/SQLite/Trino 上一致，无法安全下推的形态留给 bounded Rust recheck（D-05，QUERY-03/08）",
+              "L0 source compiler 只能产生一个 `TableRef`、没有 JOIN/CTE/UNION/raw SQL；typed printer 支持 outer CASE mask 与 typed distributed EXPLAIN（D-01，QUERY-10）"
+            ],
+            "artifacts": [
+              "path: crates/ontoforge-query/src/ast.rs, provides: ObjectSet、WhereClause、OrderBy、PageSpec、QueryLiteral 的 wire-ready AST, exports: [ObjectSet, WhereClause, OrderBy, PageSpec, QueryLiteral]",
+              "path: crates/ontoforge-query/src/compile.rs, provides: scope-aware logical validation与single-table source Select compiler, exports: [ValidatedQuery, compile_source_select, CompileLimits]",
+              "path: crates/ontoforge-engine/src/printer/ast.rs, provides: typed `Expr::CaseWhen`, contains: CaseWhen",
+              "path: crates/ontoforge-query/tests/sql_shape.rs, provides: single-table、scope rewrite、CASE mask与complexity limit guards"
+            ],
+            "key_links": [
+              "from: crates/ontoforge-query/src/compile.rs, to: crates/ontoforge-auth/src/scope/merge.rs, via: `TypeScope::lower` 提供 row 与 per-column grant expressions, pattern: scope.lower",
+              "from: crates/ontoforge-query/src/compile.rs, to: crates/ontoforge-engine/src/printer/ast.rs, via: 只构造 typed `Select` / `Expr::CaseWhen`，不创建 SQL String, pattern: CaseWhen"
+            ]
+          }
+        },
+        "stderr": ""
+      },
+      "artifacts": {
+        "args": [
+          "verify.artifacts",
+          ".planning/phases/04-scoped-l0-read/04-02-PLAN.md"
+        ],
+        "exit": 0,
+        "data": {
+          "all_passed": true,
+          "passed": 4,
+          "total": 4,
+          "artifacts": [
+            {
+              "path": "crates/ontoforge-query/src/ast.rs",
+              "exists": true,
+              "issues": [],
+              "passed": true
+            },
+            {
+              "path": "crates/ontoforge-query/src/compile.rs",
+              "exists": true,
+              "issues": [],
+              "passed": true
+            },
+            {
+              "path": "crates/ontoforge-engine/src/printer/ast.rs",
+              "exists": true,
+              "issues": [],
+              "passed": true
+            },
+            {
+              "path": "crates/ontoforge-query/tests/sql_shape.rs",
+              "exists": true,
+              "issues": [],
+              "passed": true
+            }
+          ]
+        },
+        "stderr": ""
+      },
+      "links": {
+        "args": [
+          "verify.key-links",
+          ".planning/phases/04-scoped-l0-read/04-02-PLAN.md"
+        ],
+        "exit": 0,
+        "data": {
+          "all_verified": true,
+          "verified": 2,
+          "pending": 0,
+          "total": 2,
+          "links": [
+            {
+              "from": "crates/ontoforge-query/src/compile.rs",
+              "to": "crates/ontoforge-auth/src/scope/merge.rs",
+              "via": "`TypeScope::lower` 提供 row 与 per-column grant expressions",
+              "verified": true,
+              "detail": "Pattern found in source"
+            },
+            {
+              "from": "crates/ontoforge-query/src/compile.rs",
+              "to": "crates/ontoforge-engine/src/printer/ast.rs",
+              "via": "只构造 typed `Select` / `Expr::CaseWhen`，不创建 SQL String",
+              "verified": true,
+              "detail": "Pattern found in source"
+            }
+          ]
+        },
+        "stderr": ""
+      }
+    },
+    {
+      "file": ".planning/phases/04-scoped-l0-read/04-03-PLAN.md",
+      "frontmatter": {
+        "args": [
+          "frontmatter.get",
+          ".planning/phases/04-scoped-l0-read/04-03-PLAN.md"
+        ],
+        "exit": 0,
+        "data": {
+          "phase": "04-scoped-l0-read",
+          "plan": "03",
+          "type": "tdd",
+          "wave": "2",
+          "depends_on": [
+            "04-01"
+          ],
+          "files_modified": [
+            "crates/ontoforge-storage/src/lib.rs",
+            "crates/ontoforge-storage/src/query_read.rs",
+            "crates/ontoforge-storage/tests/query_read.rs",
+            "crates/ontoforge-storage/tests/query_read_pg.rs"
+          ],
+          "autonomous": "true",
+          "requirements": [
+            "QUERY-04",
+            "QUERY-05",
+            "QUERY-08",
+            "QUERY-09"
+          ],
+          "estimate": {
+            "tokens": "70000",
+            "raw_tokens": "70000",
+            "tasks": "2",
+            "confidence": "low"
+          },
+          "must_haves": {
+            "truths": [
+              "query crate 可按 logical type 与 canonical pk 批量读取 edit patches，单批硬上限 256，且 scan 使用 stable keyset、显式 limit，不做 offset/full-table materialization（D-02，QUERY-04）",
+              "M:N link edit 可按任一 endpoint 有界读取，返回 typed endpoint keys、deleted/version；FK 不在 storage 建第二份关系表（D-05，QUERY-05）",
+              "所有 read APIs 在 SQLite/PG 都只执行 SELECT，不插 version 0 skeleton、不锁 FOR UPDATE、不改变 log/definition/table row count（QUERY-08）",
+              "storage error/public structs 使用 logical names；physical schema/table/column 只在 crate-private query builder 与日志 source 中存在（QUERY-09）"
+            ],
+            "artifacts": [
+              "path: crates/ontoforge-storage/src/query_read.rs, provides: bounded read_object_edits/scan_object_edits/read_link_edits APIs, exports: [ObjectEdit, LinkEdit, EditScanCursor]",
+              "path: crates/ontoforge-storage/tests/query_read.rs, provides: SQLite side-effect/bounds/order/value conformance",
+              "path: crates/ontoforge-storage/tests/query_read_pg.rs, provides: ignored real PostgreSQL parity tests"
+            ],
+            "key_links": [
+              "from: crates/ontoforge-storage/src/query_read.rs, to: crates/ontoforge-storage/src/physical.rs, via: ActiveDefinition physical object/link mappings select typed value and __set columns, pattern: object_table|link_table",
+              "from: crates/ontoforge-storage/src/query_read.rs, to: crates/ontoforge-storage/src/commit.rs, via: 复用read_expr/cell_json/bind value semantics，但绝不调用load_row/load_object/load_link, pattern: read_expr|cell_json"
+            ]
+          }
+        },
+        "stderr": ""
+      },
+      "artifacts": {
+        "args": [
+          "verify.artifacts",
+          ".planning/phases/04-scoped-l0-read/04-03-PLAN.md"
+        ],
+        "exit": 0,
+        "data": {
+          "all_passed": true,
+          "passed": 3,
+          "total": 3,
+          "artifacts": [
+            {
+              "path": "crates/ontoforge-storage/src/query_read.rs",
+              "exists": true,
+              "issues": [],
+              "passed": true
+            },
+            {
+              "path": "crates/ontoforge-storage/tests/query_read.rs",
+              "exists": true,
+              "issues": [],
+              "passed": true
+            },
+            {
+              "path": "crates/ontoforge-storage/tests/query_read_pg.rs",
+              "exists": true,
+              "issues": [],
+              "passed": true
+            }
+          ]
+        },
+        "stderr": ""
+      },
+      "links": {
+        "args": [
+          "verify.key-links",
+          ".planning/phases/04-scoped-l0-read/04-03-PLAN.md"
+        ],
+        "exit": 0,
+        "data": {
+          "all_verified": true,
+          "verified": 2,
+          "pending": 0,
+          "total": 2,
+          "links": [
+            {
+              "from": "crates/ontoforge-storage/src/query_read.rs",
+              "to": "crates/ontoforge-storage/src/physical.rs",
+              "via": "ActiveDefinition physical object/link mappings select typed value and __set columns",
+              "verified": true,
+              "detail": "Pattern found in target"
+            },
+            {
+              "from": "crates/ontoforge-storage/src/query_read.rs",
+              "to": "crates/ontoforge-storage/src/commit.rs",
+              "via": "复用read_expr/cell_json/bind value semantics，但绝不调用load_row/load_object/load_link",
+              "verified": true,
+              "detail": "Pattern found in source"
+            }
+          ]
+        },
+        "stderr": ""
+      }
+    },
+    {
+      "file": ".planning/phases/04-scoped-l0-read/04-04-PLAN.md",
+      "frontmatter": {
+        "args": [
+          "frontmatter.get",
+          ".planning/phases/04-scoped-l0-read/04-04-PLAN.md"
+        ],
+        "exit": 0,
+        "data": {
+          "phase": "04-scoped-l0-read",
+          "plan": "04",
+          "type": "tdd",
+          "wave": "3",
+          "depends_on": [
+            "04-02",
+            "04-03"
+          ],
+          "files_modified": [
+            "crates/ontoforge-query/src/lib.rs",
+            "crates/ontoforge-query/src/overlay.rs",
+            "crates/ontoforge-query/src/cursor.rs",
+            "crates/ontoforge-query/src/execute.rs",
+            "crates/ontoforge-query/tests/overlay_prop.rs",
+            "crates/ontoforge-query/tests/security.rs"
+          ],
+          "autonomous": "true",
+          "requirements": [
+            "QUERY-04",
+            "QUERY-08",
+            "QUERY-09"
+          ],
+          "estimate": {
+            "tokens": "95000",
+            "raw_tokens": "95000",
+            "tasks": "3",
+            "confidence": "low"
+          },
+          "must_haves": {
+            "truths": [
+              "source 与 edit candidates 并行取得后，由唯一 Rust production overlay 合并、去重、scope/recheck、排序，并以最多 256 keys 的 backfill/refill 填页（D-01/D-02，QUERY-04/08）",
+              "keyset cursor 按规范化排序值与 pk 恢复，HMAC 绑定 principal、scope fingerprint、definition、object type 与 ordering；上下文不一致或被篡改时 fail closed（D-06，QUERY-04/09）",
+              "分页继续补取到 page 满或所有 candidate lane 耗尽；work budget 耗尽返回 typed explicit error，不把不完整结果伪装成正常页（D-02，QUERY-09）",
+              "`has_more` 由经 overlay/scope/recheck 后实际存在下一行决定；`truncated` 只表示最终 row/byte cap，不表示 refill 或 budget 状态（D-06，QUERY-04/09）",
+              "同一请求共享冻结的`ExecutionLimits`：32 backend calls、10,000 raw candidates、2,048累计backfill keys、64 MiB decoded bytes；逐维B可成功、B+1无partial失败，256仍是单批keys上限（QUERY-09）"
+            ],
+            "artifacts": [
+              "path: crates/ontoforge-query/src/overlay.rs, provides: production overlay、独立排序/去重与最终 merged-row evaluation primitives, exports: [overlay_object, compare_rows, eligible_row]",
+              "path: crates/ontoforge-query/src/execute.rs, provides: 并行 source/edit candidate lanes、bounded refill/backfill 与 page finalization, exports: [QueryService::execute_list]",
+              "path: crates/ontoforge-query/src/cursor.rs, provides: canonical keyset cursor payload 与 HMAC encode/decode, exports: [CursorCodec, CursorContext, CursorPosition]",
+              "path: crates/ontoforge-query/tests/overlay_prop.rs, provides: production overlay 对独立内存参考模型的 proptest"
+            ],
+            "key_links": [
+              "from: crates/ontoforge-query/src/execute.rs, to: crates/ontoforge-storage/src/query_read.rs, via: 每轮 edit keyset scan 与按 pk ≤256 batch backfill, pattern: scan_object_edits|read_object_edits",
+              "from: crates/ontoforge-query/src/execute.rs, to: crates/ontoforge-query/src/overlay.rs, via: 每批 source/edit candidates 合并后才运行 scope、final predicate/search recheck 与 order, pattern: overlay_object|eligible_row",
+              "from: crates/ontoforge-query/src/cursor.rs, to: crates/ontoforge-query/src/execute.rs, via: verified CursorPosition 过滤完整有界 edit 集并推进未编辑 source keyset，最终 next cursor 取最后一条返回 row, pattern: decode_cursor|CursorPosition"
+            ]
+          }
+        },
+        "stderr": ""
+      },
+      "artifacts": {
+        "args": [
+          "verify.artifacts",
+          ".planning/phases/04-scoped-l0-read/04-04-PLAN.md"
+        ],
+        "exit": 1,
+        "data": {
+          "all_passed": false,
+          "passed": 3,
+          "total": 4,
+          "artifacts": [
+            {
+              "path": "crates/ontoforge-query/src/overlay.rs",
+              "exists": true,
+              "issues": [],
+              "passed": true
+            },
+            {
+              "path": "crates/ontoforge-query/src/execute.rs",
+              "exists": true,
+              "issues": [
+                "Missing export: QueryService::execute_list"
+              ],
+              "passed": false
+            },
+            {
+              "path": "crates/ontoforge-query/src/cursor.rs",
+              "exists": true,
+              "issues": [],
+              "passed": true
+            },
+            {
+              "path": "crates/ontoforge-query/tests/overlay_prop.rs",
+              "exists": true,
+              "issues": [],
+              "passed": true
+            }
+          ]
+        },
+        "stderr": ""
+      },
+      "links": {
+        "args": [
+          "verify.key-links",
+          ".planning/phases/04-scoped-l0-read/04-04-PLAN.md"
+        ],
+        "exit": 0,
+        "data": {
+          "all_verified": true,
+          "verified": 3,
+          "pending": 0,
+          "total": 3,
+          "links": [
+            {
+              "from": "crates/ontoforge-query/src/execute.rs",
+              "to": "crates/ontoforge-storage/src/query_read.rs",
+              "via": "每轮 edit keyset scan 与按 pk ≤256 batch backfill",
+              "verified": true,
+              "detail": "Pattern found in source"
+            },
+            {
+              "from": "crates/ontoforge-query/src/execute.rs",
+              "to": "crates/ontoforge-query/src/overlay.rs",
+              "via": "每批 source/edit candidates 合并后才运行 scope、final predicate/search recheck 与 order",
+              "verified": true,
+              "detail": "Pattern found in source"
+            },
+            {
+              "from": "crates/ontoforge-query/src/cursor.rs",
+              "to": "crates/ontoforge-query/src/execute.rs",
+              "via": "verified CursorPosition 过滤完整有界 edit 集并推进未编辑 source keyset，最终 next cursor 取最后一条返回 row",
+              "verified": true,
+              "detail": "Pattern found in source"
+            }
+          ]
+        },
+        "stderr": ""
+      }
+    },
+    {
+      "file": ".planning/phases/04-scoped-l0-read/04-05-PLAN.md",
+      "frontmatter": {
+        "args": [
+          "frontmatter.get",
+          ".planning/phases/04-scoped-l0-read/04-05-PLAN.md"
+        ],
+        "exit": 0,
+        "data": {
+          "phase": "04-scoped-l0-read",
+          "plan": "05",
+          "type": "execute",
+          "wave": "4",
+          "depends_on": [
+            "04-04"
+          ],
+          "files_modified": [
+            "crates/ontoforge-query/src/lib.rs",
+            "crates/ontoforge-query/src/ast.rs",
+            "crates/ontoforge-query/src/execute.rs",
+            "crates/ontoforge-query/src/link.rs",
+            "crates/ontoforge-query/src/set.rs",
+            "crates/ontoforge-query/tests/search_around.rs",
+            "crates/ontoforge-query/tests/set_ops.rs"
+          ],
+          "autonomous": "true",
+          "requirements": [
+            "QUERY-05",
+            "QUERY-06",
+            "QUERY-08",
+            "QUERY-09"
+          ],
+          "estimate": {
+            "tokens": "85000",
+            "raw_tokens": "85000",
+            "tasks": "2",
+            "confidence": "low"
+          },
+          "must_haves": {
+            "truths": [
+              "FK searchAround 读取合并后对象的logical FK；M:N 将source join-table edges与PG link edits在Rust合并，Add/Remove与deleted语义遵守ADR-0024（D-05，QUERY-05）",
+              "任何related target都通过正常的scoped pk/list read hydrate；隐藏、tombstone或目标row scope拒绝时不返回且不可由错误区分（D-03/D-05，QUERY-05/09）",
+              "union/intersect/subtract只对相同logical object type的已授权pk集合运算，随后复用正常overlay/projection/order/caps；集合代数不能成为scope或definition旁路（QUERY-06/09）",
+              "FK、M:N与set operations各有独立reference corpus，candidate重复、edit移动、multi-role与空集合保持确定、去重且有界（D-07，QUERY-08）"
+            ],
+            "artifacts": [
+              "path: crates/ontoforge-query/src/link.rs, provides: FK/M:N link plan、edge overlay 与related target hydration, exports: [LinkDirection, SearchAroundPlan, LinkEdge]",
+              "path: crates/ontoforge-query/src/set.rs, provides: scoped pk set union/intersect/subtract evaluator, exports: [SetOperator, evaluate_set_operation]",
+              "path: crates/ontoforge-query/tests/search_around.rs, provides: FK/M:N fixed、property与scope isolation corpus",
+              "path: crates/ontoforge-query/tests/set_ops.rs, provides: 集合代数reference/property与cross-type拒绝tests"
+            ],
+            "key_links": [
+              "from: crates/ontoforge-query/src/link.rs, to: crates/ontoforge-query/src/execute.rs, via: FK与M:N得到target pks后统一走scoped target object batch/list executor, pattern: execute_pk_batch|execute_list",
+              "from: crates/ontoforge-query/src/link.rs, to: crates/ontoforge-storage/src/query_read.rs, via: 仅M:N从PG读取bounded endpoint link edits；FK来自merged object property, pattern: read_link_edits",
+              "from: crates/ontoforge-query/src/set.rs, to: crates/ontoforge-query/src/execute.rs, via: 每个operand先在同一frozen context求得authorized pks，algebra后再hydrate/project, pattern: evaluate_authorized_keys|execute_pk_batch"
+            ]
+          }
+        },
+        "stderr": ""
+      },
+      "artifacts": {
+        "args": [
+          "verify.artifacts",
+          ".planning/phases/04-scoped-l0-read/04-05-PLAN.md"
+        ],
+        "exit": 0,
+        "data": {
+          "all_passed": true,
+          "passed": 4,
+          "total": 4,
+          "artifacts": [
+            {
+              "path": "crates/ontoforge-query/src/link.rs",
+              "exists": true,
+              "issues": [],
+              "passed": true
+            },
+            {
+              "path": "crates/ontoforge-query/src/set.rs",
+              "exists": true,
+              "issues": [],
+              "passed": true
+            },
+            {
+              "path": "crates/ontoforge-query/tests/search_around.rs",
+              "exists": true,
+              "issues": [],
+              "passed": true
+            },
+            {
+              "path": "crates/ontoforge-query/tests/set_ops.rs",
+              "exists": true,
+              "issues": [],
+              "passed": true
+            }
+          ]
+        },
+        "stderr": ""
+      },
+      "links": {
+        "args": [
+          "verify.key-links",
+          ".planning/phases/04-scoped-l0-read/04-05-PLAN.md"
+        ],
+        "exit": 1,
+        "data": {
+          "all_verified": false,
+          "verified": 2,
+          "pending": 0,
+          "total": 3,
+          "links": [
+            {
+              "from": "crates/ontoforge-query/src/link.rs",
+              "to": "crates/ontoforge-query/src/execute.rs",
+              "via": "FK与M:N得到target pks后统一走scoped target object batch/list executor",
+              "verified": true,
+              "detail": "Pattern found in source"
+            },
+            {
+              "from": "crates/ontoforge-query/src/link.rs",
+              "to": "crates/ontoforge-storage/src/query_read.rs",
+              "via": "仅M:N从PG读取bounded endpoint link edits；FK来自merged object property",
+              "verified": true,
+              "detail": "Pattern found in source"
+            },
+            {
+              "from": "crates/ontoforge-query/src/set.rs",
+              "to": "crates/ontoforge-query/src/execute.rs",
+              "via": "每个operand先在同一frozen context求得authorized pks，algebra后再hydrate/project",
+              "verified": false,
+              "detail": "Pattern \"evaluate_authorized_keys|execute_pk_batch\" not found in source or target"
+            }
+          ]
+        },
+        "stderr": ""
+      }
+    },
+    {
+      "file": ".planning/phases/04-scoped-l0-read/04-06-PLAN.md",
+      "frontmatter": {
+        "args": [
+          "frontmatter.get",
+          ".planning/phases/04-scoped-l0-read/04-06-PLAN.md"
+        ],
+        "exit": 0,
+        "data": {
+          "phase": "04-scoped-l0-read",
+          "plan": "06",
+          "type": "tdd",
+          "wave": "5",
+          "depends_on": [
+            "04-05"
+          ],
+          "files_modified": [
+            "crates/ontoforge-query/src/lib.rs",
+            "crates/ontoforge-query/src/ast.rs",
+            "crates/ontoforge-query/src/compile.rs",
+            "crates/ontoforge-query/src/execute.rs",
+            "crates/ontoforge-query/src/aggregate.rs",
+            "crates/ontoforge-query/tests/aggregate.rs",
+            "crates/ontoforge-query/tests/security.rs",
+            "crates/ontoforge-query/tests/sql_shape.rs"
+          ],
+          "autonomous": "true",
+          "requirements": [
+            "QUERY-07",
+            "QUERY-08",
+            "QUERY-09",
+            "QUERY-10"
+          ],
+          "estimate": {
+            "tokens": "95000",
+            "raw_tokens": "95000",
+            "tasks": "3",
+            "confidence": "low"
+          },
+          "must_haves": {
+            "truths": [
+              "count/sum/avg 用source partial加edited-key old/new contribution correction得到exact merged result；avg由sum+count组成，不能平均两个avg（D-04，QUERY-07）",
+              "min/max以typed single-table TopN source windows与全部edit candidates合并，持续补取直到证明winner或返回显式work/cost error；不能因首个candidate失效返回错误值（D-04，QUERY-07/10）",
+              "distinct与groupBy只使用scope后可见值；connector能力或预算不足以证明exact结果时返回typed explicit error，永不以`truncated`或partial buckets代替完成（D-03/D-04，QUERY-07/09）",
+              "aggregate fixed/property corpus覆盖SQLite reference、multi-role row×column、null、edited membership/value/group移动与connector能力选择（D-07，QUERY-08）",
+              "可信host冻结的Phase 4初始`AggregateLimits`为1,024 groups、4,096 buckets、请求总计10,000 distinct values、16 MiB distinct memory；与`ExecutionLimits`共享同一请求budget，wire不可调高（QUERY-09）"
+            ],
+            "artifacts": [
+              "path: crates/ontoforge-query/src/aggregate.rs, provides: aggregate capability matrix、decomposed corrections、TopN与exact distinct/groupBy execution, exports: [AggregateRequest, AggregateResult, AggregateCapabilities, AggregateError]",
+              "path: crates/ontoforge-query/tests/aggregate.rs, provides: 独立full-materialization oracle与connector/cost fixed corpus",
+              "path: crates/ontoforge-query/tests/sql_shape.rs, provides: aggregate source Select单表、typed CASE/aggregate/TopN shape assertions",
+              "path: crates/ontoforge-query/tests/security.rs, provides: aggregate inference、physical error与no-partial conformance"
+            ],
+            "key_links": [
+              "from: crates/ontoforge-query/src/aggregate.rs, to: crates/ontoforge-query/src/execute.rs, via: edited old/new contributions、TopN rows与group values都经过统一overlay/scope/final predicate evaluator, pattern: eligible_row|execute_pk_batch",
+              "from: crates/ontoforge-query/src/aggregate.rs, to: crates/ontoforge-query/src/compile.rs, via: source partial/TopN计划只生成typed single-table Select并应用scope/grant CASE, pattern: compile_aggregate|CaseWhen",
+              "from: crates/ontoforge-query/src/aggregate.rs, to: crates/ontoforge-storage/src/query_read.rs, via: stable扫描全部relevant edit candidates并按≤256 keys回查source old values, pattern: scan_object_edits|read_object_edits"
+            ]
+          }
+        },
+        "stderr": ""
+      },
+      "artifacts": {
+        "args": [
+          "verify.artifacts",
+          ".planning/phases/04-scoped-l0-read/04-06-PLAN.md"
+        ],
+        "exit": 0,
+        "data": {
+          "all_passed": true,
+          "passed": 4,
+          "total": 4,
+          "artifacts": [
+            {
+              "path": "crates/ontoforge-query/src/aggregate.rs",
+              "exists": true,
+              "issues": [],
+              "passed": true
+            },
+            {
+              "path": "crates/ontoforge-query/tests/aggregate.rs",
+              "exists": true,
+              "issues": [],
+              "passed": true
+            },
+            {
+              "path": "crates/ontoforge-query/tests/sql_shape.rs",
+              "exists": true,
+              "issues": [],
+              "passed": true
+            },
+            {
+              "path": "crates/ontoforge-query/tests/security.rs",
+              "exists": true,
+              "issues": [],
+              "passed": true
+            }
+          ]
+        },
+        "stderr": ""
+      },
+      "links": {
+        "args": [
+          "verify.key-links",
+          ".planning/phases/04-scoped-l0-read/04-06-PLAN.md"
+        ],
+        "exit": 0,
+        "data": {
+          "all_verified": true,
+          "verified": 3,
+          "pending": 0,
+          "total": 3,
+          "links": [
+            {
+              "from": "crates/ontoforge-query/src/aggregate.rs",
+              "to": "crates/ontoforge-query/src/execute.rs",
+              "via": "edited old/new contributions、TopN rows与group values都经过统一overlay/scope/final predicate evaluator",
+              "verified": true,
+              "detail": "Pattern found in source"
+            },
+            {
+              "from": "crates/ontoforge-query/src/aggregate.rs",
+              "to": "crates/ontoforge-query/src/compile.rs",
+              "via": "source partial/TopN计划只生成typed single-table Select并应用scope/grant CASE",
+              "verified": true,
+              "detail": "Pattern found in source"
+            },
+            {
+              "from": "crates/ontoforge-query/src/aggregate.rs",
+              "to": "crates/ontoforge-storage/src/query_read.rs",
+              "via": "stable扫描全部relevant edit candidates并按≤256 keys回查source old values",
+              "verified": true,
+              "detail": "Pattern found in source"
+            }
+          ]
+        },
+        "stderr": ""
+      }
+    },
+    {
+      "file": ".planning/phases/04-scoped-l0-read/04-07-PLAN.md",
+      "frontmatter": {
+        "args": [
+          "frontmatter.get",
+          ".planning/phases/04-scoped-l0-read/04-07-PLAN.md"
+        ],
+        "exit": 0,
+        "data": {
+          "phase": "04-scoped-l0-read",
+          "plan": "07",
+          "type": "execute",
+          "wave": "6",
+          "depends_on": [
+            "04-05",
+            "04-06"
+          ],
+          "files_modified": [
+            "crates/ontoforge-query/tests/trino_query_it.rs",
+            "crates/ontoforge-query/tests/query_bench_it.rs",
+            "crates/ontoforge-query/tests/sql_shape.rs",
+            "crates/ontoforge-query/tests/security.rs",
+            "ci/pg/query_corpus.sql",
+            ".github/workflows/ci.yml",
+            ".planning/phases/04-scoped-l0-read/04-PERFORMANCE.md"
+          ],
+          "autonomous": "true",
+          "requirements": [
+            "QUERY-08",
+            "QUERY-09",
+            "QUERY-10"
+          ],
+          "estimate": {
+            "tokens": "85000",
+            "raw_tokens": "85000",
+            "tasks": "3",
+            "confidence": "low"
+          },
+          "must_haves": {
+            "truths": [
+              "真实Linux CI在PostgreSQL 17 + Trino 483上实际执行storage `query_read_pg`与query `trino_query_it` ignored tests，且独立discovery guard证明每个target至少有一个ignored test（D-07，QUERY-08）",
+              "每种source-producing query shape都对真实Trino执行`EXPLAIN (TYPE DISTRIBUTED)`，parser必须识别至少1个且不超过2个fragment；无法解析也失败（D-01，QUERY-10）",
+              "真实backend corpus覆盖multi-role、overlay、cursor、traversal、set、aggregate与physical-error消毒，SQLite expected与Trino/PG结果逐项一致（QUERY-08/09）",
+              "专用无并行负载的Linux CI run以固定dataset、至少5次warmup和40次measured samples证明pk/list/aggregate/edited-PG-direct p95预算，并保存raw timings、plan、环境与run URL（D-07，QUERY-10）"
+            ],
+            "artifacts": [
+              "path: crates/ontoforge-query/tests/trino_query_it.rs, provides: 真实Trino/PG fixed corpus、distributed EXPLAIN fragment与backend security tests",
+              "path: crates/ontoforge-query/tests/query_bench_it.rs, provides: isolated/smoke benchmark harness、nearest-rank p95与machine-readable evidence",
+              "path: .github/workflows/ci.yml, provides: query ignored targets、zero-test guards、smoke benchmark与isolated workflow_dispatch job",
+              "path: .planning/phases/04-scoped-l0-read/04-PERFORMANCE.md, provides: successful isolated CI evidence、raw timing artifact pointer、EXPLAIN与all four p95 verdicts"
+            ],
+            "key_links": [
+              "from: .github/workflows/ci.yml, to: crates/ontoforge-query/tests/trino_query_it.rs, via: Linux integration job同时注入ONTOFORGE_TRINO_URL与ONTOFORGE_PG_URL并以--ignored执行, pattern: trino_query_it",
+              "from: crates/ontoforge-query/tests/trino_query_it.rs, to: crates/ontoforge-engine/src/printer/mod.rs, via: typed distributed EXPLAIN包裹实际PrintedSql并把Trino plan交给strict fragment parser, pattern: print_distributed_explain|Fragment",
+              "from: crates/ontoforge-query/tests/query_bench_it.rs, to: .planning/phases/04-scoped-l0-read/04-PERFORMANCE.md, via: isolated run输出JSON/raw timings artifact，报告记录immutable run URL与threshold verdict, pattern: p95|samples|run_url"
+            ]
+          }
+        },
+        "stderr": ""
+      },
+      "artifacts": {
+        "args": [
+          "verify.artifacts",
+          ".planning/phases/04-scoped-l0-read/04-07-PLAN.md"
+        ],
+        "exit": 0,
+        "data": {
+          "all_passed": true,
+          "passed": 4,
+          "total": 4,
+          "artifacts": [
+            {
+              "path": "crates/ontoforge-query/tests/trino_query_it.rs",
+              "exists": true,
+              "issues": [],
+              "passed": true
+            },
+            {
+              "path": "crates/ontoforge-query/tests/query_bench_it.rs",
+              "exists": true,
+              "issues": [],
+              "passed": true
+            },
+            {
+              "path": ".github/workflows/ci.yml",
+              "exists": true,
+              "issues": [],
+              "passed": true
+            },
+            {
+              "path": ".planning/phases/04-scoped-l0-read/04-PERFORMANCE.md",
+              "exists": true,
+              "issues": [],
+              "passed": true
+            }
+          ]
+        },
+        "stderr": ""
+      },
+      "links": {
+        "args": [
+          "verify.key-links",
+          ".planning/phases/04-scoped-l0-read/04-07-PLAN.md"
+        ],
+        "exit": 0,
+        "data": {
+          "all_verified": true,
+          "verified": 3,
+          "pending": 0,
+          "total": 3,
+          "links": [
+            {
+              "from": ".github/workflows/ci.yml",
+              "to": "crates/ontoforge-query/tests/trino_query_it.rs",
+              "via": "Linux integration job同时注入ONTOFORGE_TRINO_URL与ONTOFORGE_PG_URL并以--ignored执行",
+              "verified": true,
+              "detail": "Pattern found in source"
+            },
+            {
+              "from": "crates/ontoforge-query/tests/trino_query_it.rs",
+              "to": "crates/ontoforge-engine/src/printer/mod.rs",
+              "via": "typed distributed EXPLAIN包裹实际PrintedSql并把Trino plan交给strict fragment parser",
+              "verified": true,
+              "detail": "Pattern found in source"
+            },
+            {
+              "from": "crates/ontoforge-query/tests/query_bench_it.rs",
+              "to": ".planning/phases/04-scoped-l0-read/04-PERFORMANCE.md",
+              "via": "isolated run输出JSON/raw timings artifact，报告记录immutable run URL与threshold verdict",
+              "verified": true,
+              "detail": "Pattern found in source"
+            }
+          ]
+        },
+        "stderr": ""
+      }
+    }
+  ],
+  "roadmap": {
+    "args": [
+      "roadmap.get-phase",
+      "04"
+    ],
+    "exit": 0,
+    "data": {
+      "found": true,
+      "phase_number": "04",
+      "phase_name": "Scoped L0 Read",
+      "goal": "As a 调用者, I want to 仅在自己的 scope 内通过 pk、过滤、排序分页、searchAround、集合运算与聚合读取对象，由 Rust 编排叠加且 Trino 只承担单表查询, so that 各种读取方式都遵守一致的授权边界.",
+      "mode": "mvp",
+      "success_criteria": [
+        "已编辑对象经 PG 直读返回，未编辑对象经 Trino 单表 pk 查询返回，tombstone 不可见、release 后回到 source；重复 source pk 返回 `AmbiguousObject`",
+        "WhereClause 全部运算符、排序与 keyset 分页（`has_more` 判定结束，补取循环凑满页）在示例数据上正确，结果按 pk 去重；String 搜索按 token 匹配",
+        "searchAround、集合运算可用；count / sum / avg 分解聚合与朴素叠加结果相等，min / max / distinct 按 ADR-0020 处理",
+        "越权 conformance（换 ID、伪造主体属性、多 role 列 × 行交叉、谓词 / 聚合反推、令牌反推）全部被拒绝；L0 输入输出与错误不含物理名；结果超限带 `truncated`",
+        "编译器保证每条 Trino 查询单表、≤ 2 fragment；安静或隔离集群下 pk 读 p95 < 500ms、列表 p95 < 1s、聚合 p95 < 1.5s（私有 fixture 实测记录）"
+      ],
+      "section": "### Phase 4: Scoped L0 Read\n\n**Goal**: As a 调用者, I want to 仅在自己的 scope 内通过 pk、过滤、排序分页、searchAround、集合运算与聚合读取对象，由 Rust 编排叠加且 Trino 只承担单表查询, so that 各种读取方式都遵守一致的授权边界.\n**Mode:** mvp\n**Depends on**: Phase 3\n**Requirements**: QUERY-01, QUERY-02, QUERY-03, QUERY-04, QUERY-05, QUERY-06, QUERY-07, QUERY-08, QUERY-09, QUERY-10\n**Spike**: 已完成（spike 3、spike 3b）；决策见 ADR-0020\n**Success Criteria** (what must be TRUE):\n\n  1. 已编辑对象经 PG 直读返回，未编辑对象经 Trino 单表 pk 查询返回，tombstone 不可见、release 后回到 source；重复 source pk 返回 `AmbiguousObject`\n  2. WhereClause 全部运算符、排序与 keyset 分页（`has_more` 判定结束，补取循环凑满页）在示例数据上正确，结果按 pk 去重；String 搜索按 token 匹配\n  3. searchAround、集合运算可用；count / sum / avg 分解聚合与朴素叠加结果相等，min / max / distinct 按 ADR-0020 处理\n  4. 越权 conformance（换 ID、伪造主体属性、多 role 列 × 行交叉、谓词 / 聚合反推、令牌反推）全部被拒绝；L0 输入输出与错误不含物理名；结果超限带 `truncated`\n  5. 编译器保证每条 Trino 查询单表、≤ 2 fragment；安静或隔离集群下 pk 读 p95 < 500ms、列表 p95 < 1s、聚合 p95 < 1.5s（私有 fixture 实测记录）\n\n**Plans**: 7/7 executed, 6 waves; verification 36/36、UAT 23/23，详: `.planning/phases/04-scoped-l0-read/`\n**Details**: `.planning/phases/04-scoped-l0-read/`"
+    },
+    "stderr": ""
+  },
+  "before": {
+    "args": [
+      "verification.status",
+      ".planning/phases/04-scoped-l0-read"
+    ],
+    "exit": 0,
+    "data": {
+      "status": "stale",
+      "next_action": "Verification is stale — covered source files changed after the verifier last ran: \"ci/pg/seed.sql\", \"ci/trino/iceberg/iceberg.properties\", \"crates/ontoforge-engine/src/lib.rs\", \"crates/ontoforge-engine/src/printer/ast.rs\", \"crates/ontoforge-engine/src/printer/dialect.rs\" and 3 more. Re-run execute-phase for this phase: it resumes at the verification gates and re-runs the verifier, regenerating VERIFICATION.md and its digest. verify-work alone cannot refresh a stale report.",
+      "next_command": "$gsd-execute-phase 04",
+      "route": "execute-phase",
+      "moved_files": [
+        "ci/pg/seed.sql",
+        "ci/trino/iceberg/iceberg.properties",
+        "crates/ontoforge-engine/src/lib.rs",
+        "crates/ontoforge-engine/src/printer/ast.rs",
+        "crates/ontoforge-engine/src/printer/dialect.rs",
+        "crates/ontoforge-engine/src/printer/tests.rs",
+        "crates/ontoforge-engine/tests/doc_type_table.rs",
+        "crates/ontoforge-engine/tests/l2_monitor.rs"
+      ]
+    },
+    "stderr": ""
+  },
+  "decisions": {
+    "args": [
+      "check.decision-coverage-verify",
+      ".planning/phases/04-scoped-l0-read",
+      ".planning/phases/04-scoped-l0-read/04-CONTEXT.md"
+    ],
+    "exit": 0,
+    "data": {
+      "skipped": false,
+      "blocking": false,
+      "total": 7,
+      "honored": 7,
+      "not_honored": [],
+      "message": "All trackable CONTEXT.md decisions are honored by shipped artifacts."
+    },
+    "stderr": ""
+  }
+}

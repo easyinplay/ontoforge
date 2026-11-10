@@ -1,0 +1,57 @@
+{
+  "recorded_at": "2026-11-06T02:30:24.480Z",
+  "head": "060019fe52005c6b85ae5c5f59da9868f464e579",
+  "previous_index": "2026-11-05/report-resign-01/main-evidence-index.json",
+  "previous_index_immutable": true,
+  "previous_index_check": {
+    "checked": 142,
+    "differences": [
+      {
+        "file": ".planning/STATE.md",
+        "expected": "06efc436047b4c4674773bf1d512d8ef65eb9de106cb192eb1e896ec83793828",
+        "actual": "c4e8a9af43e80c6621f43139a12e3b7dd0128b2e008809859845b081bf356117"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/findings.md",
+        "expected": "ddfc17392d186be0f19b451b0c046d639de0b51c47d68c8569277066018d3ebe",
+        "actual": "4a14741fd906f0c84bfa3ade5f97351d1640a2c43173c7bc6f3bafa009e1d8b4"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/progress.md",
+        "expected": "ab8b740f05a7558b07d029775aa982aa3c7475c124c80bf4efa9e1b429b09bd2",
+        "actual": "656a6727de2b46d67e696260f15a1826cc050b51ac7b64a20bee3ce2093d0520"
+      },
+      {
+        "file": ".planning/milestones/v1.0-audit/task_plan.md",
+        "expected": "820de69921a35f87b269249ee9a12208b82ba012d61823768818701bf9bf0c68",
+        "actual": "2955f1037d0a3885bf0f2a35cccdc095a58bb0367ab7647099360ab2440e43aa"
+      }
+    ]
+  },
+  "expected_planning_mutations": [
+    ".planning/STATE.md",
+    ".planning/milestones/v1.0-audit/task_plan.md",
+    ".planning/milestones/v1.0-audit/progress.md",
+    ".planning/milestones/v1.0-audit/findings.md"
+  ],
+  "phase02_before": {
+    "status": "gaps_found",
+    "score": "100/103 must-haves verified",
+    "covered": 308,
+    "report_sha256": "07327e844aa2bc7ae3a04a8cb8b9de98a028083997afc4f62ab1b224224ec53d",
+    "gate": {
+      "status": "gaps_found",
+      "next_action": "Gaps found. Plan the fixes, then re-run execute-phase before shipping.",
+      "next_command": "$gsd-plan-phase 02 --gaps",
+      "route": "plan-phase"
+    }
+  },
+  "matrix": {
+    "workflow_satisfied": 59,
+    "workflow_partial": 12,
+    "workflow_unsatisfied": 8
+  },
+  "derive_sha256": "5e8827c6c3043ee7c25360c07a8c765c75afeb8c3b64ba3ab9e1e1a45828794c",
+  "api_key_request_withdrawn": true,
+  "no_new_override_authorized": true
+}

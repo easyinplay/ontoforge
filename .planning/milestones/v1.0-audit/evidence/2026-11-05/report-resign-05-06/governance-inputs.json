@@ -1,0 +1,72 @@
+[
+  {
+    "file": ".planning/adr/0016-storage-system-data-and-typed-edit-store.md",
+    "sha256": "5eda7f3e40fa58b8608632f7ae29495ab1c4ad70ba90e12f54a661d19fe7a1d6",
+    "lines": 28
+  },
+  {
+    "file": ".planning/adr/0018-authz-scope-and-sql-tiers.md",
+    "sha256": "4a8889fbe1c26707eef9971b7bf8f59286237ca5f10792d01e63a5cf3d85d33c",
+    "lines": 32
+  },
+  {
+    "file": ".planning/adr/0026-edit-log-format.md",
+    "sha256": "9c73fc3ce4df7760557be5d64d0a498d07771a8aa02261994fa3f09243b1b25b",
+    "lines": 75
+  },
+  {
+    "file": ".planning/adr/0028-l2-acl-health-phase-boundary.md",
+    "sha256": "0585ca4e6c0680ad22a6e7bba1989ebb2a0423f1bf4ffca44aee73fbc567af72",
+    "lines": 20
+  },
+  {
+    "file": ".planning/phases/05-online-action/05-CONTEXT.md",
+    "sha256": "bf80fb5e54d67632a2c4d94c6e702eccb4e3561dec83305ff208f5ef23026f8d",
+    "lines": 77
+  },
+  {
+    "file": ".planning/phases/05-online-action/05-ENG-REVIEW.md",
+    "sha256": "c018b1833a9695094f9700bf3971eff69bf83994d58c902ddc3cea032ceb9869",
+    "lines": 42
+  },
+  {
+    "file": ".planning/phases/05-online-action/05-VALIDATION.md",
+    "sha256": "597dcf58cddba4fafa55ba8963a7df970dcf84448721a37615637c1707d8c742",
+    "lines": 84
+  },
+  {
+    "file": ".planning/phases/05-online-action/05-UAT.md",
+    "sha256": "9f34415e4b62a7ee93845ba3feeccace2cfaa99b0bdcbd638169f5db1cbf0e23",
+    "lines": 134
+  },
+  {
+    "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-CONTEXT.md",
+    "sha256": "ac05c62727d36d5835d32b19a997c9f92d45cd09cc1530d0c720089d50dc53cd",
+    "lines": 82
+  },
+  {
+    "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-PR-REVIEW.md",
+    "sha256": "01043c537ac5c348818518e239882389f390f2865d6f5c0cae1652e5a4c197ce",
+    "lines": 169
+  },
+  {
+    "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/06-VALIDATION.md",
+    "sha256": "1ab7ef4cf8ed5e21afbfc5ce29a55edd447e8b201c717392575812d26d6ed7ee",
+    "lines": 138
+  },
+  {
+    "file": ".planning/phases/06-l2-raw-dql-toolsets-audit/deferred-items.md",
+    "sha256": "3cffd75c25a2c9e70a3a34b58b92a3fcbd0459ad7bd58bfb23b22694bf73db37",
+    "lines": 4
+  },
+  {
+    "file": ".planning/REQUIREMENTS.md",
+    "sha256": "bc1c55d4851d9fc029978a5695564372419be7f1ec20fc132073b6f5329a792f",
+    "lines": 270
+  },
+  {
+    "file": ".planning/ROADMAP.md",
+    "sha256": "f770d45c819182d077191f21b004d9e9b027f29f4783cb7779b3f3481dccaab7",
+    "lines": 336
+  }
+]

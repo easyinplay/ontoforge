@@ -1,0 +1,50 @@
+[
+  {
+    "phase": "03-edit-store-scope-model",
+    "plans": 23,
+    "truths": 134,
+    "prohibitions": 4,
+    "covered": 318,
+    "before": {
+      "status": "stale",
+      "next_action": "Verification is stale — covered source files changed after the verifier last ran: \"CONTRIBUTING.md\", \"Cargo.toml\", \"ci/pg/seed.sql\", \"crates/ontoforge-engine/src/lib.rs\", \"crates/ontoforge-engine/src/printer/ast.rs\" and 5 more. Re-run execute-phase for this phase: it resumes at the verification gates and re-runs the verifier, regenerating VERIFICATION.md and its digest. verify-work alone cannot refresh a stale report.",
+      "next_command": "$gsd-execute-phase 03",
+      "route": "execute-phase",
+      "moved_files": [
+        "CONTRIBUTING.md",
+        "Cargo.toml",
+        "ci/pg/seed.sql",
+        "crates/ontoforge-engine/src/lib.rs",
+        "crates/ontoforge-engine/src/printer/ast.rs",
+        "crates/ontoforge-engine/src/printer/dialect.rs",
+        "crates/ontoforge-engine/src/printer/tests.rs",
+        "crates/ontoforge-schema/src/diag.rs",
+        "crates/ontoforge/src/cli.rs",
+        "crates/ontoforge/src/lib.rs"
+      ]
+    }
+  },
+  {
+    "phase": "04-scoped-l0-read",
+    "plans": 7,
+    "truths": 31,
+    "prohibitions": 0,
+    "covered": 181,
+    "before": {
+      "status": "stale",
+      "next_action": "Verification is stale — covered source files changed after the verifier last ran: \"ci/pg/seed.sql\", \"ci/trino/iceberg/iceberg.properties\", \"crates/ontoforge-engine/src/lib.rs\", \"crates/ontoforge-engine/src/printer/ast.rs\", \"crates/ontoforge-engine/src/printer/dialect.rs\" and 3 more. Re-run execute-phase for this phase: it resumes at the verification gates and re-runs the verifier, regenerating VERIFICATION.md and its digest. verify-work alone cannot refresh a stale report.",
+      "next_command": "$gsd-execute-phase 04",
+      "route": "execute-phase",
+      "moved_files": [
+        "ci/pg/seed.sql",
+        "ci/trino/iceberg/iceberg.properties",
+        "crates/ontoforge-engine/src/lib.rs",
+        "crates/ontoforge-engine/src/printer/ast.rs",
+        "crates/ontoforge-engine/src/printer/dialect.rs",
+        "crates/ontoforge-engine/src/printer/tests.rs",
+        "crates/ontoforge-engine/tests/doc_type_table.rs",
+        "crates/ontoforge-engine/tests/l2_monitor.rs"
+      ]
+    }
+  }
+]

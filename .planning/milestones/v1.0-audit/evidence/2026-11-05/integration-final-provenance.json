@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "audit_date": "2026-11-05",
+  "kind": "independent_static_integration_audit",
+  "inspected_head": "060019fe52005c6b85ae5c5f59da9868f464e579",
+  "source_equivalent_commit": "8d9d8c6",
+  "whole_trees_equal": false,
+  "observed_commit_diff_paths": [
+    ".planning/HANDOFF.json",
+    ".planning/STATE.md",
+    ".planning/milestones/v1.0-audit/.continue-here.md"
+  ],
+  "source_diff_scope": ["crates", "clients", "ci", ".github", "Cargo.toml", "Cargo.lock", "schemas", "examples", "tools"],
+  "commit_source_diff_empty": true,
+  "working_tree_source_diff_from_head_empty": true,
+  "ancestor_checks": [
+    {"commit": "ef0ab9c", "scope": "Phase03-07", "exit_code": 0},
+    {"commit": "aac4fd8", "scope": "Phase07.1", "exit_code": 0},
+    {"commit": "73bbec2", "scope": "Phase07.2", "exit_code": 0}
+  ],
+  "selected_current_file_sha256": {
+    "crates/ontoforge-server/src/mcp.rs": "0926BE13A1E1ACEA182361BAE728104C56FAFA7E228C89336137606CEFE94A24",
+    "crates/ontoforge-server/src/mcp_l2.rs": "59FAB52AC06C2B9093AEE7A6CBFA2DF3B09E7BEB9DCC9E59494BD0609D35CFF0",
+    "crates/ontoforge-engine/src/trino/mod.rs": "F18C5148607B8D75C375C48C2B9EE3D23FBAEAC9B34E5863D7C4992A4682D26C",
+    "crates/ontoforge/src/online.rs": "A93DF1DFD4F0F6FEC9A65039DFB543D35325BC9718D265D9CAAF3C2595700C70",
+    "crates/ontoforge-engine/src/cardinality_check.rs": "7E0890BEE8C7E5389FD1DCB9B25FAA114E22D7EF08C4250BE4ECFEDFF38F3CFC",
+    "ci/iceberg-services.sh": "818A03DA067D79B3396F58EA036DD7B9198AA7969D45A5105E842C7F1BC07E6D",
+    ".github/workflows/nightly.yml": "28002C0425B61151F8F002634A95322EA70DD64A4F0FBFBB8670E9625F63C6AC"
+  },
+  "static_checks": {
+    "boundaries_wired": 12,
+    "boundaries_broken": 0,
+    "flows_wired": 9,
+    "flows_broken": 0,
+    "rest_route_families_consumed": 8,
+    "rest_route_families_orphaned": 0,
+    "protected_rest_operations": 7,
+    "protected_mcp_mounts": 1,
+    "public_health_intentional": true,
+    "requirement_ids_expected": 79,
+    "requirement_ids_mapped_unique": 79,
+    "requirements_with_wiring_path": 74,
+    "requirements_without_independent_cross_phase_acceptance": ["SCHEMA-07", "LINT-02", "LINT-03", "LINT-04", "DX-03"],
+    "missing_or_extra_requirement_ids": [],
+    "new_blockers": 0,
+    "warnings": 7,
+    "int01": "fixed_in_current_production_call_path"
+  },
+  "retained_judgments": {
+    "phase01": "human_needed",
+    "phase02": "gaps_found",
+    "ENGINE-05": "Partial: private SQL Server fixture/source judgment not closed"
+  },
+  "existing_evidence_read_not_rerun": [
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-real-trino-final.json",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-evidence/plan03-real-trino-final.log",
+    ".planning/phases/07.1-source-cardinality-gap-closure/07.1-VERIFICATION.md",
+    ".planning/phases/07.2-minio-contract-gap-closure/07.2-VERIFICATION.md",
+    ".planning/phases/07.2-minio-contract-gap-closure/07.2-RUNTIME-EVIDENCE.md",
+    ".planning/phases/07.2-minio-contract-gap-closure/07.2-CI-VERIFICATION.md",
+    ".planning/phases/07.2-minio-contract-gap-closure/evidence/ci-evidence-index.json",
+    "target/phase072-minio/ci/run-41833307824-verified.json"
+  ],
+  "execution_boundary": {
+    "cargo_executed": false,
+    "docker_executed": false,
+    "services_started": false,
+    "web_or_ci_queried": false,
+    "commit_or_push_executed": false,
+    "shared_documents_written": false,
+    "dynamic_tests_rerun": 0,
+    "dynamic_reverification_owner": "separate owner",
+    "old_fa81ca0_report_reused_as_evidence": false,
+    "ralph_loop_or_warp_called": false,
+    "completion_method": "explicit static acceptance checklist"
+  },
+  "recording_method": "Manual transcription of observed read-only command results and source traces; not a dynamic test log."
+}

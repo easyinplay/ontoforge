@@ -1,0 +1,13 @@
+{
+  "status": "stale",
+  "next_action": "Verification is stale — covered source files changed after the verifier last ran: \"Cargo.toml\", \"crates/ontoforge-engine/src/lib.rs\", \"crates/ontoforge-engine/tests/l2_monitor.rs\", \"crates/ontoforge/src/cli.rs\", \"crates/ontoforge/src/lib.rs\". Re-run execute-phase for this phase: it resumes at the verification gates and re-runs the verifier, regenerating VERIFICATION.md and its digest. verify-work alone cannot refresh a stale report.",
+  "next_command": "$gsd-execute-phase 07",
+  "route": "execute-phase",
+  "moved_files": [
+    "Cargo.toml",
+    "crates/ontoforge-engine/src/lib.rs",
+    "crates/ontoforge-engine/tests/l2_monitor.rs",
+    "crates/ontoforge/src/cli.rs",
+    "crates/ontoforge/src/lib.rs"
+  ]
+}

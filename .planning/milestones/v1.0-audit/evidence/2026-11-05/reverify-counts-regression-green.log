@@ -1,0 +1,20 @@
+✔ required target with zero discovery cannot complete beside a passing target (64.9246ms)
+✔ duplicate execution identity cannot conceal a missing required target (56.2802ms)
+✔ explicitly named empty doctest harness is exempt and never counted successful (61.5081ms)
+✔ explicitly ignored documentation example remains excluded not nonignored success (70.2362ms)
+✔ unknown ignored-only required target is not successful execution (65.2686ms)
+✔ unknown empty doctest is not automatically exempt (69.3362ms)
+✔ duplicate discovery identities are rejected even with equal aggregate counts (71.5629ms)
+✔ different identity sets cannot complete with equal counts (60.0514ms)
+✔ one-to-one target identities may execute in a different order (62.1204ms)
+✔ a named empty exemption cannot hide missing execution or create success alone (114.843ms)
+✔ ignored-only policy requires its exact reviewed discovery count (56.4086ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 826.9182
+exit_code=0

@@ -1,0 +1,33 @@
+{
+  "result": "PASS",
+  "mode": "read-only",
+  "head": "060019fe52005c6b85ae5c5f59da9868f464e579",
+  "counts": {
+    "requirements": 79,
+    "root_plans": 93,
+    "root_summaries": 93,
+    "formal_verifications": 9,
+    "checked": 78,
+    "summary_declared_ids": 79,
+    "metadata_gap_ids": 0,
+    "summary_missing_field_files": 4,
+    "summary_explicit_empty_files": 26,
+    "verification_covered_ids": 79,
+    "orphaned": 0,
+    "historical_three_source_claims": 78,
+    "workflow_satisfied": 59,
+    "workflow_partial": 12,
+    "workflow_unsatisfied": 8,
+    "confirmed_current_functional_failures": 0,
+    "full_contract_partial": 1,
+    "current_execution_evidence_ids": 78,
+    "mapped_tests_executed_ids": 77,
+    "partial_current_execution_ids": 1,
+    "historical_only_ids": 1,
+    "owner_signed_current_phase07_scope_ids": 21,
+    "owner_signed_phase07_only_responsibility_ids": 15,
+    "owner_signed_crossphase_scope_ids": 6,
+    "current_execution_reports_current_ids": 58,
+    "current_execution_report_resign_pending_ids": 20
+  }
+}

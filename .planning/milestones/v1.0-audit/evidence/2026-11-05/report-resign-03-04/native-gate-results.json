@@ -1,0 +1,36 @@
+[
+  {
+    "phase": "03-edit-store-scope-model",
+    "result": {
+      "args": [
+        "verification.status",
+        ".planning/phases/03-edit-store-scope-model"
+      ],
+      "exit": 0,
+      "data": {
+        "status": "human_needed",
+        "next_action": "Human verification required. Complete the manual tests in the phase's *-UAT.md, then re-run the verify step until status is passed.",
+        "next_command": "$gsd-verify-work 03",
+        "route": "verify-work"
+      },
+      "stderr": ""
+    }
+  },
+  {
+    "phase": "04-scoped-l0-read",
+    "result": {
+      "args": [
+        "verification.status",
+        ".planning/phases/04-scoped-l0-read"
+      ],
+      "exit": 0,
+      "data": {
+        "status": "passed",
+        "next_action": "Verification passed — continue.",
+        "next_command": "",
+        "route": ""
+      },
+      "stderr": ""
+    }
+  }
+]
