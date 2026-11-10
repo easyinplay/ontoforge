@@ -1,17 +1,17 @@
-# @ontoforge/typescript-client
+# ontoforge
 
 TypeScript client for the [ontoforge](https://github.com/easyinplay/ontoforge) ontology operations REST API.
 
 ## Install
 
 ```sh
-npm install @ontoforge/typescript-client
+npm install ontoforge
 ```
 
 ## Usage
 
 ```ts
-import { createOntoforgeClient } from '@ontoforge/typescript-client';
+import { createOntoforgeClient } from 'ontoforge';
 
 const client = createOntoforgeClient({
   baseUrl: 'http://localhost:8080',
