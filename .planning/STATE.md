@@ -4,11 +4,11 @@ milestone: v1.1
 milestone_name: Gap Closure
 current_phase: 09
 current_phase_name: Systemd Worker Auto-Start
-status: verifying
-stopped_at: PR #15 open; Phase 09 machine evidence green x2; human reboot signoff pending
-last_updated: "2026-11-10T04:05:00Z"
+status: phase-12-gated
+stopped_at: PR #12/#13/#14/#15 all merged to main; Phase 09 human reboot signoff pending before Phase 12
+last_updated: "2026-11-10T07:10:00Z"
 last_activity: 2026-11-09
-last_activity_desc: Phase 09 PR #15; phase9 CI job green twice; ubuntu clippy fix verified
+last_activity_desc: all phase PRs merged (#12/#13/#14/#15); Phase 12 gated on phase-09 signoff
 state_head: d6764e2
 progress:
   total_phases: 5
@@ -20,10 +20,9 @@ progress:
 # Project State
 
 ## Current Position
-Phase: 09 (Webhook Worker Supervision) — VERIFYING (human gate)
-Phase 08: ACCEPTED; Phase 10/11 PRs open
-PR #15 (gsd/phase-09-webhook-worker-supervision → tip 188d17b): phase9-webhook-supervision job green ×2 runs; 09-UAT tests 1-3 pass（harness SIGKILL→signal9→respawn→恢复投递；真 systemd install→kill MainPID→NRestarts+1 新 InvocationID→送达）
-Next: 人工签字真实重启拉起（09-UAT 测试 4）→ merge #12/#13/#14/#15 → Phase 12
+Phase 8-11: ALL MERGED to main（#12 phase-08 ACCEPTED / #13 phase-11 / #14 phase-10 / #15 phase-09）
+Remaining gates: Phase 09 测试 4 人工签字（真实重启拉起）+ Phase 12 release
+Next: 09-UAT 测试 4 签字 → Phase 12（tags + release + npm + MILESTONES）
 
 ## Project Reference
 
@@ -77,12 +76,12 @@ v1.1 承接映射：05 → Phase 08 / 09（REL-01..03）、06 → Phase 10（REL
 
 ## Session Continuity
 
-Last session: 2026-11-10T04:05:00Z
-Stopped at: Phase 09 PR #15; phase9 job green x2; awaiting human reboot signoff
+Last session: 2026-11-10T07:10:00Z
+Stopped at: all PRs merged; Phase 12 gated on phase-09 signoff
 Resume file: .planning/handoff/ontoforge-devin-2026-11-09.md
 
 ## Operator Next Steps
 
-- 合并顺序：#12（phase-08）先合 → #13 基于其顶端；#14 独立；#09 分支待推送后开 PR（基于 phase-08 tip）
-- Phase 09 机器证据已回填 09-UAT（run 42749316959 + 复跑确认）；真实重启拉起仍属人工签字（测试 4）
-- Phase 12 最后（tags + release + npm + MILESTONES）
+- 全部 PR 已合并入 main（HEAD 74fa55e）
+- Phase 09 测试 4：INSTALL.md 真机装 unit → 真实重启 → kill -9 恢复 → 签 09-UAT 结论位
+- Phase 12 在签字后启动（tags + release + npm + MILESTONES）
