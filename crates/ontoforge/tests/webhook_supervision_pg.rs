@@ -439,12 +439,11 @@ async fn wait_for_ledger(
         if let Some(reason) = liveness() {
             panic!("{reason}");
         }
-        if started.elapsed() >= deadline {
-            panic!(
-                "the receiver ledger {} did not reach the expected state within {deadline:?}: {records:?}",
-                ledger.display()
-            );
-        }
+        assert!(
+            started.elapsed() < deadline,
+            "the receiver ledger {} did not reach the expected state within {deadline:?}: {records:?}",
+            ledger.display()
+        );
         tokio::time::sleep(Duration::from_millis(100)).await;
     }
 }
@@ -522,6 +521,10 @@ const COMMAND_IDS: &[(&str, &str)] = &[("phase9-webhook-command-1", "G1")];
 
 #[tokio::test(flavor = "multi_thread")]
 #[ignore = "needs ONTOFORGE_PG_URL and ONTOFORGE_WEBHOOK_RECEIVER_BIN"]
+#[allow(
+    clippy::too_many_lines,
+    reason = "the kill-recovery orchestration reads as one linear script"
+)]
 async fn killed_worker_recovers_undelivered_event_after_respawn() {
     let url = std::env::var("ONTOFORGE_PG_URL").expect("ONTOFORGE_PG_URL must be set");
     let receiver_bin = std::env::var("ONTOFORGE_WEBHOOK_RECEIVER_BIN")
@@ -785,9 +788,10 @@ async fn wait_for_systemd_restart(
         {
             return current;
         }
-        if wait_begin.elapsed() >= deadline {
-            panic!("systemd did not restart {unit} within {deadline:?}: {current:?}");
-        }
+        assert!(
+            wait_begin.elapsed() < deadline,
+            "systemd did not restart {unit} within {deadline:?}: {current:?}"
+        );
         tokio::time::sleep(Duration::from_millis(500)).await;
     }
 }
@@ -795,6 +799,10 @@ async fn wait_for_systemd_restart(
 #[cfg(target_os = "linux")]
 #[tokio::test(flavor = "multi_thread")]
 #[ignore = "needs systemd as PID 1, passwordless sudo, ONTOFORGE_PG_URL and ONTOFORGE_WEBHOOK_RECEIVER_BIN"]
+#[allow(
+    clippy::too_many_lines,
+    reason = "the install-kill-observe-cleanup orchestration reads as one linear script"
+)]
 async fn systemd_restarts_killed_worker_and_redelivers() {
     let url = std::env::var("ONTOFORGE_PG_URL").expect("ONTOFORGE_PG_URL must be set");
     let receiver_bin = std::env::var("ONTOFORGE_WEBHOOK_RECEIVER_BIN")
