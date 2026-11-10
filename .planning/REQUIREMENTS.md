@@ -18,12 +18,12 @@ v1.1 是收口 milestone：范围来自 v1.0 关闭时逐条记录的 4 项残�
 
 ### 审计与测试收口
 
-- [ ] **REL-04**: `security::cap_counts_final_masked_row_and_version` 的纯计算断言与依赖墙钟的时间敏感集成验证分离，CI 不再需要 `--test-threads=1` 即可稳定通过
+- [x] **REL-04**: `security::cap_counts_final_masked_row_and_version` 的纯计算断言与依赖墙钟的时间敏感集成验证分离，CI 不再需要 `--test-threads=1` 即可稳定通过
 
 ### 措辞与文档追改
 
-- [ ] **REL-05**: 仓库产品层的代码注释与文档不再把私有数据源特指为 SQL Server（`private_fixtures.rs` / `CONTRIBUTING.md` / `docs/designs/trino-engine-sql-tiers.md`），措辞统一为「私有 Trino 数据源」
-- [ ] **REL-06**: 归档的 `02-10-SUMMARY.md` 对陈旧断言（本地 warehouse 描述、测试计数）加 superseded 注解指向当前状态，SUMMARY 正文作为 dated 快照保留不被改写
+- [x] **REL-05**: 仓库产品层的代码注释与文档不再把私有数据源特指为 SQL Server（`private_fixtures.rs` / `CONTRIBUTING.md` / `docs/designs/trino-engine-sql-tiers.md`），措辞统一为「私有 Trino 数据源」
+- [x] **REL-06**: 归档的 `02-10-SUMMARY.md` 对陈旧断言（本地 warehouse 描述、测试计数）加 superseded 注解指向当前状态，SUMMARY 正文作为 dated 快照保留不被改写
 
 ### 首次对外发布
 
