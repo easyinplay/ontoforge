@@ -8,7 +8,7 @@ status: v2-milestone-start
 stopped_at: v2.0 Admin Console milestone registered (Phases 13-17); Phase 13 contract design next
 last_updated: "2026-11-10T15:40:00Z"
 last_activity: 2026-11-09
-last_activity_desc: v2.0 milestone registered; CON-01..06 defined; gpt-6-1-sol opinion accepted
+last_activity_desc: v2.0 milestone registered; CON-01..06 + boundary second-opinion accepted (6-layer model, webhook egress split, file-vs-managed ownership)
 state_head: d6764e2
 progress:
   total_phases: 5

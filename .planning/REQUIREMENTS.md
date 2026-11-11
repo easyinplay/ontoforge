@@ -76,8 +76,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 ## v2.0 Admin Console (Phases 13-17)
 
 - [ ] **CON-01**: 全部管理写（定义发布/source 启停/role 绑定/outbox 重试）经受保护管理 Action，授权规则不可被普通 action 编辑提权
-- [ ] **CON-02**: 数据源凭据经服务端 url_env/url_file 引用解析且永不明文回传，引用白名单 + 连接测试 SSRF 防护 + 全输出脱敏
-- [ ] **CON-03**: source 配置 DB 持久化（revision/enabled），TOML 仅 bootstrap+引用白名单；显式导入接管无双写；desired/applied 状态分离
+- [ ] **CON-02**: 数据源凭据经服务端 url_env/url_file 引用解析且永不明文回传；引用白名单+按 principal 授权可用引用；连接测试与出站每次校验（create/modify/test/send 一致，防 DNS/跳转绕过）；webhook target 受管但出站策略 ops 所有；全输出脱敏
+- [ ] **CON-03**: source 配置 DB 持久化（revision/enabled）；六层权限模型（bootstrap+安全信任根=TOML-only / 受管领域+集成配置=UI / 凭据=永不进 UI / 运行时=只读）；文件模式 vs 受管模式任一时刻单权威，启动校验拒绝歧义双配置；desired/applied/health 状态分离
 - [ ] **CON-04**: OIDC 自托管 IdP 登录 + 服务端会话（HttpOnly/Secure/SameSite/CSRF/撤销），dev-token 仅限开发模式，首管理员 CLI bootstrap
 - [ ] **CON-05**: ontology 定义以 change-set 校验发布（引用完整性+乐观锁+破坏性阻断），变更与审计可靠关联
 - [ ] **CON-06**:  SPA（React+Vite+TS+AntD+TanStack Query+仓内 SDK），同源服务端会话，发行物含预构建静态资源且离线可建
