@@ -2,6 +2,8 @@
 
 ## Milestones
 
+- 🚧 **v2.0 Admin Console** — 管理页面：ontology 管理 + 数据源配置 + 运维面（started 2026-11-10，Phase 0 契约阶段）
+
 - ✅ **v1.1 Gap Closure** — Phases 8-12（RELEASED 2026-11-10）
 - ✅ **v1.0 MVP** — Phases 1-7、7.1、7.2（shipped 2026-11-08）
 
@@ -112,6 +114,44 @@ Plans:
   4. Given 发布完成, When 查阅项目发布记录, Then `.planning/MILESTONES.md` 记录了 tag、Release 链接与 npm 包版本, 且 v1.1 的缺口收口状态不再声称存在开放缺口
 
 **Plans**: TBD
+
+### Phase 13: Admin Console Control-Plane Contract
+
+**Goal**: 管理面服务端契约——受保护管理 Action、修订模型、配置所有权、权限矩阵、会话设计
+**Mode:** new-capability
+**Depends on**: v1.1 shipped
+**Requirements**: CON-01..CON-06
+**Success Criteria** (what must be TRUE):
+
+  1. Given 管理写请求, When 任一管理变更（定义发布/source 启停/role 绑定/outbox 重试）, Then 必经受保护管理 Action 且不能自我提权
+  2. Given 数据源凭据, When 任一 UI/API 读写路径, Then 凭据永不以明文回传且 env/file 引用受白名单约束
+  3. Given 配置变更, When 保存与运行时应用分离, Then desired/applied revision 状态可分且失败保旧配置
+  4. Given 浏览器访问, When 登录, Then OIDC 服务端会话 + HttpOnly/CSRF + 非 dev principal 可用
+  5. Given 变更并发, When 多人改同一资源, Then expected_revision 乐观锁防覆盖且变更有审计关联
+
+### Phase 14: Console Read-Only MVP
+
+**Goal**: 登录 + 五类定义浏览 + source/binding 清单 + action history + 基础审计
+**Depends on**: Phase 13
+**Success Criteria**: 非 dev principal 登录；按权限限读；无凭据泄露；发行物同源离线可跑
+
+### Phase 15: Data-Source Writable Loop
+
+**Goal**: PG/Trino source 与 binding 创建/编辑/连接测试/启停的全写入闭环
+**Depends on**: Phase 14
+**Success Criteria**: 全写入走 Action；凭据仅引用；重启保持；失败保旧连接；文件资源不可被静默覆盖
+
+### Phase 16: Ontology Full Management
+
+**Goal**: 五类定义受控编辑、change set、diff、校验、发布、弃用
+**Depends on**: Phase 15
+**Success Criteria**: 引用完整性/并发冲突/破坏性阻断均有测试；发布审计可追溯
+
+### Phase 17: Governance + Ops + Hardening
+
+**Goal**: 角色绑定管理、审计筛选、outbox 详情/重试、action 监控、发布硬化
+**Depends on**: Phase 16
+**Success Criteria**: 越权/锁死管理员防护；重试有权限+限流+审计；Windows/WSL/Linux 构建验证
 
 ## Archive
 

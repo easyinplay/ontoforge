@@ -2,13 +2,13 @@
 gsd_state_version: "1.0"
 milestone: v1.1
 milestone_name: Gap Closure
-current_phase: 09
-current_phase_name: Systemd Worker Auto-Start
-status: released
-stopped_at: v1.1 released + milestone archived; Phases 8-11 moved to .planning/milestones/v1.1-phases/
-last_updated: "2026-11-10T15:10:00Z"
+current_phase: 13
+current_phase_name: Admin Console Control-Plane Contract
+status: v2-milestone-start
+stopped_at: v2.0 Admin Console milestone registered (Phases 13-17); Phase 13 contract design next
+last_updated: "2026-11-10T15:40:00Z"
 last_activity: 2026-11-09
-last_activity_desc: v1.1 milestone audit complete + archived; REL-01..07 [x]; branches cleaned
+last_activity_desc: v2.0 milestone registered; CON-01..06 defined; gpt-6-1-sol opinion accepted
 state_head: d6764e2
 progress:
   total_phases: 5
@@ -20,10 +20,10 @@ progress:
 # Project State
 
 ## Current Position
-v1.1 SHIPPED+ARCHIVED 2026-11-10
-Phases 8-12 all ACCEPTED; REL-01..07 [x]; archived to .planning/milestones/v1.1-phases/
-Release https://github.com/easyinplay/ontoforge/releases/tag/v1.1.0; npm ontoforge@1.1.0
-Next: new milestone (needs user direction)
+v1.1 SHIPPED+ARCHIVED; v2.0 Admin Console milestone registered
+CON-01..06 + Phases 13-17 in ROADMAP/REQUIREMENTS
+Consult (gpt-6-1-sol): apps/console monorepo / React+Vite+AntD+TanStack / OIDC+server-session / 受保护管理Action / change-set发布 / DB源配置+凭据引用白名单
+Next: Phase 13 控制面契约设计
 
 ## Project Reference
 
@@ -77,8 +77,8 @@ v1.1 承接映射：05 → Phase 08 / 09（REL-01..03）、06 → Phase 10（REL
 
 ## Session Continuity
 
-Last session: 2026-11-10T15:10:00Z
-Stopped at: v1.1 released + archived; awaiting next milestone direction
+Last session: 2026-11-10T15:40:00Z
+Stopped at: v2.0 milestone skeleton; Phase 13 contract design next
 Resume file: .planning/handoff/ontoforge-devin-2026-11-09.md
 
 ## Operator Next Steps
